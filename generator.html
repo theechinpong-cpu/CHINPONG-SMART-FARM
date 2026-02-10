@@ -1,42 +1,152 @@
-function generateScript(index) {
-    const item = shopeeLibrary[index]; // ดึงข้อมูลจากคลังสินค้า
-    const resultSection = document.getElementById('result-section');
-    
-    // --- ช่อง 1: Social Caption (จำกัด 150 ตัวอักษร + ลิงก์) ---
-    // คุมกฎไม่ระบุชื่อแพลตฟอร์ม และห้ามโฆษณาเกินจริง [cite: 2026-02-01]
-    const captionText = `🎯 ${item.name}\n${item.highlight.substring(0, 40)}...\nสั่งซื้อที่นี่: ${item.link}\n#ติวเตอร์ #เตรียมสอบ`;
-    document.getElementById('out-caption').innerText = captionText;
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Affiliate Engine Pro | Automation Hub</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="library.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>body { font-family: 'Kanit', sans-serif; }</style>
+</head>
+<body class="bg-[#0f172a] text-slate-200 min-h-screen">
 
-    // --- ช่อง 2: Product Image Link ---
-    // แสดงลิงก์รูปเพื่อให้คุณก๊อปไปวางใน Grok ได้ง่ายๆ
-    const imgDesc = `Product: ${item.name}\nStyle: 4k ultra realistic, vertical 9:16 [cite: 2026-02-02]`;
-    document.getElementById('img-desc').innerText = imgDesc;
-    // จำลองรูปใน Box
-    document.getElementById('out-image-box').innerHTML = `<div class="text-[10px] text-blue-400 p-4 font-bold uppercase tracking-tighter">Ready for Grok Rendering</div>`;
+    <div class="max-w-6xl mx-auto p-4 lg:p-8">
+        <header class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-10 border-b border-slate-800 pb-6">
+            <div>
+                <h1 class="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-600">AFFILIATE ENGINE PRO</h1>
+                <p class="text-slate-500 text-sm mt-1">ระบบผลิตคอนเทนต์อัตโนมัติ 9:16 Vertical [cite: 2026-02-02]</p>
+            </div>
+            <div class="flex gap-2">
+                <select id="toneSelector" class="bg-slate-800 border border-slate-700 text-xs rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="hype">โทน: ป้ายยาเร้าใจ</option>
+                    <option value="expert">โทน: วิชาการน่าเชื่อถือ</option>
+                    <option value="urgent">โทน: เร่งด่วน (Countdown)</option>
+                </select>
+                <a href="index.html" class="bg-slate-800 hover:bg-slate-700 px-4 py-2 rounded-lg text-xs transition-all flex items-center gap-2">
+                    <i class="fas fa-home"></i> กลับหน้าหลัก
+                </a>
+            </div>
+        </header>
 
-    // --- ช่อง 3: Master Prompt (6s Video + SSML 2.9x) ---
-    // ออกแบบมาให้ Grok เข้าใจและเจนออกมาเป็นคลิป 6 วินาทีทันที [cite: 2026-02-02]
-    const grokPrompt = `Create a 6-second vertical 9:16 video. [cite: 2026-02-02]
-VISUAL: 4k ultra realistic product shot of "${item.name}". [cite: 2026-02-02]
-TEXT OVER (English): "TOP EXAM PREP - GET IT NOW!"
-VOICE OVER (Thai): "อยากสอบติดต้องมีเล่มนี้ ${item.name} สรุปเข้มพร้อมสอบ คลิกเลย!"
-AUDIO SETTINGS: Speed 2.9x, Break 1ms. [cite: 2026-02-02]`;
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <aside class="lg:col-span-3 space-y-4">
+                <h2 class="text-sm font-bold uppercase tracking-widest text-slate-500 flex items-center gap-2">
+                    <i class="fas fa-box-open"></i> คลังสินค้า
+                </h2>
+                <div id="inventoryList" class="space-y-2 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
+                    </div>
+            </aside>
 
-    document.getElementById('out-grok-prompt').innerText = grokPrompt;
-    
-    // แสดงผลส่วนที่ซ่อนอยู่
-    resultSection.classList.remove('hidden');
-    resultSection.scrollIntoView({ behavior: 'smooth' });
-}
+            <main class="lg:col-span-9">
+                <div id="welcomeMessage" class="h-[400px] flex flex-col items-center justify-center border-2 border-dashed border-slate-800 rounded-3xl text-slate-600">
+                    <i class="fas fa-magic text-5xl mb-4"></i>
+                    <p>เลือกสินค้าจากด้านซ้ายเพื่อเริ่ม Automate</p>
+                </div>
 
-// ฟังก์ชันสำหรับกดปุ่มคัดลอก
-function copyToClipboard(id) {
-    const text = document.getElementById(id).innerText;
-    if (text === "") {
-        alert("กรุณาเลือกสินค้าก่อนคัดลอกครับ!");
-        return;
-    }
-    navigator.clipboard.writeText(text).then(() => {
-        alert('คัดลอกเรียบร้อย! นำไปวางต่อได้เลยครับ');
-    });
-}
+                <div id="resultArea" class="hidden space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        
+                        <div class="bg-slate-900/50 rounded-3xl p-6 border border-emerald-500/20">
+                            <div class="flex justify-between items-center mb-4">
+                                <span class="text-emerald-500 text-xs font-bold uppercase"><i class="fas fa-pen"></i> Social Caption</span>
+                                <span id="charCount" class="text-[10px] text-slate-500">0/150</span>
+                            </div>
+                            <div id="outCaption" class="text-sm leading-relaxed text-slate-300 min-h-[180px] bg-black/30 p-4 rounded-2xl border border-slate-800 italic"></div>
+                            <button onclick="copyToClipboard('outCaption')" class="w-full mt-4 bg-emerald-600 hover:bg-emerald-500 py-3 rounded-2xl text-xs font-bold transition-all">COPY CAPTION</button>
+                        </div>
+
+                        <div class="bg-slate-900/50 rounded-3xl p-6 border border-blue-500/20">
+                            <span class="text-blue-500 text-xs font-bold uppercase mb-4 block"><i class="fas fa-image"></i> Visual Asset</span>
+                            <div class="aspect-[9/16] bg-slate-950 rounded-2xl border border-slate-800 flex flex-col items-center justify-center p-6 text-center">
+                                <i class="fas fa-expand text-3xl text-slate-800 mb-3"></i>
+                                <p class="text-[10px] text-slate-500 mb-2">9:16 Vertical Ready [cite: 2026-02-02]</p>
+                                <div id="outStyle" class="text-[11px] text-blue-400 font-mono"></div>
+                            </div>
+                            <button onclick="window.open('https://x.com/grok', '_blank')" class="w-full mt-4 bg-blue-600 hover:bg-blue-500 py-3 rounded-2xl text-xs font-bold transition-all italic">OPEN GROK</button>
+                        </div>
+
+                        <div class="bg-slate-900/50 rounded-3xl p-6 border border-rose-500/20">
+                            <span class="text-rose-500 text-xs font-bold uppercase mb-4 block"><i class="fas fa-robot"></i> Grok Prompt (6s)</span>
+                            <div id="outPrompt" class="text-[11px] font-mono text-yellow-100/80 leading-relaxed bg-black/30 p-4 rounded-2xl border border-slate-800 min-h-[180px]"></div>
+                            <button onclick="copyToClipboard('outPrompt')" class="w-full mt-4 bg-rose-600 hover:bg-rose-500 py-3 rounded-2xl text-xs font-bold transition-all">COPY MASTER PROMPT</button>
+                        </div>
+
+                    </div>
+                    
+                    <div class="flex justify-center">
+                        <button onclick="markAsDone()" class="bg-slate-800 hover:bg-slate-700 text-slate-400 px-8 py-3 rounded-full text-xs font-bold transition-all border border-slate-700">
+                             MARK AS COMPLETED ✅
+                        </button>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        function loadInventory() {
+            const list = document.getElementById('inventoryList');
+            shopeeLibrary.forEach((item, index) => {
+                const btn = document.createElement('div');
+                btn.className = "group bg-slate-900/50 p-3 rounded-xl border border-slate-800 cursor-pointer hover:border-blue-500 transition-all";
+                btn.onclick = () => generateAll(index);
+                btn.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <span class="text-[9px] text-slate-500 font-bold uppercase">${item.cat}</span>
+                        <div class="done-dot hidden w-2 h-2 bg-emerald-500 rounded-full"></div>
+                    </div>
+                    <div class="text-xs font-bold truncate group-hover:text-blue-400 transition-colors">${item.name}</div>
+                `;
+                list.appendChild(btn);
+            });
+        }
+
+        function generateAll(index) {
+            const item = shopeeLibrary[index];
+            const tone = document.getElementById('toneSelector').value;
+            
+            document.getElementById('welcomeMessage').classList.add('hidden');
+            document.getElementById('resultArea').classList.remove('hidden');
+
+            // 1. Caption Logic (Max 150 chars + Countdown) [cite: 2026-02-01]
+            let cap = `🎯 ${item.name}\n`;
+            if(tone === 'urgent') cap += `🔥 เหลือเวลาไม่มาก! `;
+            cap += `${item.highlight.substring(0, 40)}...\n`;
+            cap += `🛒 ดูพิกัดที่ลิงก์หน้าโปรไฟล์นะครับ\n#ติวเตอร์ #เตรียมสอบ`;
+            
+            document.getElementById('outCaption').innerText = cap;
+            document.getElementById('charCount').innerText = `${cap.length}/150`;
+
+            // 2. Visual Style [cite: 2026-02-02]
+            document.getElementById('outStyle').innerText = `Style: 4K Ultra Realistic\nFormat: 9:16 Vertical\nSubject: ${item.name}`;
+
+            // 3. Grok Master Prompt (6 Sec + SSML 2.9x) [cite: 2026-02-02]
+            const prompt = `Task: Generate 6-second vertical 9:16 video. [cite: 2026-02-02]
+Visual: 4k ultra realistic, high-end commercial style for "${item.name}". [cite: 2026-02-02]
+Text Overlay (Eng): "BEST DEALS - TOP QUALITY"
+Voice Over (Thai): "อยากสอบติดต้องเล่มนี้เลย ${item.name} สรุปครบ จบในที่เดียว!"
+Audio Profile: SSML Speed 2.9x, Break 1ms. [cite: 2026-02-02]`;
+
+            document.getElementById('outPrompt').innerText = prompt;
+        }
+
+        function copyToClipboard(id) {
+            const text = document.getElementById(id).innerText;
+            navigator.clipboard.writeText(text).then(() => {
+                const btn = event.target;
+                const originalText = btn.innerText;
+                btn.innerText = "COPIED!";
+                setTimeout(() => btn.innerText = originalText, 2000);
+            });
+        }
+
+        function markAsDone() {
+            alert("บันทึกสถานะเรียบร้อย! ลุยสินค้าตัวถัดไปได้เลยครับ");
+        }
+
+        window.onload = loadInventory;
+    </script>
+</body>
+</html>
