@@ -104,33 +104,40 @@
         }
 
         function generateAll(index) {
-            const item = shopeeLibrary[index];
-            const tone = document.getElementById('toneSelector').value;
-            
-            document.getElementById('welcomeMessage').classList.add('hidden');
-            document.getElementById('resultArea').classList.remove('hidden');
+    const item = shopeeLibrary[index]; // ดึงข้อมูลจาก library.js
+    const tone = document.getElementById('toneSelector').value;
+    
+    document.getElementById('welcomeMessage').classList.add('hidden');
+    document.getElementById('resultArea').classList.remove('hidden');
 
-            // 1. Caption Logic (Max 150 chars + Countdown) [cite: 2026-02-01]
-            let cap = `🎯 ${item.name}\n`;
-            if(tone === 'urgent') cap += `🔥 เหลือเวลาไม่มาก! `;
-            cap += `${item.highlight.substring(0, 40)}...\n`;
-            cap += `🛒 ดูพิกัดที่ลิงก์หน้าโปรไฟล์นะครับ\n#ติวเตอร์ #เตรียมสอบ`;
-            
-            document.getElementById('outCaption').innerText = cap;
-            document.getElementById('charCount').innerText = `${cap.length}/150`;
+    // --- ช่อง 1: Social Caption (ใส่ลิงก์ Affiliate จริง) ---
+    // คุมกฎไม่ระบุชื่อแพลตฟอร์มอื่น [cite: 2026-02-01]
+    let cap = `🎯 ${item.name}\n`;
+    if(tone === 'urgent') cap += `🔥 ดีลพิเศษเหลือเวลาจำกัด! `;
+    cap += `${item.highlight.substring(0, 45)}...\n\n`;
+    cap += `📌 สั่งซื้อที่นี่: ${item.link}\n#ติวเตอร์ #เตรียมสอบ`; // ใส่ลิงก์จากคลัง
+    
+    document.getElementById('outCaption').innerText = cap;
+    document.getElementById('charCount').innerText = `${cap.length}/150`;
 
-            // 2. Visual Style [cite: 2026-02-02]
-            document.getElementById('outStyle').innerText = `Style: 4K Ultra Realistic\nFormat: 9:16 Vertical\nSubject: ${item.name}`;
+    // --- ช่อง 2: Reference Image (เพื่อความเหมือน 100%) ---
+    // แสดงลิงก์รูปสินค้าจริงเพื่อให้ Grok ใช้เป็นต้นแบบ
+    const imgUrl = item.img || "ไม่มีลิงก์รูปในคลัง";
+    document.getElementById('outStyle').innerText = `REFERENCE IMAGE URL:\n${imgUrl}\n\nStyle: Professional Product Shoot, 9:16 [cite: 2026-02-02]`;
 
-            // 3. Grok Master Prompt (6 Sec + SSML 2.9x) [cite: 2026-02-02]
-            const prompt = `Task: Generate 6-second vertical 9:16 video. [cite: 2026-02-02]
-Visual: 4k ultra realistic, high-end commercial style for "${item.name}". [cite: 2026-02-02]
-Text Overlay (Eng): "BEST DEALS - TOP QUALITY"
-Voice Over (Thai): "อยากสอบติดต้องเล่มนี้เลย ${item.name} สรุปครบ จบในที่เดียว!"
-Audio Profile: SSML Speed 2.9x, Break 1ms. [cite: 2026-02-02]`;
+    // --- ช่อง 3: Master Prompt (สั่งให้ Grok ดูรูปจากลิงก์) ---
+    // ระบุให้ใช้ความเร็วเสียง 2.9x และ Break 1ms ตามสั่ง [cite: 2026-02-02]
+    const grokPrompt = `Analyze this reference image: ${imgUrl}
+Create a 6-second 9:16 vertical video. [cite: 2026-02-02]
+The video MUST features the exact product from the link.
+ANIMATION: Smooth zoom and 3D rotation of the book.
+TEXT OVER (English): "EXAM WINNER - MUST HAVE!"
+VOICE OVER (Thai): "อยากสอบติดต้องมีเล่มนี้ ${item.name} สรุปเข้มพร้อมสอบ คลิกเลย!"
+AUDIO SETTINGS: SSML Speed 2.9x, Break 1ms. [cite: 2026-02-02]
+QUALITY: 4k ultra realistic, cinematic lighting. [cite: 2026-02-02]`;
 
-            document.getElementById('outPrompt').innerText = prompt;
-        }
+    document.getElementById('outPrompt').innerText = grokPrompt;
+}
 
         function copyToClipboard(id) {
             const text = document.getElementById(id).innerText;
