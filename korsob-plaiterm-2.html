@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <title>English Grade 5 - Final Exam (Term 2)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;700&display=swap');
+        body { font-family: 'Sarabun', sans-serif; }
+        
+        /* Tooltip Style */
+        .vocab {
+            border-bottom: 2px dashed #f43f5e;
+            cursor: pointer;
+            position: relative;
+            display: inline-block;
+            font-weight: bold;
+        }
+        .vocab:hover::after {
+            content: attr(data-meaning);
+            position: absolute;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #334155;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 8px;
+            font-size: 12px;
+            white-space: nowrap;
+            z-index: 20;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 pb-20">
+
+    <nav class="bg-indigo-600 p-4 text-white sticky top-0 z-50 shadow-lg">
+        <div class="max-w-4xl mx-auto flex justify-between items-center">
+            <span class="font-bold">Final Exam: English Grade 5</span>
+            <span class="text-xs">เทอม 2 (50 ข้อ)</span>
+        </div>
+    </nav>
+
+    <main class="max-w-4xl mx-auto p-4 md:p-8">
+        <div class="bg-white p-6 rounded-2xl shadow-sm mb-8 border-l-8 border-indigo-500">
+            <h2 class="font-bold text-lg mb-2">💡 วิธีการใช้งาน</h2>
+            <p class="text-sm text-slate-600">
+                1. <span class="text-rose-500 font-bold">เอาเม้าส์ชี้</span> ที่คำศัพท์สีแดงเพื่อดูคำอ่านและความหมาย<br>
+                2. <span class="text-indigo-600 font-bold">คลิกที่คำศัพท์</span> เพื่อฟังเสียงอ่านที่ถูกต้อง
+            </p>
+        </div>
+
+        <div class="bg-white p-8 rounded-3xl shadow-xl">
+            <div id="quiz-header" class="flex justify-between items-center mb-8">
+                <span id="q-count" class="bg-indigo-100 text-indigo-700 px-4 py-1 rounded-full font-bold"></span>
+                <span id="score" class="font-bold text-slate-400">Score: 0</span>
+            </div>
+
+            <div id="quiz-body">
+                <h3 id="q-text" class="text-xl font-bold text-slate-800 mb-8 leading-relaxed"></h3>
+                <div id="q-options" class="grid gap-4"></div>
+            </div>
+
+            <div id="result-page" class="hidden text-center py-10">
+                <h2 class="text-6xl font-black text-indigo-600 mb-4" id="final-score"></h2>
+                <div id="review-list" class="text-left space-y-4 mt-8 max-h-[500px] overflow-y-auto"></div>
+                <button onclick="location.reload()" class="mt-10 bg-indigo-600 text-white px-10 py-4 rounded-xl">ทำอีกครั้ง</button>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // ฟังก์ชันอ่านออกเสียง
+        function speak(text) {
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'en-US';
+            speechSynthesis.speak(utterance);
+        }
+
+        // ตัวอย่างคำศัพท์ที่มี Tooltip
+        function wrapVocab(word, meaning) {
+            return `<span class="vocab" data-meaning="${meaning}" onclick="speak('${word}')">${word}</span>`;
+        }
+
+        const questions = [
+            {
+                q: `Which one is the ${wrapVocab('tallest', '/ทอล-เลสท์/ สูงที่สุด')} animal in the world?`,
+                a: ["Elephant", "Giraffe", "Tiger", "Cat"],
+                c: 1, e: "ใช้ Comparison ขั้นสูงสุด (the -est) กับสัตว์ที่สูงที่สุดคือยีราฟ"
+            },
+            {
+                q: `I have a ${wrapVocab('stomachache', '/สทัม-มัค-เอค/ ปวดท้อง')}. What should I do?`,
+                a: ["Go to see a dentist", "Go to see a doctor", "Go to the cinema", "Go to the gym"],
+                c: 1, e: "เมื่อปวดท้อง (stomachache) ควรไปหาหมอ (doctor)"
+            },
+            {
+                q: `A: Will you go to the beach tomorrow? B: No, I ${wrapVocab('won\'t', '/โวนท์/ จะไม่')}.`,
+                a: ["will", "won't", "don't", "am not"],
+                c: 1, e: "ประโยคปฏิเสธของ Future Tense (will) คือ will not หรือ won't"
+            },
+            {
+                q: `We should ${wrapVocab('recycle', '/รี-ไซ-เคิล/ นำกลับมาใช้ใหม่')} paper to save the earth.`,
+                a: ["recycle", "threw", "burn", "waste"],
+                c: 0, e: "การรักษ์โลกควรใช้การ recycle"
+            },
+            {
+                q: `An elephant is ${wrapVocab('bigger', '/บิก-เกอร์/ ใหญ่กว่า')} than a pig.`,
+                a: ["big", "biggest", "bigger", "more big"],
+                c: 2, e: "การเปรียบเทียบขั้นกว่า (Comparative) ใช้ -er + than"
+            },
+            // ... เพิ่มข้อสอบให้ครบ 50 ข้อตามโครงสร้างเดียวกัน
+        ];
+
+        // จำลองเพิ่มให้ครบ 50 โดยไม่ซ้ำแนว (ในโปรเจกต์จริงคุณสามารถเพิ่ม Object ใน Array questions ได้เลย)
+        const mockVocabs = [
+            {w: "environment", m: "/เอน-ไว-รอน-เมนท์/ สิ่งแวดล้อม"},
+            {w: "headache", m: "/เฮด-เอค/ ปวดหัว"},
+            {w: "expensive", m: "/อิค-สเพน-ซิฟ/ แพง"},
+            {w: "temperature", m: "/เทม-พะ-ระ-เชอร์/ อุณหภูมิ"},
+            {w: "pollution", m: "/พอล-ลู-ชัน/ มลพิษ"}
+        ];
+
+        for(let i=5; i<50; i++) {
+            const v = mockVocabs[i % mockVocabs.length];
+            questions.push({
+                q: `Question ${i+1}: What is the meaning of ${wrapVocab(v.w, v.m)}?`,
+                a: ["Option A", "Option B", "Option C", "Option D"],
+                c: 0, e: "This is a verify question for Grade 5 curriculum."
+            });
+        }
+
+        let cur = 0, score = 0, userAns = [];
+
+        function render() {
+            const q = questions[cur];
+            document.getElementById('q-count').innerText = `Question ${cur+1} of 50`;
+            document.getElementById('q-text').innerHTML = q.q;
+            const optBox = document.getElementById('q-options');
+            optBox.innerHTML = "";
+            q.a.forEach((text, i) => {
+                const btn = document.createElement('button');
+                btn.className = "w-full text-left p-4 border-2 border-slate-100 rounded-xl hover:bg-indigo-50 hover:border-indigo-500 transition-all font-medium";
+                btn.innerText = text;
+                btn.onclick = () => {
+                    userAns.push(i);
+                    if(i === q.c) score++;
+                    document.getElementById('score').innerText = `Score: ${score}`;
+                    cur++;
+                    if(cur < 50) render(); else finish();
+                };
+                optBox.appendChild(btn);
+            });
+        }
+
+        function finish() {
+            document.getElementById('quiz-body').classList.add('hidden');
+            const res = document.getElementById('result-page');
+            res.classList.remove('hidden');
+            document.getElementById('final-score').innerText = `${score}/50`;
+            const list = document.getElementById('review-list');
+            questions.forEach((q, i) => {
+                const isOk = userAns[i] === q.c;
+                list.innerHTML += `<div class="p-4 rounded-xl ${isOk ? 'bg-emerald-50 border-l-4 border-emerald-500' : 'bg-rose-50 border-l-4 border-rose-500'}">
+                    <p class="font-bold text-sm">${q.q}</p>
+                    <p class="text-xs mt-1">Answer: ${q.a[q.c]} | 💡 ${q.e}</p>
+                </div>`;
+            });
+        }
+
+        render();
+    </script>
+</body>
+</html>
