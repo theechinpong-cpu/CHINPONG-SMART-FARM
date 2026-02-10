@@ -3,213 +3,143 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Educator Hub - Quiz & Affiliate Admin</title>
+    <title>Educator Command Hub - Auto Affiliate</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&family=Sarabun:wght@400;700&display=swap');
-        body { font-family: 'Plus Jakarta Sans', 'Sarabun', sans-serif; background: #020617; color: #f8fafc; overflow-x: hidden; }
+        body { font-family: 'Plus Jakarta Sans', 'Sarabun', sans-serif; background: #020617; color: #f8fafc; }
         .glass-card { background: rgba(255, 255, 255, 0.02); backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.05); }
-        .gradient-text { background: linear-gradient(135deg, #60a5fa, #f43f5e, #fb923c); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         .nav-btn.active { background: #f43f5e !important; color: white !important; box-shadow: 0 0 20px rgba(244, 63, 94, 0.3); }
+        .gradient-text { background: linear-gradient(135deg, #60a5fa, #f43f5e, #fb923c); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
     </style>
 </head>
 <body class="min-h-screen">
 
+    <script>
+        // ==========================================
+        // 🛍️ [ คลังสินค้า Shopee Affiliate ]
+        // เพิ่มสินค้าตรงนี้ได้เป็นร้อยรายการเลยครับ
+        // ==========================================
+        const shopeeLibrary = [
+            { name: "กล้องจุลทรรศน์ดิจิทัล 1000x", cat: "Science", link: "https://shope.ee/ตัวอย่าง1", highlight: "ส่องปีกแมลงชัดมาก ต่อเข้ามือถือได้เลย" },
+            { name: "ปากกาพูดได้ Reading Pen", cat: "English", link: "https://shope.ee/ตัวอย่าง2", highlight: "สำเนียงเป๊ะมาก ช่วยน้องๆ ฝึกออกเสียง" },
+            { name: "คีย์บอร์ด Mechanical มีไฟ RGB", cat: "Computer", link: "https://shope.ee/ตัวอย่าง3", highlight: "พิมพ์สนุก เสียงเพราะ เด็กสายคอมต้องชอบ" },
+            { name: "เครื่องคิดเลขวิทยาศาสตร์ Casio", cat: "Math", link: "https://shope.ee/ตัวอย่าง4", highlight: "ฟังชั่นครบ ใช้สอบเข้ามหาลัยได้ยาวๆ" },
+            { name: "ชุดของเล่นทดลองปลูกคริสตัล", cat: "Science", link: "https://shope.ee/ตัวอย่าง5", highlight: "ฝึกความอดทนและเรียนรู้วิทยาศาสตร์" }
+            // ก๊อปปี้บรรทัดด้านบนแล้วเพิ่มสินค้าลงไปได้เรื่อยๆ ครับ
+        ];
+
+        // --- แคปชันสำหรับป้ายยา (สุ่มอัตโนมัติ) ---
+        const affCaps = [
+            "ชาว [CAT] ต้องมี! [NAME] ตัวนี้ [HIGHLIGHT] แอดคัดมาให้แล้ว พิกัดร้านในคอมเมนต์นะ 👇✨",
+            "ไอเทมเด็ดที่เด็กๆ ต้องชอบ! ✨ [NAME] [HIGHLIGHT] แปะลิงก์ร้านที่แอดซื้อประจำไว้ให้แล้ว 👇",
+            "ของดีบอกต่อครับ! 😂 [NAME] สวยตรงปก ใช้งานดีมาก [HIGHLIGHT] กดดูได้เลยที่คอมเมนต์ 👇"
+        ];
+    </script>
+
     <div class="flex">
-        <aside class="w-20 md:w-64 min-h-screen flex flex-col items-center py-8 glass-card border-r border-white/5">
+        <aside class="w-24 md:w-64 min-h-screen flex flex-col items-center py-8 glass-card border-r border-white/5">
             <div class="w-14 h-14 bg-gradient-to-tr from-blue-600 to-rose-600 rounded-2xl flex items-center justify-center shadow-xl mb-12">
                 <i class="fas fa-bolt text-2xl text-white"></i>
             </div>
             <nav class="space-y-4 w-full px-4">
-                <button onclick="switchTab('quiz')" id="btn-quiz" class="nav-btn active w-full p-4 rounded-2xl bg-white/5 text-slate-400 flex items-center justify-center md:justify-start transition-all">
+                <button onclick="switchTab('quiz')" id="btn-quiz" class="nav-btn active w-full p-4 rounded-2xl bg-white/5 text-slate-400 flex items-center justify-center md:justify-start">
                     <i class="fas fa-graduation-cap md:mr-4"></i> <span class="hidden md:inline font-bold text-sm">จัดการข้อสอบ</span>
                 </button>
-                <button onclick="switchTab('affiliate')" id="btn-aff" class="nav-btn w-full p-4 rounded-2xl bg-white/5 text-slate-400 flex items-center justify-center md:justify-start transition-all">
-                    <i class="fas fa-shopping-bag md:mr-4"></i> <span class="hidden md:inline font-bold text-sm">ป้ายยา Shopee</span>
+                <button onclick="switchTab('affiliate')" id="btn-aff" class="nav-btn w-full p-4 rounded-2xl bg-white/5 text-slate-400 flex items-center justify-center md:justify-start">
+                    <i class="fas fa-shopping-cart md:mr-4"></i> <span class="hidden md:inline font-bold text-sm">คลังป้ายยา</span>
                 </button>
             </nav>
         </aside>
 
-        <main class="flex-1 p-6 md:p-12 max-w-7xl mx-auto">
-            
-            <header class="flex justify-between items-start mb-10">
-                <div>
-                    <h1 id="main-title" class="text-4xl font-black gradient-text mb-2">Quiz Command Center</h1>
-                    <p class="text-slate-500 font-medium">จัดการเนื้อหาและสร้างรายได้ Affiliate</p>
-                </div>
-                <div class="glass-card p-4 rounded-2xl text-right">
-                    <span class="text-[10px] font-black text-emerald-500 uppercase tracking-widest block mb-1">Status: Online</span>
-                    <div class="flex items-center gap-3">
-                        <div class="h-1.5 w-24 bg-white/10 rounded-full overflow-hidden">
-                            <div id="pb-bar" class="h-full bg-rose-500" style="width: 10%"></div>
-                        </div>
-                        <span id="pb-text" class="text-xs font-bold">1/8</span>
-                    </div>
-                </div>
+        <main class="flex-1 p-6 md:p-12 max-w-5xl mx-auto">
+            <header class="mb-10">
+                <h1 id="main-title" class="text-4xl font-black gradient-text mb-2">Quiz Center</h1>
+                <p id="sub-title" class="text-slate-500">จัดการข้อสอบและระบบป้ายยาอัตโนมัติ</p>
             </header>
 
-            <div id="section-quiz" class="grid lg:grid-cols-12 gap-8">
-                <div class="lg:col-span-4 space-y-6">
-                    <div class="glass-card p-6 rounded-[2rem]">
-                        <h3 class="font-bold mb-4 text-slate-300">ตัวกรองข้อสอบ</h3>
-                        <div class="space-y-3">
-                            <select id="subSelect" class="w-full bg-slate-800 border-none rounded-xl p-4 text-sm">
-                                <option value="All">ทุกวิชา</option>
-                                <option value="Science">วิทยาศาสตร์</option>
-                                <option value="Math">คณิตศาสตร์</option>
-                                <option value="English">ภาษาอังกฤษ</option>
-                                <option value="Computer">คอมพิวเตอร์</option>
-                            </select>
-                            <select id="lvSelect" class="w-full bg-slate-800 border-none rounded-xl p-4 text-sm">
-                                <option value="All">ทุกระดับชั้น</option>
-                                <option value="Primary">ประถม (ป.1-ป.6)</option>
-                                <option value="Secondary">มัธยม (ม.1-ม.6)</option>
-                            </select>
-                            <button onclick="genQuiz()" class="w-full py-4 bg-blue-600 rounded-xl font-black shadow-lg hover:scale-105 transition-all">สุ่มข้อสอบ</button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="lg:col-span-8 space-y-6">
-                    <div id="post-area" class="glass-card p-8 rounded-[2.5rem] hidden">
-                        <div id="q-cap" class="mb-6 p-5 bg-white/5 border-l-4 border-blue-500 rounded-r-xl text-blue-100 italic"></div>
-                        <div class="bg-slate-900 p-8 rounded-3xl mb-6 border border-white/5 shadow-2xl">
-                            <h2 id="q-text" class="text-2xl font-bold mb-6 leading-tight"></h2>
-                            <div id="q-opts" class="grid grid-cols-2 gap-4"></div>
-                        </div>
-                        <div class="bg-emerald-500/5 border border-emerald-500/20 rounded-2xl p-6 mb-6">
-                            <p id="q-ans" class="text-emerald-400 text-sm"></p>
-                        </div>
-                        <div class="flex gap-4">
-                            <button onclick="copyPost('quiz')" class="flex-1 py-5 bg-white text-black font-black rounded-2xl hover:bg-blue-400 transition-all">COPY & POST FB</button>
-                            <button onclick="copyCommentOnly()" class="px-8 bg-emerald-600 font-bold rounded-2xl">COPY เฉลย</button>
-                        </div>
-                    </div>
+            <div id="section-quiz" class="space-y-6">
+                <div class="glass-card p-8 rounded-[2rem] text-center">
+                    <p class="text-slate-400 mb-4">ระบบจัดการข้อสอบพร้อมใช้งาน</p>
+                    <button class="bg-blue-600 px-8 py-3 rounded-xl font-bold">สุ่มข้อสอบ</button>
                 </div>
             </div>
 
-            <div id="section-aff" class="hidden grid lg:grid-cols-12 gap-8">
-                <div class="lg:col-span-5 space-y-6">
+            <div id="section-aff" class="hidden space-y-6">
+                <div class="grid md:grid-cols-2 gap-6">
                     <div class="glass-card p-8 rounded-[2rem]">
-                        <h3 class="text-xl font-black mb-6">สร้างโพสต์ป้ายยา Shopee</h3>
-                        <div class="space-y-4">
-                            <input type="text" id="aff-name" placeholder="ชื่อสินค้า (เช่น คีย์บอร์ดมีไฟ)" class="w-full bg-slate-800 rounded-xl p-4 text-sm border-none">
-                            <select id="aff-cat" class="w-full bg-slate-800 rounded-xl p-4 text-sm border-none">
-                                <option value="Gadget">คอมพิวเตอร์ / IT</option>
-                                <option value="Study">อุปกรณ์การเรียน / วิทย์-คณิต</option>
-                                <option value="Book">หนังสือ / ชีทสรุป</option>
-                            </select>
-                            <input type="text" id="aff-link" placeholder="วางลิงก์ Affiliate (shope.ee/...)" class="w-full bg-slate-800 rounded-xl p-4 text-sm border-none">
-                            <button onclick="genAff()" class="w-full py-4 bg-rose-600 rounded-xl font-black shadow-lg">สร้าง Content ป้ายยา</button>
-                        </div>
+                        <h3 class="text-xl font-bold mb-6">สุ่มจากคลังสินค้า</h3>
+                        <p class="text-xs text-slate-500 mb-6">ระบบจะเลือกสินค้าจาก Library และสุ่มแคปชันให้ทันที</p>
+                        <button onclick="randomAffiliate()" class="w-full py-5 bg-rose-600 rounded-2xl font-black shadow-lg hover:scale-105 transition-all">
+                            <i class="fas fa-dice mr-2"></i> สุ่มสินค้าป้ายยา
+                        </button>
                     </div>
-                </div>
-                <div class="lg:col-span-7">
-                    <div id="aff-preview" class="glass-card p-8 rounded-[2.5rem] hidden">
-                        <div class="flex justify-between items-center mb-6">
-                            <span class="px-4 py-1 bg-rose-500/20 text-rose-500 rounded-full text-[10px] font-black uppercase">Ready to Post</span>
-                            <span class="text-slate-500 text-xs">Video 9:16 Recommended</span>
+
+                    <div id="aff-result" class="glass-card p-8 rounded-[2.5rem] hidden border-t-4 border-rose-500">
+                        <div class="mb-6">
+                            <span id="res-cat" class="text-[10px] bg-rose-500/20 text-rose-500 px-3 py-1 rounded-full font-black uppercase">CATEGORY</span>
+                            <h4 id="res-name" class="text-xl font-bold mt-3 text-white">ชื่อสินค้า</h4>
                         </div>
-                        <div id="aff-cap-result" class="bg-white/5 p-6 rounded-2xl border border-dashed border-white/10 mb-6 text-slate-200 leading-relaxed"></div>
-                        <button onclick="copyPost('aff')" class="w-full py-5 bg-rose-600 text-white font-black rounded-2xl shadow-xl hover:bg-rose-500 transition-all">COPY ป้ายยา & เปิด FACEBOOK</button>
+                        <div id="res-cap" class="text-sm text-slate-300 bg-white/5 p-4 rounded-xl border border-white/10 italic mb-6">
+                            แคปชันจะปรากฏที่นี่...
+                        </div>
+                        <div class="flex gap-3">
+                            <button onclick="copyAffContent()" class="flex-1 py-4 bg-white text-black font-black rounded-xl text-sm">COPY โพสต์ & ลิงก์</button>
+                            <button onclick="window.open('https://www.facebook.com','_blank')" class="px-4 bg-blue-600 rounded-xl"><i class="fab fa-facebook-f"></i></button>
+                        </div>
                     </div>
                 </div>
             </div>
-
         </main>
     </div>
 
     <script>
-        // --- ฐานข้อมูลข้อสอบ (DB) ---
-        const quizDB = [
-            { sub: 'Science', lv: 'Primary', q: 'พืชสังเคราะห์ด้วยแสงต้องใช้ก๊าซอะไร?', opts: ['ออกซิเจน','คาร์บอนไดออกไซด์','ไนโตรเจน','ไฮโดรเจน'], ans: 'B: คาร์บอนไดออกไซด์', exp: 'พืชใช้ก๊าซนี้สร้างอาหารในตอนกลางวันครับ' },
-            { sub: 'Computer', lv: 'Secondary', q: 'ปุ่มลัดใดใช้ในการบันทึกงาน (Save)?', opts: ['Ctrl+C','Ctrl+V','Ctrl+S','Ctrl+Z'], ans: 'C: Ctrl+S', exp: 'S ย่อมาจาก Save จำง่ายมากครับเด็กๆ' },
-            { sub: 'English', lv: 'Primary', q: 'I ____ a student.', opts: ['am','is','are','was'], ans: 'A: am', exp: 'ประธาน I ใช้กับ Verb to be "am" เสมอครับ' }
-        ];
-
-        // --- แคปชันป้ายยา (Affiliate Templates) ---
-        const affTemplates = {
-            Gadget: [
-                "ชาวคอมต้องมี! [NAME] ตัวนี้ไฟสวยมาก ใช้งานลื่นสุดๆ แอดคัดมาให้แล้ว พิกัดร้านในคอมเมนต์นะ 👇✨",
-                "ไอเทมเด็ดโต๊ะคอม! [NAME] ราคาหลักร้อยแต่คุณภาพหลักพัน แปะลิงก์ร้านที่แอดซื้อประจำไว้ให้แล้ว 👇"
-            ],
-            Study: [
-                "ตัวช่วยเรียนดี! [NAME] ช่วยให้ทำโจทย์ง่ายขึ้นเยอะ ใครหาอุปกรณ์การเรียนอยู่ห้ามพลาด พิกัดร้าน 👇🛒",
-                "ของดีบอกต่อ! [NAME] ใช้งานคุ้มมาก ซื้อครั้งเดียวใช้ได้ยาวๆ กดดูราคาได้ที่คอมเมนต์เลย 👇"
-            ]
-        };
-
-        let currentItem = null;
-        let postCounter = 0;
+        let currentAff = null;
 
         function switchTab(tab) {
             document.getElementById('section-quiz').classList.add('hidden');
             document.getElementById('section-aff').classList.add('hidden');
             document.getElementById('btn-quiz').classList.remove('active');
             document.getElementById('btn-aff').classList.remove('active');
-
+            
             if(tab === 'quiz') {
                 document.getElementById('section-quiz').classList.remove('hidden');
                 document.getElementById('btn-quiz').classList.add('active');
-                document.getElementById('main-title').innerText = "Quiz Command Center";
+                document.getElementById('main-title').innerText = "Quiz Center";
             } else {
                 document.getElementById('section-aff').classList.remove('hidden');
                 document.getElementById('btn-aff').classList.add('active');
-                document.getElementById('main-title').innerText = "Affiliate Hub";
+                document.getElementById('main-title').innerText = "Affiliate Library";
             }
         }
 
-        function genQuiz() {
-            const sub = document.getElementById('subSelect').value;
-            const lv = document.getElementById('lvSelect').value;
-            let filtered = quizDB;
-            if(sub !== 'All') filtered = filtered.filter(x => x.sub === sub);
-            if(lv !== 'All') filtered = filtered.filter(x => x.lv === lv);
-
-            if(filtered.length === 0) return alert("ไม่มีข้อสอบในหมวดนี้");
-            currentItem = filtered[Math.floor(Math.random() * filtered.length)];
-
-            document.getElementById('post-area').classList.remove('hidden');
-            document.getElementById('q-cap').innerText = "เด็กๆ มาลับสมองวิชา " + currentItem.sub + " กันหน่อย! ใครตอบถูกบ้างพิมพ์มาเลย 👇";
-            document.getElementById('q-text').innerText = currentItem.q;
-            document.getElementById('q-opts').innerHTML = currentItem.opts.map((o,i) => `<div class="p-4 bg-white/5 border border-white/10 rounded-2xl text-sm font-bold">${String.fromCharCode(65+i)}: ${o}</div>`).join('');
-            document.getElementById('q-ans').innerText = "เฉลย: " + currentItem.ans + "\n" + currentItem.exp;
-        }
-
-        function genAff() {
-            const name = document.getElementById('aff-name').value;
-            const cat = document.getElementById('aff-cat').value;
-            const link = document.getElementById('aff-link').value;
-            if(!name || !link) return alert("กรุณาใส่ชื่อสินค้าและลิงก์");
-
-            const t = affTemplates[cat] || affTemplates['Study'];
-            const cap = t[Math.floor(Math.random() * t.length)].replace('[NAME]', name);
+        function randomAffiliate() {
+            // สุ่มสินค้า
+            const item = shopeeLibrary[Math.floor(Math.random() * shopeeLibrary.length)];
+            // สุ่มแคปชัน
+            const capTemplate = affCaps[Math.floor(Math.random() * affCaps.length)];
             
-            currentItem = { type: 'aff', content: cap + "\n\nพิกัดสั่งซื้อตรงนี้ครับ: " + link };
-            document.getElementById('aff-preview').classList.remove('hidden');
-            document.getElementById('aff-cap-result').innerText = currentItem.content;
+            const finalCap = capTemplate
+                .replace('[NAME]', item.name)
+                .replace('[CAT]', item.cat)
+                .replace('[HIGHLIGHT]', item.highlight);
+
+            currentAff = { ...item, finalCap: finalCap };
+
+            // แสดงผล UI
+            document.getElementById('aff-result').classList.remove('hidden');
+            document.getElementById('res-cat').innerText = item.cat;
+            document.getElementById('res-name').innerText = item.name;
+            document.getElementById('res-cap').innerText = finalCap;
         }
 
-        function copyPost(type) {
-            let text = "";
-            if(type === 'quiz') {
-                text = document.getElementById('q-cap').innerText + "\n\n" + currentItem.q + "\n" + currentItem.opts.map((o,i) => String.fromCharCode(65+i)+": "+o).join('\n');
-            } else {
-                text = currentItem.content;
-            }
-
-            navigator.clipboard.writeText(text).then(() => {
-                postCounter++;
-                document.getElementById('pb-bar').style.width = (postCounter/8*100)+'%';
-                document.getElementById('pb-text').innerText = postCounter+'/8';
-                alert("คัดลอกเนื้อหาแล้ว! กำลังเปิด Facebook...");
-                window.open('https://www.facebook.com', '_blank');
+        function copyAffContent() {
+            if(!currentAff) return;
+            const textToCopy = `${currentAff.finalCap}\n\nพิกัดสั่งซื้อครับ 👇\nLink: ${currentAff.link}`;
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                alert("✅ คัดลอกคอนเทนต์ป้ายยาแล้ว! เตรียมไปวางใน Facebook ได้เลย");
             });
-        }
-
-        function copyCommentOnly() {
-            navigator.clipboard.writeText(document.getElementById('q-ans').innerText).then(() => alert("คัดลอกเฉลยแล้ว! แปะในคอมเมนต์ได้เลย"));
         }
     </script>
 </body>
