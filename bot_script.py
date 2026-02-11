@@ -1,8 +1,13 @@
+import os
 import random
 import time
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.common.by import By
+from webdriver_manager.chrome import ChromeDriverManager
 
 def get_safe_comment():
-    # 1. รายการข้อความเกริ่นนำ (Human-like)
     greetings = [
         "ไอเทมนี้ดีจริงครับ ลองดู",
         "ใครหาอยู่ แนะนำอันนี้เลย",
@@ -10,16 +15,39 @@ def get_safe_comment():
         "เพิ่งจัดมาเหมือนกัน ใช้ดีมาก",
         "ชี้เป้าครับ ราคาดีด้วย"
     ]
-    
-    # 2. รายการลิงก์ (อาจจะใช้ลิงก์ตรงสลับกับลิงก์ที่ย่อมาใหม่)
-    product_links = [
-        "https://s.shopee.co.th/2g5bPAW1Fg",
-        "https://s.shopee.co.th/2g5bPAW1Fg?smtt=0.0.9" # ใส่ parameter หลอกเพื่อให้ URL ไม่ซ้ำ
-    ]
-    
-    message = f"{random.choice(greetings)} {random.choice(product_links)}"
-    return message
+    # เปลี่ยนเป็นลิงก์ GitHub Pages เพื่อความปลอดภัย
+    product_link = "https://theechinpong-cpu.github.io/king-mongkut-tutor/go.html"
+    return f"{random.choice(greetings)} {product_link}"
 
-# ตอนสั่ง Selenium พิมพ์
-# comment_text = get_safe_comment()
-# textbox.send_keys(comment_text)
+def run_bot():
+    # 1. Setup Chrome Options สำหรับรันบน Cloud
+    chrome_options = Options()
+    chrome_options.add_argument('--headless')
+    chrome_options.add_argument('--no-sandbox')
+    chrome_options.add_argument('--disable-dev-shm-usage')
+    chrome_options.add_argument('--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36')
+
+    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
+
+    try:
+        # 2. ดึงค่าจาก GitHub Secrets
+        username = os.getenv("X_USERNAME")
+        password = os.getenv("X_PASSWORD")
+
+        print("กำลังเริ่มเข้าสู่ระบบ X...")
+        driver.get("https://x.com/login")
+        time.sleep(10) # รอหน้าเว็บโหลด
+
+        # --- Logic การ Login และโพสต์จะเริ่มตรงนี้ ---
+        # Note: คุณสามารถเพิ่ม XPath เพื่อสั่งพิมพ์ User/Pass ได้ที่นี่
+        
+        comment = get_safe_comment()
+        print(f"เตรียมโพสต์ข้อความ: {comment}")
+
+    except Exception as e:
+        print(f"เกิดข้อผิดพลาด: {e}")
+    finally:
+        driver.quit()
+
+if __name__ == "__main__":
+    run_bot()
