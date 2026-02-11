@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Grok Unified Prompt Engine | KING MONGKUT TUTOR</title>
+    <title>Grok Unified Prompt Engine</title>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="library.js"></script>
@@ -20,59 +20,47 @@
     </nav>
 
     <main class="container mx-auto px-4 py-10 max-w-4xl">
-        <div id="content-output" class="space-y-8">
-            </div>
+        <div id="content-output"></div>
     </main>
 
     <script>
         function generateContent() {
             if (typeof shopeeLibrary === 'undefined' || shopeeLibrary.length === 0) {
-                document.getElementById('content-output').innerHTML = "<p class='text-center text-rose-500'>❌ ไม่พบข้อมูลใน library.js</p>";
+                document.getElementById('content-output').innerHTML = `
+                    <div class="text-center p-10 bg-rose-500/10 border border-rose-500/50 rounded-3xl">
+                        <p class="text-rose-500 font-bold">❌ ไม่พบไฟล์ library.js หรือข้อมูลใน shopeeLibrary</p>
+                        <p class="text-xs text-slate-400 mt-2">กรุณาตรวจสอบว่าชื่อตัวแปรใน library.js คือ const shopeeLibrary = [...]</p>
+                    </div>`;
                 return;
             }
 
             const item = shopeeLibrary[Math.floor(Math.random() * shopeeLibrary.length)];
-            const container = document.getElementById('content-output');
-
-            // --- UNIFIED PROMPT FOR GROK ---
-            const unifiedPrompt = `
-Generate a 6-second vertical 9:16 video, an English caption, and a Thai SSML voice-over for this product:
+            
+            // สร้าง Super Prompt สำหรับ Grok
+            const unifiedPrompt = `Act as a professional video creator. Generate a 6-second vertical 9:16 video, an English caption, and a Thai SSML voice-over for this product:
 
 PRODUCT: "${item.name}"
-HIGHLIGHT: "${item.highlight}"
+DETAILS: "${item.highlight}"
 
-VIDEO INSTRUCTIONS:
-Create a cinematic 4K ultra-realistic close-up shot of the product, showcasing its key features (${item.highlight}) with professional studio lighting, a soft bokeh background, and dynamic camera movement. The video must be 6 seconds long and in 9:16 aspect ratio.
+1. [VIDEO INSTRUCTIONS]: 
+Create a cinematic 4K ultra-realistic vertical 9:16 video. Scene: Close-up of ${item.name} showing its key feature: ${item.highlight}. High-end studio lighting, soft bokeh, dynamic 6-second camera movement. 
 
-ENGLISH CAPTION:
-"🔥 Don't miss out! Get your ${item.name} today. Experience ${item.highlight} and upgrade your lifestyle! ✨ Shop now! #${item.cat.replace(/ /g, '')} #MustHave #LimitedTimeOffer #AffiliateDeal"
+2. [ENGLISH CAPTION]:
+"🔥 Don't miss out! Get your ${item.name} today. Best quality for your lifestyle! ✨ #MustHave #Affiliate #${item.cat.replace(/ /g, '')}"
 
-THAI VOICE OVER (SSML):
-<speak><prosody rate="2.9" volume="+0dB" pitch="+0st">สวัสดีครับ <break time="100ms"/> วันนี้ขอเสนอ <break time="1ms"/> ${item.name} <break time="1ms"/> ที่มาพร้อมคุณสมบัติเด่นคือ <break time="1ms"/> ${item.highlight} <break time="1ms"/> ห้ามพลาด <break time="100ms"/> สั่งซื้อเลยครับ</prosody></speak>
-`;
-            // --- END UNIFIED PROMPT ---
+3. [THAI VOICE OVER SSML]:
+<speak><prosody rate="2.9">${item.name} <break time="1ms"/> ${item.highlight} <break time="1ms"/> สินค้าดีที่ต้องมี สั่งซื้อได้ที่ลิงก์ในคอมเมนต์เลยครับ</prosody></speak>`;
 
-            container.innerHTML = `
-                <div class="bg-emerald-600/10 p-8 rounded-[2rem] border-2 border-emerald-600/30 shadow-2xl shadow-emerald-600/10">
-                    <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-emerald-400 font-black text-sm uppercase tracking-widest">✨ GROK UNIFIED MASTER PROMPT (Copy All Below)</h3>
-                        <span class="text-[10px] bg-emerald-500 text-white px-3 py-1 rounded-full font-bold uppercase">Ready for Grok</span>
-                    </div>
-                    <textarea id="unifiedCopy" class="w-full h-80 bg-black/50 p-6 rounded-2xl text-sm font-mono text-emerald-100 leading-relaxed border border-emerald-600/20 focus:outline-none select-all resize-y" readonly>${unifiedPrompt.trim()}</textarea>
-                    <p class="text-[11px] text-emerald-400/60 mt-4 italic text-center">** เพียง Copy ข้อความทั้งหมดในกล่องด้านบน แล้วไปวางใน Grok เพื่อ Generate Video, Caption และ Voice Over ได้ในครั้งเดียว **</p>
+            document.getElementById('content-output').innerHTML = `
+                <div class="bg-emerald-600/10 p-8 rounded-[2rem] border-2 border-emerald-600/30 shadow-2xl">
+                    <h3 class="text-emerald-400 font-black text-sm mb-4">✨ GROK MASTER PROMPT (Copy & Paste to Grok)</h3>
+                    <textarea id="unifiedCopy" class="w-full h-80 bg-black/50 p-6 rounded-2xl text-sm font-mono text-emerald-100 border border-emerald-600/20 focus:outline-none select-all" readonly>${unifiedPrompt.trim()}</textarea>
                 </div>
-
-                <div class="bg-slate-800/50 p-6 rounded-3xl border border-slate-700 flex gap-6 items-center">
-                    <div class="w-24 h-24 bg-white/5 rounded-2xl flex items-center justify-center text-4xl">📦</div>
-                    <div>
-                        <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">${item.cat}</span>
-                        <h4 class="text-lg font-black text-white mt-1">${item.name}</h4>
-                        <p class="text-sm text-slate-400 italic">${item.highlight}</p>
-                    </div>
+                <div class="mt-6 p-4 bg-slate-800 rounded-2xl text-xs text-slate-400 text-center">
+                    สินค้าที่เลือก: <b>${item.name}</b> (${item.cat})
                 </div>
             `;
         }
-
         window.onload = generateContent;
     </script>
 </body>
