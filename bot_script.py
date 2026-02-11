@@ -11,7 +11,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from webdriver_manager.chrome import ChromeDriverManager
 
 def get_safe_comment():
-    # 1. รายการข้อความเกริ่นนำ (สุ่มเพื่อเลี่ยงการตรวจจับ Spam)
+    # รายการข้อความสุ่มเพื่อเลี่ยงการตรวจจับ Spam
     greetings = [
         "ไอเทมนี้ดีจริงครับ ลองดู",
         "ใครหาอยู่ แนะนำอันนี้เลย",
@@ -19,22 +19,22 @@ def get_safe_comment():
         "เพิ่งจัดมาเหมือนกัน ใช้ดีมาก",
         "ชี้เป้าครับ ราคาดีด้วย"
     ]
-    # 2. ลิงก์ผ่าน GitHub Pages (Link Shield) เพื่อความปลอดภัย
+    # ลิงก์ผ่าน GitHub Pages (Link Shield)
     product_link = "https://theechinpong-cpu.github.io/king-mongkut-tutor/go.html"
     return f"{random.choice(greetings)} {product_link}"
 
 def run_bot():
     chrome_options = Options()
-    chrome_options.add_argument('--headless') # รันแบบไม่มีหน้าจอบน GitHub Actions
+    chrome_options.add_argument('--headless') # รันเบื้องหลังบน GitHub Actions
     chrome_options.add_argument('--no-sandbox')
     chrome_options.add_argument('--disable-dev-shm-usage')
     chrome_options.add_argument('--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36')
 
     driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
-    wait = WebDriverWait(driver, 25)
+    wait = WebDriverWait(driver, 30)
 
     try:
-        # ดึงค่าจาก GitHub Secrets
+        # ดึงค่าจาก Secrets
         username = os.getenv("X_USERNAME")
         password = os.getenv("X_PASSWORD")
 
@@ -55,36 +55,41 @@ def run_bot():
         pass_input.send_keys(password)
         pass_input.send_keys(Keys.ENTER)
         print("Login สำเร็จ!")
+        
+        # --- จัดการ Pop-up ที่ขวางหน้าจอ (เช่นหน้า Premium) ---
+        time.sleep(10)
+        print("ตรวจสอบและจัดการหน้าต่างขวางกั้น...")
+        driver.refresh() # รีเฟรชเพื่อล้างหน้าต่างโฆษณาที่มักเด้งตอน Login ครั้งแรก
         time.sleep(7)
 
-        # --- ขั้นตอนการค้นหาโพสต์อัตโนมัติ (Discovery Logic) ---
+        # --- ขั้นตอนการค้นหาโพสต์อัตโนมัติ ---
         keywords = ["แจกพิกัด", "ของดีบอกต่อ", "รีวิวจัดโต๊ะคอม"]
         search_query = random.choice(keywords)
-        print(f"กำลังค้นหาโพสต์ด้วยคำว่า: {search_query}")
+        print(f"กำลังค้นหาด้วยคำว่า: {search_query}")
         
-        # ค้นหาแบบเรียลไทม์ (Latest)
         search_url = f"https://x.com/search?q={search_query}&f=live"
         driver.get(search_url)
-        time.sleep(7)
+        time.sleep(10)
 
-        # ดึงลิงก์โพสต์ล่าสุด
+        # ดึงลิงก์โพสต์
         post_elements = wait.until(EC.presence_of_all_elements_located((By.XPATH, '//a[contains(@href, "/status/")]')))
         target_posts = list(set([post.get_attribute('href') for post in post_elements if "/status/" in post.get_attribute('href')]))[:3]
         
-        print(f"พบโพสต์ที่น่าสนใจ {len(target_posts)} โพสต์")
+        print(f"พบเป้าหมาย {len(target_posts)} โพสต์")
 
         # --- ลูปการตอบกลับ ---
         for url in target_posts:
             try:
                 print(f"กำลังไปที่: {url}")
                 driver.get(url)
-                time.sleep(5)
+                time.sleep(7)
 
-                # กดปุ่มตอบกลับ (ใช้ XPATH ที่แม่นยำ)
+                # กดปุ่ม Reply (ใช้ XPath ที่เจาะจงมากขึ้น)
                 reply_btn = wait.until(EC.element_to_be_clickable((By.XPATH, '//div[@data-testid="reply"]')))
                 reply_btn.click()
+                time.sleep(2)
 
-                # พิมพ์ข้อความที่สุ่มได้
+                # พิมพ์ข้อความ
                 text_area = wait.until(EC.presence_of_element_located((By.XPATH, '//div[@role="textbox"]')))
                 comment = get_safe_comment()
                 text_area.send_keys(comment)
@@ -94,18 +99,18 @@ def run_bot():
                 send_btn = driver.find_element(By.XPATH, '//div[@data-testid="tweetButtonInline"]')
                 send_btn.click()
                 
-                print(f"สำเร็จ! โพสต์คอมเมนต์: {comment}")
-                time.sleep(random.randint(15, 30)) # รอสุ่มเวลาเพื่อความเป็นธรรมชาติ
+                print(f"สำเร็จ: {comment}")
+                time.sleep(random.randint(20, 40)) # รอเพื่อความเป็นธรรมชาติ
 
             except Exception as inner_e:
-                print(f"ข้ามโพสต์นี้เนื่องจาก: {inner_e}")
+                print(f"ข้ามโพสต์นี้เนื่องจากปุ่มถูกบังหรือหาไม่เจอ")
                 continue
 
     except Exception as e:
         print(f"เกิดข้อผิดพลาดร้ายแรง: {e}")
     finally:
         driver.quit()
-        print("จบการทำงาน")
+        print("ปิดระบบ")
 
 if __name__ == "__main__":
     run_bot()
