@@ -1,75 +1,51 @@
-// menu.js - คลังข้อมูลบทเรียนทั้งหมด
+// menu.js - Full Curriculum Structure 2026
 const lessonMenu = [
     {
-        category: "ประถมศึกษา ป.1 - ป.6",
+        category: "Primary Level (ป.1 - ป.6)",
         color: "green",
-        icon: "fas fa-book-reader",
+        icon: "fas fa-pencil-alt",
         items: [
             {
-                subject: "ภาษาอังกฤษ (ป.5 เทอม 2)",
-                icon: "🇬🇧",
+                subject: "Mathematics", icon: "🔢",
                 links: [
-                    { title: "คลังคำศัพท์ (1,200 คำ)", url: "vocabulary-pri-5-1.html", type: "normal" },
-                    { title: "ทบทวนศัพท์ 1-10 (Liverpool)", url: "liverpool-lesson.html", type: "italic" },
-                    { title: "🎯 ข้อสอบปลายภาค", url: "korsob-plaiterm-2.html", type: "bold" }
+                    { title: "จำนวนและพีชคณิต", url: "math-p-algebra.html", type: "bold" },
+                    { title: "เรขาคณิตและสถิติ", url: "math-p-geo.html", type: "normal" }
                 ]
             },
             {
-                subject: "ภาษาไทย (ป.5)",
-                icon: "🇹🇭",
+                subject: "Science & Tech", icon: "🧪",
                 links: [
-                    { title: "คำศัพท์ภาษาไทย", url: "thai-p5-vocab.html", type: "normal" },
-                    { title: "หลักภาษาและการใช้ภาษา", url: "thai-p5-lesson.html", type: "normal" },
-                    { title: "แนวข้อสอบภาษาไทย", url: "thai-p5-exam.html", type: "bold" }
-                ]
-            },
-            {
-                subject: "สังคม / ประวัติ / ศาสนา",
-                icon: "🗺️",
-                links: [
-                    { title: "บทเรียนพระพุทธศาสนา", url: "social-p5-religion.html", type: "normal" },
-                    { title: "หน้าที่พลเมืองและวัฒนธรรม", url: "social-p5-duty.html", type: "normal" },
-                    { title: "ประวัติศาสตร์ไทย ป.5", url: "social-p5-history.html", type: "normal" },
-                    { title: "ภูมิศาสตร์ไทย", url: "social-p5-geography.html", type: "normal" },
-                    { title: "รวมข้อสอบสังคมศึกษา", url: "social-exam-all.html", type: "bold" }
-                ]
-            },
-            {
-                subject: "วิทย์ - คณิต (ป.5)",
-                icon: "🧪",
-                links: [
-                    { title: "วิทยาศาสตร์ ป.5 เทอม 2", url: "science-p5-t2.html", type: "bold" },
-                    { title: "คณิตศาสตร์ ป.5 เทอม 2", url: "math-p5-t2.html", type: "bold" }
+                    { title: "วิทยาศาสตร์กายภาพ", url: "sci-p-phys.html", type: "normal" },
+                    { title: "วิทยาการคำนวณ (Coding)", url: "sci-p-coding.html", type: "bold" }
                 ]
             }
         ]
     },
     {
-        category: "มัธยมศึกษา ม.1 - ม.6",
-        color: "red",
-        icon: "fas fa-user-graduate",
+        category: "Secondary Level (ม.1 - ม.6)",
+        color: "rose",
+        icon: "fas fa-university",
         items: [
             {
-                subject: "Culinary English (ม.4)",
-                icon: "👨‍🍳",
+                subject: "Pure Sciences", icon: "🧬",
                 links: [
-                    { title: "คลังคำศัพท์ Chef JOURNEY", url: "vocabulary-m4-chef.html", type: "bold" },
-                    { title: "บทเรียน Chef's English", url: "chef-lesson.html", type: "italic" }
+                    { title: "ฟิสิกส์ (Physics)", url: "phys-m-all.html", type: "normal" },
+                    { title: "ชีววิทยา (Biology)", url: "bio-m-all.html", type: "bold" },
+                    { title: "เคมี (Chemistry)", url: "chem-m-all.html", type: "normal" }
                 ]
             },
             {
-                subject: "วิทยาศาสตร์ชีวภาพ (ม.ปลาย)",
-                icon: "🧬",
+                subject: "English Specials", icon: "👨‍🍳",
                 links: [
-                    { title: "บทที่ 1: การลำเลียงสาร", url: "cell-transport.html", type: "normal" },
-                    { title: "บทที่ 2: ดุลยภาพร่างกาย", url: "homeostasis.html", type: "normal" }
+                    { title: "Culinary English (Chef)", url: "en-m4-chef.html", type: "bold" },
+                    { title: "English for Academic", url: "en-m-academic.html", type: "italic" }
                 ]
             },
             {
-                subject: "สังคมศึกษา ม.ปลาย",
-                icon: "🌍",
+                subject: "Social & Geography", icon: "🌍",
                 links: [
-                    { title: "ภูมิศาสตร์อเมริกาเหนือ", url: "north-america-geography.html", type: "italic" }
+                    { title: "ภูมิศาสตร์อเมริกาเหนือ", url: "soc-m6-america.html", type: "normal" },
+                    { title: "ประวัติศาสตร์โลก", url: "his-m-world.html", type: "normal" }
                 ]
             }
         ]
