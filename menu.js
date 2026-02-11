@@ -38,6 +38,7 @@ const lessonMenu = [
                 { title: "ภูมิศาสตร์อเมริกาเหนือ", url: "soc-m6-america.html", type: "italic" }
             ]},
             { subject: "คลังข้อสอบ TCAS / TGAT / TPAT", icon: "📝", links: [
+                { title: "แนวข้อสอบภาษาอังกฤษ ม.4 ปลายภาค 50 ข้อ", url: "m4-english-final.html", type: "bold" },
                 { title: "ติวสอบ TGAT (ทุกพาร์ท)", url: "tgas-all.html", type: "bold" },
                 { title: "แนวข้อสอบ A-Level", url: "alevel-all.html", type: "bold" }
             ]}
