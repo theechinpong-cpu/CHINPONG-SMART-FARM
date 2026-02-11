@@ -11,100 +11,81 @@ from selenium.webdriver.support import expected_conditions as EC
 from webdriver_manager.chrome import ChromeDriverManager
 
 def get_safe_comment():
-    greetings = [
-        "ไอเทมนี้ดีจริงครับ ลองดู",
-        "ใครหาอยู่ แนะนำอันนี้เลย",
-        "ของมันต้องมีครับตัวนี้",
-        "เพิ่งจัดมาเหมือนกัน ใช้ดีมาก",
-        "ชี้เป้าครับ ราคาดีด้วย",
-        "พิกัดของดี ตามนี้เลยครับ"
-    ]
-    # ลิงก์ GitHub Pages ของคุณ
+    greetings = ["ไอเทมนี้ดีจริงครับ", "แนะนำอันนี้เลย", "ของมันต้องมี", "ใช้ดีมากครับ", "ชี้เป้าครับ"]
     product_link = "https://theechinpong-cpu.github.io/king-mongkut-tutor/go.html"
     return f"{random.choice(greetings)} {product_link}"
 
 def run_bot():
     chrome_options = Options()
-    chrome_options.add_argument('--headless') 
+    chrome_options.add_argument('--headless')
     chrome_options.add_argument('--no-sandbox')
     chrome_options.add_argument('--disable-dev-shm-usage')
     chrome_options.add_argument('--window-size=1920,1080')
-    chrome_options.add_argument('--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36')
+    chrome_options.add_argument('--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36')
 
     driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
-    wait = WebDriverWait(driver, 45)
+    wait = WebDriverWait(driver, 60) # เพิ่มเวลารอเป็น 60 วินาที
 
     try:
         username = os.getenv("X_USERNAME")
         password = os.getenv("X_PASSWORD")
 
-        print("กำลังเริ่มเข้าสู่ระบบ X...")
+        print("--- เริ่มกระบวนการล็อกอิน ---")
         driver.get("https://x.com/login")
 
-        # 1. Login Logic
+        # Login Step
         user_input = wait.until(EC.presence_of_element_located((By.NAME, "text")))
         user_input.send_keys(username)
         user_input.send_keys(Keys.ENTER)
-        time.sleep(5)
+        time.sleep(7)
 
         pass_input = wait.until(EC.presence_of_element_located((By.NAME, "password")))
         pass_input.send_keys(password)
         pass_input.send_keys(Keys.ENTER)
         print("ล็อกอินสำเร็จ!")
+        time.sleep(20)
+
+        # ค้นหาโพสต์
+        keywords = ["แจกพิกัด", "รีวิว"]
+        search_query = random.choice(keywords)
+        driver.get(f"https://x.com/search?q={search_query}&f=live")
         time.sleep(15)
 
-        # 2. ป้องกัน Pop-up บังหน้าจอ
-        driver.refresh()
-        time.sleep(10)
-
-        # 3. ค้นหาโพสต์เป้าหมาย
-        keywords = ["แจกพิกัด", "ของดีบอกต่อ", "รีวิวจัดโต๊ะคอม"]
-        search_query = random.choice(keywords)
-        print(f"กำลังค้นหาโพสต์ด้วยคำว่า: {search_query}")
-        
-        search_url = f"https://x.com/search?q={search_query}&f=live"
-        driver.get(search_url)
-        time.sleep(12)
-
+        # ดึงโพสต์เป้าหมาย
         post_elements = wait.until(EC.presence_of_all_elements_located((By.XPATH, '//a[contains(@href, "/status/")]')))
-        target_posts = list(dict.fromkeys([p.get_attribute('href') for p in post_elements if "/status/" in p.get_attribute('href')]))[:2]
+        target_links = list(dict.fromkeys([p.get_attribute('href') for p in post_elements if "/status/" in p.get_attribute('href')]))[:1]
         
-        print(f"พบเป้าหมาย {len(target_posts)} โพสต์")
+        for url in target_links:
+            print(f"กำลังไปที่โพสต์: {url}")
+            driver.get(url)
+            time.sleep(12)
 
-        # 4. Loop การ Reply
-        for url in target_posts:
+            # --- จุดตาย: การกด Reply ---
             try:
-                print(f"กำลังไปที่โพสต์: {url}")
-                driver.get(url)
-                time.sleep(10)
-
+                # 1. พิมพ์ข้อความลงไปตรงๆ (ไม่ต้องรอคลิกปุ่ม Reply ก่อน เพื่อลดความเสี่ยง)
+                text_area = wait.until(EC.presence_of_element_located((By.XPATH, '//div[@role="textbox"]')))
                 comment = get_safe_comment()
-                print(f"เตรียมโพสต์ข้อความ: {comment}")
-
-                # ใช้ JavaScript คลิกเพื่อเลี่ยง Pop-up
-                reply_btn = wait.until(EC.presence_of_element_located((By.XPATH, '//div[@data-testid="reply"]')))
-                driver.execute_script("arguments[0].click();", reply_btn)
+                driver.execute_script("arguments[0].innerText = arguments[1];", text_area, comment) # บังคับใส่ Text
+                text_area.send_keys(Keys.SPACE) # กระตุ้นให้ปุ่มส่งทำงาน
+                print(f"ใส่ข้อความเรียบร้อย: {comment}")
                 time.sleep(5)
 
-                text_area = wait.until(EC.presence_of_element_located((By.XPATH, '//div[@role="textbox"]')))
-                text_area.send_keys(comment)
-                time.sleep(3)
-
+                # 2. บังคับกดส่งด้วย JS หลายช่องทาง
                 send_btn = driver.find_element(By.XPATH, '//div[@data-testid="tweetButtonInline"]')
+                driver.execute_script("arguments[0].scrollIntoView(true);", send_btn)
                 driver.execute_script("arguments[0].click();", send_btn)
                 
-                print("--- ส่งคอมเมนต์สำเร็จ! ---")
-                time.sleep(30)
+                print("--- [CONFIRMED] ส่งคอมเมนต์เรียบร้อย! ---")
+                time.sleep(10)
 
             except Exception as e:
-                print(f"ข้ามโพสต์เนื่องจาก: {e}")
-                continue
+                print(f"ส่งไม่สำเร็จในโพสต์นี้: {e}")
 
     except Exception as e:
-        print(f"เกิดข้อผิดพลาด: {e}")
+        print(f"เกิดข้อผิดพลาดร้ายแรง: {e}")
     finally:
         driver.quit()
-        print("จบการทำงาน")
+        print("--- จบการทำงาน ---")
 
 if __name__ == "__main__":
     run_bot()
