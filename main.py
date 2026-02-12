@@ -2,31 +2,43 @@ import os
 import requests
 import google.generativeai as genai
 
+# ดึงค่าจาก Secrets
 GEMINI_KEY = os.getenv('GEMINI_API_KEY')
 TELE_TOKEN = os.getenv('TELEGRAM_TOKEN')
 CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
 
-def diagnose_system():
+def generate_and_send():
     try:
+        # 1. ตั้งค่า Gemini ด้วยรุ่นที่ตรวจเจอ (2.0-flash)
         genai.configure(api_key=GEMINI_KEY)
+        model = genai.GenerativeModel('gemini-2.0-flash')
         
-        # ดึงรายชื่อ Model ทั้งหมดที่ใช้ได้
-        available_models = []
-        for m in genai.list_models():
-            if 'generateContent' in m.supported_generation_methods:
-                available_models.append(m.name)
+        prompt = """
+        เขียนสคริปต์วิดีโอ TikTok 9:16 สำหรับสินค้า 'เครื่องสกัดสมุนไพรสกัดเย็น' 
+        ของ ChinPong Smart Farm โดยเน้น:
+        1. ความสะดวกในการใช้งาน
+        2. การรักษาคุณค่าของสมุนไพร
+        3. ปิดท้ายด้วยการเชิญชวนให้ติดตาม
+        ขอเนื้อหาที่สนุก น่าตื่นเต้น และใช้ภาษาที่เป็นกันเอง
+        """
         
-        model_list_str = "\n".join(available_models)
-        message = f"✅ **เชื่อมต่อสำเร็จ!**\n\nนี่คือ Model ที่คุณใช้ได้:\n{model_list_str}"
+        # 2. เจนเนื้อหา
+        response = model.generate_content(prompt)
+        content = response.text if response.text else "AI ไม่สามารถสร้างเนื้อหาได้"
 
-        # ส่งรายชื่อกลับเข้า Telegram
+        # 3. ส่งเข้า Telegram
         url = f"https://api.telegram.org/bot{TELE_TOKEN}/sendMessage"
-        requests.post(url, json={"chat_id": CHAT_ID, "text": message})
+        payload = {
+            "chat_id": CHAT_ID,
+            "text": f"🎬 **สคริปต์วิดีโอจาก Gemini 2.0 มาแล้วครับ!**\n\n{content}",
+            "parse_mode": "Markdown"
+        }
+        requests.post(url, json=payload)
 
     except Exception as e:
-        error_msg = f"❌ **Diagnosis Failed:** {str(e)}"
+        error_msg = f"❌ **Error:** {str(e)}"
         requests.post(f"https://api.telegram.org/bot{TELE_TOKEN}/sendMessage", 
                       json={"chat_id": CHAT_ID, "text": error_msg})
 
 if __name__ == "__main__":
-    diagnose_system()
+    generate_and_send()
