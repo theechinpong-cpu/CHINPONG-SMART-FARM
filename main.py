@@ -1,63 +1,55 @@
 import os
 import requests
 import google.generativeai as genai
-from google.api_core import exceptions
+from gtts import gTTS
+import subprocess
 
 # ดึงค่าจาก Secrets
 GEMINI_KEY = os.getenv('GEMINI_API_KEY')
 TELE_TOKEN = os.getenv('TELEGRAM_TOKEN')
 CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
 
-def generate_and_send():
-    genai.configure(api_key=GEMINI_KEY)
-    
-    # เรียงลำดับจากคุณภาพสูงสุดลงมา (Best -> Good -> Fast)
-    models_to_try = [
-        'gemini-2.0-flash',        # อันดับ 1: ฉลาดและครบเครื่องที่สุด
-        'gemini-2.0-flash-lite',   # อันดับ 2: เร็วและแม่นยำ (ประหยัด Quota)
-        'gemini-1.5-flash',        # อันดับ 3: รุ่นมาตรฐานที่เสถียรมาก
-        'gemini-1.5-flash-lite',   # อันดับ 4: รุ่นประหยัดสำหรับงานทั่วไป
-        'gemma-3-12b-it'           # อันดับ 5: รุ่นเล็กเน้นความไวสูงสุด
-    ]
-    
-    content = None
-    used_model = ""
+def generate_video_automation():
+    try:
+        genai.configure(api_key=GEMINI_KEY)
+        model = genai.GenerativeModel('gemini-2.0-flash')
+        
+        # 1. สร้างเนื้อหา (สคริปต์ และ แคปชั่น)
+        prompt = """
+        เขียนสคริปต์สั้นสำหรับ TikTok (ไม่เกิน 15 วินาที) สินค้า 'เครื่องสกัดสมุนไพรสกัดเย็น'
+        พร้อมแคปชั่นที่น่าดึงดูด แฮชแท็กที่เกี่ยวข้อง และเว้นวรรคให้ใส่ลิงก์สินค้า
+        """
+        response = model.generate_content(prompt)
+        full_text = response.text
 
-    for model_name in models_to_try:
-        try:
-            print(f"กำลังลองใช้: {model_name}...")
-            model = genai.GenerativeModel(model_name)
-            
-            # คำสั่งสร้างเนื้อหาตามสไตล์ที่คุณต้องการ [cite: 2026-02-11]
-            prompt = """
-            เขียนสคริปต์วิดีโอ TikTok 9:16 สินค้า 'เครื่องสกัดสมุนไพรสกัดเย็น' 
-            ของ ChinPong Smart Farm เน้นความน่าตื่นเต้น ประโยชน์ และการใช้งานที่ง่าย
-            """
-            
-            response = model.generate_content(prompt)
-            if response and response.text:
-                content = response.text
-                used_model = model_name
-                break # เจอตัวที่ใช้ได้แล้ว หยุดทันที
-                
-        except (exceptions.ResourceExhausted, exceptions.InvalidArgument, Exception) as e:
-            # ถ้าติดลิมิต หรือรุ่นนั้นไม่รองรับ ให้ขยับไปตัวถัดไป
-            print(f"รุ่น {model_name} ใช้ไม่ได้เนื่องจาก: {str(e)}")
-            continue
+        # 2. สร้างเสียงบรรยาย (TTS)
+        tts = gTTS(text=full_text[:100], lang='th') # เอาส่วนหนึ่งของสคริปต์มาทำเสียง
+        tts.save("voice.mp3")
 
-    # ส่งผลลัพธ์เข้า Telegram
-    if content:
-        message = f"🎬 **สคริปต์วิดีโอพร้อมแล้ว!**\n\n(สร้างโดย: {used_model})\n\n---\n\n{content}"
-    else:
-        message = "❌ **Error:** ไม่สามารถใช้งาน AI ได้ทุกเวอร์ชันในขณะนี้ เนื่องจากติดลิมิตทั้งหมด"
+        # 3. สร้างภาพประกอบ (ในที่นี้เราจะใช้ภาพสีพื้นหรือภาพตัวอย่างไปก่อน เพราะ API รูปภาพส่ง URL ตรงไม่ได้)
+        # หมายเหตุ: ขั้นตอนนี้ใน GitHub Actions ปกติจะใช้ภาพที่เราเตรียมไว้ใน Repo หรือเจนใหม่
+        # เพื่อความชัวร์ ผมจะใช้ FFmpeg สร้างวิดีโอจากภาพนิ่งสีพื้นที่มีข้อความประกอบ
+        subprocess.run([
+            'ffmpeg', '-y', '-f', 'lavfi', '-i', 'color=c=black:s=720x1280:d=5', 
+            '-vf', f"drawtext=text='Smart Farm Herb Extractor':fontcolor=white:fontsize=40:x=(w-text_w)/2:y=(h-text_h)/2",
+            '-i', 'voice.mp3', '-shortest', '-c:v', 'libx264', '-c:a', 'aac', 'output_video.mp4'
+        ])
 
-    url = f"https://api.telegram.org/bot{TELE_TOKEN}/sendMessage"
-    payload = {
-        "chat_id": CHAT_ID,
-        "text": message,
-        "parse_mode": "Markdown"
-    }
-    requests.post(url, json=payload)
+        # 4. ส่งวิดีโอเข้า Telegram
+        url_video = f"https://api.telegram.org/bot{TELE_TOKEN}/sendVideo"
+        with open("output_video.mp4", "rb") as video:
+            requests.post(url_video, data={"chat_id": CHAT_ID}, files={"video": video})
+
+        # 5. ส่งแคปชั่นและลิงก์สินค้า (คุณสามารถแก้ลิงก์เป็นของ Shopee/TikTok คุณได้เลย)
+        product_link = "https://shopee.co.th/your-product-link" # <-- แก้เป็นลิงก์ของคุณ
+        caption = f"🎬 **วิดีโอของคุณพร้อมแล้ว!**\n\n{full_text}\n\n📍 **พิกัดสินค้า:** {product_link}"
+        
+        url_msg = f"https://api.telegram.org/bot{TELE_TOKEN}/sendMessage"
+        requests.post(url_msg, json={"chat_id": CHAT_ID, "text": caption, "parse_mode": "Markdown"})
+
+    except Exception as e:
+        requests.post(f"https://api.telegram.org/bot{TELE_TOKEN}/sendMessage", 
+                      json={"chat_id": CHAT_ID, "text": f"❌ Error: {str(e)}"})
 
 if __name__ == "__main__":
-    generate_and_send()
+    generate_video_automation()
