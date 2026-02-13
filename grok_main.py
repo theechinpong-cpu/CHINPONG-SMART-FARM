@@ -1,30 +1,42 @@
-name: Grok AI Content Automation
-on:
-  workflow_dispatch:
-  schedule:
-    - cron: '0 9 * * *'
+import os
+import random
+import requests
 
-jobs:
-  generate_grok_content:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
+def main():
+    # 1. ตั้งค่าพื้นฐาน (ดึงจาก Secrets)
+    api_key = os.getenv("GEMINI_API_KEY")
+    token = os.getenv("TELEGRAM_TOKEN")
+    chat_id = os.getenv("TELEGRAM_CHAT_ID")
+    
+    # 2. เลือกสินค้า
+    product = "สินค้าเกษตรคุณภาพ"
+    try:
+        with open('products.txt', 'r', encoding='utf-8') as f:
+            product = random.choice([line.strip() for line in f if line.strip()])
+    except: pass
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.9'
+    # 3. สั่งงาน Gemini v1 (Stable Endpoint - ป้องกัน Error 404)
+    url = f"https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key={api_key}"
+    payload = {
+        "contents": [{"parts": [{"text": f"เขียนสคริปต์ TikTok 9:16 สำหรับ: {product}"}]}]
+    }
+    
+    try:
+        response = requests.post(url, json=payload, timeout=30)
+        data = response.json()
+        
+        # ดึงข้อความออกมา
+        if 'candidates' in data:
+            content = data['candidates'][0]['content']['parts'][0]['text']
+            # 4. ส่งเข้า Telegram
+            tg_url = f"https://api.telegram.org/bot{token}/sendMessage"
+            requests.post(tg_url, json={"chat_id": chat_id, "text": f"✅ <b>SmartFarm Success:</b>\n\n{content}", "parse_mode": "HTML"})
+            print("Successfully sent to Telegram")
+        else:
+            requests.post(f"https://api.telegram.org/bot{token}/sendMessage", 
+                          json={"chat_id": chat_id, "text": f"❌ Gemini Error: {data}"})
+    except Exception as e:
+        print(f"Failed: {str(e)}")
 
-      - name: Install Dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install openai requests
-
-      - name: Execute Script
-        env:
-          GROK_API_KEY: ${{ secrets.GROK_API_KEY }}
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
-          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-        run: python grok_main.py
+if __name__ == "__main__":
+    main()
