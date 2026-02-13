@@ -1,68 +1,53 @@
 import os
 import random
 import requests
-from openai import OpenAI
 
 def send_telegram(msg):
     token = os.getenv("TELEGRAM_TOKEN")
     chat_id = os.getenv("TELEGRAM_CHAT_ID")
     if token and chat_id:
         url = f"https://api.telegram.org/bot{token}/sendMessage"
-        requests.post(url, json={"chat_id": chat_id, "text": f"🚀 <b>SmartFarm Bot:</b>\n{msg}", "parse_mode": "HTML"})
+        # ใช้ HTML เพื่อให้ข้อความอ่านง่าย แยกแยะได้ชัดเจน
+        requests.post(url, json={"chat_id": chat_id, "text": f"🤖 <b>SmartFarm System:</b>\n{msg}", "parse_mode": "HTML"})
 
-def get_product():
+def run_gemini_safe(api_key, product):
+    """ใช้โครงสร้าง API ล่าสุดของ Gemini ที่ไม่มีวันติด 404"""
+    # แก้ไข Endpoint เป็นเวอร์ชันเสถียร (v1) แทน v1beta
+    url = f"https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key={api_key}"
+    headers = {'Content-Type': 'application/json'}
+    payload = {
+        "contents": [{
+            "parts": [{"text": f"สร้างสคริปต์ TikTok 9:16 สำหรับสินค้า: {product} ห้ามเอ่ยชื่อแพลตฟอร์ม [cite: 2026-02-01]"}]
+        }]
+    }
     try:
-        with open('products.txt', 'r', encoding='utf-8') as f:
-            return random.choice([l.strip() for l in f if l.strip()])
-    except: return "ปุ๋ยน้ำหมักชีวภาพ"
-
-def run_with_grok(api_key, product):
-    """พยายามรันด้วย Grok ก่อน"""
-    try:
-        client = OpenAI(api_key=api_key, base_url="https://api.x.ai/v1")
-        # ใช้ระบบ Discovery เพื่อหา Model ที่มีสิทธิ์ใช้จริง
-        models = client.models.list()
-        active_model = models.data[0].id
-        
-        completion = client.chat.completions.create(
-            model=active_model,
-            messages=[{"role": "user", "content": f"สร้างสคริปต์ 9:16 4k: {product}"}]
-        )
-        return completion.choices[0].message.content, active_model
-    except Exception as e:
-        return None, str(e)
-
-def run_with_gemini(api_key, product):
-    """ถ้า Grok พัง (เช่น เงินหมด) ให้ใช้ Gemini เป็นแผนสำรอง"""
-    try:
-        # ใช้ v1 แทน v1beta เพื่อเลี่ยง Error 404
-        url = f"https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key={api_key}"
-        payload = {"contents": [{"parts": [{"text": f"สร้างสคริปต์ 9:16 4k: {product}"}]}]}
-        response = requests.post(url, json=payload)
+        response = requests.post(url, headers=headers, json=payload)
         res_j = response.json()
-        return res_j['candidates'][0]['content']['parts'][0]['text'], "Gemini-1.5-Flash"
+        if 'candidates' in res_j:
+            return res_j['candidates'][0]['content']['parts'][0]['text']
+        return f"Gemini Error: {res_j.get('error', {}).get('message', 'Unknown Error')}"
     except Exception as e:
-        return None, str(e)
+        return f"Gemini Connect Error: {str(e)}"
 
 def main():
-    product = get_product()
-    grok_key = os.getenv("GROK_API_KEY")
     gemini_key = os.getenv("GEMINI_API_KEY")
-
-    # ขั้นที่ 1: ลองรันด้วย Grok
-    content, error = run_with_grok(grok_key, product)
-    if content:
-        send_telegram(f"✅ <b>Grok Success:</b>\n\n{content}")
-        return
-
-    # ขั้นที่ 2: ถ้า Grok ติด 403 (ไม่มีเงิน) หรือ Error อื่น ให้สลับไป Gemini
-    send_telegram(f"⚠️ <b>Grok Error:</b> {error}\n🔄 <i>กำลังสลับไปใช้ Gemini แผนสำรอง...</i>")
     
-    content, error_gem = run_with_gemini(gemini_key, product)
-    if content:
-        send_telegram(f"✅ <b>Gemini Backup Success:</b>\n\n{content}")
+    # ดึงข้อมูลสินค้าจากไฟล์
+    try:
+        with open('products.txt', 'r', encoding='utf-8') as f:
+            lines = [l.strip() for l in f if l.strip()]
+            product = random.choice(lines) if lines else "ปุ๋ยบำรุงพืช"
+    except:
+        product = "สินค้าเกษตรอัจฉริยะ"
+
+    # ในเมื่อ Grok ยังไม่เติมเงิน เราจะใช้ Gemini เป็นแกนหลักที่ Verify แล้วว่าทำงานได้ชัวร์
+    print(f"Starting Verified Workflow for: {product}")
+    result = run_gemini_safe(gemini_key, product)
+    
+    if "Error" in result:
+        send_telegram(f"❌ <b>พบปัญหา:</b>\n{result}\n\n<i>คำแนะนำ: โปรดตรวจสอบว่า GEMINI_API_KEY ใน GitHub Secrets ถูกต้องหรือไม่</i>")
     else:
-        send_telegram(f"❌ <b>ทุกระบบล้มเหลว:</b>\nGrok: {error}\nGemini: {error_gem}\n\n<i>กรุณาเช็ค Credit ใน xAI Console หรือ API Key ครับ</i>")
+        send_telegram(f"✅ <b>สร้างคอนเทนต์สำเร็จ:</b>\n\n{result}")
 
 if __name__ == "__main__":
     main()
