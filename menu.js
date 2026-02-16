@@ -32,14 +32,21 @@ const lessonMenu = [
                 { title: "เคมี (ครบทุกบท)", url: "chem-main.html", type: "normal" },
                 { title: "ชีววิทยา (ครบทุกบท)", url: "bio-main.html", type: "bold" }
             ]},
+            { subject: "แนวข้อสอบ ม.4 สายศิลป์ (17 ก.พ. 69)", icon: "✍️", links: [
+                { title: "แนวข้อสอบวิชาภาษาอังกฤษ ปลายภาค", url: "en-m4-final.html", type: "bold" },
+                { title: "มหาเวสสันดรชาดก", url: "th-m4-ves.html", type: "normal" },
+                { title: "มงคลสูตรคำฉันท์", url: "th-m4-monkol.html", type: "normal" },
+                { title: "การฟัง การดู และการพูดในโอกาสต่าง ๆ", url: "th-m4-speech.html", type: "normal" },
+                { title: "การแต่งอินทรวิเชียรฉันท์", url: "th-m4-chan.html", type: "italic" }
+            ]},
             { subject: "สายศิลป์และภาษา", icon: "👩‍🍳", links: [
                 { title: "Culinary English (Chef)", url: "en-m4-chef.html", type: "bold" },
                 { title: "ภาษาไทย/สังคม ม.ปลาย", url: "th-soc-m-high.html", type: "normal" },
                 { title: "ภูมิศาสตร์อเมริกาเหนือ", url: "soc-m6-america.html", type: "italic" }
             ]},
             { subject: "คลังข้อสอบ TCAS / TGAT / TPAT", icon: "📝", links: [
-                { title: "แนวข้อสอบวิชาภาษาอังกฤษ ม.4 ปลายภาค 50 ข้อ", url: "m4-english-final.html", type: "bold" },
-                { title: "แนวข้อสอบวิชาภาษาไทย ม.4 ปลายภาค 50 ข้อ", url: "Thai-Final-Guideline.html", type: "bold" },
+                { title: "แนวข้อสอบวิชาภาษาอังกฤษ ม.4 ปลายภาค", url: "m4-english-final.html", type: "bold" },
+                { title: "แนวข้อสอบวิชาภาษาไทย ม.4 ปลายภาค", url: "Thai-Final-Guideline.html", type: "bold" },
                 { title: "ติวสอบ TGAT (ทุกพาร์ท)", url: "tgas-all.html", type: "bold" },
                 { title: "แนวข้อสอบ A-Level", url: "alevel-all.html", type: "bold" }
             ]}
