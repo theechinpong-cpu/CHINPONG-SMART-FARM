@@ -33,11 +33,11 @@ const lessonMenu = [
                 { title: "ชีววิทยา (ครบทุกบท)", url: "bio-main.html", type: "bold" }
             ]},
             { subject: "แนวข้อสอบ ม.4 สายศิลป์ (17 ก.พ. 69)", icon: "✍️", links: [
-                { title: "แนวข้อสอบวิชาภาษาอังกฤษ ปลายภาค", url: "en-m4-final.html", type: "bold" },
-                { title: "มหาเวสสันดรชาดก", url: "th-m4-ves.html", type: "normal" },
-                { title: "มงคลสูตรคำฉันท์", url: "th-m4-monkol.html", type: "normal" },
-                { title: "การฟัง การดู และการพูดในโอกาสต่าง ๆ", url: "th-m4-speech.html", type: "normal" },
-                { title: "การแต่งอินทรวิเชียรฉันท์", url: "th-m4-chan.html", type: "italic" }
+                { title: "แนวข้อสอบวิชาภาษาอังกฤษ ปลายภาค", url: "https://king-mongkut-tutor.vercel.app/English_M4_Final_Full_60.html", type: "bold" },
+                { title: "มหาเวสสันดรชาดก", url: "https://king-mongkut-tutor.vercel.app/vesandara_quiz.html", type: "normal" },
+                { title: "มงคลสูตรคำฉันท์", url: "https://king-mongkut-tutor.vercel.app/itv11_exam_summary.html", type: "normal" },
+                { title: "การฟัง การดู และการพูดในโอกาสต่าง ๆ", url: "https://king-mongkut-tutor.vercel.app/listening_speaking_reading_exam.html", type: "normal" },
+                { title: "การแต่งอินทรวิเชียรฉันท์", url: "https://king-mongkut-tutor.vercel.app/thai_m4_itv_exam.html", type: "italic" }
             ]},
             { subject: "สายศิลป์และภาษา", icon: "👩‍🍳", links: [
                 { title: "Culinary English (Chef)", url: "en-m4-chef.html", type: "bold" },
