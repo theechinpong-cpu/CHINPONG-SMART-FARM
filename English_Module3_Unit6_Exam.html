@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Master Exam: Moments in Life (Unit 6)</title>
+    <style>
+        body { font-family: 'Sarabun', sans-serif; line-height: 1.6; background-color: #f0f4f8; color: #2d3436; padding: 20px; }
+        .container { max-width: 950px; margin: auto; background: white; padding: 40px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        h1 { color: #0984e3; text-align: center; border-bottom: 4px solid #0984e3; padding-bottom: 15px; text-transform: uppercase; }
+        .content-summary { background: #dfe6e9; padding: 25px; border-radius: 8px; margin-bottom: 40px; border-left: 10px solid #0984e3; }
+        .question { margin-bottom: 30px; padding: 20px; border: 1px solid #dcdde1; border-radius: 8px; background: #fff; transition: 0.3s; }
+        .question:hover { border-color: #0984e3; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+        .options label { display: block; margin: 12px 0; cursor: pointer; padding: 10px; border-radius: 5px; border: 1px solid #f1f2f6; }
+        .options label:hover { background: #e1f5fe; }
+        button { background: #00b894; color: white; border: none; padding: 18px; border-radius: 8px; cursor: pointer; font-size: 20px; width: 100%; font-weight: bold; margin-top: 20px; }
+        button:hover { background: #00a087; transform: translateY(-2px); }
+        #resultArea { margin-top: 40px; display: none; padding: 30px; border-radius: 12px; background: #fff; border: 2px solid #0984e3; }
+        .correct-ans { color: #27ae60; font-weight: bold; }
+        .incorrect-ans { color: #e74c3c; font-weight: bold; }
+        .explanation { font-size: 0.95em; color: #636e72; background: #f9f9f9; padding: 15px; border-radius: 6px; margin-top: 10px; border-left: 4px solid #fdcb6e; }
+        .analysis { background: #ffeaa7; padding: 25px; border-radius: 10px; margin-bottom: 30px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Module 3: Unit 6 - Comprehensive Examination</h1>
+    
+    <div class="content-summary">
+        <h2>📌 สรุปประเด็นสำคัญก่อนสอบ</h2>
+        <ul>
+            <li><b>Irish Wedding:</b> เน้นเรื่องโชคลาง (Superstitions), ห่าน (Goose), มงกุฎดอกไม้ป่า, และความเชื่อเรื่องภูต (Fairies)</li>
+            <li><b>Future Logic:</b> Will (ฉับพลัน/เดา), Going to (ตั้งใจ/หลักฐาน), Present Con (นัดหมายชัวร์)</li>
+            <li><b>Phrasal Verbs:</b> Break down (พัง), Break off (เลิก), Break into (งัด), Break out (หนี)</li>
+            <li><b>Question Tags:</b> ประโยคบอกเล่าคู่กับหางปฏิเสธ และประโยคปฏิเสธคู่กับหางบอกเล่า</li>
+        </ul>
+    </div>
+
+    <form id="quizForm">
+        </form>
+
+    <button type="button" onclick="evaluateExam()">บันทึกคำตอบและวิเคราะห์ผลการสอบ</button>
+
+    <div id="resultArea">
+        <h2 style="text-align:center;">Summary Report: <span id="scoreDisplay"></span>/50</h2>
+        <div id="analysisSection"></div>
+        <hr>
+        <div id="feedbackDetail"></div>
+    </div>
+</div>
+
+<script>
+const examDatabase = [
+    // [1-10] Culture & Reading
+    { q: "Why did Irish people cook a goose for the groom?", a: "To celebrate his birthday", b: "To prevent him from changing his mind", c: "To show off their wealth", d: "To welcome the fairies", cor: "b", cat: "Culture", exp: "การปรุงห่านให้เจ้าบ่าวเป็นการแสดงความใจกว้าง เพื่อให้เจ้าบ่าวผูกพันและไม่เปลี่ยนใจก่อนงานแต่ง" },
+    { q: "Irish brides usually wear a wreath of ______ in their hair.", a: "Silk flowers", b: "Wild flowers", c: "Golden leaves", d: "Green ribbons", cor: "b", cat: "Culture", exp: "ดอกไม้ป่า (Wild flowers) เป็นสัญลักษณ์ของความเรียบง่ายและเป็นประเพณีดั้งเดิม" },
+    { q: "The bride's wedding dress is later used for ______.", a: "Her sister's wedding", b: "The first child's christening robe", c: "A Christmas decoration", d: "A gift for the groom", cor: "b", cat: "Culture", exp: "ชุดแต่งงานจะถูกนำไปตัดเป็นชุด Christening (ล้างบาป) ให้ลูกคนแรก" },
+    { q: "Why is dancing with both feet off the ground considered bad for an Irish bride?", a: "She might trip and fall", b: "It is considered impolite", c: "Fairies might carry her off", d: "It breaks the wedding cake", cor: "c", cat: "Culture", exp: "โชคลางเชื่อว่าถ้าเท้าลอยพ้นพื้น ภูต (Fairies) จะมีโอกาสลักพาตัวเจ้าสาวไป" },
+    { q: "According to the poem, February is the month when ______.", a: "Winds blow hard", b: "Birds mate", c: "Flowers bloom", d: "Snow melts", cor: "b", cat: "Reading", exp: "ในบทกลอนกล่าวว่า 'When February birds do mate, you may wed...'" },
+    { q: "What does 'dread' mean in the poem?", a: "To enjoy", b: "To be afraid of", c: "To forget", d: "To hope for", cor: "b", cat: "Vocab", exp: "Dread หมายถึง ความหวาดกลัว" },
+    { q: "Nowadays, where do most Irish couples get their wedding cake?", a: "From their grandmother", b: "From a local baker", c: "They make it themselves", d: "From the groom's house", cor: "b", cat: "Culture", exp: "ปัจจุบันคู่รักมักสั่งเค้กจากร้านขนมปัง (Local baker) มากกว่าทำเอง" },
+    { q: "The traditional Irish wedding cake is a ______.", a: "Chocolate cake", b: "Three-tier fruitcake", c: "Sponge cake", d: "Vanilla cupcake", cor: "b", cat: "Culture", exp: "เค้กผลไม้สามชั้นคือเอกลักษณ์ของงานแต่งไอริชโบราณ" },
+    { q: "What is a 'horseshoe' carried for?", a: "Protection from horses", b: "Luck", c: "To give to the priest", d: "To hold the flowers", cor: "b", cat: "Culture", exp: "เกือกม้า (Horseshoe) คือเครื่องรางนำโชค" },
+    { q: "Irish brides are advised never to wear ______ on their wedding day.", a: "White", b: "Green", c: "Blue", d: "Gold", cor: "b", cat: "Culture", exp: "สีเขียวเป็นสีของภูต การใส่สีนี้อาจทำให้ภูตมาลักพาตัวเจ้าสาว" },
+
+    // [11-25] Grammar: Future Forms
+    { q: "A: I'm really thirsty. B: I ______ you some water.", a: "get", b: "am getting", c: "will get", d: "going to get", cor: "c", cat: "Grammar", exp: "ตัดสินใจทันที (On-the-spot) ใช้ will" },
+    { q: "Look at that car! It ______ hit the wall!", a: "will", b: "is going to", c: "hits", d: "is hitting", cor: "b", cat: "Grammar", exp: "มีหลักฐานเห็นอยู่ตรงหน้า ใช้ be going to" },
+    { q: "We ______ a party next Saturday. Everything is already planned.", a: "will have", b: "have", c: "are having", d: "going to have", cor: "c", cat: "Grammar", exp: "แผนการที่นัดหมายและเตรียมการแล้ว (Fixed Arrangement) ใช้ Present Continuous" },
+    { q: "The flight to London ______ at 6:00 a.m.", a: "leaves", b: "is leaving", c: "will leave", d: "is going to leave", cor: "a", cat: "Grammar", exp: "ตารางเวลา (Timetable) ใช้ Present Simple" },
+    { q: "I hope you ______ a great time at the festival.", a: "are having", b: "will have", c: "have", d: "going to have", cor: "b", cat: "Grammar", exp: "หลังคำว่า 'I hope' มักใช้ will เพื่อการคาดการณ์" },
+    { q: "This time tomorrow, I ______ across the Atlantic.", a: "will fly", b: "am flying", c: "will be flying", d: "fly", cor: "c", cat: "Grammar", exp: "เหตุการณ์ที่กำลังทำในเวลาที่ระบุในอนาคต ใช้ Future Continuous" },
+    { q: "Don't move or I ______!", a: "shoot", b: "will shoot", c: "am shooting", d: "going to shoot", cor: "b", cat: "Grammar", exp: "การขู่ (Threat) ใช้ will" },
+    { q: "Why are you buying so much flour? - I ______ a cake.", a: "will make", b: "am going to make", c: "make", d: "am making", cor: "b", cat: "Grammar", exp: "มีความตั้งใจไว้ก่อนแล้ว (Intention) ใช้ be going to" },
+    { q: "A: The phone is ringing. B: I ______ it.", a: "answer", b: "will answer", c: "am going to answer", d: "am answering", cor: "b", cat: "Grammar", exp: "ตัดสินใจเดี๋ยวนั้น ใช้ will" },
+    { q: "I promise I ______ anyone your secret.", a: "don't tell", b: "won't tell", c: "am not telling", d: "not going to tell", cor: "b", cat: "Grammar", exp: "คำสัญญา (Promise) ใช้ will (won't)" },
+    { q: "What ______ at 9:00 tonight?", a: "will you do", b: "are you doing", c: "will you be doing", d: "do you do", cor: "c", cat: "Grammar", exp: "ถามถึงการกระทำที่กำลังดำเนินอยู่ ณ เวลาเฉพาะในอนาคต" },
+    { q: "I ______ my boss at 3:00 p.m. today.", a: "meet", b: "will meet", c: "am meeting", d: "am going to meeting", cor: "c", cat: "Grammar", exp: "การนัดหมายธุรกิจ (Arrangement) ใช้ Present Continuous" },
+    { q: "The exam ______ at exactly 10 o'clock.", a: "starts", b: "is starting", c: "will start", d: "starting", cor: "a", cat: "Grammar", exp: "ตารางเวลาสอบ ใช้ Present Simple" },
+    { q: "I'm sure she ______ the competition.", a: "wins", b: "is winning", c: "will win", d: "going to win", cor: "c", cat: "Grammar", exp: "การคาดเดาความมั่นใจ ใช้ will" },
+    { q: "I ______ probably stay at home tonight.", a: "will", b: "am", c: "going to", d: "am going to", cor: "a", cat: "Grammar", exp: "ใช้ will กับคำว่า probably" },
+
+    // [26-35] Phrasal Verbs & Question Tags
+    { q: "The car ______ in the middle of the highway.", a: "broke into", b: "broke down", c: "broke out", d: "broke off", cor: "b", cat: "Phrasal", exp: "Break down แปลว่า รถเสีย" },
+    { q: "A stranger tried to ______ our house.", a: "break into", b: "break off", c: "break out", d: "break down", cor: "a", cat: "Phrasal", exp: "Break into แปลว่า งัดแงะเข้าไป" },
+    { q: "The two countries ______ diplomatic relations.", a: "broke into", b: "broke down", c: "broke out", d: "broke off", cor: "d", cat: "Phrasal", exp: "Break off แปลว่า ตัดความสัมพันธ์" },
+    { q: "War ______ in 1939.", a: "broke out", b: "broke off", c: "broke into", d: "broke down", cor: "a", cat: "Phrasal", exp: "Break out ใช้กับเหตุการณ์รุนแรงที่เกิดขึ้นฉับพลัน เช่น สงคราม หรือ โรคระบาด" },
+    { q: "He's coming to the party, ______?", a: "is he", b: "isn't he", c: "does he", d: "doesn't he", cor: "b", cat: "Grammar", exp: "Tag ของ He is คือ isn't he?" },
+    { q: "You don't like coffee, ______?", a: "do you", b: "don't you", c: "are you", d: "aren't you", cor: "a", cat: "Grammar", exp: "Tag ของ Don't คือ do you?" },
+    { q: "Let's go for a walk, ______?", a: "shall we", b: "will we", c: "don't we", d: "won't we", cor: "a", cat: "Grammar", exp: "Tag ของ Let's คือ shall we? (กฎพิเศษ)" },
+    { q: "Shut the door, ______?", a: "do you", b: "will you", c: "shall we", d: "don't you", cor: "b", cat: "Grammar", exp: "ประโยคคำสั่ง ใช้ will you ในส่วนหาง" },
+    { q: "There are many people here, ______?", a: "aren't they", b: "aren't there", c: "isn't there", d: "don't they", cor: "b", cat: "Grammar", exp: "Tag ของ There are คือ aren't there?" },
+    { q: "She can swim, ______?", a: "can she", b: "can't she", c: "does she", d: "doesn't she", cor: "b", cat: "Grammar", exp: "หน้าบอกเล่า หางปฏิเสธ" },
+
+    // [36-50] Vocabulary, Festivals & Communication
+    { q: "Which word is a 'Positive' adjective to describe a parade?", a: "Boring", b: "Spectacular", c: "Disappointing", d: "Tiring", cor: "b", cat: "Vocab", exp: "Spectacular (ตระการตา) เป็นความหมายเชิงบวก" },
+    { q: "Children wear strange costumes and scare friends on ______.", a: "Christmas", b: "Halloween", c: "Eid Al-Fitr", d: "New Year's Eve", cor: "b", cat: "Culture", exp: "การใส่ชุดแปลกๆ ไปหลอกคนอื่นคือเอกลักษณ์ของฮาโลวีน" },
+    { q: "What do people do during 'Eid Al-Fitr'?", a: "Decorate a tree", b: "Pray in mosques", c: "Make pumpkin lanterns", d: "Pull crackers", cor: "b", cat: "Culture", exp: "ชาวมุสลิมจะไปละหมาดที่มัสยิดในวันอีฎิ้ลฟิตริ" },
+    { q: "If you want to wish someone a quick recovery from illness, you say:", a: "Season's Greetings", b: "Many happy returns", c: "Get well soon", d: "Well done", cor: "c", cat: "Communication", exp: "Get well soon ใช้กับคนป่วย" },
+    { q: "A 'three-tier' cake has how many levels?", a: "Two", b: "Three", c: "Four", d: "Five", cor: "b", cat: "Vocab", exp: "Tier แปลว่า ชั้น / Three-tier คือ 3 ชั้น" },
+    { q: "Which greeting is used for a 25th wedding anniversary?", a: "Happy 21st", b: "Happy Silver Anniversary", c: "Happy New Year", d: "Happy Birthday", cor: "b", cor: "b", cat: "Communication", exp: "Silver คือ ครบรอบ 25 ปี" },
+    { q: "People 'exchange gifts' and 'sing carols' on ______.", a: "Carnival", b: "Christmas", c: "Halloween", d: "May Day", cor: "b", cat: "Culture", exp: "การร้องเพลงแครอลและแลกของขวัญทำในวันคริสต์มาส" },
+    { q: "Which adjective means 'extremely good/excellent'?", a: "Dull", b: "Superb", c: "Crowded", d: "Terrible", cor: "b", cat: "Vocab", exp: "Superb แปลว่า ยอดเยี่ยมยิ่งนัก" },
+    { q: "What is 'sorrow'?", a: "Great happiness", b: "Deep sadness", c: "Extreme anger", d: "High speed", cor: "b", cat: "Vocab", exp: "Sorrow หมายถึง ความโศกเศร้า" },
+    { q: "In a postcard, 'It's a pity you aren't here' means:", a: "I am glad you stayed home", b: "I wish you were here", c: "I will see you tomorrow", d: "The weather is bad", cor: "b", cat: "Communication", exp: "เป็นสำนวนบอกว่า 'น่าเสียดายที่คุณไม่ได้อยู่ที่นี่ด้วยกัน'" },
+    { q: "Which festival is celebrated on December 31st?", a: "Halloween", b: "New Year's Eve", c: "Christmas", d: "Carnival", cor: "b", cat: "Culture", exp: "31 ธันวาคม คือวันสิ้นปี" },
+    { q: "What are 'streamers'?", a: "Musical instruments", b: "Long strips of coloured paper", c: "Types of food", d: "Scary ghosts", cor: "b", cat: "Vocab", exp: "Streamers คือ สายรุ้งกระดาษที่ใช้โยนในงานฉลอง" },
+    { q: "If your friend passes a driving test, you say:", a: "Congratulations!", b: "Get well soon", c: "Season's Greetings", d: "Good luck", cor: "a", cat: "Communication", exp: "ยินดีในความสำเร็จใช้ Congratulations!" },
+    { q: "A 'christening robe' is for a ______.", a: "Groom", b: "Bride", c: "Baby", d: "Baker", cor: "c", cat: "Vocab", exp: "ชุด Christening ใช้สำหรับเด็กทารกในพิธีรับเข้าเป็นคริสต์ศาสนิกชน" },
+    { q: "The 'top layer' of an Irish cake is saved in a ______.", a: "Fridge", b: "Tin", c: "Bag", d: "Oven", cor: "b", cat: "Culture", exp: "ตามเนื้อหาในหนังสือ เค้กจะถูกเก็บไว้ใน tin (กล่องสังกะสี)" }
+];
+
+function loadQuestions() {
+    const form = document.getElementById('quizForm');
+    examDatabase.forEach((data, index) => {
+        const div = document.createElement('div');
+        div.className = 'question';
+        div.innerHTML = `
+            <p><strong>Q${index + 1}:</strong> ${data.q}</p>
+            <div class="options">
+                <label><input type="radio" name="q${index}" value="a"> A) ${data.a}</label>
+                <label><input type="radio" name="q${index}" value="b"> B) ${data.b}</label>
+                <label><input type="radio" name="q${index}" value="c"> C) ${data.c}</label>
+                <label><input type="radio" name="q${index}" value="d"> D) ${data.d}</label>
+            </div>
+        `;
+        form.appendChild(div);
+    });
+}
+
+function evaluateExam() {
+    let score = 0;
+    let stats = { Culture: 0, Grammar: 0, Vocab: 0, Reading: 0, Communication: 0 };
+    let totals = { Culture: 0, Grammar: 0, Vocab: 0, Reading: 0, Communication: 0 };
+    let feedbackHtml = "";
+
+    examDatabase.forEach((item, i) => {
+        const selected = document.querySelector(`input[name="q${i}"]:checked`);
+        const userAns = selected ? selected.value : null;
+        const isCorrect = userAns === item.cor;
+
+        totals[item.cat]++;
+        if (isCorrect) {
+            score++;
+            stats[item.cat]++;
+        }
+
+        feedbackHtml += `
+            <div class="question" style="border-left: 5px solid ${isCorrect ? '#27ae60' : '#e74c3c'}">
+                <p><strong>ข้อที่ ${i+1}:</strong> ${item.q}</p>
+                <p class="${isCorrect ? 'correct-ans' : 'incorrect-ans'}">
+                    คำตอบของคุณ: ${userAns ? userAns.toUpperCase() : 'ไม่ได้ตอบ'} 
+                    ${isCorrect ? '(ถูกต้อง)' : '(ผิด! คำตอบคือ ' + item.cor.toUpperCase() + ')'}
+                </p>
+                <div class="explanation"><strong>Insight:</strong> ${item.exp}</div>
+            </div>
+        `;
+    });
+
+    let analysisHtml = "<h3>📊 บทวิเคราะห์คะแนนรายหัวข้อ:</h3><ul>";
+    for (let cat in stats) {
+        let p = (stats[cat] / totals[cat]) * 100;
+        analysisHtml += `<li><strong>${cat}:</strong> ${stats[cat]}/${totals[cat]} (${p.toFixed(0)}%) - ${p < 70 ? '❌ ต้องอ่านเพิ่ม' : '✅ ผ่านเกณฑ์'}</li>`;
+    }
+    analysisHtml += "</ul>";
+
+    document.getElementById('scoreDisplay').innerText = score;
+    document.getElementById('analysisSection').innerHTML = analysisHtml;
+    document.getElementById('feedbackDetail').innerHTML = feedbackHtml;
+    document.getElementById('resultArea').style.display = 'block';
+    window.scrollTo(0, document.getElementById('resultArea').offsetTop);
+}
+
+window.onload = loadQuestions;
+</script>
+
+</body>
+</html>
