@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>P.5 Vocab Drag & Drop - พระจอมเกล้าติวเตอร์</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;700&family=Fredoka+One&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Sarabun', sans-serif; background-color: #f0f7ff; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .container { max-width: 900px; width: 100%; background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border-top: 10px solid #ff9800; }
+        .header { text-align: center; margin-bottom: 30px; }
+        h1 { font-family: 'Fredoka One', cursive; color: #e65100; margin: 0; }
+        p.desc { color: #666; margin-top: 5px; }
+
+        /* Vocab Pool */
+        .vocab-pool { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; padding: 20px; background: #fff3e0; border-radius: 15px; margin-bottom: 30px; border: 2px dashed #ffb74d; }
+        .word { background: #ff9800; color: white; padding: 10px 20px; border-radius: 30px; cursor: grab; font-weight: bold; font-size: 1.1em; box-shadow: 0 4px 6px rgba(0,0,0,0.1); user-select: none; }
+        .word:active { cursor: grabbing; opacity: 0.6; }
+
+        /* Quiz Section */
+        .quiz-list { counter-reset: q-counter; }
+        .quiz-item { margin-bottom: 20px; font-size: 1.15em; line-height: 1.8; display: flex; align-items: center; flex-wrap: wrap; }
+        .quiz-item::before { counter-increment: q-counter; content: counter(q-counter) ". "; font-weight: bold; margin-right: 10px; }
+        
+        .drop-zone { width: 160px; height: 35px; border-bottom: 3px solid #ff9800; display: inline-flex; align-items: center; justify-content: center; margin: 0 10px; vertical-align: middle; transition: 0.3s; background: #fafafa; border-radius: 5px; }
+        .drop-zone.over { background: #ffe0b2; border-bottom-style: dashed; }
+        .drop-zone .word { background: #4caf50; padding: 5px 15px; font-size: 0.9em; box-shadow: none; }
+
+        /* Buttons */
+        .btn-check { display: block; width: 220px; margin: 30px auto; padding: 15px; background: #2e7d32; color: white; border: none; border-radius: 30px; font-size: 1.2em; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .btn-check:hover { background: #1b5e20; transform: scale(1.05); }
+
+        .result { display: none; text-align: center; padding: 20px; border-radius: 15px; background: #e8f5e9; border: 2px solid #2e7d32; margin-top: 20px; }
+        .footer { text-align: center; margin-top: 30px; font-size: 0.85em; color: #888; border-top: 1px solid #eee; padding-top: 10px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1>Vocabulary Fun Time!</h1>
+        <p class="desc">ลากคำศัพท์ด้านบน มาวางในช่องว่างให้ถูกต้อง</p>
+        <p><strong>เขียนโดย: CHINPONG SMART FARM</strong></p>
+    </div>
+
+    <div class="vocab-pool" id="vocabPool">
+        </div>
+
+    <div class="quiz-list" id="quizList">
+        </div>
+
+    <button class="btn-check" onclick="checkAnswers()">ตรวจคำตอบ (Check)</button>
+
+    <div id="resultBox" class="result">
+        <h2 id="scoreText"></h2>
+        <p id="analysisText"></p>
+        <button onclick="window.location.reload()" style="padding: 10px 20px; cursor: pointer;">เล่นใหม่อีกครั้ง</button>
+    </div>
+
+    <div class="footer">
+        © 2026 พระจอมเกล้าติวเตอร์ | IEP English Program P.5 Mastery
+    </div>
+</div>
+
+<script>
+const vocabData = [
+    { word: "Ambitious", sentence: "He is very ________; he wants to be a CEO in the future." },
+    { word: "Generous", sentence: "My sister is ________. She always shares her snacks with friends." },
+    { word: "Vegetables", sentence: "Eating fresh ________ every day is good for your health." },
+    { word: "Adventure", sentence: "Hiking in the deep jungle is a great ________." },
+    { word: "Environment", sentence: "We must plant more trees to protect our ________." },
+    { word: "Delicious", sentence: "This chocolate cake tastes ________! Can I have more?" },
+    { word: "Temperature", sentence: "The ________ today is very high, it is 40°C!" },
+    { word: "Healthy", sentence: "You should exercise regularly to stay ________." },
+    { word: "Gymnastics", sentence: "She can do a handstand because she practices ________." },
+    { word: "Neighborhood", sentence: "There is a beautiful park in my ________." }
+];
+
+const vocabPool = document.getElementById('vocabPool');
+const quizList = document.getElementById('quizList');
+
+// Shuffle function
+function shuffle(array) {
+    return array.sort(() => Math.random() - 0.5);
+}
+
+// Render Words
+const shuffledWords = shuffle([...vocabData]);
+shuffledWords.forEach(item => {
+    const wordEl = document.createElement('div');
+    wordEl.className = 'word';
+    wordEl.innerText = item.word;
+    wordEl.draggable = true;
+    wordEl.id = `word-${item.word}`;
+    wordEl.addEventListener('dragstart', e => {
+        e.dataTransfer.setData('text', e.target.id);
+    });
+    vocabPool.appendChild(wordEl);
+});
+
+// Render Questions
+vocabData.forEach((item, index) => {
+    const itemEl = document.createElement('div');
+    itemEl.className = 'quiz-item';
+    const parts = item.sentence.split('________');
+    itemEl.innerHTML = `
+        ${parts[0]} <div class="drop-zone" data-answer="${item.word}"></div> ${parts[1]}
+    `;
+    quizList.appendChild(itemEl);
+});
+
+// Drag and Drop Logic
+const zones = document.querySelectorAll('.drop-zone');
+zones.forEach(zone => {
+    zone.addEventListener('dragover', e => e.preventDefault());
+    zone.addEventListener('dragenter', e => zone.classList.add('over'));
+    zone.addEventListener('dragleave', e => zone.classList.remove('over'));
+    zone.addEventListener('drop', e => {
+        e.preventDefault();
+        zone.classList.remove('over');
+        const wordId = e.dataTransfer.getData('text');
+        const wordEl = document.getElementById(wordId);
+        
+        // If zone already has a word, put it back to pool
+        if (zone.firstChild) {
+            vocabPool.appendChild(zone.firstChild);
+        }
+        zone.appendChild(wordEl);
+    });
+});
+
+function checkAnswers() {
+    let score = 0;
+    const zones = document.querySelectorAll('.drop-zone');
+    
+    zones.forEach(zone => {
+        if (zone.firstChild) {
+            const selectedWord = zone.firstChild.innerText;
+            const correctWord = zone.getAttribute('data-answer');
+            if (selectedWord === correctWord) {
+                score++;
+                zone.style.borderColor = "#2e7d32";
+            } else {
+                zone.style.borderColor = "#c62828";
+            }
+        } else {
+            zone.style.borderColor = "#ccc";
+        }
+    });
+
+    const resultBox = document.getElementById('resultBox');
+    const scoreText = document.getElementById('scoreText');
+    const analysisText = document.getElementById('analysisText');
+    
+    resultBox.style.display = 'block';
+    scoreText.innerText = `You got ${score} out of 10!`;
+    
+    if (score === 10) analysisText.innerText = "Excellent! You are a Vocab Master! 🌟";
+    else if (score >= 7) analysisText.innerText = "Great job! Keep practicing. 👍";
+    else analysisText.innerText = "Good try! Let's review the words again. 📖";
+    
+    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+}
+</script>
+
+</body>
+</html>
