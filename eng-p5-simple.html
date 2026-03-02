@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Present Simple Quiz - พระจอมเกล้าติวเตอร์</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;700&family=Mitr&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Sarabun', sans-serif; background-color: #f8f9fa; margin: 0; padding: 20px; }
+        .container { max-width: 850px; margin: auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); border-top: 10px solid #6c5ce7; }
+        .header { text-align: center; border-bottom: 2px solid #eee; padding-bottom: 20px; margin-bottom: 25px; }
+        h1 { font-family: 'Mitr', sans-serif; color: #6c5ce7; }
+        .vocab-hint { background: #f0edff; padding: 15px; border-radius: 10px; margin-bottom: 20px; font-size: 0.9em; border-left: 5px solid #6c5ce7; }
+        .q-card { border-bottom: 1px solid #eee; padding: 20px 0; }
+        .q-text { font-weight: bold; margin-bottom: 12px; display: block; }
+        .options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .opt-btn { padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px; background: white; cursor: pointer; text-align: left; transition: 0.2s; }
+        .opt-btn:hover { border-color: #6c5ce7; background: #f0edff; }
+        .correct { background: #2ecc71 !important; color: white !important; border-color: #27ae60 !important; }
+        .wrong { background: #e74c3c !important; color: white !important; border-color: #c0392b !important; }
+        .explanation { display: none; margin-top: 10px; padding: 10px; background: #fff9c4; border-radius: 5px; font-size: 0.9em; }
+        .btn-submit { display: block; width: 100%; padding: 15px; background: #6c5ce7; color: white; border: none; border-radius: 10px; font-size: 1.2em; cursor: pointer; margin-top: 30px; font-weight: bold; }
+        .result-panel { display: none; text-align: center; margin-top: 30px; padding: 20px; background: #e8f5e9; border-radius: 10px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1>ชุดที่ 1: Present Simple & Vocab Review</h1>
+        <p>โดย <strong>พระจอมเกล้าติวเตอร์</strong> | เขียนโดย <strong>CHINPONG SMART FARM</strong></p>
+    </div>
+
+    <div class="vocab-hint">
+        <strong>ทบทวนศัพท์ใหม่:</strong> Ambitious, Generous, Vegetables, Adventure, Environment, Delicious, Temperature, Healthy, Gymnastics, Neighborhood
+    </div>
+
+    <div id="quiz-container"></div>
+
+    <button class="btn-submit" onclick="showResults()">ตรวจคะแนน (Check My Score)</button>
+
+    <div id="resultBox" class="result-panel">
+        <h2 id="finalScore"></h2>
+        <p id="analysis"></p>
+        <button onclick="window.location.reload()" style="padding: 10px 20px; cursor: pointer;">เริ่มใหม่</button>
+    </div>
+</div>
+
+<script>
+const quizData = [
+    { q: "1. She ________ fresh vegetables every morning.", a: "eats", o: ["eat", "eats", "eating", "is eat"], e: "She เป็นราชาเหงา (คนเดียว) กริยา eat ต้องเติม s" },
+    { q: "2. We ________ the environment by planting trees.", a: "protect", o: ["protect", "protects", "protecting", "are protect"], e: "We เป็นทีมพิฆาต (หลายคน) กริยาไม่ต้องเติม s" },
+    { q: "3. This cake ________ delicious!", a: "tastes", o: ["taste", "tastes", "tasting", "is taste"], e: "This cake มีชิ้นเดียว กริยา taste ต้องเติม s" },
+    { q: "4. My ambitious brother ________ hard for his goal.", a: "works", o: ["work", "works", "working", "workes"], e: "Brother คนเดียว กริยา work เติม s" },
+    { q: "5. They ________ in a beautiful neighborhood.", a: "live", o: ["live", "lives", "living", "are live"], e: "They เป็นทีมพิฆาต กริยาไม่ต้องเติม s" },
+    { q: "6. The temperature ________ during the day.", a: "rises", o: ["rise", "rises", "rising", "risees"], e: "Temperature ถือเป็นประธานเอกพจน์ กริยาเติม s" },
+    { q: "7. Generous people ________ their money to the poor.", a: "give", o: ["give", "gives", "giving", "given"], e: "People เป็นพหูพจน์ (หลายคน) กริยาไม่ต้องเติม s" },
+    { q: "8. I ________ gymnastics on Saturdays.", a: "practice", o: ["practice", "practices", "practicing", "am practice"], e: "I เป็นข้อยกเว้น อยู่กลุ่มทีมพิฆาต กริยาไม่ต้องเติม s" },
+    { q: "9. An adventure ________ with a single step.", a: "starts", o: ["start", "starts", "starting", "started"], e: "Adventure สิ่งเดียว กริยาเติม s" },
+    { q: "10. Healthy food ________ our body strong.", a: "makes", o: ["make", "makes", "making", "are make"], e: "Food (นับไม่ได้) ถือเป็นเอกพจน์ กริยาเติม s" },
+    { q: "11. He ________ to be an ambitious pilot.", a: "wants", o: ["want", "wants", "wanting", "is want"], e: "He ราชาเหงา กริยาเติม s" },
+    { q: "12. My mom ________ delicious soup for us.", a: "cooks", o: ["cook", "cooks", "cooking", "is cook"], e: "Mom คนเดียว กริยาเติม s" },
+    { q: "13. Children ________ many vegetables for lunch.", a: "eat", o: ["eat", "eats", "eating", "is eat"], e: "Children หลายคน (พหูพจน์) ไม่ต้องเติม s" },
+    { q: "14. My neighborhood ________ quiet at night.", a: "is", o: ["is", "am", "are", "be"], e: "Neighborhood สถานที่แห่งเดียว ใช้ is" },
+    { q: "15. We ________ to find a new adventure.", a: "try", o: ["try", "tries", "trying", "are try"], e: "We ทีมพิฆาต กริยาไม่เติม s" },
+    { q: "16. A generous man ________ his umbrella with me.", a: "shares", o: ["share", "shares", "sharing", "is share"], e: "Man คนเดียว กริยาเติม s" },
+    { q: "17. You ________ the temperature with a thermometer.", a: "measure", o: ["measure", "measures", "measuring", "are measure"], e: "You อยู่กลุ่มทีมพิฆาต ไม่เติม s" },
+    { q: "18. Gymnastics ________ me flexible.", a: "makes", o: ["make", "makes", "making", "is make"], e: "ชื่อกีฬาถือเป็นเอกพจน์ กริยาเติม s" },
+    { q: "19. The environment ________ our help.", a: "needs", o: ["need", "needs", "needing", "is need"], e: "Environment สิ่งเดียว กริยาเติม s" },
+    { q: "20. I always ________ healthy habits.", a: "follow", o: ["follow", "follows", "following", "am follow"], e: "I อยู่กลุ่มเดียวกับทีมพิฆาต ไม่เติม s" }
+];
+
+const container = document.getElementById('quiz-container');
+let answered = 0;
+let score = 0;
+
+quizData.forEach((item, idx) => {
+    const card = document.createElement('div');
+    card.className = 'q-card';
+    card.id = `q-${idx}`;
+    card.innerHTML = `
+        <span class="q-text">${item.q}</span>
+        <div class="options">
+            ${item.o.map(opt => `<button class="opt-btn" onclick="checkAnswer(${idx}, '${opt}', this)">${opt}</button>`).join('')}
+        </div>
+        <div class="explanation" id="ex-${idx}">${item.e}</div>
+    `;
+    container.appendChild(card);
+});
+
+function checkAnswer(qIdx, selected, btn) {
+    const card = document.getElementById(`q-${qIdx}`);
+    if (card.hasAttribute('data-done')) return;
+    card.setAttribute('data-done', 'true');
+    answered++;
+
+    const correct = quizData[qIdx].a;
+    const exp = document.getElementById(`ex-${qIdx}`);
+    exp.style.display = 'block';
+
+    if (selected === correct) {
+        btn.classList.add('correct');
+        score++;
+    } else {
+        btn.classList.add('wrong');
+        const btns = card.querySelectorAll('.opt-btn');
+        btns.forEach(b => { if(b.innerText === correct) b.classList.add('correct'); });
+    }
+}
+
+function showResults() {
+    if (answered < 20) { alert("ทำข้อสอบให้ครบ 20 ข้อก่อนนะจ๊ะ!"); return; }
+    const panel = document.getElementById('resultBox');
+    panel.style.display = 'block';
+    document.getElementById('finalScore').innerText = `คะแนนของคุณ: ${score} / 20`;
+    
+    let text = "";
+    if (score === 20) text = "ยอดเยี่ยมมาก! คุณคือราชาแห่ง Grammar ตัวจริง!";
+    else if (score >= 15) text = "เก่งมากครับ! มีผิดพลาดนิดหน่อยเรื่องการเติม s ลองทบทวนดูนะ";
+    else text = "พยายามต่อไปนะ! จำไว้ว่า 'ราชาเหงา (คนเดียว) ต้องมี S มาเป็นเพื่อน'";
+    document.getElementById('analysis').innerText = text;
+    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+}
+</script>
+</body>
+</html>
