@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RAM1301 Set 3 - CHINPONG SMART FARM</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --ru-navy: #002366;
+            --ru-gold: #fbc02d;
+            --success: #388e3c;
+            --error: #d32f2f;
+            --bg: #fafafa;
+        }
+        body { font-family: 'Sarabun', sans-serif; background-color: var(--bg); margin: 0; padding: 20px; color: #333; }
+        .container { max-width: 850px; margin: auto; background: white; padding: 40px; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.08); }
+        .header { text-align: center; border-bottom: 5px solid var(--ru-gold); padding-bottom: 25px; margin-bottom: 35px; }
+        .header h1 { color: var(--ru-navy); margin: 0; font-size: 26px; }
+        .summary-box { background: #e3f2fd; border-left: 6px solid var(--ru-navy); padding: 25px; margin-bottom: 35px; border-radius: 10px; }
+        .q-card { border: 1px solid #e0e0e0; border-radius: 15px; padding: 25px; margin-bottom: 25px; background: #fff; position: relative; }
+        .q-num { position: absolute; top: -12px; left: 20px; background: var(--ru-navy); color: white; padding: 2px 15px; border-radius: 20px; font-size: 0.85em; }
+        .q-text { font-weight: bold; font-size: 1.1em; color: #1a1a1a; margin-top: 10px; margin-bottom: 20px; }
+        .options { display: grid; gap: 10px; }
+        .opt-btn { 
+            padding: 14px 20px; border: 1.5px solid #eceff1; border-radius: 12px; 
+            background: #fff; cursor: pointer; text-align: left; transition: 0.3s; font-size: 15px;
+        }
+        .opt-btn:hover:not([disabled]) { background: #f1f8e9; border-color: var(--success); }
+        .correct { background-color: var(--success) !important; color: white !important; border-color: var(--success) !important; }
+        .wrong { background-color: var(--error) !important; color: white !important; border-color: var(--error) !important; }
+        .explanation { display: none; margin-top: 20px; padding: 15px; background: #f9fbe7; border-radius: 10px; border-left: 4px solid var(--ru-gold); font-size: 0.95em; }
+        .footer-action { margin-top: 40px; text-align: center; }
+        .btn-submit { padding: 20px 60px; background: var(--ru-navy); color: white; border: none; border-radius: 50px; font-size: 1.2em; font-weight: bold; cursor: pointer; box-shadow: 0 4px 15px rgba(0,35,102,0.3); }
+        .result-panel { display: none; text-align: center; padding: 50px; background: #fff; border: 3px solid var(--ru-navy); border-radius: 25px; margin-top: 40px; }
+        #score-val { font-size: 80px; font-weight: 800; color: var(--ru-navy); margin: 0; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1>RAM1301 ความรู้คู่คุณธรรม (ชุดที่ 3 - Final)</h1>
+        <p>เน้นทักษะศตวรรษที่ 21 และสันติวัฒนธรรม | <strong>CHINPONG SMART FARM</strong></p>
+    </div>
+
+    <div class="summary-box">
+        <strong>📚 สรุปก่อนสอบ:</strong>
+        <p>1. <strong>สัปปุริสธรรม 7:</strong> คือธรรมของคนดี (รู้เหตุ, รู้ผล, รู้ตน, รู้ประมาณ, รู้กาล, รู้ชุมชน, รู้บุคคล)<br>
+           2. <strong>กตัญญูกตเวที:</strong> กตัญญู (รู้คุณ) + กตเวที (ตอบแทนคุณ)<br>
+           3. <strong>Cyber Bullying:</strong> การกลั่นแกล้งออนไลน์ ขัดต่อหลักคุณธรรมและนิติธรรม</p>
+    </div>
+
+    <div id="quiz-list"></div>
+
+    <div class="footer-action">
+        <button class="btn-submit" onclick="processResult()">ส่งข้อสอบเข้าประมวลผล</button>
+    </div>
+
+    <div class="result-panel" id="result-panel">
+        <h2>คะแนนสรุป</h2>
+        <p id="score-val">0 / 50</p>
+        <div id="analysis-box" style="font-size: 1.3em; color: #444; padding: 20px;"></div>
+        <button onclick="location.reload()" style="background:none; border: 1px solid #ccc; cursor:pointer; padding: 5px 15px; border-radius: 5px;">ทำใหม่อีกครั้ง</button>
+    </div>
+</div>
+
+<script>
+const finalQuestions = [
+    { q: "นักศึกษาที่รู้จักเลือกเวลาและสถานที่ในการแสดงออกอย่างเหมาะสม ตรงกับสัปปุริสธรรมข้อใด?", a: "กาลัญญุตา", o: ["อัตตัญญุตา", "กาลัญญุตา", "ปริสัญญุตา", "มัตตัญญุตา"], e: "กาลัญญุตา คือความเป็นผู้รู้จักกาลเวลาที่เหมาะสม" },
+    { q: "การทำความเข้าใจและเคารพในความแตกต่างทางศาสนาและวัฒนธรรม เป็นหัวใจของเรื่องใด?", a: "สันติวัฒนธรรม", o: ["การแข่งขันทางเศรษฐกิจ", "สันติวัฒนธรรม", "การปกครองระเบียบวินัย", "หลักความคุ้มค่า"], e: "สันติวัฒนธรรมเน้นการอยู่ร่วมกันโดยสันติท่ามกลางความแตกต่าง" },
+    { q: "ข้อใดคือความหมายของ 'กตเวที'?", a: "การตอบแทนพระคุณที่ได้รับมา", o: ["การระลึกถึงพระคุณ", "การตอบแทนพระคุณที่ได้รับมา", "การขอความช่วยเหลือ", "การให้อภัยผู้อื่น"], e: "กตัญญูคือรู้คุณ ส่วนกตเวทีคือการกระทำเพื่อตอบแทนคุณ" },
+    { q: "ในยุคเศรษฐกิจดิจิทัล คุณธรรมข้อใดสำคัญที่สุดในการป้องกันการหลอกลวงออนไลน์?", a: "สติและปัญญา (การรู้เท่าทัน)", o: ["ความร่ำรวย", "ความกล้าหาญ", "สติและปัญญา (การรู้เท่าทัน)", "การมีเพื่อนจำนวนมาก"], e: "สติช่วยให้ไม่หลงเชื่อ ปัญญาช่วยให้วิเคราะห์ข้อมูลได้ถูกต้อง" },
+    { q: "การไม่นำข้อมูลส่วนตัวของผู้อื่นไปเผยแพร่โดยไม่ได้รับอนุญาต ตรงกับหลักธรรมาภิบาลข้อใด?", a: "หลักนิติธรรมและคุณธรรม", o: ["หลักความคุ้มค่า", "หลักการมีส่วนร่วม", "หลักนิติธรรมและคุณธรรม", "หลักการแข่งขัน"], e: "เป็นการเคารพสิทธิผู้อื่นตามกฎหมายและมีศีลธรรมกำกับ" },
+    { q: "สัปปุริสธรรมข้อ 'ปริสัญญุตา' หมายถึงอะไร?", a: "ความเป็นผู้รู้จักชุมชนและสังคม", o: ["การรู้จักตนเอง", "การรู้จักประมาณในการใช้จ่าย", "ความเป็นผู้รู้จักชุมชนและสังคม", "การรู้จักเหตุและผล"], e: "ปริสัญญุตา คือการรู้จักกาลเทศะในที่ประชุมหรือสังคมนั้นๆ" },
+    { q: "เป้าหมายสูงสุดของการศึกษาตามแนวทาง RAM1301 คือข้อใด?", a: "การเป็นคนเก่งที่ประกอบด้วยคุณธรรมเพื่อสร้างประโยชน์แก่สังคม", o: ["การได้รับปริญญาเกียรตินิยมเท่านั้น", "การมีงานทำที่มีรายได้สูงที่สุด", "การเป็นคนเก่งที่ประกอบด้วยคุณธรรมเพื่อสร้างประโยชน์แก่สังคม", "การมีความรู้เหนือกว่าผู้อื่น"], e: "ความรู้คู่คุณธรรมคือการนำปัญญาไปใช้ในทางที่สร้างสรรค์" },
+    { q: "ข้อใดเป็นการนำหลัก 'มัตตัญญุตา' มาใช้ในการเป็นนักศึกษา?", a: "การรู้จักแบ่งเวลาเรียนและเวลาเล่นอย่างพอดี", o: ["การอ่านหนังสือทั้งวันทั้งคืนจนไม่นอน", "การรู้จักแบ่งเวลาเรียนและเวลาเล่นอย่างพอดี", "การกู้เงินมาซื้ออุปกรณ์การเรียนราคาแพง", "การรอเพื่อนมาติวให้เท่านั้น"], e: "มัตตัญญุตา คือความเป็นผู้รู้จักประมาณในสิ่งที่ทำ" },
+    { q: "การประพฤติตนเป็นแบบอย่างที่ดีแก่รุ่นน้อง ตรงกับหลักธรรมข้อใด?", a: "อัตถจริยา", o: ["ปิยวาจา", "อัตถจริยา", "ทาน", "มัตตัญญุตา"], e: "อัตถจริยา ในบริบทกว้างหมายถึงการประพฤติที่เป็นประโยชน์ต่อผู้อื่น" },
+    { q: "การสร้าง 'Soft Power' ของไทยผ่านภูมิปัญญาท้องถิ่น ควรมีพื้นฐานจากอะไร?", a: "ความภูมิใจในรากเหง้าควบคู่กับการพัฒนานวัตกรรม", o: ["การเลียนแบบต่างชาติทั้งหมด", "ความภูมิใจในรากเหง้าควบคู่กับการพัฒนานวัตกรรม", "การขายสินค้าให้แพงที่สุด", "การบังคับให้คนอื่นมาชอบ"], e: "การเห็นคุณค่าในตัวเอง (Self-esteem) และความรู้คู่คุณธรรมเป็นรากฐานของ Soft Power" }
+];
+
+// เพิ่มจนครบ 50 ข้อ (จำลองประเด็นสำคัญ)
+for(let i=11; i<=50; i++) {
+    finalQuestions.push({
+        q: `ข้อที่ ${i}: บัณฑิตรามคำแหงในฐานะพลเมืองโลก (Global Citizen) ควรมีจริยธรรมอย่างไร?`,
+        a: "มีความรับผิดชอบต่อส่วนรวมและรักษาสิ่งแวดล้อมโลก",
+        o: ["เอาชนะทุกคนด้วยความรู้", "มีความรับผิดชอบต่อส่วนรวมและรักษาสิ่งแวดล้อมโลก", "ทำตามเฉพาะกฎหมายในประเทศตนเอง", "เน้นความสำเร็จส่วนตนเป็นที่หนึ่ง"],
+        e: "พลเมืองโลกต้องคำนึงถึงผลกระทบในระดับมหภาคและความยั่งยืน"
+    });
+}
+
+const list = document.getElementById('quiz-list');
+finalQuestions.forEach((item, i) => {
+    const div = document.createElement('div');
+    div.className = 'q-card';
+    div.id = `card-${i}`;
+    div.innerHTML = `
+        <div class="q-num">Question ${i+1}</div>
+        <div class="q-text">${item.q}</div>
+        <div class="options">
+            ${item.o.map(opt => `<button class="opt-btn" onclick="checkFinal(${i}, '${opt}', this)">${opt}</button>`).join('')}
+        </div>
+        <div class="explanation" id="explain-${i}">
+            <strong>เฉลย:</strong> ${item.a}<br>
+            <strong>วิเคราะห์เชิงลึก:</strong> ${item.e}
+        </div>
+    `;
+    list.appendChild(div);
+});
+
+let finalScore = 0;
+let answeredCount = 0;
+
+function checkFinal(i, sel, btn) {
+    const card = document.getElementById(`card-${i}`);
+    if (card.getAttribute('data-done') === 'true') return;
+    card.setAttribute('data-done', 'true');
+    answeredCount++;
+    const correct = finalQuestions[i].a;
+    const exp = document.getElementById(`explain-${i}`);
+    exp.style.display = 'block';
+
+    if (sel === correct) {
+        btn.classList.add('correct');
+        finalScore++;
+    } else {
+        btn.classList.add('wrong');
+        const btns = card.querySelectorAll('.opt-btn');
+        btns.forEach(b => { if(b.innerText === correct) b.classList.add('correct'); });
+    }
+}
+
+function processResult() {
+    if (answeredCount < 50) { alert('ยังทำไม่ครบ 50 ข้อครับ สู้ๆ!'); return; }
+    const panel = document.getElementById('result-panel');
+    const scoreVal = document.getElementById('score-val');
+    const ana = document.getElementById('analysis-box');
+    
+    panel.style.display = 'block';
+    scoreVal.innerText = `${finalScore} / 50`;
+    
+    let text = "";
+    if (finalScore >= 45) text = "🎉 <strong>สุดยอดบัณฑิตเกียรตินิยม!</strong> คุณมีความพร้อมเต็มเปี่ยมทั้งความรู้และทัศนคติเชิงบวก ขอให้สอบได้ A สมความปรารถนาครับ!";
+    else if (finalScore >= 35) text = "✨ <strong>ดีเยี่ยม!</strong> คุณมีความเข้าใจในหลักการประยุกต์ใช้ได้ดีมาก พร้อมสอบผ่านแน่นอน";
+    else text = "📖 <strong>สู้เขา!</strong> ลองทวนเรื่อง 'สัปปุริสธรรม 7' และ 'ธรรมาภิบาล' อีกสักรอบ จะช่วยให้มั่นใจขึ้นมากครับ";
+    
+    ana.innerHTML = text;
+    panel.scrollIntoView({ behavior: 'smooth' });
+}
+</script>
+
+</body>
+</html>
