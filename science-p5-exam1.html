@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Science P.5 Quiz - พระจอมเกล้าติวเตอร์</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;700&family=Kanit:wght@500&display=swap" rel="stylesheet">
+    <style>
+        :root { --primary: #27ae60; --secondary: #2980b9; --bg: #f0f3f5; }
+        body { font-family: 'Sarabun', sans-serif; background: var(--bg); margin: 0; padding: 20px; }
+        .container { max-width: 900px; margin: auto; background: white; padding: 30px; border-radius: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border-top: 15px solid var(--primary); }
+        .header { text-align: center; margin-bottom: 30px; }
+        h1 { font-family: 'Kanit', sans-serif; color: var(--primary); margin: 0; }
+        
+        /* สรุปบทเรียนก่อนสอบ */
+        .summary-box { background: #e8f5e9; padding: 20px; border-radius: 15px; margin-bottom: 30px; border-left: 5px solid var(--primary); }
+        
+        /* Quiz Styling */
+        .quiz-item { background: #fff; border: 2px solid #eee; padding: 20px; border-radius: 15px; margin-bottom: 25px; transition: 0.3s; }
+        .q-text { font-size: 1.1em; font-weight: bold; margin-bottom: 15px; display: block; color: #2c3e50; }
+        .icon-box { font-size: 3rem; text-align: center; margin-bottom: 15px; }
+        
+        /* Drag and Drop area */
+        .drop-zone { width: 100%; min-height: 50px; background: #f9f9f9; border: 2px dashed #ccc; border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-top: 10px; transition: 0.3s; padding: 5px; }
+        .drop-zone.over { background: #e3f2fd; border-color: var(--secondary); }
+        
+        .answer-pool { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; background: #ecf0f1; padding: 20px; border-radius: 15px; position: sticky; top: 10px; z-index: 100; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .ans-item { background: var(--secondary); color: white; padding: 8px 15px; border-radius: 20px; cursor: grab; font-weight: bold; font-size: 0.9em; user-select: none; }
+        .ans-item:active { cursor: grabbing; opacity: 0.6; }
+
+        .explanation { display: none; margin-top: 10px; padding: 10px; border-radius: 8px; font-size: 0.9em; }
+        .correct-bg { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .wrong-bg { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+
+        .btn-submit { display: block; width: 100%; padding: 20px; background: var(--primary); color: white; border: none; border-radius: 15px; font-size: 1.3em; font-weight: bold; cursor: pointer; margin-top: 20px; }
+        .result-panel { display: none; text-align: center; margin-top: 40px; background: #fff; padding: 30px; border-radius: 20px; border: 3px solid var(--primary); }
+        
+        footer { text-align: center; margin-top: 40px; color: #95a5a6; font-size: 0.8em; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1>แนวข้อสอบวิทย์ ป.5 (25 ข้อ)</h1>
+        <p>เรื่อง: <strong>ชีวิตกับสิ่งแวดล้อม</strong> | เขียนโดย <strong>CHINPONG SMART FARM</strong></p>
+    </div>
+
+    <div class="summary-box">
+        <strong>💡 สรุปก่อนสอบ (Short Note):</strong><br>
+        1. <strong>การปรับตัว:</strong> เพื่อพรางตัว, หาอาหาร, และอยู่รอด (เช่น 🌵 เปลี่ยนใบเป็นหนามลดคายน้ำ)<br>
+        2. <strong>ความสัมพันธ์:</strong> 🤝 พึ่งพากัน (+/+) แยกไม่ได้, ได้ประโยชน์ร่วมกัน (+/+) แยกได้, อิงอาศัย (+/0), ปรสิต (+/-)<br>
+        3. <strong>โซ่อาหาร:</strong> เริ่มต้นที่ 🌿 ผู้ผลิต (Producer) เสมอ ลูกศรชี้ไปทางผู้กิน
+    </div>
+
+    <div class="answer-pool" id="answerPool">
+        </div>
+
+    <div id="quizContainer">
+        </div>
+
+    <button class="btn-submit" onclick="checkAll()">ส่งคำตอบและวิเคราะห์คะแนน</button>
+
+    <div id="resultBox" class="result-panel">
+        <h2 id="scoreText"></h2>
+        <div id="analysisText" style="text-align: left; margin-bottom: 20px;"></div>
+        <button onclick="window.location.reload()" style="padding: 10px 20px; cursor: pointer;">เริ่มทำใหม่</button>
+    </div>
+
+    <footer>
+        © 2026 พระจอมเกล้าติวเตอร์ | ข้อมูลอ้างอิงหลักสูตร สพฐ. 100%
+    </footer>
+</div>
+
+<script>
+const quizData = [
+    { id: 1, icon: "🐻‍❄️", q: "หมีขั้วโลกปรับตัวอย่างไร?", a: "ขนหนาสีขาวและไขมันหนา" },
+    { id: 2, icon: "🌵", q: "กระบองเพชรปรับตัวอย่างไร?", a: "เปลี่ยนใบเป็นหนาม" },
+    { id: 3, icon: "🌳", q: "ต้นโกงกางมีรากค้ำจุนเพื่อ?", a: "ยึดลำต้นในดินเลน" },
+    { id: 4, icon: "🦗", q: "ตั๊กแตนใบไม้เขียวเพื่อ?", a: "พรางตัวจากศัตรู" },
+    { id: 5, icon: "🛶", q: "ผักตบชวาลอยน้ำได้เพราะ?", a: "ก้านใบมีโพรงอากาศ" },
+    { id: 6, icon: "🦈", q: "ฉลามกับเหาฉลามคือภาวะ?", a: "อิงอาศัย (+/0)" },
+    { id: 7, icon: "🍄", q: "เห็ดและรามีหน้าที่เป็น?", a: "ผู้ย่อยสลาย" },
+    { id: 8, icon: "🌿", q: "พืชถูกเรียกว่าเป็น?", a: "ผู้ผลิต (Producer)" },
+    { id: 9, icon: "🦟", q: "ยุงที่กินเลือดคนคือภาวะ?", a: "ปรสิต (+/-)" },
+    { id: 10, icon: "🐃", q: "นกเอี้ยงกับควายคือภาวะ?", a: "ได้ประโยชน์ร่วมกัน" },
+    { id: 11, icon: "🐫", q: "หนอกของอูฐใช้เก็บ?", a: "ไขมันสำรองพลังงาน" },
+    { id: 12, icon: "🦆", q: "เป็ดมีพังผืดที่เท้าเพื่อ?", a: "ช่วยว่ายน้ำได้ดี" },
+    { id: 13, icon: "🦒", q: "ยีราฟคอยาวเพื่อ?", a: "กินใบไม้บนต้นไม้สูง" },
+    { id: 14, icon: "🤝", q: "รากับสาหร่าย (ไลเคน) คือ?", a: "ภาวะพึ่งพากัน (+/+)" },
+    { id: 15, icon: "🐍", q: "งูในนาข้าวช่วยเกษตรกรโดย?", a: "ช่วยกำจัดหนูนา" },
+    { id: 16, icon: "🐚", q: "ปูเสฉวนกับดอกไม้ทะเลคือ?", a: "ได้ประโยชน์ร่วมกัน" },
+    { id: 17, icon: "🦎", q: "กิ้งก่าเปลี่ยนสีผิวเพื่อ?", a: "พรางตัวตามสภาพแวดล้อม" },
+    { id: 18, icon: "🐟", q: "ปลามีรูปร่างเพรียวเพื่อ?", a: "ลดแรงต้านของน้ำ" },
+    { id: 19, icon: "🐝", q: "ผึ้งกับดอกไม้คือภาวะ?", a: "ได้ประโยชน์ร่วมกัน" },
+    { id: 20, icon: "🐜", q: "เพลี้ยกับมดดำคือภาวะ?", a: "ได้ประโยชน์ร่วมกัน" },
+    { id: 21, icon: "🏹", q: "ทิศทางลูกศรในโซ่อาหารคือ?", a: "ทิศทางการถ่ายทอดพลังงาน" },
+    { id: 22, icon: "🦅", q: "สัตว์ที่อยู่ปลายโซ่อาหารคือ?", a: "ผู้บริโภคอันดับสุดท้าย" },
+    { id: 23, icon: "🔥", q: "ภาวะที่ฝ่ายหนึ่งเสียประโยชน์คือ?", a: "ภาวะปรสิต" },
+    { id: 24, icon: "🧊", q: "การจำศีลของสัตว์คือการปรับตัว?", a: "การปรับตัวทางพฤติกรรม" },
+    { id: 25, icon: "🧬", q: "สิ่งมีชีวิตปรับตัวเพื่อ?", a: "การอยู่รอดและแพร่พันธุ์" }
+];
+
+const pool = document.getElementById('answerPool');
+const container = document.getElementById('quizContainer');
+
+// Shuffle answers
+const allAnswers = quizData.map(item => item.a).sort(() => Math.random() - 0.5);
+
+allAnswers.forEach((ans, index) => {
+    const div = document.createElement('div');
+    div.className = 'ans-item';
+    div.innerText = ans;
+    div.draggable = true;
+    div.id = 'ans-' + index;
+    div.ondragstart = (e) => e.dataTransfer.setData('text', e.target.id);
+    pool.appendChild(div);
+});
+
+// Render Quiz
+quizData.forEach((item, index) => {
+    const qDiv = document.createElement('div');
+    qDiv.className = 'quiz-item';
+    qDiv.innerHTML = `
+        <div class="icon-box">${item.icon}</div>
+        <span class="q-text">${index + 1}. ${item.q}</span>
+        <div class="drop-zone" data-answer="${item.a}" id="drop-${index}">ลากคำตอบมาวางที่นี่</div>
+        <div class="explanation" id="exp-${index}">เฉลย: ${item.a}</div>
+    `;
+    container.appendChild(qDiv);
+});
+
+// Drag & Drop Logic
+document.querySelectorAll('.drop-zone').forEach(zone => {
+    zone.ondragover = (e) => e.preventDefault();
+    zone.ondragenter = (e) => zone.classList.add('over');
+    zone.ondragleave = (e) => zone.classList.remove('over');
+    zone.ondrop = (e) => {
+        e.preventDefault();
+        zone.classList.remove('over');
+        const id = e.dataTransfer.getData('text');
+        const el = document.getElementById(id);
+        if(zone.firstChild && zone.firstChild.nodeType === 3) zone.innerHTML = '';
+        if(zone.firstChild) pool.appendChild(zone.firstChild);
+        zone.appendChild(el);
+    };
+});
+
+function checkAll() {
+    let score = 0;
+    let weakAreas = [];
+
+    quizData.forEach((item, index) => {
+        const zone = document.getElementById(`drop-${index}`);
+        const exp = document.getElementById(`exp-${index}`);
+        exp.style.display = 'block';
+        
+        if (zone.firstChild && zone.firstChild.innerText === item.a) {
+            score++;
+            exp.className = 'explanation correct-bg';
+            exp.innerText = "ถูกต้อง! ✓ " + item.a;
+        } else {
+            exp.className = 'explanation wrong-bg';
+            exp.innerText = "ยังไม่ถูก ✗ เฉลยคือ: " + item.a;
+            weakAreas.push(item.q);
+        }
+    });
+
+    document.getElementById('resultBox').style.display = 'block';
+    document.getElementById('scoreText').innerText = `ได้คะแนน ${score} / 25`;
+    
+    let analysis = `<h3>วิเคราะห์ผลการสอบ:</h3>`;
+    if(score === 25) analysis += "<p style='color:green'>ยอดเยี่ยมมาก! น้องเข้าใจเรื่องสิ่งแวดล้อมครบถ้วน 100%</p>";
+    else if(score > 18) analysis += "<p style='color:blue'>เก่งมากครับ มีบางจุดที่ต้องระวังเพิ่มเติม</p>";
+    else analysis += "<p style='color:red'>ควรทบทวนเรื่องการปรับตัวและความสัมพันธ์ของสิ่งมีชีวิตอีกครั้งนะครับ</p>";
+    
+    if(weakAreas.length > 0) {
+        analysis += "<strong>จุดที่ควรทบทวน:</strong><ul>";
+        weakAreas.slice(0, 5).forEach(q => analysis += `<li>${q}</li>`);
+        if(weakAreas.length > 5) analysis += "<li>และจุดอื่นๆ...</li>";
+        analysis += "</ul>";
+    }
+    
+    document.getElementById('analysisText').innerHTML = analysis;
+    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+}
+</script>
+</body>
+</html>
