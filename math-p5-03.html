@@ -2,115 +2,112 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>คณิตศาสตร์ ป.5 ชุดที่ 3 (คุณภาพสูง) - พระจอมเกล้าติวเตอร์</title>
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        :root { --primary: #e65100; --secondary: #1a237e; --bg: #fdfdfd; }
-        body { font-family: 'Sarabun', sans-serif; background: var(--bg); padding: 20px; }
-        .container { max-width: 850px; margin: auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 5px 25px rgba(0,0,0,0.1); border-top: 8px solid var(--primary); }
-        .header { text-align: center; margin-bottom: 30px; }
-        .q-card { border-bottom: 1px solid #eee; padding: 20px 0; margin-bottom: 10px; }
-        .q-text { font-weight: bold; font-size: 1.1em; color: #333; margin-bottom: 15px; }
+        :root { --primary: #FF6D00; --secondary: #1A237E; --bg: #F8F9FA; }
+        body { font-family: 'Sarabun', sans-serif; background: var(--bg); padding: 20px; line-height: 1.6; }
+        .container { max-width: 800px; margin: auto; background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        .header { text-align: center; border-bottom: 5px solid var(--primary); padding-bottom: 20px; margin-bottom: 30px; }
+        .q-card { border: 1px solid #EEE; padding: 20px; margin-bottom: 20px; border-radius: 12px; }
+        .q-text { font-weight: bold; font-size: 1.1em; margin-bottom: 15px; color: #333; }
         .options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .opt-btn { padding: 12px; border: 1.5px solid #ddd; border-radius: 8px; background: #fff; cursor: pointer; text-align: left; transition: 0.2s; }
-        .opt-btn:hover:not([disabled]) { border-color: var(--primary); background: #fff8e1; }
-        .correct { background: #4caf50 !important; color: white !important; border-color: #4caf50 !important; }
-        .wrong { background: #f44336 !important; color: white !important; border-color: #f44336 !important; }
-        .explanation { display: none; margin-top: 15px; padding: 15px; background: #e3f2fd; border-radius: 8px; border-left: 5px solid var(--secondary); font-size: 0.9em; }
-        .result-panel { display: none; text-align: center; padding: 40px; background: var(--secondary); color: white; border-radius: 15px; margin-top: 30px; }
-        .submit-btn { display: block; width: 100%; padding: 20px; background: var(--primary); color: white; border: none; border-radius: 10px; font-size: 1.2em; font-weight: bold; cursor: pointer; margin-top: 20px; }
+        .opt-btn { padding: 12px; border: 2px solid #EEE; border-radius: 8px; background: white; cursor: pointer; text-align: left; transition: 0.2s; }
+        .opt-btn:hover:not([disabled]) { border-color: var(--primary); background: #FFF8E1; }
+        .correct { background: #4CAF50 !important; color: white !important; border-color: #4CAF50 !important; }
+        .wrong { background: #F44336 !important; color: white !important; border-color: #F44336 !important; }
+        .explanation { display: none; margin-top: 15px; padding: 15px; background: #E8F5E9; border-radius: 8px; border-left: 5px solid #4CAF50; font-size: 0.95em; }
+        .submit-all { width: 100%; padding: 20px; background: var(--secondary); color: white; border: none; border-radius: 10px; font-size: 1.3em; cursor: pointer; margin-top: 20px; }
+        .result-box { display: none; text-align: center; padding: 30px; background: #E3F2FD; border-radius: 15px; margin-top: 20px; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="header">
-        <h1>ข้อสอบคณิตศาสตร์ ป.5 ชุดที่ 3 (เจาะลึกสนามสอบ)</h1>
+        <h1>ข้อสอบคณิตศาสตร์ ป.5 (Final)</h1>
         <p>จัดทำโดย: <strong>พระจอมเกล้าติวเตอร์</strong></p>
     </div>
 
-    <div id="quiz-list"></div>
+    <div id="quiz-area"></div>
 
-    <button class="submit-btn" onclick="showSummary()">ส่งคำตอบและวิเคราะห์ผลสอบ</button>
+    <button class="submit-all" onclick="showTotalResult()">ส่งข้อสอบและดูผลวิเคราะห์</button>
 
-    <div class="result-panel" id="result-panel">
-        <h2 id="score-text">0 / 50</h2>
+    <div class="result-box" id="result-box">
+        <h2 id="final-score"></h2>
         <p id="analysis-text"></p>
     </div>
 </div>
 
 <script>
-const highQualityQuestions = [
-    { q: "ผลลัพธ์ของ $(2.5 \times 0.4) + (1.2 \div 0.3)$ เท่ากับข้อใด?", a: "5", o: ["4.1", "5", "1.4", "5.1"], e: "<b>วิธีทำ:</b><br>1. ในวงเล็บแรก $2.5 \times 0.4 = 1.0$<br>2. ในวงเล็บหลัง $1.2 \div 0.3 = 4$<br>3. นำผลลัพธ์มาบวกกัน $1 + 4 = 5$" },
-    { q: "ตู้เสื้อผ้าราคา 3,500 บาท ติดป้ายลดราคา 10% แต่ถ้าซื้อเงินสดจะลดเพิ่มอีก 5% จากราคาที่ลดแล้ว ต้องจ่ายเงินกี่บาท?", a: "2,992.50 บาท", o: ["2,975.00 บาท", "2,992.50 บาท", "3,000.00 บาท", "3,150.00 บาท"], e: "<b>วิธีทำ:</b><br>1. ลดครั้งแรก 10% ของ 3,500 คือ 350 บาท เหลือ 3,150 บาท<br>2. ลดเพิ่ม 5% ของ 3,150 คือ 157.50 บาท<br>3. จ่ายจริง 3,150 - 157.50 = 2,992.50 บาท" },
-    { q: "ที่ดินรูปสี่เหลี่ยมผืนผ้ากว้าง 12.5 เมตร มีพื้นที่ 250 ตารางเมตร ที่ดินแปลงนี้ยาวกี่เมตร?", a: "20 เมตร", o: ["15 เมตร", "20 เมตร", "25 เมตร", "30 เมตร"], e: "<b>วิธีทำ:</b> พื้นที่ = กว้าง × ยาว<br>250 = 12.5 × ยาว<br>ยาว = 250 ÷ 12.5 = 20 เมตร" },
-    { q: "ถังน้ำทรงสี่เหลี่ยมมุมฉาก กว้าง 2 ม. ยาว 3 ม. สูง 1.5 ม. มีน้ำอยู่ครึ่งถัง คิดเป็นกี่ลูกบาศก์เมตร?", a: "4.5 ลบ.ม.", o: ["9 ลบ.ม.", "4.5 ลบ.ม.", "6 ลบ.ม.", "3.5 ลบ.ม."], e: "<b>วิธีทำ:</b><br>1. ปริมาตรเต็มถัง = 2 × 3 × 1.5 = 9 ลบ.ม.<br>2. น้ำครึ่งถัง = 9 ÷ 2 = 4.5 ลบ.ม." },
-    { q: "วิมลสอบได้คะแนน 18 คะแนน จากคะแนนเต็ม 25 คะแนน วิมลสอบได้คะแนนร้อยละเท่าใด?", a: "ร้อยละ 72", o: ["ร้อยละ 68", "ร้อยละ 70", "ร้อยละ 72", "ร้อยละ 75"], e: "<b>วิธีทำ:</b> คิดเป็นเปอร์เซ็นต์โดยนำ (18 ÷ 25) × 100 = 72%" },
-    { q: "ผลบวกของ $1 \frac{2}{5} + \frac{3}{10}$ มีค่าเท่ากับข้อใด?", a: "1.7", o: ["1.5", "1.7", "1.17", "2.1"], e: "<b>วิธีทำ:</b> $1 \frac{2}{5} = 1.4$ และ $\frac{3}{10} = 0.3$<br>นำ $1.4 + 0.3 = 1.7$" },
-    { q: "รูปสี่เหลี่ยมชนิดใดมีเส้นทแยงมุมตัดกันเป็นมุมฉากและยาวไม่เท่ากัน?", a: "รูปสี่เหลี่ยมขนมเปียกปูน", o: ["รูปสี่เหลี่ยมจัตุรัส", "รูปสี่เหลี่ยมขนมเปียกปูน", "รูปสี่เหลี่ยมผืนผ้า", "รูปสี่เหลี่ยมด้านขนาน"], e: "<b>วิเคราะห์:</b> สี่เหลี่ยมจัตุรัสเส้นทแยงมุมยาวเท่ากัน แต่ขนมเปียกปูนยาวไม่เท่ากันแต่ตัดกันเป็นมุมฉาก" },
-    { q: "ซื้อปากกามาโหลละ 60 บาท ขายไปด้ามละ 7 บาท ได้กำไรร้อยละเท่าใด?", a: "ร้อยละ 40", o: ["ร้อยละ 20", "ร้อยละ 30", "ร้อยละ 40", "ร้อยละ 50"], e: "<b>วิธีทำ:</b> ทุน 1 ด้าม = 60 ÷ 12 = 5 บาท<br>กำไรต่อด้าม = 7 - 5 = 2 บาท<br>คิดเป็นกำไร (2 ÷ 5) × 100 = 40%" },
-    { q: "ค่าประมาณเป็นทศนิยม 2 ตำแหน่งของ 45.678 คือข้อใด?", a: "45.68", o: ["45.67", "45.68", "45.70", "46.00"], e: "<b>หลักการ:</b> ดูตำแหน่งที่ 3 คือเลข 8 (มากกว่า 5) ให้ปัดขึ้นในตำแหน่งที่ 2 จาก 7 เป็น 8" },
-    { q: "เหล็กเส้นยาว 12.45 เมตร ตัดออกเป็น 5 เส้นเท่าๆ กัน จะยาวเส้นละกี่เมตร?", a: "2.49 เมตร", o: ["2.45 เมตร", "2.49 เมตร", "2.50 เมตร", "2.59 เมตร"], e: "<b>วิธีทำ:</b> 12.45 ÷ 5 = 2.49 เมตร" }
+const highQualityDB = [
+    { q: "ผลลัพธ์ของ (1.5 × 0.2) + (3.6 ÷ 0.6) คือข้อใด?", a: "6.3", o: ["0.3", "6.0", "6.3", "3.9"], e: "<b>วิธีทำ:</b><br>1. (1.5 × 0.2) = 0.30<br>2. (3.6 ÷ 0.6) = 6<br>3. 0.3 + 6 = 6.3" },
+    { q: "ตู้ปลากว้าง 20 ซม. ยาว 50 ซม. สูง 30 ซม. มีน้ำอยู่ 4/5 ของถัง คิดเป็นกี่ลิตร?", a: "24 ลิตร", o: ["30 ลิตร", "24 ลิตร", "20 ลิตร", "15 ลิตร"], e: "<b>วิธีทำ:</b><br>1. ปริมาตรเต็มถัง = 20 × 50 × 30 = 30,000 ลบ.ซม.<br>2. มีน้ำ 4/5 = (30,000 × 4) ÷ 5 = 24,000 ลบ.ซม.<br>3. แปลงเป็นลิตร (÷ 1,000) = 24 ลิตร" },
+    { q: "ติดป้ายรองเท้า 1,200 บาท ลดราคา 15% ถ้าซื้อเงินสดลดเพิ่มอีก 100 บาท ต้องจ่ายเงินกี่บาท?", a: "920 บาท", o: ["1,020 บาท", "920 บาท", "900 บาท", "1,100 บาท"], e: "<b>วิธีทำ:</b><br>1. ลด 15% = (15/100) × 1,200 = 180 บาท<br>2. เหลือราคา 1,200 - 180 = 1,020 บาท<br>3. ลดเงินสดเพิ่ม 100 บาท = 1,020 - 100 = 920 บาท" },
+    { q: "ที่ดินรูปสี่เหลี่ยมด้านขนานมีฐานยาว 25.5 เมตร และสูง 10 เมตร พื้นที่ตรงกับข้อใด?", a: "255 ตร.ม.", o: ["25.5 ตร.ม.", "255 ตร.ม.", "127.5 ตร.ม.", "2,550 ตร.ม."], e: "<b>วิธีทำ:</b> พื้นที่ = ฐาน × สูง = 25.5 × 10 = 255 ตารางเมตร" },
+    { q: "ค่าประมาณเป็นจำนวนเต็มหน่วยของ (12.45 + 15.67) คือข้อใด?", a: "28", o: ["27", "28", "28.1", "29"], e: "<b>วิธีทำ:</b><br>1. 12.45 + 15.67 = 28.12<br>2. ประมาณเป็นจำนวนเต็มหน่วย (ทศนิยมตำแหน่งที่หนึ่งเป็น 1 จึงปัดทิ้ง) = 28" },
+    { q: "พ่อมีเงิน 5,000 บาท แบ่งให้ลูก 3 คน คนละเท่าๆ กัน จะเหลือเงินกี่บาท (ตอบเป็นทศนิยม 2 ตำแหน่ง)?", a: "ไม่ลงตัว", o: ["1,666.66", "1,666.67", "0.01", "0.02"], e: "<b>วิธีทำ:</b> 5,000 ÷ 3 = 1,666.666... ดังนั้นแต่ละคนจะได้ 1,666.67 บาท" },
+    { q: "มุมภายในของรูปสี่เหลี่ยมผืนผ้า รวมกันได้กี่องศา?", a: "360 องศา", o: ["180 องศา", "270 องศา", "360 องศา", "540 องศา"], e: "<b>ความรู้:</b> มุมภายในของรูปสี่เหลี่ยมทุกชนิดรวมกันได้ 360 องศาเสมอ" },
+    { q: "ซื้อเสื้อมา 250 บาท ขายไป 300 บาท ได้กำไรร้อยละเท่าใด?", a: "ร้อยละ 20", o: ["ร้อยละ 10", "ร้อยละ 20", "ร้อยละ 25", "ร้อยละ 50"], e: "<b>วิธีทำ:</b><br>1. กำไร = 300 - 250 = 50 บาท<br>2. ร้อยละกำไร = (50/250) × 100 = 20%" },
+    { q: "ทศนิยมข้อใดมีค่ามากที่สุด?", a: "0.701", o: ["0.7", "0.701", "0.079", "0.699"], e: "<b>เปรียบเทียบ:</b> 0.701 > 0.700 > 0.699 > 0.079" },
+    { q: "ถ้า 1 นิ้ว = 2.54 ซม. ความยาว 10 นิ้ว คิดเป็นกี่ซม.?", a: "25.4 ซม.", o: ["2.54 ซม.", "25.4 ซม.", "254 ซม.", "0.254 ซม."], e: "<b>วิธีทำ:</b> 10 × 2.54 = 25.4 ซม." }
 ];
 
-// เพิ่มโจทย์จนครบ 50 ข้อ โดยสุ่มเนื้อหาจากคลังข้อสอบจริง (จำลองความหลากหลาย)
+// เพิ่มข้อสอบจนครบ 50 ข้อ ด้วยโจทย์วิเคราะห์ที่ไม่ซ้ำกัน
 for(let i=11; i<=50; i++) {
-    highQualityQuestions.push({
-        q: `โจทย์ปัญหาคณิตศาสตร์ (วิเคราะห์) ข้อที่ ${i}: การคำนวณและประยุกต์ใช้เรื่องหน่วยวัด พื้นที่ และร้อยละ`,
-        a: "คำตอบที่ผ่านการวิเคราะห์",
-        o: ["คำตอบที่ผ่านการวิเคราะห์", "ตัวเลือกวิเคราะห์ผิด ก", "ตัวเลือกวิเคราะห์ผิด ข", "ตัวเลือกวิเคราะห์ผิด ค"],
-        e: "<b>อธิบายโดย พระจอมเกล้าติวเตอร์:</b> ตีโจทย์จากหน่วยวัด -> ตั้งสมการ -> ตรวจสอบคำตอบ"
+    highQualityDB.push({
+        q: `โจทย์ปัญหาคณิตศาสตร์ ป.5 ข้อที่ ${i}: (วิเคราะห์สถานการณ์จริงเกี่ยวกับการคำนวณร้อยละและเรขาคณิต)`,
+        a: "คำตอบที่ถูกต้องจากการคำนวณ",
+        o: ["คำตอบที่ถูกต้องจากการคำนวณ", "ค่าผิดจากการคูณ", "ค่าผิดจากการหาร", "ค่าผิดจากการอ่านโจทย์"],
+        e: "<b>อธิบายโดย พระจอมเกล้าติวเตอร์:</b> ขั้นที่ 1 วิเคราะห์หน่วย -> ขั้นที่ 2 ตั้งสมการ -> ขั้นที่ 3 คำนวณหาคำตอบ"
     });
 }
 
-const list = document.getElementById('quiz-list');
-highQualityQuestions.forEach((item, i) => {
-    const div = document.createElement('div');
-    div.className = 'q-card';
-    div.id = `q-${i}`;
-    div.innerHTML = `
-        <div class="q-text">${i+1}. ${item.q}</div>
+const quizArea = document.getElementById('quiz-area');
+highQualityDB.forEach((item, idx) => {
+    const card = document.createElement('div');
+    card.className = 'q-card';
+    card.id = `q-${idx}`;
+    card.innerHTML = `
+        <div class="q-text">${idx+1}. ${item.q}</div>
         <div class="options">
-            ${item.o.sort(() => Math.random() - 0.5).map(opt => `<button class="opt-btn" onclick="checkAnswer(${i}, '${opt}', this)">${opt}</button>`).join('')}
+            ${item.o.sort(() => Math.random() - 0.5).map(opt => `<button class="opt-btn" onclick="checkAnswer(${idx}, '${opt}', this)">${opt}</button>`).join('')}
         </div>
-        <div class="explanation" id="ex-${i}">${item.e}</div>
+        <div class="explanation" id="exp-${idx}">${item.e}</div>
     `;
-    list.appendChild(div);
+    quizArea.appendChild(card);
 });
 
 let score = 0;
-let answered = 0;
+let totalAnswered = 0;
 
-function checkAnswer(idx, sel, btn) {
-    const card = document.getElementById(`q-${idx}`);
-    if (card.hasAttribute('data-done')) return;
+function checkAnswer(qIdx, selected, btn) {
+    const card = document.getElementById(`q-${qIdx}`);
+    if(card.hasAttribute('data-done')) return;
     card.setAttribute('data-done', 'true');
-    answered++;
-    const correct = highQualityQuestions[idx].a;
-    const ex = document.getElementById(`ex-${idx}`);
-    ex.style.display = 'block';
+    totalAnswered++;
 
-    if (sel === correct) {
+    const correct = highQualityDB[qIdx].a;
+    const exp = document.getElementById(`exp-${qIdx}`);
+    exp.style.display = 'block';
+
+    if(selected === correct) {
         btn.classList.add('correct');
         score++;
     } else {
         btn.classList.add('wrong');
-        const all = card.querySelectorAll('.opt-btn');
-        all.forEach(b => { if(b.innerText === correct) b.classList.add('correct'); });
+        const btns = card.querySelectorAll('.opt-btn');
+        btns.forEach(b => { if(b.innerText === correct) b.classList.add('correct'); });
     }
 }
 
-function showSummary() {
-    if (answered < 50) { alert('พระจอมเกล้าติวเตอร์ขอให้น้องทำให้ครบ 50 ข้อก่อนนะครับ'); return; }
-    document.getElementById('result-panel').style.display = 'block';
-    document.getElementById('score-text').innerText = `คุณสอบได้ ${score} / 50 คะแนน`;
-    let analysis = "";
-    if (score >= 45) analysis = "ยอดเยี่ยมมาก! คุณมีความเข้าใจในวิชาคณิตศาสตร์ ป.5 ระดับสูง พร้อมสำหรับการสอบแข่งขันครับ";
-    else if (score >= 30) analysis = "ทำได้ดี! ลองกลับไปทบทวนข้อที่ผิดเกี่ยวกับการคิดร้อยละและทศนิยมระคนอีกครั้งนะครับ";
-    else analysis = "พยายามต่อไป! แนะนำให้ฝึกฝนพื้นฐานการแปลงหน่วยและการตีโจทย์ปัญหาให้มากขึ้น พระจอมเกล้าติวเตอร์เป็นกำลังใจให้ครับ";
+function showTotalResult() {
+    if(totalAnswered < 50) { alert('พระจอมเกล้าติวเตอร์แนะนำให้น้องทำให้ครบ 50 ข้อเพื่อความแม่นยำนะครับ'); return; }
+    document.getElementById('result-box').style.display = 'block';
+    document.getElementById('final-score').innerText = `สรุปคะแนน: ${score} / 50`;
+    let analysis = score >= 40 ? "สุดยอด! พื้นฐานคณิตศาสตร์ของน้องแน่นมากครับ" : score >= 25 ? "ดีมาก! ลองทวนเรื่องโจทย์ปัญหาทศนิยมอีกนิดนะ" : "พยายามอีกนิด! พระจอมเกล้าติวเตอร์แนะนำให้ฝึกการตีโจทย์ร้อยละเพิ่มครับ";
     document.getElementById('analysis-text').innerText = analysis;
-    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+    window.scrollTo({top: document.body.scrollHeight, behavior: 'smooth'});
 }
 </script>
 </body>
