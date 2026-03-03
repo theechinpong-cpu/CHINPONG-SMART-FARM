@@ -6,64 +6,76 @@
     <title>Math P.5 Final Exam - พระจอมเกล้าติวเตอร์</title>
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;700&family=Kanit:wght@500&display=swap" rel="stylesheet">
     <style>
-        :root { --primary: #2c3e50; --accent: #e67e22; --success: #27ae60; --bg: #f4f7f6; }
-        body { font-family: 'Sarabun', sans-serif; background: var(--bg); margin: 0; padding: 10px; }
-        .container { max-width: 1000px; margin: auto; background: white; padding: 25px; border-radius: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
-        .header { text-align: center; border-bottom: 3px double var(--primary); padding-bottom: 20px; margin-bottom: 30px; }
-        h1 { font-family: 'Kanit', sans-serif; color: var(--primary); margin: 5px 0; }
+        :root { --primary: #2c3e50; --accent: #e67e22; --success: #27ae60; --bg: #f8f9fa; }
+        body { font-family: 'Sarabun', sans-serif; background: var(--bg); margin: 0; padding: 15px; }
+        .container { max-width: 900px; margin: auto; background: white; padding: 25px; border-radius: 20px; box-shadow: 0 5px 20px rgba(0,0,0,0.08); }
+        .header { text-align: center; border-bottom: 2px solid #eee; padding-bottom: 20px; margin-bottom: 20px; }
+        h1 { font-family: 'Kanit', sans-serif; color: var(--primary); margin: 5px 0; font-size: 1.8em; }
         
-        .summary-box { background: #fff3e0; padding: 20px; border-radius: 12px; margin-bottom: 30px; border-left: 6px solid var(--accent); font-size: 0.95em; }
+        .summary-box { background: #e3f2fd; padding: 15px; border-radius: 12px; margin-bottom: 25px; border-left: 6px solid #2196f3; font-size: 0.9em; line-height: 1.6; }
         
-        /* Drag & Drop Styles */
-        .quiz-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
-        .quiz-item { background: #fff; border: 1px solid #ddd; padding: 15px; border-radius: 15px; position: relative; transition: 0.3s; }
-        .quiz-item:hover { border-color: var(--accent); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-        .q-num { background: var(--primary); color: white; padding: 2px 8px; border-radius: 5px; font-size: 0.8em; margin-right: 5px; }
+        /* Selection UI */
+        .pool-container { position: sticky; top: 10px; z-index: 1000; background: white; padding: 15px; border-radius: 15px; box-shadow: 0 8px 20px rgba(0,0,0,0.1); margin-bottom: 30px; border: 2px solid var(--accent); }
+        .pool-title { font-weight: bold; color: var(--accent); margin-bottom: 10px; font-size: 0.9em; text-align: center; }
+        .answer-pool { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; max-height: 150px; overflow-y: auto; padding: 5px; }
         
-        .drop-zone { min-height: 45px; background: #fafafa; border: 2px dashed #bbb; border-radius: 8px; margin-top: 10px; display: flex; align-items: center; justify-content: center; padding: 5px; font-size: 0.9em; color: #888; }
-        .drop-zone.over { background: #e1f5fe; border-color: var(--accent); }
-        
-        .answer-pool { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; background: #eee; padding: 20px; border-radius: 15px; position: sticky; top: 0; z-index: 1000; margin-bottom: 30px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); max-height: 200px; overflow-y: auto; }
-        .ans-item { background: var(--accent); color: white; padding: 6px 12px; border-radius: 15px; cursor: grab; font-size: 0.85em; font-weight: bold; white-space: nowrap; }
+        .ans-card { background: #fff; border: 2px solid #ddd; padding: 6px 12px; border-radius: 20px; cursor: pointer; font-size: 0.85em; transition: 0.2s; user-select: none; }
+        .ans-card:hover { border-color: var(--accent); background: #fff3e0; }
+        .ans-card.selected { background: var(--accent); color: white; border-color: var(--accent); box-shadow: 0 0 10px rgba(230,126,34,0.5); }
+        .ans-card.used { opacity: 0.3; cursor: default; pointer-events: none; }
 
-        .explanation { display: none; margin-top: 10px; padding: 10px; border-radius: 8px; font-size: 0.85em; line-height: 1.5; }
+        .quiz-item { background: #fff; border: 1px solid #eee; padding: 18px; border-radius: 12px; margin-bottom: 15px; display: flex; flex-direction: column; gap: 10px; }
+        .q-header { display: flex; align-items: flex-start; gap: 10px; }
+        .q-num { background: var(--primary); color: white; min-width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.8em; font-weight: bold; flex-shrink: 0; }
+        .q-text { font-weight: 700; color: #34495e; font-size: 1em; }
+
+        .answer-slot { width: 100%; min-height: 40px; border: 2px dashed #bbb; border-radius: 8px; display: flex; align-items: center; justify-content: center; background: #fafafa; cursor: pointer; transition: 0.3s; font-weight: bold; color: var(--accent); }
+        .answer-slot:hover { border-color: var(--accent); background: #fff8f2; }
+        .answer-slot.filled { border-style: solid; border-color: var(--accent); background: #fff3e0; }
+
+        .explanation { display: none; margin-top: 10px; padding: 12px; border-radius: 8px; font-size: 0.85em; line-height: 1.5; }
         .correct { background: #e8f5e9; color: #2e7d32; border: 1px solid #c8e6c9; }
         .wrong { background: #ffebee; color: #c62828; border: 1px solid #ffcdd2; }
 
-        .btn-check { display: block; width: 100%; padding: 20px; background: var(--success); color: white; border: none; border-radius: 12px; font-size: 1.2em; font-weight: bold; cursor: pointer; margin-top: 30px; }
+        .footer-nav { margin-top: 30px; text-align: center; }
+        .btn-check { padding: 15px 40px; background: var(--success); color: white; border: none; border-radius: 30px; font-size: 1.2em; font-weight: bold; cursor: pointer; box-shadow: 0 4px 15px rgba(39, 174, 96, 0.3); }
         .result-panel { display: none; margin-top: 30px; padding: 25px; border-radius: 15px; background: var(--primary); color: white; text-align: center; }
-        
-        @media (max-width: 600px) { .quiz-grid { grid-template-columns: 1fr; } }
+
+        /* Animation */
+        @keyframes pop { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+        .filled { animation: pop 0.3s ease; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="header">
-        <h1>แบบทดสอบวัดผลปลายปี ป.5 (60 ข้อ)</h1>
-        <p>วิชาคณิตศาสตร์ | <strong>พระจอมเกล้าติวเตอร์</strong> | โดย CHINPONG SMART FARM</p>
+        <h1>Verify ข้อสอบคณิตศาสตร์ ป.5 (60 ข้อ)</h1>
+        <p><strong>พระจอมเกล้าติวเตอร์</strong> | โดย CHINPONG SMART FARM</p>
     </div>
 
     <div class="summary-box">
-        <strong>🧠 สรุปเทคนิคทำข้อสอบ (Memory Tricks):</strong><br>
-        1. <strong>บัญญัติไตรยางศ์:</strong> "ขวาตั้ง ซ้ายหาร คูณด้วยตัวใหม่" (เช่น 10 ฟอง 20 บาท -> 20/10 * 140)<br>
-        2. <strong>ร้อยละ:</strong> เปลี่ยนคำว่า "ของ" เป็น "คูณ" และส่วน 100 เสมอ<br>
-        3. <strong>ปริมาตร:</strong> จำง่ายๆ "กว้าง x ยาว x สูง" หน่วยต้องเป็น "ลูกบาศก์"<br>
-        4. <strong>เส้นขนาน:</strong> มุมแย้งต้องเท่ากัน, มุมภายในข้างเดียวกันรวมกันได้ 180°
+        <strong>💡 วิธีทำข้อสอบแบบใหม่:</strong><br>
+        1. คลิกเลือก <strong>คำตอบ</strong> จากกล่องสีส้มด้านบน (จะเกิดแสงสีส้มล้อมรอบ)<br>
+        2. คลิกที่ <strong>ช่องว่าง</strong> ในข้อที่ต้องการตอบ<br>
+        3. หากต้องการเปลี่ยนคำตอบ ให้คลิกที่ช่องนั้นซ้ำเพื่อดึงคำตอบออก
     </div>
 
-    <div class="answer-pool" id="answerPool">
-        </div>
+    <div class="pool-container">
+        <div class="pool-title">คลังคำตอบ (คลิกเพื่อเลือก)</div>
+        <div class="answer-pool" id="answerPool"></div>
+    </div>
 
-    <div class="quiz-grid" id="quizContainer">
-        </div>
+    <div id="quizContainer"></div>
 
-    <button class="btn-check" onclick="verifyExam()">ส่งกระดาษคำตอบ (Verify Answers)</button>
+    <div class="footer-nav">
+        <button class="btn-check" onclick="verifyExam()">ส่งกระดาษคำตอบและดูวิธีทำ</button>
+    </div>
 
     <div id="resultBox" class="result-panel">
         <h2 id="finalScore"></h2>
-        <div id="analysis" style="text-align: left; font-size: 0.9em;"></div>
-        <button onclick="window.location.reload()" style="margin-top:15px; padding:10px 20px; border-radius:8px; cursor:pointer;">ทำใหม่อีกครั้ง</button>
+        <div id="analysis" style="text-align: left;"></div>
+        <button onclick="window.location.reload()" style="margin-top:20px; padding:10px 25px; border-radius:20px; cursor:pointer;">เริ่มทำใหม่</button>
     </div>
 </div>
 
@@ -131,18 +143,20 @@ const fullExamData = [
     { q: "กล่องสูง 28 ซม. ปริมาตร 252 ลบ.ซม. พื้นที่ฐานเท่าใด?", a: "9 ตร.ซม.", step: "252 ÷ 28 = 9" }
 ];
 
-// Shuffle and Render
+let selectedAnswerText = null;
+let selectedAnswerNode = null;
+
 const container = document.getElementById('quizContainer');
 const pool = document.getElementById('answerPool');
+
+// Shuffle answers
 const shuffledAnswers = fullExamData.map(d => d.a).sort(() => Math.random() - 0.5);
 
 shuffledAnswers.forEach((ans, i) => {
     const div = document.createElement('div');
-    div.className = 'ans-item';
+    div.className = 'ans-card';
     div.innerText = ans;
-    div.draggable = true;
-    div.id = 'ans-' + i;
-    div.ondragstart = (e) => e.dataTransfer.setData('text', e.target.id);
+    div.onclick = () => selectAnswer(div);
     pool.appendChild(div);
 });
 
@@ -150,65 +164,70 @@ fullExamData.forEach((item, i) => {
     const div = document.createElement('div');
     div.className = 'quiz-item';
     div.innerHTML = `
-        <span class="q-num">${i + 1}</span> <strong>${item.q}</strong>
-        <div class="drop-zone" id="drop-${i}" data-correct="${item.a}">ลางคำตอบที่นี่</div>
-        <div class="explanation" id="exp-${i}">
-            <b>วิธีทำ:</b> ${item.step}
+        <div class="q-header">
+            <div class="q-num">${i + 1}</div>
+            <div class="q-text">${item.q}</div>
         </div>
+        <div class="answer-slot" id="slot-${i}" onclick="placeAnswer(${i})">คลิกเพื่อใส่คำตอบ</div>
+        <div class="explanation" id="exp-${i}"><b>วิธีทำ:</b> ${item.step}</div>
     `;
     container.appendChild(div);
 });
 
-// Drag & Drop Handling
-document.querySelectorAll('.drop-zone').forEach(zone => {
-    zone.ondragover = (e) => e.preventDefault();
-    zone.ondragenter = (e) => zone.classList.add('over');
-    zone.ondragleave = (e) => zone.classList.remove('over');
-    zone.ondrop = (e) => {
-        e.preventDefault();
-        zone.classList.remove('over');
-        const id = e.dataTransfer.getData('text');
-        const draggedEl = document.getElementById(id);
-        if(zone.firstChild && zone.firstChild.nodeType !== 3) {
-            pool.appendChild(zone.firstChild);
-        }
-        zone.innerText = '';
-        zone.appendChild(draggedEl);
-    };
-});
+function selectAnswer(node) {
+    if (selectedAnswerNode) selectedAnswerNode.classList.remove('selected');
+    if (node.classList.contains('used')) return;
+    
+    selectedAnswerNode = node;
+    selectedAnswerText = node.innerText;
+    node.classList.add('selected');
+}
+
+function placeAnswer(index) {
+    const slot = document.getElementById(`slot-${index}`);
+    
+    // If slot has answer, return it to pool
+    if (slot.classList.contains('filled')) {
+        const oldText = slot.innerText;
+        const poolItems = document.querySelectorAll('.ans-card');
+        poolItems.forEach(item => {
+            if (item.innerText === oldText) item.classList.remove('used');
+        });
+        slot.innerText = 'คลิกเพื่อใส่คำตอบ';
+        slot.classList.remove('filled');
+        return;
+    }
+
+    // If something is selected, fill the slot
+    if (selectedAnswerText) {
+        slot.innerText = selectedAnswerText;
+        slot.classList.add('filled');
+        selectedAnswerNode.classList.add('used');
+        selectedAnswerNode.classList.remove('selected');
+        selectedAnswerText = null;
+        selectedAnswerNode = null;
+    }
+}
 
 function verifyExam() {
     let score = 0;
-    let mistakes = [];
-    
     fullExamData.forEach((item, i) => {
-        const zone = document.getElementById(`drop-${i}`);
+        const slot = document.getElementById(`slot-${i}`);
         const exp = document.getElementById(`exp-${i}`);
-        const userAns = zone.innerText.trim();
-        
         exp.style.display = 'block';
-        if(userAns === item.a) {
+        
+        if (slot.innerText.trim() === item.a) {
             score++;
             exp.classList.add('correct');
         } else {
             exp.classList.add('wrong');
-            mistakes.push(item.q);
         }
     });
 
-    const resultBox = document.getElementById('resultBox');
-    resultBox.style.display = 'block';
-    document.getElementById('finalScore').innerText = `คุณได้คะแนน ${score} / 60`;
-    
-    let analysisText = "<h3>วิเคราะห์ผลการสอบ:</h3>";
-    if(score >= 50) analysisText += "<p>🌟 ยอดเยี่ยมมาก! คุณมีความแม่นยำสูงมาก พร้อมสอบจริงแล้ว</p>";
-    else if(score >= 30) analysisText += "<p>📈 ทำได้ดีครับ แต่ยังมีจุดที่สับสนเรื่องการคำนวณปริมาตรและร้อยละ</p>";
-    else analysisText += "<p>📚 ควรกลับไปทบทวนเรื่องสูตรพื้นที่และบัญญัติไตรยางศ์ด่วนครับ</p>";
-    
-    document.getElementById('analysis').innerHTML = analysisText;
+    document.getElementById('resultBox').style.display = 'block';
+    document.getElementById('finalScore').innerText = `สรุปคะแนน: ${score} / 60`;
     window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
 }
 </script>
-
 </body>
 </html>
