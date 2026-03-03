@@ -4,114 +4,178 @@
     <meta charset="UTF-8">
     <title>ข้อสอบปลายภาคภาษาอังกฤษ ป.5 - พระจอมเกล้าติวเตอร์</title>
     <style>
-        body { font-family: 'Sarabun', sans-serif; background: #f0f2f5; padding: 20px; }
-        .quiz-container { max-width: 850px; margin: auto; background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
-        .header { text-align: center; border-bottom: 3px solid #ff6f00; margin-bottom: 30px; padding-bottom: 10px; }
-        .question-box { margin-bottom: 30px; padding: 20px; border: 1px solid #eee; border-radius: 12px; }
-        .options { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; }
-        button { padding: 12px; border: 2px solid #e0e0e0; background: white; border-radius: 10px; cursor: pointer; transition: 0.3s; font-size: 16px; }
-        button:hover { border-color: #ff6f00; background: #fff8f1; }
-        .correct { background: #d4edda !important; border-color: #28a745 !important; color: #155724; }
+        body { font-family: 'Sarabun', sans-serif; background: #f4f7f6; padding: 20px; color: #333; }
+        .quiz-container { max-width: 900px; margin: auto; background: white; padding: 40px; border-radius: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+        .header { text-align: center; border-bottom: 4px solid #ff6f00; margin-bottom: 40px; padding-bottom: 20px; }
+        .question-box { margin-bottom: 35px; padding: 25px; border: 1px solid #eef0f2; border-radius: 15px; background: #fff; }
+        .options { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
+        button { padding: 15px; border: 2px solid #edeff1; background: #f8f9fa; border-radius: 12px; cursor: pointer; transition: 0.2s; font-size: 16px; text-align: left; }
+        button:hover { border-color: #ff6f00; background: #fff3e0; }
+        .correct { background: #d4edda !important; border-color: #28a745 !important; color: #155724; font-weight: bold; }
         .wrong { background: #f8d7da !important; border-color: #dc3545 !important; color: #721c24; }
-        .explanation { display: none; margin-top: 15px; padding: 15px; background: #e7f3ff; border-radius: 8px; border-left: 5px solid #2196f3; font-size: 14px; }
-        #summary { display: none; text-align: center; padding: 40px; background: #fff; border-radius: 20px; margin-top: 20px; }
-        .score-big { font-size: 60px; color: #ff6f00; font-weight: bold; }
-        .btn-finish { display: block; width: 100%; padding: 20px; background: #004d40; color: white; border: none; border-radius: 12px; font-size: 20px; cursor: pointer; margin-top: 30px; }
+        .explanation { display: none; margin-top: 15px; padding: 15px; background: #e3f2fd; border-radius: 10px; border-left: 5px solid #2196f3; font-size: 15px; line-height: 1.5; }
+        #summary-page { display: none; text-align: center; }
+        .score-display { font-size: 72px; color: #ff6f00; margin: 20px 0; font-weight: bold; }
+        .btn-submit { display: block; width: 100%; padding: 20px; background: #00695c; color: white; border: none; border-radius: 12px; font-size: 22px; cursor: pointer; margin-top: 40px; font-weight: bold; }
+        .disabled { pointer-events: none; opacity: 0.8; }
     </style>
 </head>
 <body>
 
-<div class="quiz-container">
+<div class="quiz-container" id="main-quiz">
     <div class="header">
-        <h1>🎓 ข้อสอบปลายภาคภาษาอังกฤษ ป.5</h1>
-        <p>สร้างโดย <b>พระจอมเกล้าติวเตอร์</b> | เขียนโดย CHINPONG SMART FARM</p>
+        <h1>🌟 ข้อสอบปลายภาคภาษาอังกฤษ ป.5 (60 ข้อ)</h1>
+        <p>โดย <b>พระจอมเกล้าติวเตอร์</b> | เขียนโดย CHINPONG SMART FARM</p>
     </div>
 
-    <div id="quiz-body"></div>
+    <div id="quiz-content"></div>
 
-    <button class="btn-finish" onclick="showSummary()">📊 ส่งข้อสอบและวิเคราะห์ผล</button>
+    <button class="btn-submit" onclick="calculateResult()">ส่งข้อสอบและดูการวิเคราะห์จุดอ่อน</button>
 </div>
 
-<div id="summary" class="quiz-container">
-    <h2>🎯 ผลการทดสอบของคุณ</h2>
-    <div class="score-big" id="final-score">0/60</div>
-    <div id="weak-points" style="margin: 20px 0; text-align: left; line-height: 1.8;"></div>
-    <button class="btn-finish" onclick="location.reload()">ทำใหม่อีกครั้ง</button>
+<div class="quiz-container" id="summary-page">
+    <h2>📊 สรุปผลคะแนนของคุณ</h2>
+    <div class="score-display" id="total-score">0/60</div>
+    <div id="analysis-report" style="text-align: left; background: #f9f9f9; padding: 20px; border-radius: 15px;"></div>
+    <button class="btn-submit" style="background: #ff6f00;" onclick="location.reload()">เริ่มทำใหม่อีกครั้ง</button>
 </div>
 
 <script>
-const quizData = [
-    // หมวด Comparison (20 ข้อ)
-    { q: "A giraffe is ______ than a horse.", a: ["tall", "taller", "tallest", "more tall"], c: 1, e: "ขั้นกว่าของ tall คือ taller และต้องมี than เสมอ" },
-    { q: "The blue whale is the ______ animal.", a: ["large", "larger", "largest", "most large"], c: 2, e: "มี the นำหน้า ต้องใช้ขั้นสุด (largest)" },
-    { q: "English is ______ than Math for me.", a: ["easyer", "easier", "easyest", "more easy"], c: 1, e: "คำที่ลงท้ายด้วย y ให้เปลี่ยน y เป็น i แล้วเติม er" },
-    { q: "This is the ______ movie I've ever seen.", a: ["good", "better", "best", "goodest"], c: 2, e: "ขั้นสุดของ good คือ best" },
-    { q: "An airplane is ______ than a bus.", a: ["expensive", "more expensive", "most expensive", "expensiver"], c: 1, e: "expensive เป็นคำยาว ใช้ more นำหน้าในขั้นกว่า" },
-    // (เพิ่มข้อสอบจนครบ 60 ข้อโดยใช้โครงสร้างหมวดหมู่ที่ตกลงกัน)
+const questions = [
+    // 1-10: Comparison
+    { q: "A turtle is _______ than a rabbit.", a: ["slow", "slower", "slowest", "more slow"], c: 1, e: "ใช้ 'slower' เพราะเป็นการเปรียบเทียบสัตว์ 2 ชนิด (ขั้นกว่า) และคำว่า slow เป็นคำสั้น" },
+    { q: "The Everest is the _______ mountain in the world.", a: ["high", "higher", "highest", "most high"], c: 2, e: "ใช้ 'highest' เพราะมี 'the' นำหน้าและเปรียบเทียบสิ่งที่เป็นที่สุดในโลก" },
+    { q: "This sofa is _______ than that chair.", a: ["comfortable", "more comfortable", "most comfortable", "comfortabler"], c: 1, e: "comfortable เป็นคำยาว (3 พยางค์ขึ้นไป) ขั้นกว่าต้องใช้ 'more' นำหน้า" },
+    { q: "Which is the _______ city in Thailand?", a: ["hot", "hotter", "hottest", "more hot"], c: 2, e: "ถามถึงเมืองที่ร้อนที่สุด (ขั้นสุด) ต้องใช้ 'hottest'" },
+    { q: "My score is _______ than yours.", a: ["good", "better", "best", "gooder"], c: 1, e: "รูปขั้นกว่าของ good คือ better (เป็นคำยกเว้น)" },
+    { q: "An apple is _______ than a watermelon.", a: ["smaller", "small", "smallest", "more small"], c: 0, e: "เปรียบเทียบขนาดของ 2 สิ่ง ใช้ขั้นกว่าเติม -er" },
+    { q: "He is the _______ student in our class.", a: ["smart", "smarter", "smartest", "most smart"], c: 2, e: "ใช้ 'the' ตามด้วยขั้นสุด 'smartest'" },
+    { q: "Gold is _______ than silver.", a: ["expensive", "more expensive", "most expensive", "expensiver"], c: 1, e: "ขั้นกว่าของคำยาวใช้ more + adjective" },
+    { q: "This is the _______ cake I have ever eaten.", a: ["delicious", "more delicious", "most delicious", "deliciousest"], c: 2, e: "ขั้นสุดของคำยาวใช้ most + adjective" },
+    { q: "A plane is _______ than a train.", a: ["fast", "faster", "fastest", "more fast"], c: 1, e: "ขั้นกว่าของ fast คือ faster" },
+
+    // 11-20: Present Continuous
+    { q: "Look! The baby _______.", a: ["is sleeping", "am sleeping", "are sleeping", "sleeps"], c: 0, e: "Look! บอกว่ากำลังทำ ประธานเอกพจน์ใช้ is + V.ing" },
+    { q: "We _______ English now.", a: ["is studying", "am studying", "are studying", "studies"], c: 2, e: "ประธาน We ใช้ are + V.ing เพื่อบอกเหตุการณ์ที่กำลังทำตอนนี้" },
+    { q: "_______ you doing your homework?", a: ["Is", "Am", "Are", "Do"], c: 2, e: "ประโยคคำถาม Present Con. ประธาน You ต้องใช้ Are นำหน้า" },
+    { q: "Listen! Somebody _______ at the door.", a: ["knock", "knocks", "is knocking", "are knocking"], c: 2, e: "Listen! บอกว่าเหตุการณ์กำลังเกิดขึ้น ใช้ is + V.ing" },
+    { q: "I _______ a book at the moment.", a: ["am reading", "is reading", "are reading", "read"], c: 0, e: "ประธาน I ใช้คู่กับ am + V.ing เท่านั้น" },
+    { q: "They _______ in the pool right now.", a: ["swim", "swimming", "is swimming", "are swimming"], c: 3, e: "right now บอกปัจจุบันกาลกำลังทำ ประธานพหูพจน์ใช้ are" },
+    { q: "She _______ her mother in the kitchen.", a: ["helps", "is helping", "helping", "are helping"], c: 1, e: "โครงสร้าง Subject + is + V.ing" },
+    { q: "What _______ the cat doing?", a: ["is", "am", "are", "do"], c: 0, e: "the cat เป็นเอกพจน์ ใช้กริยาช่วย is" },
+    { q: "I _______ not watching TV.", a: ["is", "am", "are", "do"], c: 1, e: "ประโยคปฏิเสธของ I ใน Present Con. คือ I am not + V.ing" },
+    { q: "Are they _______ football?", a: ["play", "plays", "playing", "played"], c: 2, e: "หลัง Verb to be ในประโยคถามอาการที่ทำอยู่ ต้องใช้ V.ing" },
+
+    // 21-30: Quantifiers (Some/Any/Much/Many)
+    { q: "I would like _______ juice, please.", a: ["some", "any", "many", "a"], c: 0, e: "ใช้ some ในประโยคบอกเล่าหรือการขอร้องสุภาพ" },
+    { q: "There isn't _______ bread on the table.", a: ["some", "any", "many", "a"], c: 1, e: "ใช้ any ในประโยคปฏิเสธ" },
+    { q: "How _______ money do you have?", a: ["many", "much", "any", "some"], c: 1, e: "Money นับไม่ได้ ใช้ How much" },
+    { q: "How _______ eggs are in the basket?", a: ["much", "many", "any", "some"], c: 1, e: "Eggs นับได้พหูพจน์ ใช้ How many" },
+    { q: "Do you have _______ pencils?", a: ["some", "any", "much", "a"], c: 1, e: "ใช้ any ในประโยคคำถามทั่วไป" },
+    { q: "There are _______ students in the garden.", a: ["some", "any", "much", "a"], c: 0, e: "ประโยคบอกเล่ากับนามพหูพจน์ใช้ some" },
+    { q: "She doesn't want _______ coffee.", a: ["some", "any", "many", "a"], c: 1, e: "ปฏิเสธใช้ any" },
+    { q: "We need _______ salt for the soup.", a: ["some", "any", "many", "a"], c: 0, e: "เกลือนับไม่ได้ในประโยคบอกเล่าใช้ some" },
+    { q: "How _______ sugar do you want?", a: ["many", "much", "any", "some"], c: 1, e: "น้ำตาลนับไม่ได้ ใช้ How much" },
+    { q: "Are there _______ birds on the tree?", a: ["some", "any", "much", "a"], c: 1, e: "ประโยคคำถามใช้ any" },
+
+    // 31-40: Health & Feelings
+    { q: "A: What's the matter?\nB: I have a _______.", a: ["headache", "happy", "blue", "hungry"], c: 0, e: "ถามอาการป่วย ต้องตอบเป็นชื่ออาการ (headache = ปวดหัว)" },
+    { q: "You should see a _______ if you have a toothache.", a: ["nurse", "dentist", "teacher", "police"], c: 1, e: "ปวดฟันต้องไปหาหมอฟัน (dentist)" },
+    { q: "I feel _______. I want to go to sleep.", a: ["thirsty", "tired", "excited", "angry"], c: 1, e: "อยากนอนแสดงว่าเหนื่อย (tired)" },
+    { q: "She has a _______ throat.", a: ["sore", "pain", "hurt", "sick"], c: 0, e: "เจ็บคอใช้คำว่า sore throat" },
+    { q: "Drink some water if you are _______.", a: ["hungry", "thirsty", "cold", "sad"], c: 1, e: "กระหายน้ำ (thirsty) ต้องดื่มน้ำ" },
+    { q: "He ate too much. Now he has a _______.", a: ["stomachache", "earache", "backache", "cold"], c: 0, e: "กินเยอะไปทำให้ปวดท้อง (stomachache)" },
+    { q: "It is very cold. You _______ wear a jacket.", a: ["should", "shouldn't", "can't", "don't"], c: 0, e: "หนาวควร (should) ใส่แจ็คเก็ต" },
+    { q: "A: How do you feel?\nB: I am _______ because I lost my pen.", a: ["happy", "sad", "funny", "good"], c: 1, e: "ทำของหายต้องรู้สึกเศร้า (sad)" },
+    { q: "What should you do if you have a cold?", a: ["Play in the rain", "Take some rest", "Eat ice cream", "Run fast"], c: 1, e: "เป็นหวัดควรพักผ่อน (Take some rest)" },
+    { q: "My sister feels _______ of spiders.", a: ["happy", "scared", "brave", "angry"], c: 1, e: "กลัวแมงมุม (scared)" },
+
+    // 41-50: Vocabulary & Daily Life
+    { q: "We bake bread in an _______.", a: ["fridge", "oven", "sink", "shower"], c: 1, e: "อบขนมปังในเตาอบ (oven)" },
+    { q: "You can see stars at _______.", a: ["morning", "afternoon", "night", "noon"], c: 2, e: "เห็นดาวตอนกลางคืน (night)" },
+    { q: "A person who flies a plane is a _______.", a: ["driver", "pilot", "doctor", "chef"], c: 1, e: "คนขับเครื่องบินคือ pilot" },
+    { q: "Where can you buy stamps?", a: ["At the school", "At the post office", "At the hospital", "At the zoo"], c: 1, e: "ซื้อแสตมป์ที่ที่ทำการไปรษณีย์" },
+    { q: "The month after June is _______.", a: ["May", "July", "August", "September"], c: 1, e: "หลังเดือนมิถุนายน (June) คือ กรกฎาคม (July)" },
+    { q: "We keep milk in the _______ to stay cold.", a: ["cupboard", "fridge", "oven", "box"], c: 1, e: "เก็บของให้เย็นในตู้เย็น (fridge)" },
+    { q: "A _______ works in a library.", a: ["librarian", "teacher", "singer", "farmer"], c: 0, e: "บรรณารักษ์ทำงานในห้องสมุด" },
+    { q: "What do you use to cut paper?", a: ["Ruler", "Scissors", "Pencil", "Eraser"], c: 1, e: "ใช้กรรไกร (scissors) ตัดกระดาษ" },
+    { q: "Which animal can live in the desert?", a: ["Shark", "Camel", "Penguin", "Whale"], c: 1, e: "อูฐ (camel) อาศัยในทะเลทราย" },
+    { q: "You go to the _______ to watch a movie.", a: ["market", "cinema", "bank", "park"], c: 1, e: "ไปดูหนังที่โรงหนัง (cinema)" },
+
+    // 51-60: Grammar Mix (Past, Future, Preposition)
+    { q: "He _______ to the zoo last Sunday.", a: ["go", "goes", "went", "going"], c: 2, e: "Last Sunday บอกอดีต ใช้กริยาช่อง 2 (went)" },
+    { q: "I _______ my teeth every morning.", a: ["brush", "brushes", "brushed", "brushing"], c: 0, e: "ทำทุกเช้า (นิสัย) ประธาน I ใช้กริยาช่อง 1 ไม่ต้องเติม s" },
+    { q: "There is a cat _______ the table.", a: ["under", "between", "next", "among"], c: 0, e: "under the table (ใต้โต๊ะ) เป็นความหมายที่พบบ่อยสุด" },
+    { q: "They _______ going to visit London next year.", a: ["is", "am", "are", "will"], c: 2, e: "โครงสร้าง Future (be going to) ประธาน They ใช้ are" },
+    { q: "She _______ like spicy food.", a: ["don't", "doesn't", "isn't", "aren't"], c: 1, e: "ประธานเอกพจน์ ใช้ doesn't ในประโยคปฏิเสธ Present Simple" },
+    { q: "Did you _______ a movie yesterday?", a: ["watch", "watches", "watched", "watching"], c: 0, e: "หลัง Did ต้องตามด้วยกริยาช่อง 1 (base form) เสมอ" },
+    { q: "The book is _______ the bag.", a: ["in", "on", "at", "under"], c: 0, e: "ใส่หนังสือ 'ใน' (in) กระเป๋า" },
+    { q: "I _______ to be a doctor in the future.", a: ["want", "wants", "wanted", "wanting"], c: 0, e: "บอกความต้องการในปัจจุบันใช้ V.1" },
+    { q: "We _______ a new car two days ago.", a: ["buy", "buys", "bought", "buying"], c: 2, e: "ago บอกอดีต ใช้กริยาช่อง 2 (bought)" },
+    { q: "_______ is your birthday?", a: ["What", "Where", "When", "Who"], c: 2, e: "When ใช้ถามเวลา/วันเกิด" }
 ];
 
-// จำลองข้อสอบให้ครบ 60 ข้อเพื่อประหยัดพื้นที่แสดงผลตรงนี้ แต่ในไฟล์จริงจะมีครบ
-for(let i=1; i<=55; i++) {
-    let types = ["Present Continuous", "Quantifiers", "Health", "Comparison", "Vocabulary"];
-    let type = types[i % 5];
-    quizData.push({
-        q: `[Q${i+5}] This is a test question about ${type}. Select the correct answer.`,
-        a: ["Correct Answer", "Wrong Option 1", "Wrong Option 2", "Wrong Option 3"],
-        c: 0,
-        e: `นี่คือคำอธิบายของเรื่อง ${type} เพื่อให้น้องเข้าใจที่มาของคำตอบที่ถูกต้อง`
-    });
-}
+const quizContent = document.getElementById('quiz-content');
+let userScore = 0;
+let answeredCount = 0;
 
-let score = 0;
-let answered = 0;
-
-const quizBody = document.getElementById('quiz-body');
-quizData.forEach((data, idx) => {
-    const div = document.createElement('div');
-    div.className = 'question-box';
-    div.innerHTML = `
-        <p><b>ข้อที่ ${idx + 1}:</b> ${data.q}</p>
-        <div class="options" id="opt-container-${idx}">
-            ${data.a.map((opt, i) => `<button onclick="checkAnswer(${idx}, ${i})">${opt}</button>`).join('')}
+questions.forEach((item, idx) => {
+    const box = document.createElement('div');
+    box.className = 'question-box';
+    box.innerHTML = `
+        <p><b>ข้อที่ ${idx + 1}:</b> ${item.q}</p>
+        <div class="options" id="options-${idx}">
+            ${item.a.map((opt, i) => `<button onclick="check(${idx}, ${i})">${opt}</button>`).join('')}
         </div>
-        <div class="explanation" id="exp-${idx}"><b>💡 วิธีคิด:</b> ${data.e}</div>
+        <div class="explanation" id="exp-${idx}">
+            <b>💡 อธิบาย:</b> ${item.e}
+        </div>
     `;
-    quizBody.appendChild(div);
+    quizContent.appendChild(box);
 });
 
-function checkAnswer(qIdx, choiceIdx) {
-    const container = document.getElementById(`opt-container-${qIdx}`);
-    if (container.classList.contains('disabled')) return;
-    
-    const buttons = container.getElementsByTagName('button');
+function check(qIdx, choiceIdx) {
+    const optContainer = document.getElementById(`options-${qIdx}`);
+    if (optContainer.classList.contains('disabled')) return;
+
+    const btns = optContainer.getElementsByTagName('button');
     const exp = document.getElementById(`exp-${qIdx}`);
-    
-    if (choiceIdx === quizData[qIdx].c) {
-        buttons[choiceIdx].classList.add('correct');
-        score++;
+
+    if (choiceIdx === questions[qIdx].c) {
+        btns[choiceIdx].classList.add('correct');
+        userScore++;
     } else {
-        buttons[choiceIdx].classList.add('wrong');
-        buttons[quizData[qIdx].c].classList.add('correct');
+        btns[choiceIdx].classList.add('wrong');
+        btns[questions[qIdx].c].classList.add('correct');
     }
-    
-    container.classList.add('disabled');
+
+    optContainer.classList.add('disabled');
     exp.style.display = 'block';
-    answered++;
+    answeredCount++;
 }
 
-function showSummary() {
-    if (answered < 60) { alert("ทำข้อสอบให้ครบ 60 ข้อก่อนนะจ๊ะ!"); return; }
-    document.querySelector('.quiz-container').style.display = 'none';
-    document.getElementById('summary').style.display = 'block';
-    document.getElementById('final-score').innerText = score + "/60";
+function calculateResult() {
+    if (answeredCount < 60) {
+        alert("ทำข้อสอบให้ครบทั้ง 60 ข้อก่อนนะครับน้อง ๆ!");
+        return;
+    }
+
+    document.getElementById('main-quiz').style.display = 'none';
+    const summary = document.getElementById('summary-page');
+    summary.style.display = 'block';
     
-    let analysis = "<h3>🔍 วิเคราะห์จุดอ่อน:</h3>";
-    if (score < 30) analysis += "• น้องต้องทบทวนพื้นฐานเรื่อง Tense และการเปรียบเทียบด่วนเลยครับ!";
-    else if (score < 50) analysis += "• ทำได้ดีแล้ว! ลองสังเกตคำบอกเวลา (Keywords) ให้แม่นขึ้นจะเป๊ะมาก";
-    else analysis += "• สุดยอดไปเลย! น้องพร้อมลงสนามสอบจริงแล้วครับ";
+    document.getElementById('total-score').innerText = userScore + "/60";
     
-    document.getElementById('weak-points').innerHTML = analysis;
+    let report = "<h3>📢 บทวิเคราะห์จากพระจอมเกล้าติวเตอร์:</h3>";
+    if (userScore >= 54) report += "<p>🌟 <b>ยอดเยี่ยมที่สุด!</b> น้องเก่งมากครับ แทบไม่มีจุดอ่อนเลย พร้อมสอบปลายภาค 100%!</p>";
+    else if (userScore >= 40) report += "<p>👍 <b>ทำได้ดีมาก!</b> มีข้อผิดพลาดเล็กน้อย ลองกลับไปดูคำอธิบายในข้อที่ผิดเพื่อความแม่นยำนะ</p>";
+    else if (userScore >= 30) report += "<p>📖 <b>พยายามอีกนิด!</b> น้องเริ่มเข้าใจแล้ว แต่ต้องทบทวนเรื่อง Comparison และ Tenses เพิ่มเติมครับ</p>";
+    else report += "<p>💪 <b>สู้ต่อไป!</b> อย่าเพิ่งท้อนะ กลับไปอ่านสรุปเนื้อหาด้านบนและลองทำใหม่อีกครั้ง พี่เชื่อว่าน้องทำได้!</p>";
+    
+    document.getElementById('analysis-report').innerHTML = report;
+    window.scrollTo(0, 0);
 }
 </script>
+
 </body>
 </html>
