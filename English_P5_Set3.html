@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <title>ข้อสอบภาษาอังกฤษ ป.5 ชุดที่ 2 - พระจอมเกล้าติวเตอร์</title>
+    <style>
+        body { font-family: 'Sarabun', sans-serif; background: #eef2f3; padding: 20px; }
+        .quiz-card { max-width: 850px; margin: auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .q-header { text-align: center; color: #d32f2f; border-bottom: 2px solid #d32f2f; padding-bottom: 10px; margin-bottom: 25px; }
+        .question { background: #fff; border: 1px solid #ddd; padding: 20px; margin-bottom: 20px; border-radius: 10px; }
+        .options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        button { padding: 12px; border: 1px solid #ccc; border-radius: 8px; cursor: pointer; background: #fafafa; transition: 0.3s; }
+        button:hover { background: #ffebee; border-color: #d32f2f; }
+        .correct { background: #c8e6c9 !important; border-color: #388e3c !important; }
+        .wrong { background: #ffcdd2 !important; border-color: #d32f2f !important; }
+        .explain { display: none; margin-top: 10px; color: #1565c0; font-size: 0.9em; background: #e3f2fd; padding: 10px; border-radius: 5px; }
+        #res-container { display: none; text-align: center; margin-top: 30px; }
+        .btn-submit { width: 100%; padding: 15px; background: #d32f2f; color: white; border: none; border-radius: 10px; font-size: 1.2em; cursor: pointer; }
+        .disabled { pointer-events: none; opacity: 0.7; }
+    </style>
+</head>
+<body>
+
+<div class="quiz-card" id="quiz-ui">
+    <div class="q-header">
+        <h1>📝 ข้อสอบภาษาอังกฤษ ป.5 ชุดที่ 2</h1>
+        <p>โดย <b>พระจอมเกล้าติวเตอร์</b> (CHINPONG SMART FARM)</p>
+    </div>
+    <div id="questions-list"></div>
+    <button class="btn-submit" onclick="showScore()">สรุปคะแนนและวิเคราะห์ผล</button>
+</div>
+
+<div class="quiz-card" id="res-container">
+    <h2>🎯 คะแนนของคุณคือ</h2>
+    <h1 id="score-val" style="font-size: 80px; color: #d32f2f;">0/60</h1>
+    <div id="feedback" style="text-align: left; padding: 20px; background: #f9f9f9; border-radius: 10px;"></div>
+    <button class="btn-submit" style="margin-top: 20px; background: #333;" onclick="location.reload()">ทำอีกรอบ</button>
+</div>
+
+<script>
+const data = [
+    // 1-15 Past Simple
+    { q: "I _______ to the park yesterday.", a: ["go", "goes", "went", "going"], c: 2, e: "Yesterday เป็นอดีต กริยาต้องเป็นช่อง 2 (went)" },
+    { q: "She _______ a beautiful song last night.", a: ["sing", "sings", "sang", "singing"], c: 2, e: "กริยาช่อง 2 ของ sing คือ sang" },
+    { q: "Did you _______ your milk this morning?", a: ["drink", "drinks", "drank", "drinking"], c: 0, e: "ในประโยคคำถามที่มี Did กริยาต้องกลับเป็นช่อง 1 (drink)" },
+    { q: "They _______ football two days ago.", a: ["play", "plays", "played", "playing"], c: 2, e: "กริยาปกติเติม -ed เมื่อเป็นอดีต" },
+    { q: "He _______ not watch TV yesterday.", a: ["do", "does", "did", "was"], c: 2, e: "ประโยคปฏิเสธในอดีตใช้ did not (didn't)" },
+    { q: "My mom _______ a cake for my birthday last week.", a: ["make", "makes", "made", "making"], c: 2, e: "ช่อง 2 ของ make คือ made" },
+    { q: "We _______ at school yesterday.", a: ["is", "am", "are", "were"], c: 3, e: "Verb to be ช่อง 2 ของ We คือ were" },
+    { q: "Was he happy yesterday? Yes, he _______.", a: ["is", "was", "did", "were"], c: 1, e: "ถาม Was ตอบ Was" },
+    { q: "I _______ my homework last night.", a: ["do", "does", "did", "done"], c: 2, e: "do ช่อง 2 คือ did" },
+    { q: "Who _______ the window? (อดีต)", a: ["break", "breaks", "broke", "broken"], c: 2, e: "break ช่อง 2 คือ broke" },
+    { q: "Sarah _______ her keys this morning.", a: ["lose", "loses", "lost", "losing"], c: 2, e: "lose ช่อง 2 คือ lost" },
+    { q: "We _______ a movie last Friday.", a: ["see", "saw", "seen", "sees"], c: 1, e: "see ช่อง 2 คือ saw" },
+    { q: "Did it _______ rain yesterday? No, it didn't.", a: ["rain", "rains", "rained", "raining"], c: 0, e: "หลัง Did ใช้กริยาช่อง 1" },
+    { q: "I _______ an apple for breakfast.", a: ["eat", "eats", "ate", "eating"], c: 2, e: "eat ช่อง 2 คือ ate" },
+    { q: "They _______ very tired after the trip.", a: ["was", "were", "are", "is"], c: 1, e: "They ใช้กับ were ในอดีต" },
+
+    // 16-30 Adverbs of Frequency
+    { q: "I _______ brush my teeth. (100%)", a: ["always", "usually", "often", "never"], c: 0, e: "100% คือ Always" },
+    { q: "He _______ eats junk food. (0%)", a: ["always", "often", "sometimes", "never"], c: 3, e: "0% คือ Never" },
+    { q: "She _______ goes to the library. (80%)", a: ["always", "usually", "never", "sometimes"], c: 1, e: "80% คือ Usually" },
+    { q: "Where does 'often' go? 'I _______ play games.'", a: ["often", "play often", "am often", "play"], c: 0, e: "Adverb วางหน้ากริยาแท้ (play)" },
+    { q: "They _______ late for school.", a: ["are always", "always are", "always", "is always"], c: 0, e: "Adverb วางหลัง Verb to be (are)" },
+    { q: "I _______ watch TV in the morning. (40%)", a: ["always", "never", "sometimes", "usually"], c: 2, e: "40% คือ Sometimes" },
+    { q: "Does he always study? Yes, he _______.", a: ["is", "does", "do", "always"], c: 1, e: "ถามด้วย Does ตอบด้วย does" },
+    { q: "We _______ have breakfast at 7 AM. (60%)", a: ["always", "often", "never", "rarely"], c: 1, e: "60% คือ Often" },
+    { q: "It _______ rains in the summer.", a: ["always", "sometimes", "never", "usually"], c: 1, e: "ตกบ้างไม่ตกบ้าง ใช้ sometimes" },
+    { q: "My cat _______ sleeps on my bed.", a: ["usually", "is usually", "usually is", "usually are"], c: 0, e: "กริยาแท้คือ sleeps วาง usually ไว้ข้างหน้า" },
+    { q: "How _______ do you exercise? I exercise every day.", a: ["much", "many", "often", "long"], c: 2, e: "How often ใช้ถามความถี่" },
+    { q: "I _______ help my mom. (100%)", a: ["always", "never", "often", "usually"], c: 0, e: "ทำตลอดคือ Always" },
+    { q: "You _______ drink milk. It's good for you.", a: ["should always", "always should", "never", "should never"], c: 0, e: "ควรทำเสมอ" },
+    { q: "He _______ forgets his pen. (บางครั้ง)", a: ["always", "sometimes", "never", "usually"], c: 1, e: "บางครั้งคือ Sometimes" },
+    { q: "Birds _______ fly in the sky.", a: ["never", "sometimes", "always", "rarely"], c: 2, e: "นกบินในอากาศเป็นปกติ/เสมอ" },
+
+    // 31-45 Direction & Places
+    { q: "Go _______ and turn left at the hospital.", a: ["straight", "back", "up", "down"], c: 0, e: "Go straight แปลว่า ตรงไป" },
+    { q: "The library is _______ the bank and the park.", a: ["between", "next to", "opposite", "at"], c: 0, e: "มีสถานที่ 2 แห่ง ใช้ between (ระหว่าง)" },
+    { q: "Turn _______ at the corner.", a: ["left", "straight", "on", "in"], c: 0, e: "Turn left (เลี้ยวซ้าย) หรือ Turn right (เลี้ยวขวา)" },
+    { q: "The cinema is _______ the supermarket.", a: ["opposite", "between", "in", "under"], c: 0, e: "Opposite แปลว่า ตรงข้าม" },
+    { q: "Excuse me, _______ is the post office?", a: ["What", "Where", "When", "Who"], c: 1, e: "ถามหาสถานที่ใช้ Where" },
+    { q: "A _______ works in a hospital.", a: ["chef", "doctor", "pilot", "farmer"], c: 1, e: "หมอทำงานที่โรงพยาบาล" },
+    { q: "You can buy bread at the _______.", a: ["bakery", "library", "bank", "zoo"], c: 0, e: "ร้านขนมปังคือ bakery" },
+    { q: "The school is _______ to the temple.", a: ["next", "near", "opposite", "between"], c: 0, e: "Next ต้องคู่กับ to (next to = ข้าง ๆ)" },
+    { q: "A teacher works in a _______.", a: ["police station", "school", "farm", "shop"], c: 1, e: "ครูทำงานที่โรงเรียน" },
+    { q: "Walk _______ the bridge.", a: ["over", "under", "in", "at"], c: 0, e: "Over the bridge (ข้ามสะพาน)" },
+    { q: "Where does a farmer work?", a: ["In a field", "In a hospital", "In a school", "In a bank"], c: 0, e: "ชาวนาทำงานในทุ่งนา/ไร่" },
+    { q: "The ball is _______ the box. (ข้างใน)", a: ["in", "on", "under", "at"], c: 0, e: "in = ข้างใน" },
+    { q: "You go here to save money.", a: ["Bank", "Cinema", "Zoo", "Park"], c: 0, e: "ฝากเงินที่ธนาคาร (Bank)" },
+    { q: "Stop at the _______ light.", a: ["traffic", "car", "road", "street"], c: 0, e: "Traffic light (ไฟจราจร)" },
+    { q: "How can I _______ to the mall?", a: ["get", "gets", "got", "getting"], c: 0, e: "How can I get to... (ฉันจะไป... ได้อย่างไร)" },
+
+    // 46-60 Mix Review
+    { q: "I have _______ apple and _______ banana.", a: ["a, an", "an, a", "a, a", "an, an"], c: 1, e: "an apple (ขึ้นต้นด้วยสระ), a banana" },
+    { q: "_______ is your favorite color?", a: ["What", "Where", "Who", "When"], c: 0, e: "ถามสิ่งของ/สี ใช้ What" },
+    { q: "These are my _______.", a: ["book", "books", "a book", "bookes"], c: 1, e: "These are ใช้กับนามพหูพจน์ (books)" },
+    { q: "Can you help me? Yes, I _______.", a: ["can", "do", "am", "will"], c: 0, e: "ถาม Can ตอบ can" },
+    { q: "She _______ her hair every day.", a: ["wash", "washes", "washing", "washed"], c: 1, e: "ประธานเอกพจน์ กริยาเติม es" },
+    { q: "Look at _______ birds!", a: ["that", "this", "those", "them"], c: 2, e: "Birds พหูพจน์และอยู่ไกล (Look at) ใช้ those" },
+    { q: "_______ many students are here?", a: ["How", "What", "Who", "Where"], c: 0, e: "How many ถามจำนวน" },
+    { q: "This is _______ eraser.", a: ["a", "an", "the", "two"], c: 1, e: "eraser ขึ้นต้นด้วย e (สระ) ใช้ an" },
+    { q: "My father _______ a car.", a: ["has", "have", "is", "are"], c: 0, e: "My father (1 คน) ใช้ has" },
+    { q: "Whose bag is this? It's _______.", a: ["me", "my", "mine", "I"], c: 2, e: "mine แสดงความเป็นเจ้าของแบบไม่ต้องมีนามตามหลัง" },
+    { q: "We _______ happy today.", a: ["is", "am", "are", "was"], c: 2, e: "We ใช้ are" },
+    { q: "_______ are you from? I'm from Thailand.", a: ["What", "Where", "When", "Who"], c: 1, e: "Where are you from?" },
+    { q: "I like _______ to music.", a: ["listen", "listens", "listening", "listened"], c: 2, e: "หลัง like มักตามด้วย V.ing" },
+    { q: "A cat is _______ than a mouse.", a: ["big", "bigger", "biggest", "more big"], c: 1, e: "ขั้นกว่าของ big คือ bigger" },
+    { q: "Today is Monday. Tomorrow is _______.", a: ["Sunday", "Tuesday", "Wednesday", "Friday"], c: 1, e: "พรุ่งนี้คือวันอังคาร" }
+];
+
+const list = document.getElementById('questions-list');
+let score = 0;
+let answered = 0;
+
+data.forEach((item, idx) => {
+    const div = document.createElement('div');
+    div.className = 'question';
+    div.innerHTML = `
+        <p><b>ข้อที่ ${idx + 1}:</b> ${item.q}</p>
+        <div class="options" id="opt-${idx}">
+            ${item.a.map((opt, i) => `<button onclick="check(${idx}, ${i})">${opt}</button>`).join('')}
+        </div>
+        <div class="explain" id="exp-${idx}"><b>เฉลย:</b> ${item.a[item.c]} <br> <b>เหตุผล:</b> ${item.e}</div>
+    `;
+    list.appendChild(div);
+});
+
+function check(qIdx, cIdx) {
+    const container = document.getElementById(`opt-${qIdx}`);
+    if(container.classList.contains('disabled')) return;
+    const btns = container.getElementsByTagName('button');
+    if(cIdx === data[qIdx].c) {
+        btns[cIdx].classList.add('correct');
+        score++;
+    } else {
+        btns[cIdx].classList.add('wrong');
+        btns[data[qIdx].c].classList.add('correct');
+    }
+    container.classList.add('disabled');
+    document.getElementById(`exp-${qIdx}`).style.display = 'block';
+    answered++;
+}
+
+function showScore() {
+    if(answered < 60) { alert("ทำให้ครบ 60 ข้อก่อนนะจ๊ะ!"); return; }
+    document.getElementById('quiz-ui').style.display = 'none';
+    document.getElementById('res-container').style.display = 'block';
+    document.getElementById('score-val').innerText = score + "/60";
+    
+    let fb = "<h3>🔍 วิเคราะห์รายบุคคล:</h3>";
+    if(score >= 50) fb += "<p>🌟 <b>สุดยอด!</b> น้องแม่นเรื่อง Tense และคำศัพท์มาก พร้อมสอบปลายภาคแล้วครับ!</p>";
+    else if(score >= 35) fb += "<p>👍 <b>ใช้ได้เลย!</b> ลองกลับไปทบทวนเรื่องกริยาช่อง 2 (Past Tense) อีกนิด จะเป๊ะมากครับ</p>";
+    else fb += "<p>📚 <b>สู้ ๆ นะ!</b> แนะนำให้ท่องกริยา 3 ช่อง และตำแหน่ง Adverb of Frequency บ่อย ๆ นะครับ พี่เป็นกำลังใจให้!</p>";
+    document.getElementById('feedback').innerHTML = fb;
+}
+</script>
+
+</body>
+</html>
