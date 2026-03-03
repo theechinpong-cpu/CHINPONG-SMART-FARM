@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>English Final Exam Grade 5 - Set 1</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;700&family=Fredoka+One&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Sarabun', sans-serif; background: #e0f2f1; color: #263238; padding: 20px; }
+        .exam-box { max-width: 900px; margin: auto; background: white; padding: 40px; border-radius: 25px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); border: 8px solid #4db6ac; }
+        h1 { font-family: 'Fredoka One', cursive; color: #00796b; text-align: center; font-size: 2.5em; text-shadow: 2px 2px #b2dfdb; }
+        .sub-header { text-align: center; color: #004d40; font-weight: bold; margin-bottom: 30px; }
+        .q-item { margin-bottom: 25px; padding: 20px; border-radius: 15px; background: #f9f9f9; border-left: 8px solid #80cbc4; }
+        .q-text { font-size: 1.2em; font-weight: bold; margin-bottom: 15px; color: #00695c; }
+        .opt-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .btn-opt { padding: 12px; border: 2px solid #b2dfdb; background: #fff; border-radius: 10px; cursor: pointer; text-align: left; font-size: 1em; transition: 0.3s; }
+        .btn-opt:hover { background: #e0f2f1; border-color: #4db6ac; }
+        .correct { background: #66bb6a !important; color: white; border-color: #388e3c !important; }
+        .wrong { background: #ef5350 !important; color: white; border-color: #c62828 !important; }
+        .explain { display: none; margin-top: 15px; padding: 12px; background: #fff9c4; border-radius: 8px; font-size: 0.9em; border-left: 5px solid #fbc02d; }
+        .result-panel { display: none; text-align: center; margin-top: 30px; padding: 30px; background: #00796b; color: white; border-radius: 20px; }
+        .submit-btn { width: 100%; padding: 20px; background: #00796b; color: white; border: none; border-radius: 15px; font-size: 1.5em; cursor: pointer; font-weight: bold; margin-top: 20px; box-shadow: 0 5px 0 #004d40; }
+        .submit-btn:active { transform: translateY(5px); box-shadow: none; }
+    </style>
+</head>
+<body>
+
+<div class="exam-box">
+    <h1>🇬🇧 English Final Exam (Set 1)</h1>
+    <p class="sub-header">Grade 5 | By พระจอมเกล้าติวเตอร์ | CHINPONG SMART FARM</p>
+
+    <div id="questions-container"></div>
+
+    <button class="submit-btn" onclick="calculateScore()">Submit & Check Score</button>
+
+    <div class="result-panel" id="resultPanel">
+        <h2 id="finalScore"></h2>
+        <p id="feedback"></p>
+        <p><i>Written by CHINPONG SMART FARM</i></p>
+    </div>
+</div>
+
+<script>
+const quizData = [
+    { q: "1. A: What is she doing? <br> B: She ______ a book in the library.", opts: ["read", "is reading", "reads", "reading"], ans: 1, exp: "Present Continuous (is + v.ing) ใช้กับเหตุการณ์ที่กำลังทำอยู่ครับ" },
+    { q: "2. I ______ to school by bus yesterday.", opts: ["go", "goes", "went", "going"], ans: 2, exp: "Yesterday เป็นอดีต ต้องใช้กริยาช่อง 2 (went) ครับ" },
+    { q: "3. Which animal is the tallest?", opts: ["Elephant", "Giraffe", "Lion", "Zebra"], ans: 1, exp: "Tallest คือขั้นสุด ยีราฟสูงที่สุดครับ" },
+    { q: "4. A: ______ is the hospital? <br> B: It's next to the bank.", opts: ["Who", "What", "When", "Where"], ans: 3, exp: "Where ใช้ถามสถานที่ครับ" },
+    { q: "5. We don't have ______ milk in the fridge.", opts: ["some", "any", "many", "a"], ans: 1, exp: "Any ใช้ในประโยคปฏิเสธครับ" },
+    { q: "6. A ______ works in a farm and grows rice.", opts: ["Doctor", "Teacher", "Farmer", "Nurse"], ans: 2, exp: "Farmer คือชาวนา ทำนาปลูกข้าวครับ" },
+    { q: "7. It's very hot today. You should ______ a lot of water.", opts: ["drink", "drinks", "drank", "drinking"], ans: 0, exp: "หลัง should ต้องตามด้วยกริยาไม่เติมอะไรเลย (Infinitive) ครับ" },
+    { q: "8. Sarah is ______ than her sister.", opts: ["short", "shorter", "shortest", "more short"], ans: 1, exp: "ขั้นกว่า (Comparative) เติม -er + than ครับ" },
+    { q: "9. How ______ apples do you want?", opts: ["much", "many", "any", "some"], ans: 1, exp: "Apples เป็นนามนับได้พหูพจน์ ใช้ How many ครับ" },
+    { q: "10. He ______ his teeth twice a day.", opts: ["brush", "brushes", "brushing", "brushed"], ans: 1, exp: "He เป็นประธานเอกพจน์ กริยาต้องเติม s/es ใน Present Simple ครับ" },
+    { q: "11. A: What's the matter? <br> B: I have a ______. (Touching the head)", opts: ["stomachache", "headache", "toothache", "sore throat"], ans: 1, exp: "Headache คืออาการปวดศีรษะครับ" },
+    { q: "12. The sun ______ in the east.", opts: ["rise", "rises", "rising", "rose"], ans: 1, exp: "ข้อเท็จจริงตามธรรมชาติ ใช้ Present Simple (S+V1) ครับ" },
+    { q: "13. Listen! The baby ______.", opts: ["cries", "is crying", "cry", "cried"], ans: 1, exp: "Listen! เป็นสัญญาณว่าเหตุการณ์กำลังเกิดขึ้น (is crying) ครับ" },
+    { q: "14. A: How ______ is this shirt? <br> B: It's 200 baht.", opts: ["many", "much", "old", "tall"], ans: 1, exp: "How much ใช้ถามราคาครับ" },
+    { q: "15. I ______ my homework at 8 PM last night.", opts: ["did", "do", "does", "done"], ans: 0, exp: "Last night เป็นอดีต ใช้กริยาช่อง 2 (did) ครับ" },
+    { q: "16. Which one is an 'uncountable noun'?", opts: ["Apple", "Book", "Sugar", "Pen"], ans: 2, exp: "Sugar (น้ำตาล) เป็นนามนับไม่ได้ครับ" },
+    { q: "17. An airplane is ______ than a car.", opts: ["fast", "faster", "fastest", "more fast"], ans: 1, exp: "เปรียบเทียบ 2 สิ่ง ใช้ขั้นกว่า (faster) ครับ" },
+    { q: "18. A: ______ do you go to bed? <br> B: At 9 o'clock.", opts: ["Where", "Who", "When", "Why"], ans: 2, exp: "ถามเวลาใช้ When (เมื่อไหร่) ครับ" },
+    { q: "19. There ______ some birds on the tree.", opts: ["is", "am", "are", "was"], ans: 2, exp: "Birds เป็นพหูพจน์ ใช้ are ครับ" },
+    { q: "20. You shouldn't ______ too much candy.", opts: ["eat", "eats", "ate", "eating"], ans: 0, exp: "หลัง shouldn't ตามด้วย V.1 ไม่เติมครับ" },
+    { q: "21. A: Can I have some water, please? <br> B: Yes, ______.", opts: ["thank you", "here you are", "I don't know", "you're welcome"], ans: 1, exp: "Here you are ใช้ยื่นของให้ครับ" },
+    { q: "22. My father is a ______. He flies planes.", opts: ["Doctor", "Pilot", "Chef", "Singer"], ans: 1, exp: "Pilot คือนักบินครับ" },
+    { q: "23. December is the ______ month of the year.", opts: ["first", "tenth", "eleventh", "twelfth"], ans: 3, exp: "ธันวาคม คือเดือนที่ 12 ครับ" },
+    { q: "24. We ______ English now.", opts: ["study", "studies", "are studying", "studied"], ans: 2, exp: "มีคำว่า now ใช้ Present Continuous (are + v.ing) ครับ" },
+    { q: "25. A: Whose pen is this? <br> B: It is ______.", opts: ["me", "my", "mine", "I"], ans: 2, exp: "Mine เป็น Possessive Pronoun ใช้แสดงความเป็นเจ้าของโดยไม่มีนามตามหลังครับ" },
+    { q: "26. Is there ______ orange juice in the glass?", opts: ["any", "some", "many", "few"], ans: 0, exp: "Any ใช้ในประโยคคำถามครับ" },
+    { q: "27. My house is ______ the school and the park.", opts: ["in", "on", "under", "between"], ans: 3, exp: "Between...and... ใช้บอกตำแหน่ง 'ระหว่าง' สองสิ่งครับ" },
+    { q: "28. An ant is ______ than a cat.", opts: ["small", "smaller", "smallest", "more small"], ans: 1, exp: "ขั้นกว่าของ small คือ smaller ครับ" },
+    { q: "29. A: ______ did you see at the party? <br> B: I saw my friends.", opts: ["Who", "What", "Where", "When"], ans: 0, exp: "ถามถึงคน (friends) ใช้ Who ครับ" },
+    { q: "30. They ______ to the zoo last Sunday.", opts: ["go", "goes", "went", "going"], ans: 2, exp: "Last Sunday เป็นอดีต ใช้ V.2 (went) ครับ" },
+    { q: "31. A ______ works in a kitchen.", opts: ["Teacher", "Chef", "Nurse", "Pilot"], ans: 1, exp: "Chef ทำงานในครัวครับ" },
+    { q: "32. I ______ like coffee.", opts: ["don't", "doesn't", "am not", "not"], ans: 0, exp: "I ใช้กับ do/don't ครับ" },
+    { q: "33. This is the ______ mountain in the world.", opts: ["high", "higher", "highest", "more high"], ans: 2, exp: "The + ขั้นสุด (highest) ครับ" },
+    { q: "34. A: Thank you for your help. <br> B: ______.", opts: ["No problem", "You're welcome", "I'm sorry", "Goodbye"], ans: 1, exp: "ตอบรับการขอบคุณใช้ You're welcome ครับ" },
+    { q: "35. Look at those clouds! It ______ rain soon.", opts: ["is going to", "is", "was", "did"], ans: 0, exp: "Be going to ใช้กับการคาดการณ์จากหลักฐานที่เห็น (เมฆดำ) ครับ" },
+    { q: "36. We eat ______ in the morning.", opts: ["lunch", "dinner", "breakfast", "snack"], ans: 2, exp: "อาหารเช้าคือ breakfast ครับ" },
+    { q: "37. He ______ very happy yesterday.", opts: ["is", "am", "are", "was"], ans: 3, exp: "Yesterday + He ใช้ Verb to be ช่อง 2 คือ was ครับ" },
+    { q: "38. Please turn ______ the light. It's too dark.", opts: ["on", "off", "up", "down"], ans: 0, exp: "Turn on แปลว่าเปิดไฟครับ" },
+    { q: "39. I am ______ than my brother.", opts: ["tall", "taller", "tallest", "more tall"], ans: 1, exp: "ขั้นกว่าของ tall คือ taller ครับ" },
+    { q: "40. A: Do you like pizza? <br> B: Yes, ______.", opts: ["I like", "I do", "I am", "I can"], ans: 1, exp: "ถาม Do ตอบ Do ครับ" },
+    { q: "41. Sheep give us ______.", opts: ["milk", "wool", "egg", "honey"], ans: 1, exp: "แกะให้ขน (wool) ครับ" },
+    { q: "42. ______ I borrow your pencil, please?", opts: ["Do", "Are", "Can", "Have"], ans: 2, exp: "Can I... ใช้ในการขออนุญาตครับ" },
+    { q: "43. Tigers are ______ than rabbits.", opts: ["dangerous", "more dangerous", "most dangerous", "danger"], ans: 1, exp: "คำยาว (dangerous) ใช้ more นำหน้าในขั้นกว่าครับ" },
+    { q: "44. A: Where is your mother? <br> B: She is in the ______. She is cooking.", opts: ["bedroom", "bathroom", "kitchen", "living room"], ans: 2, exp: "ทำอาหารต้องอยู่ในห้องครัว (kitchen) ครับ" },
+    { q: "45. My birthday is ______ May.", opts: ["in", "on", "at", "by"], ans: 0, exp: "ใช้ in กับเดือนครับ" },
+    { q: "46. They ______ watching TV right now.", opts: ["is", "am", "are", "was"], ans: 2, exp: "They ใช้ are ใน Present Continuous ครับ" },
+    { q: "47. Which one is a 'fruit'?", opts: ["Cabbage", "Carrot", "Mango", "Potato"], ans: 2, exp: "Mango (มะม่วง) คือผลไม้ครับ" },
+    { q: "48. Walk ______ and then turn left.", opts: ["straight", "up", "down", "back"], ans: 0, exp: "Walk straight แปลว่าเดินตรงไปครับ" },
+    { q: "49. I ______ my teeth every morning.", opts: ["clean", "wash", "brush", "comb"], ans: 2, exp: "Brush teeth คือแปรงฟันครับ" },
+    { q: "50. A: What time is it? <br> B: It's ______ (10:30).", opts: ["ten o'clock", "half past ten", "ten fifteen", "eleven o'clock"], ans: 1, exp: "10.30 คือ half past ten ครับ" },
+    { q: "51. We use an ______ when it rains.", opts: ["hat", "umbrella", "coat", "bag"], ans: 1, exp: "Umbrella ขึ้นต้นด้วยสระ ใช้ an นำหน้าครับ" },
+    { q: "52. She ______ English very well.", opts: ["speak", "speaks", "speaking", "spoken"], ans: 1, exp: "She เป็นเอกพจน์ กริยาเติม s ครับ" },
+    { q: "53. The cat is ______ the table. (มันอยู่ข้างบน)", opts: ["in", "on", "under", "between"], ans: 1, exp: "On คือข้างบนครับ" },
+    { q: "54. A: ______ color do you like? <br> B: I like blue.", opts: ["Which", "What", "Who", "Where"], ans: 1, exp: "What color ใช้ถามว่าสีอะไรครับ" },
+    { q: "55. Yesterday was Monday. Today is ______.", opts: ["Sunday", "Tuesday", "Wednesday", "Thursday"], ans: 1, exp: "ถ้าวานนี้วันจันทร์ วันนี้คือวันอังคารครับ" },
+    { q: "56. A dog has four ______.", opts: ["arms", "legs", "hands", "fingers"], ans: 1, exp: "สุนัขมี 4 ขา (legs) ครับ" },
+    { q: "57. I have a ______ throat. I can't speak.", opts: ["sore", "head", "stomach", "tooth"], ans: 0, exp: "Sore throat คือเจ็บคอครับ" },
+    { q: "58. Whale is the ______ animal in the sea.", opts: ["large", "larger", "largest", "more large"], ans: 2, exp: "วาฬเป็นสัตว์ที่ใหญ่ที่สุด (largest) ครับ" },
+    { q: "59. A: ______ is that boy? <br> B: He is my brother.", opts: ["Who", "What", "Where", "When"], ans: 0, exp: "ถามถึงบุคคลใช้ Who ครับ" },
+    { q: "60. Are you ready for the exam?", opts: ["Yes, I am.", "No, I don't.", "Yes, I do.", "No, I'm not ready."], ans: 0, exp: "ถาม Are you... ตอบ Yes, I am / No, I'm not ครับ" }
+];
+
+const container = document.getElementById('questions-container');
+let userAnswers = new Array(60).fill(null);
+
+function renderQuiz() {
+    quizData.forEach((data, index) => {
+        const qDiv = document.createElement('div');
+        qDiv.className = 'q-item';
+        qDiv.innerHTML = `
+            <div class="q-text">${index + 1}. ${data.q}</div>
+            <div class="opt-grid">
+                ${data.opts.map((opt, optIdx) => `
+                    <button class="btn-opt" id="btn-${index}-${optIdx}" onclick="selectOption(${index}, ${optIdx})">${opt}</button>
+                `).join('')}
+            </div>
+            <div class="explain" id="exp-${index}">
+                <strong>Correct: ${data.opts[data.ans]}</strong><br>
+                💡 ${data.exp}
+            </div>
+        `;
+        container.appendChild(qDiv);
+    });
+}
+
+function selectOption(qIdx, optIdx) {
+    if (userAnswers[qIdx] !== null) return;
+    
+    userAnswers[qIdx] = optIdx;
+    const correctIdx = quizData[qIdx].ans;
+    const selectedBtn = document.getElementById(`btn-${qIdx}-${optIdx}`);
+    const correctBtn = document.getElementById(`btn-${qIdx}-${correctIdx}`);
+    const expDiv = document.getElementById(`exp-${qIdx}`);
+
+    if (optIdx === correctIdx) {
+        selectedBtn.classList.add('correct');
+    } else {
+        selectedBtn.classList.add('wrong');
+        correctBtn.classList.add('correct');
+    }
+    expDiv.style.display = 'block';
+}
+
+function calculateScore() {
+    let score = 0;
+    userAnswers.forEach((ans, idx) => {
+        if (ans === quizData[idx].ans) score++;
+    });
+
+    const resultPanel = document.getElementById('resultPanel');
+    const finalScore = document.getElementById('finalScore');
+    const feedback = document.getElementById('feedback');
+
+    resultPanel.style.display = 'block';
+    finalScore.innerText = `Your Score: ${score} / 60`;
+
+    if (score >= 50) feedback.innerText = "Excellent! You are an English master!";
+    else if (score >= 36) feedback.innerText = "Good job! Keep practicing.";
+    else feedback.innerText = "Don't give up! Review the grammar and try again.";
+
+    window.scrollTo(0, document.body.scrollHeight);
+}
+
+renderQuiz();
+</script>
+
+</body>
+</html>
