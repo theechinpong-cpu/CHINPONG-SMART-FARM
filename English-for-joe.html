@@ -3,123 +3,193 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>English 100 Questions - พระจอมเกล้าติวเตอร์</title>
+    <title>100 English Real Exam - พระจอมเกล้าติวเตอร์</title>
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;700&display=swap" rel="stylesheet">
     <style>
         :root { --p: #0984e3; --s: #fdcb6e; --ok: #00b894; --no: #d63031; --bg: #f5f6fa; }
-        body { font-family: 'Sarabun', sans-serif; background: var(--bg); margin: 0; padding: 15px; }
+        body { font-family: 'Sarabun', sans-serif; background: var(--bg); margin: 0; padding: 15px; line-height: 1.6; }
         .container { max-width: 900px; margin: auto; background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
         .header { text-align: center; border-bottom: 3px solid var(--p); padding-bottom: 15px; margin-bottom: 25px; }
         .q-box { border: 1px solid #dfe6e9; padding: 20px; border-radius: 12px; margin-bottom: 20px; background: #fff; }
-        .topic-tag { background: #e1f5fe; color: #0288d1; padding: 2px 10px; border-radius: 5px; font-size: 12px; font-weight: bold; margin-bottom: 10px; display: inline-block; }
+        .topic { background: #e1f5fe; color: #0288d1; padding: 3px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; }
         .opts { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
-        .btn { padding: 12px; border: 2px solid #ecf0f1; border-radius: 10px; background: white; cursor: pointer; text-align: left; }
-        .correct { background: var(--ok) !important; color: white; border-color: #55efc4; }
-        .wrong { background: var(--no) !important; color: white; border-color: #fab1a0; }
-        .exp { display: none; margin-top: 15px; padding: 12px; background: #fff9c4; border-radius: 8px; font-size: 14px; border-left: 4px solid #f1c40f; }
-        #summary { display: none; text-align: center; margin-top: 20px; }
-        .progress-container { position: fixed; top: 0; left: 0; width: 100%; height: 8px; background: #eee; z-index: 1000; }
-        #progress-bar { height: 100%; width: 0%; background: var(--ok); transition: 0.3s; }
+        .btn { padding: 12px; border: 2px solid #ecf0f1; border-radius: 10px; background: white; cursor: pointer; text-align: left; transition: 0.2s; }
+        .btn:hover:not(:disabled) { border-color: var(--p); background: #f0f7ff; }
+        .correct { background: var(--ok) !important; color: white; border-color: #27ae60; }
+        .wrong { background: var(--no) !important; color: white; border-color: #c0392b; }
+        .exp { display: none; margin-top: 15px; padding: 15px; background: #fff9c4; border-radius: 8px; font-size: 14px; border-left: 5px solid #f1c40f; }
+        #summary { display: none; text-align: center; padding: 40px; background: white; border-radius: 20px; }
+        #submit-btn { width: 100%; padding: 20px; background: var(--p); color: white; border: none; border-radius: 15px; font-size: 20px; cursor: pointer; font-weight: bold; }
     </style>
 </head>
 <body>
 
-<div class="progress-container"><div id="progress-bar"></div></div>
-
 <div class="container">
     <div class="header">
-        <p style="color: #636e72;">เขียนโดย CHINPONG SMART FARM</p>
-        <h1>💎 คลังข้อสอบจริง 100 ข้อ (ป.5)</h1>
+        <p><b>เขียนโดย CHINPONG SMART FARM</b></p>
+        <h1>💎 คลังข้อสอบภาษาอังกฤษ ป.5 (100 ข้อจริง)</h1>
         <p>โดย <b>พระจอมเกล้าติวเตอร์</b></p>
     </div>
 
     <div id="quiz-root"></div>
 
-    <button id="submit-btn" onclick="showResults()" style="width:100%; padding:20px; background:var(--p); color:white; border:none; border-radius:10px; font-size:20px; cursor:pointer;">ส่งคำตอบและวิเคราะห์จุดอ่อน</button>
-
-    <div id="summary">
-        <h2 id="final-score"></h2>
-        <div id="analysis" style="text-align:left; background:#fff; padding:20px; border-radius:10px; border:2px solid var(--p);"></div>
-        <button onclick="location.reload()" style="margin-top:20px; padding:10px 20px; cursor:pointer;">ทำใหม่อีกครั้ง</button>
-    </div>
+    <button id="submit-btn" onclick="showResults()">ส่งคำตอบและวิเคราะห์ผล</button>
+    <div id="summary"></div>
 </div>
 
 <script>
-const data = [
-    // ตารางข้อมูลข้อสอบ 100 ข้อ (Hard-coded สั้นๆ เป็นตัวอย่างโครงสร้างเพื่อให้เห็นภาพครบ 100)
-    { t: "Wh-Questions", q: "_____ is your best friend? - Tom is.", o: ["What", "Where", "Who", "When"], a: "Who", e: "ถามถึงบุคคล (Tom) ต้องใช้ Who" },
-    { t: "Present Simple", q: "She _____ to the market every Saturday.", o: ["go", "goes", "going", "gone"], a: "goes", e: "ประธานเอกพจน์ กริยาเติม es" },
-    { t: "Present Continuous", q: "Look! The baby _____.", o: ["sleep", "sleeps", "is sleeping", "sleeping"], a: "is sleeping", e: "Look! บอกเหตุการณ์กำลังเกิด" },
-    { t: "Past Simple", q: "I _____ a movie last night.", o: ["watch", "watched", "watching", "is watch"], a: "watched", e: "last night บอกอดีต ใช้ V.2" },
-    { t: "Comparison", q: "A plane is _____ than a car.", o: ["fast", "faster", "fastest", "the fastest"], a: "faster", e: "มี than คือขั้นกว่า" },
-    { t: "Quantity", q: "There isn't _____ orange juice in the glass.", o: ["some", "any", "many", "a few"], a: "any", e: "ประโยคปฏิเสธใช้ any" },
-    { t: "Occupations", q: "A _____ takes care of sick animals.", o: ["doctor", "nurse", "vet", "dentist"], a: "vet", e: "สัตวแพทย์ (vet) ดูแลสัตว์ป่วย" },
-    { t: "Prepositions", q: "My birthday is _____ July.", o: ["in", "on", "at", "to"], a: "in", e: "ใช้ in กับเดือน" },
-    // ... พี่ใส่ให้ครบ 100 ข้อตามโครงสร้างด้านล่าง ...
-];
+    const questions = [
+        { t: "Conversation", q: "A: How are you today? B: ________", o: ["I am fine, thanks.", "I am nine.", "I am a boy.", "I am here."], a: "I am fine, thanks.", e: "ถามสารทุกข์สุกดิบ ตอบสบายดี" },
+        { t: "Grammar", q: "She _______ her teeth twice a day.", o: ["brush", "brushes", "brushing", "brushed"], a: "brushes", e: "กิจวัตร ประธาน She กริยาเติม es" },
+        { t: "Past Simple", q: "They _______ to Japan last year.", o: ["go", "goes", "going", "went"], a: "went", e: "Last year (อดีต) ใช้ V.2 (went)" },
+        { t: "Comparison", q: "A lion is _______ than a cat.", o: ["strong", "stronger", "strongest", "the strongest"], a: "stronger", e: "เปรียบเทียบขั้นกว่ามี than" },
+        { t: "Vocab", q: "A _______ works in a library.", o: ["doctor", "chef", "librarian", "pilot"], a: "librarian", e: "บรรณารักษ์ทำงานที่ห้องสมุด" },
+        { t: "Grammar", q: "Look! The dog _______ in the pool.", o: ["swim", "swims", "is swimming", "swam"], a: "is swimming", e: "มีคำว่า Look! บอกว่ากำลังทำอยู่" },
+        { t: "Preposition", q: "I have lunch _______ noon.", o: ["in", "on", "at", "to"], a: "at", e: "ใช้ at กับเวลาเฉพาะเจาะจง" },
+        { t: "Quantity", q: "There isn't _______ sugar in my coffee.", o: ["some", "any", "many", "few"], a: "any", e: "ประโยคปฏิเสธใช้ any" },
+        { t: "Wh-Question", q: "_______ is the bank? - Next to the school.", o: ["Who", "What", "Where", "When"], a: "Where", e: "ถามสถานที่ใช้ Where" },
+        { t: "Comparison", q: "Hotter than", q: "Thailand is _______ than England.", o: ["hot", "hotter", "hottest", "the hottest"], a: "hotter", e: "ขั้นกว่าของ hot คือ hotter" },
+        { t: "Health", q: "I have a _______. I should go to the dentist.", o: ["stomachache", "headache", "toothache", "sore throat"], a: "toothache", e: "ปวดฟันไปหาหมอฟัน" },
+        { t: "Vocab", q: "An _______ flies to space.", o: ["actor", "artist", "astronaut", "pilot"], a: "astronaut", e: "นักบินอวกาศ" },
+        { t: "Grammar", q: "We _______ students.", o: ["is", "am", "are", "be"], a: "are", e: "We ใช้คู่กับ are" },
+        { t: "Time", q: "10:30 is _______.", o: ["half past ten", "ten o'clock", "quarter to ten", "ten past ten"], a: "half past ten", e: "ผ่านสิบโมงมา 30 นาที" },
+        { t: "Quantity", q: "How _______ milk do you drink?", o: ["many", "much", "old", "tall"], a: "much", e: "นมเป็นนามนับไม่ได้ใช้ How much" },
+        { t: "Daily Life", q: "I _______ my face at 6 AM.", o: ["wash", "washes", "washing", "washed"], a: "wash", e: "กิจวัตรของ I กริยาไม่ต้องเติม s" },
+        { t: "Plural", q: "Plural form of 'Child' is _______.", o: ["Childs", "Children", "Childrens", "Childes"], a: "Children", e: "child เปลี่ยนรูปเป็น children" },
+        { t: "Article", q: "My father is _______ engineer.", o: ["a", "an", "the", "-"], a: "an", e: "หน้าสระใช้ an" },
+        { t: "Past Simple", q: "Yesterday, it _______ heavily.", o: ["rain", "rains", "rained", "raining"], a: "rained", e: "อดีต (Yesterday) ใช้ V.2" },
+        { t: "Conversation", q: "A: Can I borrow a pen? B: _______", o: ["No.", "Sure, here you are.", "Yes, I am.", "Thank you."], a: "Sure, here you are.", e: "ตอบรับการขอยืมอย่างสุภาพ" },
+        { t: "Wh-Question", q: "_______ is that man? - He is my father.", o: ["What", "Where", "Who", "How"], a: "Who", e: "ถามถึงคนใช้ Who" },
+        { t: "Comparison", q: "The whale is the _______ animal in the sea.", o: ["large", "larger", "largest", "the largest"], a: "largest", e: "มี the นำหน้าใช้ขั้นสุด" },
+        { t: "Preposition", q: "The pen is _______ the table.", o: ["in", "on", "at", "under"], a: "on", e: "อยู่บนพื้นผิวใช้ on" },
+        { t: "Vocab", q: "A _______ grows rice.", o: ["nurse", "farmer", "doctor", "soldier"], a: "farmer", e: "ชาวนาปลูกข้าว" },
+        { t: "Conversation", q: "A: Thank you. B: _______", o: ["You're welcome.", "Good luck.", "Fine, thanks.", "Goodbye."], a: "You're welcome.", e: "การตอบรับคำขอบคุณ" },
+        { t: "Grammar", q: "He _______ like durian.", o: ["don't", "doesn't", "isn't", "aren't"], a: "doesn't", e: "He เป็นเอกพจน์ในประโยคปฏิเสธใช้ doesn't" },
+        { t: "Verb", q: "A bird can _______.", o: ["fly", "swim", "run", "climb"], a: "fly", e: "ความสามารถของนก" },
+        { t: "Time", q: "What time is it? (9:00)", o: ["Nine o'clock.", "Ten o'clock.", "Nine past ten.", "Ten past nine."], a: "Nine o'clock.", e: "โมงตรงใช้ o'clock" },
+        { t: "Reading", q: "Keep off the grass means _______.", o: ["You can walk here.", "Don't walk on grass.", "Don't eat grass.", "Cut the grass."], a: "Don't walk on grass.", e: "ป้ายห้ามเดินลัดสนาม" },
+        { t: "Quantity", q: "There are _______ students in the room.", o: ["any", "much", "some", "a"], a: "some", e: "ประโยคบอกเล่าใช้ some" },
+        { t: "Grammar", q: "Does she play tennis? - Yes, _______.", o: ["she is", "she does", "she do", "she can"], a: "she does", e: "ถาม Does ตอบ Does" },
+        { t: "Health", q: "I have a _______. I need to see a doctor.", o: ["happy", "hungry", "headache", "thirsty"], a: "headache", e: "ปวดหัวจึงต้องหาหมอ" },
+        { t: "Preposition", q: "Halloween is _______ October.", o: ["in", "on", "at", "by"], a: "in", e: "ใช้ in กับเดือน" },
+        { t: "Comparison", q: "An ant is _______ than a bee.", o: ["small", "smaller", "smallest", "the smallest"], a: "smaller", e: "เปรียบเทียบ 2 สิ่งใช้ขั้นกว่า" },
+        { t: "Wh-Question", q: "_______ color do you like?", o: ["What", "Where", "Who", "When"], a: "What", e: "ถามถึงสิ่งของใช้ What" },
+        { t: "Vocab", q: "A _______ works in a kitchen.", o: ["teacher", "doctor", "chef", "nurse"], a: "chef", e: "เชฟทำงานในครัว" },
+        { t: "Daily Life", q: "I go to bed _______ 9 PM.", o: ["at", "on", "in", "to"], a: "at", e: "ใช้ at กับเวลา" },
+        { t: "Past Simple", q: "We _______ a movie last night.", o: ["watch", "watches", "watched", "watching"], a: "watched", e: "อดีต (last night) ใช้ V.2" },
+        { t: "Quantity", q: "How _______ apples are there?", o: ["much", "many", "old", "tall"], a: "many", e: "แอปเปิลนับได้ใช้ How many" },
+        { t: "Conversation", q: "A: Goodbye. B: _______", o: ["See you later.", "Fine.", "You're welcome.", "Hi."], a: "See you later.", e: "การบอกลา" },
+        { t: "Grammar", q: "Peter and Tom _______ my friends.", o: ["is", "am", "are", "be"], a: "are", e: "ประธาน 2 คนใช้ are" },
+        { t: "Preposition", q: "The ball is _______ the box.", o: ["under", "at", "on", "to"], a: "under", e: "ลูกบอลอยู่ใต้กล่อง" },
+        { t: "Comparison", q: "English is _______ than Math.", o: ["easy", "easier", "easiest", "the easiest"], a: "easier", e: "ขั้นกว่าของ easy" },
+        { t: "Wh-Question", q: "_______ is your birthday? - In May.", o: ["Who", "Where", "When", "What"], a: "When", e: "ถามเวลาใช้ When" },
+        { t: "Vocab", q: "A _______ drives a bus.", o: ["doctor", "driver", "pilot", "chef"], a: "driver", e: "คนขับรถ" },
+        { t: "Grammar", q: "I _______ not a teacher.", o: ["is", "am", "are", "be"], a: "am", e: "I ใช้ am" },
+        { t: "Time", q: "A quarter past six is _______.", o: ["6:00", "6:15", "6:30", "6:45"], a: "6:15", e: "quarter คือ 15 นาที" },
+        { t: "Conversation", q: "A: I'm sorry. B: _______", o: ["You're welcome.", "It's okay.", "Good.", "Thank you."], a: "It's okay.", e: "การตอบรับคำขอโทษ" },
+        { t: "Article", q: "There is _______ elephant in the zoo.", o: ["a", "an", "the", "-"], a: "an", e: "หน้าสระใช้ an" },
+        { t: "Past Simple", q: "I _______ my lunch two hours ago.", o: ["eat", "eats", "ate", "eating"], a: "ate", e: "อดีต (ago) ใช้ V.2" },
+        { t: "Vocab", q: "A ______ cures people.", o: ["nurse", "doctor", "chef", "teacher"], a: "doctor", e: "หมอรักษาคนไข้" },
+        { t: "Grammar", q: "The sun ______ in the morning.", o: ["rise", "rises", "rising", "rose"], a: "rises", e: "ความจริงทั่วไป กริยาเติม s" },
+        { t: "Comparison", q: "Which is ______ , a plane or a bird?", o: ["fast", "faster", "fastest", "the fastest"], a: "faster", e: "เปรียบเทียบสองสิ่ง" },
+        { t: "Quantity", q: "Do you have ______ pets?", o: ["some", "any", "much", "few"], a: "any", e: "ประโยคคำถามใช้ any" },
+        { t: "Conversation", q: "A: What's the matter? B: I have a ______.", o: ["pen", "fever", "book", "school"], a: "fever", e: "ถามอาการไม่สบาย" },
+        { t: "Grammar", q: "Listen! She is ______.", o: ["sing", "sings", "singing", "sang"], a: "singing", e: "Listen! บอกเหตุการณ์กำลังเกิด" },
+        { t: "Preposition", q: "He was born ______ 2012.", o: ["in", "on", "at", "to"], a: "in", e: "ใช้ in กับปี" },
+        { t: "Vocab", q: "A ______ flies a plane.", o: ["driver", "pilot", "doctor", "farmer"], a: "pilot", e: "นักบิน" },
+        { t: "Plural", q: "Plural of 'Tooth' is ______.", o: ["Tooths", "Teeth", "Toothes", "Teeths"], a: "Teeth", e: "ฟันหลายซี่ใช้ teeth" },
+        { t: "Wh-Question", q: "______ is that? - It's my bag.", o: ["Who", "What", "Where", "When"], a: "What", e: "ถามถึงสิ่งของใช้ What" },
+        { t: "Grammar", q: "They ______ playing now.", o: ["is", "am", "are", "be"], a: "are", e: "They ใช้ are" },
+        { t: "Conversation", q: "A: Happy Birthday! B: ______", o: ["Thank you.", "The same to you.", "Good luck.", "I'm fine."], a: "Thank you.", e: "ตอบรับคำอวยพร" },
+        { t: "Past Simple", q: "She ______ a letter yesterday.", o: ["write", "writes", "wrote", "writing"], a: "wrote", e: "อดีต (yesterday) ใช้ V.2" },
+        { t: "Comparison", q: "The elephant is ______ than the mouse.", o: ["heavy", "heavier", "heaviest", "the heaviest"], a: "heavier", e: "ขั้นกว่าของ heavy" },
+        { t: "Preposition", q: "See you ______ Monday.", o: ["in", "on", "at", "to"], a: "on", e: "ใช้ on กับวัน" },
+        { t: "Vocab", q: "A ______ cooks food.", o: ["nurse", "chef", "pilot", "driver"], a: "chef", e: "เชฟปรุงอาหาร" },
+        { t: "Grammar", q: "I ______ to school by bus.", o: ["go", "goes", "going", "gone"], a: "go", e: "กิจวัตรของ I ไม่ต้องเติม s" },
+        { t: "Wh-Question", q: "______ is the cat? - In the box.", o: ["Who", "What", "Where", "When"], a: "Where", e: "ถามตำแหน่ง" },
+        { t: "Quantity", q: "I have ______ friends.", o: ["much", "many", "any", "a"], a: "many", e: "เพื่อนนับได้ใช้ many" },
+        { t: "Conversation", q: "A: Can I have some water? B: ______", o: ["No, thanks.", "Sure, here it is.", "Yes, I am.", "Good."], a: "Sure, here it is.", e: "การตอบรับการขอ" },
+        { t: "Grammar", q: "Look! The cat is ______.", o: ["run", "runs", "running", "ran"], a: "running", e: "กำลังวิ่ง (เบิ้ล n)" },
+        { t: "Comparison", q: "She is the ______ girl in class.", o: ["pretty", "prettier", "prettiest", "more pretty"], a: "prettiest", e: "ขั้นสุดมี the" },
+        { t: "Time", q: "7:45 is ______.", o: ["quarter to eight", "quarter past seven", "half past seven", "seven o'clock"], a: "quarter to eight", e: "อีก 15 นาทีแปดโมง" },
+        { t: "Health", q: "I have a ______ throat.", o: ["sore", "pain", "sick", "cut"], a: "sore", e: "เจ็บคอใช้ sore throat" },
+        { t: "Preposition", q: "He sits ______ me.", o: ["at", "next to", "in", "on"], a: "next to", e: "นั่งข้าง ๆ" },
+        { t: "Vocab", q: "A ______ catches thieves.", o: ["doctor", "policeman", "chef", "teacher"], a: "policeman", e: "ตำรวจจับโจร" },
+        { t: "Grammar", q: "______ you like pizza?", o: ["Do", "Does", "Is", "Are"], a: "Do", e: "You ใช้ Do ในคำถาม" },
+        { t: "Past Simple", q: "He ______ his homework last night.", o: ["do", "does", "did", "doing"], a: "did", e: "อดีตของ do คือ did" },
+        { t: "Wh-Question", q: "______ is it? - It's 50 baht.", o: ["How many", "How much", "How old", "How far"], a: "How much", e: "ถามราคา" },
+        { t: "Conversation", q: "A: How old are you? B: ______", o: ["I'm ten.", "I'm fine.", "I'm a girl.", "I'm Thai."], a: "I'm ten.", e: "ถามอายุ" },
+        { t: "Article", q: "I have ______ umbrella.", o: ["a", "an", "the", "-"], a: "an", e: "หน้าสระใช้ an" },
+        { t: "Grammar", q: "They ______ not coming.", o: ["is", "am", "are", "be"], a: "are", e: "They ใช้ are" },
+        { t: "Vocab", q: "A ______ works in a school.", o: ["doctor", "teacher", "chef", "nurse"], a: "teacher", e: "ครูสอนในโรงเรียน" },
+        { t: "Time", q: "It's 12:00. It is ______.", o: ["noon", "night", "morning", "evening"], a: "noon", e: "เที่ยงวัน" },
+        { t: "Conversation", q: "A: Nice to meet you. B: ______", o: ["Nice to meet you, too.", "Fine.", "I'm sorry.", "Goodbye."], a: "Nice to meet you, too.", e: "ยินดีที่ได้รู้จัก" },
+        { t: "Comparison", q: "A bike is ______ than a car.", o: ["slow", "slower", "slowest", "the slowest"], a: "slower", e: "ขั้นกว่า" },
+        { t: "Preposition", q: "Christmas is ______ December 25th.", o: ["in", "on", "at", "by"], a: "on", e: "ใช้วันที่มีวันที่ใช้ on" },
+        { t: "Grammar", q: "It ______ raining now.", o: ["is", "am", "are", "be"], a: "is", e: "It ใช้ is" },
+        { t: "Wh-Question", q: "______ is that? - It's a pencil.", o: ["Who", "What", "Where", "When"], a: "What", e: "ถามสิ่งของ" },
+        { t: "Quantity", q: "I don't have ______ brothers.", o: ["some", "any", "much", "a"], a: "any", e: "ปฏิเสธใช้ any" },
+        { t: "Vocab", q: "A ______ makes bread.", o: ["doctor", "baker", "chef", "nurse"], a: "baker", e: "คนทำขนมปัง" },
+        { t: "Past Simple", q: "I ______ my keys yesterday.", o: ["lose", "lost", "losing", "loses"], a: "lost", e: "อดีตของ lose คือ lost" },
+        { t: "Conversation", q: "A: What is your name? B: ______", o: ["My name is Ann.", "I am fine.", "I am ten.", "I like pizza."], a: "My name is Ann.", e: "ถามชื่อ" },
+        { t: "Comparison", q: "The giraffe is the ______ animal.", o: ["tall", "taller", "tallest", "more tall"], a: "tallest", e: "ขั้นสุด" },
+        { t: "Preposition", q: "The cat is ______ the armchair.", o: ["in", "on", "under", "between"], a: "on", e: "อยู่บนเก้าอี้" },
+        { t: "Grammar", q: "______ she a nurse?", o: ["Is", "Am", "Are", "Do"], a: "Is", e: "She ใช้ Is" },
+        { t: "Time", q: "Quarter to ten is ______.", o: ["9:45", "10:15", "10:45", "9:15"], a: "9:45", e: "อีก 15 นาทีสิบโมง" },
+        { t: "Wh-Question", q: "______ do you go to school? - By car.", o: ["Who", "How", "When", "What"], a: "How", e: "ถามวิธีการ" },
+        { t: "Conversation", q: "A: Excuse me. B: ______", o: ["Yes?", "No.", "Fine.", "Thank you."], a: "Yes?", " e: "ตอบรับการเรียก" },
+        { t: "Grammar", q: "We ______ happy.", o: ["is", "am", "are", "be"], a: "are", e: "We ใช้ are" }
+    ];
 
-// เพิ่มข้อมูลให้ครบ 100 ข้อ (โดยอ้างอิงหัวข้อที่ ป.5 ต้องรู้)
-for(let i=9; i<=100; i++){
-    let topics = ["Grammar", "Vocabulary", "Reading", "Conversation"];
-    data.push({
-        t: topics[i % 4],
-        q: "Real Exam Question " + i + ": [Verified Standard P.5 Content]",
-        o: ["Option A", "Option B", "Option C", "Option D"],
-        a: "Option A",
-        e: "นี่คือข้อสอบมาตรฐานข้อที่ " + i + " ที่ครอบคลุมเนื้อหา ป.5 เรื่อง " + topics[i % 4]
+    const root = document.getElementById('quiz-root');
+    let score = 0;
+    let done = 0;
+
+    questions.forEach((item, i) => {
+        const box = document.createElement('div');
+        box.className = 'q-box';
+        box.innerHTML = `
+            <span class="topic">${item.t}</span>
+            <p><b>${i+1}. ${item.q}</b></p>
+            <div class="opts">
+                ${item.o.map(opt => `<button class="btn" onclick="check(this, ${i}, '${opt}')">${opt}</button>`).join('')}
+            </div>
+            <div class="exp" id="exp-${i}"><b>คำตอบคือ: ${item.a}</b><br>${item.e}</div>
+        `;
+        root.appendChild(box);
     });
-}
 
-const root = document.getElementById('quiz-root');
-let score = 0;
-let done = 0;
+    function check(btn, i, choice) {
+        const parent = btn.parentElement;
+        if(parent.dataset.answered) return;
+        parent.dataset.answered = "true";
+        done++;
 
-data.forEach((item, i) => {
-    const div = document.createElement('div');
-    div.className = 'q-box';
-    div.innerHTML = `
-        <span class="topic-tag">${item.t}</span>
-        <p><b>${i+1}. ${item.q}</b></p>
-        <div class="opts">
-            ${item.o.map(opt => `<button class="btn" onclick="check(this, ${i}, '${opt}')">${opt}</button>`).join('')}
-        </div>
-        <div class="exp" id="exp-${i}"><b>เฉลย: ${item.a}</b><br>${item.e}</div>
-    `;
-    root.appendChild(div);
-});
-
-function check(btn, i, choice) {
-    const parent = btn.parentElement;
-    if(parent.dataset.answered) return;
-    parent.dataset.answered = "true";
-    done++;
-    document.getElementById('progress-bar').style.width = (done/100*100) + "%";
-
-    if(choice === data[i].a) {
-        btn.classList.add('correct');
-        score++;
-    } else {
-        btn.classList.add('wrong');
-        Array.from(parent.children).forEach(b => { if(b.innerText === data[i].a) b.classList.add('correct'); });
+        if(choice === questions[i].a) {
+            btn.classList.add('correct');
+            score++;
+        } else {
+            btn.classList.add('wrong');
+            Array.from(parent.children).forEach(b => {
+                if(b.innerText === questions[i].a) b.classList.add('correct');
+            });
+        }
+        document.getElementById(`exp-${i}`).style.display = 'block';
     }
-    document.getElementById(`exp-${i}`).style.display = 'block';
-}
 
-function showResults() {
-    if(done < 100) { alert('ทำใจร่มๆ แล้วทำให้ครบ 100 ข้อก่อนนะจ๊ะ!'); return; }
-    document.getElementById('quiz-root').style.display = 'none';
-    document.getElementById('submit-btn').style.display = 'none';
-    const sum = document.getElementById('summary');
-    sum.style.display = 'block';
-    document.getElementById('final-score').innerText = `คุณได้คะแนน ${score} / 100`;
-    
-    let report = "<h3>วิเคราะห์จุดอ่อนรายบุคคล:</h3>";
-    if(score < 50) report += "น้องต้องทบทวนพื้นฐานคำศัพท์และ Tense ใหม่ทั้งหมด พี่แนะนำให้กลับไปอ่านสรุปด้านบน 3 รอบครับ!";
-    else if(score < 80) report += "เก่งใช้ได้! แต่ยังมีหลุดเรื่องการใช้ some/any และการเปรียบเทียบ ลองทำซ้ำอีกรอบนะ";
-    else report += "ยอดเยี่ยมที่สุด! น้องพร้อมสำหรับการสอบเข้า ม.1 โรงเรียนดังแล้วครับ!";
-    document.getElementById('analysis').innerHTML = report;
-    window.scrollTo(0,0);
-}
+    function showResults() {
+        if(done < 100) { alert(`ทำให้ครบ 100 ข้อก่อนนะจ๊ะ (ทำไป ${done}/100)`); return; }
+        document.getElementById('quiz-root').style.display = 'none';
+        document.getElementById('submit-btn').style.display = 'none';
+        const sum = document.getElementById('summary');
+        sum.style.display = 'block';
+        sum.innerHTML = `
+            <h2>คะแนนของคุณ: ${score} / 100</h2>
+            <p>${score >= 80 ? "ยอดเยี่ยม! คุณคือเทพภาษาอังกฤษ ป.5" : "พยายามอีกนิด ทบทวนข้อที่ผิดนะจ๊ะ"}</p>
+            <button onclick="location.reload()" style="padding:10px 20px; border-radius:10px; cursor:pointer;">เริ่มใหม่</button>
+        `;
+    }
 </script>
+
 </body>
 </html>
