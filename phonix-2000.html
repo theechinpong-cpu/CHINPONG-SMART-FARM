@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <title>Expert Vocab 1501-2000 - พระจอมเกล้าติวเตอร์</title>
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;700&family=Sarabun:wght@300;600&display=swap" rel="stylesheet">
+    <style>
+        :root { --p: #e84393; --s: #6c5ce7; --bg: #f1f2f6; }
+        body { font-family: 'Lexend', 'Sarabun', sans-serif; background: var(--bg); margin: 0; padding: 20px; }
+        .container { max-width: 1200px; margin: auto; background: white; padding: 40px; border-radius: 30px; box-shadow: 0 15px 50px rgba(0,0,0,0.1); }
+        h1 { text-align: center; color: var(--p); font-size: 2.5em; text-transform: uppercase; letter-spacing: 2px; }
+        .sub { text-align: center; color: #636e72; margin-bottom: 30px; }
+
+        .search-area { margin-bottom: 25px; }
+        .search-input { width: 100%; padding: 15px; border: 2px solid #dfe6e9; border-radius: 15px; font-size: 1.1em; box-sizing: border-box; outline: none; transition: 0.3s; }
+        .search-input:focus { border-color: var(--p); box-shadow: 0 0 10px rgba(232, 67, 147, 0.2); }
+
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 12px; max-height: 550px; overflow-y: auto; padding: 15px; border: 1px solid #eee; border-radius: 20px; background: #fff; }
+        
+        .card { position: relative; background: #f9f9f9; border: 1px solid #efefef; padding: 15px; border-radius: 12px; text-align: center; cursor: pointer; transition: 0.2s; font-weight: 700; color: #2d3436; }
+        .card:hover { background: var(--p); color: white; transform: translateY(-3px); z-index: 10; }
+        
+        /* Tooltip คำแปล */
+        .card::after {
+            content: attr(data-th);
+            position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%);
+            background: #2d3436; color: white; padding: 6px 12px; border-radius: 8px;
+            font-size: 0.85em; white-space: nowrap; visibility: hidden; opacity: 0; transition: 0.2s;
+            font-family: 'Sarabun'; font-weight: 400;
+        }
+        .card:hover::after { visibility: visible; opacity: 1; bottom: 115%; }
+
+        .dashboard { margin-top: 40px; padding: 30px; border-radius: 25px; background: linear-gradient(135deg, #6c5ce7, #a29bfe); color: white; text-align: center; }
+        .big-word { font-size: 4em; margin: 10px 0; font-weight: 700; text-shadow: 2px 2px 10px rgba(0,0,0,0.2); }
+        .big-mean { font-size: 1.5em; font-family: 'Sarabun'; opacity: 0.9; margin-bottom: 20px; }
+        .btn-group button { padding: 15px 35px; border: none; border-radius: 50px; cursor: pointer; font-weight: bold; font-size: 1em; margin: 5px; transition: 0.3s; }
+        .btn-next { background: #fff; color: var(--s); }
+        .btn-audio { background: #fd79a8; color: white; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🏆 English Expert (1,501 - 2,000)</h1>
+    <p class="sub">รวบรวมโดย พระจอมเกล้าติวเตอร์ | CHINPONG SMART FARM</p>
+
+    <div class="search-area">
+        <input type="text" id="search" class="search-input" placeholder="🔍 ค้นหาคำศัพท์ระดับ Expert..." onkeyup="filter()">
+    </div>
+
+    <div id="vocabGrid" class="grid"></div>
+
+    <div class="dashboard">
+        <h2>🔥 The Final Master Challenge</h2>
+        <div id="target" class="big-word">START</div>
+        <div id="thai" class="big-mean">พร้อมแล้วกดสุ่มเลย!</div>
+        <div class="btn-group">
+            <button class="btn-next" onclick="randomWord()">Random Word</button>
+            <button class="btn-audio" onclick="speak()">🔊 Play Sound</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const synth = window.speechSynthesis;
+    // ฐานข้อมูลคำศัพท์ 1501-2000 (ตัวอย่างกลุ่มคำระดับสูง)
+    const expertData = [
+        {en:"Algorithm", th:"อัลกอริทึม/ขั้นตอนวิธี"}, {en:"Ambition", th:"ความทะเยอทะยาน"}, {en:"Analyze", th:"วิเคราะห์"},
+        {en:"Architecture", th:"สถาปัตยกรรม"}, {en:"Artificial", th:"เทียม/ประดิษฐ์"}, {en:"Automation", th:"ระบบอัตโนมัติ"},
+        {en:"Avalanche", th:"หิมะถล่ม"}, {en:"Background", th:"ภูมิหลัง/พื้นหลัง"}, {en:"Beneficial", th:"เป็นประโยชน์"},
+        {en:"Blizzard", th:"พายุหิมะ"}, {en:"Boundary", th:"ขอบเขต"}, {en:"Broadcast", th:"แพร่ภาพกระจายเสียง"},
+        {en:"Candidate", th:"ผู้สมัคร"}, {en:"Capacity", th:"ความจุ/ความสามารถ"}, {en:"Categorize", th:"จัดหมวดหมู่"},
+        {en:"Chronology", th:"ลำดับเหตุการณ์"}, {en:"Collaboration", th:"การร่วมมือ"}, {en:"Compassion", th:"ความเมตตา"},
+        {en:"Complexity", th:"ความซับซ้อน"}, {en:"Component", th:"ส่วนประกอบ"}, {en:"Concentrate", th:"จดจ่อ/รวบรวม"},
+        {en:"Conclusion", th:"ข้อสรุป"}, {en:"Consequence", th:"ผลที่ตามมา"}, {en:"Conservation", th:"การอนุรักษ์"},
+        {en:"Consistency", th:"ความสม่ำเสมอ"}, {en:"Contribute", th:"สนับสนุน/มีส่วนร่วม"}, {en:"Controversy", th:"การโต้เถียง"},
+        {en:"Cooperation", th:"การร่วมมือกัน"}, {en:"Crisis", th:"วิกฤตการณ์"}, {en:"Critical", th:"วิกฤต/เชิงวิพากษ์"},
+        {en:"Curiosity", th:"ความอยากรู้อยากเห็น"}, {en:"Database", th:"ฐานข้อมูล"}, {en:"Decade", th:"ทศวรรษ"},
+        {en:"Definition", th:"นิยาม/ความจำกัดความ"}, {en:"Democracy", th:"ประชาธิปไตย"}, {en:"Description", th:"คำอธิบาย"},
+        {en:"Detection", th:"การตรวจจับ"}, {en:"Development", th:"การพัฒนา"}, {en:"Digitalization", th:"การปรับเป็นดิจิทัล"},
+        {en:"Dimension", th:"มิติ"}, {en:"Disaster", th:"ภัยพิบัติ"}, {en:"Diversity", th:"ความหลากหลาย"},
+        {en:"Drought", th:"ความแห้งแล้ง"}, {en:"Efficiency", th:"ประสิทธิภาพ"}, {en:"Empathy", th:"ความเข้าใจความรู้สึก"},
+        {en:"Encryption", th:"การเข้ารหัส"}, {en:"Endurance", th:"ความอดทน"}, {en:"Environment", th:"สิ่งแวดล้อม"},
+        {en:"Erosion", th:"การกัดเซาะ"}, {en:"Evidence", th:"หลักฐาน"}, {en:"Evolution", th:"วิวัฒนาการ"},
+        {en:"Exaggerate", th:"พูดเกินจริง"}, {en:"Experiment", th:"การทดลอง"}, {en:"Exploration", th:"การสำรวจ"},
+        {en:"Fascinating", th:"น่าหลงใหล"}, {en:"Fluctuation", th:"การผันผวน"}, {en:"Foundation", th:"พื้นฐาน/มูลนิธิ"},
+        {en:"Framework", th:"โครงร่าง/กรอบงาน"}, {en:"Generation", th:"รุ่น/ยุค"}, {en:"Geography", th:"ภูมิศาสตร์"},
+        {en:"Global", th:"ระดับโลก"}, {en:"Gravity", th:"แรงโน้มถ่วง"}, {en:"Guarantee", th:"การรับประกัน"},
+        {en:"Heritage", th:"มรดก"}, {en:"Hierarchy", th:"ลำดับขั้น"}, {en:"Horizon", th:"เส้นขอบฟ้า"},
+        {en:"Humidity", th:"ความชื้น"}, {en:"Hypothesis", th:"สมมติฐาน"}, {en:"Identity", th:"อัตลักษณ์"},
+        {en:"Illustration", th:"ภาพประกอบ"}, {en:"Implementation", th:"การนำไปปฏิบัติ"}, {en:"Implication", th:"ความนัย/ผลกระทบ"},
+        {en:"Indicator", th:"ตัวบ่งชี้"}, {en:"Influence", th:"อิทธิพล"}, {en:"Innovation", th:"นวัตกรรม"},
+        {en:"Integrity", th:"ความซื่อสัตย์"}, {en:"Intelligence", th:"สติปัญญา"}, {en:"Interaction", th:"ปฏิสัมพันธ์"},
+        {en:"Internal", th:"ภายใน"}, {en:"Interpret", th:"ตีความ"}, {en:"Investment", th:"การลงทุน"},
+        {en:"Isolation", th:"การแยกตัว"}, {en:"Journalism", th:"วารสารศาสตร์"}, {en:"Justification", th:"การให้เหตุผล"},
+        {en:"Landscape", th:"ทัศนียภาพ"}, {en:"Legislative", th:"ฝ่ายนิติบัญญัติ"}, {en:"Limitation", th:"ข้อจำกัด"},
+        {en:"Literal", th:"ตามตัวอักษร"}, {en:"Magnitude", th:"ขนาด/ความรุนแรง"}, {en:"Maintenance", th:"การบำรุงรักษา"},
+        {en:"Management", th:"การจัดการ"}, {en:"Mechanism", th:"กลไก"}, {en:"Medicine", th:"ยา/แพทยศาสตร์"},
+        {en:"Mental", th:"ทางจิตใจ"}, {en:"Methodology", th:"ระเบียบวิธีวิจัย"}, {en:"Migration", th:"การย้ายถิ่นฐาน"},
+        {en:"Modification", th:"การปรับเปลี่ยน"}, {en:"Momentum", th:"แรงเฉื่อย/แรงขับ"}, {en:"Motivation", th:"แรงจูงใจ"},
+        {en:"Negotiate", th:"เจรจาต่อรอง"}, {en:"Network", th:"เครือข่าย"}, {en:"Neutral", th:"เป็นกลาง"},
+        {en:"Notification", th:"การแจ้งเตือน"}, {en:"Objective", th:"วัตถุประสงค์/ที่เป็นกลาง"}, {en:"Obstacle", th:"อุปสรรค"},
+        {en:"Occupation", th:"อาชีพ"}, {en:"Operational", th:"ที่ใช้งานได้"}, {en:"Opportunity", th:"โอกาส"},
+        {en:"Optimistic", th:"มองโลกในแง่ดี"}, {en:"Organization", th:"องค์กร"}, {en:"Outcome", th:"ผลลัพธ์"},
+        {en:"Paradox", th:"ความขัดแย้งในตัวเอง"}, {en:"Parallel", th:"ขนาน"}, {en:"Participation", th:"การมีส่วนร่วม"},
+        {en:"Perception", th:"การรับรู้"}, {en:"Perspective", th:"มุมมอง"}, {en:"Pessimistic", th:"มองโลกในแง่ร้าย"},
+        {en:"Philosophy", th:"ปรัชญา"}, {en:"Plagiarism", th:"การคัดลอกผลงาน"}, {en:"Policy", th:"นโยบาย"},
+        {en:"Portfolio", th:"แฟ้มผลงาน"}, {en:"Precaution", th:"การป้องกันไว้ก่อน"}, {en:"Precision", th:"ความแม่นยำ"},
+        {en:"Prediction", th:"การทำนาย"}, {en:"Preference", th:"ความพึงพอใจ"}, {en:"Privilege", th:"สิทธิพิเศษ"},
+        {en:"Probability", th:"ความน่าจะเป็น"}, {en:"Procedure", th:"ขั้นตอน"}, {en:"Process", th:"กระบวนการ"},
+        {en:"Productivity", th:"ประสิทธิภาพการผลิต"}, {en:"Professionalism", th:"ความเป็นมืออาชีพ"}, {en:"Profitability", th:"ความสามารถในการทำกำไร"},
+        {en:"Promotion", th:"การส่งเสริม/เลื่อนตำแหน่ง"}, {en:"Protocol", th:"ระเบียบการ/โปรโตคอล"}, {en:"Psychology", th:"จิตวิทยา"},
+        {en:"Publication", th:"การตีพิมพ์"}, {en:"Qualification", th:"คุณสมบัติ"}, {en:"Radiation", th:"รังสี"},
+        {en:"Rational", th:"มีเหตุผล"}, {en:"Recommendation", th:"คำแนะนำ"}, {en:"Recovery", th:"การฟื้นฟู"},
+        {en:"Regulation", th:"กฎระเบียบ"}, {en:"Reliability", th:"ความน่าเชื่อถือ"}, {en:"Requirement", th:"ข้อกำหนด"},
+        {en:"Resilience", th:"ความยืดหยุ่นทางใจ"}, {en:"Resolution", th:"การแก้ปัญหา/ความละเอียด"}, {en:"Revenue", th:"รายได้"},
+        {en:"Revolution", th:"การปฏิวัติ"}, {en:"Satisfaction", th:"ความพึงพอใจ"}, {en:"Simulation", th:"การจำลอง"},
+        {en:"Stability", th:"เสถียรภาพ"}, {en:"Standardization", th:"การทำให้เป็นมาตรฐาน"}, {en:"Statistics", th:"สถิติ"},
+        {en:"Strategy", th:"กลยุทธ์"}, {en:"Structure", th:"โครงสร้าง"}, {en:"Subjective", th:"ตามความคิดส่วนตัว"},
+        {en:"Substantial", th:"เป็นกอบเป็นกำ/สำคัญ"}, {en:"Sustainable", th:"ยั่งยืน"}, {en:"Transformation", th:"การเปลี่ยนแปลงรูปร่าง"},
+        {en:"Transmission", th:"การส่งผ่าน/แพร่กระจาย"}, {en:"Transparency", th:"ความโปร่งใส"}, {en:"Tsunami", th:"สึนามิ"},
+        {en:"Validation", th:"การตรวจสอบความถูกต้อง"}, {en:"Variation", th:"ความแปรผัน"}, {en:"Virtual", th:"เสมือนจริง"},
+        {en:"Vocabulary", th:"คำศัพท์"}, {en:"Voluntary", th:"โดยสมัครใจ"}, {en:"Warehouse", th:"คลังสินค้า"},
+        {en:"Wholesale", th:"ขายส่ง"}, {en:"Wireless", th:"ไร้สาย"}, {en:"Withdrawal", th:"การถอนตัว"},
+        {en:"Yield", th:"ผลผลิต"}, {en:"Zone", th:"เขต/พื้นที่"}
+    ];
+
+    const grid = document.getElementById('vocabGrid');
+    const target = document.getElementById('target');
+    const thai = document.getElementById('thai');
+    let current = null;
+
+    function init() {
+        expertData.sort((a,b) => a.en.localeCompare(b.en)).forEach(item => {
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.innerText = item.en;
+            card.setAttribute('data-th', item.th);
+            card.onclick = () => { current = item; target.innerText = item.en; thai.innerText = item.th; speak(); };
+            grid.appendChild(card);
+        });
+    }
+
+    function filter() {
+        const val = document.getElementById('search').value.toLowerCase();
+        document.querySelectorAll('.card').forEach(c => {
+            c.style.display = c.innerText.toLowerCase().includes(val) ? 'block' : 'none';
+        });
+    }
+
+    function randomWord() {
+        current = expertData[Math.floor(Math.random() * expertData.length)];
+        target.innerText = current.en;
+        thai.innerText = current.th;
+        speak();
+    }
+
+    function speak() {
+        if(!current) return;
+        const u = new SpeechSynthesisUtterance(current.en);
+        u.lang = 'en-US';
+        u.rate = 0.85;
+        synth.speak(u);
+    }
+
+    init();
+</script>
+</body>
+</html>
