@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <title>Vocab 101-150 - พระจอมเกล้าติวเตอร์</title>
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;700&family=Sarabun&display=swap" rel="stylesheet">
+    <style>
+        :root { --p: #a29bfe; --s: #fd79a8; --bg: #fdfbfb; }
+        body { font-family: 'Lexend', 'Sarabun', sans-serif; background: #f0f2f5; padding: 20px; color: #2d3436; }
+        .container { max-width: 1100px; margin: auto; background: white; padding: 40px; border-radius: 35px; box-shadow: 0 20px 50px rgba(0,0,0,0.1); }
+        h1 { text-align: center; color: #6c5ce7; font-size: 2.8em; margin-bottom: 10px; }
+        .sub { text-align: center; color: #636e72; margin-bottom: 40px; }
+        
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px; margin-bottom: 50px; }
+        .card { background: #fff; border: 2px solid #f1f2f6; padding: 20px; border-radius: 20px; text-align: center; cursor: pointer; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .card:hover { border-color: var(--p); transform: scale(1.05); box-shadow: 0 10px 20px rgba(108, 92, 231, 0.2); background: #f8f7ff; }
+        .card b { font-size: 1.5em; display: block; color: #6c5ce7; margin-bottom: 5px; }
+        .card i { font-size: 0.8em; color: #b2bec3; }
+        .cat-title { grid-column: 1 / -1; background: var(--s); color: white; padding: 12px 25px; border-radius: 15px; margin-top: 30px; font-weight: bold; }
+
+        .game-zone { background: #ecf0f1; padding: 30px; border-radius: 25px; border: 3px dashed var(--p); text-align: center; }
+        .btn-play { background: #6c5ce7; color: white; border: none; padding: 15px 40px; border-radius: 50px; font-size: 1.2em; cursor: pointer; font-weight: bold; box-shadow: 0 5px 15px rgba(108, 92, 231, 0.4); }
+        .btn-play:hover { background: #5649c0; }
+        #answer-input { padding: 15px; width: 250px; border-radius: 10px; border: 2px solid #ddd; font-size: 1.2em; margin: 20px 0; }
+        .result-msg { font-size: 1.5em; font-weight: bold; margin-top: 15px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🎯 Vocab 101 - 150 (Mastery)</h1>
+    <p class="sub">ฝึกออกเสียงคำศัพท์ระดับก้าวหน้า โดย CHINPONG SMART FARM</p>
+
+    <div class="grid" id="main-grid">
+        </div>
+
+    <div class="game-zone">
+        <h2>🎮 Spelling & Listening Game</h2>
+        <p>ฟังเสียงแล้วลองพิมพ์คำศัพท์ให้ถูกต้อง (สะกดตามเสียงนะจ๊ะ!)</p>
+        <button class="btn-play" onclick="playSecret()">🔊 ฟังเสียงโจทย์</button><br>
+        <input type="text" id="answer-input" placeholder="พิมพ์คำศัพท์ที่ได้ยิน..." onkeyup="if(event.keyCode===13) checkGame()">
+        <br>
+        <button onclick="checkGame()" style="padding:10px 20px; cursor:pointer;">ตรวจคำตอบ</button>
+        <div id="game-fb" class="result-msg"></div>
+    </div>
+</div>
+
+<script>
+    const synth = window.speechSynthesis;
+    const words = [
+        {w:"Classroom", c:"School"}, {w:"Student", c:"School"}, {w:"Paper", c:"School"}, {w:"Pencil", c:"School"}, {w:"Ruler", c:"School"},
+        {w:"Eraser", c:"School"}, {w:"Computer", c:"School"}, {w:"Lesson", c:"School"}, {w:"Homework", c:"School"}, {w:"Playground", c:"School"},
+        {w:"Sunday", c:"Time"}, {w:"Monday", c:"Time"}, {w:"Tuesday", c:"Time"}, {w:"Morning", c:"Time"}, {w:"Afternoon", c:"Time"},
+        {w:"Evening", c:"Time"}, {w:"Week", c:"Time"}, {w:"Month", c:"Time"}, {w:"Year", c:"Time"}, {w:"Birthday", c:"Time"},
+        {w:"Farmer", c:"Place/Job"}, {w:"Police", c:"Place/Job"}, {w:"Shop", c:"Place/Job"}, {w:"Market", c:"Place/Job"}, {w:"Hospital", c:"Place/Job"},
+        {w:"Street", c:"Place/Job"}, {w:"Park", c:"Place/Job"}, {w:"Kitchen", c:"Place/Job"}, {w:"Garden", c:"Place/Job"}, {w:"Forest", c:"Place/Job"},
+        {w:"Think", c:"Verbs"}, {w:"Clean", c:"Verbs"}, {w:"Brush", c:"Verbs"}, {w:"Wash", c:"Verbs"}, {w:"Watch", c:"Verbs"},
+        {w:"Listen", c:"Verbs"}, {w:"Speak", c:"Verbs"}, {w:"Write", c:"Verbs"}, {w:"Draw", c:"Verbs"}, {w:"Paint", c:"Verbs"},
+        {w:"Small", c:"General"}, {w:"Large", c:"General"}, {w:"Pretty", c:"General"}, {w:"Strong", c:"General"}, {w:"Fast", c:"General"},
+        {w:"Slow", c:"General"}, {w:"First", c:"General"}, {w:"Last", c:"General"}, {w:"Above", c:"General"}, {w:"Below", c:"General"}
+    ];
+
+    const grid = document.getElementById('main-grid');
+    let currentCat = "";
+    let targetWord = "";
+
+    words.forEach(item => {
+        if(item.c !== currentCat) {
+            currentCat = item.c;
+            const h = document.createElement('div');
+            h.className = 'cat-title';
+            h.innerText = "หมวด: " + currentCat;
+            grid.appendChild(h);
+        }
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.onclick = () => {
+            const u = new SpeechSynthesisUtterance(item.w);
+            u.lang = 'en-US';
+            synth.speak(u);
+        };
+        card.innerHTML = `<b>${item.w}</b><i>คลิกฟังเสียง</i>`;
+        grid.appendChild(card);
+    });
+
+    function playSecret() {
+        targetWord = words[Math.floor(Math.random() * words.length)].w;
+        const u = new SpeechSynthesisUtterance(targetWord);
+        u.lang = 'en-US';
+        synth.speak(u);
+        document.getElementById('game-fb').innerText = "";
+    }
+
+    function checkGame() {
+        const inp = document.getElementById('answer-input').value.trim();
+        const fb = document.getElementById('game-fb');
+        if(inp.toLowerCase() === targetWord.toLowerCase()) {
+            fb.innerHTML = "🌟 ยอดเยี่ยม! ถูกต้องครับ 🌟";
+            fb.style.color = "#00b894";
+        } else {
+            fb.innerHTML = "❌ ยังไม่ใช่จ้า... ลองฟังใหม่อีกทีนะ!";
+            fb.style.color = "#d63031";
+        }
+        document.getElementById('answer-input').value = "";
+    }
+</script>
+</body>
+</html>
