@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <title>Vocab 1001-1500 - พระจอมเกล้าติวเตอร์</title>
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;700&family=Sarabun:wght@300;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --p: #00cec9; --s: #6c5ce7; --bg: #f5f6fa; }
+        body { font-family: 'Lexend', 'Sarabun', sans-serif; background: var(--bg); margin: 0; padding: 20px; }
+        .container { max-width: 1200px; margin: auto; background: white; padding: 40px; border-radius: 30px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); }
+        h1 { text-align: center; color: var(--s); font-size: 2.5em; }
+        .author { text-align: center; color: #636e72; margin-bottom: 20px; }
+        
+        .vocab-controls { display: flex; gap: 10px; margin-bottom: 20px; }
+        .search-input { flex: 1; padding: 15px; border-radius: 12px; border: 2px solid #eee; font-size: 1.1em; }
+        
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; max-height: 500px; overflow-y: auto; padding: 15px; border: 2px solid #f1f2f6; border-radius: 15px; background: #fafafa; }
+        .card { background: white; border: 1px solid #eee; padding: 12px; border-radius: 10px; text-align: center; cursor: pointer; transition: 0.3s; font-size: 0.9em; font-weight: bold; color: #2d3436; }
+        .card:hover { background: var(--s); color: white; transform: scale(1.05); }
+        
+        .scholar-zone { margin-top: 40px; padding: 30px; background: #eef2f3; border-radius: 20px; text-align: center; border: 2px solid var(--p); }
+        .big-word { font-size: 3.5em; color: var(--s); font-weight: bold; margin: 15px 0; min-height: 1.1em; letter-spacing: 2px; }
+        .typing-input { width: 300px; padding: 12px; border-radius: 8px; border: 2px solid #ccc; font-size: 1.2em; text-align: center; margin-bottom: 10px; }
+        .btn { padding: 12px 25px; border: none; border-radius: 50px; cursor: pointer; font-weight: bold; margin: 5px; transition: 0.3s; }
+        .btn-blue { background: var(--s); color: white; }
+        .btn-green { background: var(--p); color: white; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🎓 Scholar Vocabulary (1001 - 1500)</h1>
+    <p class="author">โดย พระจอมเกล้าติวเตอร์ | ยกระดับความรู้โดย CHINPONG SMART FARM</p>
+
+    <div class="vocab-controls">
+        <input type="text" class="search-input" id="search" placeholder="🔍 ค้นหาศัพท์แสงทางวิชาการ..." onkeyup="filter()">
+    </div>
+
+    <div class="grid" id="grid">
+        </div>
+
+    <div class="scholar-zone">
+        <h2>🔬 Scholar Challenge</h2>
+        <p>ฝึกสะกดคำศัพท์ยากๆ ให้แม่นยำ (พิมพ์ตามคำที่สุ่มได้)</p>
+        <div class="big-word" id="target">CHALLENGE</div>
+        <input type="text" id="typer" class="typing-input" placeholder="Type here..." onkeyup="checkType()">
+        <br>
+        <button class="btn btn-blue" onclick="randomWord()">Next Word</button>
+        <button class="btn btn-green" onclick="speak()">🔊 Listen</button>
+        <div id="msg" style="margin-top:10px; font-weight:bold; font-size:1.2em;"></div>
+    </div>
+</div>
+
+<script>
+    const synth = window.speechSynthesis;
+    // ตัวอย่างคำศัพท์ Scholar (พยายามรวบรวมกลุ่มคำสำคัญ)
+    const scholarWords = [
+        "Atmosphere", "Artificial", "Analysis", "Ancient", "Bacteria", "Because", "Business", "Citizen", "Culture", "Chemical", "Completely", "Discovery", "Digital", "Delicious", "Excellent", "Evidence", "Especially", "Experiment", "Finally", "Freedom", "Future", "Failure", "Fossil", "Gravity", "Gigantic", "However", "History", "Intelligence", "International", "Instead", "Knowledge", "Language", "Lightning", "Medicine", "Moreover", "Mountain", "Modern", "National", "Normal", "Network", "Observe", "Object", "Online", "President", "Progress", "Perfect", "Private", "Public", "Profit", "Quality", "Quickly", "Rarely", "Research", "Science", "Society", "Strange", "Success", "Service", "Solution", "Suddenly", "Therefore", "Tradition", "Terrible", "Usually", "Useful", "Valley", "Volcano", "Weight", "Website", "Yesterday", "Zero",
+        "Abilities", "Abundant", "Academic", "Accurate", "Advantage", "Adventure", "Agriculture", "Allowance", "Amazing", "Ambition", "Ancestors", "Antarctic", "Appetite", "Applaud", "Approach", "Aquarium", "Architect", "Aristocrat", "Artifact", "Assembly", "Assistance", "Asteroid", "Astronomy", "Athletic", "Attention", "Audience", "Authentic", "Authority", "Automate", "Avalanche", "Aviation", "Awareness", "Awesome", "Backbone", "Baggage", "Balances", "Barometer", "Barrier", "Beacons", "Behavior", "Benefits", "Bilingual", "Biography", "Biological", "Blizzard", "Boundary", "Broadcast", "Buildings", "Bulletins", "Calendar", "Campaign", "Capacity", "Captivate", "Celebrity", "Cemetery", "Certified", "Challenge", "Character", "Chemistry", "Chimpanzee", "Chronology", "Circular", "Classical", "Classification", "Climate", "Coalition", "Cognitive", "Collapse", "Collision", "Colonial", "Combination", "Comfortable", "Commerce", "Commission", "Commitment", "Committee", "Communication", "Community", "Comparison", "Compassion", "Compensation", "Competition", "Complaint", "Complexion", "Complicated", "Component", "Composition", "Compromise", "Concentrate", "Concept", "Conclusion", "Condition", "Conference", "Confidence", "Conflict", "Confusion", "Congratulate", "Connection", "Consequence", "Conservation", "Considerable", "Consistency", "Constant", "Constitution", "Construction", "Consultant", "Consumer", "Consumption", "Contact", "Container", "Contemporary", "Context", "Continent", "Continue", "Contract", "Contrast", "Contribution", "Convenient", "Conversation", "Convince", "Cooperation", "Coordinate", "Corporation", "Correction", "Correspondence", "Corridor", "Counselor", "Counter", "Courageous", "Courtesy", "Coverage", "Creative", "Credential", "Credibility", "Critical", "Criticism", "Crucial", "Crystal", "Culinary", "Cultivate", "Cumulative", "Curiosity", "Currency", "Current", "Curriculum", "Customer", "Cylinder", "Deadline", "Debatable", "Decision", "Declaration", "Decoration", "Decrease", "Dedication", "Defeat", "Definition", "Delegate", "Delicate", "Delivery", "Democracy", "Democratic", "Demonstrate", "Departure", "Dependable", "Description", "Deserve", "Designer", "Desperate", "Destination", "Destruction", "Detective", "Determination", "Development", "Diagonal", "Dialogue", "Diameter", "Dictionary", "Difference", "Difficulty", "Diffusion", "Dilemma", "Dimension", "Diplomat", "Direction", "Disappear", "Disappoint", "Disaster", "Discipline", "Disclosure", "Discount", "Discovery", "Discriminate", "Discussion", "Disease", "Disguise", "Disorder", "Display", "Disposal", "Distance", "Distinct", "Distribution", "Diversity", "Dividend", "Division", "Document", "Domestic", "Dominant", "Donation", "Dramatic", "Duration", "Dynamics", "Earnings", "Earthquake", "Economic", "Education", "Efficiency", "Elastic", "Election", "Electric", "Electronic", "Element", "Elephant", "Eligible", "Eliminate", "Embassy", "Emergency", "Emphasis", "Employment", "Encounter", "Encourage", "Endurance", "Energetic", "Engineer", "Enormous", "Enterprise", "Enthusiasm", "Entrance", "Environment", "Equation", "Equipment", "Equivalent", "Eruption", "Essential", "Establish", "Estimate", "Eternal", "Evaluate", "Evaporation", "Everyday", "Evolution", "Exaggerate", "Examination", "Excellence", "Exchange", "Excursion", "Execution", "Exercise", "Exhaustion", "Exhibition", "Existence", "Expansion", "Expectation", "Experience", "Experiment", "Explanation", "Exploration", "Explosion", "Expression", "Extension", "Extensive", "Exterior", "External", "Extinct", "Extraction", "Extremely", "Fabricate", "Facility", "Familiar", "Fantastic", "Fascinate", "Fashion", "Favorite", "Feasible", "Feature", "Federal", "Feedback", "Fertilizer", "Festival", "Fictional", "Fidelity", "Figurative", "Financial", "Flexible", "Flourish", "Fluctuation", "Forecast", "Foreigner", "Formation", "Fortunate", "Foundation", "Fragrance", "Framework", "Frequency", "Friendly", "Frighten", "Frustrate", "Function", "Fundamental", "Furniture", "Gallery", "Garbage", "Garment", "General", "Generate", "Generation", "Generosity", "Genetic", "Genuine", "Geography", "Geology", "Geometry", "Gesture", "Gigantic", "Global", "Glorious", "Government", "Governor", "Graduate", "Grammar", "Grandeur", "Graphic", "Grateful", "Gravity", "Greatness", "Grocery", "Guarantee", "Guardian", "Guidance", "Gymnastic", "Habitat", "Handwriting", "Happiness", "Hardship", "Harmony", "Harvest", "Headlight", "Headline", "Healthy", "Hearing", "Heartbeat", "Heavily", "Heighten", "Heritage", "Heroism", "Hesitate", "Highway", "History", "Holiday", "Homeland", "Honesty", "Horizon", "Horizontal", "Hormone", "Hospital", "Hostility", "Household", "Humanity", "Humidity", "Humility", "Humorous", "Hurricane", "Hydrogen", "Hygiene", "Hypothesis", "Identity", "Ideology", "Ignorance", "Illegal", "Illness", "Illusion", "Illustrate", "Imaginary", "Immediate", "Immigrate", "Immunity", "Impact", "Impatient", "Implement", "Important", "Impose", "Impossible", "Impression", "Improve", "Incident", "Include", "Increase", "Incredible", "Indicate", "Individual", "Industry", "Inertia", "Influence", "Inform", "Inhabit", "Inherit", "Initial", "Inject", "Injure", "Innocent", "Innovate", "Inquire", "Insects", "Inside", "Insight", "Inspect", "Inspire", "Install", "Instance", "Instant", "Instead", "Institute", "Instruct", "Insult", "Insurance", "Intact", "Integrity", "Intelligent", "Intend", "Intense", "Interact", "Interest", "Interior", "Internal", "Interpret", "Interval", "Interview", "Introduce", "Invade", "Invent", "Invest", "Invite", "Involve", "Irony", "Island", "Isolate", "Issue", "Itemize", "Ivory", "Jacket", "January", "Jealousy", "Jewelry", "Journal", "Journey", "Judgment", "Judicial", "Junction", "Justice", "Justify", "Juvenile", "Keepsake", "Keyboard", "Kidnap", "Kinship", "Kitchen", "Knowledge", "Labels", "Laboratory", "Landscape", "Language", "Lantern", "Latitude", "Laundry", "Lawyer", "Leadership", "Lecture", "Legacy", "Legendary", "Legislate", "Legitimate", "Leisure", "Length", "Lesson", "Lethal", "Liability", "Liberal", "Liberty", "Library", "License", "Lifetime", "Lighten", "Likely", "Limit", "Lineage", "Linguistic", "Liquid", "Listen", "Literal", "Literary", "Literature", "Location", "Logical", "Longevity", "Longitude", "Looking", "Loyalty", "Lucrative", "Lullaby", "Lumber", "Luminous", "Luxury", "Lyrics", "Machine", "Magazine", "Magical", "Magnet", "Magnify", "Maintain", "Majestic", "Majority", "Mammal", "Manage", "Mandate", "Manifest", "Manner", "Manual", "Manufacture", "Manuscript", "Marathon", "Marginal", "Marine", "Marker", "Market", "Marriage", "Marshal", "Martial", "Marvelous", "Masculine", "Massive", "Mastery", "Material", "Maternal", "Mathematics", "Maturity", "Maximum", "Meadow", "Measure", "Mechanic", "Mechanism", "Mediation", "Medicine", "Medieval", "Mediocre", "Medium", "Melody", "Memorable", "Memorial", "Memory", "Mental", "Mention", "Mentor", "Merchant", "Merciful", "Message", "Metabolic", "Metallic", "Metaphor", "Meticulous", "Metric", "Metropolis", "Microscope", "Middle", "Midnight", "Migration", "Military", "Million", "Mineral", "Minimize", "Minister", "Minority", "Miracle", "Mirror", "Mischief", "Miserable", "Mission", "Mistake", "Mixture", "Mobility", "Moderate", "Modern", "Modesty", "Modify", "Moisture", "Molecular", "Momentum", "Monarch", "Monetary", "Monitor", "Monopoly", "Monster", "Monthly", "Monument", "Morality", "Morning", "Mortality", "Mortgage", "Motivation", "Mountain", "Movement", "Multiple", "Multiply", "Municipal", "Muscle", "Museum", "Musical", "Musician", "Mutation", "Mystery", "Mystical", "Narrative", "Narrow", "Nation", "Native", "Natural", "Nautical", "Navigate", "Nearby", "Nebula", "Necessary", "Negative", "Neglect", "Neighbor", "Nervous", "Network", "Neutral", "Nimble", "Nitrogen", "Nobility", "Nocturnal", "Nominate", "Nonprofit", "Nonsense", "Normal", "Notable", "Notebook", "Notice", "Notion", "Novelty", "Nuclear", "Nuisance", "Numerical", "Numerous", "Nursery", "Nurture", "Nutrient", "Nutrition", "Obedient", "Object", "Oblige", "Obscure", "Observe", "Obstacle", "Obvious", "Occasion", "Occupy", "Oceanic", "Octagon", "Offense", "Official", "Olden", "Omission", "Onward", "Opaque", "Operate", "Opinion", "Opponent", "Opposite", "Optimist", "Option", "Oracle", "Orange", "Orbit", "Orchard", "Orderly", "Ordinary", "Organic", "Organize", "Orient", "Original", "Ornament", "Orphan", "Outcome", "Outdoor", "Outline", "Outlook", "Outside", "Outward", "Overcome", "Overlap", "Overlay", "Overview", "Oxygen", "Pacific", "Package", "Pageant", "Palace", "Panther", "Parable", "Parade", "Paradise", "Parallel", "Paralysis", "Parameter", "Parasite", "Parcel", "Parental", "Parking", "Parliament", "Partial", "Particle", "Partner", "Passage", "Passive", "Pastime", "Pasture", "Patience", "Patient", "Patriot", "Pattern", "Payment", "Peaceful", "Peasant", "Pebble", "Peculiar", "Pedestrian", "Penalty", "Pendulum", "Pension", "People", "Perceive", "Percent", "Perfect", "Perform", "Perfume", "Periodic", "Permanent", "Permission", "Personal", "Persist", "Perspective", "Persuade", "Pesticide", "Petroleum", "Pharmacy", "Phenomenon", "Phonetic", "Physical", "Physics", "Picnic", "Picture", "Pilgrim", "Pillar", "Pilot", "Pioneer", "Pipeline", "Pirate", "Piston", "Pitfall", "Pivotal", "Placement", "Placid", "Plague", "Planetary", "Planning", "Plastic", "Plateau", "Platform", "Plausible", "Playful", "Pleasant", "Pleasure", "Pledge", "Plentiful", "Pliable", "Plumber", "Plural", "Plywood", "Poetry", "Pointed", "Poison", "Polarity", "Police", "Policy", "Polish", "Polite", "Political", "Pollute", "Polygon", "Polymer", "Popular", "Portion", "Portrait", "Position", "Positive", "Possess", "Possible", "Postage", "Postpone", "Posture", "Potency", "Potential", "Poverty", "Powerful", "Practice", "Prairie", "Preach", "Precaution", "Precede", "Precious", "Precise", "Predict", "Preface", "Prefer", "Prefix", "Pregnant", "Premier", "Prepare", "Presence", "Present", "Preserve", "Preside", "Pressure", "Prestige", "Presume", "Pretend", "Pretext", "Prevail", "Prevent", "Previous", "Primary", "Primate", "Primitive", "Principal", "Principle", "Printer", "Priority", "Privacy", "Private", "Privilege", "Probable", "Problem", "Procedure", "Proceed", "Process", "Proclaim", "Produce", "Product", "Profile", "Profit", "Program", "Progress", "Project", "Prolong", "Prominent", "Promise", "Promote", "Prompt", "Pronounce", "Proof", "Proper", "Property", "Prophet", "Proposal", "Prospect", "Prosper", "Protect", "Protein", "Protest", "Protocol", "Proudly", "Provide", "Province", "Provoke", "Prudent", "Psychic", "Public", "Publish", "Punctual", "Puppet", "Purchase", "Purely", "Purpose", "Pursue", "Puzzle", "Pyramid"
+    ];
+
+    const grid = document.getElementById('grid');
+    const target = document.getElementById('target');
+    const typer = document.getElementById('typer');
+    const msg = document.getElementById('msg');
+    let current = "";
+
+    function init() {
+        scholarWords.sort().forEach(w => {
+            const div = document.createElement('div');
+            div.className = 'card';
+            div.innerText = w;
+            div.onclick = () => { current = w; target.innerText = w; speak(); };
+            grid.appendChild(div);
+        });
+        randomWord();
+    }
+
+    function filter() {
+        const val = document.getElementById('search').value.toLowerCase();
+        const cards = document.querySelectorAll('.card');
+        cards.forEach(c => {
+            c.style.display = c.innerText.toLowerCase().includes(val) ? 'block' : 'none';
+        });
+    }
+
+    function randomWord() {
+        current = scholarWords[Math.floor(Math.random() * scholarWords.length)];
+        target.innerText = current;
+        typer.value = "";
+        msg.innerText = "";
+        typer.focus();
+    }
+
+    function checkType() {
+        if(typer.value.toLowerCase() === current.toLowerCase()) {
+            msg.innerText = "✨ Excellent Spell! ✨";
+            msg.style.color = "#00b894";
+            setTimeout(randomWord, 1000);
+        } else {
+            msg.innerText = "Keep typing...";
+            msg.style.color = "#636e72";
+        }
+    }
+
+    function speak() {
+        const u = new SpeechSynthesisUtterance(current);
+        u.lang = 'en-US';
+        u.rate = 0.8;
+        synth.speak(u);
+    }
+
+    init();
+</script>
+</body>
+</html>
