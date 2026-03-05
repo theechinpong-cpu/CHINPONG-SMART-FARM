@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>50 Essential Vocab for Kids - พระจอมเกล้าติวเตอร์</title>
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;700&family=Sarabun&display=swap" rel="stylesheet">
+    <style>
+        :root { --primary: #6c5ce7; --secondary: #00cec9; --accent: #fab1a0; }
+        body { font-family: 'Lexend', 'Sarabun', sans-serif; background: #f1f2f6; padding: 20px; }
+        .container { max-width: 1100px; margin: auto; background: white; padding: 40px; border-radius: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        h1 { text-align: center; color: var(--primary); font-size: 2.5em; margin-bottom: 5px; }
+        .sub { text-align: center; color: #636e72; margin-bottom: 30px; }
+        
+        .vocab-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px; margin-bottom: 50px; }
+        .word-card { background: white; border: 2px solid #dfe6e9; padding: 15px; border-radius: 15px; text-align: center; cursor: pointer; transition: 0.3s; }
+        .word-card:hover { border-color: var(--primary); transform: translateY(-5px); background: #f9faff; }
+        .word-card b { font-size: 1.5em; display: block; color: var(--primary); }
+        .word-card i { font-size: 0.9em; color: #b2bec3; display: block; margin-top: 5px; }
+        .category-title { grid-column: 1 / -1; background: var(--secondary); color: white; padding: 10px 20px; border-radius: 10px; margin-top: 20px; font-weight: bold; }
+
+        .exercise-box { background: #fef9e7; padding: 30px; border-radius: 20px; border: 2px dashed #f39c12; }
+        .q-row { margin-bottom: 20px; background: white; padding: 15px; border-radius: 10px; }
+        .btn-check { background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; }
+        .feedback { display: none; margin-top: 10px; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🌟 50 Essential Vocabulary</h1>
+    <p class="sub">ฝึกอ่านออกเสียง 50 คำพื้นฐาน โดย CHINPONG SMART FARM</p>
+
+    <div class="vocab-grid" id="main-grid">
+        </div>
+
+    <div class="exercise-box">
+        <h2>📝 แบบฝึกหัดทดสอบการฟัง (10 ข้อตัวอย่าง)</h2>
+        <p>กดปุ่ม 🔊 แล้วเลือกว่าได้ยินคำว่าอะไร</p>
+        <div id="quiz-area"></div>
+        <h3 id="final-score" style="text-align:center; color:var(--primary);"></h3>
+    </div>
+</div>
+
+<script>
+    const synth = window.speechSynthesis;
+    const words = [
+        {w:"Cat", c:"Animals"}, {w:"Dog", c:"Animals"}, {w:"Bird", c:"Animals"}, {w:"Fish", c:"Animals"}, {w:"Lion", c:"Animals"},
+        {w:"Tiger", c:"Animals"}, {w:"Rabbit", c:"Animals"}, {w:"Duck", c:"Animals"}, {w:"Horse", c:"Animals"}, {w:"Zebra", c:"Animals"},
+        {w:"Book", c:"Objects"}, {w:"Pen", c:"Objects"}, {w:"School", c:"Objects"}, {w:"House", c:"Objects"}, {w:"Table", c:"Objects"},
+        {w:"Chair", c:"Objects"}, {w:"Bag", c:"Objects"}, {w:"Bed", c:"Objects"}, {w:"Car", c:"Objects"}, {w:"Bus", c:"Objects"},
+        {w:"Apple", c:"Food"}, {w:"Banana", c:"Food"}, {w:"Orange", c:"Food"}, {w:"Milk", c:"Food"}, {w:"Egg", c:"Food"},
+        {w:"Bread", c:"Food"}, {w:"Rice", c:"Food"}, {w:"Cake", c:"Food"}, {w:"Candy", c:"Food"}, {w:"Water", c:"Food"},
+        {w:"Run", c:"Verbs"}, {w:"Walk", c:"Verbs"}, {w:"Eat", c:"Verbs"}, {w:"Drink", c:"Verbs"}, {w:"Sleep", c:"Verbs"},
+        {w:"Read", c:"Verbs"}, {w:"Write", c:"Verbs"}, {w:"Jump", c:"Verbs"}, {w:"Sing", c:"Verbs"}, {w:"Dance", c:"Verbs"},
+        {w:"Big", c:"Adj"}, {w:"Small", c:"Adj"}, {w:"Happy", c:"Adj"}, {w:"Sad", c:"Adj"}, {w:"Red", c:"Colors"},
+        {w:"Blue", c:"Colors"}, {w:"Green", c:"Colors"}, {w:"Yellow", c:"Colors"}, {w:"Hot", c:"Adj"}, {w:"Cold", c:"Adj"}
+    ];
+
+    const grid = document.getElementById('main-grid');
+    let currentCat = "";
+
+    words.forEach(item => {
+        if(item.c !== currentCat) {
+            currentCat = item.c;
+            const h = document.createElement('div');
+            h.className = 'category-title';
+            h.innerText = "หมวด: " + currentCat;
+            grid.appendChild(h);
+        }
+        const card = document.createElement('div');
+        card.className = 'word-card';
+        card.onclick = () => {
+            const u = new SpeechSynthesisUtterance(item.w);
+            u.lang = 'en-US';
+            synth.speak(u);
+        };
+        card.innerHTML = `<b>${item.w}</b><i>คลิกเพื่อฟังเสียง</i>`;
+        grid.appendChild(card);
+    });
+
+    // Quiz Generation
+    const quizArea = document.getElementById('quiz-area');
+    const quizWords = words.slice(0, 10); // Take first 10 for quiz
+    let score = 0;
+
+    quizWords.forEach((item, idx) => {
+        const div = document.createElement('div');
+        div.className = 'q-row';
+        const options = [item.w, words[Math.floor(Math.random()*50)].w, words[Math.floor(Math.random()*50)].w].sort();
+        
+        div.innerHTML = `
+            <button onclick="playQuiz('${item.w}')">🔊 ฟังเสียงข้อ ${idx+1}</button>
+            <div style="margin-top:10px;">
+                ${options.map(opt => `<input type="radio" name="q${idx}" value="${opt}"> ${opt} `).join('')}
+            </div>
+            <button class="btn-check" onclick="checkQ(${idx}, '${item.w}')">ตรวจ</button>
+            <div id="fb${idx}" class="feedback"></div>
+        `;
+        quizArea.appendChild(div);
+    });
+
+    function playQuiz(w) {
+        const u = new SpeechSynthesisUtterance(w);
+        u.lang = 'en-US';
+        synth.speak(u);
+    }
+
+    function checkQ(idx, correct) {
+        const sel = document.querySelector(`input[name="q${idx}"]:checked`);
+        const fb = document.getElementById('fb'+idx);
+        fb.style.display = 'block';
+        if(sel && sel.value === correct) {
+            fb.innerText = "Correct! ✅"; fb.style.color = "green";
+        } else {
+            fb.innerText = "Wrong! ❌ เฉลยคือ " + correct; fb.style.color = "red";
+        }
+    }
+</script>
+</body>
+</html>
