@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vocab Mastery Test by พระจอมเกล้าติวเตอร์</title>
+    <style>
+        body { font-family: 'Chalkboard SE', 'Sarabun', sans-serif; background-color: #f0f8ff; color: #333; line-height: 1.6; padding: 20px; }
+        .container { max-width: 800px; margin: auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        h1 { color: #1e90ff; text-align: center; border-bottom: 2px solid #1e90ff; padding-bottom: 10px; }
+        .quiz-section { margin-bottom: 25px; padding: 15px; border: 1px solid #e0e0e0; border-radius: 10px; }
+        .question { font-weight: bold; font-size: 1.1em; margin-bottom: 10px; color: #2c3e50; }
+        .options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        button.option-btn { padding: 10px; border: 2px solid #ddd; background: #fff; border-radius: 8px; cursor: pointer; transition: 0.3s; font-size: 1em; }
+        button.option-btn:hover { background: #e3f2fd; border-color: #2196f3; }
+        .feedback { margin-top: 10px; padding: 10px; border-radius: 5px; display: none; font-weight: bold; }
+        .correct { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .incorrect { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .summary { display: none; text-align: center; margin-top: 30px; padding: 20px; background: #fff9c4; border-radius: 10px; }
+        .footer { text-align: center; margin-top: 20px; font-size: 0.9em; color: #666; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>📝 ข้อสอบคำศัพท์ ป.5 โดย พระจอมเกล้าติวเตอร์</h1>
+    <p style="text-align:center;">เขียนโดย CHINPONG SMART FARM</p>
+
+    <div id="quiz-container"></div>
+
+    <div id="summary" class="summary">
+        <h2>📊 สรุปผลคะแนนของคุณ</h2>
+        <p id="score-text" style="font-size: 1.5em; font-weight: bold;"></p>
+        <div id="analysis" style="text-align: left; margin-top: 15px;"></div>
+        <button onclick="location.reload()" style="margin-top:20px; padding:10px 20px; background:#1e90ff; color:white; border:none; border-radius:5px; cursor:pointer;">ทำข้อสอบอีกครั้ง</button>
+    </div>
+
+    <div class="footer">
+        © พัฒนาโดย CHINPONG SMART FARM สำหรับนักเรียน ป.5 ทุกคน
+    </div>
+</div>
+
+<script>
+const quizData = [
+    {
+        q: "1. หากนักเรียนต้องการวาดวงกลมให้สวยงาม และลงสีไม้ นักเรียนต้องใช้ทักษะใด?",
+        options: ["Listen and Speak", "Draw and Paint", "Wash and Clean", "Think and Write"],
+        correct: 1,
+        explain: "Draw แปลว่า วาดรูป และ Paint แปลว่า ระบายสี ซึ่งตรงกับโจทย์ที่สุดครับ",
+        category: "Verbs"
+    },
+    {
+        q: "2. คำศัพท์ใดอยู่ในกลุ่ม 'Time' และอยู่ระหว่าง Monday และ Wednesday?",
+        options: ["Sunday", "Friday", "Tuesday", "Month"],
+        correct: 2,
+        explain: "Tuesday คือวันอังคาร ซึ่งอยู่ต่อจากวันจันทร์ (Monday) และก่อนวันพุธ (Wednesday)",
+        category: "Time"
+    },
+    {
+        q: "3. 'The elephant is ______, but the mouse is ______.' ควรเติมคำใดลงในช่องว่าง?",
+        options: ["Small / Large", "Fast / Slow", "Large / Small", "Above / Below"],
+        correct: 2,
+        explain: "ช้างมีขนาดใหญ่ (Large) ส่วนหนูมีขนาดเล็ก (Small) เป็นการเปรียบเทียบขนาดครับ",
+        category: "General"
+    },
+    {
+        q: "4. สถานที่ใดที่เราจะพบ 'Farmer' และ 'Garden' ได้บ่อยที่สุด?",
+        options: ["Hospital", "Market", "Police Station", "Kitchen"],
+        correct: 1,
+        explain: "Market (ตลาด) เป็นที่ที่ชาวนา (Farmer) นำผลผลิตจากสวน (Garden) มาขายครับ",
+        category: "Place/Job"
+    },
+    {
+        q: "5. อุปกรณ์ใดที่ใช้ลบคำผิดเมื่อเราใช้ Pencil เขียนลงบน Paper?",
+        options: ["Ruler", "Eraser", "Computer", "Homework"],
+        correct: 1,
+        explain: "Eraser คือ ยางลบ ใช้สำหรับลบรอยดินสอ (Pencil) ครับ",
+        category: "School"
+    }
+];
+
+let score = 0;
+let answeredCount = 0;
+let analysisData = {};
+
+function initQuiz() {
+    const container = document.getElementById('quiz-container');
+    quizData.forEach((item, index) => {
+        const section = document.createElement('div');
+        section.className = 'quiz-section';
+        section.innerHTML = `
+            <div class="question">${item.q}</div>
+            <div class="options">
+                ${item.options.map((opt, i) => `<button class="option-btn" onclick="checkAnswer(${index}, ${i}, this)">${opt}</button>`).join('')}
+            </div>
+            <div id="feedback-${index}" class="feedback"></div>
+        `;
+        container.appendChild(section);
+    });
+}
+
+function checkAnswer(qIdx, optIdx, btn) {
+    const feedback = document.getElementById(`feedback-${qIdx}`);
+    const buttons = btn.parentElement.querySelectorAll('.option-btn');
+    
+    // ป้องกันการกดซ้ำ
+    if (feedback.style.display === 'block') return;
+
+    buttons.forEach(b => b.style.cursor = 'default');
+    feedback.style.display = 'block';
+
+    if (optIdx === quizData[qIdx].correct) {
+        score++;
+        feedback.innerHTML = `✅ ถูกต้อง! <br> <small>${quizData[qIdx].explain}</small>`;
+        feedback.className = 'feedback correct';
+    } else {
+        feedback.innerHTML = `❌ ยังไม่ถูกนะ <br> <small>เฉลย: ${quizData[qIdx].options[quizData[qIdx].correct]} <br> เพราะ: ${quizData[qIdx].explain}</small>`;
+        feedback.className = 'feedback incorrect';
+        
+        // เก็บข้อมูลจุดอ่อน
+        const cat = quizData[qIdx].category;
+        analysisData[cat] = (analysisData[cat] || 0) + 1;
+    }
+
+    answeredCount++;
+    if (answeredCount === quizData.length) {
+        showSummary();
+    }
+}
+
+function showSummary() {
+    document.getElementById('summary').style.display = 'block';
+    document.getElementById('score-text').innerText = `คุณได้คะแนน ${score} / ${quizData.length}`;
+    
+    let analysisHTML = "<strong>🔍 วิเคราะห์จุดอ่อน:</strong><ul>";
+    if (Object.keys(analysisData).length === 0) {
+        analysisHTML += "<li>ยอดเยี่ยมมาก! คุณไม่มีจุดอ่อนในบทเรียนนี้เลย</li>";
+    } else {
+        for (const cat in analysisData) {
+            analysisHTML += `<li>ควรทบทวนหมวด <b>${cat}</b> เพิ่มเติมอีกนิดนะเด็กๆ</li>`;
+        }
+    }
+    analysisHTML += "</ul>";
+    document.getElementById('analysis').innerHTML = analysisHTML;
+    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+}
+
+initQuiz();
+</script>
+</body>
+</html>
