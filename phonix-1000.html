@@ -8,20 +8,30 @@
         :root { --primary: #6c5ce7; --secondary: #00b894; --dark: #2d3436; }
         body { font-family: 'Lexend', 'Sarabun', sans-serif; background: #f0f2f5; margin: 0; padding: 20px; }
         .container { max-width: 1200px; margin: auto; background: white; padding: 40px; border-radius: 30px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); }
-        h1 { text-align: center; color: var(--primary); font-size: 2.5em; }
+        h1 { text-align: center; color: var(--primary); font-size: 2.5em; margin-bottom: 10px; }
         .author { text-align: center; color: #636e72; margin-bottom: 20px; }
         
-        .search-box { width: 100%; padding: 15px; border-radius: 15px; border: 2px solid #ddd; font-size: 1.1em; margin-bottom: 20px; box-sizing: border-box; }
+        .search-box { width: 100%; padding: 15px; border-radius: 15px; border: 2px solid #ddd; font-size: 1.1em; margin-bottom: 20px; box-sizing: border-box; outline: none; transition: 0.3s; }
+        .search-box:focus { border-color: var(--primary); box-shadow: 0 0 10px rgba(108, 92, 231, 0.2); }
         
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; max-height: 600px; overflow-y: auto; padding: 10px; border: 1px solid #eee; border-radius: 15px; }
-        .card { background: white; border: 1px solid #eee; padding: 12px; border-radius: 10px; text-align: center; cursor: pointer; transition: 0.2s; font-size: 0.9em; }
-        .card:hover { background: var(--primary); color: white; transform: scale(1.05); }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; max-height: 500px; overflow-y: auto; padding: 15px; border: 1px solid #eee; border-radius: 15px; background: #fafafa; }
+        .card { background: white; border: 1px solid #e0e0e0; padding: 15px; border-radius: 12px; text-align: center; cursor: pointer; transition: 0.2s; font-size: 1em; font-weight: bold; color: var(--dark); }
+        .card:hover { background: var(--primary); color: white; transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
         
-        .practice-zone { margin-top: 40px; padding: 30px; background: #f9f9f9; border-radius: 20px; text-align: center; }
-        .big-word { font-size: 4em; color: var(--primary); font-weight: bold; margin: 20px 0; min-height: 1.2em; }
-        .btn { padding: 15px 30px; font-size: 1.1em; border: none; border-radius: 50px; cursor: pointer; transition: 0.3s; margin: 5px; font-weight: bold; }
+        .practice-zone { margin-top: 40px; padding: 30px; background: #f9f9f9; border-radius: 20px; text-align: center; border: 2px dashed #ddd; }
+        .big-word { font-size: 4.5em; color: var(--primary); font-weight: bold; margin: 20px 0; min-height: 1.2em; text-shadow: 2px 2px 0px rgba(0,0,0,0.05); }
+        .meaning-display { font-size: 1.5em; color: var(--secondary); margin-bottom: 20px; min-height: 1.2em; font-family: 'Sarabun'; }
+        
+        .btn { padding: 15px 35px; font-size: 1.1em; border: none; border-radius: 50px; cursor: pointer; transition: 0.3s; margin: 8px; font-weight: bold; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .btn:active { transform: scale(0.95); }
         .btn-rand { background: var(--primary); color: white; }
         .btn-speak { background: var(--secondary); color: white; }
+
+        /* ปรับแต่ง Scrollbar */
+        .grid::-webkit-scrollbar { width: 8px; }
+        .grid::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
+        .grid::-webkit-scrollbar-thumb { background: #ccc; border-radius: 10px; }
+        .grid::-webkit-scrollbar-thumb:hover { background: var(--primary); }
     </style>
 </head>
 <body>
@@ -30,40 +40,89 @@
     <h1>🏆 Phonics Grand Master (501 - 1000)</h1>
     <p class="author">โดย พระจอมเกล้าติวเตอร์ | เขียนโดย CHINPONG SMART FARM</p>
 
-    <input type="text" class="search-box" id="searchInput" placeholder="🔍 ค้นหาคำศัพท์ (เช่น Science, Internet...)" onkeyup="filterWords()">
+    <input type="text" class="search-box" id="searchInput" placeholder="🔍 ค้นหาคำศัพท์ (ลองเอาเมาส์ชี้ที่บัตรคำเพื่อดูคำแปล...)" onkeyup="filterWords()">
 
-    <div class="grid" id="vocabGrid">
-        </div>
+    <div class="grid" id="vocabGrid"></div>
 
     <div class="practice-zone">
         <h2>🎮 Random Practice Zone</h2>
-        <p>กดปุ่มสุ่มคำศัพท์แล้วลองฝึกอ่านออกเสียงให้ดังและชัดเจน!</p>
+        <p>สุ่มคำศัพท์ ฝึกอ่านออกเสียง และดูคำแปลไปพร้อมกัน!</p>
         <div class="big-word" id="displayWord">READY?</div>
-        <button class="btn btn-rand" onclick="randomWord()">สุ่มคำใหม่</button>
+        <div class="meaning-display" id="displayMeaning">ชี้ที่คำศัพท์เพื่อดูความหมาย</div>
+        <button class="btn btn-rand" onclick="randomWord()">🎲 สุ่มคำใหม่</button>
         <button class="btn btn-speak" onclick="speakCurrent()">🔊 ฟังเสียง</button>
     </div>
 </div>
 
 <script>
-    // ตัวอย่างคำศัพท์บางส่วน (ในระบบจริงจะใส่ให้ครบ 500 คำ)
-    const words = [
-        "History", "Science", "Math", "Music", "Art", "Physical", "Geography", "Language", "Library", "Uniform", "Internet", "Website", "Screen", "Keyboard", "Mouse", "Laptop", "Tablet", "Battery", "Charger", "Signal", "Password", "Email", "Camera", "Video", "Game", "Surprised", "Nervous", "Excited", "Bored", "Lonely", "Proud", "Jealous", "Confused", "Patient", "Careful", "Creative", "Honest", "Brave", "Polite", "Jungle", "Desert", "Ocean", "Valley", "Volcano", "Earthquake", "Rainbow", "Lightning", "Season", "Summer", "Winter", "Autumn", "Spring", "Environment", "Healthy", "Sick", "Fever", "Headache", "Stomach", "Medicine", "Vitamin", "Exercise", "Muscle", "Bone", "Heart", "Brain", "Blood", "Dentist", "Clinic", "Engineer", "Artist", "Musician", "Scientist", "Lawyer", "Soldier", "Sailor", "Fireman", "Postman", "Waiter", "Photographer", "Astronaut", "Manager", "Painting", "Cooking", "Traveling", "Fishing", "Camping", "Hiking", "Skating", "Surfing", "Collecting", "Gardening", "Shopping", "Tomorrow", "Yesterday", "Suddenly", "Quickly", "Slowly", "Loudly", "Quietly", "Always", "Never", "Sometimes", "Rectangle", "Oval", "Diamond", "Sphere", "Cone", "Cube", "Length", "Height", "Weight", "Heavy", "Light", "Deep", "Shallow", "Umbrella", "Hammer", "Scissors", "Compass", "Candle", "Flashlight", "Magnet", "Telescope", "Microscope", "Rocket", "Airplane", "Helicopter",
-        // ... เพิ่มคำอื่นๆ จนครบ 500 คำ (พี่ใส่ตัวแทนกลุ่มคำสำคัญไว้ให้เพื่อทดสอบระบบ)
-        "Adventure", "Balance", "Calendar", "Distance", "Energy", "Future", "Gravity", "History", "Imagine", "Journey", "Kitchen", "Liquid", "Message", "Notice", "Object", "Pattern", "Quality", "Reason", "Safety", "Target", "Useful", "Valley", "Weather", "Xylophone", "Young", "Zero"
-    ];
+    // ข้อมูลคำศัพท์พร้อมคำแปล (Dictionary)
+    const vocabData = {
+        "History": "ประวัติศาสตร์", "Science": "วิทยาศาสตร์", "Math": "คณิตศาสตร์", "Music": "ดนตรี", 
+        "Art": "ศิลปะ", "Physical": "พลศึกษา/กายภาพ", "Geography": "ภูมิศาสตร์", "Language": "ภาษา", 
+        "Library": "ห้องสมุด", "Uniform": "เครื่องแบบ", "Internet": "อินเทอร์เน็ต", "Website": "เว็บไซต์", 
+        "Screen": "หน้าจอ", "Keyboard": "แป้นพิมพ์", "Mouse": "เมาส์", "Laptop": "คอมพิวเตอร์พกพา", 
+        "Tablet": "แท็บเล็ต", "Battery": "แบตเตอรี่", "Charger": "ที่ชาร์จ", "Signal": "สัญญาณ", 
+        "Password": "รหัสผ่าน", "Email": "อีเมล", "Camera": "กล้อง", "Video": "วิดีโอ", 
+        "Game": "เกม", "Surprised": "ประหลาดใจ", "Nervous": "ประหม่า/กังวล", "Excited": "ตื่นเต้น", 
+        "Bored": "เบื่อ", "Lonely": "เหงา", "Proud": "ภูมิใจ", "Jealous": "อิจฉา", 
+        "Confused": "สับสน", "Patient": "อดทน", "Careful": "ระมัดระวัง", "Creative": "สร้างสรรค์", 
+        "Honest": "ซื่อสัตย์", "Brave": "กล้าหาญ", "Polite": "สุภาพ", "Jungle": "ป่าดิบชื้น", 
+        "Desert": "ทะเลทราย", "Ocean": "มหาสมุทร", "Valley": "หุบเขา", "Volcano": "ภูเขาไฟ", 
+        "Earthquake": "แผ่นดินไหว", "Rainbow": "รุ้งกินน้ำ", "Lightning": "ฟ้าแลบ/สายฟ้า", "Season": "ฤดูกาล", 
+        "Summer": "ฤดูร้อน", "Winter": "ฤดูหนาว", "Autumn": "ฤดูใบไม้ร่วง", "Spring": "ฤดูใบไม้ผลิ", 
+        "Environment": "สิ่งแวดล้อม", "Healthy": "สุขภาพดี", "Sick": "ป่วย", "Fever": "ไข้", 
+        "Headache": "ปวดหัว", "Stomach": "ท้อง/ปวดท้อง", "Medicine": "ยา", "Vitamin": "วิตามิน", 
+        "Exercise": "ออกกำลังกาย", "Muscle": "กล้ามเนื้อ", "Bone": "กระดูก", "Heart": "หัวใจ", 
+        "Brain": "สมอง", "Blood": "เลือด", "Dentist": "หมอฟัน", "Clinic": "คลินิก", 
+        "Engineer": "วิศวกร", "Artist": "ศิลปิน", "Musician": "นักดนตรี", "Scientist": "นักวิทยาศาสตร์", 
+        "Lawyer": "ทนายความ", "Soldier": "ทหาร", "Sailor": "ทหารเรือ", "Fireman": "พนักงานดับเพลิง", 
+        "Postman": "บุรุษไปรษณีย์", "Waiter": "บริกร/เด็กเสิร์ฟ", "Photographer": "ช่างภาพ", "Astronaut": "นักบินอวกาศ", 
+        "Manager": "ผู้จัดการ", "Painting": "การวาดภาพ", "Cooking": "การทำอาหาร", "Traveling": "การเดินทาง", 
+        "Fishing": "การตกปลา", "Camping": "การตั้งแคมป์", "Hiking": "การเดินป่า", "Skating": "การเล่นสเก็ต", 
+        "Surfing": "การเล่นกระดานโต้คลื่น", "Collecting": "การสะสม", "Gardening": "การทำสวน", "Shopping": "การซื้อของ", 
+        "Tomorrow": "พรุ่งนี้", "Yesterday": "เมื่อวาน", "Suddenly": "ทันทีทันใด", "Quickly": "อย่างรวดเร็ว", 
+        "Slowly": "อย่างช้าๆ", "Loudly": "อย่างดัง", "Quietly": "อย่างเงียบๆ", "Always": "เสมอ", 
+        "Never": "ไม่เคย", "Sometimes": "บางครั้ง", "Rectangle": "สี่เหลี่ยมผืนผ้า", "Oval": "วงรี", 
+        "Diamond": "ทรงสี่เหลี่ยมข้าวหลามตัด", "Sphere": "ทรงกลม", "Cone": "ทรงกรวย", "Cube": "ลูกบาศก์", 
+        "Length": "ความยาว", "Height": "ความสูง", "Weight": "น้ำหนัก", "Heavy": "หนัก", 
+        "Light": "เบา/แสง", "Deep": "ลึก", "Shallow": "ตื้น", "Umbrella": "ร่ม", 
+        "Hammer": "ค้อน", "Scissors": "กรรไกร", "Compass": "เข็มทิศ", "Candle": "เทียน", 
+        "Flashlight": "ไฟฉาย", "Magnet": "แม่เหล็ก", "Telescope": "กล้องโทรทรรศน์", "Microscope": "กล้องจุลทรรศน์", 
+        "Rocket": "จรวด", "Airplane": "เครื่องบิน", "Helicopter": "เฮลิคอปเตอร์", "Adventure": "การผจญภัย", 
+        "Balance": "สมดุล", "Calendar": "ปฏิทิน", "Distance": "ระยะทาง", "Energy": "พลังงาน", 
+        "Future": "อนาคต", "Gravity": "แรงโน้มถ่วง", "Imagine": "จินตนาการ", "Journey": "การเดินทาง", 
+        "Kitchen": "ห้องครัว", "Liquid": "ของเหลว", "Message": "ข้อความ", "Notice": "ประกาศ/แจ้งเตือน", 
+        "Object": "วัตถุ", "Pattern": "รูปแบบ", "Quality": "คุณภาพ", "Reason": "เหตุผล", 
+        "Safety": "ความปลอดภัย", "Target": "เป้าหมาย", "Useful": "มีประโยชน์", "Weather": "สภาพอากาศ", 
+        "Xylophone": "ระนาด", "Young": "หนุ่มสาว/เด็ก", "Zero": "ศูนย์"
+    };
 
+    const words = Object.keys(vocabData).sort();
     const grid = document.getElementById('vocabGrid');
     const display = document.getElementById('displayWord');
+    const displayMeaning = document.getElementById('displayMeaning');
     let currentWord = "";
 
     function init() {
-        words.sort().forEach(w => {
+        words.forEach(w => {
             const div = document.createElement('div');
             div.className = 'card';
             div.innerText = w;
-            div.onclick = () => { currentWord = w; display.innerText = w; speakCurrent(); };
+            // เพิ่มคำแปลลงใน title attribute เพื่อให้ขึ้นตอน Hover
+            div.title = `คำแปล: ${vocabData[w]}`;
+            
+            div.onclick = () => { 
+                updateDisplay(w);
+                speakCurrent(); 
+            };
             grid.appendChild(div);
         });
+    }
+
+    function updateDisplay(w) {
+        currentWord = w;
+        display.innerText = w;
+        displayMeaning.innerText = `💡 แปลว่า: ${vocabData[w]}`;
     }
 
     function filterWords() {
@@ -80,12 +139,14 @@
 
     function randomWord() {
         const rand = words[Math.floor(Math.random() * words.length)];
-        currentWord = rand;
-        display.innerText = rand;
+        updateDisplay(rand);
     }
 
     function speakCurrent() {
         if(!currentWord) return;
+        // หยุดเสียงที่กำลังพูดอยู่ก่อนหน้า
+        window.speechSynthesis.cancel();
+        
         const u = new SpeechSynthesisUtterance(currentWord);
         u.lang = 'en-US';
         u.rate = 0.8;
