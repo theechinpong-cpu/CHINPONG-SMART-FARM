@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nouns Master Class - พระจอมเกล้าติวเตอร์</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap');
+        body { font-family: 'Kanit', sans-serif; background-color: #f4f7f6; padding: 15px; line-height: 1.6; }
+        .lesson-header { max-width: 800px; margin: auto; background: #1a73e8; color: white; padding: 25px; border-radius: 20px 20px 0 0; text-align: center; }
+        .content-body { max-width: 800px; margin: auto; background: white; padding: 30px; border-radius: 0 0 20px 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .trick-box { background: #fff3e0; border-left: 6px solid #ff9800; padding: 15px; margin: 20px 0; border-radius: 8px; }
+        .q-card { background: #fafafa; border: 1px solid #eee; padding: 20px; margin-bottom: 20px; border-radius: 15px; transition: 0.3s; }
+        .q-card:hover { border-color: #1a73e8; }
+        .opt-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
+        button { padding: 12px; border: 2px solid #ddd; border-radius: 10px; background: white; cursor: pointer; font-family: 'Kanit'; font-size: 16px; }
+        button:hover { background: #e8f0fe; }
+        .correct { background: #d4edda !important; border-color: #28a745 !important; color: #155724; font-weight: bold; }
+        .incorrect { background: #f8d7da !important; border-color: #dc3545 !important; color: #721c24; }
+        .explanation { display: none; margin-top: 12px; padding: 12px; background: #e3f2fd; border-radius: 8px; font-size: 0.9em; color: #0d47a1; }
+        .result-area { display: none; text-align: center; padding: 40px; }
+        #final-score { font-size: 3em; color: #1a73e8; }
+        .badge { display: inline-block; padding: 3px 10px; border-radius: 5px; font-size: 0.7em; margin-bottom: 5px; color: white; }
+    </style>
+</head>
+<body>
+
+<div class="lesson-header">
+    <h1>เก่ง Nouns ในหน้าเดียว 🌟</h1>
+    <p>โดย พระจอมเกล้าติวเตอร์</p>
+</div>
+
+<div class="content-body">
+    <div class="trick-box">
+        <strong>ทบทวนสั้นๆ:</strong><br>
+        ✅ <b>A/An</b> ใช้กับนามนับได้ 1 อย่าง (Singular)<br>
+        ✅ <b>เติม s/es</b> ใช้เมื่อมีหลายอย่าง (Plural) และห้ามใส่ A/An<br>
+        ✅ <b>นับไม่ได้ (Water, Rice, Gas)</b> ห้ามใส่ A/An และห้ามเติม s
+    </div>
+
+    <div id="quiz-area"></div>
+
+    <div style="text-align: center; margin-top: 30px;">
+        <button id="finish-btn" style="background: #1a73e8; color: white; padding: 15px 50px; font-size: 1.2em; border: none;" onclick="showSummary()">ส่งคำตอบทั้งหมด</button>
+    </div>
+
+    <div id="result-area" class="result-area">
+        <hr>
+        <h2>คะแนนรวมของคุณ</h2>
+        <div id="final-score">0</div>
+        <div id="analysis" style="text-align: left; margin-top: 20px;"></div>
+        <button onclick="location.reload()" style="margin-top: 20px;">เริ่มเรียนใหม่</button>
+    </div>
+</div>
+
+<script>
+const myQuestions = [
+    { q: "1. I see ___ van on the road.", opts: ["a", "an", "vans", "-"], ans: 0, note: "Van เป็นนามนับได้ มี 1 คัน และขึ้นต้นด้วยเสียงพยัญชนะ จึงใช้ a" },
+    { q: "2. The driver buys ___ water.", opts: ["a", "an", "water", "-"], ans: 2, note: "Water เป็นนามนับไม่ได้ ห้ามใส่ a/an จึงใช้ตัวคำนามเปล่าๆ ได้เลย" },
+    { q: "3. There are ten ___ in the school.", opts: ["student", "students", "a student", "an student"], ans: 1, note: "มี 10 คน (มากกว่าหนึ่ง) ต้องเติม s ที่ท้ายคำนาม" },
+    { q: "4. Uncle Somchai drinks ___ coffee.", opts: ["a", "an", "the", "-"], ans: 3, note: "Coffee นับไม่ได้ ห้ามใส่ a/an (ในประโยคทั่วไป)" },
+    { q: "5. I have ___ apple in my bag.", opts: ["a", "an", "apples", "-"], ans: 1, note: "Apple นับได้ มี 1 ผล ขึ้นต้นด้วยเสียงสระ (อ.) ใช้ an" },
+    { q: "6. Look at those ___!", opts: ["bird", "birds", "a bird", "an bird"], ans: 1, note: "Those ใช้กับของหลายอย่าง ดังนั้น bird ต้องเติม s" },
+    { q: "7. We need some ___ for the van.", opts: ["gas", "gases", "a gas", "an gas"], ans: 0, note: "Gas (น้ำมัน/ก๊าซ) นับไม่ได้ ไม่ต้องเติม s" },
+    { q: "8. I see ___ elephant at the zoo.", opts: ["a", "an", "elephants", "-"], ans: 1, note: "Elephant 1 ตัวขึ้นด้วยเสียง อ. ใช้ an" },
+    { q: "9. My mother buys three ___.", opts: ["egg", "eggs", "an egg", "a eggs"], ans: 1, note: "3 ฟอง ต้องเติม s" },
+    { q: "10. Do you want ___ ice?", opts: ["a", "an", "the", "-"], ans: 3, note: "Ice (น้ำแข็ง) นับไม่ได้ ห้ามใส่ a/an" },
+    { q: "11. He is ___ teacher at Kanlayanee.", opts: ["a", "an", "teachers", "-"], ans: 0, note: "ครู 1 คน ใช้ a" },
+    { q: "12. I have two ___.", opts: ["brother", "brothers", "a brother", "an brother"], ans: 1, note: "มี 2 คน ต้องเติม s" },
+    { q: "13. This is ___ orange.", opts: ["a", "an", "oranges", "-"], ans: 1, note: "ส้ม 1 ผล ใช้ an" },
+    { q: "14. Please give me ___ rice.", opts: ["a", "an", "the", "-"], ans: 3, note: "ข้าว นับไม่ได้ ห้ามใส่ a/an" },
+    { q: "15. The cat has four ___.", opts: ["leg", "legs", "a leg", "an leg"], ans: 1, note: "4 ขา ต้องเติม s" },
+    { q: "16. I want to buy ___ umbrella.", opts: ["a", "an", "umbrellas", "-"], ans: 1, note: "ร่ม 1 คัน เสียง อ. ใช้ an" },
+    { q: "17. There is ___ milk in the glass.", opts: ["a", "an", "the", "-"], ans: 3, note: "นม นับไม่ได้ ห้ามใส่ a/an" },
+    { q: "18. Karn sees many ___ on the way.", opts: ["tree", "trees", "a tree", "an tree"], ans: 1, note: "Many แปลว่ามาก ต้องใช้กับนามเติม s" },
+    { q: "19. It is ___ beautiful day.", opts: ["a", "an", "days", "-"], ans: 0, note: "วันดีๆ 1 วัน ใช้ a" },
+    { q: "20. I like ___ music.", opts: ["a", "an", "the", "-"], ans: 3, note: "ดนตรี เป็นนามนับไม่ได้ ห้ามใส่ a/an" },
+    { q: "21. She has ___ old car.", opts: ["a", "an", "cars", "-"], ans: 1, note: "Old ขึ้นต้นด้วยเสียง อ. ใช้ an" },
+    { q: "22. The shop sells ___ bread.", opts: ["a", "an", "breads", "-"], ans: 3, note: "Bread (ขนมปัง) ภาษาอังกฤษถือว่านับไม่ได้ ห้ามใส่ a/an" },
+    { q: "23. Open ___ window, please.", opts: ["a", "an", "the", "-"], ans: 2, note: "เจาะจงให้เปิดบานนั้น ใช้ the" },
+    { q: "24. There are five ___ on the table.", opts: ["box", "boxes", "a box", "an box"], ans: 1, note: "5 กล่อง คำที่ลงท้ายด้วย x ต้องเติม es" },
+    { q: "25. I see ___ moon in the sky.", opts: ["a", "an", "the", "-"], ans: 2, note: "พระจันทร์มีดวงเดียวในโลก ใช้ the" }
+];
+
+let userScore = 0;
+let answered = 0;
+
+const quizArea = document.getElementById('quiz-area');
+myQuestions.forEach((item, idx) => {
+    const card = document.createElement('div');
+    card.className = 'q-card';
+    card.innerHTML = `
+        <p><strong>${item.q}</strong></p>
+        <div class="opt-grid" id="grid-${idx}">
+            ${item.opts.map((o, i) => `<button onclick="check(${idx}, ${i}, this)">${o}</button>`).join('')}
+        </div>
+        <div id="exp-${idx}" class="explanation"></div>
+    `;
+    quizArea.appendChild(card);
+});
+
+function check(qIdx, selected, btn) {
+    const correct = myQuestions[qIdx].ans;
+    const exp = document.getElementById(`exp-${qIdx}`);
+    if(exp.style.display === 'block') return;
+
+    answered++;
+    exp.style.display = 'block';
+    exp.innerHTML = `<b>คำตอบ: ${myQuestions[qIdx].opts[correct]}</b><br>${myQuestions[qIdx].note}`;
+
+    if(selected === correct) {
+        btn.classList.add('correct');
+        userScore++;
+    } else {
+        btn.classList.add('incorrect');
+        const btns = document.getElementById(`grid-${qIdx}`).querySelectorAll('button');
+        btns[correct].classList.add('correct');
+    }
+}
+
+function showSummary() {
+    if(answered < 25) { alert("ทำข้อสอบให้ครบ 25 ข้อก่อนนะเด็กๆ"); return; }
+    document.getElementById('quiz-area').style.display = 'none';
+    document.getElementById('finish-btn').style.display = 'none';
+    const area = document.getElementById('result-area');
+    area.style.display = 'block';
+    document.getElementById('final-score').innerText = userScore + "/25";
+    
+    let comment = "<h3>บทวิเคราะห์จากคุณครู:</h3>";
+    if(userScore === 25) comment += "<p>🌟 <b>สมบูรณ์แบบ!</b> หนูเข้าใจเรื่องคำนามอย่างลึกซึ้งแล้วครับ</p>";
+    else if(userScore >= 18) comment += "<p>👏 <b>เก่งมาก!</b> มีพลาดนิดหน่อยเรื่องนามนับไม่ได้ ลองทวนเรื่อง Bread กับ Water นะครับ</p>";
+    else comment += "<p>📚 <b>สู้ๆ นะ!</b> ลองกลับไปอ่านเรื่องการเติม s และการใช้ a/an กับเสียง อ. อีกรอบนะครับ</p>";
+    
+    document.getElementById('analysis').innerHTML = comment;
+}
+</script>
+</body>
+</html>
