@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A, An, The Master - พระจอมเกล้าติวเตอร์</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap');
+        body { font-family: 'Kanit', sans-serif; background-color: #eef2f3; padding: 10px; }
+        .lesson-card { max-width: 800px; margin: 20px auto; background: #fff; padding: 30px; border-radius: 20px; border-left: 10px solid #1a73e8; box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
+        .quiz-container { max-width: 800px; margin: auto; background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        h1, h2 { color: #1a73e8; }
+        .highlight { color: #d93025; font-weight: bold; }
+        .question-block { margin-bottom: 25px; padding: 15px; border-bottom: 1px dashed #ccc; }
+        .options { display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
+        button.opt-btn { padding: 10px 20px; border: 2px solid #ddd; border-radius: 12px; background: white; cursor: pointer; font-size: 16px; transition: 0.2s; }
+        button.opt-btn:hover { background: #f0f7ff; border-color: #1a73e8; }
+        .correct { background: #d4edda !important; border-color: #28a745 !important; color: #155724; }
+        .incorrect { background: #f8d7da !important; border-color: #dc3545 !important; color: #721c24; }
+        .explanation { display: none; margin-top: 10px; padding: 15px; background: #fff3cd; border-radius: 10px; font-size: 0.9em; border-left: 5px solid #ffa000; }
+        .result-box { display: none; text-align: center; padding: 40px; }
+        .badge { display: inline-block; padding: 5px 15px; border-radius: 20px; font-size: 0.8em; margin-bottom: 5px; }
+        .b-easy { background: #e8f5e9; color: #2e7d32; }
+        .b-med { background: #fff3e0; color: #ef6c00; }
+        .b-hard { background: #f3e5f5; color: #7b1fa2; }
+    </style>
+</head>
+<body>
+
+<div class="lesson-card">
+    <h2>สรุปก่อนทำแบบฝึกหัด 💡</h2>
+    <p>1. <b>A:</b> ใช้กับของ 1 ชิ้น ที่ขึ้นต้นด้วยเสียงพยัญชนะ (เช่น a dog, a car)</p>
+    <p>2. <b>An:</b> ใช้กับของ 1 ชิ้น ที่ขึ้นต้นด้วยเสียง <b>"อ"</b> (เช่น an apple, an hour)</p>
+    <p>3. <b>The:</b> ใช้กับของที่ <b>"เจาะจง"</b> หรือมีอย่างเดียวในโลก (เช่น the sun, the moon)</p>
+    <p>4. <b>ไม่ต้องใส่:</b> หน้าชื่อวิชา, กีฬา, ภาษา และมื้ออาหาร (เช่น English, Football)</p>
+</div>
+
+<div class="quiz-container">
+    <h1>แบบฝึกหัด 25 ข้อ ✍️</h1>
+    <div id="quiz-content"></div>
+    
+    <div style="text-align:center; margin-top:30px;">
+        <button onclick="showFinalResult()" style="background:#1a73e8; color:white; padding:15px 40px; border:none; border-radius:30px; font-size:1.2em; cursor:pointer;">ตรวจคะแนนทั้งหมด</button>
+    </div>
+
+    <div id="result-box" class="result-box">
+        <h2 id="score-text"></h2>
+        <div id="analysis-text" style="text-align:left; background:#f9f9f9; padding:20px; border-radius:15px;"></div>
+        <button onclick="location.reload()" style="margin-top:20px; padding:10px 20px;">เริ่มใหม่</button>
+    </div>
+</div>
+
+<script>
+const quizData = [
+    { q: "I have ___ red pen.", opts: ["a", "an", "the", "-"], ans: 0, level: "easy", note: "Red ขึ้นต้นด้วยเสียง 'ร' (พยัญชนะ) และเป็นปากกาทั่วไป 1 ด้าม จึงใช้ a" },
+    { q: "She eats ___ orange every day.", opts: ["a", "an", "the", "-"], ans: 1, level: "easy", note: "Orange ขึ้นต้นด้วยเสียง 'อ' (สระ O) จึงใช้ an" },
+    { q: "___ moon looks beautiful tonight.", opts: ["A", "An", "The", "-"], ans: 2, level: "med", note: "พระจันทร์มีดวงเดียวในโลก ต้องใช้ The" },
+    { q: "He is studying ___ Math.", opts: ["a", "an", "the", "-"], ans: 3, level: "hard", note: "Math เป็นชื่อวิชา ห้ามใส่ article ใดๆ" },
+    { q: "I want to be ___ astronaut.", opts: ["a", "an", "the", "-"], ans: 1, level: "easy", note: "Astronaut ขึ้นต้นด้วยเสียง 'อ' จึงใช้ an" },
+    { q: "Look! ___ bird is flying.", opts: ["a", "an", "the", "-"], ans: 2, level: "med", note: "เจาะจงนกตัวที่กำลังบินให้ดูอยู่ ใช้ The" },
+    { q: "It takes ___ hour to get there.", opts: ["a", "an", "the", "-"], ans: 1, level: "easy", note: "Hour ออกเสียง อาว-เว่อร์ (เสียง อ.) จึงใช้ an แม้จะขึ้นด้วย H" },
+    { q: "Can you play ___ guitar?", opts: ["a", "an", "the", "-"], ans: 2, level: "med", note: "เครื่องดนตรีเมื่อใช้กับการเล่น ต้องใช้ The" },
+    { q: "I like to eat ___ breakfast at 7 AM.", opts: ["a", "an", "the", "-"], ans: 3, level: "hard", note: "ชื่อมื้ออาหารไม่ต้องใส่ article" },
+    { q: "This is ___ university.", opts: ["a", "an", "the", "-"], ans: 0, level: "easy", note: "University ออกเสียง 'ยู' (เสียง ย. พยัญชนะ) จึงใช้ a" },
+    { q: "I saw a dog. ___ dog was big.", opts: ["A", "An", "The", "-"], ans: 2, level: "med", note: "พูดถึงหมาตัวเดิมซ้ำเป็นครั้งที่สอง จึงเจาะจงใช้ The" },
+    { q: "He is ___ honest boy.", opts: ["a", "an", "the", "-"], ans: 1, level: "easy", note: "Honest ออกเสียง 'ออน-เนส' (เสียง อ.) จึงใช้ an" },
+    { q: "Do you want ___ ice cream?", opts: ["a", "an", "the", "-"], ans: 1, level: "easy", note: "Ice ขึ้นต้นด้วยเสียง 'อ' จึงใช้ an" },
+    { q: "Thailand is in ___ Asia.", opts: ["a", "an", "the", "-"], ans: 3, level: "hard", note: "ชื่อทวีปหรือประเทศส่วนใหญ่ไม่ต้องใส่ article" },
+    { q: "She is ___ best student.", opts: ["a", "an", "the", "-"], ans: 2, level: "med", note: "ขั้นสูงสุด (Best) ต้องมี The นำหน้าเสมอ" },
+    { q: "I speak ___ Thai and English.", opts: ["a", "an", "the", "-"], ans: 3, level: "hard", note: "ชื่อภาษาไม่ต้องใส่ article" },
+    { q: "Open ___ door, please.", opts: ["a", "an", "the", "-"], ans: 2, level: "med", note: "เจาะจงว่าให้เปิดประตูบานนั้น ใช้ The" },
+    { q: "There is ___ octopus in the sea.", opts: ["a", "an", "the", "-"], ans: 1, level: "easy", note: "Octopus ขึ้นต้นด้วยเสียง 'อ' จึงใช้ an" },
+    { q: "We live on ___ Earth.", opts: ["a", "an", "the", "-"], ans: 2, level: "med", note: "โลกมีเพียงหนึ่งเดียว ใช้ The" },
+    { q: "I have ___ umbrella.", opts: ["a", "an", "the", "-"], ans: 1, level: "easy", note: "Umbrella ขึ้นต้นด้วยเสียง 'อ' จึงใช้ an" },
+    { q: "He plays ___ basketball.", opts: ["a", "an", "the", "-"], ans: 3, level: "hard", note: "ชื่อกีฬาไม่ต้องใส่ article" },
+    { q: "___ sky is blue.", opts: ["A", "An", "The", "-"], ans: 2, level: "med", note: "ท้องฟ้ามีเพียงหนึ่งเดียว ใช้ The" },
+    { q: "I want ___ cup of milk.", opts: ["a", "an", "the", "-"], ans: 0, level: "easy", note: "Cup ขึ้นต้นด้วยเสียง 'ค' และบอกจำนวนหนึ่งถ้วยทั่วไป ใช้ a" },
+    { q: "She is ___ MEP student.", opts: ["a", "an", "the", "-"], ans: 1, level: "hard", note: "MEP ออกเสียง 'เอ็ม' (เสียง อ.) จึงใช้ an" },
+    { q: "Paris is ___ beautiful city.", opts: ["a", "an", "the", "-"], ans: 0, level: "easy", note: "Beautiful ขึ้นต้นด้วยเสียงพยัญชนะ และเป็นการบอกลักษณะทั่วไป ใช้ a" }
+];
+
+const container = document.getElementById('quiz-content');
+let score = 0;
+let answeredCount = 0;
+let levelMistakes = { easy: 0, med: 0, hard: 0 };
+
+quizData.forEach((data, i) => {
+    const block = document.createElement('div');
+    block.className = 'question-block';
+    block.innerHTML = `
+        <span class="badge b-${data.level}">${data.level.toUpperCase()}</span>
+        <p><strong>ข้อที่ ${i+1}:</strong> ${data.q}</p>
+        <div class="options" id="opt-container-${i}">
+            ${data.opts.map((o, idx) => `<button class="opt-btn" onclick="check(${i}, ${idx}, this)">${o}</button>`).join('')}
+        </div>
+        <div id="exp-${i}" class="explanation"></div>
+    `;
+    container.appendChild(block);
+});
+
+function check(qIdx, selected, btn) {
+    const correct = quizData[qIdx].ans;
+    const exp = document.getElementById(`exp-${qIdx}`);
+    const btns = document.getElementById(`opt-container-${qIdx}`).querySelectorAll('button');
+    
+    if(exp.style.display === 'block') return; // กันกดซ้ำ
+    
+    exp.innerHTML = `<b>เฉลย: ${quizData[qIdx].opts[correct]}</b><br>${quizData[qIdx].note}`;
+    exp.style.display = 'block';
+    answeredCount++;
+
+    if(selected === correct) {
+        btn.classList.add('correct');
+        score++;
+    } else {
+        btn.classList.add('incorrect');
+        btns[correct].classList.add('correct');
+        levelMistakes[quizData[qIdx].level]++;
+    }
+}
+
+function showFinalResult() {
+    if(answeredCount < 25) { alert("ทำข้อสอบให้ครบทุกข้อก่อนนะครับเด็กๆ!"); return; }
+    document.getElementById('quiz-content').style.display = 'none';
+    document.getElementById('result-box').style.display = 'block';
+    document.getElementById('score-text').innerText = `เย้! ได้คะแนน ${score} / 25`;
+    
+    let analysis = "<h3>วิเคราะห์ความเก่ง:</h3><ul>";
+    if(levelMistakes.easy > 0) analysis += "<li>🔍 <b>พื้นฐาน:</b> ยังมีพลาดเรื่องเสียง อ. กับ พยัญชนะ ลองทวนเรื่อง an hour กับ a university นะครับ</li>";
+    if(levelMistakes.med > 0) analysis += "<li>🔍 <b>ความเข้าใจ:</b> เรื่องการเจาะจง (The) ยังมีสับสนนิดหน่อย จำไว้ว่าถ้าพูดซ้ำหรือมีหนึ่งเดียว ใช้ The เสมอ!</li>";
+    if(levelMistakes.hard > 0) analysis += "<li>🔍 <b>ระดับ Master:</b> อย่าลืมว่า ชื่อวิชา กีฬา มื้ออาหาร เราจะไม่ใส่หน้ากาก (Article) ให้เขานะ</li>";
+    if(score === 25) analysis += "<li>🌟 <b>สุดยอด!</b> หนูคือเทพเจ้าแห่ง A, An, The แล้วครับ!</li>";
+    analysis += "</ul>";
+    document.getElementById('analysis-text').innerHTML = analysis;
+    window.scrollTo(0,0);
+}
+</script>
+</body>
+</html>
