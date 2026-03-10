@@ -3,83 +3,110 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>พระจอมเกล้าติวเตอร์ - P.E. Vocab Quiz</title>
+    <title>พระจอมเกล้าติวเตอร์ - Interactive P.E. Class</title>
     <style>
-        body { font-family: 'Kanit', sans-serif; background: #fdf2e9; padding: 20px; }
-        .quiz-container { max-width: 650px; margin: auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); border: 2px solid #e67e22; }
-        h1 { color: #d35400; text-align: center; }
-        .q-box { margin-bottom: 20px; padding: 15px; border-radius: 10px; background: #fffcf9; }
-        .btn-option { display: block; width: 100%; text-align: left; padding: 12px; margin: 5px 0; border: 1px solid #fab1a0; border-radius: 8px; cursor: pointer; background: #fff; }
-        .btn-option:hover { background: #ffeaa7; }
-        .explanation { display: none; padding: 15px; border-radius: 8px; margin-top: 10px; font-weight: 500; }
-        .correct { background: #55efc4; color: #006266; }
-        .wrong { background: #ff7675; color: #fff; }
-        #result-area { display: none; text-align: center; margin-top: 20px; padding: 20px; background: #d35400; color: white; border-radius: 10px; }
+        :root { --primary: #3498db; --secondary: #2ecc71; --accent: #e67e22; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f7f6; display: flex; justify-content: center; padding: 20px; }
+        .chat-container { width: 100%; max-width: 700px; background: white; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); overflow: hidden; border: 3px solid var(--primary); }
+        .header { background: var(--primary); color: white; padding: 20px; text-align: center; }
+        .chat-box { padding: 20px; height: 500px; overflow-y: auto; background: #fafafa; }
+        
+        .sentence-row { margin-bottom: 15px; display: flex; align-items: flex-start; animation: fadeIn 0.5s ease; }
+        .speaker-a { flex-direction: row; }
+        .speaker-b { flex-direction: row-reverse; }
+        
+        .bubble { max-width: 70%; padding: 12px 18px; border-radius: 15px; position: relative; cursor: pointer; transition: 0.3s; }
+        .speaker-a .bubble { background: #d1ecf1; border-bottom-left-radius: 2px; margin-left: 10px; }
+        .speaker-b .bubble { background: #d4edda; border-bottom-right-radius: 2px; margin-right: 10px; }
+        .bubble:hover { transform: scale(1.02); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+
+        .vocab { font-weight: bold; color: #e67e22; text-decoration: underline dotted; position: relative; }
+        
+        /* Tooltip Bubble */
+        .vocab:hover::after {
+            content: attr(data-info);
+            position: absolute; bottom: 120%; left: 50%; transform: translateX(-50%);
+            background: #2c3e50; color: white; padding: 8px 12px; border-radius: 8px;
+            font-size: 14px; white-space: pre; z-index: 10; width: 160px; text-align: center;
+            box-shadow: 0 5px 10px rgba(0,0,0,0.2);
+        }
+
+        .play-btn { background: white; border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .play-btn:hover { background: #eee; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .footer { padding: 15px; text-align: center; font-size: 12px; color: #7f8c8d; background: #eee; }
     </style>
 </head>
 <body>
 
-<div class="quiz-container">
-    <h1>🏆 P.E. Vocabulary Quiz</h1>
-    <p style="text-align: center;">โดย <b>พระจอมเกล้าติวเตอร์</b></p>
-
-    <div class="q-box">
-        <p><b>1. ก่อนเริ่มเล่นกีฬา เราควรทำสิ่งใดเพื่อป้องกันการบาดเจ็บ?</b></p>
-        <div class="options">
-            <button class="btn-option" onclick="ans(this, true, 'ถูกต้อง! Warm up คือการอบอุ่นร่างกายเพื่อเตรียมกล้ามเนื้อครับ')">A. Warm up</button>
-            <button class="btn-option" onclick="ans(this, false, 'ผิดจ้า! Sprain คืออาการบาดเจ็บ (ข้อเท้าแพลง)')">B. Sprain</button>
-            <button class="btn-option" onclick="ans(this, false, 'ผิดครับ! Sweat คือเหงื่อ ไม่ใช่การเตรียมตัว')">C. Sweat</button>
-        </div>
-        <div class="explanation"></div>
+<div class="chat-container">
+    <div class="header">
+        <h2>🏅 วิชาพละหรรษา (P.E. Class)</h2>
+        <p>คลิกที่ประโยคเพื่อฟังเสียง / ชี้ที่ตัวส้มเพื่อดูคำแปล</p>
     </div>
 
-    <div class="q-box">
-        <p><b>2. อุปกรณ์ชนิดใดจำเป็นที่สุดสำหรับการเล่น Badminton?</b></p>
-        <div class="options">
-            <button class="btn-option" onclick="ans(this, false, 'ผิดครับ! Whistle คือนกหวีด ปกติกรรมการหรือครูจะเป็นคนใช้')">A. Whistle</button>
-            <button class="btn-option" onclick="ans(this, true, 'เก่งมาก! Racket คือไม้ที่ใช้ตีลูกขนไก่ในกีฬาแบดมินตันครับ')">B. Racket</button>
-            <button class="btn-option" onclick="ans(this, false, 'ผิดครับ! Sneakers คือรองเท้าผ้าใบ ถึงสำคัญแต่ Racket เป็นอุปกรณ์เฉพาะทางกว่า')">C. Sneakers</button>
+    <div class="chat-box" id="chat">
         </div>
-        <div class="explanation"></div>
-    </div>
 
-    <div id="result-area">
-        <h2>สรุปคะแนน</h2>
-        <p id="score-display"></p>
-        <p id="critique"></p>
-        <button onclick="location.reload()" style="padding: 10px 20px; cursor: pointer;">ลองอีกครั้ง</button>
+    <div class="footer">
+        เขียนโดย CHINPONG SMART FARM | ติวโดย พระจอมเกล้าติวเตอร์
     </div>
 </div>
 
 <script>
-    let score = 0;
-    let count = 0;
-    function ans(el, isCorrect, msg) {
-        const parent = el.closest('.q-box');
-        const feedback = parent.querySelector('.explanation');
-        const btns = parent.querySelectorAll('.btn-option');
-        
-        btns.forEach(b => b.disabled = true);
-        feedback.style.display = 'block';
-        
-        if(isCorrect) {
-            score++;
-            feedback.className = 'explanation correct';
-            feedback.innerHTML = "✨ " + msg;
-            el.style.background = '#55efc4';
-        } else {
-            feedback.className = 'explanation wrong';
-            feedback.innerHTML = "❌ " + msg;
-            el.style.background = '#ff7675';
-        }
-        
-        count++;
-        if(count === 2) {
-            document.getElementById('result-area').style.display = 'block';
-            document.getElementById('score-display').innerText = "คุณทำได้ " + score + " จาก 2 คะแนน";
-            document.getElementById('critique').innerText = score === 2 ? "สุดยอด! น้องคือดาวเด่นในสนามพละ" : "พยายามอีกนิดนะ ทบทวนศัพท์อุปกรณ์กีฬาบ่อยๆ ครับ";
-        }
+    const conversation = [
+        { s: "Pete", t: "Hi Zea, are you ready for our match in the gymnasium?", v: {"gymnasium": "ยิม-เน-เซียม\n(โรงยิม)"} },
+        { s: "Zea", t: "I'm ready! But we should warm up our muscles first.", v: {"warm up": "วอร์ม-อัพ\n(อบอุ่นร่างกาย)", "muscles": "มัส-เซิล\n(กล้ามเนื้อ)"} },
+        { s: "Pete", t: "Good idea, it helps prevent a painful sprain.", v: {"sprain": "สเปรน\n(ข้อเท้าแพลง)"} },
+        { s: "Zea", t: "Did you bring your new racket and sneakers?", v: {"racket": "แร็ก-เกต\n(ไม้เทนนิส/แบด)", "sneakers": "สนีก-เกอร์\n(รองเท้าผ้าใบ)"} },
+        { s: "Pete", t: "Yes! Look, the teacher is blowing the whistle now.", v: {"whistle": "วิส-เซิล\n(นกหวีด)"} },
+        { s: "Zea", t: "Who will be the referee for our game today?", v: {"referee": "เรฟ-เฟอ-รี\n(ผู้ตัดสิน)"} },
+        { s: "Pete", t: "Mark will be the referee. He is very strict.", v: {"strict": "สทริคท์\n(เข้มงวด)"} },
+        { s: "Zea", t: "We must follow the rules of the game.", v: {"rules": "รูลส์\n(กฎกติกา)"} },
+        { s: "Pete", t: "I hope we can beat our opponents today.", v: {"opponents": "ออพ-โพ-เนินท์ส\n(คู่ต่อสู้)"} },
+        { s: "Zea", t: "Just focus! I am already covered in sweat.", v: {"sweat": "สเวท\n(เหงื่อ)"} },
+        { s: "Pete", t: "Drink some water to stay hydrated.", v: {"hydrated": "ไฮ-เดร-เทด\n(มีน้ำในร่างกายเพียงพอ)"} },
+        { s: "Zea", t: "Thanks! Let's go to the court and play.", v: {"court": "คอร์ท\n(สนามกีฬา)"} },
+        { s: "Pete", t: "Show them our great teamwork!", v: {"teamwork": "ทีม-เวิร์ค\n(การทำงานเป็นทีม)"} },
+        { s: "Zea", t: "Victory is ours if we play hard!", v: {"Victory": "วิค-ตอ-รี\n(ชัยชนะ)"} },
+        { s: "Pete", t: "Don't forget to shake hands after the game.", v: {"shake hands": "เชค-แฮนด์\n(จับมือแสดงสปิริต)"} },
+        { s: "Zea", t: "Of course! Sportsmanship is the most important.", v: {"Sportsmanship": "สปอร์ต-แมน-ชิพ\n(น้ำใจนักกีฬา)"} }
+    ];
+
+    const chatBox = document.getElementById('chat');
+
+    function speak(text) {
+        window.speechSynthesis.cancel();
+        const msg = new SpeechSynthesisUtterance(text);
+        msg.lang = 'en-US';
+        msg.rate = 0.9;
+        window.speechSynthesis.speak(msg);
     }
+
+    function renderChat() {
+        conversation.forEach((item, index) => {
+            const row = document.createElement('div');
+            row.className = `sentence-row ${item.s === 'Pete' ? 'speaker-a' : 'speaker-b'}`;
+            
+            let processedText = item.t;
+            for (const [word, info] of Object.entries(item.v)) {
+                const reg = new RegExp(`\\b${word}\\b`, 'gi');
+                processedText = processedText.replace(reg, `<span class="vocab" data-info="${info}">${word}</span>`);
+            }
+
+            row.innerHTML = `
+                <button class="play-btn" onclick="speak('${item.t.replace(/'/g, "\\'")}')">▶️</button>
+                <div class="bubble" onclick="speak('${item.t.replace(/'/g, "\\'")}')">
+                    <strong>${item.s}:</strong> ${processedText}
+                </div>
+            `;
+            chatBox.appendChild(row);
+        });
+    }
+
+    renderChat();
 </script>
 
 </body>
