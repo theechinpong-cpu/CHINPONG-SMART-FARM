@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>พระจอมเกล้าติวเตอร์ - Word Scramble P.6</title>
+    <style>
+        body { font-family: 'Kanit', sans-serif; background: #f0f2f5; padding: 20px; color: #333; }
+        .container { max-width: 800px; margin: auto; background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        h1 { color: #2c3e50; text-align: center; border-bottom: 3px solid #3498db; padding-bottom: 10px; }
+        .word-card { background: #fff; border: 2px solid #e1e4e8; padding: 15px; margin-bottom: 15px; border-radius: 12px; transition: 0.3s; }
+        .word-card:hover { border-color: #3498db; transform: translateY(-2px); }
+        .scrambled { font-size: 24px; color: #e67e22; font-weight: bold; letter-spacing: 5px; margin-bottom: 10px; text-transform: uppercase; }
+        .input-area { display: flex; gap: 10px; }
+        input { flex: 1; padding: 10px; border: 2px solid #ddd; border-radius: 8px; font-size: 18px; text-transform: lowercase; }
+        button { padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        .check-btn { background: #3498db; color: white; }
+        .check-btn:hover { background: #2980b9; }
+        .feedback { margin-top: 10px; font-weight: bold; display: none; padding: 8px; border-radius: 5px; }
+        .correct { background: #d4edda; color: #155724; display: block; }
+        .wrong { background: #f8d7da; color: #721c24; display: block; }
+        #summary-btn { width: 100%; background: #27ae60; color: white; font-size: 20px; margin-top: 20px; }
+        #result-panel { display: none; text-align: center; margin-top: 30px; padding: 20px; background: #2c3e50; color: white; border-radius: 15px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🧩 เกมเรียงตัวอักษร 18 คำศัพท์พละ</h1>
+    <p style="text-align: center;">โดย <b>พระจอมเกล้าติวเตอร์</b></p>
+    <hr>
+
+    <div id="quiz-area"></div>
+
+    <button id="summary-btn" onclick="showResults()">ตรวจคะแนนทั้งหมด</button>
+
+    <div id="result-panel">
+        <h2>สรุปผลการเรียนรู้</h2>
+        <h1 id="score-text">0 / 18</h1>
+        <p id="analysis-text"></p>
+        <button onclick="location.reload()" style="background: #f1c40f; color: black;">ลองอีกครั้ง</button>
+    </div>
+</div>
+
+<script>
+    const words = [
+        { scrambled: "MUINMSAYG", correct: "gymnasium", hint: "โรงยิม" },
+        { scrambled: "PWARM U", correct: "warm up", hint: "อบอุ่นร่างกาย" },
+        { scrambled: "SMUCLSE", correct: "muscles", hint: "กล้ามเนื้อ" },
+        { scrambled: "NIRA PS", correct: "sprain", hint: "ข้อเท้าแพลง" },
+        { scrambled: "TEKCAR", correct: "racket", hint: "ไม้เทนนิส/แบด" },
+        { scrambled: "KERSANSE", correct: "sneakers", hint: "รองเท้าผ้าใบ" },
+        { scrambled: "TLESIWH", correct: "whistle", hint: "นกหวีด" },
+        { scrambled: "REREEFE", correct: "referee", hint: "ผู้ตัดสิน" },
+        { scrambled: "TRICTS", correct: "strict", hint: "เข้มงวด" },
+        { scrambled: "SLURE", correct: "rules", hint: "กฎกติกา" },
+        { scrambled: "PONENTSOP", correct: "opponents", hint: "คู่ต่อสู้" },
+        { scrambled: "TAWES", correct: "sweat", hint: "เหงื่อ" },
+        { scrambled: "DRATEDHY", correct: "hydrated", hint: "มีน้ำเพียงพอ" },
+        { scrambled: "TURCO", correct: "court", hint: "สนามกีฬา" },
+        { scrambled: "KROWMAET", correct: "teamwork", hint: "การทำงานเป็นทีม" },
+        { scrambled: "TORYVIC", correct: "victory", hint: "ชัยชนะ" },
+        { scrambled: "KESHASH NDA", correct: "shake hands", hint: "จับมือ" },
+        { scrambled: "MANSHIPSORTPS", correct: "sportsmanship", hint: "น้ำใจนักกีฬา" }
+    ];
+
+    const quizArea = document.getElementById('quiz-area');
+    let userScores = new Array(words.length).fill(false);
+
+    words.forEach((item, index) => {
+        const card = document.createElement('div');
+        card.className = 'word-card';
+        card.innerHTML = `
+            <div class="scrambled">${item.scrambled}</div>
+            <p style="color: #7f8c8d; font-size: 14px;">คำใบ้: ${item.hint}</p>
+            <div class="input-area">
+                <input type="text" id="input-${index}" placeholder="พิมพ์คำที่ถูกต้อง...">
+                <button class="check-btn" onclick="checkWord(${index})">เช็ค</button>
+            </div>
+            <div class="feedback" id="feedback-${index}"></div>
+        `;
+        quizArea.appendChild(card);
+    });
+
+    function checkWord(index) {
+        const userVal = document.getElementById(`input-${index}`).value.trim().toLowerCase();
+        const feedback = document.getElementById(`feedback-${index}`);
+        
+        if (userVal === words[index].correct) {
+            feedback.innerHTML = "✅ ถูกต้อง! เก่งมาก";
+            feedback.className = "feedback correct";
+            userScores[index] = true;
+        } else {
+            feedback.innerHTML = `❌ ยังไม่ถูกนะ (คำที่ถูกคือ: ${words[index].correct})`;
+            feedback.className = "feedback wrong";
+            userScores[index] = false;
+        }
+    }
+
+    function showResults() {
+        const scoreCount = userScores.filter(x => x).length;
+        document.getElementById('result-panel').style.display = 'block';
+        document.getElementById('score-text').innerText = `${scoreCount} / 18`;
+        
+        const analysis = document.getElementById('analysis-text');
+        if (scoreCount === 18) {
+            analysis.innerText = "วิเคราะห์: คุณคือเจ้าแห่งคำศัพท์! สะกดถูกครบทุกคำแบบนี้ พี่ ป.6 ยังต้องยอมแพ้ครับ";
+        } else if (scoreCount >= 12) {
+            analysis.innerText = "วิเคราะห์: พื้นฐานการสะกดคำดีมากครับ มีพลาดแค่บางคำที่ยาวๆ ลองทบทวนคำว่า Sportsmanship อีกนิดนะ";
+        } else {
+            analysis.innerText = "วิเคราะห์: พยายามสะสมคลังคำศัพท์เพิ่มอีกนิดนะครับ ลองฝึกเขียนบ่อยๆ จะช่วยให้จำตำแหน่งตัวอักษรได้แม่นขึ้น";
+        }
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+</script>
+
+</body>
+</html>
