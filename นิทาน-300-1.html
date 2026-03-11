@@ -3,93 +3,268 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Grade 5 Story - Bobby's Busy Morning</title>
+    <title>Bobby's Busy Morning: Story & Quiz</title>
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;500&family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --primary: #2980b9;
+            --secondary: #e67e22;
+            --success: #27ae60;
+            --bg: #f0f4f8;
+        }
+
         body {
             font-family: 'Quicksand', 'Sarabun', sans-serif;
-            background-color: #eef2f3;
-            color: #333;
-            line-height: 1.8;
+            background-color: var(--bg);
+            margin: 0;
             padding: 20px;
+            color: #333;
+        }
+
+        .main-container {
             max-width: 800px;
             margin: auto;
-        }
-        h1 { text-align: center; color: #2980b9; text-transform: uppercase; }
-        .instruction { text-align: center; color: #7f8c8d; font-size: 0.9rem; }
-        .story-section {
             background: white;
-            padding: 25px;
+            padding: 20px;
             border-radius: 20px;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
         }
-        .sentence {
-            padding: 10px;
-            margin-bottom: 5px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: 0.3s;
+
+        h1 { text-align: center; color: var(--primary); margin-bottom: 10px; }
+
+        /* Tab System */
+        .tabs {
             display: flex;
-            align-items: flex-start;
+            gap: 10px;
+            margin-bottom: 20px;
+            justify-content: center;
         }
-        .sentence:hover { background: #f0f7ff; color: #2980b9; }
-        .speaker { margin-right: 15px; font-size: 1.1rem; }
-        .vocab { font-weight: bold; color: #e67e22; }
-        .thai { display: block; font-size: 0.85rem; color: #7f8c8d; font-family: 'Sarabun'; }
-        hr { border: 0; border-top: 1px solid #eee; margin: 20px 0; }
+
+        .tab-btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 50px;
+            background: #ddd;
+            cursor: pointer;
+            font-weight: bold;
+            font-family: inherit;
+            transition: 0.3s;
+        }
+
+        .tab-btn.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .content-section { display: none; }
+        .content-section.active { display: block; }
+
+        /* Story Styles */
+        .sentence {
+            padding: 15px;
+            margin-bottom: 10px;
+            background: #f9f9f9;
+            border-radius: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            transition: 0.2s;
+            border-left: 5px solid var(--primary);
+        }
+
+        .sentence:hover { background: #eef7ff; transform: translateX(5px); }
+        .speaker { margin-right: 15px; font-size: 1.2rem; }
+        .vocab { font-weight: bold; color: var(--secondary); text-decoration: underline; }
+        .thai { display: block; font-size: 0.85rem; color: #7f8c8d; margin-top: 5px; }
+
+        /* Quiz Styles */
+        .question-block {
+            background: #fff;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 15px;
+            border: 1px solid #eee;
+        }
+
+        .options { display: grid; gap: 10px; margin-top: 15px; }
+        .option-btn {
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            background: white;
+            cursor: pointer;
+            text-align: left;
+            font-family: inherit;
+            transition: 0.2s;
+        }
+
+        .option-btn:hover { background: #fdf2e9; border-color: var(--secondary); }
+        .option-btn.selected { background: var(--secondary); color: white; border-color: #d35400; }
+
+        .explanation {
+            display: none;
+            margin-top: 15px;
+            padding: 15px;
+            background: #fff3cd;
+            border-radius: 8px;
+            border-left: 5px solid #ffca28;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 20px;
+            background: var(--success);
+            color: white;
+            border: none;
+            border-radius: 15px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        .score-display {
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary);
+            margin-top: 20px;
+            display: none;
+        }
     </style>
 </head>
 <body>
 
+<div class="main-container">
     <h1>🏠 Bobby's Busy Morning</h1>
-    <p class="instruction">💡 Click each sentence to listen (คลิกแต่ละประโยคเพื่อฟังเสียงอ่าน)</p>
+    
+    <div class="tabs">
+        <button class="tab-btn active" onclick="openTab('story-part')">📖 Read Story</button>
+        <button class="tab-btn" onclick="openTab('quiz-part')">📝 Take Quiz</button>
+    </div>
 
-    <div class="story-section" id="story-content">
-        </div>
+    <div id="story-part" class="content-section active">
+        <p style="text-align:center; color: #7f8c8d;">💡 Click sentences to listen (คลิกเพื่อฟังเสียงอ่าน)</p>
+        <div id="story-container"></div>
+    </div>
 
-    <script>
-        const storyData = [
-            // Part 1: Dressing Up
-            { en: "Bobby wakes up. He puts on his white <span class='vocab'>Shirt</span>.", th: "บ๊อบบี้ตื่นนอน เขาสวมเสื้อเชิ้ตสีขาว" },
-            { en: "He wears his blue <span class='vocab'>Pants</span> and a black <span class='vocab'>Belt</span>.", th: "เขาสวมกางเกิขายาวสีฟ้าและเข็มขัดสีดำ" },
-            { en: "His sister wears a pink <span class='vocab'>Dress</span> and a small <span class='vocab'>Ring</span>.", th: "น้องสาวของเขาสวมชุดเดรสสีชมพูและแหวนวงเล็ก" },
-            { en: "His mom wears a long <span class='vocab'>Skirt</span>.", th: "แม่ของเขาสวมกระโปรงยาว" },
-            { en: "Bobby puts on his <span class='vocab'>Sock</span> and his brown <span class='vocab'>Shoe</span>.", th: "บ๊อบบี้สวมถุงเท้าและรองเท้าสีน้ำตาล" },
-            { en: "It is cold, so he puts on a <span class='vocab'>Hat</span> and a <span class='vocab'>Coat</span>.", th: "อากาศหนาว เขาจึงสวมหมวกและเสื้อคลุม" },
-            
-            // Part 2: Around the House
-            { en: "Bobby walks on the clean <span class='vocab'>Floor</span>.", th: "บ๊อบบี้เดินบนพื้นบ้านที่สะอาด" },
-            { en: "He looks at the white <span class='vocab'>Wall</span> and the red <span class='vocab'>Roof</span>.", th: "เขามองไปที่ผนังสีขาวและหลังคาสีแดง" },
-            { en: "He opens the <span class='vocab'>Door</span> and looks out the <span class='vocab'>Window</span>.", th: "เขาเปิดประตูและมองออกไปนอกหน้าต่าง" },
-            { en: "He sees a <span class='vocab'>Lamp</span> and a <span class='vocab'>Mirror</span> in the room.", th: "เขาเห็นโคมไฟและกระจกอยู่ในห้อง" },
-            { en: "He washes his hands with <span class='vocab'>Soap</span> and a <span class='vocab'>Towel</span>.", th: "เขาล้างมือด้วยสบู่และเช็ดด้วยผ้าเช็ดตัว" },
+    <div id="quiz-part" class="content-section">
+        <div id="quiz-container"></div>
+        <div id="score-result" class="score-display"></div>
+        <button class="submit-btn" onclick="checkQuiz()">Finish & Check Answers</button>
+    </div>
+</div>
 
-            // Part 3: Breakfast
-            { en: "It is time for breakfast!", th: "ได้เวลาอาหารเช้าแล้ว!" },
-            { en: "Bobby takes a <span class='vocab'>Spoon</span> and a <span class='vocab'>Fork</span>.", th: "บ๊อบบี้หยิบช้อนและส้อม" },
-            { en: "Dad uses a <span class='vocab'>Knife</span> to cut the bread.", th: "พ่อใช้มีดตัดขนมปัง" },
-            { en: "There is rice on the <span class='vocab'>Plate</span> and soup in the <span class='vocab'>Bowl</span>.", th: "มีข้าวอยู่ในจานและมีซุปอยู่ในชาม" },
-            { en: "Bobby drinks milk from a <span class='vocab'>Glass</span>.", th: "บ๊อบบี้ดื่มนมจากแก้ว" },
-            { en: "Now, he is ready for school!", th: "ตอนนี้เขาพร้อมไปโรงเรียนแล้ว!" }
-        ];
+<script>
+    // --- Data Management ---
+    const storyData = [
+        { en: "Bobby wakes up. He puts on his white <span class='vocab'>Shirt</span>.", th: "บ๊อบบี้ตื่นนอน เขาสวมเสื้อเชิ้ตสีขาว" },
+        { en: "He wears his blue <span class='vocab'>Pants</span> and a black <span class='vocab'>Belt</span>.", th: "เขาสวมกางเกงขายาวสีฟ้าและเข็มขัดสีดำ" },
+        { en: "His sister wears a pink <span class='vocab'>Dress</span> and a small <span class='vocab'>Ring</span>.", th: "น้องสาวของเขาสวมชุดเดรสสีชมพูและแหวนวงเล็ก" },
+        { en: "His mom wears a long <span class='vocab'>Skirt</span>.", th: "แม่ของเขาสวมกระโปรงยาว" },
+        { en: "Bobby puts on his <span class='vocab'>Sock</span> and his brown <span class='vocab'>Shoe</span>.", th: "บ๊อบบี้สวมถุงเท้าและรองเท้าสีน้ำตาล" },
+        { en: "It is cold, so he puts on a <span class='vocab'>Hat</span> and a <span class='vocab'>Coat</span>.", th: "อากาศหนาว เขาจึงสวมหมวกและเสื้อคลุม" },
+        { en: "Bobby walks on the clean <span class='vocab'>Floor</span>.", th: "บ๊อบบี้เดินบนพื้นบ้านที่สะอาด" },
+        { en: "He looks at the white <span class='vocab'>Wall</span> and the red <span class='vocab'>Roof</span>.", th: "เขามองไปที่ผนังสีขาวและหลังคาสีแดง" },
+        { en: "He opens the <span class='vocab'>Door</span> and looks out the <span class='vocab'>Window</span>.", th: "เขาเปิดประตูและมองออกไปนอกหน้าต่าง" },
+        { en: "He sees a <span class='vocab'>Lamp</span> and a <span class='vocab'>Mirror</span> in the room.", th: "เขาเห็นโคมไฟและกระจกอยู่ในห้อง" },
+        { en: "He washes his hands with <span class='vocab'>Soap</span> and a <span class='vocab'>Towel</span>.", th: "เขาล้างมือด้วยสบู่และเช็ดด้วยผ้าเช็ดตัว" },
+        { en: "Bobby takes a <span class='vocab'>Spoon</span> and a <span class='vocab'>Fork</span>.", th: "บ๊อบบี้หยิบช้อนและส้อม" },
+        { en: "Dad uses a <span class='vocab'>Knife</span> to cut the bread.", th: "พ่อใช้มีดตัดขนมปัง" },
+        { en: "There is rice on the <span class='vocab'>Plate</span> and soup in the <span class='vocab'>Bowl</span>.", th: "มีข้าวอยู่ในจานและมีซุปอยู่ในชาม" },
+        { en: "Bobby drinks milk from a <span class='vocab'>Glass</span>.", th: "บ๊อบบี้ดื่มนมจากแก้ว" }
+    ];
 
-        const container = document.getElementById('story-content');
+    const quizQuestions = [
+        { q: "1. Bobby puts on his white ____.", a: "Shirt", options: ["Shirt", "Pants", "Sock"], tip: "Shirt คือเสื้อเชิ้ตครับ" },
+        { q: "2. Bobby's pants are ____.", a: "blue", options: ["red", "blue", "white"], tip: "ในเรื่องบอกว่า blue Pants ครับ" },
+        { q: "3. Sister wears a pink ____.", a: "Dress", options: ["Dress", "Hat", "Coat"], tip: "Dress คือชุดกระโปรงยาวชิ้นเดียวครับ" },
+        { q: "4. Mom wears a long ____.", a: "Skirt", options: ["Belt", "Skirt", "Ring"], tip: "Skirt คือกระโปรงครับ" },
+        { q: "5. We wear ____ on our feet before shoes.", a: "Sock", options: ["Hat", "Sock", "Ring"], tip: "Sock คือถุงเท้าครับ" },
+        { q: "6. Bobby's shoe is ____.", a: "brown", options: ["black", "brown", "white"], tip: "เขาสวมรองเท้าสีน้ำตาล (brown) ครับ" },
+        { q: "7. Bobby wears a ____ on his head.", a: "Hat", options: ["Hat", "Belt", "Shirt"], tip: "Hat คือหมวกครับ" },
+        { q: "8. When it is cold, Bobby wears a ____.", a: "Coat", options: ["Ring", "Glass", "Coat"], tip: "Coat คือเสื้อคลุมกันหนาวครับ" },
+        { q: "9. To keep pants tight, we use a ____.", a: "Belt", options: ["Belt", "Soap", "Fork"], tip: "Belt คือเข็มขัดครับ" },
+        { q: "10. Sister wears a ____ on her finger.", a: "Ring", options: ["Spoon", "Ring", "Mirror"], tip: "Ring คือแหวนครับ" },
+        { q: "11. We walk into a room through the ____.", a: "Door", options: ["Window", "Roof", "Door"], tip: "Door คือประตูครับ" },
+        { q: "12. We look out to see birds through the ____.", a: "Window", options: ["Window", "Floor", "Wall"], tip: "Window คือหน้าต่างครับ" },
+        { q: "13. We walk on the ____.", a: "Floor", options: ["Roof", "Floor", "Lamp"], tip: "Floor คือพื้นบ้านครับ" },
+        { q: "14. The ____ of the house is red.", a: "Roof", options: ["Floor", "Wall", "Roof"], tip: "Roof คือหลังคา อยู่บนสุดเลย" },
+        { q: "15. The ____ are white in the house.", a: "Wall", options: ["Wall", "Spoon", "Glass"], tip: "Wall คือผนังหรือกำแพงครับ" },
+        { q: "16. We turn on the ____ for light.", a: "Lamp", options: ["Lamp", "Soap", "Towel"], tip: "Lamp คือโคมไฟครับ" },
+        { q: "17. We see our face in the ____.", a: "Mirror", options: ["Plate", "Mirror", "Bowl"], tip: "Mirror คือกระจกเงาครับ" },
+        { q: "18. Wash your hands with ____.", a: "Soap", options: ["Fork", "Soap", "Glass"], tip: "Soap คือสบู่ครับ" },
+        { q: "19. Dry your hands with a ____.", a: "Towel", options: ["Towel", "Plate", "Coat"], tip: "Towel คือผ้าเช็ดตัวครับ" },
+        { q: "20. Use a ____ to eat soup.", a: "Spoon", options: ["Knife", "Spoon", "Belt"], tip: "Spoon คือช้อนครับ" },
+        { q: "21. Use a ____ to pick up food.", a: "Fork", options: ["Fork", "Soap", "Mirror"], tip: "Fork คือส้อมครับ" },
+        { q: "22. Use a ____ to cut bread.", a: "Knife", options: ["Knife", "Spoon", "Glass"], tip: "Knife คือมีด (ระวังอันตรายนะ)" },
+        { q: "23. Put your rice on a ____.", a: "Plate", options: ["Bowl", "Plate", "Window"], tip: "Plate คือจานแบนๆ ครับ" },
+        { q: "24. Put your soup in a ____.", a: "Bowl", options: ["Bowl", "Plate", "Hat"], tip: "Bowl คือชามกลมๆ ครับ" },
+        { q: "25. Drink milk from a ____.", a: "Glass", options: ["Glass", "Ring", "Belt"], tip: "Glass คือแก้วน้ำครับ" }
+    ];
 
-        storyData.forEach(item => {
-            const div = document.createElement('div');
-            div.className = 'sentence';
-            div.innerHTML = `<span class="speaker">🔊</span> <div>${item.en} <span class="thai">${item.th}</span></div>`;
-            
-            div.onclick = () => {
-                window.speechSynthesis.cancel();
-                const cleanText = item.en.replace(/<\/?[^>]+(>|$)/g, "");
-                const utterance = new SpeechSynthesisUtterance(cleanText);
-                utterance.lang = 'en-US';
-                utterance.rate = 0.8; 
-                window.speechSynthesis.speak(utterance);
-            };
-            container.appendChild(div);
+    // --- Core Functions ---
+
+    function openTab(tabId) {
+        document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(tabId).classList.add('active');
+        event.currentTarget.classList.add('active');
+    }
+
+    // Load Story
+    const sContainer = document.getElementById('story-container');
+    storyData.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'sentence';
+        div.innerHTML = `<span class="speaker">🔊</span> <div>${item.en} <span class="thai">${item.th}</span></div>`;
+        div.onclick = () => {
+            window.speechSynthesis.cancel();
+            const speech = new SpeechSynthesisUtterance(item.en.replace(/<\/?[^>]+(>|$)/g, ""));
+            speech.lang = 'en-US';
+            speech.rate = 0.8;
+            window.speechSynthesis.speak(speech);
+        };
+        sContainer.appendChild(div);
+    });
+
+    // Load Quiz
+    const qContainer = document.getElementById('quiz-container');
+    quizQuestions.forEach((item, idx) => {
+        const block = document.createElement('div');
+        block.className = 'question-block';
+        block.innerHTML = `
+            <div style="font-weight:bold; color:var(--primary);">${item.q}</div>
+            <div class="options">
+                ${item.options.map(opt => `<button class="option-btn" onclick="select(this, ${idx})">${opt}</button>`).join('')}
+            </div>
+            <div class="explanation" id="exp-${idx}">
+                <b>✅ Answer: ${item.a}</b><br>💡 ${item.tip}
+            </div>
+        `;
+        qContainer.appendChild(block);
+    });
+
+    let userAnswers = {};
+    function select(btn, qIdx) {
+        const parent = btn.parentElement;
+        parent.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        userAnswers[qIdx] = btn.innerText;
+    }
+
+    function checkQuiz() {
+        let score = 0;
+        quizQuestions.forEach((item, idx) => {
+            if(userAnswers[idx] === item.a) score++;
+            document.getElementById(`exp-${idx}`).style.display = 'block';
         });
-    </script>
+        const scoreDiv = document.getElementById('score-result');
+        scoreDiv.style.display = 'block';
+        scoreDiv.innerHTML = `🌟 You got ${score} / 25 points! 🌟`;
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+</script>
+
 </body>
 </html>
