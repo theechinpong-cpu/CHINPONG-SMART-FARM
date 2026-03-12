@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>พระจอมเกล้าติวเตอร์ - Drag & Drop Challenge</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;600&family=Sarabun:wght@300;400;700&display=swap');
+
+        body {
+            background-color: #0f172a;
+            color: #f8fafc;
+            font-family: 'Sarabun', sans-serif;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 3px solid #f59e0b;
+            padding-bottom: 10px;
+        }
+
+        .game-container {
+            max-width: 900px;
+            background: #1e293b;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+        }
+
+        .story-box {
+            line-height: 2.2;
+            font-size: 1.1rem;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #334155;
+            border-radius: 12px;
+        }
+
+        .drop-zone {
+            display: inline-block;
+            width: 120px;
+            height: 30px;
+            border-bottom: 2px dashed #f59e0b;
+            margin: 0 5px;
+            vertical-align: middle;
+            text-align: center;
+            color: #fbbf24;
+            font-weight: bold;
+        }
+
+        .vocab-corral {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            padding: 20px;
+            background: #0f172a;
+            border: 2px solid #475569;
+            border-radius: 15px;
+            justify-content: center;
+            min-height: 100px;
+        }
+
+        .draggable {
+            background: #f59e0b;
+            color: #000;
+            padding: 5px 15px;
+            border-radius: 8px;
+            cursor: grab;
+            font-weight: 600;
+            user-select: none;
+            transition: transform 0.2s;
+        }
+
+        .draggable:active {
+            cursor: grabbing;
+            transform: scale(1.1);
+        }
+
+        .btn-check {
+            margin-top: 20px;
+            padding: 12px 30px;
+            background: #10b981;
+            border: none;
+            color: white;
+            border-radius: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 1.1rem;
+        }
+
+        .result {
+            margin-top: 20px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .correct { color: #34d399; }
+        .wrong { color: #f87171; }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1>👨‍🏫 พระจอมเกล้าติวเตอร์</h1>
+    <p>เขียนโดย CHINPONG SMART FARM</p>
+</div>
+
+<div class="game-container">
+    <div class="story-box" id="story-content">
+        The air in London during <span class="drop-zone" data-answer="Winter"></span> was freezing. 
+        Yesterday was a typical day for Ray, a <span class="drop-zone" data-answer="Young"></span> student. 
+        He sat in the silent <span class="drop-zone" data-answer="Library"></span>, staring at his <span class="drop-zone" data-answer="Laptop"></span>. 
+        His <span class="drop-zone" data-answer="Brain"></span> was focused on a mysterious <span class="drop-zone" data-answer="Email"></span>. 
+        Suddenly, the <span class="drop-zone" data-answer="Battery"></span> was at <span class="drop-zone" data-answer="Zero"></span> percent! 
+        He moved <span class="drop-zone" data-answer="Quickly"></span> to plug in the <span class="drop-zone" data-answer="Charger"></span>.
+    </div>
+
+    <div class="vocab-corral" id="vocab-corral">
+        <div class="draggable" draggable="true" id="v1">Winter</div>
+        <div class="draggable" draggable="true" id="v2">Young</div>
+        <div class="draggable" draggable="true" id="v3">Library</div>
+        <div class="draggable" draggable="true" id="v4">Laptop</div>
+        <div class="draggable" draggable="true" id="v5">Brain</div>
+        <div class="draggable" draggable="true" id="v6">Email</div>
+        <div class="draggable" draggable="true" id="v7">Battery</div>
+        <div class="draggable" draggable="true" id="v8">Zero</div>
+        <div class="draggable" draggable="true" id="v9">Quickly</div>
+        <div class="draggable" draggable="true" id="v10">Charger</div>
+    </div>
+
+    <center>
+        <button class="btn-check" onclick="checkAnswers()">ตรวจคำตอบ ✅</button>
+        <div id="feedback" class="result"></div>
+    </center>
+</div>
+
+<script>
+    const draggables = document.querySelectorAll('.draggable');
+    const dropZones = document.querySelectorAll('.drop-zone');
+
+    draggables.forEach(draggable => {
+        draggable.addEventListener('dragstart', () => {
+            draggable.classList.add('dragging');
+        });
+
+        draggable.addEventListener('dragend', () => {
+            draggable.classList.remove('dragging');
+        });
+    });
+
+    dropZones.forEach(zone => {
+        zone.addEventListener('dragover', e => {
+            e.preventDefault();
+        });
+
+        zone.addEventListener('drop', e => {
+            e.preventDefault();
+            const dragging = document.querySelector('.dragging');
+            if (zone.innerText === "") {
+                zone.innerText = dragging.innerText;
+                dragging.style.display = 'none';
+            }
+        });
+
+        // Click to return word
+        zone.addEventListener('click', () => {
+            if (zone.innerText !== "") {
+                const word = zone.innerText;
+                const originalBtn = Array.from(draggables).find(d => d.innerText === word);
+                if (originalBtn) originalBtn.style.display = 'block';
+                zone.innerText = "";
+            }
+        });
+    });
+
+    function checkAnswers() {
+        let score = 0;
+        let total = dropZones.length;
+        
+        dropZones.forEach(zone => {
+            if (zone.innerText === zone.getAttribute('data-answer')) {
+                zone.style.color = '#34d399';
+                score++;
+            } else {
+                zone.style.color = '#f87171';
+            }
+        });
+
+        const feedback = document.getElementById('feedback');
+        let analysis = "";
+        
+        if (score === total) {
+            analysis = "สุดยอดไปเลย! น้องเข้าใจบริบทของเนื้อเรื่องได้สมบูรณ์แบบมากครับ";
+        } else if (score > total/2) {
+            analysis = "เก่งมากครับ! ลองสังเกตคำกริยาและคำนามอีกนิด จะได้คะแนนเต็มแน่นอน";
+        } else {
+            analysis = "ไม่เป็นไรนะ! ลองกลับไปอ่าน 'สรุปเนื้อหา' ด้านบน แล้วกลับมาลองใหม่ครับ";
+        }
+
+        feedback.innerHTML = `คุณได้คะแนน ${score}/${total} <br> <small>${analysis}</small>`;
+    }
+</script>
+
+</body>
+</html>
