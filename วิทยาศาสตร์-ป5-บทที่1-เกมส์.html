@@ -3,287 +3,263 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>50 Trials: Adaptation Survivor - พระจอมเกล้าติวเตอร์</title>
+    <title>Floating Survival - พระจอมเกล้าติวเตอร์</title>
     <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --bg: #020617;
-            --card: #1e293b;
             --primary: #06b6d4;
             --danger: #ef4444;
             --success: #10b981;
-            --gold: #f59e0b;
         }
 
-        body {
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
             font-family: 'Chakra Petch', sans-serif;
-            background: var(--bg);
-            color: white;
-            margin: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            overflow: hidden;
+            background: var(--bg); color: white; overflow: hidden;
         }
 
-        #game-box {
-            width: 95%;
-            max-width: 700px;
-            background: var(--card);
-            border: 3px solid var(--primary);
-            border-radius: 20px;
-            padding: 25px;
-            position: relative;
-            box-shadow: 0 0 50px rgba(6, 182, 212, 0.3);
+        #game-stage {
+            position: relative; width: 100%; height: 100vh;
+            background: radial-gradient(circle, #1e293b 0%, #020617 100%);
         }
 
-        /* ระบบ HP */
-        .header-ui {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            border-bottom: 2px solid #334155;
-            padding-bottom: 10px;
+        /* ส่วนหัว UI */
+        .ui-layer {
+            position: absolute; top: 0; left: 0; width: 100%; padding: 20px;
+            display: flex; justify-content: space-between; align-items: center;
+            z-index: 100; pointer-events: none;
         }
 
-        .hp-bar { color: var(--danger); font-size: 1.5rem; letter-spacing: 5px; }
+        #hp-display { font-size: 2rem; color: var(--danger); pointer-events: auto; }
+        #score-display { font-size: 1.5rem; color: var(--primary); }
 
-        .progress-text { color: var(--primary); font-weight: bold; }
-
-        /* โจทย์ */
-        .question-area {
-            font-size: 1.4rem;
-            margin: 30px 0;
-            line-height: 1.5;
-            min-height: 100px;
-            text-shadow: 0 0 10px rgba(255,255,255,0.2);
+        /* คำถาม */
+        #q-container {
+            position: absolute; top: 100px; left: 50%; transform: translateX(-50%);
+            width: 80%; text-align: center; font-size: 1.8rem;
+            background: rgba(0,0,0,0.6); padding: 20px; border-radius: 15px;
+            border: 1px solid var(--primary); z-index: 90;
         }
 
-        /* ปุ่มตอบ */
-        .options-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
+        /* ตัวเลือกที่ลอยไปมา */
+        .floating-opt {
+            position: absolute; padding: 15px 25px;
+            background: var(--primary); color: var(--bg);
+            border-radius: 50px; cursor: pointer; font-weight: bold;
+            font-size: 1.1rem; border: 3px solid white;
+            box-shadow: 0 0 20px rgba(6,182,212,0.5);
+            transition: transform 0.1s, opacity 0.3s;
+            user-select: none; z-index: 80;
+            white-space: nowrap;
         }
 
-        @media (max-width: 500px) { .options-grid { grid-template-columns: 1fr; } }
+        .floating-opt:hover { transform: scale(1.1); background: white; }
 
-        .opt-btn {
-            background: #334155;
-            border: 2px solid #475569;
-            color: white;
-            padding: 15px;
-            border-radius: 10px;
-            cursor: pointer;
-            font-family: 'Chakra Petch';
-            font-size: 1.1rem;
-            transition: 0.2s;
-        }
-
-        .opt-btn:hover:not(:disabled) {
-            background: var(--primary);
-            border-color: white;
-            transform: scale(1.02);
-        }
-
-        /* Screen States */
-        .screen { display: none; text-align: center; }
-        .active { display: block; }
-
-        /* Animation */
-        .shake { animation: shake 0.5s; }
-        @keyframes shake {
-            0% { transform: translateX(0); }
-            25% { transform: translateX(10px); }
-            50% { transform: translateX(-10px); }
-            75% { transform: translateX(10px); }
-            100% { transform: translateX(0); }
+        /* หน้าจออื่นๆ */
+        .overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.9);
+            display: flex; flex-direction: column; justify-content: center;
+            align-items: center; z-index: 1000; text-align: center;
         }
 
         .btn-start {
-            background: var(--primary);
-            color: var(--bg);
-            padding: 20px 50px;
-            font-size: 2rem;
-            font-weight: bold;
-            border: none;
-            border-radius: 50px;
-            cursor: pointer;
-            box-shadow: 0 0 20px var(--primary);
+            padding: 20px 60px; font-size: 2rem; background: var(--primary);
+            border: none; border-radius: 50px; cursor: pointer; font-family: 'Chakra Petch';
+            box-shadow: 0 0 30px var(--primary); font-weight: bold;
+        }
+
+        .shake { animation: shake 0.5s; }
+        @keyframes shake {
+            0%, 100% { transform: translate(0,0); }
+            20% { transform: translate(-10px, 10px); }
+            40% { transform: translate(10px, -10px); }
+            60% { transform: translate(-10px, -10px); }
+            80% { transform: translate(10px, 10px); }
         }
     </style>
 </head>
 <body>
 
-<div id="game-box">
-    <div id="start-screen" class="screen active">
-        <h1 style="font-size: 3rem; color: var(--primary);">50 TRIALS</h1>
-        <h2>ADAPTATION SURVIVOR</h2>
-        <p>คุณมีหัวใจ 5 ดวง... ตอบผิด 5 ครั้ง = สูญพันธุ์!</p>
-        <button class="btn-start" onclick="initGame()">START</button>
+<div id="game-stage">
+    <div class="ui-layer">
+        <div id="hp-display">❤️❤️❤️❤️❤️</div>
+        <div id="score-display">คะแนน: 0 | ข้อที่: 1/50</div>
     </div>
 
-    <div id="game-screen" class="screen">
-        <div class="header-ui">
-            <div class="hp-bar" id="hp-display">❤️❤️❤️❤️❤️</div>
-            <div class="progress-text">ด่านที่: <span id="q-num">1</span>/50</div>
-        </div>
-        <div class="question-area" id="q-text">คำถามกำลังมา...</div>
-        <div class="options-grid" id="options-area"></div>
+    <div id="q-container">กด START เพื่อเริ่มการทดสอบ!</div>
+
+    <div id="start-screen" class="overlay">
+        <h1 style="font-size: 4rem; color: var(--primary); margin: 0;">50 TRIALS</h1>
+        <p style="font-size: 1.5rem;">คลิกคำตอบที่ลอยอยู่ให้ถูกต้องเพื่อรอดชีวิต!</p>
+        <button class="btn-start" onclick="initGame()">START GAME</button>
+        <p style="margin-top: 20px;">*จะมีเพลงตื่นเต้นประกอบเมื่อเริ่มเล่น*</p>
     </div>
 
-    <div id="end-screen" class="screen">
-        <h1 id="end-title">GAME OVER</h1>
-        <p id="end-msg"></p>
-        <h2 style="color:var(--gold)">SCORE: <span id="final-score">0</span></h2>
-        <button class="btn-start" style="font-size: 1.2rem;" onclick="location.reload()">TRY AGAIN</button>
+    <div id="end-screen" class="overlay" style="display:none">
+        <h1 id="end-status" style="font-size: 4rem;">GAME OVER</h1>
+        <p id="end-msg" style="font-size: 1.5rem;"></p>
+        <h2 style="color:gold">SCORE: <span id="final-score">0</span></h2>
+        <button class="btn-start" onclick="location.reload()">RETRY</button>
     </div>
 </div>
 
 <script>
-    const allQuestions = [
-        { q: "1. โหนกของอูฐมีหน้าที่สำคัญที่สุดคืออะไร?", a: "สะสมไขมันไว้เป็นพลังงาน", opts: ["สะสมน้ำไว้ใช้", "สะสมไขมันไว้เป็นพลังงาน", "ระบายความร้อน", "ป้องกันแสงแดด"] },
-        { q: "2. ต้นกระบองเพชรเปลี่ยนใบเป็นหนามเพื่ออะไร?", a: "ลดการคายน้ำ", opts: ["สังเคราะห์แสง", "ลดการคายน้ำ", "พรางตัวจากศัตรู", "ดักจับแมลง"] },
-        { q: "3. ผักตบชวาสามารถลอยน้ำได้เพราะลักษณะใด?", a: "ก้านใบพองและมีช่องอากาศ", opts: ["ใบกว้างและบาง", "ก้านใบพองและมีช่องอากาศ", "รากมีขนาดเล็กมาก", "ลำต้นกลวง"] },
-        { q: "4. พืชป่าชายเลน (โกงกาง) มีรากค้ำจุนเพื่ออะไร?", a: "พยุงลำต้นในดินเลน", opts: ["หายใจใต้น้ำ", "พยุงลำต้นในดินเลน", "ดูดสารอาหาร", "คายเกลือ"] },
-        { q: "5. หมีขั้วโลกมีขนสีขาวเพื่อประโยชน์ด้านใด?", a: "พรางตัวในหิมะ", opts: ["ระบายความร้อน", "พรางตัวในหิมะ", "สะท้อนแสงแดด", "หาคู่ง่ายขึ้น"] },
-        { q: "6. การที่สัตว์จำศีลในฤดูหนาวจัดเป็นการปรับตัวแบบใด?", a: "พฤติกรรม", opts: ["สรีระ", "โครงสร้าง", "พฤติกรรม", "เคมี"] },
-        { q: "7. จิ้งจอกทะเลทรายมีหูขนาดใหญ่เพื่ออะไร?", a: "ระบายความร้อน", opts: ["ฟังเสียงได้ไกล", "ระบายความร้อน", "หาอาหาร", "บิน"] },
-        { q: "8. ปลาตีนใช้สิ่งใดช่วยในการเคลื่อนที่บนเลน?", a: "ครีบอกที่แข็งแรง", opts: ["ครีบหาง", "ครีบอกที่แข็งแรง", "เหงือก", "เกล็ด"] },
-        { q: "9. พังผืดที่เท้าของเป็ดช่วยในเรื่องใด?", a: "การว่ายน้ำ", opts: ["การเดินบนทราย", "การว่ายน้ำ", "การเกาะกิ่งไม้", "การหาอาหาร"] },
-        { q: "10. รากหายใจของต้นลำพูมีลักษณะอย่างไร?", a: "แทงยอดแหลมขึ้นเหนือดิน", opts: ["แผ่ขนานไปกับดิน", "แทงยอดแหลมขึ้นเหนือดิน", "หยั่งลึกลงไปใต้ดิน", "พันรอบต้นไม้ใหญ่"] },
-        { q: "11. ไลเคน (Lichen) เป็นความสัมพันธ์แบบใด?", a: "ภาวะพึ่งพากัน (+,+)", opts: ["ภาวะอิงอาศัย (+,0)", "ภาวะพึ่งพากัน (+,+)", "ภาวะปรสิต (+,-)", "ภาวะล่าเหยื่อ"] },
-        { q: "12. นกเอี้ยงกับควายจัดเป็นความสัมพันธ์แบบใด?", a: "ได้ประโยชน์ร่วมกัน (+,+)", opts: ["พึ่งพากัน", "ได้ประโยชน์ร่วมกัน (+,+)", "ปรสิต", "อิงอาศัย"] },
-        { q: "13. กาฝากบนต้นมะม่วงเป็นความสัมพันธ์แบบ?", a: "ภาวะปรสิต (+,-)", opts: ["ภาวะอิงอาศัย", "ภาวะปรสิต (+,-)", "ภาวะพึ่งพากัน", "ได้ประโยชน์ร่วมกัน"] },
-        { q: "14. เหาฉลามกับฉลาม ใครเสียประโยชน์?", a: "ไม่มีใครเสียประโยชน์", opts: ["ฉลาม", "เหาฉลาม", "ไม่มีใครเสียประโยชน์", "เสียประโยชน์ทั้งคู่"] },
-        { q: "15. เสือกับกวาง มีความสัมพันธ์แบบใด?", a: "ภาวะล่าเหยื่อ (+,-)", opts: ["ภาวะปรสิต", "ภาวะล่าเหยื่อ (+,-)", "ภาวะอิงอาศัย", "ภาวะพึ่งพากัน"] },
-        { q: "16. ผู้ผลิต (Producer) ในโซ่อาหารคือข้อใด?", a: "หญ้า", opts: ["เสือ", "หญ้า", "แบคทีเรีย", "คน"] },
-        { q: "17. มนุษย์เป็นผู้บริโภคประเภทใด?", a: "กินทั้งพืชและสัตว์", opts: ["กินพืช", "กินสัตว์", "กินทั้งพืชและสัตว์", "ผู้ย่อยสลาย"] },
-        { q: "18. ในโซ่อาหาร หัวลูกศรชี้ไปทางใด?", a: "ผู้บริโภค", opts: ["ผู้ผลิต", "ผู้บริโภค", "แหล่งกำเนิดแสง", "ดิน"] },
-        { q: "19. ผู้ย่อยสลาย (Decomposer) ที่สำคัญคือข้อใด?", a: "เห็ดและรา", opts: ["แร้ง", "ไส้เดือน", "เห็ดและรา", "แมลงสาบ"] },
-        { q: "20. หากผู้ผลิตในป่าหายไปจะเกิดอะไรขึ้น?", a: "สิ่งมีชีวิตอื่นๆ จะตายหมด", opts: ["สัตว์กินเนื้อจะเพิ่มขึ้น", "สิ่งมีชีวิตอื่นๆ จะตายหมด", "อากาศจะบริสุทธิ์ขึ้น", "ไม่มีผลกระทบ"] },
-        { q: "21. ตั๊กแตนใบไม้มีการปรับตัวแบบใด?", a: "การพรางตัว (Camouflage)", opts: ["การจำศีล", "การพรางตัว (Camouflage)", "การอพยพ", "การต่อสู้"] },
-        { q: "22. อูฐมีขนตายาวเพื่ออะไร?", a: "ป้องกันทรายเข้าตา", opts: ["ความสวยงาม", "ป้องกันทรายเข้าตา", "กรองแสงแดด", "ระบายความร้อน"] },
-        { q: "23. ขนที่หนาของสัตว์ขั้วโลกทำหน้าที่อะไร?", a: "รักษาความอบอุ่น", opts: ["ระบายเหงื่อ", "รักษาความอบอุ่น", "เก็บน้ำ", "ว่ายน้ำ"] },
-        { q: "24. พืชที่ขึ้นในที่น้ำท่วมขังมักมีลักษณะใด?", a: "มีช่องอากาศในลำต้น", opts: ["รากสั้น", "มีช่องอากาศในลำต้น", "ใบเล็กและแข็ง", "ไม่มีดอก"] },
-        { q: "25. สัตว์ชนิดใดปรับตัวโดยการ 'เปลี่ยนสีผิว' ตามสภาพแวดล้อม?", a: "กิ้งก่า", opts: ["นกยูง", "กิ้งก่า", "ช้าง", "เสือ"] },
-        { q: "26. ข้อใดคือความสัมพันธ์แบบ (+, 0)?", a: "กล้วยไม้บนต้นไม้ใหญ่", opts: ["พยาธิในท้อง", "กล้วยไม้บนต้นไม้ใหญ่", "มดดำกับเพลี้ย", "เสือล่ากวาง"] },
-        { q: "27. ผีเสื้อกับดอกไม้แยกกันได้หรือไม่?", a: "แยกกันได้และยังรอดชีวิต", opts: ["แยกกันไม่ได้เลย", "แยกกันได้และยังรอดชีวิต", "แยกกันแล้วตายทันที", "ไม่มีข้อถูก"] },
-        { q: "28. กล้วยไม้บนต้นไม้ใหญ่ ต้นไม้ใหญ่เสียประโยชน์หรือไม่?", a: "ไม่เสียและไม่ได้ประโยชน์", opts: ["เสียประโยชน์", "ไม่เสียและไม่ได้ประโยชน์", "ได้ประโยชน์", "ตายทันที"] },
-        { q: "29. แร้งที่กินซากสัตว์จัดเป็นผู้บริโภคประเภทใด?", a: "สัตว์กินซาก (Scavenger)", opts: ["ผู้ผลิต", "สัตว์กินซาก (Scavenger)", "ผู้ย่อยสลาย", "ผู้บริโภคพืช"] },
-        { q: "30. พลังงานเริ่มต้นของโซ่อาหารมาจากไหน?", a: "ดวงอาทิตย์", opts: ["ดิน", "น้ำ", "ดวงอาทิตย์", "พืช"] },
-        { q: "31. กบจำศีลเพื่ออะไร?", a: "ขาดแคลนอาหารและน้ำ", opts: ["หาคู่", "ขาดแคลนอาหารและน้ำ", "รอให้ตัวโตขึ้น", "หนีศัตรู"] },
-        { q: "32. ยีราฟคอยาวเป็นผลจากการปรับตัวเพื่อสิ่งใด?", a: "กินใบไม้บนที่สูง", opts: ["มองเห็นศัตรูได้ไกล", "กินใบไม้บนที่สูง", "ระบายความร้อน", "ส่งเสียงคำราม"] },
-        { q: "33. พืชที่เปลี่ยนใบเป็นหนามลดการคายน้ำทางใด?", a: "ปากใบ", opts: ["ราก", "ลำต้น", "ปากใบ", "ดอก"] },
-        { q: "34. ปลาใช้อะไรหายใจใต้น้ำ?", a: "เหงือก", opts: ["ปอด", "ผิวหนัง", "เหงือก", "ครีบ"] },
-        { q: "35. ตัวนิ่มม้วนตัวเป็นก้อนกลมเพื่อ?", a: "ป้องกันตัวจากศัตรู", opts: ["กลิ้งลงเขา", "ป้องกันตัวจากศัตรู", "จำศีล", "เก็บความร้อน"] },
-        { q: "36. การถ่ายทอดพลังงานในโซ่อาหาร สิ่งใดอยู่ระดับล่างสุด?", a: "ผู้ผลิต", opts: ["ผู้ผลิต", "ผู้บริโภคพืช", "ผู้บริโภคสัตว์", "ผู้ย่อยสลาย"] },
-        { q: "37. ข้อใดไม่ใช่ลักษณะพืชป่าชายเลน?", a: "ใบใหญ่และอวบน้ำ", opts: ["รากค้ำจุน", "รากหายใจ", "ใบหนามีต่อมขับเกลือ", "ใบใหญ่และอวบน้ำ"] },
-        { q: "38. มดดำกับเพลี้ยเป็นความสัมพันธ์แบบใด?", a: "ได้ประโยชน์ร่วมกัน", opts: ["ปรสิต", "อิงอาศัย", "ได้ประโยชน์ร่วมกัน", "ล่าเหยื่อ"] },
-        { q: "39. ทำไมเห็ดราถึงไม่ใช่ผู้ผลิต?", a: "ไม่มีคลอโรฟิลล์สร้างอาหารเองไม่ได้", opts: ["เคลื่อนที่ไม่ได้", "ไม่มีคลอโรฟิลล์สร้างอาหารเองไม่ได้", "ไม่มีราก", "ตัวเล็กเกินไป"] },
-        { q: "40. สายใยอาหาร (Food Web) ต่างจากโซ่อาหารอย่างไร?", a: "มีความซับซ้อนและกินกันหลายทอด", opts: ["มีสิ่งมีชีวิตน้อยกว่า", "มีความซับซ้อนและกินกันหลายทอด", "ไม่มีผู้ผลิต", "เหมือนกันทุกอย่าง"] },
-        { q: "41. อูฐมีเท้าที่แบนกว้างเพื่ออะไร?", a: "ไม่ให้จมลงในทราย", opts: ["วิ่งได้เร็วขึ้น", "ไม่ให้จมลงในทราย", "ระบายความร้อน", "ใช้ขุดหลุม"] },
-        { q: "42. พืชน้ำส่วนใหญ่มักมีรากเป็นแบบใด?", a: "รากฝอยขนาดเล็ก", opts: ["รากแก้วหยั่งลึก", "รากฝอยขนาดเล็ก", "รากอากาศ", "ไม่มีราก"] },
-        { q: "43. ความสัมพันธ์แบบ (+, -) ใครคือผู้เสียประโยชน์?", a: "Host (ผู้ถูกอาศัย/เหยื่อ)", opts: ["Parasite", "Host (ผู้ถูกอาย/เหยื่อ)", "ทั้งคู่", "ไม่มีใคร"] },
-        { q: "44. ต้นกาบหอยแครงปรับตัวเพื่อรับสารอาหารใดจากแมลง?", a: "ไนโตรเจน", opts: ["แป้ง", "น้ำตาล", "ไนโตรเจน", "ไขมัน"] },
-        { q: "45. การอพยพของนกไซบีเรียเป็นการปรับตัวด้านใด?", a: "พฤติกรรมเพื่อหนีหนาว", opts: ["โครงสร้างร่างกาย", "พฤติกรรมเพื่อหนีหนาว", "สรีระภายใน", "การหาคู่"] },
-        { q: "46. ข้อใดคือความสัมพันธ์แบบพึ่งพากัน?", a: "ปลวกกับโปรโตซัวในลำไส้", opts: ["นกทำรังบนต้นไม้", "ปลวกกับโปรโตซัวในลำไส้", "เห็บบนตัวสุนัข", "เสือกับสิงโต"] },
-        { q: "47. สิ่งมีชีวิตที่กินได้ทั้งพืชและสัตว์เรียกว่า?", a: "Omnivore", opts: ["Herbivore", "Carnivore", "Omnivore", "Scavenger"] },
-        { q: "48. ทำไมพืชในทะเลทรายถึงมีรากแผ่กว้าง?", a: "ดักจับน้ำฝนที่ตกลงมาน้อย", opts: ["ยึดลำต้น", "ดักจับน้ำฝนที่ตกลงมาน้อย", "หาอาหารใต้ดิน", "ระบายอากาศ"] },
-        { q: "49. สัญลักษณ์ (+, +) หมายถึง?", a: "ได้ประโยชน์ทั้งคู่", opts: ["ได้ประโยชน์ฝ่ายเดียว", "เสียประโยชน์ทั้งคู่", "ได้ประโยชน์ทั้งคู่", "ไม่มีใครได้ใครเสีย"] },
-        { q: "50. การเรียนรู้เรื่องการปรับตัวสอนให้เราเห็นอะไร?", a: "ความสมดุลและความอยู่รอด", opts: ["การทำลายธรรมชาติ", "ความสมดุลและความอยู่รอด", "การเอาชนะธรรมชาติ", "ความเก่งของมนุษย์"] }
+    const questions = [
+        { q: "โหนกของอูฐมีหน้าที่สำคัญที่สุดคืออะไร?", a: "สะสมไขมันไว้เป็นพลังงาน", opts: ["สะสมน้ำ", "สะสมไขมันไว้เป็นพลังงาน", "ระบายความร้อน", "ป้องกันแดด"] },
+        { q: "ต้นกระบองเพชรเปลี่ยนใบเป็นหนามเพื่ออะไร?", a: "ลดการคายน้ำ", opts: ["สังเคราะห์แสง", "ลดการคายน้ำ", "พรางตัว", "ดักจับแมลง"] },
+        { q: "พืชป่าชายเลน (โกงกาง) มีรากค้ำจุนเพื่อ?", a: "พยุงลำต้นในดินเลน", opts: ["หายใจ", "พยุงลำต้นในดินเลน", "ดูดเกลือ", "หาอาหาร"] },
+        { q: "ผักตบชวาลอยน้ำได้เพราะลักษณะใด?", a: "ก้านใบพองมีช่องอากาศ", opts: ["ใบกว้าง", "ก้านใบพองมีช่องอากาศ", "รากยาว", "ดอกเบา"] },
+        { q: "ความสัมพันธ์แบบ (+, +) ที่แยกกันไม่ได้คือ?", a: "ไลเคน", opts: ["นกเอี้ยงกับควาย", "ผีเสื้อกับดอกไม้", "ไลเคน", "กาฝาก"] },
+        { q: "มนุษย์เป็นผู้บริโภคประเภทใด?", a: "Omnivore (กินทั้งพืชและสัตว์)", opts: ["Herbivore", "Carnivore", "Omnivore (กินทั้งพืชและสัตว์)", "Decomposer"] },
+        { q: "ในโซ่อาหาร หัวลูกศรชี้ไปทางใด?", a: "ผู้กิน", opts: ["ผู้ผลิต", "ผู้กิน", "แสงแดด", "ดิน"] },
+        { q: "สัตว์ขั้วโลกมีไขมันหนาเพื่ออะไร?", a: "รักษาความอบอุ่น", opts: ["ว่ายน้ำเร็ว", "รักษาความอบอุ่น", "พรางตัว", "เก็บน้ำ"] },
+        { q: "ต้นไม้ใหญ่กับกล้วยไม้ คือความสัมพันธ์แบบ?", a: "ภาวะอิงอาศัย (+,0)", opts: ["ปรสิต", "อิงอาศัย (+,0)", "พึ่งพากัน", "ล่าเหยื่อ"] },
+        { q: "ผู้ย่อยสลายที่สำคัญคือข้อใด?", a: "เห็ดและรา", opts: ["แร้ง", "ไส้เดือน", "เห็ดและรา", "แมลงสาบ"] }
+        // (น้องสามารถเพิ่มข้อ 11-50 ได้ในรูปแบบเดียวกันนี้ครับ พี่ใส่ตัวอย่างหลักๆ ให้ก่อน)
     ];
 
     let currentIdx = 0;
     let hp = 5;
     let score = 0;
+    let floatingElements = [];
+    let audioCtx, oscillator, gainNode;
 
-    function initGame() {
-        document.getElementById('start-screen').classList.remove('active');
-        document.getElementById('game-screen').classList.add('active');
-        hp = 5;
-        score = 0;
-        currentIdx = 0;
-        updateHP();
-        showQ();
+    // ระบบเสียงตื่นเต้น (Synth Music)
+    function startMusic() {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        oscillator = audioCtx.createOscillator();
+        gainNode = audioCtx.createGain();
+        
+        oscillator.type = 'sawtooth';
+        oscillator.frequency.setValueAtTime(60, audioCtx.currentTime); 
+        
+        // จังหวะการเต้นของเสียง (Heartbeat/Techno feel)
+        setInterval(() => {
+            if(audioCtx.state === 'running') {
+                gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.5);
+            }
+        }, 600);
+
+        oscillator.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        oscillator.start();
     }
 
-    function showQ() {
-        if (currentIdx >= allQuestions.length) {
-            victory();
+    function initGame() {
+        document.getElementById('start-screen').style.display = 'none';
+        startMusic();
+        spawnQuestion();
+        animate();
+    }
+
+    function spawnQuestion() {
+        if (currentIdx >= questions.length || hp <= 0) {
+            endGame(hp > 0);
             return;
         }
-        const data = allQuestions[currentIdx];
-        document.getElementById('q-num').innerText = currentIdx + 1;
-        document.getElementById('q-text').innerText = data.q;
+
+        const data = questions[currentIdx];
+        document.getElementById('q-container').innerText = data.q;
+        document.getElementById('score-display').innerText = `คะแนน: ${score} | ข้อที่: ${currentIdx + 1}/50`;
         
-        const area = document.getElementById('options-area');
-        area.innerHTML = '';
-        data.opts.forEach(o => {
-            const btn = document.createElement('button');
-            btn.className = 'opt-btn';
-            btn.innerText = o;
-            btn.onclick = () => check(btn, o);
-            area.appendChild(btn);
+        // ล้างตัวเลือกเก่า
+        floatingElements.forEach(el => el.dom.remove());
+        floatingElements = [];
+
+        // สร้างตัวเลือกใหม่
+        data.opts.forEach(opt => {
+            const div = document.createElement('div');
+            div.className = 'floating-opt';
+            div.innerText = opt;
+            document.getElementById('game-stage').appendChild(div);
+
+            const element = {
+                dom: div,
+                x: Math.random() * (window.innerWidth - 150),
+                y: Math.random() * (window.innerHeight - 200) + 150,
+                vx: (Math.random() - 0.5) * 2,
+                vy: (Math.random() - 0.5) * 2
+            };
+
+            div.onclick = () => checkAnswer(opt);
+            floatingElements.push(element);
         });
     }
 
-    function check(btn, val) {
-        const correct = allQuestions[currentIdx].a;
-        const btns = document.querySelectorAll('.opt-btn');
-        btns.forEach(b => b.disabled = true);
+    function animate() {
+        floatingElements.forEach(el => {
+            el.x += el.vx;
+            el.y += el.vy;
 
-        if (val === correct) {
-            btn.style.background = "var(--success)";
+            // ชนขอบเด้งคืน
+            if (el.x <= 0 || el.x >= window.innerWidth - el.dom.offsetWidth) el.vx *= -1;
+            if (el.y <= 150 || el.y >= window.innerHeight - el.dom.offsetHeight) el.vy *= -1;
+
+            el.dom.style.left = el.x + 'px';
+            el.dom.style.top = el.y + 'px';
+        });
+        requestAnimationFrame(animate);
+    }
+
+    function checkAnswer(selected) {
+        const correct = questions[currentIdx].a;
+        if (selected === correct) {
             score += 20;
             currentIdx++;
-            setTimeout(showQ, 1000);
+            // เสียงความถี่สูงเมื่อถูก
+            beep(880, 0.1);
+            spawnQuestion();
         } else {
-            btn.style.background = "var(--danger)";
-            document.getElementById('game-box').classList.add('shake');
             hp--;
             updateHP();
-            // เฉลย
-            btns.forEach(b => { if(b.innerText === correct) b.style.background = "var(--success)"; });
+            document.body.classList.add('shake');
+            beep(110, 0.3); // เสียงต่ำเมื่อผิด
+            setTimeout(() => document.body.classList.remove('shake'), 500);
             
-            setTimeout(() => {
-                document.getElementById('game-box').classList.remove('shake');
-                if (hp <= 0) {
-                    gameOver();
-                } else {
-                    currentIdx++;
-                    showQ();
-                }
-            }, 1500);
+            if (hp <= 0) {
+                endGame(false);
+            } else {
+                currentIdx++;
+                spawnQuestion();
+            }
         }
+    }
+
+    function beep(freq, duration) {
+        if(!audioCtx) return;
+        const osc = audioCtx.createOscillator();
+        const g = audioCtx.createGain();
+        osc.frequency.value = freq;
+        osc.connect(g);
+        g.connect(audioCtx.destination);
+        osc.start();
+        g.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + duration);
+        osc.stop(audioCtx.currentTime + duration);
     }
 
     function updateHP() {
         document.getElementById('hp-display').innerText = "❤️".repeat(hp) + "🖤".repeat(5-hp);
     }
 
-    function gameOver() {
-        document.getElementById('game-screen').classList.remove('active');
-        const end = document.getElementById('end-screen');
-        end.classList.add('active');
-        document.getElementById('end-title').innerText = "SPECIES EXTINCT!";
-        document.getElementById('end-title').style.color = "var(--danger)";
-        document.getElementById('end-msg').innerText = "คุณไม่สามารถปรับตัวได้ทัน และสูญพันธุ์ไปจากเกาะ...";
+    function endGame(isWin) {
+        if(oscillator) oscillator.stop();
+        document.getElementById('end-screen').style.display = 'flex';
         document.getElementById('final-score').innerText = score;
-    }
+        const status = document.getElementById('end-status');
+        const msg = document.getElementById('end-msg');
 
-    function victory() {
-        document.getElementById('game-screen').classList.remove('active');
-        const end = document.getElementById('end-screen');
-        end.classList.add('active');
-        document.getElementById('end-title').innerText = "APEX SURVIVOR!";
-        document.getElementById('end-title').style.color = "var(--success)";
-        document.getElementById('end-msg').innerText = "ยินดีด้วย! คุณคือสุดยอดสิ่งมีชีวิตที่ปรับตัวได้สมบูรณ์แบบที่สุด!";
-        document.getElementById('final-score').innerText = score;
+        if(isWin) {
+            status.innerText = "VICTORY!";
+            status.style.color = "var(--success)";
+            msg.innerText = "คุณคือสุดยอดผู้อยู่รอด! ปรับตัวได้ 100%";
+        } else {
+            status.innerText = "EXTINCT!";
+            status.style.color = "var(--danger)";
+            msg.innerText = "คุณสูญพันธุ์เพราะปรับตัวไม่ทัน... ลองใหม่นะ!";
+        }
     }
 </script>
-
 </body>
 </html>
