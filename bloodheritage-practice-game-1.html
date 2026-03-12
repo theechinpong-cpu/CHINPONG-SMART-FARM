@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>พระจอมเกล้าติวเตอร์ - Vocab Mission</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Prompt:wght@300;400;600&display=swap');
+
+        :root {
+            --primary: #00f2ff;
+            --secondary: #7000ff;
+            --bg: #050b18;
+            --text: #ffffff;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Prompt', sans-serif;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .header {
+            text-align: center;
+            padding: 20px;
+            background: linear-gradient(180deg, #10192c 0%, transparent 100%);
+            width: 100%;
+            border-bottom: 2px solid var(--primary);
+            box-shadow: 0 0 20px rgba(0, 242, 255, 0.3);
+        }
+
+        .brand { font-family: 'Orbitron', sans-serif; color: var(--primary); font-size: 0.8rem; letter-spacing: 3px; }
+        h1 { font-family: 'Orbitron', sans-serif; margin: 10px 0; text-shadow: 0 0 10px var(--primary); }
+
+        .game-world {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            max-width: 1000px;
+            width: 95%;
+            padding: 20px;
+            height: 60vh;
+            overflow-y: auto;
+            background: rgba(16, 25, 44, 0.8);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .vocab-list, .meaning-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .draggable-item {
+            background: linear-gradient(90deg, var(--secondary), #4a00ff);
+            padding: 12px;
+            border-radius: 10px;
+            cursor: grab;
+            text-align: center;
+            font-weight: 600;
+            border: 1px solid rgba(255,255,255,0.2);
+            transition: all 0.2s;
+            user-select: none;
+        }
+
+        .draggable-item:active { cursor: grabbing; transform: scale(0.95); }
+
+        .drop-target {
+            background: rgba(255,255,255,0.05);
+            border: 2px dashed #444;
+            padding: 12px;
+            border-radius: 10px;
+            min-height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.3s;
+        }
+
+        .drop-target.active { border-color: var(--primary); background: rgba(0, 242, 255, 0.1); }
+        .meaning-text { font-size: 0.9rem; color: #aaa; margin-right: 10px; flex: 1; }
+
+        .placed-word {
+            background: var(--primary);
+            color: #000;
+            padding: 4px 10px;
+            border-radius: 5px;
+            font-weight: bold;
+            cursor: pointer;
+            animation: glow 1.5s infinite alternate;
+        }
+
+        @keyframes glow {
+            from { box-shadow: 0 0 5px var(--primary); }
+            to { box-shadow: 0 0 15px var(--primary); }
+        }
+
+        .controls {
+            padding: 30px;
+            display: flex;
+            gap: 20px;
+        }
+
+        .btn {
+            background: var(--primary);
+            color: #000;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 50px;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 5px 15px rgba(0, 242, 255, 0.4);
+        }
+
+        .btn:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(0, 242, 255, 0.6); }
+
+        #score-screen {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.95);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .score-circle {
+            width: 200px;
+            height: 200px;
+            border: 5px solid var(--primary);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 3rem;
+            font-family: 'Orbitron', sans-serif;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <div class="brand">CHINPONG SMART FARM OPERATIONS</div>
+    <h1>MISSION: VOCAB MATCH</h1>
+</div>
+
+<div class="game-world">
+    <div class="vocab-list" id="source-container">
+        </div>
+    <div class="meaning-list" id="target-container">
+        </div>
+</div>
+
+<div class="controls">
+    <button class="btn" onclick="checkMission()">CHECK MISSION ✅</button>
+</div>
+
+<div id="score-screen">
+    <div class="brand">MISSION COMPLETE</div>
+    <div class="score-circle" id="final-score">0</div>
+    <div id="evaluation"></div>
+    <button class="btn" style="margin-top:30px" onclick="location.reload()">RESTART</button>
+</div>
+
+<script>
+    const data = [
+        {en: "Winter", th: "ฤดูหนาว"}, {en: "Bone", th: "กระดูก"}, {en: "Yesterday", th: "เมื่อวาน"},
+        {en: "Bored", th: "น่าเบื่อ"}, {en: "Young", th: "วัยเยาว์"}, {en: "History", th: "ประวัติศาสตร์"},
+        {en: "Future", th: "อนาคต"}, {en: "Library", th: "ห้องสมุด"}, {en: "Laptop", th: "โน้ตบุ๊ก"},
+        {en: "Math", th: "คณิตศาสตร์"}, {en: "Geography", th: "ภูมิศาสตร์"}, {en: "Brain", th: "สมอง"},
+        {en: "Email", th: "อีเมล"}, {en: "Password", th: "รหัสผ่าน"}, {en: "Mouse", th: "เมาส์"},
+        {en: "Battery", th: "แบตเตอรี่"}, {en: "Zero", th: "ศูนย์"}, {en: "Charger", th: "ที่ชาร์จ"},
+        {en: "Loudly", th: "อย่างเสียงดัง"}, {en: "Quickly", th: "อย่างรวดเร็ว"}, {en: "Quietly", th: "อย่างเงียบๆ"},
+        {en: "Screen", th: "หน้าจอ"}, {en: "Object", th: "วัตถุ"}, {en: "Jungle", th: "ป่าทึบ"},
+        {en: "Calendar", th: "ปฏิทิน"}, {en: "Excited", th: "ตื่นเต้น"}, {en: "Heart", th: "หัวใจ"},
+        {en: "Notice", th: "สังเกต"}, {en: "Rectangle", th: "สี่เหลี่ยมผืนผ้า"}, {en: "Sphere", th: "ทรงกลม"},
+        {en: "Cube", th: "ลูกบาศก์"}, {en: "Game", th: "เกม"}, {en: "Brave", th: "กล้าหาญ"},
+        {en: "Careful", th: "ระมัดระวัง"}, {en: "Blood", th: "เลือด"}, {en: "Science", th: "วิทยาศาสตร์"},
+        {en: "Hiking", th: "การเดินป่า"}, {en: "Flashlight", th: "ไฟฉาย"}, {en: "Compass", th: "เข็มทิศ"},
+        {en: "Medicine", th: "ยา"}, {en: "Sick", th: "ป่วย"}, {en: "Fever", th: "เป็นไข้"},
+        {en: "Journey", th: "การเดินทาง"}, {en: "Engineer", th: "วิศวกร"}, {en: "Clinic", th: "คลินิก"},
+        {en: "Weather", th: "สภาพอากาศ"}, {en: "Uniform", th: "เครื่องแบบ"}, {en: "Balance", th: "สมดุล"},
+        {en: "Airplane", th: "เครื่องบิน"}, {en: "Lightning", th: "ฟ้าผ่า"}, {en: "Reason", th: "เหตุผล"},
+        {en: "Message", th: "ข้อความ"}, {en: "Tablet", th: "แท็บเล็ต"}, {en: "Adventure", th: "การผจญภัย"}
+    ];
+
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    function playTone(freq, type, dur) {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + dur);
+    }
+
+    const sourceContainer = document.getElementById('source-container');
+    const targetContainer = document.getElementById('target-container');
+
+    // Shuffle and init
+    [...data].sort(() => Math.random() - 0.5).forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'draggable-item';
+        div.draggable = true;
+        div.innerText = item.en;
+        div.id = `word-${item.en}`;
+        div.ondragstart = (e) => {
+            e.dataTransfer.setData('text', item.en);
+            playTone(440, 'sine', 0.1);
+        };
+        sourceContainer.appendChild(div);
+    });
+
+    [...data].sort(() => Math.random() - 0.5).forEach(item => {
+        const zone = document.createElement('div');
+        zone.className = 'drop-target';
+        zone.dataset.ans = item.en;
+        zone.innerHTML = `<span class="meaning-text">${item.th}</span>`;
+        
+        zone.ondragover = (e) => { e.preventDefault(); zone.classList.add('active'); };
+        zone.ondragleave = () => zone.classList.remove('active');
+        zone.ondrop = (e) => {
+            e.preventDefault();
+            zone.classList.remove('active');
+            const word = e.dataTransfer.getData('text');
+            if (zone.querySelector('.placed-word')) {
+                const oldWord = zone.querySelector('.placed-word').innerText;
+                document.getElementById(`word-${oldWord}`).style.display = 'block';
+            }
+            zone.innerHTML = `<span class="meaning-text">${item.th}</span><span class="placed-word">${word}</span>`;
+            document.getElementById(`word-${word}`).style.display = 'none';
+            playTone(880, 'square', 0.05);
+            
+            zone.querySelector('.placed-word').onclick = () => {
+                document.getElementById(`word-${word}`).style.display = 'block';
+                zone.innerHTML = `<span class="meaning-text">${item.th}</span>`;
+            };
+        };
+        targetContainer.appendChild(zone);
+    });
+
+    function checkMission() {
+        const zones = document.querySelectorAll('.drop-target');
+        let score = 0;
+        zones.forEach(z => {
+            const placed = z.querySelector('.placed-word');
+            if (placed && placed.innerText === z.dataset.ans) {
+                score++;
+                z.style.borderColor = "#10b981";
+            } else {
+                z.style.borderColor = "#f87171";
+            }
+        });
+
+        document.getElementById('score-screen').style.display = 'flex';
+        document.getElementById('final-score').innerText = score;
+        const eval = document.getElementById('evaluation');
+        if (score === data.length) {
+            eval.innerText = "RANK: S - LEGENDARY EXPLORER!";
+            playTone(523, 'sine', 0.2); setTimeout(()=>playTone(659, 'sine', 0.2), 200);
+        } else {
+            eval.innerText = `RANK: C - KEEP TRAINING, CADET! (${data.length - score} ERRORS)`;
+            playTone(220, 'sawtooth', 0.5);
+        }
+    }
+</script>
+
+</body>
+</html>
