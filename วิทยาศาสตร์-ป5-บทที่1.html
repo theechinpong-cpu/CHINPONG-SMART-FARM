@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <title>แบบฝึกหัด 25 ข้อ: การปรับตัวของสิ่งมีชีวิต - พระจอมเกล้าติวเตอร์</title>
+    <style>
+        :root { --primary: #2c3e50; --secondary: #3498db; --success: #27ae60; --danger: #e74c3c; }
+        body { font-family: 'Sarabun', sans-serif; background-color: #f4f7f6; color: var(--primary); padding: 20px; }
+        .container { max-width: 800px; margin: auto; background: white; padding: 40px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        .header { text-align: center; border-bottom: 3px solid var(--secondary); margin-bottom: 30px; padding-bottom: 10px; }
+        .question-box { display: none; margin-bottom: 20px; }
+        .question-box.active { display: block; }
+        .q-text { font-size: 1.3rem; font-weight: bold; margin-bottom: 20px; color: #1a252f; }
+        .option { display: block; width: 100%; padding: 15px; margin: 10px 0; border: 2px solid #ddd; border-radius: 12px; background: #fff; cursor: pointer; font-size: 1.1rem; text-align: left; transition: 0.2s; }
+        .option:hover { border-color: var(--secondary); background: #f0f8ff; }
+        .feedback { margin-top: 20px; padding: 20px; border-radius: 12px; display: none; line-height: 1.6; }
+        .btn-nav { background: var(--secondary); color: white; border: none; padding: 12px 25px; border-radius: 8px; cursor: pointer; font-size: 1.1rem; float: right; margin-top: 10px; }
+        .progress-bar { height: 10px; background: #eee; border-radius: 5px; margin-bottom: 30px; }
+        .progress-fill { height: 100%; background: var(--secondary); width: 0%; border-radius: 5px; transition: 0.3s; }
+        #summary-page { display: none; text-align: center; }
+        .score-circle { font-size: 3rem; font-weight: bold; color: var(--secondary); margin: 20px 0; }
+        .weakness-item { text-align: left; background: #fff3cd; padding: 15px; border-left: 5px solid #ffc107; margin: 10px 0; border-radius: 5px; }
+    </style>
+</head>
+<body>
+
+<div class="container" id="quiz-app">
+    <div class="header">
+        <h1>🧬 เจาะลึกการปรับตัวของสิ่งมีชีวิต</h1>
+        <p>โดย พระจอมเกล้าติวเตอร์ (CHINPONG SMART FARM)</p>
+    </div>
+    
+    <div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
+
+    <div id="quiz-content">
+        </div>
+
+    <div id="summary-page">
+        <h2>📊 สรุปผลคะแนนของน้อง</h2>
+        <div class="score-circle" id="final-score">0 / 25</div>
+        <div id="analysis-box"></div>
+        <button class="btn-nav" style="float:none; margin-top:30px;" onclick="location.reload()">เริ่มทำใหม่</button>
+    </div>
+</div>
+
+<script>
+    const questions = [
+        {q: "การปรับตัวหมายถึงอะไร?", options: ["การย้ายบ้านบ่อยๆ", "การเปลี่ยนแปลงลักษณะเพื่อให้รอดชีวิต", "การกินอาหารให้เยอะขึ้น", "การนอนหลับเป็นเวลานาน"], ans: 1, exp: "การปรับตัวคือกระบวนการที่สิ่งมีชีวิตเปลี่ยนลักษณะทางกายภาพหรือพฤติกรรมเพื่อให้เหมาะสมกับสิ่งแวดล้อมและรอดชีวิตได้ครับ"},
+        {q: "อูฐมีโหนกไว้เพื่ออะไร?", options: ["เก็บน้ำไว้ดื่ม", "เก็บไขมันเป็นพลังงานสำรอง", "ช่วยระบายความร้อน", "ใช้ดึงดูดเพศตรงข้าม"], ans: 1, exp: "จำไว้ให้แม่น! โหนกอูฐคือ 'คลังไขมัน' ไม่ใช่ถังน้ำนะลูก"},
+        {q: "ผักตบชวาลอยน้ำได้เพราะเหตุใด?", options: ["มีใบขนาดใหญ่", "มีรากยาวมาก", "ก้านใบพองลมและมีอากาศข้างใน", "มีน้ำหนักเบาเหมือนโฟม"], ans: 2, exp: "ก้านใบที่พองออกจะมีช่องว่างอากาศช่วยเพิ่มแรงพยุงตัวให้ลอยน้ำได้ครับ"},
+        {q: "ต้นโกงกางมีรากค้ำจุนเพื่อวัตถุประสงค์ใด?", options: ["ช่วยหายใจ", "ยึดลำต้นในดินเลนที่อ่อนนุ่ม", "ป้องกันปลวกกิน", "หาอาหารได้ไกลขึ้น"], ans: 1, exp: "ดินเลนในป่าชายเลนมันนิ่มและโดนคลื่นซัด รากค้ำจุนเลยเหมือนขาแมงมุมที่คอยค้ำไว้ไม่ให้ล้ม"},
+        {q: "กิ้งก่าเปลี่ยนสีตามสภาพแวดล้อมจัดเป็นการปรับตัวแบบใด?", options: ["การพรางตัว", "การเตือนภัย", "การเรียกคู่", "การขู่ศัตรู"], ans: 0, exp: "การพรางตัว (Camouflage) ช่วยให้กลมกลืนกับพื้นหลังเพื่อหนีศัตรูหรือแอบล่าเหยื่อครับ"},
+        {q: "สัตว์ในเขตหนาวมักมีลักษณะใดโดดเด่น?", options: ["ใบหูใหญ่", "ชั้นไขมันหนาและขนฟู", "ตัวผอมเพรียว", "ไม่มีขนเลย"], ans: 1, exp: "ไขมันและขนหนาคือเสื้อกันหนาวธรรมชาติของสัตว์ขั้วโลก"},
+        {q: "ทำไมกระบองเพชรต้องเปลี่ยนใบเป็นหนาม?", options: ["เพื่อความเท่", "เพื่อป้องกันคนมาเก็บ", "เพื่อลดการคายน้ำในทะเลทราย", "เพื่อใช้เกี่ยวต้นไม้อื่น"], ans: 2, exp: "น้ำในทะเลทรายหายากมาก การลดพื้นที่ผิวใบเป็นหนามช่วยลดการสูญเสียน้ำได้ดีที่สุด"},
+        {q: "จิ้งจอกทะเลทรายมีหูขนาดใหญ่เพื่ออะไร?", options: ["ฟังเสียงเหยื่อได้ไกลขึ้น", "ช่วยระบายความร้อนจากร่างกาย", "ใช้โบกไล่แมลง", "ความสวยงาม"], ans: 1, exp: "หูที่ใหญ่มีเส้นเลือดฝอยเยอะ ช่วยระบายความร้อนออกจากร่างกายได้เร็วขึ้นครับ"},
+        {q: "บัวมีปากใบอยู่ด้านใดของใบ?", options: ["ด้านล่าง", "ด้านบน", "ขอบใบ", "ไม่มีปากใบ"], ans: 1, exp: "บัวเป็นพืชลอยน้ำ ปากใบจึงต้องอยู่ด้านบนเพื่อสัมผัสอากาศและคายน้ำได้สะดวก"},
+        {q: "นกเป็ดน้ำมีพังผืดที่เท้าเพื่ออะไร?", options: ["ช่วยในการบิน", "ช่วยในการเดินบนบก", "ช่วยในการว่ายน้ำและพุ้ยน้ำ", "ใช้จับเหยื่อ"], ans: 2, exp: "พังผืดช่วยเพิ่มพื้นที่ผิวที่สัมผัสน้ำ ทำให้ว่ายน้ำได้เร็วเหมือนใส่ตีนกบ"},
+        {q: "สัตว์ชนิดใดมีการพรางตัวที่โดดเด่นที่สุด?", options: ["ม้าลาย", "ตั๊กแตนใบไม้", "สิงโต", "ยีราฟ"], ans: 1, exp: "ตั๊กแตนใบไม้มีรูปร่างและสีเหมือนใบไม้จนแทบแยกไม่ออก"},
+        {q: "หมีขั้วโลกมีสีขาวเพื่ออะไร?", options: ["เพื่อให้ดูสะอาด", "เพื่อให้กลมกลืนกับหิมะ", "เพื่อให้ได้รับความร้อนจากแสงอาทิตย์", "เพื่อบอกว่าเป็นเพศผู้"], ans: 1, exp: "สีขาวช่วยในการพรางตัวท่ามกลางหิมะขาวโพลนครับ"},
+        {q: "พืชในป่าชายเลนบางชนิดมีรากหายใจโผล่พ้นดินเพื่ออะไร?", options: ["รับแสงแดด", "รับอากาศหายใจในดินที่น้ำท่วมขัง", "ดักจับแมลง", "ผลิตเมล็ด"], ans: 1, exp: "ในดินเลนมีอากาศน้อย รากหายใจจึงต้องโผล่พ้นน้ำขึ้นมาเพื่อรับออกซิเจน"},
+        {q: "ปลาปักเป้าพองตัวและมีหนามเพื่ออะไร?", options: ["เพื่อว่ายน้ำเร็วขึ้น", "เพื่อดึงดูดคู่", "เพื่อป้องกันตัวจากการถูกกิน", "เพื่อให้น้ำเข้าตัว"], ans: 2, exp: "การพองตัวทำให้ตัวใหญ่ขึ้นและมีหนามแหลมคม ศัตรูจึงกินไม่ได้"},
+        {q: "สิ่งมีชีวิตต้องปรับตัวเพื่ออะไรเป็นหลัก?", options: ["เพื่อความสวยงาม", "เพื่อความอยู่รอดและการสืบพันธุ์", "เพื่อความสนุกสนาน", "เพื่อเลื่อนระดับชั้นวิวัฒนาการ"], ans: 1, exp: "หัวใจสำคัญคือ 'การอยู่รอด' และ 'ส่งต่อรุ่นสู่รุ่น' ครับ"},
+        {q: "เหตุใดแมวน้ำจึงมีรูปร่างที่เพรียวและมีไขมันหนา?", options: ["เพื่อให้ลอยน้ำนิ่งๆ", "เพื่อความรวดเร็วและทนหนาว", "เพื่อให้เดินบนบกเก่ง", "เพื่อใช้ข่มขู่ศัตรู"], ans: 1, exp: "รูปทรงเพรียวช่วยลดแรงต้านน้ำ ไขมันช่วยกันหนาวครับ"},
+        {q: "นกฮูกมีดวงตาขนาดใหญ่และมองเห็นได้ดีในที่มืดจัดเป็นการปรับตัวเพื่ออะไร?", options: ["เพื่อความสวยงาม", "เพื่อการล่าเหยื่อในเวลากลางคืน", "เพื่อสู้กับนกตัวอื่น", "เพื่อหลบแดด"], ans: 1, exp: "เป็นการปรับตัวทางโครงสร้างเพื่อประสิทธิภาพในการหากินกลางคืน"},
+        {q: "ยีราฟมีคอยาวเพื่ออะไร?", options: ["ไว้ดูศัตรูไกลๆ", "ไว้กินใบไม้บนยอดไม้สูงๆ", "ไว้สะบัดคอสู้กัน", "ถูกทุกข้อ"], ans: 3, exp: "คอยาวช่วยให้กินใบไม้ที่สัตว์อื่นกินไม่ถึง และมองเห็นศัตรูจากระยะไกลได้ด้วย"},
+        {q: "พืชน้ำที่จมอยู่ใต้น้ำทั้งหมดมักมีลักษณะอย่างไร?", options: ["ลำต้นแข็งแรงมาก", "ใบเล็กและเหนียว", "ลำต้นอ่อนนิ่มไปตามกระแสน้ำ", "มีผลขนาดใหญ่"], ans: 2, exp: "ลำต้นต้องอ่อนนิ่มเพื่อให้ไหวตามกระแสน้ำได้โดยไม่หักครับ"},
+        {q: "การจำศีลของกบในฤดูหนาวจัดเป็นการปรับตัวแบบใด?", options: ["การปรับตัวทางพฤติกรรม", "การปรับตัวทางรูปร่าง", "การปรับตัวทางเคมี", "ไม่ใช่การปรับตัว"], ans: 0, exp: "การจำศีลเป็นการเปลี่ยน 'พฤติกรรม' เพื่อรักษาพลังงานในช่วงอาหารน้อยครับ"},
+        {q: "ช้างในแอฟริกามีหูใหญ่กว่าช้างเอเชียเพราะเหตุใด?", options: ["ฟังเสียงได้ชัดกว่า", "ระบายความร้อนได้ดีกว่าในอากาศร้อนจัด", "ใช้ปัดเป่าแมลงได้ดีกว่า", "เป็นสายพันธุ์ที่ตัวโตกว่า"], ans: 1, exp: "อากาศในแอฟริการ้อนมาก หูที่ใหญ่ช่วยระบายความร้อนได้ดีเยี่ยม"},
+        {q: "แมลงที่เลียนแบบลายตาของนกฮูกบนปีกมีจุดประสงค์เพื่ออะไร?", options: ["เพื่อให้ดูน่ากลัวและไล่ผู้ล่า", "เพื่อดึงดูดคู่", "เพื่อเลียนแบบนกฮูกจริงๆ", "เพื่อความสวยงาม"], ans: 0, exp: "นี่คือการ Mimicry หรือการเลียนแบบสิ่งที่น่ากลัวเพื่อให้ผู้ล่าตกใจไม่กล้ากิน"},
+        {q: "พืชในเขตแห้งแล้งมักมีรากเป็นอย่างไร?", options: ["รากสั้นๆ", "รากแผ่กระจายกว้างหรือชอนไชลงลึก", "ไม่มีราก", "มีรากอยู่บนอากาศ"], ans: 1, exp: "เพื่อหาแหล่งน้ำที่หาได้ยากในดินที่แห้งแล้งครับ"},
+        {q: "สุนัขจิ้งจอกอาร์กติกเปลี่ยนสีขนตามฤดูกาลเพื่ออะไร?", options: ["เพื่อให้ตัวอุ่นขึ้น", "เพื่อให้กลมกลืนกับสภาพแวดล้อมที่เปลี่ยนไป", "เพื่อสลัดขนทิ้ง", "เพื่อความแปลกใหม่"], ans: 1, exp: "ฤดูหนาวขนสีขาว (หิมะ), ฤดูร้อนขนสีน้ำตาล (พื้นดิน) เพื่อพรางตัวตลอดปี"},
+        {q: "ข้อใดคือการปรับตัวของปลาในการใช้ชีวิตในน้ำ?", options: ["มีขาแข็งแรง", "มีเหงือกหายใจและครีบว่ายน้ำ", "มีขนหนา", "มีกระเป๋าหน้าท้อง"], ans: 1, exp: "เหงือกและครีบคือโครงสร้างสำคัญที่ทำให้ปลาใช้ชีวิตใต้น้ำได้ครับ"}
+    ];
+
+    let currentIdx = 0;
+    let score = 0;
+    let wrongList = [];
+
+    function renderQuestion() {
+        if(currentIdx >= questions.length) {
+            showSummary();
+            return;
+        }
+        
+        const q = questions[currentIdx];
+        const container = document.getElementById('quiz-content');
+        container.innerHTML = `
+            <div class="question-box active">
+                <div class="q-text">${currentIdx + 1}. ${q.q}</div>
+                <div id="options-area">
+                    ${q.options.map((opt, i) => `<button class="option" onclick="handleAnswer(${i})">${opt}</button>`).join('')}
+                </div>
+                <div id="feedback-area" class="feedback"></div>
+                <button id="btn-next" class="btn-nav" style="display:none" onclick="nextQ()">ถัดไป ➔</button>
+            </div>
+        `;
+        updateProgress();
+    }
+
+    function handleAnswer(choice) {
+        const q = questions[currentIdx];
+        const feedback = document.getElementById('feedback-area');
+        const nextBtn = document.getElementById('btn-next');
+        const btns = document.querySelectorAll('.option');
+        
+        btns.forEach(b => b.disabled = true);
+        feedback.style.display = 'block';
+
+        if(choice === q.ans) {
+            feedback.className = 'feedback' ;
+            feedback.style.backgroundColor = '#d4edda';
+            feedback.style.color = '#155724';
+            feedback.innerHTML = `✅ <b>ถูกต้องจ้า!</b><br>${q.exp}`;
+            score++;
+        } else {
+            feedback.className = 'feedback';
+            feedback.style.backgroundColor = '#f8d7da';
+            feedback.style.color = '#721c24';
+            feedback.innerHTML = `❌ <b>เกือบถูกแล้วลูก...</b><br>${q.exp}`;
+            wrongList.push(q.q);
+        }
+        nextBtn.style.display = 'block';
+    }
+
+    function nextQ() {
+        currentIdx++;
+        renderQuestion();
+    }
+
+    function updateProgress() {
+        const percent = (currentIdx / questions.length) * 100;
+        document.getElementById('progress').style.width = percent + '%';
+    }
+
+    function showSummary() {
+        document.getElementById('quiz-content').style.display = 'none';
+        document.getElementById('progress').parentElement.style.display = 'none';
+        const summaryPage = document.getElementById('summary-page');
+        summaryPage.style.display = 'block';
+        document.getElementById('final-score').innerText = `${score} / 25`;
+        
+        let analysis = "<h3>🔍 วิเคราะห์จุดอ่อนรายบุคคล:</h3>";
+        if(score === 25) {
+            analysis += "<p style='color:green; font-weight:bold;'>สุดยอด! น้องคืออัจฉริยะวิทยาศาสตร์ ตัวจริงเสียงจริง!</p>";
+        } else if (score >= 20) {
+            analysis += "<p>น้องทำได้ดีมากครับ! มีข้อพลาดนิดหน่อย ลองทบทวนข้อที่ผิดดูนะ</p>";
+        } else {
+            analysis += "<p>พยายามอีกนิดนะลูก! พี่แนะนำให้กลับไปอ่านเนื้อหาเรื่องการปรับตัวอีกรอบ พี่เชื่อว่าน้องทำได้!</p>";
+        }
+        
+        if(wrongList.length > 0) {
+            analysis += "<div class='weakness-item'><b>ข้อที่ควรทบทวน:</b><br>" + wrongList.join('<br>') + "</div>";
+        }
+        document.getElementById('analysis-box').innerHTML = analysis;
+    }
+
+    renderQuestion();
+</script>
+</body>
+</html>
