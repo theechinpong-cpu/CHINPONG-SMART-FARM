@@ -3,164 +3,91 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>พระจอมเกล้าติวเตอร์ - Vocab Mission</title>
+    <title>พระจอมเกล้าติวเตอร์ - Dual Scroll Matcher</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Prompt:wght@300;400;600&display=swap');
 
-        :root {
-            --primary: #00f2ff;
-            --secondary: #7000ff;
-            --bg: #050b18;
-            --text: #ffffff;
-        }
+        :root { --primary: #00f2ff; --secondary: #7000ff; --bg: #050b18; --text: #ffffff; }
 
         body {
-            background: var(--bg);
-            color: var(--text);
-            font-family: 'Prompt', sans-serif;
-            margin: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
-            overflow-x: hidden;
+            background: var(--bg); color: var(--text); font-family: 'Prompt', sans-serif;
+            margin: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh;
         }
 
-        .header {
-            text-align: center;
-            padding: 20px;
-            background: linear-gradient(180deg, #10192c 0%, transparent 100%);
-            width: 100%;
-            border-bottom: 2px solid var(--primary);
-            box-shadow: 0 0 20px rgba(0, 242, 255, 0.3);
+        .header { text-align: center; padding: 15px; background: #10192c; width: 100%; border-bottom: 2px solid var(--primary); box-shadow: 0 0 15px rgba(0, 242, 255, 0.2); }
+        .brand { font-family: 'Orbitron', sans-serif; color: var(--primary); font-size: 0.7rem; letter-spacing: 2px; }
+        h1 { font-family: 'Orbitron', sans-serif; font-size: 1.2rem; margin: 5px 0; }
+
+        .mission-container {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 15px;
+            max-width: 1000px; width: 95%; margin-top: 20px;
         }
 
-        .brand { font-family: 'Orbitron', sans-serif; color: var(--primary); font-size: 0.8rem; letter-spacing: 3px; }
-        h1 { font-family: 'Orbitron', sans-serif; margin: 10px 0; text-shadow: 0 0 10px var(--primary); }
-
-        .game-world {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            max-width: 1000px;
-            width: 95%;
-            padding: 20px;
-            height: 60vh;
-            overflow-y: auto;
-            background: rgba(16, 25, 44, 0.8);
-            border-radius: 20px;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255,255,255,0.1);
+        .scroll-column {
+            background: rgba(16, 25, 44, 0.8); height: 500px; /* ประมาณ 12 บรรทัด */
+            overflow-y: auto; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);
+            padding: 15px; scrollbar-width: thin; scrollbar-color: var(--primary) #10192c;
         }
 
-        .vocab-list, .meaning-list {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
+        .column-title {
+            position: sticky; top: -15px; background: #1a243a; padding: 10px;
+            text-align: center; font-weight: bold; color: var(--primary); z-index: 10;
+            border-bottom: 1px solid var(--primary); margin-bottom: 10px;
         }
 
         .draggable-item {
             background: linear-gradient(90deg, var(--secondary), #4a00ff);
-            padding: 12px;
-            border-radius: 10px;
-            cursor: grab;
-            text-align: center;
-            font-weight: 600;
-            border: 1px solid rgba(255,255,255,0.2);
-            transition: all 0.2s;
-            user-select: none;
+            padding: 10px; border-radius: 8px; cursor: grab; text-align: center;
+            font-weight: 600; margin-bottom: 10px; border: 1px solid rgba(255,255,255,0.1);
+            transition: 0.2s; user-select: none;
         }
 
-        .draggable-item:active { cursor: grabbing; transform: scale(0.95); }
+        .draggable-item.dragging { opacity: 0.3; }
 
         .drop-target {
-            background: rgba(255,255,255,0.05);
-            border: 2px dashed #444;
-            padding: 12px;
-            border-radius: 10px;
-            min-height: 45px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            transition: all 0.3s;
+            background: rgba(255,255,255,0.05); border: 2px dashed #444;
+            padding: 10px; border-radius: 8px; min-height: 40px; margin-bottom: 10px;
+            display: flex; align-items: center; justify-content: space-between;
         }
 
         .drop-target.active { border-color: var(--primary); background: rgba(0, 242, 255, 0.1); }
-        .meaning-text { font-size: 0.9rem; color: #aaa; margin-right: 10px; flex: 1; }
+        .meaning-text { font-size: 0.9rem; color: #ccc; }
 
         .placed-word {
-            background: var(--primary);
-            color: #000;
-            padding: 4px 10px;
-            border-radius: 5px;
-            font-weight: bold;
-            cursor: pointer;
-            animation: glow 1.5s infinite alternate;
+            background: var(--primary); color: #000; padding: 3px 8px;
+            border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 0.85rem;
         }
 
-        @keyframes glow {
-            from { box-shadow: 0 0 5px var(--primary); }
-            to { box-shadow: 0 0 15px var(--primary); }
-        }
-
-        .controls {
-            padding: 30px;
-            display: flex;
-            gap: 20px;
-        }
-
+        .controls { padding: 20px; text-align: center; }
         .btn {
-            background: var(--primary);
-            color: #000;
-            border: none;
-            padding: 15px 40px;
-            border-radius: 50px;
-            font-family: 'Orbitron', sans-serif;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s;
-            box-shadow: 0 5px 15px rgba(0, 242, 255, 0.4);
+            background: var(--primary); color: #000; border: none; padding: 12px 30px;
+            border-radius: 50px; font-family: 'Orbitron', sans-serif; font-weight: bold; cursor: pointer;
         }
-
-        .btn:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(0, 242, 255, 0.6); }
 
         #score-screen {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.95);
-            display: none;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 100;
-        }
-
-        .score-circle {
-            width: 200px;
-            height: 200px;
-            border: 5px solid var(--primary);
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 3rem;
-            font-family: 'Orbitron', sans-serif;
-            margin-bottom: 20px;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.95); display: none; flex-direction: column;
+            justify-content: center; align-items: center; z-index: 100;
         }
     </style>
 </head>
 <body>
 
 <div class="header">
-    <div class="brand">CHINPONG SMART FARM OPERATIONS</div>
-    <h1>MISSION: VOCAB MATCH</h1>
+    <div class="brand">CHINPONG SMART FARM OPS</div>
+    <h1>VOCAB DUAL-SCROLL CHALLENGE</h1>
 </div>
 
-<div class="game-world">
-    <div class="vocab-list" id="source-container">
-        </div>
-    <div class="meaning-list" id="target-container">
-        </div>
+<div class="mission-container">
+    <div class="scroll-column" id="vocab-col">
+        <div class="column-title">ENGLISH WORDS</div>
+        <div id="source-container"></div>
+    </div>
+
+    <div class="scroll-column" id="meaning-col">
+        <div class="column-title">THAI MEANINGS</div>
+        <div id="target-container"></div>
+    </div>
 </div>
 
 <div class="controls">
@@ -168,10 +95,10 @@
 </div>
 
 <div id="score-screen">
-    <div class="brand">MISSION COMPLETE</div>
-    <div class="score-circle" id="final-score">0</div>
-    <div id="evaluation"></div>
-    <button class="btn" style="margin-top:30px" onclick="location.reload()">RESTART</button>
+    <h2 style="font-family: Orbitron; color: var(--primary);">MISSION REPORT</h2>
+    <div style="font-size: 4rem; border: 4px solid var(--primary); padding: 20px 40px; border-radius: 50%; margin: 20px;" id="final-score">0</div>
+    <div id="eval-text"></div>
+    <button class="btn" style="margin-top:20px" onclick="location.reload()">RE-INITIALIZE</button>
 </div>
 
 <script>
@@ -196,36 +123,25 @@
         {en: "Message", th: "ข้อความ"}, {en: "Tablet", th: "แท็บเล็ต"}, {en: "Adventure", th: "การผจญภัย"}
     ];
 
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    function playTone(freq, type, dur) {
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.type = type;
-        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-        gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        osc.start();
-        osc.stop(audioCtx.currentTime + dur);
-    }
+    const source = document.getElementById('source-container');
+    const target = document.getElementById('target-container');
 
-    const sourceContainer = document.getElementById('source-container');
-    const targetContainer = document.getElementById('target-container');
-
-    // Shuffle and init
+    // Init Draggables (Left Side)
     [...data].sort(() => Math.random() - 0.5).forEach(item => {
         const div = document.createElement('div');
         div.className = 'draggable-item';
         div.draggable = true;
         div.innerText = item.en;
-        div.id = `word-${item.en}`;
+        div.id = `w-${item.en}`;
         div.ondragstart = (e) => {
             e.dataTransfer.setData('text', item.en);
-            playTone(440, 'sine', 0.1);
+            div.classList.add('dragging');
         };
-        sourceContainer.appendChild(div);
+        div.ondragend = () => div.classList.remove('dragging');
+        source.appendChild(div);
     });
 
+    // Init Targets (Right Side)
     [...data].sort(() => Math.random() - 0.5).forEach(item => {
         const zone = document.createElement('div');
         zone.className = 'drop-target';
@@ -238,47 +154,34 @@
             e.preventDefault();
             zone.classList.remove('active');
             const word = e.dataTransfer.getData('text');
+            
             if (zone.querySelector('.placed-word')) {
-                const oldWord = zone.querySelector('.placed-word').innerText;
-                document.getElementById(`word-${oldWord}`).style.display = 'block';
+                const old = zone.querySelector('.placed-word').innerText;
+                document.getElementById(`w-${old}`).style.display = 'block';
             }
+            
             zone.innerHTML = `<span class="meaning-text">${item.th}</span><span class="placed-word">${word}</span>`;
-            document.getElementById(`word-${word}`).style.display = 'none';
-            playTone(880, 'square', 0.05);
+            document.getElementById(`w-${word}`).style.display = 'none';
             
             zone.querySelector('.placed-word').onclick = () => {
-                document.getElementById(`word-${word}`).style.display = 'block';
+                document.getElementById(`w-${word}`).style.display = 'block';
                 zone.innerHTML = `<span class="meaning-text">${item.th}</span>`;
             };
         };
-        targetContainer.appendChild(zone);
+        target.appendChild(zone);
     });
 
     function checkMission() {
-        const zones = document.querySelectorAll('.drop-target');
         let score = 0;
-        zones.forEach(z => {
+        document.querySelectorAll('.drop-target').forEach(z => {
             const placed = z.querySelector('.placed-word');
-            if (placed && placed.innerText === z.dataset.ans) {
-                score++;
-                z.style.borderColor = "#10b981";
-            } else {
-                z.style.borderColor = "#f87171";
-            }
+            if (placed && placed.innerText === z.dataset.ans) score++;
         });
 
         document.getElementById('score-screen').style.display = 'flex';
         document.getElementById('final-score').innerText = score;
-        const eval = document.getElementById('evaluation');
-        if (score === data.length) {
-            eval.innerText = "RANK: S - LEGENDARY EXPLORER!";
-            playTone(523, 'sine', 0.2); setTimeout(()=>playTone(659, 'sine', 0.2), 200);
-        } else {
-            eval.innerText = `RANK: C - KEEP TRAINING, CADET! (${data.length - score} ERRORS)`;
-            playTone(220, 'sawtooth', 0.5);
-        }
+        document.getElementById('eval-text').innerText = score === data.length ? "EXCELLENT! ALL MATCHED." : "KEEP PRACTICING!";
     }
 </script>
-
 </body>
 </html>
