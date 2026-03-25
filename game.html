@@ -8,112 +8,84 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;600&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Kanit', sans-serif; }
-        .scale-110 { transform: scale(1.1); transition: 0.1s; }
+        body { font-family: 'Kanit', sans-serif; touch-action: manipulation; }
+        .correct-flash { animation: flash 0.5s ease-out; }
+        @keyframes flash {
+            0% { background-color: #ffffff; }
+            50% { background-color: #4ade80; }
+            100% { background-color: #ffffff; }
+        }
     </style>
 </head>
-<body class="bg-gradient-to-b from-blue-600 to-indigo-900 h-screen flex flex-col items-center justify-center p-4 text-white overflow-hidden">
+<body class="bg-gradient-to-b from-blue-700 to-indigo-900 h-screen flex flex-col items-center justify-center p-4 text-white overflow-hidden">
 
-    <div id="setup-container" class="text-center animate-fade-in">
-        <h1 class="text-3xl font-black mb-2 text-yellow-400">PHONICS CHALLENGE</h1>
-        <p class="mb-8 opacity-80">โดย CHINPONG SMART FARM</p>
-        <p class="mb-4 text-xl">เลือกตำแหน่งผู้เล่นบนมือถือ</p>
-        <div class="flex gap-4">
-            <button onclick="selectPlayer(1)" class="bg-orange-500 hover:bg-orange-400 p-6 rounded-2xl w-32 shadow-xl font-bold text-2xl">คนที่ 1</button>
-            <button onclick="selectPlayer(2)" class="bg-green-500 hover:bg-green-400 p-6 rounded-2xl w-32 shadow-xl font-bold text-2xl">คนที่ 2</button>
+    <div id="setup-container" class="text-center transition-all duration-500">
+        <h1 class="text-4xl font-black mb-2 text-yellow-400 drop-shadow-lg">PHONICS CHALLENGE</h1>
+        <p class="mb-8 opacity-90 tracking-widest text-sm">BY CHINPONG SMART FARM</p>
+        <div class="bg-white/10 backdrop-blur-md p-8 rounded-3xl border border-white/20">
+            <p class="mb-6 text-xl">น้องคนไหนกำลังจะเล่นครับ?</p>
+            <div class="flex gap-6 justify-center">
+                <button onclick="selectPlayer(1)" class="bg-orange-500 hover:scale-105 active:scale-95 p-6 rounded-2xl w-36 shadow-xl font-bold text-xl transition-all">คนที่ 1</button>
+                <button onclick="selectPlayer(2)" class="bg-green-500 hover:scale-105 active:scale-95 p-6 rounded-2xl w-36 shadow-xl font-bold text-xl transition-all">คนที่ 2</button>
+            </div>
         </div>
     </div>
 
     <div id="game-ui" class="hidden w-full max-w-sm flex flex-col items-center">
         <div class="w-full flex justify-between items-center mb-4 px-2">
-            <span id="player-tag" class="bg-white text-blue-900 px-4 py-1 rounded-full font-bold"></span>
-            <span id="group-label" class="opacity-70 text-sm"></span>
+            <span id="player-tag" class="bg-yellow-400 text-blue-900 px-4 py-1 rounded-full font-bold shadow-md"></span>
+            <span id="group-label" class="bg-blue-500/50 px-3 py-1 rounded-lg text-xs font-light"></span>
         </div>
 
-        <div class="bg-white text-black w-full p-10 rounded-[40px] shadow-2xl text-center mb-6 relative">
-            <div class="text-gray-400 text-sm mb-2 uppercase tracking-widest">แปลคำนี้เป็นไทย</div>
-            <h1 id="word-display" class="text-6xl font-black text-indigo-700 mb-6 uppercase">Loading...</h1>
+        <div id="word-card" class="bg-white text-black w-full p-10 rounded-[40px] shadow-2xl text-center mb-8 transition-all">
+            <div class="text-gray-400 text-xs mb-3 uppercase tracking-[0.2em]">พิมพ์ความหมายคำนี้</div>
+            <h1 id="word-display" class="text-5xl font-black text-indigo-800 mb-8 uppercase tracking-tight">...</h1>
             <input type="text" id="answer-input" 
-                   class="w-full border-b-4 border-indigo-200 p-2 rounded-none text-center text-2xl focus:outline-none focus:border-yellow-500 transition-colors" 
-                   placeholder="พิมพ์ความหมายที่นี่..." autocomplete="off">
+                   class="w-full border-b-4 border-indigo-100 p-2 rounded-none text-center text-3xl focus:outline-none focus:border-yellow-500 transition-all text-indigo-900" 
+                   placeholder="คำแปลภาษาไทย" autocomplete="off" autofocus>
         </div>
 
         <button onclick="checkAnswer()" id="btn-submit" 
-                class="bg-yellow-400 hover:bg-yellow-300 text-blue-900 font-black p-5 w-full rounded-2xl text-2xl shadow-[0_8px_0_rgb(202,138,4)] active:translate-y-1 active:shadow-none transition-all">
+                class="bg-yellow-400 hover:bg-yellow-300 text-blue-900 font-black p-6 w-full rounded-2xl text-2xl shadow-[0_8px_0_rgb(202,138,4)] active:translate-y-1 active:shadow-none transition-all">
             ส่งคำตอบ! 🚀
         </button>
     </div>
 
     <script>
-        // --- 1. การตั้งค่าระบบ Real-time ---
-        const socket = io('YOUR_SERVER_URL'); // *** เปลี่ยนเป็น URL ของ Server คุณ ***
+        // --- ส่วนที่ 1: การตั้งค่าระบบ ---
+        // ใส่ URL ของ Server ที่คุณใช้ (เช่น Render หรือเครื่อง Local)
+        const socket = io('https://your-socket-server.com'); 
         const clapSound = new Audio('https://www.soundjay.com/human/applause-01.mp3');
         
         let currentPlayer = 0;
         let currentWordIndex = 0;
 
-        // --- 2. ข้อมูลคำศัพท์ 150 คำ (Group 1-6) โดย CHINPONG SMART FARM ---
+        // --- ส่วนที่ 2: คลังคำศัพท์ 150 คำ โดย CHINPONG SMART FARM ---
         const vocabulary = [
             // Group 1
-            {w: 'Shirt', m: ['เสื้อ', 'เสื้อเชิ้ต'], g: 'Group 1'}, {w: 'Pants', m: ['กางเกง', 'กางเกงขายาว'], g: 'Group 1'},
-            {w: 'Dress', m: ['ชุดกระโปรง', 'เดรส'], g: 'Group 1'}, {w: 'Skirt', m: ['กระโปรง'], g: 'Group 1'},
-            {w: 'Sock', m: ['ถุงเท้า'], g: 'Group 1'}, {w: 'Shoe', m: ['รองเท้า'], g: 'Group 1'},
-            {w: 'Hat', m: ['หมวก'], g: 'Group 1'}, {w: 'Coat', m: ['เสื้อคลุม', 'เสื้อโค้ท'], g: 'Group 1'},
-            {w: 'Belt', m: ['เข็มขัด'], g: 'Group 1'}, {w: 'Ring', m: ['แหวน'], g: 'Group 1'},
-            {w: 'Door', m: ['ประตู'], g: 'Group 1'}, {w: 'Window', m: ['หน้าต่าง'], g: 'Group 1'},
-            {w: 'Floor', m: ['พื้น'], g: 'Group 1'}, {w: 'Wall', m: ['ผนัง', 'กำแพง'], g: 'Group 1'},
-            {w: 'Roof', m: ['หลังคา'], g: 'Group 1'}, {w: 'Lamp', m: ['โคมไฟ'], g: 'Group 1'},
-            {w: 'Mirror', m: ['กระจก'], g: 'Group 1'}, {w: 'Soap', m: ['สบู่'], g: 'Group 1'},
-            {w: 'Towel', m: ['ผ้าขนหนู', 'ผ้าเช็ดตัว'], g: 'Group 1'}, {w: 'Spoon', m: ['ช้อน'], g: 'Group 1'},
-            {w: 'Fork', m: ['ส้อม'], g: 'Group 1'}, {w: 'Knife', m: ['มีด'], g: 'Group 1'},
-            {w: 'Plate', m: ['จาน'], g: 'Group 1'}, {w: 'Bowl', m: ['ชาม'], g: 'Group 1'},
-            {w: 'Glass', m: ['แก้ว'], g: 'Group 1'},
+            {w:'Shirt',m:['เสื้อ','เสื้อเชิ้ต'],g:'Group 1'},{w:'Pants',m:['กางเกง','กางเกงขายาว'],g:'Group 1'},{w:'Dress',m:['ชุดกระโปรง','เดรส'],g:'Group 1'},{w:'Skirt',m:['กระโปรง'],g:'Group 1'},{w:'Sock',m:['ถุงเท้า'],g:'Group 1'},{w:'Shoe',m:['รองเท้า'],g:'Group 1'},{w:'Hat',m:['หมวก'],g:'Group 1'},{w:'Coat',m:['เสื้อคลุม','เสื้อโค้ท'],g:'Group 1'},{w:'Belt',m:['เข็มขัด'],g:'Group 1'},{w:'Ring',m:['แหวน'],g:'Group 1'},{w:'Door',m:['ประตู'],g:'Group 1'},{w:'Window',m:['หน้าต่าง'],g:'Group 1'},{w:'Floor',m:['พื้น'],g:'Group 1'},{w:'Wall',m:['ผนัง','กำแพง'],g:'Group 1'},{w:'Roof',m:['หลังคา'],g:'Group 1'},{w:'Lamp',m:['โคมไฟ'],g:'Group 1'},{w:'Mirror',m:['กระจก'],g:'Group 1'},{w:'Soap',m:['สบู่'],g:'Group 1'},{w:'Towel',m:['ผ้าขนหนู','ผ้าเช็ดตัว'],g:'Group 1'},{w:'Spoon',m:['ช้อน'],g:'Group 1'},{w:'Fork',m:['ส้อม'],g:'Group 1'},{w:'Knife',m:['มีด'],g:'Group 1'},{w:'Plate',m:['จาน'],g:'Group 1'},{w:'Bowl',m:['ชาม'],g:'Group 1'},{w:'Glass',m:['แก้ว'],g:'Group 1'},
             // Group 2
-            {w: 'Angry', m: ['โกรธ', 'โมโห'], g: 'Group 2'}, {w: 'Brave', m: ['กล้าหาญ', 'ใจกล้า'], g: 'Group 2'},
-            {w: 'Scared', m: ['กลัว'], g: 'Group 2'}, {w: 'Tired', m: ['เหนื่อย'], g: 'Group 2'},
-            {w: 'Thirsty', m: ['หิวน้ำ', 'กระหายน้ำ'], g: 'Group 2'}, {w: 'Dirty', m: ['สกปรก'], g: 'Group 2'},
-            {w: 'Clean', m: ['สะอาด'], g: 'Group 2'}, {w: 'Soft', m: ['นุ่ม'], g: 'Group 2'},
-            {w: 'Hard', m: ['แข็ง', 'ยาก'], g: 'Group 2'}, {w: 'Heavy', m: ['หนัก'], g: 'Group 2'},
-            {w: 'Light', m: ['เบา', 'แสง'], g: 'Group 2'}, {w: 'Full', m: ['เต็ม', 'อิ่ม'], g: 'Group 2'},
-            {w: 'Empty', m: ['ว่างเปล่า'], g: 'Group 2'}, {w: 'Rich', m: ['รวย'], g: 'Group 2'},
-            {w: 'Poor', m: ['จน', 'น่าสงสาร'], g: 'Group 2'}, {w: 'Earth', m: ['โลก'], g: 'Group 2'},
-            {w: 'Sun', m: ['พระอาทิตย์', 'ดวงอาทิตย์'], g: 'Group 2'}, {w: 'Moon', m: ['พระจันทร์', 'ดวงจันทร์'], g: 'Group 2'},
-            {w: 'Star', m: ['ดาว'], g: 'Group 2'}, {w: 'Cloud', m: ['เมฆ'], g: 'Group 2'},
-            {w: 'Rain', m: ['ฝน'], g: 'Group 2'}, {w: 'Snow', m: ['หิมะ'], g: 'Group 2'},
-            {w: 'Storm', m: ['พายุ'], g: 'Group 2'}, {w: 'Wind', m: ['ลม'], g: 'Group 2'},
-            {w: 'Fire', m: ['ไฟ'], g: 'Group 2'},
+            {w:'Angry',m:['โกรธ','โมโห'],g:'Group 2'},{w:'Brave',m:['กล้าหาญ','ใจกล้า'],g:'Group 2'},{w:'Scared',m:['กลัว'],g:'Group 2'},{w:'Tired',m:['เหนื่อย'],g:'Group 2'},{w:'Thirsty',m:['หิวน้ำ','กระหายน้ำ'],g:'Group 2'},{w:'Dirty',m:['สกปรก'],g:'Group 2'},{w:'Clean',m:['สะอาด'],g:'Group 2'},{w:'Soft',m:['นุ่ม'],g:'Group 2'},{w:'Hard',m:['แข็ง','ยาก'],g:'Group 2'},{w:'Heavy',m:['หนัก'],g:'Group 2'},{w:'Light',m:['เบา','แสง'],g:'Group 2'},{w:'Full',m:['เต็ม','อิ่ม'],g:'Group 2'},{w:'Empty',m:['ว่างเปล่า'],g:'Group 2'},{w:'Rich',m:['รวย'],g:'Group 2'},{w:'Poor',m:['จน','น่าสงสาร'],g:'Group 2'},{w:'Earth',m:['โลก'],g:'Group 2'},{w:'Sun',m:['พระอาทิตย์','ดวงอาทิตย์'],g:'Group 2'},{w:'Moon',m:['พระจันทร์','ดวงจันทร์'],g:'Group 2'},{w:'Star',m:['ดาว'],g:'Group 2'},{w:'Cloud',m:['เมฆ'],g:'Group 2'},{w:'Rain',m:['ฝน'],g:'Group 2'},{w:'Snow',m:['หิมะ'],g:'Group 2'},{w:'Storm',m:['พายุ'],g:'Group 2'},{w:'Wind',m:['ลม'],g:'Group 2'},{w:'Fire',m:['ไฟ'],g:'Group 2'},
             // Group 3
-            {w: 'Water', m: ['น้ำ'], g: 'Group 3'}, {w: 'Land', m: ['บก', 'ที่ดิน', 'พื้นดิน'], g: 'Group 3'},
-            {w: 'Sea', m: ['ทะเล'], g: 'Group 3'}, {w: 'Mountain', m: ['ภูเขา'], g: 'Group 3'},
-            {w: 'Cave', m: ['ถ้ำ'], g: 'Group 3'}, {w: 'Left', m: ['ซ้าย'], g: 'Group 3'},
-            {w: 'Right', m: ['ขวา'], g: 'Group 3'}, {w: 'Up', m: ['ขึ้น'], g: 'Group 3'},
-            {w: 'Down', m: ['ลง'], g: 'Group 3'}, {w: 'Inside', m: ['ข้างใน'], g: 'Group 3'},
-            {w: 'Outside', m: ['ข้างนอก'], g: 'Group 3'}, {w: 'Between', m: ['ระหว่าง'], g: 'Group 3'},
-            {w: 'Behind', m: ['ข้างหลัง'], g: 'Group 3'}, {w: 'Under', m: ['ข้างล่าง', 'ใต้'], g: 'Group 3'},
-            {w: 'Above', m: ['ข้างบน', 'เหนือ'], g: 'Group 3'}, {w: 'Fruit', m: ['ผลไม้'], g: 'Group 3'},
-            {w: 'Animal', m: ['สัตว์'], g: 'Group 3'}, {w: 'Person', m: ['คน'], g: 'Group 3'},
-            {w: 'Money', m: ['เงิน'], g: 'Group 3'}, {w: 'Paper', m: ['กระดาษ'], g: 'Group 3'},
-            {w: 'Picture', m: ['รูปภาพ'], g: 'Group 3'}, {w: 'Music', m: ['ดนตรี'], g: 'Group 3'},
-            {w: 'Song', m: ['เพลง'], g: 'Group 3'}, {w: 'Sound', m: ['เสียง'], g: 'Group 3'},
-            {w: 'Color', m: ['สี'], g: 'Group 3'},
-            // Group 4-6 (ย่อเพื่อความกระชับ คุณสามารถเติมคำแปลที่เหลือได้ในรูปแบบเดียวกัน)
-            {w: 'Shape', m: ['รูปร่าง'], g: 'Group 4'}, {w: 'Square', m: ['จัตุรัส', 'สี่เหลี่ยม'], g: 'Group 4'},
-            {w: 'Circle', m: ['วงกลม'], g: 'Group 4'}, {w: 'Triangle', m: ['สามเหลี่ยม'], g: 'Group 4'},
-            {w: 'Heart', m: ['หัวใจ'], g: 'Group 4'}, {w: 'Beach', m: ['ชายหาด'], g: 'Group 4'},
-            {w: 'Doctor', m: ['หมอ', 'แพทย์'], g: 'Group 5'}, {w: 'Nurse', m: ['พยาบาล'], g: 'Group 5'},
-            {w: 'Police', m: ['ตำรวจ'], g: 'Group 5'}, {w: 'Teacher', m: ['ครู'], g: 'Group 5'},
-            {w: 'Farmer', m: ['ชาวนา', 'เกษตรกร'], g: 'Group 5'}, {w: 'Happy', m: ['มีความสุข'], g: 'Group 6'},
-            {w: 'Sad', m: ['เศร้า', 'เสียใจ'], g: 'Group 6'}, {w: 'Good', m: ['ดี'], g: 'Group 6'},
-            {w: 'New', m: ['ใหม่'], g: 'Group 6'}, {w: 'Old', m: ['เก่า', 'แก่'], g: 'Group 6'}
+            {w:'Water',m:['น้ำ'],g:'Group 3'},{w:'Land',m:['บก','ที่ดิน','พื้นดิน'],g:'Group 3'},{w:'Sea',m:['ทะเล'],g:'Group 3'},{w:'Mountain',m:['ภูเขา'],g:'Group 3'},{w:'Cave',m:['ถ้ำ'],g:'Group 3'},{w:'Left',m:['ซ้าย'],g:'Group 3'},{w:'Right',m:['ขวา'],g:'Group 3'},{w:'Up',m:['ขึ้น'],g:'Group 3'},{w:'Down',m:['ลง'],g:'Group 3'},{w:'Inside',m:['ข้างใน'],g:'Group 3'},{w:'Outside',m:['ข้างนอก'],g:'Group 3'},{w:'Between',m:['ระหว่าง'],g:'Group 3'},{w:'Behind',m:['ข้างหลัง'],g:'Group 3'},{w:'Under',m:['ข้างล่าง','ใต้'],g:'Group 3'},{w:'Above',m:['ข้างบน','เหนือ'],g:'Group 3'},{w:'Fruit',m:['ผลไม้'],g:'Group 3'},{w:'Animal',m:['สัตว์'],g:'Group 3'},{w:'Person',m:['คน'],g:'Group 3'},{w:'Money',m:['เงิน'],g:'Group 3'},{w:'Paper',m:['กระดาษ'],g:'Group 3'},{w:'Picture',m:['รูปภาพ'],g:'Group 3'},{w:'Music',m:['ดนตรี'],g:'Group 3'},{w:'Song',m:['เพลง'],g:'Group 3'},{w:'Sound',m:['เสียง'],g:'Group 3'},{w:'Color',m:['สี'],g:'Group 3'},
+            // Group 4
+            {w:'Shape',m:['รูปร่าง'],g:'Group 4'},{w:'Square',m:['สี่เหลี่ยม','จัตุรัส'],g:'Group 4'},{w:'Circle',m:['วงกลม'],g:'Group 4'},{w:'Triangle',m:['สามเหลี่ยม'],g:'Group 4'},{w:'Heart',m:['หัวใจ'],g:'Group 4'},{w:'Beach',m:['ชายหาด'],g:'Group 4'},{w:'Island',m:['เกาะ'],g:'Group 4'},{w:'River',m:['แม่น้ำ'],g:'Group 4'},{w:'Lake',m:['ทะเลสาบ'],g:'Group 4'},{w:'Forest',m:['ป่า'],g:'Group 4'},{w:'Garden',m:['สวน'],g:'Group 4'},{w:'Farm',m:['ฟาร์ม','ไร่นา'],g:'Group 4'},{w:'Park',m:['สวนสาธารณะ'],g:'Group 4'},{w:'City',m:['เมือง'],g:'Group 4'},{w:'Town',m:['เมือง'],g:'Group 4'},{w:'Apple',m:['แอปเปิ้ล'],g:'Group 4'},{w:'Banana',m:['กล้วย'],g:'Group 4'},{w:'Orange',m:['ส้ม'],g:'Group 4'},{w:'Grape',m:['องุ่น'],g:'Group 4'},{w:'Mango',m:['มะม่วง'],g:'Group 4'},{w:'Lemon',m:['มะนาว'],g:'Group 4'},{w:'Candy',m:['ลูกอม','ขนม'],g:'Group 4'},{w:'Bread',m:['ขนมปัง'],g:'Group 4'},{w:'Butter',m:['เนย'],g:'Group 4'},{w:'Cheese',m:['ชีส'],g:'Group 4'},
+            // Group 5
+            {w:'Doctor',m:['หมอ','แพทย์'],g:'Group 5'},{w:'Nurse',m:['พยาบาล'],g:'Group 5'},{w:'Police',m:['ตำรวจ'],g:'Group 5'},{w:'Pilot',m:['นักบิน'],g:'Group 5'},{w:'Chef',m:['เชฟ','พ่อครัว'],g:'Group 5'},{w:'Teacher',m:['ครู'],g:'Group 5'},{w:'Farmer',m:['ชาวนา','เกษตรกร'],g:'Group 5'},{w:'Worker',m:['คนงาน'],g:'Group 5'},{w:'Driver',m:['คนขับรถ'],g:'Group 5'},{w:'Singer',m:['นักร้อง'],g:'Group 5'},{w:'Table',m:['โต๊ะ'],g:'Group 5'},{w:'Chair',m:['เก้าอี้'],g:'Group 5'},{w:'Desk',m:['โต๊ะทำงาน'],g:'Group 5'},{w:'Bed',m:['เตียง'],g:'Group 5'},{w:'Sofa',m:['โซฟา'],g:'Group 5'},{w:'Box',m:['กล่อง'],g:'Group 5'},{w:'Cup',m:['ถ้วย'],g:'Group 5'},{w:'Bottle',m:['ขวด'],g:'Group 5'},{w:'Key',m:['กุญแจ'],g:'Group 5'},{w:'Watch',m:['นาฬิกา'],g:'Group 5'},{w:'Quiet',m:['เงียบ'],g:'Group 5'},{w:'Loud',m:['ดัง'],g:'Group 5'},{w:'Fast',m:['เร็ว'],g:'Group 5'},{w:'Slow',m:['ช้า'],g:'Group 5'},{w:'Small',m:['เล็ก'],g:'Group 5'},
+            // Group 6
+            {w:'Large',m:['ใหญ่'],g:'Group 6'},{w:'Short',m:['สั้น','เตี้ย'],g:'Group 6'},{w:'Tall',m:['สูง'],g:'Group 6'},{w:'Young',m:['หนุ่ม','สาว','เด็ก'],g:'Group 6'},{w:'Old',m:['เก่า','แก่'],g:'Group 6'},{w:'Happy',m:['มีความสุข','ดีใจ'],g:'Group 6'},{w:'Sad',m:['เศร้า','เสียใจ'],g:'Group 6'},{w:'Good',m:['ดี'],g:'Group 6'},{w:'Bad',m:['เลว','ไม่ดี'],g:'Group 6'},{w:'Nice',m:['ดี'],g:'Group 6'},{w:'Cool',m:['เย็น','เจ๋ง'],g:'Group 6'},{w:'Warm',m:['อบอุ่น'],g:'Group 6'},{w:'Cold',m:['หนาว','เย็น'],g:'Group 6'},{w:'Hot',m:['ร้อน'],g:'Group 6'},{w:'New',m:['ใหม่'],g:'Group 6'}
         ];
 
-        // --- 3. Logic การเล่นเกม ---
+        // --- ส่วนที่ 3: ระบบควบคุมเกม ---
         function selectPlayer(num) {
             currentPlayer = num;
-            document.getElementById('setup-container').classList.add('hidden');
-            document.getElementById('game-ui').classList.remove('hidden');
-            document.getElementById('player-tag').innerText = `ผู้เล่นคนที่ ${num}`;
-            nextWord();
+            document.getElementById('setup-container').classList.add('opacity-0', 'scale-90');
+            setTimeout(() => {
+                document.getElementById('setup-container').classList.add('hidden');
+                document.getElementById('game-ui').classList.remove('hidden');
+                document.getElementById('player-tag').innerText = `ผู้เล่นคนที่ ${num}`;
+                nextWord();
+            }, 500);
         }
 
         function nextWord() {
@@ -126,30 +98,34 @@
 
         function checkAnswer() {
             const userInput = document.getElementById('answer-input').value.trim();
+            if (!userInput) return;
+
             const correctMeanings = vocabulary[currentWordIndex].m;
-            
-            // ตรวจว่าสิ่งที่เด็กพิมพ์ ตรงกับความหมายอันใดอันหนึ่งหรือไม่
-            const isCorrect = correctMeanings.some(meaning => meaning === userInput);
+            const isCorrect = correctMeanings.some(m => m === userInput);
 
             if (isCorrect) {
-                // เอฟเฟกต์ตอบถูก: เสียงปรบมือ
+                // เล่นเสียงปรบมือ
                 clapSound.currentTime = 0;
                 clapSound.play();
                 
-                // ส่งคะแนนไปยัง Dashboard Real-time
+                // เอฟเฟกต์ไฟกะพริบที่การ์ด
+                const card = document.getElementById('word-card');
+                card.classList.add('correct-flash');
+                setTimeout(() => card.classList.remove('correct-flash'), 500);
+
+                // ส่งคะแนน (Real-time)
                 socket.emit('submit-score', { player: currentPlayer, points: 10 });
                 
-                // เปลี่ยนโจทย์
                 nextWord();
             } else {
-                // เขย่าหน้าจอเมื่อผิด
-                const box = document.querySelector('.bg-white');
-                box.classList.add('animate-bounce');
-                setTimeout(() => box.classList.remove('animate-bounce'), 500);
+                // เอฟเฟกต์สั่นเมื่อตอบผิด
+                const card = document.getElementById('word-card');
+                card.classList.add('animate-ping'); // ใช้ Tailwind สั้นๆ เพื่อให้รู้ว่าผิด
+                setTimeout(() => card.classList.remove('animate-ping'), 300);
             }
         }
 
-        // รองรับการกด Enter เพื่อส่งคำตอบ
+        // กด Enter ส่งคำตอบได้เลย
         document.getElementById('answer-input').addEventListener('keypress', (e) => {
             if (e.key === 'Enter') checkAnswer();
         });
