@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phonics Challenge - Player</title>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-blue-500 h-screen flex flex-col items-center justify-center p-4 text-white">
+    <div id="setup" class="text-center">
+        <h1 class="text-2xl font-bold mb-4">เลือกผู้เล่น</h1>
+        <button onclick="selectPlayer(1)" class="bg-orange-500 p-4 rounded-xl m-2 w-32">คนที่ 1</button>
+        <button onclick="selectPlayer(2)" class="bg-green-500 p-4 rounded-xl m-2 w-32">คนที่ 2</button>
+    </div>
+
+    <div id="game-ui" class="hidden w-full max-w-sm text-center">
+        <h2 id="group-label" class="text-lg opacity-80"></h2>
+        <div class="bg-white text-black p-8 rounded-3xl shadow-2xl my-6">
+            <h1 id="word-display" class="text-5xl font-black mb-4 tracking-widest text-blue-600"></h1>
+            <input type="text" id="answer-input" class="w-full border-2 border-blue-300 p-3 rounded-lg text-center text-xl" placeholder="พิมพ์คำศัพท์ที่เห็น...">
+        </div>
+        <button onclick="checkAnswer()" class="bg-yellow-400 text-blue-900 font-bold p-4 w-full rounded-2xl text-xl shadow-lg">ส่งคำตอบ! 🚀</button>
+    </div>
+
+    <script>
+        const socket = io('YOUR_SERVER_URL'); // ใส่ URL ของ Server เช่น https://my-game.render.com
+        let currentPlayer = 0;
+        const vocabulary = [
+            {word: 'Shirt', group: 'Group 1'}, {word: 'Pants', group: 'Group 1'}, // ... ใส่คำศัพท์จนครบ 150 คำ
+            {word: 'Angry', group: 'Group 2'}, {word: 'Brave', group: 'Group 2'}
+        ];
+        let currentWordIndex = 0;
+
+        function selectPlayer(num) {
+            currentPlayer = num;
+            document.getElementById('setup').classList.add('hidden');
+            document.getElementById('game-ui').classList.remove('hidden');
+            nextWord();
+        }
+
+        function nextWord() {
+            currentWordIndex = Math.floor(Math.random() * vocabulary.length);
+            document.getElementById('word-display').innerText = vocabulary[currentWordIndex].word;
+            document.getElementById('group-label').innerText = vocabulary[currentWordIndex].group;
+            document.getElementById('answer-input').value = '';
+            document.getElementById('answer-input').focus();
+        }
+
+        function checkAnswer() {
+            const input = document.getElementById('answer-input').value.trim().toLowerCase();
+            const correct = vocabulary[currentWordIndex].word.toLowerCase();
+            
+            if (input === correct) {
+                socket.emit('submit-score', { player: currentPlayer, points: 10 });
+                alert('ถูกต้อง! +10 คะแนน');
+                nextWord();
+            } else {
+                alert('ลองใหม่อีกครั้งนะ!');
+            }
+        }
+    </script>
+</body>
+</html>
