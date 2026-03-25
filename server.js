@@ -1,23 +1,37 @@
 const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
+const cors = require('cors');
 
 const app = express();
-const server = http.createServer(app);
-const io = new Server(server, { cors: { origin: "*" } });
+app.use(cors()); // อนุญาตให้ทุก Domain เข้าถึงได้
 
-let scores = { player1: { name: "Player 1", score: 0 }, player2: { name: "Player 2", score: 0 } };
+const server = http.createServer(app);
+const io = new Server(server, {
+    cors: {
+        origin: "*", // สำคัญมาก: เพื่อให้มือถือและ Dashboard คุยกันได้
+        methods: ["GET", "POST"]
+    }
+});
+
+let scores = { 
+    player1: { name: "Player 1", score: 0 }, 
+    player2: { name: "Player 2", score: 0 } 
+};
 
 io.on('connection', (socket) => {
-    // ส่งคะแนนปัจจุบันให้คนที่เพิ่ง Connect (เช่น Dashboard)
+    console.log('A user connected: ' + socket.id);
+
+    // ส่งคะแนนปัจจุบันให้คนที่เพิ่งเปิดหน้าจอ (เช่น Dashboard)
     socket.emit('update-dashboard', scores);
 
     // รับคะแนนจากมือถือเด็ก
     socket.on('submit-score', (data) => {
+        console.log('Score received:', data);
         if (data.player === 1) scores.player1.score += data.points;
         if (data.player === 2) scores.player2.score += data.points;
         
-        // ส่งคะแนนที่อัปเดตไปให้ Dashboard ทันที
+        // Broadcast อัปเดตให้ทุกหน้าจอ (รวมถึง Dashboard) ทันที
         io.emit('update-dashboard', scores);
     });
 
@@ -28,4 +42,5 @@ io.on('connection', (socket) => {
     });
 });
 
-server.listen(3000, () => console.log('Server running on port 3000'));
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
