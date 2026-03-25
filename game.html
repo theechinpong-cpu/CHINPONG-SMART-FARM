@@ -15,34 +15,42 @@
             50% { background-color: #4ade80; }
             100% { background-color: #ffffff; }
         }
+        /* เอฟเฟกต์สั่นเมื่อตอบผิด */
+        .shake { animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both; }
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-1px, 0, 0); }
+            20%, 80% { transform: translate3d(2px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+            40%, 60% { transform: translate3d(4px, 0, 0); }
+        }
     </style>
 </head>
 <body class="bg-gradient-to-b from-blue-700 to-indigo-900 h-screen flex flex-col items-center justify-center p-4 text-white overflow-hidden">
 
     <div id="setup-container" class="text-center transition-all duration-500">
-        <h1 class="text-4xl font-black mb-2 text-yellow-400 drop-shadow-lg">PHONICS CHALLENGE</h1>
+        <h1 class="text-4xl font-black mb-2 text-yellow-400 drop-shadow-lg uppercase">Phonics Challenge</h1>
         <p class="mb-8 opacity-90 tracking-widest text-sm">BY CHINPONG SMART FARM</p>
         <div class="bg-white/10 backdrop-blur-md p-8 rounded-3xl border border-white/20">
-            <p class="mb-6 text-xl">น้องคนไหนกำลังจะเล่นครับ?</p>
+            <p class="mb-6 text-xl">น้องคนไหนจะแข่งครับ?</p>
             <div class="flex gap-6 justify-center">
-                <button onclick="selectPlayer(1)" class="bg-orange-500 hover:scale-105 active:scale-95 p-6 rounded-2xl w-36 shadow-xl font-bold text-xl transition-all">คนที่ 1</button>
-                <button onclick="selectPlayer(2)" class="bg-green-500 hover:scale-105 active:scale-95 p-6 rounded-2xl w-36 shadow-xl font-bold text-xl transition-all">คนที่ 2</button>
+                <button onclick="selectPlayer(1)" class="bg-orange-500 hover:scale-105 active:scale-95 p-6 rounded-2xl w-36 shadow-xl font-bold text-xl transition-all border-b-4 border-orange-700">คนที่ 1</button>
+                <button onclick="selectPlayer(2)" class="bg-green-500 hover:scale-105 active:scale-95 p-6 rounded-2xl w-36 shadow-xl font-bold text-xl transition-all border-b-4 border-green-700">คนที่ 2</button>
             </div>
         </div>
     </div>
 
     <div id="game-ui" class="hidden w-full max-w-sm flex flex-col items-center">
-        <div class="w-full flex justify-between items-center mb-4 px-2">
-            <span id="player-tag" class="bg-yellow-400 text-blue-900 px-4 py-1 rounded-full font-bold shadow-md"></span>
-            <span id="group-label" class="bg-blue-500/50 px-3 py-1 rounded-lg text-xs font-light"></span>
+        <div class="w-full flex justify-between items-center mb-4 px-2 text-sm font-bold uppercase tracking-wider">
+            <span id="player-tag" class="bg-yellow-400 text-blue-900 px-4 py-1 rounded-full shadow-md"></span>
+            <span id="group-label" class="text-blue-200"></span>
         </div>
 
         <div id="word-card" class="bg-white text-black w-full p-10 rounded-[40px] shadow-2xl text-center mb-8 transition-all">
-            <div class="text-gray-400 text-xs mb-3 uppercase tracking-[0.2em]">พิมพ์ความหมายคำนี้</div>
+            <div class="text-gray-400 text-xs mb-3 uppercase tracking-[0.2em]">แปลเป็นภาษาไทย</div>
             <h1 id="word-display" class="text-5xl font-black text-indigo-800 mb-8 uppercase tracking-tight">...</h1>
             <input type="text" id="answer-input" 
                    class="w-full border-b-4 border-indigo-100 p-2 rounded-none text-center text-3xl focus:outline-none focus:border-yellow-500 transition-all text-indigo-900" 
-                   placeholder="คำแปลภาษาไทย" autocomplete="off" autofocus>
+                   placeholder="พิมพ์คำแปลที่นี่" autocomplete="off">
         </div>
 
         <button onclick="checkAnswer()" id="btn-submit" 
@@ -52,15 +60,17 @@
     </div>
 
     <script>
-        // --- ส่วนที่ 1: การตั้งค่าระบบ ---
-        // ใส่ URL ของ Server ที่คุณใช้ (เช่น Render หรือเครื่อง Local)
-        const socket = io('https://your-socket-server.com'); 
-        const clapSound = new Audio('https://www.soundjay.com/human/applause-01.mp3');
+        // --- ส่วนที่ 1: การตั้งค่าระบบ & เสียง ---
+        const socket = io('https://your-socket-server.com'); // เปลี่ยนเป็น URL ของคุณ
         
+        // โหลดเสียง (Free Assets)
+        const cheerSound = new Audio('https://www.soundjay.com/human/sounds/applause-01.mp3');
+        const booSound = new Audio('https://www.myinstants.com/media/sounds/crowd-moan.mp3'); // เสียงโห่เสียดาย
+
         let currentPlayer = 0;
         let currentWordIndex = 0;
 
-        // --- ส่วนที่ 2: คลังคำศัพท์ 150 คำ โดย CHINPONG SMART FARM ---
+        // --- ส่วนที่ 2: คลังคำศัพท์ 150 คำ ---
         const vocabulary = [
             // Group 1
             {w:'Shirt',m:['เสื้อ','เสื้อเชิ้ต'],g:'Group 1'},{w:'Pants',m:['กางเกง','กางเกงขายาว'],g:'Group 1'},{w:'Dress',m:['ชุดกระโปรง','เดรส'],g:'Group 1'},{w:'Skirt',m:['กระโปรง'],g:'Group 1'},{w:'Sock',m:['ถุงเท้า'],g:'Group 1'},{w:'Shoe',m:['รองเท้า'],g:'Group 1'},{w:'Hat',m:['หมวก'],g:'Group 1'},{w:'Coat',m:['เสื้อคลุม','เสื้อโค้ท'],g:'Group 1'},{w:'Belt',m:['เข็มขัด'],g:'Group 1'},{w:'Ring',m:['แหวน'],g:'Group 1'},{w:'Door',m:['ประตู'],g:'Group 1'},{w:'Window',m:['หน้าต่าง'],g:'Group 1'},{w:'Floor',m:['พื้น'],g:'Group 1'},{w:'Wall',m:['ผนัง','กำแพง'],g:'Group 1'},{w:'Roof',m:['หลังคา'],g:'Group 1'},{w:'Lamp',m:['โคมไฟ'],g:'Group 1'},{w:'Mirror',m:['กระจก'],g:'Group 1'},{w:'Soap',m:['สบู่'],g:'Group 1'},{w:'Towel',m:['ผ้าขนหนู','ผ้าเช็ดตัว'],g:'Group 1'},{w:'Spoon',m:['ช้อน'],g:'Group 1'},{w:'Fork',m:['ส้อม'],g:'Group 1'},{w:'Knife',m:['มีด'],g:'Group 1'},{w:'Plate',m:['จาน'],g:'Group 1'},{w:'Bowl',m:['ชาม'],g:'Group 1'},{w:'Glass',m:['แก้ว'],g:'Group 1'},
@@ -83,7 +93,7 @@
             setTimeout(() => {
                 document.getElementById('setup-container').classList.add('hidden');
                 document.getElementById('game-ui').classList.remove('hidden');
-                document.getElementById('player-tag').innerText = `ผู้เล่นคนที่ ${num}`;
+                document.getElementById('player-tag').innerText = `Player ${num}`;
                 nextWord();
             }, 500);
         }
@@ -103,29 +113,28 @@
             const correctMeanings = vocabulary[currentWordIndex].m;
             const isCorrect = correctMeanings.some(m => m === userInput);
 
+            const card = document.getElementById('word-card');
+
             if (isCorrect) {
-                // เล่นเสียงปรบมือ
-                clapSound.currentTime = 0;
-                clapSound.play();
+                // ตอบถูก: ปรบมือโห่ร้อง + ไฟเขียว
+                cheerSound.currentTime = 0;
+                cheerSound.play();
                 
-                // เอฟเฟกต์ไฟกะพริบที่การ์ด
-                const card = document.getElementById('word-card');
                 card.classList.add('correct-flash');
                 setTimeout(() => card.classList.remove('correct-flash'), 500);
 
-                // ส่งคะแนน (Real-time)
                 socket.emit('submit-score', { player: currentPlayer, points: 10 });
-                
                 nextWord();
             } else {
-                // เอฟเฟกต์สั่นเมื่อตอบผิด
-                const card = document.getElementById('word-card');
-                card.classList.add('animate-ping'); // ใช้ Tailwind สั้นๆ เพื่อให้รู้ว่าผิด
-                setTimeout(() => card.classList.remove('animate-ping'), 300);
+                // ตอบผิด: เสียงโห่ + สั่นหน้าจอ
+                booSound.currentTime = 0;
+                booSound.play();
+                
+                card.classList.add('shake');
+                setTimeout(() => card.classList.remove('shake'), 500);
             }
         }
 
-        // กด Enter ส่งคำตอบได้เลย
         document.getElementById('answer-input').addEventListener('keypress', (e) => {
             if (e.key === 'Enter') checkAnswer();
         });
