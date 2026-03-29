@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>English Vocabulary Quiz - KMITL Tutor Style</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;700&family=Poppins:wght@400;600&display=swap');
+        
+        body { font-family: 'Poppins', 'Sarabun', sans-serif; background-color: #f8f9fa; color: #333; padding: 20px; }
+        .container { max-width: 850px; margin: auto; background: white; padding: 40px; border-radius: 15px; box-shadow: 0 5px 25px rgba(0,0,0,0.08); }
+        
+        .header { text-align: center; border-bottom: 3px solid #e67e22; margin-bottom: 30px; padding-bottom: 20px; }
+        .header h1 { color: #d35400; margin-bottom: 5px; }
+        .tutor-tag { color: #7f8c8d; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
+
+        .summary-box { background: #fff5eb; border-left: 5px solid #e67e22; padding: 20px; border-radius: 8px; margin-bottom: 30px; line-height: 1.6; }
+
+        .quiz-card { margin-bottom: 25px; padding: 20px; border: 1px solid #eee; border-radius: 12px; transition: 0.3s; }
+        .quiz-card:hover { border-color: #e67e22; background: #fffcf9; }
+        .question-text { font-weight: 600; font-size: 1.1em; margin-bottom: 15px; display: block; }
+
+        .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .choice-btn { padding: 12px; border: 2px solid #edeff0; background: white; border-radius: 8px; cursor: pointer; text-align: left; font-size: 1em; transition: 0.2s; }
+        .choice-btn:hover { border-color: #e67e22; }
+        .choice-btn.active { background: #e67e22; color: white; border-color: #d35400; }
+
+        #submit-btn { width: 100%; padding: 20px; background: #2ecc71; color: white; border: none; border-radius: 10px; font-size: 1.2em; font-weight: 700; cursor: pointer; margin-top: 20px; transition: 0.3s; }
+        #submit-btn:hover { background: #27ae60; box-shadow: 0 4px 15px rgba(46, 204, 113, 0.3); }
+
+        .feedback { margin-top: 15px; padding: 12px; border-radius: 8px; display: none; font-weight: 600; }
+        .is-correct { background: #d4edda; color: #155724; }
+        .is-wrong { background: #f8d7da; color: #721c24; }
+
+        #results-panel { display: none; margin-top: 40px; padding: 30px; background: #2c3e50; color: white; border-radius: 15px; }
+        .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 15px; margin-top: 20px; }
+        .stat-item { background: rgba(255,255,255,0.1); padding: 15px; border-radius: 8px; text-align: center; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1>English Vocabulary Mastery</h1>
+        <div class="tutor-tag">KMITL TUTOR (พระจอมเกล้าติวเตอร์)</div>
+    </div>
+
+    <div class="summary-box">
+        <h3>💡 Quick Summary & Tips</h3>
+        <p>This exam tests your knowledge of common English nouns, verbs, and adjectives. 
+        <strong>Trick:</strong> Pay attention to the category. If the word is "Run," look for an action. If the word is "Apple," look for a type of food. Good luck!</p>
+    </div>
+
+    <div id="quiz-area"></div>
+
+    <button id="submit-btn" onclick="evaluateQuiz()">Submit Your Answers</button>
+
+    <div id="results-panel">
+        <h2 style="text-align: center;">Total Score: <span id="score-text">0</span> / 50</h2>
+        <div class="stat-grid" id="stat-area"></div>
+        <button onclick="window.location.reload()" style="margin-top:20px; width:100%; cursor:pointer; padding: 10px;">Retry Test</button>
+    </div>
+</div>
+
+<script>
+const quizData = [
+    {q: "Cat", a: "A small feline animal", c: "Animals"}, {q: "Dog", a: "A common pet known as man's best friend", c: "Animals"},
+    {q: "Bird", a: "An animal that has feathers and wings", c: "Animals"}, {q: "Fish", a: "An animal that lives and breathes in water", c: "Animals"},
+    {q: "Lion", a: "The king of the jungle", c: "Animals"}, {q: "Tiger", a: "A large orange cat with black stripes", c: "Animals"},
+    {q: "Rabbit", a: "An animal with long ears that likes carrots", c: "Animals"}, {q: "Duck", a: "A water bird that says 'Quack'", c: "Animals"},
+    {q: "Horse", a: "A large animal used for riding", c: "Animals"}, {q: "Zebra", a: "A wild animal that looks like a striped horse", c: "Animals"},
+    {q: "Book", a: "Something you read", c: "Objects"}, {q: "Pen", a: "An object used for writing with ink", c: "Objects"},
+    {q: "School", a: "A place where students go to learn", c: "Objects"}, {q: "House", a: "A place where people live", c: "Objects"},
+    {q: "Table", a: "Furniture with a flat top and legs", c: "Objects"}, {q: "Chair", a: "Something you sit on", c: "Objects"},
+    {q: "Bag", a: "Used for carrying things", c: "Objects"}, {q: "Bed", a: "Furniture used for sleeping", c: "Objects"},
+    {q: "Car", a: "A vehicle with four wheels", c: "Objects"}, {q: "Bus", a: "A large vehicle for many passengers", c: "Objects"},
+    {q: "Apple", a: "A round red or green fruit", c: "Food"}, {q: "Banana", a: "A long yellow fruit", c: "Food"},
+    {q: "Orange", a: "A round citrus fruit and a color", c: "Food"}, {q: "Milk", a: "A white liquid from cows", c: "Food"},
+    {q: "Egg", a: "A round object produced by birds, used as food", c: "Food"}, {q: "Bread", a: "Food made from flour and baked", c: "Food"},
+    {q: "Rice", a: "Small white or brown grains eaten as a staple", c: "Food"}, {q: "Cake", a: "A sweet baked dessert", c: "Food"},
+    {q: "Candy", a: "A small piece of sweet food made with sugar", c: "Food"}, {q: "Water", a: "A clear liquid essential for life", c: "Food"},
+    {q: "Run", a: "To move quickly on foot", c: "Verbs"}, {q: "Walk", a: "To move on foot at a regular pace", c: "Verbs"},
+    {q: "Eat", a: "To put food in your mouth and swallow", c: "Verbs"}, {q: "Drink", a: "To take liquid into the mouth", c: "Verbs"},
+    {q: "Sleep", a: "To rest with eyes closed", c: "Verbs"}, {q: "Read", a: "To look at and understand written words", c: "Verbs"},
+    {q: "Write", a: "To use a pen to make words on paper", c: "Verbs"}, {q: "Jump", a: "To push yourself off the ground into the air", c: "Verbs"},
+    {q: "Sing", a: "To make musical sounds with the voice", c: "Verbs"}, {q: "Dance", a: "To move your body to music", c: "Verbs"},
+    {q: "Big", a: "Opposite of small", c: "Adjectives"}, {q: "Small", a: "Little in size", c: "Adjectives"},
+    {q: "Happy", a: "Feeling or showing pleasure", c: "Adjectives"}, {q: "Sad", a: "Feeling unhappy or sorrowful", c: "Adjectives"},
+    {q: "Red", a: "The color of a strawberry", c: "Colors"}, {q: "Blue", a: "The color of the sky", c: "Colors"},
+    {q: "Green", a: "The color of grass", c: "Colors"}, {q: "Yellow", a: "The color of a lemon", c: "Colors"},
+    {q: "Hot", a: "Having a high temperature", c: "Adjectives"}, {q: "Cold", a: "Having a low temperature", c: "Adjectives"}
+];
+
+let userAnswers = new Array(50).fill(null);
+
+function renderQuiz() {
+    const area = document.getElementById('quiz-area');
+    quizData.forEach((item, idx) => {
+        const card = document.createElement('div');
+        card.className = 'quiz-card';
+        
+        let choices = [item.a];
+        while(choices.length < 4) {
+            let rand = quizData[Math.floor(Math.random() * 50)].a;
+            if(!choices.includes(rand)) choices.push(rand);
+        }
+        choices.sort(() => Math.random() - 0.5);
+
+        card.innerHTML = `
+            <span class="question-text">${idx+1}. What is the meaning of the word: <u>"${item.q}"</u>?</span>
+            <div class="options-grid" id="grid-${idx}">
+                ${choices.map(c => `<button class="choice-btn" onclick="pick(${idx}, '${c}', this)">${c}</button>`).join('')}
+            </div>
+            <div id="feedback-${idx}" class="feedback"></div>
+        `;
+        area.appendChild(card);
+    });
+}
+
+function pick(idx, val, btn) {
+    userAnswers[idx] = val;
+    const parent = document.getElementById(`grid-${idx}`);
+    parent.querySelectorAll('.choice-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+}
+
+function evaluateQuiz() {
+    let score = 0;
+    let stats = {};
+
+    quizData.forEach((item, idx) => {
+        if(!stats[item.c]) stats[item.c] = {ok: 0, total: 0};
+        stats[item.c].total++;
+
+        const fb = document.getElementById(`feedback-${idx}`);
+        fb.style.display = 'block';
+
+        if(userAnswers[idx] === item.a) {
+            score++;
+            stats[item.c].ok++;
+            fb.className = 'feedback is-correct';
+            fb.innerText = "Correct! Well done.";
+        } else {
+            fb.className = 'feedback is-wrong';
+            fb.innerText = `Incorrect. The correct answer is: ${item.a}`;
+        }
+    });
+
+    document.getElementById('score-text').innerText = score;
+    const statArea = document.getElementById('stat-area');
+    statArea.innerHTML = '';
+
+    for(let cat in stats) {
+        const div = document.createElement('div');
+        div.className = 'stat-item';
+        div.innerHTML = `<strong>${cat}</strong><br>${stats[cat].ok}/${stats[cat].total}`;
+        statArea.appendChild(div);
+    }
+
+    document.getElementById('results-panel').style.display = 'block';
+    window.scrollTo({ top: document.getElementById('results-panel').offsetTop, behavior: 'smooth' });
+}
+
+renderQuiz();
+</script>
+</body>
+</html>
