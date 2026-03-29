@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>แบบฝึกหัดคำศัพท์ 50 ข้อ - พระจอมเกล้าติวเตอร์</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;700&display=swap');
+        
+        body { font-family: 'Sarabun', sans-serif; background-color: #f0f2f5; color: #333; margin: 0; padding: 20px; }
+        .container { max-width: 900px; margin: auto; background: white; padding: 40px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        
+        .header-section { border-bottom: 3px solid #3498db; margin-bottom: 30px; padding-bottom: 20px; }
+        h1 { color: #2c3e50; margin-top: 0; }
+        
+        .summary-box { background: #e8f4fd; padding: 20px; border-radius: 10px; margin-bottom: 30px; border-left: 5px solid #3498db; }
+        .summary-box h3 { margin-top: 0; color: #2980b9; }
+        
+        .quiz-item { background: #fff; border: 1px solid #ddd; padding: 20px; border-radius: 12px; margin-bottom: 20px; transition: transform 0.2s; }
+        .quiz-item:hover { transform: translateY(-2px); border-color: #3498db; }
+        .word-title { font-size: 1.2em; font-weight: bold; color: #2c3e50; margin-bottom: 15px; display: block; }
+        
+        .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .option-btn { padding: 12px; border: 2px solid #e0e0e0; background: white; border-radius: 8px; cursor: pointer; transition: 0.2s; font-family: 'Sarabun', sans-serif; font-size: 1em; }
+        .option-btn:hover { border-color: #3498db; background: #f7fbff; }
+        .option-btn.selected { background: #3498db; color: white; border-color: #2980b9; }
+        
+        .feedback { margin-top: 15px; padding: 12px; border-radius: 8px; display: none; font-size: 0.95em; }
+        .correct { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .incorrect { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        
+        #submit-btn { width: 100%; padding: 20px; background: #27ae60; color: white; border: none; border-radius: 10px; font-size: 1.3em; font-weight: bold; cursor: pointer; margin-top: 30px; transition: 0.3s; }
+        #submit-btn:hover { background: #219150; box-shadow: 0 5px 15px rgba(39,174,96,0.3); }
+        
+        #result-panel { display: none; margin-top: 40px; padding: 30px; background: #2c3e50; color: white; border-radius: 15px; text-align: center; }
+        .analysis-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-top: 20px; text-align: left; }
+        .analysis-card { background: rgba(255,255,255,0.1); padding: 15px; border-radius: 10px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header-section">
+        <h1>แบบฝึกหัดคำศัพท์ภาษาอังกฤษ (50 ข้อ)</h1>
+        <p>จัดทำโดย: <strong>พระจอมเกล้าติวเตอร์</strong></p>
+    </div>
+
+    <div class="summary-box">
+        <h3>💡 สรุปเนื้อหาและเทคนิคการจำ</h3>
+        <p><strong>สรุปบทเรียน:</strong> การเรียนรู้คำศัพท์พื้นฐานแบ่งตามหมวดหมู่ (Animals, Objects, Food, Verbs, Adj, Colors) ช่วยให้สมองสร้างเครือข่ายความหมายได้เร็วขึ้น การเข้าใจหน้าที่ของคำ (Part of Speech) เช่น คำนามใช้เรียกชื่อ คำกริยาใช้บอกอาการ จะช่วยให้สื่อสารได้ถูกต้องตามโครงสร้างภาษา</p>
+        <p><strong>เทคนิคการจำ:</strong> 
+            1. <strong>"Visual Link"</strong> เชื่อมคำศัพท์กับภาพในหัว 
+            2. <strong>"Context Method"</strong> ลองแต่งประโยคสั้นๆ เช่น "The Red Cat" จะได้ทั้งสีและสัตว์ 
+            3. <strong>"Daily Use"</strong> พยายามเรียกชื่อสิ่งของรอบตัวเป็นภาษาอังกฤษวันละ 5 อย่าง
+        </p>
+    </div>
+
+    <div id="quiz-container"></div>
+
+    <button id="submit-btn" onclick="checkAllAnswers()">ส่งคำตอบและดูผลวิเคราะห์</button>
+
+    <div id="result-panel">
+        <h2>คะแนนรวมของคุณ: <span id="final-score">0</span> / 50</h2>
+        <div class="analysis-grid" id="analysis-content"></div>
+        <button onclick="location.reload()" style="margin-top: 20px; padding: 10px 20px; cursor: pointer;">ทำแบบฝึกหัดอีกครั้ง</button>
+    </div>
+</div>
+
+<script>
+const vocabData = [
+    {w: "Cat", m: "แมว", c: "Animals"}, {w: "Dog", m: "สุนัข", c: "Animals"}, {w: "Bird", m: "นก", c: "Animals"}, {w: "Fish", m: "ปลา", c: "Animals"}, {w: "Lion", m: "สิงโต", c: "Animals"},
+    {w: "Tiger", m: "เสือ", c: "Animals"}, {w: "Rabbit", m: "กระต่าย", c: "Animals"}, {w: "Duck", m: "เป็ด", c: "Animals"}, {w: "Horse", m: "ม้า", c: "Animals"}, {w: "Zebra", m: "ม้าลาย", c: "Animals"},
+    {w: "Book", m: "หนังสือ", c: "Objects"}, {w: "Pen", m: "ปากกา", c: "Objects"}, {w: "School", m: "โรงเรียน", c: "Objects"}, {w: "House", m: "บ้าน", c: "Objects"}, {w: "Table", m: "โต๊ะ", c: "Objects"},
+    {w: "Chair", m: "เก้าอี้", c: "Objects"}, {w: "Bag", m: "กระเป๋า", c: "Objects"}, {w: "Bed", m: "เตียงนอน", c: "Objects"}, {w: "Car", m: "รถยนต์", c: "Objects"}, {w: "Bus", m: "รถเมล์", c: "Objects"},
+    {w: "Apple", m: "แอปเปิ้ล", c: "Food"}, {w: "Banana", m: "กล้วย", c: "Food"}, {w: "Orange", m: "ส้ม", c: "Food"}, {w: "Milk", m: "นม", c: "Food"}, {w: "Egg", m: "ไข่", c: "Food"},
+    {w: "Bread", m: "ขนมปัง", c: "Food"}, {w: "Rice", m: "ข้าว", c: "Food"}, {w: "Cake", m: "เค้ก", c: "Food"}, {w: "Candy", m: "ลูกอม", c: "Food"}, {w: "Water", m: "น้ำเปล่า", c: "Food"},
+    {w: "Run", m: "วิ่ง", c: "Verbs"}, {w: "Walk", m: "เดิน", c: "Verbs"}, {w: "Eat", m: "กิน", c: "Verbs"}, {w: "Drink", m: "ดื่ม", c: "Verbs"}, {w: "Sleep", m: "นอน", c: "Verbs"},
+    {w: "Read", m: "อ่าน", c: "Verbs"}, {w: "Write", m: "เขียน", c: "Verbs"}, {w: "Jump", m: "กระโดด", c: "Verbs"}, {w: "Sing", m: "ร้องเพลง", c: "Verbs"}, {w: "Dance", m: "เต้น", c: "Verbs"},
+    {w: "Big", m: "ใหญ่", c: "Adjectives"}, {w: "Small", m: "เล็ก", c: "Adjectives"}, {w: "Happy", m: "มีความสุข", c: "Adjectives"}, {w: "Sad", m: "เศร้า", c: "Adjectives"},
+    {w: "Red", m: "สีแดง", c: "Colors"}, {w: "Blue", m: "สีน้ำเงิน", c: "Colors"}, {w: "Green", m: "สีเขียว", c: "Colors"}, {w: "Yellow", m: "สีเหลือง", c: "Colors"},
+    {w: "Hot", m: "ร้อน", c: "Adjectives"}, {w: "Cold", m: "หนาว/เย็น", c: "Adjectives"}
+];
+
+let userSelections = new Array(50).fill(null);
+const container = document.getElementById('quiz-container');
+
+function initQuiz() {
+    vocabData.forEach((item, idx) => {
+        const div = document.createElement('div');
+        div.className = 'quiz-item';
+        
+        let options = [item.m];
+        while(options.length < 4) {
+            let rand = vocabData[Math.floor(Math.random() * vocabData.length)].m;
+            if(!options.includes(rand)) options.push(rand);
+        }
+        options.sort(() => Math.random() - 0.5);
+
+        div.innerHTML = `
+            <span class="word-title">${idx + 1}. คลำศัพท์คำว่า: "${item.w}"</span>
+            <div class="options-grid" id="opt-grid-${idx}">
+                ${options.map(opt => `<button class="option-btn" onclick="selectOpt(${idx}, '${opt}', this)">${opt}</button>`).join('')}
+            </div>
+            <div id="fb-${idx}" class="feedback"></div>
+        `;
+        container.appendChild(div);
+    });
+}
+
+function selectOpt(idx, val, btn) {
+    userSelections[idx] = val;
+    const parent = document.getElementById(`opt-grid-${idx}`);
+    parent.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+}
+
+function checkAllAnswers() {
+    let score = 0;
+    let stats = {};
+
+    vocabData.forEach((item, idx) => {
+        if(!stats[item.c]) stats[item.c] = {correct: 0, total: 0};
+        stats[item.c].total++;
+
+        const fb = document.getElementById(`fb-${idx}`);
+        fb.style.display = 'block';
+        
+        if(userSelections[idx] === item.m) {
+            score++;
+            stats[item.c].correct++;
+            fb.className = 'feedback correct';
+            fb.innerHTML = `✅ ถูกต้อง! ${item.w} = ${item.m}`;
+        } else {
+            fb.className = 'feedback incorrect';
+            fb.innerHTML = `❌ ผิด! คำตอบคือ "${item.m}"`;
+        }
+    });
+
+    document.getElementById('final-score').innerText = score;
+    const analysisBox = document.getElementById('analysis-content');
+    analysisBox.innerHTML = '';
+    
+    for(let cat in stats) {
+        const s = stats[cat];
+        const card = document.createElement('div');
+        card.className = 'analysis-card';
+        card.innerHTML = `<strong>หมวด ${cat}</strong><br>ได้ ${s.correct}/${s.total}<br>${s.correct === s.total ? '🌟 ยอดเยี่ยม' : '📖 ฝึกฝนเพิ่มนะ'}`;
+        analysisBox.appendChild(card);
+    }
+
+    document.getElementById('result-panel').style.display = 'block';
+    window.scrollTo({ top: document.getElementById('result-panel').offsetTop, behavior: 'smooth' });
+}
+
+initQuiz();
+</script>
+</body>
+</html>
