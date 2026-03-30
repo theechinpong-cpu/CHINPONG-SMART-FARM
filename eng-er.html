@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ฝึกพิมพ์สะกดคำ - พระจอมเกล้าติวเตอร์</title>
+    <style>
+        :root { --primary: #3498db; --success: #2ecc71; --error: #e74c3c; --bg: #f0f4f8; }
+        body { font-family: 'Sarabun', sans-serif; background: var(--bg); margin: 0; padding: 20px; display: flex; justify-content: center; }
+        .container { max-width: 700px; width: 100%; background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        h1 { color: #2c3e50; text-align: center; border-bottom: 3px solid var(--primary); padding-bottom: 10px; }
+        .score-board { display: flex; justify-content: space-around; background: #2c3e50; color: white; padding: 15px; border-radius: 10px; margin-bottom: 20px; font-size: 1.2rem; }
+        
+        .typing-area { display: flex; flex-direction: column; align-items: center; gap: 20px; }
+        .word-hint { font-size: 2rem; color: var(--primary); font-weight: bold; }
+        .input-box { width: 80%; padding: 15px; font-size: 2rem; text-align: center; border: 4px solid #ddd; border-radius: 15px; outline: none; transition: 0.3s; text-transform: lowercase; }
+        .input-box:focus { border-color: var(--primary); }
+        .input-box.correct { border-color: var(--success); background-color: #e8fdf0; }
+        .input-box.wrong { border-color: var(--error); background-color: #fff5f5; }
+
+        .progress-bar { width: 100%; height: 10px; background: #ddd; border-radius: 5px; margin-top: 20px; overflow: hidden; }
+        .progress-fill { height: 100%; background: var(--success); width: 0%; transition: 0.5s; }
+        
+        .result-screen { text-align: center; display: none; }
+        .btn-restart { padding: 10px 25px; font-size: 1.1rem; background: var(--primary); color: white; border: none; border-radius: 8px; cursor: pointer; margin-top: 20px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div id="game-screen">
+        <h1>⌨️ Typing Challenge (-er words)</h1>
+        
+        <div class="score-board">
+            <span>ข้อที่: <span id="current-index">1</span>/50</span>
+            <span>คะแนน: <span id="score">0</span></span>
+        </div>
+
+        <div class="typing-area">
+            <div class="word-hint" id="word-thai">พ่อ</div>
+            <input type="text" id="user-input" class="input-box" placeholder="พิมพ์ภาษาอังกฤษที่นี่..." autocomplete="off">
+            <p id="feedback-text" style="height: 20px; font-weight: bold;"></p>
+        </div>
+
+        <div class="progress-bar">
+            <div class="progress-fill" id="progress-fill"></div>
+        </div>
+    </div>
+
+    <div id="result-screen" class="result-screen">
+        <h1>🎉 เก่งมาก! ฝึกเสร็จแล้ว</h1>
+        <p style="font-size: 1.5rem;">คะแนนรวมของคุณคือ: <span id="final-score"></span>/50</p>
+        <button class="btn-restart" onclick="location.reload()">เริ่มฝึกใหม่</button>
+    </div>
+</div>
+
+<script>
+    const wordList = [
+        { th: "พ่อ", en: "father" }, { th: "แม่", en: "mother" }, { th: "พี่ชาย/น้องชาย", en: "brother" },
+        { th: "พี่สาว/น้องสาว", en: "sister" }, { th: "คุณครู", en: "teacher" }, { th: "ชาวนา", en: "farmer" },
+        { th: "นักร้อง", en: "singer" }, { th: "นักเต้น", en: "dancer" }, { th: "คนขับรถ", en: "driver" },
+        { th: "นักเขียน", en: "writer" }, { th: "ผู้ช่วย", en: "helper" }, { th: "นักวิ่ง", en: "runner" },
+        { th: "ผู้เล่น", en: "player" }, { th: "ผู้นำ", en: "leader" }, { th: "คนงาน", en: "worker" },
+        { th: "คอมพิวเตอร์", en: "computer" }, { th: "เครื่องพิมพ์", en: "printer" }, { th: "ลำโพง", en: "speaker" },
+        { th: "กระดาษ", en: "paper" }, { th: "ยางลบ", en: "eraser" }, { th: "ไม้บรรทัด", en: "ruler" },
+        { th: "ปากกาเมจิก", en: "marker" }, { th: "เครื่องสแกน", en: "scanner" }, { th: "ตัวกระจายเน็ต", en: "router" },
+        { th: "ค้อน", en: "hammer" }, { th: "บันได", en: "ladder" }, { th: "จดหมาย", en: "letter" },
+        { th: "ตัวเลข", en: "number" }, { th: "เครื่องผสม", en: "mixer" }, { th: "เครื่องกรอง", en: "filter" },
+        { th: "ใหญ่กว่า", en: "bigger" }, { th: "เล็กกว่า", en: "smaller" }, { th: "เร็วกว่า", en: "faster" },
+        { th: "ช้ากว่า", en: "slower" }, { th: "สูงกว่า", en: "taller" }, { th: "สั้นกว่า", en: "shorter" },
+        { th: "ยาวกว่า", en: "longer" }, { th: "ร้อนกว่า", en: "hotter" }, { th: "หนาวกว่า", en: "colder" },
+        { th: "สว่างกว่า", en: "brighter" }, { th: "สุดยอด", en: "super" }, { th: "ดอกไม้", en: "flower" },
+        { th: "แม่น้ำ", en: "river" }, { th: "ฤดูร้อน", en: "summer" }, { th: "ฤดูหนาว", en: "winter" },
+        { th: "อาหารเย็น", en: "dinner" }, { th: "เนย", en: "butter" }, { th: "แร่เงิน", en: "silver" },
+        { th: "คำตอบ", en: "answer" }, { th: "มื้อดึก", en: "supper" }
+    ];
+
+    let currentIndex = 0;
+    let score = 0;
+
+    const inputField = document.getElementById('user-input');
+    const wordThai = document.getElementById('word-thai');
+    const scoreDisplay = document.getElementById('score');
+    const indexDisplay = document.getElementById('current-index');
+    const progressFill = document.getElementById('progress-fill');
+    const feedbackText = document.getElementById('feedback-text');
+
+    function updateWord() {
+        if (currentIndex < wordList.length) {
+            wordThai.innerText = wordList[currentIndex].th;
+            indexDisplay.innerText = currentIndex + 1;
+            inputField.value = "";
+            inputField.className = "input-box";
+            feedbackText.innerText = "";
+            progressFill.style.width = `${(currentIndex / wordList.length) * 100}%`;
+        } else {
+            showResult();
+        }
+    }
+
+    inputField.addEventListener('input', (e) => {
+        const val = e.target.value.toLowerCase();
+        const target = wordList[currentIndex].en.toLowerCase();
+
+        if (val === target) {
+            inputField.className = "input-box correct";
+            feedbackText.innerText = "ถูกต้อง! ✨";
+            feedbackText.style.color = "var(--success)";
+            score++;
+            scoreDisplay.innerText = score;
+            
+            setTimeout(() => {
+                currentIndex++;
+                updateWord();
+            }, 800);
+        } else if (target.startsWith(val)) {
+            inputField.className = "input-box";
+            feedbackText.innerText = "กำลังพิมพ์...";
+            feedbackText.style.color = "var(--primary)";
+        } else {
+            inputField.className = "input-box wrong";
+            feedbackText.innerText = "สะกดผิด ลองดูใหม่นะ!";
+            feedbackText.style.color = "var(--error)";
+        }
+    });
+
+    function showResult() {
+        document.getElementById('game-screen').style.display = "none";
+        document.getElementById('result-screen').style.display = "block";
+        document.getElementById('final-score').innerText = score;
+    }
+
+    updateWord();
+</script>
+
+</body>
+</html>
