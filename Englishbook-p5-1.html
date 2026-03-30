@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phonics Challenge 151-300 - พระจอมเกล้าติวเตอร์</title>
+    <style>
+        body { font-family: 'Sarabun', sans-serif; background-color: #f0f4f8; padding: 20px; color: #333; }
+        .container { max-width: 900px; margin: auto; background: white; padding: 40px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        h2 { color: #2c3e50; text-align: center; border-bottom: 3px solid #3498db; padding-bottom: 15px; margin-bottom: 30px; }
+        .grid-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .word-row { display: flex; align-items: center; background: #fafafa; padding: 10px; border-radius: 8px; border: 1px solid #eee; }
+        .word-row label { flex: 1; font-weight: 600; font-size: 0.95em; color: #444; }
+        input[type="text"] { flex: 1.2; padding: 8px; border: 2px solid #dfe6e9; border-radius: 6px; outline: none; transition: 0.2s; }
+        input[type="text"]:focus { border-color: #3498db; background: #f7fbff; }
+        .group-header { grid-column: 1 / -1; background: #3498db; color: white; padding: 10px 20px; border-radius: 8px; margin-top: 25px; margin-bottom: 10px; font-weight: bold; }
+        button#submit-btn { display: block; width: 100%; padding: 20px; background-color: #2ecc71; color: white; border: none; border-radius: 12px; font-size: 20px; font-weight: bold; cursor: pointer; margin-top: 40px; box-shadow: 0 4px 0 #27ae60; }
+        button#submit-btn:active { transform: translateY(3px); box-shadow: none; }
+        #result { margin-top: 40px; display: none; padding: 25px; border-radius: 15px; background: #fff; border: 2px solid #3498db; }
+        .score-box { text-align: center; font-size: 32px; font-weight: bold; color: #2c3e50; margin-bottom: 25px; background: #e1f5fe; padding: 20px; border-radius: 10px; }
+        .analysis-grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
+        .error-item { background: #fff5f5; border-left: 6px solid #ff7675; padding: 15px; border-radius: 8px; }
+        .correct-ans { color: #27ae60; font-weight: bold; text-decoration: underline; }
+        .wrong-ans { color: #d63031; text-decoration: line-through; margin-right: 10px; }
+        .memory-tip { display: block; margin-top: 8px; font-size: 0.85em; color: #636e72; background: #f1f2f6; padding: 5px 10px; border-radius: 4px; }
+        @media (max-width: 600px) { .grid-layout { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>🎯 Phonics Challenge: 151 - 300</h2>
+    <div id="quiz-container" class="grid-layout"></div>
+    <button id="submit-btn" onclick="checkAnswers()">ส่งคำตอบ (Submit 150 คำ)</button>
+
+    <div id="result">
+        <div class="score-box" id="score-display"></div>
+        <div id="weak-areas" style="margin-bottom: 20px; font-weight: bold; color: #d63031;"></div>
+        <div class="analysis-grid" id="analysis"></div>
+        <button onclick="window.scrollTo(0,0); location.reload();" style="margin-top:20px; background:#95a5a6; padding:10px; color:white; border:none; border-radius:5px; cursor:pointer;">เริ่มใหม่</button>
+    </div>
+</div>
+
+<script>
+const wordsData = [
+    // Group 1
+    {th: "เสื้อเชิ้ต", en: "Shirt", tip: "sh ออกเสียง 'ช' ยาวๆ", cat: "Clothes"},
+    {th: "กางเกง", en: "Pants", tip: "มี s เพราะกางเกงมีสองขา", cat: "Clothes"},
+    {th: "ชุดกระโปรง", en: "Dress", tip: "ss สองตัวท้าย", cat: "Clothes"},
+    {th: "กระโปรง", en: "Skirt", tip: "sk-irt คล้าย shirt", cat: "Clothes"},
+    {th: "ถุงเท้า", en: "Sock", tip: "ลงท้ายด้วย ck", cat: "Clothes"},
+    {th: "รองเท้า", en: "Shoe", tip: "sh-o-e", cat: "Clothes"},
+    {th: "หมวก", en: "Hat", tip: "H-A-T", cat: "Clothes"},
+    {th: "เสื้อโค้ท", en: "Coat", tip: "C-O-A-T", cat: "Clothes"},
+    {th: "เข็มขัด", en: "Belt", tip: "B-E-L-T", cat: "Clothes"},
+    {th: "แหวน", en: "Ring", tip: "R-I-N-G", cat: "Clothes"},
+    {th: "ประตู", en: "Door", tip: "oo ออกเสียงสระออ", cat: "Home"},
+    {th: "หน้าต่าง", en: "Window", tip: "Win-dow", cat: "Home"},
+    {th: "พื้น", en: "Floor", tip: "Fl-oor", cat: "Home"},
+    {th: "กำแพง", en: "Wall", tip: "ll สองตัว", cat: "Home"},
+    {th: "หลังคา", en: "Roof", tip: "oo ออกเสียงสระอู", cat: "Home"},
+    {th: "โคมไฟ", en: "Lamp", tip: "L-A-M-P", cat: "Home"},
+    {th: "กระจก", en: "Mirror", tip: "rr สองตัวและลงท้าย or", cat: "Home"},
+    {th: "สบู่", en: "Soap", tip: "oa ออกเสียงสระโอ", cat: "Home"},
+    {th: "ผ้าขนหนู", en: "Towel", tip: "Tow-el", cat: "Home"},
+    {th: "ช้อน", en: "Spoon", tip: "oo ออกเสียงสระอู", cat: "Kitchen"},
+    {th: "ส้อม", en: "Fork", tip: "F-O-R-K", cat: "Kitchen"},
+    {th: "มีด", en: "Knife", tip: "ตัว K ไม่ออกเสียง", cat: "Kitchen"},
+    {th: "จาน", en: "Plate", tip: "Pl-a-te", cat: "Kitchen"},
+    {th: "ชาม", en: "Bowl", tip: "B-O-W-L", cat: "Kitchen"},
+    {th: "แก้วน้ำ", en: "Glass", tip: "ss สองตัวท้าย", cat: "Kitchen"},
+
+    // Group 2
+    {th: "โกรธ", en: "Angry", tip: "An-gry", cat: "Feelings"},
+    {th: "กล้าหาญ", en: "Brave", tip: "Br-ave", cat: "Feelings"},
+    {th: "กลัว", en: "Scared", tip: "S-C-A-R-E-D", cat: "Feelings"},
+    {th: "เหนื่อย", en: "Tired", tip: "Ti-red", cat: "Feelings"},
+    {th: "หิวน้ำ", en: "Thirsty", tip: "Th ออกเสียงเอาลิ้นแตะฟัน", cat: "Feelings"},
+    {th: "สกปรก", en: "Dirty", tip: "Dir-ty", cat: "Status"},
+    {th: "สะอาด", en: "Clean", tip: "Cl-ean", cat: "Status"},
+    {th: "นุ่ม", en: "Soft", tip: "S-O-F-T", cat: "Status"},
+    {th: "แข็ง", en: "Hard", tip: "H-A-R-D", cat: "Status"},
+    {th: "หนัก", en: "Heavy", tip: "Heav-y", cat: "Status"},
+    {th: "เบา", en: "Light", tip: "L-i-ght (ght ไม่ออกเสียง)", cat: "Status"},
+    {th: "เต็ม", en: "Full", tip: "ll สองตัว", cat: "Status"},
+    {th: "ว่างเปล่า", en: "Empty", tip: "Emp-ty", cat: "Status"},
+    {th: "รวย", en: "Rich", tip: "ลงท้ายด้วย ch", cat: "Status"},
+    {th: "จน", en: "Poor", tip: "oo ออกเสียงสระอัว", cat: "Status"},
+    {th: "โลก", en: "Earth", tip: "ลงท้ายด้วย th", cat: "Nature"},
+    {th: "พระอาทิตย์", en: "Sun", tip: "S-U-N", cat: "Nature"},
+    {th: "พระจันทร์", en: "Moon", tip: "M-O-O-N", cat: "Nature"},
+    {th: "ดาว", en: "Star", tip: "S-T-A-R", cat: "Nature"},
+    {th: "เมฆ", en: "Cloud", tip: "Cl-oud", cat: "Nature"},
+    {th: "ฝน", en: "Rain", tip: "R-ai-n", cat: "Nature"},
+    {th: "หิมะ", en: "Snow", tip: "Sn-ow", cat: "Nature"},
+    {th: "พายุ", en: "Storm", tip: "S-T-O-R-M", cat: "Nature"},
+    {th: "ลม", en: "Wind", tip: "W-I-N-D", cat: "Nature"},
+    {th: "ไฟ", en: "Fire", tip: "F-I-R-E", cat: "Nature"},
+
+    // Group 3
+    {th: "น้ำ", en: "Water", tip: "Wa-ter", cat: "Nature"},
+    {th: "ดิน/พื้นดิน", en: "Land", tip: "L-A-N-D", cat: "Nature"},
+    {th: "ทะเล", en: "Sea", tip: "S-E-A", cat: "Nature"},
+    {th: "ภูเขา", en: "Mountain", tip: "Moun-tain", cat: "Nature"},
+    {th: "ถ้ำ", en: "Cave", tip: "C-A-V-E", cat: "Nature"},
+    {th: "ซ้าย", en: "Left", tip: "L-E-F-T", cat: "Direction"},
+    {th: "ขวา", en: "Right", tip: "R-i-ght", cat: "Direction"},
+    {th: "ขึ้น", en: "Up", tip: "U-P", cat: "Direction"},
+    {th: "ลง", en: "Down", tip: "D-O-W-N", cat: "Direction"},
+    {th: "ข้างใน", en: "Inside", tip: "In-side", cat: "Direction"},
+    {th: "ข้างนอก", en: "Outside", tip: "Out-side", cat: "Direction"},
+    {th: "ระหว่าง", en: "Between", tip: "Be-tween", cat: "Direction"},
+    {th: "ข้างหลัง", en: "Behind", tip: "Be-hind", cat: "Direction"},
+    {th: "ข้างใต้", en: "Under", tip: "Un-der", cat: "Direction"},
+    {th: "ข้างบน", en: "Above", tip: "A-bove", cat: "Direction"},
+    {th: "ผลไม้", en: "Fruit", tip: "Fr-u-i-t", cat: "General"},
+    {th: "สัตว์", en: "Animal", tip: "Ani-mal", cat: "General"},
+    {th: "บุคคล", en: "Person", tip: "Per-son", cat: "General"},
+    {th: "เงิน", en: "Money", tip: "Mon-ey", cat: "General"},
+    {th: "กระดาษ", en: "Paper", tip: "Pa-per", cat: "General"},
+    {th: "รูปภาพ", en: "Picture", tip: "Pic-ture", cat: "General"},
+    {th: "ดนตรี", en: "Music", tip: "Mu-sic", cat: "General"},
+    {th: "เพลง", en: "Song", tip: "S-O-N-G", cat: "General"},
+    {th: "เสียง", en: "Sound", tip: "S-O-U-N-D", cat: "General"},
+    {th: "สี", en: "Color", tip: "Col-or", cat: "General"},
+
+    // Group 4
+    {th: "รูปร่าง", en: "Shape", tip: "sh และลงท้ายด้วย e", cat: "Shapes"},
+    {th: "สี่เหลี่ยมจัตุรัส", en: "Square", tip: "Sq-ua-re", cat: "Shapes"},
+    {th: "วงกลม", en: "Circle", tip: "Cir-cle", cat: "Shapes"},
+    {th: "สามเหลี่ยม", en: "Triangle", tip: "Tri-an-gle", cat: "Shapes"},
+    {th: "หัวใจ", en: "Heart", tip: "He-art", cat: "Shapes"},
+    {th: "ชายหาด", en: "Beach", tip: "ลงท้ายด้วย ch", cat: "Places"},
+    {th: "เกาะ", en: "Island", tip: "ตัว s ไม่ออกเสียง", cat: "Places"},
+    {th: "แม่น้ำ", en: "River", tip: "Ri-ver", cat: "Places"},
+    {th: "ทะเลสาบ", en: "Lake", tip: "L-A-K-E", cat: "Places"},
+    {th: "ป่า", en: "Forest", tip: "For-est", cat: "Places"},
+    {th: "สวน", en: "Garden", tip: "Gar-den", cat: "Places"},
+    {th: "ฟาร์ม", en: "Farm", tip: "F-A-R-M", cat: "Places"},
+    {th: "สวนสาธารณะ", en: "Park", tip: "P-A-R-K", cat: "Places"},
+    {th: "เมืองใหญ่", en: "City", tip: "C-I-T-Y", cat: "Places"},
+    {th: "เมือง/หมู่บ้าน", en: "Town", tip: "T-O-W-N", cat: "Places"},
+    {th: "แอปเปิ้ล", en: "Apple", tip: "pp สองตัว", cat: "Food"},
+    {th: "กล้วย", en: "Banana", tip: "ba-na-na", cat: "Food"},
+    {th: "ส้ม", en: "Orange", tip: "Or-an-ge", cat: "Food"},
+    {th: "องุ่น", en: "Grape", tip: "Gr-ape", cat: "Food"},
+    {th: "มะม่วง", en: "Mango", tip: "Man-go", cat: "Food"},
+    {th: "มะนาว", en: "Lemon", tip: "Lem-on", cat: "Food"},
+    {th: "ลูกอม", en: "Candy", tip: "Can-dy", cat: "Food"},
+    {th: "ขนมปัง", en: "Bread", tip: "ea ออกเสียงสระเอะ", cat: "Food"},
+    {th: "เนย", en: "Butter", tip: "tt สองตัว", cat: "Food"},
+    {th: "ชีส", en: "Cheese", tip: "ee ตรงกลาง", cat: "Food"},
+
+    // Group 5
+    {th: "คุณหมอ", en: "Doctor", tip: "Doc-tor", cat: "Jobs"},
+    {th: "พยาบาล", en: "Nurse", tip: "Nur-se", cat: "Jobs"},
+    {th: "ตำรวจ", en: "Police", tip: "Po-lice", cat: "Jobs"},
+    {th: "นักบิน", en: "Pilot", tip: "Pi-lot", cat: "Jobs"},
+    {th: "พ่อครัว", en: "Chef", tip: "Ch แต่ออกเสียง ช เบาๆ", cat: "Jobs"},
+    {th: "คุณครู", en: "Teacher", tip: "Teach-er", cat: "Jobs"},
+    {th: "เกษตรกร", en: "Farmer", tip: "Farm-er", cat: "Jobs"},
+    {th: "คนงาน", en: "Worker", tip: "Work-er", cat: "Jobs"},
+    {th: "คนขับรถ", en: "Driver", tip: "Driv-er", cat: "Jobs"},
+    {th: "นักร้อง", en: "Singer", tip: "Sing-er", cat: "Jobs"},
+    {th: "โต๊ะ", en: "Table", tip: "ลงท้าย le", cat: "Furniture"},
+    {th: "เก้าอี้", en: "Chair", tip: "Ch-air", cat: "Furniture"},
+    {th: "โต๊ะทำงาน", en: "Desk", tip: "D-E-S-K", cat: "Furniture"},
+    {th: "เตียง", en: "Bed", tip: "B-E-D", cat: "Furniture"},
+    {th: "โซฟา", en: "Sofa", tip: "So-fa", cat: "Furniture"},
+    {th: "กล่อง", en: "Box", tip: "B-O-X", cat: "Items"},
+    {th: "ถ้วย", en: "Cup", tip: "C-U-P", cat: "Items"},
+    {th: "ขวด", en: "Bottle", tip: "tt สองตัว", cat: "Items"},
+    {th: "กุญแจ", en: "Key", tip: "K-E-Y", cat: "Items"},
+    {th: "นาฬิกาข้อมือ", en: "Watch", tip: "ลงท้ายด้วย ch", cat: "Items"},
+    {th: "เงียบ", en: "Quiet", tip: "Qu-i-et", cat: "Status"},
+    {th: "ดัง", en: "Loud", tip: "L-O-U-D", cat: "Status"},
+    {th: "เร็ว", en: "Fast", tip: "F-A-S-T", cat: "Status"},
+    {th: "ช้า", en: "Slow", tip: "Sl-ow", cat: "Status"},
+    {th: "เล็ก", en: "Small", tip: "ll สองตัว", cat: "Status"},
+
+    // Group 6
+    {th: "ใหญ่", en: "Large", tip: "Lar-ge", cat: "Status"},
+    {th: "สั้น/เตี้ย", en: "Short", tip: "Sh-ort", cat: "Status"},
+    {th: "สูง", en: "Tall", tip: "ll สองตัว", cat: "Status"},
+    {th: "เด็ก/หนุ่มสาว", en: "Young", tip: "Y-O-U-N-G", cat: "Status"},
+    {th: "แก่/เก่า", en: "Old", tip: "O-L-D", cat: "Status"},
+    {th: "มีความสุข", en: "Happy", tip: "pp สองตัว", cat: "Feelings"},
+    {th: "เศร้า", en: "Sad", tip: "S-A-D", cat: "Feelings"},
+    {th: "ดี", en: "Good", tip: "oo สองตัว", cat: "Rating"},
+    {th: "แย่", en: "Bad", tip: "B-A-D", cat: "Rating"},
+    {th: "ดี/สวยงาม", en: "Nice", tip: "Ni-ce", cat: "Rating"},
+    {th: "เย็นสบาย/เท่", en: "Cool", tip: "oo สองตัว", cat: "Weather"},
+    {th: "อุ่น", en: "Warm", tip: "W-A-R-M", cat: "Weather"},
+    {th: "หนาว", en: "Cold", tip: "C-O-L-D", cat: "Weather"},
+    {th: "ร้อน", en: "Hot", tip: "H-O-T", cat: "Weather"},
+    {th: "ใหม่", en: "New", tip: "N-E-W", cat: "Status"}
+];
+
+function initQuiz() {
+    const container = document.getElementById('quiz-container');
+    let currentGroup = 0;
+    
+    wordsData.forEach((item, index) => {
+        if (index % 25 === 0) {
+            currentGroup++;
+            container.innerHTML += `<div class="group-header">Group ${currentGroup}</div>`;
+        }
+        container.innerHTML += `
+            <div class="word-row">
+                <label>${index + 151}. ${item.th}</label>
+                <input type="text" id="input-${index}" placeholder="...">
+            </div>
+        `;
+    });
+}
+
+function checkAnswers() {
+    let score = 0;
+    let wrongByCat = {};
+    let analysisHtml = "";
+
+    wordsData.forEach((item, index) => {
+        const userVal = document.getElementById(`input-${index}`).value.trim().toLowerCase();
+        const correctVal = item.en.toLowerCase();
+
+        if (userVal === correctVal) {
+            score++;
+        } else {
+            // Track weak categories
+            wrongByCat[item.cat] = (wrongByCat[item.cat] || 0) + 1;
+            
+            analysisHtml += `
+                <div class="error-item">
+                    <strong>ข้อ ${index + 151} (${item.th}):</strong><br>
+                    <span class="wrong-ans">${userVal || "(ไม่ได้ตอบ)"}</span> 
+                    → <span class="correct-ans">${item.en}</span>
+                    <span class="memory-tip">💡 ${item.tip}</span>
+                </div>
+            `;
+        }
+    });
+
+    // Score & Analysis
+    document.getElementById('score-display').innerText = `ได้คะแนน ${score} จาก 150`;
+    
+    let weakText = "หมวดหมู่ที่ต้องฝึกฝนเพิ่ม: ";
+    const weakCats = Object.keys(wrongByCat).filter(cat => wrongByCat[cat] > 2);
+    weakText += weakCats.length > 0 ? weakCats.join(", ") : "ไม่มี (คุณทำได้ดีมาก!)";
+    
+    document.getElementById('weak-areas').innerText = weakText;
+    document.getElementById('analysis').innerHTML = score === 150 ? "<h3>🌟 Perfect! คุณเป็นอัจฉริยะด้านตัวสะกด!</h3>" : analysisHtml;
+    document.getElementById('result').style.display = 'block';
+    window.scrollTo(0, document.getElementById('result').offsetTop);
+}
+
+initQuiz();
+</script>
+
+</body>
+</html>
