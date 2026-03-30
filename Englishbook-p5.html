@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>แบบฝึกหัดสะกดคำศัพท์ 50 คำ - พระจอมเกล้าติวเตอร์</title>
+    <style>
+        body { font-family: 'Sarabun', sans-serif; background-color: #f4f7f6; padding: 20px; line-height: 1.6; }
+        .container { max-width: 800px; margin: auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        h2 { color: #2c3e50; text-align: center; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
+        .word-row { display: flex; align-items: center; margin-bottom: 12px; padding: 10px; border-bottom: 1px solid #eee; }
+        .word-row label { flex: 1; font-weight: bold; }
+        input[type="text"] { flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 5px; font-size: 16px; }
+        button { display: block; width: 100%; padding: 15px; background-color: #27ae60; color: white; border: none; border-radius: 8px; font-size: 18px; cursor: pointer; margin-top: 20px; transition: 0.3s; }
+        button:hover { background-color: #219150; }
+        #result { margin-top: 30px; display: none; }
+        .score-box { text-align: center; font-size: 24px; font-weight: bold; color: #e67e22; margin-bottom: 20px; }
+        .error-item { background: #fff5f5; border-left: 5px solid #e74c3c; padding: 15px; margin-bottom: 10px; border-radius: 5px; }
+        .correct-text { color: #27ae60; font-weight: bold; }
+        .wrong-text { color: #e74c3c; text-decoration: line-through; }
+        .tips { font-style: italic; color: #555; font-size: 0.9em; margin-top: 5px; display: block; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>📝 แบบฝึกหัดสะกดคำศัพท์ (50 คำ)</h2>
+    <p style="text-align: center;">พิมพ์คำศัพท์ภาษาอังกฤษให้ตรงกับคำแปล</p>
+    
+    <div id="quiz-form"></div>
+    
+    <button onclick="checkAnswers()">ส่งคำตอบและดูคะแนน</button>
+
+    <div id="result">
+        <div class="score-box" id="score-display"></div>
+        <div id="analysis"></div>
+        <button onclick="location.reload()" style="background-color: #3498db;">ทำใหม่อีกครั้ง</button>
+    </div>
+</div>
+
+<script>
+const vocabulary = [
+    { th: "แมว", en: "Cat", tip: "จำง่ายๆ C-A-T แปะข้างฝา" },
+    { th: "สุนัข", en: "Dog", tip: "D-O-G ด็อก" },
+    { th: "นก", en: "Bird", tip: "ระวังตัว i ไม่ใช่ e นะจ๊ะ" },
+    { th: "ปลา", en: "Fish", tip: "ลงท้ายด้วย sh ออกเสียงฉี่" },
+    { th: "สิงโต", en: "Lion", tip: "Li-on มีตัว O อยู่ข้างหลัง" },
+    { th: "เสือ", en: "Tiger", tip: "Ti-ger แยกสองพยางค์" },
+    { th: "กระต่าย", en: "Rabbit", tip: "มี b สองตัวนะ (bb)" },
+    { th: "เป็ด", en: "Duck", tip: "ลงท้ายด้วย ck" },
+    { th: "ม้า", en: "Horse", tip: "อย่าลืมตัว e เงียบที่ท้ายคำ" },
+    { th: "ม้าลาย", en: "Zebra", tip: "Z-E-B-R-A" },
+    { th: "หนังสือ", en: "Book", tip: "oo ออกเสียงสระอุ/อู" },
+    { th: "ปากกา", en: "Pen", tip: "P-E-N" },
+    { th: "โรงเรียน", en: "School", tip: "มี ch แต่ออกเสียง ค" },
+    { th: "บ้าน", en: "House", tip: "H-O-U-S-E" },
+    { th: "โต๊ะ", en: "Table", tip: "ลงท้ายด้วย -le" },
+    { th: "เก้าอี้", en: "Chair", tip: "Ch-air อากาศที่เก้าอี้" },
+    { th: "กระเป๋า", en: "Bag", tip: "B-A-G" },
+    { th: "เตียงนอน", en: "Bed", tip: "B-E-D เหมือนรูปเตียง" },
+    { th: "รถยนต์", en: "Car", tip: "C-A-R" },
+    { th: "รถบัส", en: "Bus", tip: "B-U-S" },
+    { th: "แอปเปิ้ล", en: "Apple", tip: "pp สองตัว และลงท้าย le" },
+    { th: "กล้วย", en: "Banana", tip: "ba-na-na สระ a ล้วน" },
+    { th: "ส้ม", en: "Orange", tip: "O-R-A-N-G-E" },
+    { th: "นม", en: "Milk", tip: "M-I-L-K" },
+    { th: "ไข่", en: "Egg", tip: "E-G-G สอง g" },
+    { th: "ขนมปัง", en: "Bread", tip: "ea ออกเสียงสระเอะ" },
+    { th: "ข้าว", en: "Rice", tip: "Ri-ce ตัว c ออกเสียงส" },
+    { th: "เค้ก", en: "Cake", tip: "C-A-K-E" },
+    { th: "ลูกอม/ขนมหวาน", en: "Candy", tip: "Can-dy" },
+    { th: "น้ำ", en: "Water", tip: "Wa-ter" },
+    { th: "วิ่ง", en: "Run", tip: "R-U-N" },
+    { th: "เดิน", en: "Walk", tip: "ตัว l ไม่ออกเสียง" },
+    { th: "กิน", en: "Eat", tip: "E-A-T" },
+    { th: "ดื่ม", en: "Drink", tip: "D-R-I-N-K" },
+    { th: "นอน", en: "Sleep", tip: "ee ออกเสียงสระอี" },
+    { th: "อ่าน", en: "Read", tip: "R-E-A-D" },
+    { th: "เขียน", en: "Write", tip: "W ไม่ออกเสียง" },
+    { th: "กระโดด", en: "Jump", tip: "J-U-M-P" },
+    { th: "ร้องเพลง", en: "Sing", tip: "S-I-N-G" },
+    { th: "เต้น", en: "Dance", tip: "Dan-ce ตัว c ออกเสียงส" },
+    { th: "ใหญ่", en: "Big", tip: "B-I-G" },
+    { th: "เล็ก", en: "Small", tip: "ll สองตัว" },
+    { th: "มีความสุข", en: "Happy", tip: "p สองตัว และลงท้าย y" },
+    { th: "เศร้า", en: "Sad", tip: "S-A-D" },
+    { th: "สีแดง", en: "Red", tip: "R-E-D" },
+    { th: "สีฟ้า", en: "Blue", tip: "B-L-U-E" },
+    { th: "สีเขียว", en: "Green", tip: "ee ออกเสียงสระอี" },
+    { th: "สีเหลือง", en: "Yellow", tip: "ll สองตัว" },
+    { th: "ร้อน", en: "Hot", tip: "H-O-T" },
+    { th: "หนาว", en: "Cold", tip: "C-O-L-D" }
+];
+
+const form = document.getElementById('quiz-form');
+vocabulary.forEach((item, index) => {
+    form.innerHTML += `
+        <div class="word-row">
+            <label>${index + 1}. ${item.th}</label>
+            <input type="text" id="word-${index}" placeholder="พิมพ์ภาษาอังกฤษที่นี่">
+        </div>
+    `;
+});
+
+function checkAnswers() {
+    let score = 0;
+    let analysisHtml = "<h3>🔎 วิเคราะห์ข้อผิดพลาดและคำแนะนำ:</h3>";
+    let wrongFound = false;
+
+    vocabulary.forEach((item, index) => {
+        const userValue = document.getElementById(`word-${index}`).value.trim().toLowerCase();
+        if (userValue === item.en.toLowerCase()) {
+            score++;
+        } else {
+            wrongFound = true;
+            analysisHtml += `
+                <div class="error-item">
+                    <strong>ข้อ ${index + 1} (${item.th}):</strong><br>
+                    คุณพิมพ์: <span class="wrong-text">${userValue || "(ว่าง)"}</span> | 
+                    ที่ถูกต้องคือ: <span class="correct-text">${item.en}</span><br>
+                    <span class="tips">💡 เทคนิคการจำ: ${item.tip}</span>
+                </div>
+            `;
+        }
+    });
+
+    document.getElementById('score-display').innerText = `คะแนนของคุณ: ${score} / 50`;
+    document.getElementById('analysis').innerHTML = wrongFound ? analysisHtml : "<h3>🌟 ยอดเยี่ยมมาก! คุณสะกดถูกต้องทุกคำเลย!</h3>";
+    document.getElementById('result').style.display = 'block';
+    window.scrollTo(0, document.body.scrollHeight);
+}
+</script>
+
+</body>
+</html>
