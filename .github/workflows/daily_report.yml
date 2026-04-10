@@ -2,9 +2,12 @@ name: Gmail Summary Agent
 
 on:
   schedule:
-    - cron: '0 23 * * *'  # 06:00 น. เวลาไทย
-    - cron: '0 13 * * *'  # 20:00 น. เวลาไทย
-  workflow_dispatch:      # เพื่อให้พี่กดทดสอบเองได้
+    - cron: '0 23 * * *'  # 06:00 น. ไทย
+    - cron: '0 13 * * *'  # 20:00 น. ไทย
+  workflow_dispatch:      # ปุ่มกดรันเอง
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true  # ปิด Warning Node 20
 
 jobs:
   run-summary:
@@ -19,19 +22,11 @@ jobs:
           python-version: '3.11'
 
       - name: Install Dependencies
-        run: |
-          pip install google-api-python-client google-auth-oauthlib google-auth-httplib2 google-generativeai requests
-
-      - name: Verify Files
-        run: |
-          if [ ! -f summary_bot.py ]; then
-            echo "❌ Error: summary_bot.py not found in root directory!"
-            exit 1
-          fi
+        run: pip install google-api-python-client google-auth-oauthlib google-auth-httplib2 google-generativeai requests
 
       - name: Execute Script
         env:
-          # Mapping: ชื่อที่ Python ใช้ : ชื่อที่ตั้งใน GitHub Secrets
+          # ฝั่งซ้ายคือชื่อที่ Python เรียก | ฝั่งขวาคือชื่อที่พี่ตั้งใน GitHub Secrets
           GMAIL_REFRESH_TOKEN: ${{ secrets.REFRESH_TOKEN_GET }}
           GMAIL_CLIENT_ID: ${{ secrets.G_CLIENTID }}
           GMAIL_CLIENT_SECRET: ${{ secrets.G_CLIENTSECRET }}
