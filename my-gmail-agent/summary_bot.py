@@ -15,7 +15,7 @@ def send_telegram(message):
             print(f"Telegram Error: {e}")
 
 def get_gmail_summary():
-    # ดึงค่า Env ที่แมตช์กับไฟล์ YAML ด้านล่าง
+    # ดึงค่าจาก Env ที่ส่งมาจาก YAML (ชื่อฝั่งซ้ายต้องตรงกับ YAML)
     creds_dict = {
         "refresh_token": os.getenv("GMAIL_REFRESH_TOKEN"),
         "client_id": os.getenv("GMAIL_CLIENT_ID"),
@@ -23,45 +23,35 @@ def get_gmail_summary():
         "token_uri": "https://oauth2.googleapis.com/token",
     }
     
-    # Verify: ตรวจสอบว่ามีค่าว่างถูกส่งมาหรือไม่
-    for key, value in creds_dict.items():
-        if not value:
-            raise ValueError(f"Missing Secret: {key} is empty. Check GitHub Secrets.")
+    # Check: ถ้าค่าใดค่าหนึ่งว่าง Python จะ Error ทันที
+    for k, v in creds_dict.items():
+        if not v:
+            raise ValueError(f"ค่า Secret '{k}' ว่างเปล่า! เช็คการตั้งค่าใน GitHub")
 
     creds = Credentials.from_authorized_user_info(creds_dict)
     service = build('gmail', 'v1', credentials=creds)
     
-    # ดึงอีเมลล่าสุด (จำกัด 15 ฉบับ)
     results = service.users().messages().list(userId='me', maxResults=15).execute()
     messages = results.get('messages', [])
     
     if not messages:
-        return "ไม่มีอีเมลใหม่ในช่วงนี้ครับ"
+        return "ไม่มีอีเมลใหม่"
 
-    full_content = ""
+    snippets = ""
     for msg in messages:
         m = service.users().messages().get(userId='me', id=msg['id']).execute()
-        full_content += f"- {m['snippet']}\n"
+        snippets += f"- {m['snippet']}\n"
 
-    # Gemini Config
     api_key = os.getenv("GEMINI_API_KEY")
-    if not api_key:
-        raise ValueError("GEMINI_API_KEY is not set.")
-        
     genai.configure(api_key=api_key)
     model = genai.GenerativeModel('gemini-1.5-flash')
     
-    prompt = f"คุณคือเลขาส่วนตัว สรุปอีเมลต่อไปนี้เป็นภาษาไทย แยกเป็นหัวข้อสำคัญและสิ่งที่ต้องจัดการด่วน:\n{full_content}"
-    response = model.generate_content(prompt)
-    
+    response = model.generate_content(f"สรุปอีเมลนี้เป็นภาษาไทยสั้นๆ:\n{snippets}")
     return response.text
 
 if __name__ == "__main__":
     try:
         summary = get_gmail_summary()
-        print(summary)
-        send_telegram(f"📢 สรุปอีเมลของพี่ธี:\n\n{summary}")
+        send_telegram(f"📧 สรุปอีเมลพี่ธี:\n\n{summary}")
     except Exception as e:
-        error_info = f"❌ ระบบขัดข้อง: {str(e)}"
-        print(error_info)
-        send_telegram(error_info)
+        send_telegram(f"❌ ระบบขัดข้อง: {str(e)}")
