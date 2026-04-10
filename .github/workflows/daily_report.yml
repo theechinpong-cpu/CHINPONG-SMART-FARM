@@ -4,26 +4,34 @@ on:
   schedule:
     - cron: '0 23 * * *'  # 06:00 น. เวลาไทย
     - cron: '0 13 * * *'  # 20:00 น. เวลาไทย
-  workflow_dispatch:      # เพื่อให้กดรันเองได้
+  workflow_dispatch:      # เพื่อให้พี่กดทดสอบเองได้
 
 jobs:
   run-summary:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v4 # อัปเกรดจาก v3 เป็น v4
+        uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v5 # อัปเกรดจาก v4 เป็น v5
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.11' # ขยับมาใช้ Python 3.11 ที่เสถียรในปี 2026
+          python-version: '3.11'
 
       - name: Install Dependencies
         run: |
           pip install google-api-python-client google-auth-oauthlib google-auth-httplib2 google-generativeai requests
 
+      - name: Verify Files
+        run: |
+          if [ ! -f summary_bot.py ]; then
+            echo "❌ Error: summary_bot.py not found in root directory!"
+            exit 1
+          fi
+
       - name: Execute Script
         env:
+          # Mapping: ชื่อที่ Python ใช้ : ชื่อที่ตั้งใน GitHub Secrets
           GMAIL_REFRESH_TOKEN: ${{ secrets.REFRESH_TOKEN_GET }}
           GMAIL_CLIENT_ID: ${{ secrets.G_CLIENTID }}
           GMAIL_CLIENT_SECRET: ${{ secrets.G_CLIENTSECRET }}
