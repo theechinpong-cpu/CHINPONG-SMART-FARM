@@ -102,36 +102,97 @@
 
 
             
-// ฟังก์ชันดึงข้อมูล Log จาก GitHub มาแสดงใน DIV Telegram
+<div class="card-monitor rounded-[3rem] p-8 border-l-4 border-emerald-500 relative overflow-hidden group cursor-pointer">
+    <div class="relative z-10">
+        <div class="flex justify-between items-center mb-6">
+            <h3 class="text-[10px] font-black text-emerald-400 uppercase tracking-[0.2em] inter">Telegram Bot Infrastructure</h3>
+            <span class="text-[9px] bg-emerald-500/10 text-emerald-400 px-2 py-1 rounded font-bold uppercase">@chinpongsmartfarmbot</span>
+        </div>
+        
+        <div class="space-y-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="relative">
+                        <i class="fab fa-telegram text-2xl text-sky-400"></i>
+                        <span class="absolute -top-1 -right-1 w-2.5 h-2.5 bg-emerald-500 rounded-full border-2 border-[#020617] animate-pulse"></span>
+                    </div>
+                    <div>
+                        <p class="text-xs font-bold text-white leading-none">Bot Service: Active</p>
+                        <p class="text-[9px] text-slate-500 uppercase mt-1">Webhook Connectivity: 100%</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-4 bg-slate-900/50 rounded-2xl border border-slate-800 space-y-3">
+                <p class="text-[9px] font-bold text-slate-500 uppercase tracking-widest border-b border-slate-800 pb-2 mb-2">
+                    <i class="fas fa-list-ul mr-1"></i> Recent Activity Log
+                </p>
+                
+                <div id="telegram-log-content" class="space-y-3">
+                    <div class="flex items-center gap-2">
+                        <i class="fas fa-sync fa-spin text-[10px] text-slate-600"></i>
+                        <span class="text-[10px] text-slate-600 uppercase tracking-widest">Syncing Data...</span>
+                    </div>
+                </div>
+            </div>
+
+            <button onclick="window.open('https://t.me/chinpongsmartfarmbot', '_blank')" 
+                    class="w-full py-3 bg-sky-500/10 border border-sky-500/20 rounded-xl text-sky-400 text-[10px] font-black uppercase tracking-[0.2em] hover:bg-sky-500 hover:text-white transition-all">
+                Launch Command Bot
+            </button>
+        </div>
+    </div>
+    <i class="fab fa-telegram-plane absolute bottom-[-20px] right-[-10px] text-8xl text-white/[0.02] group-hover:text-sky-500/[0.05] transition-all duration-700"></i>
+</div>
+
+<script>
 async function updateTelegramLogs() {
+    // URL สำหรับดึงข้อมูลจาก GitHub Repo ของคุณ
     const logUrl = 'https://raw.githubusercontent.com/T-TOUCH/king-mongkut-tutor/main/data/telegram_logs.json';
-    const logContainer = document.querySelector('#telegram-log-content'); // ตั้ง ID ให้ DIV ที่จะแสดง
+    const logContainer = document.getElementById('telegram-log-content');
 
     try {
         const response = await fetch(logUrl);
+        if (!response.ok) throw new Error('File not found');
+        
         const data = await response.json();
         
         let logHtml = '';
-        data.logs.forEach(item => {
-            const icon = item.type === 'error' ? 'fa-exclamation-triangle text-amber-500' : 'fa-check-circle text-emerald-500';
-            logHtml += `
-                <div class="flex items-start gap-3">
-                    <i class="fas ${icon} text-[10px] mt-1"></i>
-                    <div>
-                        <p class="text-[10px] text-slate-200">${item.message}</p>
-                        <p class="text-[8px] text-slate-600 uppercase">${item.time}</p>
+        // ตรวจสอบว่ามีข้อมูลใน logs หรือไม่
+        if (data.logs && data.logs.length > 0) {
+            data.logs.forEach(item => {
+                const icon = item.type === 'error' ? 'fa-exclamation-triangle text-amber-500' : 'fa-check-circle text-emerald-500';
+                logHtml += `
+                    <div class="flex items-start gap-3 animate-fade-in">
+                        <i class="fas ${icon} text-[10px] mt-1"></i>
+                        <div>
+                            <p class="text-[10px] text-slate-200">${item.message}</p>
+                            <p class="text-[8px] text-slate-600 uppercase font-bold">${item.time}</p>
+                        </div>
                     </div>
-                </div>
-            `;
-        });
+                `;
+            });
+        } else {
+            logHtml = '<p class="text-[10px] text-slate-600">No recent logs found.</p>';
+        }
         logContainer.innerHTML = logHtml;
+
     } catch (error) {
-        console.log("Waiting for log update...");
+        console.warn("Log fetch pending: " + error.message);
+        logContainer.innerHTML = `
+            <div class="flex items-center gap-2 opacity-50">
+                <i class="fas fa-database text-[10px]"></i>
+                <span class="text-[10px] uppercase">Waiting for n8n push...</span>
+            </div>
+        `;
     }
 }
 
-// เรียกใช้เมื่อโหลดหน้าจอ
+// รันฟังก์ชันทันทีที่โหลดหน้า
 updateTelegramLogs();
+// Refresh ทุกๆ 5 นาที
+setInterval(updateTelegramLogs, 300000);
+</script>
 
 
         
