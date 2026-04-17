@@ -5,76 +5,78 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TIKTOK MONITORING OS</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Kanit', sans-serif; background: #010101; color: #fff; }
-        .tiktok-card { background: #121212; border: 1px solid rgba(255, 255, 255, 0.05); }
-        .gradient-text { background: linear-gradient(to right, #ff0050, #00f2ea); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .stat-card { background: #121212; border-radius: 2rem; padding: 2rem; border: 1px solid rgba(255,255,255,0.05); }
     </style>
 </head>
 <body class="p-8">
-    <div class="max-w-7xl mx-auto">
-        <header class="flex justify-between items-center mb-10">
-            <h1 class="text-2xl font-black uppercase">TikTok <span class="gradient-text">Automation OS</span></h1>
-            <button onclick="fetchData()" class="bg-white text-black px-6 py-2 rounded-full font-bold text-sm">REFRESH DATA</button>
-        </header>
+    <div class="max-w-6xl mx-auto">
+        <div class="flex justify-between items-center mb-10">
+            <h1 class="text-3xl font-black italic">TIKTOK <span class="text-[#ff0050]">AUTOMATION OS</span></h1>
+            <button onclick="updateData()" class="bg-white text-black px-8 py-2 rounded-full font-bold">REFRESH</button>
+        </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
-            <div class="tiktok-card p-8 rounded-[2rem]">
-                <p class="text-xs text-gray-500 uppercase font-bold mb-2">Followers</p>
-                <h2 id="f-val" class="text-4xl font-black">---</h2>
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+            <div class="stat-card">
+                <p class="text-xs text-gray-500 font-bold uppercase">Followers</p>
+                <h2 id="f" class="text-4xl font-black">---</h2>
             </div>
-            <div class="tiktok-card p-8 rounded-[2rem]">
-                <p class="text-xs text-gray-500 uppercase font-bold mb-2">Total Views</p>
-                <h2 id="v-val" class="text-4xl font-black">---</h2>
+            <div class="stat-card">
+                <p class="text-xs text-gray-500 font-bold uppercase">Views</p>
+                <h2 id="v" class="text-4xl font-black">---</h2>
             </div>
-            <div class="tiktok-card p-8 rounded-[2rem]">
-                <p class="text-xs text-gray-500 uppercase font-bold mb-2">Status</p>
-                <h2 id="s-val" class="text-4xl font-black text-sky-400">---</h2>
+            <div class="stat-card">
+                <p class="text-xs text-gray-500 font-bold uppercase">Status</p>
+                <h2 id="s" class="text-4xl font-black text-sky-400">---</h2>
             </div>
-            <div class="tiktok-card p-8 rounded-[2rem] border-l-4 border-emerald-500">
-                <p class="text-xs text-gray-500 uppercase font-bold mb-2">Commission</p>
-                <h2 id="c-val" class="text-4xl font-black text-emerald-400">฿0</h2>
+            <div class="stat-card border-l-4 border-emerald-500">
+                <p class="text-xs text-gray-500 font-bold uppercase">Commission</p>
+                <h2 id="c" class="text-4xl font-black text-emerald-500">฿0</h2>
             </div>
         </div>
 
-        <div class="tiktok-card p-8 rounded-[2rem]">
-            <div class="flex justify-between items-center">
-                <span class="text-gray-500 font-bold uppercase text-xs">System Health</span>
-                <span id="api-status" class="text-rose-500 font-black">WAITING...</span>
-            </div>
+        <div id="health" class="text-center p-4 bg-gray-900/50 rounded-xl text-xs font-bold text-gray-500">
+            SYSTEM STATUS: <span id="status-text">WAITING...</span>
         </div>
     </div>
 
     <script>
-        // วาง URL ที่ได้จาก New Deployment (Anyone) ตรงนี้
-        const WEB_APP_URL = "ก๊อปปี้ URL จากหน้า Deploy มาวางตรงนี้"; 
+        // *** วาง URL ที่ก๊อปมาใหม่ตรงนี้ ***
+        const API_URL = "วาง_Web_App_URL_ตรงนี้"; 
 
-        async function fetchData() {
-            const statusTag = document.getElementById('api-status');
+        async function updateData() {
+            const statusText = document.getElementById('status-text');
+            statusText.innerText = "CONNECTING...";
+            
             try {
-                // เทคนิค 100%: ใช้การเรียกแบบปกติ และเช็ค response
-                const resp = await fetch(WEB_APP_URL);
-                const data = await resp.json();
+                // ใช้เทคนิคดึงข้อมูลผ่าน Redirect ของ Google
+                const response = await fetch(API_URL);
+                const text = await response.text();
                 
-                if (data && data[0]) {
-                    const info = data[0];
-                    document.getElementById('f-val').innerText = info.followers.toLocaleString();
-                    document.getElementById('v-val').innerText = info.views;
-                    document.getElementById('c-val').innerText = '฿' + info.commission;
-                    document.getElementById('s-val').innerText = info.status;
-
-                    statusTag.innerText = "ONLINE (CONNECTED)";
-                    statusTag.className = "text-emerald-500 font-black";
+                // เช็คว่าถ้า Google ส่งหน้า Error มา มันจะมีคำว่า "<!DOCTYPE"
+                if (text.includes("<!DOCTYPE")) {
+                    throw new Error("Google blocked the request. Please check 'Who has access: Anyone'");
                 }
-            } catch (e) {
-                statusTag.innerText = "OFFLINE/ERROR: " + e.message;
-                statusTag.className = "text-rose-500 font-black";
+
+                const data = JSON.parse(text);
+                
+                document.getElementById('f').innerText = Number(data.followers).toLocaleString();
+                document.getElementById('v').innerText = data.views;
+                document.getElementById('c').innerText = '฿' + data.commission;
+                document.getElementById('s').innerText = data.status;
+
+                statusText.innerText = "ONLINE";
+                statusText.className = "text-emerald-500";
+            } catch (err) {
+                statusText.innerText = "ERROR: " + err.message;
+                statusText.className = "text-rose-500";
+                console.error(err);
             }
         }
 
-        window.onload = fetchData;
-        setInterval(fetchData, 60000); // อัปเดตทุก 1 นาที
+        window.onload = updateData;
     </script>
 </body>
 </html>
