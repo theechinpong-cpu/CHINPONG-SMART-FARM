@@ -5,31 +5,88 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>พระจอมเกล้าติวเตอร์ - Dashboard</title>
     <style>
-        body { font-family: sans-serif; padding: 20px; background-color: #f5f5f5; }
-        .container { max-width: 800px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        h1 { color: #333; text-align: center; }
-        #status { text-align: center; margin-bottom: 20px; font-weight: bold; }
-        table { border-collapse: collapse; width: 100%; margin-top: 10px; }
-        th, td { border: 1px solid #ddd; padding: 12px; text-align: center; }
-        th { background-color: #007bff; color: white; }
-        tr:nth-child(even) { background-color: #f9f9f9; }
-        .error { color: red; }
+        body { 
+            font-family: 'Sarabun', sans-serif; 
+            padding: 20px; 
+            background-color: #f0f2f5; 
+            color: #333;
+        }
+        .container { 
+            max-width: 900px; 
+            margin: auto; 
+            background: white; 
+            padding: 30px; 
+            border-radius: 12px; 
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08); 
+        }
+        h1 { 
+            color: #1a73e8; 
+            text-align: center; 
+            margin-bottom: 10px;
+        }
+        .info {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 0.9em;
+        }
+        #status { 
+            text-align: center; 
+            margin-bottom: 20px; 
+            font-weight: bold; 
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .loader {
+            color: #1a73e8;
+            background: #e8f0fe;
+        }
+        table { 
+            border-collapse: collapse; 
+            width: 100%; 
+            background: white;
+        }
+        th, td { 
+            border: 1px solid #eee; 
+            padding: 15px; 
+            text-align: center; 
+        }
+        th { 
+            background-color: #1a73e8; 
+            color: white; 
+            font-weight: bold;
+        }
+        tr:nth-child(even) { 
+            background-color: #f8f9fa; 
+        }
+        tr:hover {
+            background-color: #f1f3f4;
+        }
+        .error-msg { 
+            color: #d93025; 
+            background: #fce8e6;
+            padding: 15px;
+            border-radius: 5px;
+            border: 1px solid #fad2cf;
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
     <h1>Shopee Affiliate Monitoring</h1>
-    <div id="status">กำลังดึงข้อมูลจากระบบ...</div>
+    <p class="info">ระบบดึงข้อมูลอัตโนมัติจาก Google Sheets ผ่าน API</p>
+    
+    <div id="status" class="loader">กำลังเชื่อมต่อข้อมูล...</div>
     <div id="table-container"></div>
 </div>
 
 <script>
     async function loadData() {
-        // --- ข้อมูลกำหนดค่า ---
+        // --- ข้อมูลที่กำหนดไว้จากระบบของคุณ ---
         const API_KEY = 'AIzaSyBYShuq98zxEPDCQgIZatzc83bXnxQevAU'; 
-        const SHEET_ID = '18fd3a87-e672-4743-bffd-7e628c44a955'; // ไอดีจากไฟล์รูปภาพที่คุณส่งมา
-        const RANGE = 'Sheet1!A1:D5'; // ปรับชื่อ Sheet ให้ตรงกับในไฟล์ของคุณ
+        const SHEET_ID = '1oGTv23WfGJMu_TGWzMzc9R-CUeNp_TMIWxjNy25z1A4';
+        const RANGE = 'Sheet1!A1:D10'; // หากชื่อชีตไม่ใช่ Sheet1 ให้เปลี่ยนตรงนี้
         
         const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${RANGE}?key=${API_KEY}`;
         const statusDiv = document.getElementById('status');
@@ -45,40 +102,43 @@
 
             const rows = result.values;
             if (!rows || rows.length === 0) {
-                statusDiv.innerText = "ไม่พบข้อมูลในตาราง";
+                statusDiv.innerText = "ไม่พบข้อมูลในตาราง (ตรวจสอบช่วงข้อมูล A1:D10)";
+                statusDiv.className = "";
                 return;
             }
 
             // สร้าง HTML Table
             let tableHtml = '<table><thead><tr>';
             
-            // วนลูปสร้างหัวตาราง (Row แรก)
+            // วนลูปสร้างหัวตาราง (แถวแรก)
             rows[0].forEach(header => {
                 tableHtml += `<th>${header}</th>`;
             });
             tableHtml += '</tr></thead><tbody>';
 
-            // วนลูปสร้างข้อมูล (Row ที่เหลือ)
+            // วนลูปสร้างข้อมูล (แถวที่เหลือ)
             for (let i = 1; i < rows.length; i++) {
                 tableHtml += '<tr>';
                 rows[i].forEach(cell => {
-                    tableHtml += `<td>${cell}</td>`;
+                    tableHtml += `<td>${cell || '-'}</td>`; // ถ้าช่องว่างให้ใส่ -
                 });
                 tableHtml += '</tr>';
             }
             tableHtml += '</tbody></table>';
 
             container.innerHTML = tableHtml;
-            statusDiv.innerText = "อัปเดตข้อมูลล่าสุดเมื่อ: " + new Date().toLocaleTimeString();
-            statusDiv.style.color = "green";
+            statusDiv.innerText = "อัปเดตสำเร็จเมื่อ: " + new Date().toLocaleTimeString();
+            statusDiv.style.color = "#188038";
+            statusDiv.className = ""; // ล้างคลาส loader
 
         } catch (error) {
-            statusDiv.innerHTML = `<span class="error">เกิดข้อผิดพลาด: ${error.message}</span>`;
+            statusDiv.innerHTML = `<div class="error-msg">เกิดข้อผิดพลาด: ${error.message}<br><small>ตรวจสอบการ Share Sheet (Anyone with link) หรือชื่อ Sheet Name</small></div>`;
+            statusDiv.className = "";
             console.error("API Error:", error);
         }
     }
 
-    // เรียกทำงานทันที
+    // เรียกทำงานทันทีที่โหลดหน้าจอ
     loadData();
 </script>
 
