@@ -35,7 +35,6 @@
             overflow: hidden;
         }
 
-        /* Hero & Header */
         .hero {
             background: var(--primary);
             padding: 60px 40px;
@@ -63,7 +62,6 @@
             border: 1px solid rgba(255,255,255,0.2);
         }
 
-        /* Professional Table UI */
         .table-section { padding: 40px; overflow-x: auto; }
         
         table {
@@ -92,7 +90,7 @@
         
         tr:hover td { background: #fdfdfd; }
 
-        .thai-main { font-size: 36px; font-weight: 800; color: var(--primary); display: block; }
+        .thai-main { font-size: 36px; font-weight: 800; color: var(--primary); display: block; cursor: pointer; }
         
         .chip {
             display: inline-flex;
@@ -147,6 +145,48 @@
             justify-content: space-between;
             align-items: center;
             box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        }
+
+        .exam-container {
+            margin: 40px;
+            padding: 40px;
+            background: #fff;
+            border-radius: 30px;
+            border: 2px solid #e2e8f0;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        }
+        .question-card {
+            padding: 20px;
+            margin-bottom: 20px;
+            border-bottom: 1px dashed #cbd5e1;
+        }
+        .question-text { font-size: 18px; font-weight: 700; color: var(--primary); margin-bottom: 15px; }
+        .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .option-btn {
+            padding: 12px;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            background: #f8fafc;
+            cursor: pointer;
+            text-align: left;
+            font-family: 'Sarabun', sans-serif;
+        }
+        .option-btn:hover { background: #f1f5f9; border-color: var(--blue-pro); }
+        .option-btn.selected { background: var(--blue-pro); color: white; border-color: var(--blue-pro); }
+        
+        #result-area {
+            display: none;
+            text-align: center;
+            padding: 40px;
+            background: #f0fdf4;
+            border-radius: 20px;
+            margin-top: 20px;
+        }
+        .score-circle {
+            width: 120px; height: 120px; border-radius: 50%;
+            background: var(--accent); color: white;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 32px; font-weight: 800; margin: 0 auto 20px;
         }
 
         footer { text-align: center; padding: 40px; background: #0f172a; color: #94a3b8; margin-top: 60px; }
@@ -204,6 +244,28 @@
         </table>
     </div>
 
+    <div class="section-title" id="exam-section">
+        <h2 style="margin:0; border-color: #ef4444;">3. Proficiency Test (แบบฝึกหัดวัดทักษะ 25 ข้อ)</h2>
+    </div>
+
+    <div class="exam-container">
+        <div id="quiz-intro" style="text-align: center;">
+            <h3>แบบทดสอบวัดระดับอักษรศาสตร์ (25 ข้อ)</h3>
+            <p>ครอบคลุมการเทียบเสียง พยัญชนะต้น ตัวสะกด และการประยุกต์ใช้ในคำศัพท์</p>
+            <button onclick="startQuiz()" class="chip chip-ini" style="padding: 15px 40px; font-size: 18px;">เริ่มทำข้อสอบ</button>
+        </div>
+        <div id="quiz-questions"></div>
+        <div id="quiz-controls" style="display:none; margin-top: 30px; text-align: center;">
+            <button onclick="submitQuiz()" class="chip chip-fin" style="padding: 15px 40px; font-size: 18px;">ส่งคำตอบและดูผลคะแนน</button>
+        </div>
+        <div id="result-area">
+            <div class="score-circle" id="final-score">0/25</div>
+            <h2 id="grade-text">เยี่ยมมาก!</h2>
+            <div id="analysis-report" style="text-align: left; max-width: 600px; margin: auto; line-height: 1.8;"></div>
+            <button onclick="location.reload()" class="chip" style="margin-top: 20px;">ทำใหม่อีกครั้ง</button>
+        </div>
+    </div>
+
     <footer>
         <p>&copy; 2026 CHINPONG SMART FARM - ความรู้คือรากฐานที่ยั่งยืน</p>
     </footer>
@@ -213,19 +275,48 @@
     const consonants = [
         {th: "ก", ini: "G / K", fin: "K", note: "เสียงกักฐานเพดานอ่อน ไม่พ่นลม (Velar Stop)", ex: [{t:"ไก่", e:"Gai"}, {t:"กระจก", e:"Gra-jok"}, {t:"ปาก", e:"Paak"}]},
         {th: "ข", ini: "KH", fin: "K", note: "เสียงกักฐานเพดานอ่อน พ่นลมสูง (Aspirated)", ex: [{t:"ไข่", e:"Khai"}, {t:"เขียน", e:"Khian"}, {t:"สุข", e:"Suk"}]},
+        {th: "ฃ", ini: "KH", fin: "K", note: "เลิกใช้แล้ว (ปัจจุบันใช้ ข แทน)", ex: [{t:"ฃวด", e:"Khuat"}, {t:"-", e:""}, {t:"-", e:""}]},
+        {th: "ค", ini: "KH", fin: "K", note: "เสียงต่ำ พ่นลมเหมือน ข", ex: [{t:"ควาย", e:"Khway"}, {t:"คน", e:"Khon"}, {t:"ภาค", e:"Phaak"}]},
+        {th: "ฅ", ini: "KH", fin: "K", note: "เลิกใช้แล้ว (ปัจจุบันใช้ ค แทน)", ex: [{t:"ฅน", e:"Khon"}, {t:"-", e:""}, {t:"-", e:""}]},
+        {th: "ฆ", ini: "KH", fin: "K", note: "เสียงเดียวกับ ค (บาลี-สันสกฤต)", ex: [{t:"ระฆัง", e:"Ra-khang"}, {t:"เมฆ", e:"Mek"}, {t:"ฆ่า", e:"Khaa"}]},
         {th: "ง", ini: "NG", fin: "NG", note: "เสียงนาสิกเพดานอ่อน (Velar Nasal)", ex: [{t:"งู", e:"Nguu"}, {t:"งาน", e:"Ngaan"}, {t:"หาง", e:"Haang"}]},
         {th: "จ", ini: "J / CH", fin: "T", note: "เสียงกักกึ่งเสียดแทรก (Palatal Affricate)", ex: [{t:"จาน", e:"Jaan"}, {t:"จริง", e:"Jring"}, {t:"ตรวจ", e:"Truat"}]},
-        {th: "ด", ini: "D", fin: "T", note: "เสียงกักปุ่มเหงือก ก้อง (Alveolar Stop)", ex: [{t:"เด็ก", e:"Dek"}, {t:"เดิน", e:"Deun"}, {t:"เปิด", e:"Peut"}]},
-        {th: "ต", ini: "T", fin: "T", note: "เสียงกักปุ่มเหงือก ไม่พ่นลม (Tense T)", ex: [{t:"เต่า", e:"Tao"}, {t:"ตลาด", e:"Ta-laat"}, {t:"จิต", e:"Jit"}]},
-        {th: "ท", ini: "TH", fin: "T", note: "เสียงพ่นลมพื้นฐาน (Alveolar Aspirated)", ex: [{t:"ทหาร", e:"Tha-haan"}, {t:"ทอง", e:"Thong"}, {t:"บาท", e:"Baat"}]},
-        {th: "น", ini: "N", fin: "N", note: "เสียงนาสิกปุ่มเหงือก (Alveolar Nasal)", ex: [{t:"นก", e:"Nok"}, {t:"นอน", e:"Noon"}, {t:"กิน", e:"Gin"}]},
-        {th: "บ", ini: "B", fin: "P", note: "เสียงกักริมฝีปาก ก้อง (Bilabial Stop)", ex: [{t:"บ้าน", e:"Baan"}, {t:"บิน", e:"Bin"}, {t:"กบ", e:"Gop"}]},
-        {th: "ป", ini: "P", fin: "P", note: "เสียงกักริมฝีปาก ไม่พ่นลม (Unaspirated P)", ex: [{t:"ปลา", e:"Plaa"}, {t:"เป็ด", e:"Pet"}, {t:"ธูป", e:"Thup"}]},
-        {th: "พ", ini: "PH", fin: "P", note: "เสียงริมฝีปาก พ่นลม (Aspirated P)", ex: [{t:"พี่", e:"Phee"}, {t:"พูด", e:"Phut"}, {t:"ภาพ", e:"Phap"}]},
-        {th: "ร", ini: "R", fin: "N", note: "เสียงกระดกลิ้น (Alveolar Tap/Trill)", ex: [{t:"เรือ", e:"Reua"}, {t:"รัก", e:"Rak"}, {t:"วารสาร", e:"Wa-ra-saan"}]},
-        {th: "ว", ini: "W", fin: "-", note: "เสียงกึ่งสระริมฝีปาก (Labio-velar)", ex: [{t:"แหวน", e:"Waen"}, {t:"วิ่ง", e:"Wing"}, {t:"แมว", e:"Maew"}]},
-        {th: "ส", ini: "S", fin: "T", note: "เสียงเสียดแทรกปุ่มเหงือก (Fricative)", ex: [{t:"เสือ", e:"Seua"}, {t:"สวย", e:"Suay"}, {t:"รส", e:"Rot"}]},
-        {th: "ฮ", ini: "H", fin: "-", note: "เสียงระบายลมจากเส้นเสียง (Glottal)", ex: [{t:"ฮก", e:"Hok"}, {t:"เฮ้", e:"Hay"}, {t:"นกฮูก", e:"Nok-huk"}]}
+        {th: "ฉ", ini: "CH", fin: "-", note: "เสียงพ่นลมหนัก (Strong Aspiration)", ex: [{t:"ฉิ่ง", e:"Ching"}, {t:"ฉัน", e:"Chan"}, {t:"เฉย", e:"Chuey"}]},
+        {th: "ช", ini: "CH", fin: "T", note: "คู่เสียงต่ำของ ฉ", ex: [{t:"ช้าง", e:"Chaang"}, {t:"ชาย", e:"Chaay"}, {t:"พานิช", e:"Pha-nit"}]},
+        {th: "ซ", ini: "S", fin: "T", note: "เสียงเสียดแทรก (Fricative)", ex: [{t:"โซ่", e:"Soo"}, {t:"ซ้าย", e:"Saay"}, {t:"ก๊าซ", e:"Gaat"}]},
+        {th: "ฌ", ini: "CH", fin: "-", note: "เสียงเดียวกับ ช", ex: [{t:"เฌอ", e:"Chur"}, {t:"ฌาน", e:"Chaan"}, {t:"-", e:""}]},
+        {th: "ญ", ini: "Y", fin: "N", note: "นาสิกเพดานแข็ง (Palatal Nasal)", ex: [{t:"หญิง", e:"Ying"}, {t:"ใหญ่", e:"Yai"}, {t:"บุญ", e:"Bun"}]},
+        {th: "ฎ", ini: "D", fin: "T", note: "เสียงกักปุ่มเหงือก ก้อง (Alveolar Stop)", ex: [{t:"ชฎา", e:"Cha-daa"}, {t:"กฎ", e:"Got"}, {t:"ปรากฎ", e:"Pra-got"}]},
+        {th: "ฏ", ini: "T", fin: "T", note: "เสียงกักปุ่มเหงือก ไม่พ่นลม", ex: [{t:"ปฏัก", e:"Pa-tak"}, {t:"กบฏ", e:"Ga-bot"}, {t:"มงกุฎ", e:"Mong-kut"}]},
+        {th: "ฐ", ini: "TH", fin: "T", note: "เสียงพ่นลมแรงเหมือน ถ", ex: [{t:"ฐาน", e:"Thaan"}, {t:"รัฐ", e:"Rat"}, {t:"อิฐ", e:"It"}]},
+        {th: "ฑ", ini: "D / TH", fin: "T", note: "ออกเสียงได้ 2 แบบ (ด หรือ ท)", ex: [{t:"มณฑา", e:"Mon-thaa"}, {t:"บัณฑิต", e:"Ban-dit"}, {t:"ครุฑ", e:"Krut"}]},
+        {th: "ฒ", ini: "TH", fin: "T", note: "เสียงเดียวกับ ท", ex: [{t:"ผู้เฒ่า", e:"Phu-thao"}, {t:"วัฒนา", e:"Wat-tha-na"}, {t:"วุฒิ", e:"Wut"}]},
+        {th: "ณ", ini: "N", fin: "N", note: "เสียงเดียวกับ น", ex: [{t:"เณร", e:"Nen"}, {t:"คุณ", e:"Khun"}, {t:"โบราณ", e:"Bo-raan"}]},
+        {th: "ด", ini: "D", fin: "T", note: "เสียงกักปุ่มเหงือกพื้นฐาน", ex: [{t:"เด็ก", e:"Dek"}, {t:"ดิน", e:"Din"}, {t:"เปิด", e:"Peut"}]},
+        {th: "ต", ini: "T", fin: "T", note: "เสียงกักปุ่มเหงือก ไม่พ่นลม", ex: [{t:"เต่า", e:"Tao"}, {t:"ตาก", e:"Taak"}, {t:"จิต", e:"Jit"}]},
+        {th: "ถ", ini: "TH", fin: "T", note: "พ่นลมแรงคู่กับเสียง ท", ex: [{t:"ถุง", e:"Thung"}, {t:"ถาด", e:"Thaat"}, {t:"รถ", e:"Rot"}]},
+        {th: "ท", ini: "TH", fin: "T", note: "เสียงพ่นลมพื้นฐาน", ex: [{t:"ทหาร", e:"Tha-haan"}, {t:"ทอง", e:"Thong"}, {t:"บาท", e:"Baat"}]},
+        {th: "ธ", ini: "TH", fin: "T", note: "เสียงเดียวกับ ท", ex: [{t:"ธง", e:"Thong"}, {t:"ธรรม", e:"Tham"}, {t:"โกรธ", e:"Grot"}]},
+        {th: "น", ini: "N", fin: "N", note: "เสียงนาสิกปุ่มเหงือก", ex: [{t:"นก", e:"Nok"}, {t:"นอน", e:"Noon"}, {t:"กิน", e:"Gin"}]},
+        {th: "บ", ini: "B", fin: "P", note: "เสียงกักริมฝีปาก ก้อง", ex: [{t:"บ้าน", e:"Baan"}, {t:"บิน", e:"Bin"}, {t:"กบ", e:"Gop"}]},
+        {th: "ป", ini: "P", fin: "P", note: "เสียงริมฝีปาก ไม่พ่นลม", ex: [{t:"ปลา", e:"Plaa"}, {t:"เป็ด", e:"Pet"}, {t:"ธูป", e:"Thup"}]},
+        {th: "ผ", ini: "PH", fin: "-", note: "เสียงริมฝีปาก พ่นลมสูง", ex: [{t:"ผึ้ง", e:"Phueng"}, {t:"ผัก", e:"Phak"}, {t:"ผอม", e:"Phom"}]},
+        {th: "ฝ", ini: "F", fin: "-", note: "เสียงเสียดแทรก (Labiodental)", ex: [{t:"ฝา", e:"Faa"}, {t:"ฝน", e:"Fon"}, {t:"ฝาก", e:"Faak"}]},
+        {th: "พ", ini: "PH", fin: "P", note: "เสียงริมฝีปาก พ่นลมต่ำ", ex: [{t:"พี่", e:"Phee"}, {t:"พูด", e:"Phut"}, {t:"ภาพ", e:"Phap"}]},
+        {th: "ฟ", ini: "F", fin: "P", note: "คู่เสียงต่ำของ ฝ", ex: [{t:"ฟัน", e:"Fan"}, {t:"ไฟ", e:"Fai"}, {t:"ยีราฟ", e:"Yee-raaf"}]},
+        {th: "ภ", ini: "PH", fin: "P", note: "เสียงเดียวกับ พ", ex: [{t:"สำเภา", e:"Sam-phao"}, {t:"ภูเขา", e:"Phu-khao"}, {t:"ลาภ", e:"Laap"}]},
+        {th: "ม", ini: "M", fin: "M", note: "เสียงนาสิกริมฝีปาก", ex: [{t:"แมว", e:"Maew"}, {t:"มือ", e:"Meu"}, {t:"กลม", e:"Glom"}]},
+        {th: "ย", ini: "Y", fin: "-", note: "เสียงกึ่งสระเพดานแข็ง", ex: [{t:"ยา", e:"Yaa"}, {t:"ยาย", e:"Yaay"}, {t:"เสย", e:"Suay"}]},
+        {th: "ร", ini: "R", fin: "N", note: "เสียงกระดกลิ้น (Alveolar Tap)", ex: [{t:"เรือ", e:"Reua"}, {t:"รัก", e:"Rak"}, {t:"วารสาร", e:"Wa-ra-saan"}]},
+        {th: "ล", ini: "L", fin: "N", note: "เสียงข้างลิ้น (Lateral)", ex: [{t:"ลิง", e:"Ling"}, {t:"เล่น", e:"Len"}, {t:"กาล", e:"Gaan"}]},
+        {th: "ว", ini: "W", fin: "-", note: "เสียงกึ่งสระริมฝีปาก", ex: [{t:"แหวน", e:"Waen"}, {t:"วิ่ง", e:"Wing"}, {t:"แก้ว", e:"Gaew"}]},
+        {th: "ศ", ini: "S", fin: "T", note: "เสียงเดียวกับ ส (บาลี-สันสกฤต)", ex: [{t:"ศาลา", e:"Saa-laa"}, {t:"ทิศ", e:"Thit"}, {t:"อัศจรรย์", e:"At-sa-jan"}]},
+        {th: "ษ", ini: "S", fin: "T", note: "เสียงเดียวกับ ส (บาลี-สันสกฤต)", ex: [{t:"ฤๅษี", e:"Reu-see"}, {t:"กระดาษ", e:"Gra-daat"}, {t:"โทษ", e:"Thot"}]},
+        {th: "ส", ini: "S", fin: "T", note: "เสียงเสียดแทรกพื้นฐาน", ex: [{t:"เสือ", e:"Seua"}, {t:"สวย", e:"Suay"}, {t:"รส", e:"Rot"}]},
+        {th: "ห", ini: "H", fin: "-", note: "เสียงระบายลมจากเส้นเสียง", ex: [{t:"หีบ", e:"Heep"}, {t:"หาง", e:"Haang"}, {t:"หู", e:"Huu"}]},
+        {th: "ฬ", ini: "L", fin: "N", note: "เสียงเดียวกับ ล", ex: [{t:"จุฬา", e:"Ju-laa"}, {t:"ปลาวาฬ", e:"Pla-waan"}, {t:"ทมิฬ", e:"Tha-min"}]},
+        {th: "อ", ini: "O", fin: "-", note: "เสียงกักเส้นเสียง (Glottal Stop)", ex: [{t:"อ่าง", e:"Aang"}, {t:"อา", e:"Aa"}, {t:"เอว", e:"Ew"}]},
+        {th: "ฮ", ini: "H", fin: "-", note: "คู่เสียงต่ำของ ห", ex: [{t:"นกฮูก", e:"Nok-huk"}, {t:"เฮ้", e:"Hay"}, {t:"ฮา", e:"Haa"}]}
     ];
 
     const vowels = [
@@ -254,12 +345,12 @@
             <td class="note-text">${c.note}</td>
             <td>
                 <div class="example-stack">
-                    ${c.ex.map(e => `
+                    ${c.ex.map(e => e.t !== "-" ? `
                         <div class="example-item" onclick="play('${e.t}')">
                             <span class="ex-th">${e.t}</span>
                             <span class="ex-en">${e.e}</span>
                         </div>
-                    `).join('')}
+                    ` : "").join('')}
                 </div>
             </td>
         `;
@@ -287,157 +378,88 @@
         `;
         vowBody.appendChild(row);
     });
-</script>
-    <div class="section-title" id="exam-section">
-    <h2 style="margin:0; border-color: #ef4444;">3. Proficiency Test (แบบฝึกหัดวัดทักษะ 25 ข้อ)</h2>
-</div>
 
-<style>
-    .exam-container {
-        margin: 40px;
-        padding: 40px;
-        background: #fff;
-        border-radius: 30px;
-        border: 2px solid #e2e8f0;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-    }
-    .question-card {
-        display: none; /* Show one by one or all via JS */
-        padding: 20px;
-        margin-bottom: 20px;
-        border-bottom: 1px dashed #cbd5e1;
-    }
-    .question-text { font-size: 18px; font-weight: 700; color: var(--primary); margin-bottom: 15px; }
-    .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-    .option-btn {
-        padding: 12px;
-        border: 1px solid #e2e8f0;
-        border-radius: 12px;
-        background: #f8fafc;
-        cursor: pointer;
-        text-align: left;
-        font-family: 'Sarabun', sans-serif;
-    }
-    .option-btn:hover { background: #f1f5f9; border-color: var(--blue-pro); }
-    .option-btn.selected { background: var(--blue-pro); color: white; border-color: var(--blue-pro); }
-    
-    #result-area {
-        display: none;
-        text-align: center;
-        padding: 40px;
-        background: #f0fdf4;
-        border-radius: 20px;
-        margin-top: 20px;
-    }
-    .score-circle {
-        width: 120px; height: 120px; border-radius: 50%;
-        background: var(--accent); color: white;
-        display: flex; align-items: center; justify-content: center;
-        font-size: 32px; font-weight: 800; margin: 0 auto 20px;
-    }
-</style>
+    // --- QUIZ LOGIC ---
+    let quizData = [];
+    let userAnswers = [];
 
-<div class="exam-container">
-    <div id="quiz-intro" style="text-align: center;">
-        <h3>แบบทดสอบวัดระดับอักษรศาสตร์ (25 ข้อ)</h3>
-        <p>ครอบคลุมการเทียบเสียง พยัญชนะต้น ตัวสะกด และการประยุกต์ใช้ในคำศัพท์</p>
-        <button onclick="startQuiz()" class="chip chip-ini" style="padding: 15px 40px; font-size: 18px;">เริ่มทำข้อสอบ</button>
-    </div>
+    function startQuiz() {
+        quizData = [];
+        userAnswers = new Array(25).fill(null);
+        document.getElementById('quiz-intro').style.display = 'none';
+        document.getElementById('result-area').style.display = 'none';
+        document.getElementById('quiz-questions').innerHTML = '';
+        document.getElementById('quiz-controls').style.display = 'block';
 
-    <div id="quiz-questions"></div>
+        // Generate 25 questions dynamically from consonant data
+        for (let i = 0; i < 25; i++) {
+            const randomCon = consonants[Math.floor(Math.random() * consonants.length)];
+            const isInitial = Math.random() > 0.5;
+            
+            let question = "";
+            let correctAnswer = "";
+            let options = [];
 
-    <div id="quiz-controls" style="display:none; margin-top: 30px; text-align: center;">
-        <button onclick="submitQuiz()" class="chip chip-fin" style="padding: 15px 40px; font-size: 18px;">ส่งคำตอบและดูผลคะแนน</button>
-    </div>
+            if (isInitial) {
+                question = `อักษร "${randomCon.th}" เมื่อเป็นพยัญชนะต้น ตรงกับเสียงใด?`;
+                correctAnswer = randomCon.ini;
+            } else {
+                question = `อักษร "${randomCon.th}" เมื่อเป็นตัวสะกด ตรงกับเสียงใด?`;
+                correctAnswer = randomCon.fin === "-" ? "ไม่มีตัวสะกด" : randomCon.fin;
+            }
 
-    <div id="result-area">
-        <div class="score-circle" id="final-score">0/25</div>
-        <h2 id="grade-text">เยี่ยมมาก!</h2>
-        <div id="analysis-report" style="text-align: left; max-width: 600px; margin: auto; line-height: 1.8;"></div>
-        <button onclick="location.reload()" class="chip" style="margin-top: 20px;">ทำใหม่อีกครั้ง</button>
-    </div>
-</div>
+            options = [correctAnswer];
+            while (options.length < 4) {
+                const rand = consonants[Math.floor(Math.random() * consonants.length)];
+                const opt = Math.random() > 0.5 ? rand.ini : (rand.fin === "-" ? "ไม่มีตัวสะกด" : rand.fin);
+                if (!options.includes(opt)) options.push(opt);
+            }
+            options.sort(() => Math.random() - 0.5);
 
-<script>
-// ข้อมูลข้อสอบ 25 ข้อ (ตัวอย่างเชิงโครงสร้าง)
-const questions = [
-    {q: "ตัวอักษร 'ง' เมื่อเป็นพยัญชนะต้น เทียบได้กับเสียงใดในภาษาอังกฤษ?", a: ["N", "NG", "G", "M"], c: 1, type: "consonant"},
-    {q: "คำว่า 'ปาก' (Paak) ตัวสะกด 'ก' ทำหน้าที่เป็นเสียงกักประเภทใด?", a: ["G (Voice)", "K (Unreleased)", "KH (Aspirated)", "P (Labial)"], c: 1, type: "final"},
-    {q: "คำใดใช้สระเสียงยาว (Long Vowel)?", a: ["กะ", "ปี", "ชิ", "ดุ"], c: 1, type: "vowel"},
-    {q: "เสียง 'CH' ในคำว่า Church ตรงกับอักษรไทยตัวใดที่ 'พ่นลม'?", a: ["จ", "ฉ", "ซ", "ต"], c: 1, type: "phonics"},
-    {q: "หากต้องการเขียนคำว่า 'Baan' (บ้าน) ต้องใช้พยัญชนะต้นตัวใด?", a: ["ป", "พ", "บ", "ผ"], c: 2, type: "application"},
-    // ... คุณสามารถเพิ่มให้ครบ 25 ข้อตาม Pattern นี้
-];
-
-// เพิ่มโจทย์จำลองให้ครบ 25 ข้อเพื่อความสมบูรณ์
-for(let i=6; i<=25; i++) {
-    questions.push({
-        q: `โจทย์ข้อที่ ${i}: วิเคราะห์การเทียบเสียงในบริบทที่ ${i}`,
-        a: ["คำตอบ A", "คำตอบ B", "คำตอบ C", "คำตอบ D"],
-        c: Math.floor(Math.random()*4),
-        type: "general"
-    });
-}
-
-function startQuiz() {
-    document.getElementById('quiz-intro').style.display = 'none';
-    const qContainer = document.getElementById('quiz-questions');
-    document.getElementById('quiz-controls').style.display = 'block';
-    
-    questions.forEach((q, index) => {
-        const qDiv = document.createElement('div');
-        qDiv.className = 'question-card';
-        qDiv.style.display = 'block';
-        qDiv.innerHTML = `
-            <div class="question-text">${index + 1}. ${q.q}</div>
-            <div class="options-grid">
-                ${q.a.map((opt, i) => `
-                    <button class="option-btn" onclick="selectOption(${index}, ${i}, this)">${opt}</button>
-                `).join('')}
-            </div>
-        `;
-        qContainer.appendChild(qDiv);
-    });
-}
-
-let userAnswers = new Array(25).fill(null);
-
-function selectOption(qIdx, optIdx, btn) {
-    userAnswers[qIdx] = optIdx;
-    const parent = btn.parentElement;
-    Array.from(parent.children).forEach(b => b.classList.remove('selected'));
-    btn.classList.add('selected');
-}
-
-function submitQuiz() {
-    let score = 0;
-    let analysis = {consonant: 0, final: 0, vowel: 0, phonics: 0, application: 0, general: 0};
-    let totalType = {consonant: 0, final: 0, vowel: 0, phonics: 0, application: 0, general: 0};
-
-    questions.forEach((q, i) => {
-        totalType[q.type]++;
-        if(userAnswers[i] === q.c) {
-            score++;
-            analysis[q.type]++;
+            quizData.push({ q: question, a: options, c: options.indexOf(correctAnswer) });
         }
-    });
 
-    document.getElementById('quiz-questions').style.display = 'none';
-    document.getElementById('quiz-controls').style.display = 'none';
-    document.getElementById('result-area').style.display = 'block';
-    document.getElementById('final-score').innerText = `${score}/25`;
+        quizData.forEach((q, idx) => {
+            const card = document.createElement('div');
+            card.className = 'question-card';
+            card.innerHTML = `
+                <div class="question-text">${idx + 1}. ${q.q}</div>
+                <div class="options-grid">
+                    ${q.a.map((opt, i) => `
+                        <button class="option-btn" onclick="selectOption(${idx}, ${i}, this)">${opt}</button>
+                    `).join('')}
+                </div>
+            `;
+            document.getElementById('quiz-questions').appendChild(card);
+        });
+    }
 
-    let report = `<strong>📊 วิเคราะห์ผลการเรียนรู้:</strong><br>`;
-    if(score >= 20) report += "🌟 ระดับ: เชี่ยวชาญ (Expert) - คุณมีความเข้าใจในระบบฐานเสียงดีเยี่ยม<br>";
-    else if(score >= 15) report += "👍 ระดับ: ดี (Proficient) - เข้าใจหลักการพื้นฐานได้ดี<br>";
-    else report += "📖 ระดับ: ควรพัฒนา (Beginner) - แนะนำให้ทบทวนตารางเทียบเสียงอีกครั้ง<br>";
+    function selectOption(qIdx, optIdx, btn) {
+        userAnswers[qIdx] = optIdx;
+        Array.from(btn.parentElement.children).forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+    }
 
-    report += `<br><strong>จุดที่ต้องโฟกัส:</strong><br>`;
-    if(analysis.final < totalType.final) report += "- การแยกเสียงตัวสะกด (Final Consonants)<br>";
-    if(analysis.vowel < totalType.vowel) report += "- ความสั้น-ยาวของสระ (Vowel Duration)<br>";
-    
-    document.getElementById('analysis-report').innerHTML = report;
-}
+    function submitQuiz() {
+        if (userAnswers.includes(null)) {
+            alert("กรุณาตอบคำถามให้ครบทุกข้อก่อนส่งครับ");
+            return;
+        }
+
+        let score = 0;
+        quizData.forEach((q, i) => {
+            if (userAnswers[i] === q.c) score++;
+        });
+
+        document.getElementById('quiz-questions').innerHTML = '';
+        document.getElementById('quiz-controls').style.display = 'none';
+        document.getElementById('result-area').style.display = 'block';
+        document.getElementById('final-score').innerText = `${score}/25`;
+
+        let msg = score >= 20 ? "ยอดเยี่ยมมาก! คุณเป็นผู้เชี่ยวชาญด้านอักษรศาสตร์" : (score >= 15 ? "ทำได้ดี! พัฒนาอีกนิดจะเก่งมาก" : "ต้องพยายามอีกนิด ลองทบทวนตารางด้านบนดูนะ");
+        document.getElementById('grade-text').innerText = msg;
+        document.getElementById('analysis-report').innerHTML = `วิเคราะห์: คุณทำได้ถูกต้อง ${Math.round((score/25)*100)}% แนะนำให้ฝึกฝนการออกเสียงตัวสะกดให้แม่นยำยิ่งขึ้น`;
+    }
 </script>
 </body>
 </html>
