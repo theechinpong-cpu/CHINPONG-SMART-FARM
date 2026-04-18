@@ -2,35 +2,85 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <title>Sheet Data Test</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>พระจอมเกล้าติวเตอร์ - Dashboard</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; background-color: #f5f5f5; }
+        .container { max-width: 800px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h1 { color: #333; text-align: center; }
+        #status { text-align: center; margin-bottom: 20px; font-weight: bold; }
+        table { border-collapse: collapse; width: 100%; margin-top: 10px; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: center; }
+        th { background-color: #007bff; color: white; }
+        tr:nth-child(even) { background-color: #f9f9f9; }
+        .error { color: red; }
+    </style>
 </head>
 <body>
-    <h1>ทดสอบดึงข้อมูลจาก Google Sheets</h1>
-    <button onclick="loadData()">กดเพื่อดึงข้อมูล</button>
-    
-    <div id="output" style="margin-top: 20px; padding: 10px; border: 1px solid #ccc; background: #f9f9f9; white-space: pre-wrap;">
-        ข้อมูลจะแสดงที่นี่...
-    </div>
 
-    <script>
-        async function loadData() {
-            // *** วาง URL ของ Web App ที่ได้จาก GAS ตรงนี้ ***
-            const url = "ใส่_WEB_APP_URL_ที่นี่";
-            const outputDiv = document.getElementById('output');
-            
-            outputDiv.innerText = "กำลังเชื่อมต่อกับ Google Sheets...";
-            
-            try {
-                const response = await fetch(url);
-                const data = await response.json();
-                
-                // แสดงผลข้อมูลดิบในรูปแบบ JSON string
-                outputDiv.innerText = JSON.stringify(data, null, 2);
-            } catch (error) {
-                outputDiv.innerText = "Error: " + error.message;
-                console.error("Fetch Error:", error);
+<div class="container">
+    <h1>Shopee Affiliate Monitoring</h1>
+    <div id="status">กำลังดึงข้อมูลจากระบบ...</div>
+    <div id="table-container"></div>
+</div>
+
+<script>
+    async function loadData() {
+        // --- ข้อมูลกำหนดค่า ---
+        const API_KEY = 'AIzaSyBYShuq98zxEPDCQgIZatzc83bXnxQevAU'; 
+        const SHEET_ID = '18fd3a87-e672-4743-bffd-7e628c44a955'; // ไอดีจากไฟล์รูปภาพที่คุณส่งมา
+        const RANGE = 'Sheet1!A1:D5'; // ปรับชื่อ Sheet ให้ตรงกับในไฟล์ของคุณ
+        
+        const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${RANGE}?key=${API_KEY}`;
+        const statusDiv = document.getElementById('status');
+        const container = document.getElementById('table-container');
+
+        try {
+            const response = await fetch(url);
+            const result = await response.json();
+
+            if (result.error) {
+                throw new Error(result.error.message);
             }
+
+            const rows = result.values;
+            if (!rows || rows.length === 0) {
+                statusDiv.innerText = "ไม่พบข้อมูลในตาราง";
+                return;
+            }
+
+            // สร้าง HTML Table
+            let tableHtml = '<table><thead><tr>';
+            
+            // วนลูปสร้างหัวตาราง (Row แรก)
+            rows[0].forEach(header => {
+                tableHtml += `<th>${header}</th>`;
+            });
+            tableHtml += '</tr></thead><tbody>';
+
+            // วนลูปสร้างข้อมูล (Row ที่เหลือ)
+            for (let i = 1; i < rows.length; i++) {
+                tableHtml += '<tr>';
+                rows[i].forEach(cell => {
+                    tableHtml += `<td>${cell}</td>`;
+                });
+                tableHtml += '</tr>';
+            }
+            tableHtml += '</tbody></table>';
+
+            container.innerHTML = tableHtml;
+            statusDiv.innerText = "อัปเดตข้อมูลล่าสุดเมื่อ: " + new Date().toLocaleTimeString();
+            statusDiv.style.color = "green";
+
+        } catch (error) {
+            statusDiv.innerHTML = `<span class="error">เกิดข้อผิดพลาด: ${error.message}</span>`;
+            console.error("API Error:", error);
         }
-    </script>
+    }
+
+    // เรียกทำงานทันที
+    loadData();
+</script>
+
 </body>
 </html>
