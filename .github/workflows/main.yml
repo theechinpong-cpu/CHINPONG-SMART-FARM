@@ -1,15 +1,17 @@
-name: AI Content Automation
+name: Auto Update Dashboard
 
 on:
-  workflow_dispatch: # ปุ่มกดรันเอง
+  # ตั้งเวลารันอัตโนมัติ (เช่น ทุกๆ 6 ชั่วโมง)
   schedule:
-    - cron: '0 */6 * * *' # รันอัตโนมัติทุก 6 ชั่วโมง [cite: 2026-02-11]
+    - cron: '0 */6 * * *'
+  # เปิดให้เรากดรันเองได้จากหน้าเว็บ GitHub (เพื่อทดสอบ)
+  workflow_dispatch:
 
 jobs:
-  generate_content:
+  run-python-script:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Repository
+      - name: Checkout Code
         uses: actions/checkout@v3
 
       - name: Set up Python
@@ -17,20 +19,12 @@ jobs:
         with:
           python-version: '3.9'
 
-      - name: Install System Dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y ffmpeg
-
       - name: Install Dependencies
         run: |
-          python -m pip install --upgrade pip
-          # บังคับอัปเกรด SDK และติดตั้ง edge-tts สำหรับสร้างไฟล์เสียง [cite: 2026-02-13]
-          pip install --upgrade google-generativeai python-telegram-bot edge-tts
+          pip install gspread google-auth
 
       - name: Execute Script
         env:
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
-          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-        run: python main.py
+          # ดึง Secret ที่เราตั้งค่าไว้มาใช้ใน Environment
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+        run: python update_sheet.py
