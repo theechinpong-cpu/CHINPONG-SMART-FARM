@@ -13,31 +13,33 @@
             background: radial-gradient(circle at top right, #111, #000); 
             color: #d1d5db; 
             font-family: 'Anuphan', sans-serif; 
+            overflow-x: hidden;
         }
         .glass { background: rgba(255, 255, 255, 0.02); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.05); }
-        .gradient-text { background: linear-gradient(to right, #60a5fa, #3b82f6, #93c5fd); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         
-        /* สไตล์เนื้อหา Markdown */
-        #content-area { font-size: 1.15rem; line-height: 2; }
-        #content-area h2 { color: white; font-size: 1.75rem; font-weight: 700; margin: 3rem 0 1.5rem 0; display: flex; items-center; gap: 0.5rem; }
+        /* Typography & Layout */
+        #content-area { font-size: 1.15rem; line-height: 2; position: relative; z-index: 1; }
+        #content-area h2 { color: white; font-size: 1.75rem; font-weight: 700; margin: 3rem 0 1.5rem 0; display: flex; align-items: center; gap: 0.5rem; }
         #content-area h2::before { content: ""; width: 4px; height: 1.5rem; background: #3b82f6; border-radius: 10px; display: inline-block; }
         #content-area p { margin-bottom: 1.8rem; color: #a1a1aa; text-align: justify; }
-        #content-area img { border-radius: 2rem; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); }
-        #content-area strong { color: white; border-bottom: 2px solid #3b82f6; }
-
-        /* Loader Animation */
+        #content-area img { border-radius: 2rem; border: 1px solid rgba(255,255,255,0.1); margin: 2rem 0; width: 100%; }
+        
+        /* Loader */
         .loader-ring { width: 80px; height: 80px; border-radius: 50%; border: 2px solid transparent; border-top-color: #3b82f6; animation: spin 1s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Button & Link Protection */
+        .clickable-btn { position: relative; z-index: 50 !important; cursor: pointer !important; pointer-events: auto !important; }
     </style>
 </head>
 <body class="min-h-screen">
 
-    <div id="loader" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black">
+    <div id="loader" class="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-black transition-opacity duration-500">
         <div class="loader-ring mb-4"></div>
         <p id="status" class="text-xs font-bold tracking-[0.3em] text-blue-500 uppercase animate-pulse">Initializing Interface</p>
     </div>
 
-    <nav class="sticky top-0 z-40 w-full glass border-b border-white/5 py-4 px-6 mb-8">
+    <nav class="sticky top-0 z-[40] w-full glass border-b border-white/5 py-4 px-6">
         <div class="max-w-4xl mx-auto flex justify-between items-center">
             <a href="index.html" class="flex items-center gap-2 text-sm font-bold text-gray-400 hover:text-white transition-all">
                 <i class="fas fa-chevron-left"></i> ย้อนกลับ
@@ -46,21 +48,21 @@
         </div>
     </nav>
 
-    <main class="max-w-4xl mx-auto px-6 pb-24">
+    <main class="max-w-4xl mx-auto px-6 pb-24 pt-12">
         <header class="mb-12">
-            <div id="category" class="text-blue-500 text-xs font-black tracking-[0.2em] uppercase mb-4">Trending Intelligence</div>
+            <div class="text-blue-500 text-xs font-black tracking-[0.2em] uppercase mb-4">Trending Intelligence</div>
             <h1 id="post-title" class="text-4xl md:text-6xl font-black text-white leading-[1.1] mb-6"></h1>
-            <div class="flex items-center gap-4 text-xs text-gray-500 font-medium">
+            <div class="flex items-center gap-4 text-xs text-gray-500">
                 <span id="read-time"><i class="far fa-clock mr-1"></i> อ่านประมาณ 5 นาที</span>
                 <span class="w-1 h-1 bg-gray-700 rounded-full"></span>
-                <span><i class="far fa-calendar-alt mr-1"></i> เมษายน 2026</span>
+                <span><i class="far fa-calendar-alt mr-1"></i> APR 2026</span>
             </div>
         </header>
 
-        <article id="content-area" class="relative">
+        <article id="content-area">
             </article>
 
-        <section id="ads-section" class="mt-20"></section>
+        <section id="ads-section" class="mt-20 relative z-50"></section>
     </main>
 
     <script>
@@ -70,18 +72,17 @@
             const file = urlParams.get('file');
 
             if (!file) {
-                statusEl.innerText = "ERROR: ACCESS DENIED";
+                statusEl.innerText = "ERROR: FILE NOT SPECIFIED";
                 return;
             }
 
             try {
-                statusEl.innerText = "ACCESSING CLOUD DATA...";
+                statusEl.innerText = "FETCHING CONTENT...";
                 const response = await fetch(`blog/${file}`);
                 if (!response.ok) throw new Error("File Missing");
                 
                 const rawData = await response.text();
-                statusEl.innerText = "RENDERING INTERFACE...";
-
+                
                 let content = rawData;
                 let title = file.replace('.md', '').replace(/_/g, ' ');
 
@@ -98,33 +99,33 @@
                 document.getElementById('post-title').innerText = title;
                 document.getElementById('content-area').innerHTML = marked.parse(content);
 
-                // Load Smart Ads from products.json
+                // Load Smart Ads
                 await injectSmartAds();
 
-                setTimeout(() => {
-                    document.getElementById('loader').style.opacity = '0';
-                    setTimeout(() => document.getElementById('loader').style.display = 'none', 500);
-                }, 800);
+                // Hide Loader
+                const loader = document.getElementById('loader');
+                loader.style.opacity = '0';
+                setTimeout(() => loader.style.display = 'none', 500);
 
             } catch (error) {
-                statusEl.innerHTML = `<span class="text-red-500 font-bold">${error.message}</span>`;
+                statusEl.innerHTML = `<span class="text-red-500 font-bold">${error.message}</span><br><a href="index.html" class="text-white mt-4 block text-[10px]">GO BACK</a>`;
             }
         }
 
         async function injectSmartAds() {
             try {
                 const res = await fetch('products.json');
+                if (!res.ok) return;
                 const products = await res.json();
                 const randomItems = products.sort(() => 0.5 - Math.random()).slice(0, 3);
                 
                 let adsHtml = `
-                    <div class="mt-20 p-8 rounded-[3rem] glass border border-blue-500/10">
-                        <div class="flex flex-col md:flex-row justify-between items-center mb-10 gap-4 text-center md:text-left">
+                    <div class="p-8 rounded-[3rem] glass border border-blue-500/10">
+                        <div class="flex flex-col md:flex-row justify-between items-center mb-10 gap-4">
                             <div>
                                 <h3 class="text-2xl font-black text-white italic">SMART DEALS</h3>
-                                <p class="text-xs text-gray-500 uppercase tracking-widest mt-1">คัดสรรสินค้าคุณภาพโดย CHINPONG SMART FARM</p>
+                                <p class="text-[10px] text-gray-500 uppercase tracking-[0.2em] mt-1">CURATED BY CHINPONG SMART FARM</p>
                             </div>
-                            <div class="h-px flex-1 bg-white/5 mx-6 hidden md:block"></div>
                             <i class="fas fa-shopping-bag text-blue-500 text-2xl"></i>
                         </div>
                         <div class="grid grid-cols-1 gap-6">
@@ -132,18 +133,21 @@
 
                 randomItems.forEach(p => {
                     adsHtml += `
-                    <div class="group relative overflow-hidden p-6 rounded-[2rem] bg-white/[0.02] border border-white/5 hover:border-blue-500/30 transition-all duration-500">
+                    <div class="relative p-6 rounded-[2rem] bg-white/[0.03] border border-white/5 hover:border-blue-500/30 transition-all duration-300">
                         <div class="flex flex-col md:flex-row justify-between items-center gap-6">
                             <div class="flex-1 text-center md:text-left">
-                                <span class="text-[10px] font-bold text-blue-400 uppercase tracking-tighter">${p.shop}</span>
-                                <h4 class="text-white font-bold text-lg leading-snug mt-1 group-hover:text-blue-400 transition-colors">${p.name}</h4>
+                                <span class="text-[9px] font-bold text-blue-400 uppercase tracking-widest">${p.shop}</span>
+                                <h4 class="text-white font-bold text-lg leading-snug mt-1">${p.name}</h4>
                             </div>
-                            <div class="flex items-center gap-8">
-                                <div class="text-center md:text-right">
-                                    <p class="text-[10px] text-gray-500 uppercase">ราคาพิเศษ</p>
-                                    <p class="text-2xl font-black text-white">฿${p.price}</p>
+                            <div class="flex items-center gap-8 w-full md:w-auto justify-between md:justify-end">
+                                <div class="text-right">
+                                    <p class="text-[9px] text-gray-500 uppercase tracking-widest">Price</p>
+                                    <p class="text-2xl font-black text-white">฿${p.price.replace(/[^\d.]/g, '')}</p>
                                 </div>
-                                <a href="${p.affLink}" target="_blank" class="bg-white text-black hover:bg-blue-500 hover:text-white px-8 py-3 rounded-full text-xs font-black transition-all shadow-xl">
+                                <a href="${p.affLink}" 
+                                   target="_blank" 
+                                   rel="noopener noreferrer"
+                                   class="clickable-btn bg-blue-600 hover:bg-blue-500 text-white px-8 py-3 rounded-full text-xs font-black transition-all shadow-xl shadow-blue-900/20 active:scale-95">
                                     SHOP NOW
                                 </a>
                             </div>
@@ -153,7 +157,7 @@
 
                 adsHtml += '</div></div>';
                 document.getElementById('ads-section').innerHTML = adsHtml;
-            } catch (e) { console.log("Ads Offline"); }
+            } catch (e) { console.error("Ads System Error"); }
         }
 
         window.onload = loadContent;
