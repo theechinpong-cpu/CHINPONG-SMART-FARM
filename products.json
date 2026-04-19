@@ -1,0 +1,154 @@
+import json
+import re
+import io
+
+# 1. วางข้อมูลตารางทั้งหมด 100 รายการของคุณลงในตัวแปรนี้ (ผมใส่ตัวอย่างให้ดู และคุณก๊อปส่วนที่เหลือมาวางทับได้เลย)
+raw_data_input = """
+27090264635	ทีเชิ้ตแขนสั้นพิมพ์ลายสีขาวสไตล์อังกฤษ เสื้อผู้หญิง ลายแฟชั่น พิมพ์ลายย้อนยุค เหมาะสำหรับคุณ	100	37	Life Fashion T-shirt	11.50%	฿11.50	https://shopee.co.th/product/1608026636/27090264635	https://s.shopee.co.th/2g7KlfKfJo
+42618887502	5L 8L 10L 15L 22L 25L 36L 55L 65L กล่องรถมอเตอร์ไซค์,กล่องหางมอเตอร์ไซค์อลูมิเนียมอลูมิเนียม,กล่องเก็บสัมภาระเก็บสัมภาระ	1.3พัน	233	MOJOWOLF	16%	฿207.84	https://shopee.co.th/product/1505399492/42618887502	https://s.shopee.co.th/2qQkxyK1yr
+20305831351	[ส่งกทม.และปริมณฑล ชลบุรี เชียงใหม่ ลำพูนเท่านั้น]  10 แพ็ก - AURA ออรา น้ำแร่ธรรมชาติ 100% 330 ml. x15 ขวด	1.2พัน	909	Aura Official Store	7%	฿81.90	https://shopee.co.th/product/721298993/20305831351	https://s.shopee.co.th/30kBAHJOdu
+43770553142	Anchi มอเตอร์ไซด์ไฟฟ้า รถไฟฟ้า 1000W ไฟเลี้ยวหน้าและหลัง จอแสดงผลดิจิตอล HD รองรับการผ่อนชำระ	14.0พัน	27	Anchi_shop.th	7%	฿979.93	https://shopee.co.th/product/1073118469/43770553142	https://s.shopee.co.th/3B3bMaIlIx
+42214862334	วินเทจ เสื้อยืดฮิปฮอปขนาดใหญ่ สไตล์เกาหลี Cotton 100% นุ่่ม ใส่สบาย เสื้อยืดผู้ชาย เสื้อยืดคู่รัก	100	57	Life Fashion T-shirt	11.50%	฿11.50	https://shopee.co.th/product/1608026636/42214862334	https://s.shopee.co.th/3LN1YtI7y0
+18057538778	ส่งฟรีทั่วประเทศ ฮินาตะ พัดอุตสาหกรรม 18 นิ้ว ใบพัดใส ส่งไว	3.0พัน	1	Quickcool_Official	20%	฿600.00	https://shopee.co.th/product/204525747/18057538778	https://s.shopee.co.th/3VgRlCHUd3
+22932447892	[ส่งกทม.และปริมณฑล ชลบุรี เชียงใหม่ ลำพูนเท่านั้น] 10 แพ็ค - AURA ออรา น้ำแร่ธรรมชาติ 100% 500 ml x 12 ขวด Free 3	1.3พัน	1พัน+	Aura Official Store	7%	฿87.50	https://shopee.co.th/product/721298993/22932447892	https://s.shopee.co.th/3fzrxVGrI6
+25485867844	ที่จับโทรศัพท์ ที่วางมือถือในรถยนต์ ปรับหมุนได้360องศา สำหรับหนีบคอลโซล พร้อมส่ง	149	9	CACO-AUTO	60%	฿89.40	https://shopee.co.th/product/476021115/25485867844	https://s.shopee.co.th/3qJI9oGDx9
+41114870339	เสื้อยืดแขนสั้นลายแมงมุมหนัก สำหรับผู้ชายและผู้หญิง ทรงหลวม สไตล์อเมริกัน 220gเสื้อยืดผ้าฝ้ายแท้	95	1พัน+	Life Fashion T-shirt	11.50%	฿10.93	https://shopee.co.th/product/1608026636/41114870339	https://s.shopee.co.th/40ciM7FacC
+53055443061	2026 ใหม่สงกรานต์ไทยเสื้อฮาวายกางเกงขาสั้นชุดจับคู่ชุดคู่แห้งเร็วUnisex PlusขนาดM-5XL	99	744	KRIS011.th	12%	฿11.88	https://shopee.co.th/product/1516457694/53055443061	https://s.shopee.co.th/4Aw8YQExHF
+28359670923	[ส่งฟรี] 1250ml 12 แพ็ก 72 ขวด นํ้าแร่ 6ty Degrees Mineral Water น้ำแร่ธรรมชาติ 100% จากแหล่งน้ำแร่เชียงดาว	1.5พัน	1พัน+	6ty° Sixty Degrees Official	7%	฿106.40	https://shopee.co.th/product/1175781765/28359670923	https://s.shopee.co.th/4LFYkjEJwI
+26073285416	CACO กล้องบันทึกวิดีโอ เลนส์สามชั้น 1080P Car Camera Dash Cam HD Night Vision DVR 3 S1 สําหรับติดรถยนต์	599	93	CACO-AUTO	60%	฿359.40	https://shopee.co.th/product/476021115/26073285416	https://s.shopee.co.th/4VYyx2DgbL
+55653504648	วันสงกรานต์✨เสื้อแฟชั่นผู้หญิง เสื้อลายดอกไม้สุดน่ารัก ดีไซน์หลวมๆ ย้อนยุคสบายๆ	125	2	Jpybf.th	10%	฿12.50	https://shopee.co.th/product/1666389647/55653504648	https://s.shopee.co.th/4fsP9LD3GO
+42805337221	สินค้าเข้าใหม่ !! ลำโพงบลูทูธ MX302 ลำโพงบลูทูธเบสหนัก ลำโพงปราตี้	225	2พัน+	kone79.shop	9%	฿20.25	https://shopee.co.th/product/36892885/42805337221	https://s.shopee.co.th/4qBpLeCPvR
+42602286270	(GWP ของเเถมห้ามจำหน่าย) Aura น้ำแร่ธรรมชาติ edition 1500 มล. แพ็ค 6 ขวด	10.0พัน	245	Aura Official Store	7%	฿699.93	https://shopee.co.th/product/721298993/42602286270	https://s.shopee.co.th/50VFXxBmaU
+48355812733	ไข่มดแดงออกใหม่ปี 69 คัดเกรดสะอาดพรีเมี่ยม	650	5	อาหารอีสานแช่แข็ง มีตลอดทั้งปี	13%	฿84.50	https://shopee.co.th/product/1731765479/48355812733	https://s.shopee.co.th/5AofkGB9FX
+23821405224	[ส่งทันที กทม.1 วัน] S2: ลายใหม่ 2026 เสื้อเชิ้ตฮาวาย เสื้อสงกรานต์ ลายใบไม้ ลายดอก แบบไม่ซ้ำใคร ผ้าไหมอิตาลี	109	2พัน+	Seoulshirts	15%	฿16.35	https://shopee.co.th/product/82077067/23821405224	https://s.shopee.co.th/16ZalUojY
+26881797577	แอร์ไดกิ้น FTKB ZV2S แมกซ์ อินเวอร์เตอร์ สบาย ซีรีย์ DAIKIN MAX INVERTER SABAI SERIES น้ำยา R32	12.9พัน	19	ร้านฉัตรมงคล	7%	฿903.00	https://shopee.co.th/product/96853200/26881797577	https://s.shopee.co.th/BPzn4UBOb
+42011730902	ผงมัทฉะ ออร์แกนิค 100% กลิ่นหอมละมุน ชงง่ายในทุกเมนู - RAIWAN ขนาด 100 กรัม	340	887	ไร่หวาน	30%	฿102.00	https://shopee.co.th/product/680371/42011730902	https://s.shopee.co.th/LjPzNTY3e
+12904265140	ARCHER-C64  AC1200 Dual-Band Wi-Fi Router SPEED: 400 Mbps at 2.4 GHz	990	1พัน+	Hp_by_iqink	1%	฿9.90	https://shopee.co.th/product/205234501/12904265140	https://s.shopee.co.th/W2qBgSuih
+26412994093	น้ำจิ้มสุกี้คีโต บอสมีดี ที่เคย120 ไม่มีแป้ง ไม่มีน้ำตาล โซเดี่ยมต่ำ ทำจากมะเขือเทศสด ไม่ใส่ผงชูรส	49	40พัน+	บอสมีดี เฮลตี้ฟู้ด	15%	฿7.35	https://shopee.co.th/product/1331531499/26412994093	https://s.shopee.co.th/gMGNzSHNk
+24240277068	พัดลมพกพา Turbo รอบสูง ชาร์จ USB พัดลมมือถือ Digital Display มือถือพัดลมขนาดเล็ก ปรับระดับได้ 100 ระดับ	1	30พัน+	บ๊อบ ไทยแลนด์	14%	฿0.14	https://shopee.co.th/product/1118936514/24240277068	https://s.shopee.co.th/qfgaIRe2n
+797396150	ลูกค้าใหม่ 1 บาท 💥💥 เลือก EMS หรือ Kerry เท่านั้น!! ไดร์6268 Cไดร์จัดแต่งทรงผม รุ่น 6268 /PAE3012 -คละสี	225	20พัน+	Hairstylishs 💈 เครื่องหนีบผม  ไดร์ผม นำเข้าสินค้าเอง ราคากันเอ๊งกันเอง	11%	฿24.75	https://shopee.co.th/product/4062349/797396150	https://s.shopee.co.th/10z6mbR0hq
+29118066364	💥จัดส่งที่รวดเร็ว💥 เคียวแมงกานีส เคียวเหล็กแมงกานีส เคียวเกี่ยวหญ้า เคียวเกี่ยวข้าว มีดถางหญ้า คียวตัดกิ่งไม้	1	40พัน+	UneedTools	11%	฿0.11	https://shopee.co.th/product/1361396027/29118066364	https://s.shopee.co.th/1BIWyuQNMt
+28066997858	MNO.9 Hoodie M248 เสื้อฮู้ด สกรีนอก มีกระเป๋าล้วงด้านหน้า GATKE ผ้าสำลีหนานุ่ม เสื้อกันหนาว เสื้อแขนยาว ฮู้ด	102	9พัน+	MNO.9	11%	฿11.22	https://shopee.co.th/product/93346517/28066997858	https://s.shopee.co.th/1LbxBDPk2w
+28125896751	กล่องเก็บของ BOX ความจุสูง กล่องพลาสติก กล่องเก็บของ โปร่งใส เก็บเสื้อผ้า ได้เก็บของเล่น ⚡การลดราคาแบบจำกัดเวลา⚡	1	90พัน+	Living Pace	10.50%	฿0.11	https://shopee.co.th/product/1336353767/28125896751	https://s.shopee.co.th/1VvNNWP6gz
+215033313	[ ลูกค้าใหม่ 0 บาท ] ลด 50 AC10 CKL / JMF 1011/PAE3027 เครื่องหนีบผม ที่หนีบผม ทำวอลลุ่ม หนีบผมตรง ปรับความร้อน 4 ระดับ	139	100พัน+	Hairstylishs 💈 เครื่องหนีบผม  ไดร์ผม นำเข้าสินค้าเอง ราคากันเอ๊งกันเอง	11%	฿15.29	https://shopee.co.th/product/4062349/215033313	https://s.shopee.co.th/1gEnZpOTM2
+29612568094	【1แถม1】🔥NEW🔥 TWSหูฟังบลูทูธ หูฟังบลูทูธไร้สาย หูฟังเกมส์บลูทูธ พร้อมกล่องชาร์จ เหมาะสําหรับ ไอโฟน ซัมซุง oppo vivo	87	9พัน+	waranya.shop&8693	10%	฿8.70	https://shopee.co.th/product/276671426/29612568094	https://s.shopee.co.th/1qYDm8Nq15
+25855289623	นาฬิกาข้อมือสปอร์ต สีมาการอง สไตล์เกาหลี สําหรับผู้ชาย และผู้หญิง 6สี	1	9พัน+	HOLO TH	10%	฿0.10	https://shopee.co.th/product/1128049590/25855289623	https://s.shopee.co.th/20rdyRNCg8
+25755237489	ผ้าใบ เข็มขัดผู้ชาย ประเภทการเจาะ ทนทาน เข็มขัด สำหรับเยาวชน ด้วย หัวเข็มขัดโลหะสแควร์	1	30พัน+	HOLO TH	10%	฿0.10	https://shopee.co.th/product/1128049590/25755237489	https://s.shopee.co.th/2BB4AkMZLB
+1098492468	ลูกค้าใหม่ 0 บาท เครื่องหนีบผม CKL719 /JMF9924/PAE908 เครื่องหนีบผม ที่หนีบผม เครื่องรีดผม ที่รีดผม หนีบผม	159	90พัน+	Hairstylishs 💈 เครื่องหนีบผม  ไดร์ผม นำเข้าสินค้าเอง ราคากันเอ๊งกันเอง	11%	฿17.49	https://shopee.co.th/product/4062349/1098492468	https://s.shopee.co.th/2LUUN3Lw0E
+3792638498	Deli กรรไกรตัดกิ่งไม้ กรรไกรแต่งกิ่ง 8 นิ้ว ตัดแต่งกิ่งไม้ ตัดแต่งใบไม้ ทำสวน Pruning Shears	24	30พัน+	Deli Tools Officialshop	10%	฿2.40	https://shopee.co.th/product/431657423/3792638498	https://s.shopee.co.th/2VnuZMLIfH
+28813756155	** TWS-HK3หูฟังลูทูธหูฟังTWS HIFIกันน้ำ IPX4 เสียงดีมากน่ารักมีไมโครโฟน บลูทูธเวอร์ชัน 5.3	89	9พัน+	Hairstylishs 💈 เครื่องหนีบผม  ไดร์ผม นำเข้าสินค้าเอง ราคากันเอ๊งกันเอง	10%	฿8.90	https://shopee.co.th/product/4062349/28813756155	https://s.shopee.co.th/808r7T0MVM
+25256264160	ร่มพับอัตโนมัติ อัตโนมัติ UV สำหรับวันที่แดดจัดและฝนตกคุณภาพร่ม UV เสริมโครง (8 กระดูก)	1	40พัน+	HOLO TH	10%	฿0.10	https://shopee.co.th/product/1128049590/25256264160	https://s.shopee.co.th/8ASHJlzjAP
+24371486628	(ส่งจากกรุงเทพฯ)เสื้อคาร์ดิแกนลําลอง แขนยาว คอปก ติดกระดุม สีพื้น เข้ากับทุกการแต่งกาย สไตล์ใหม่ เสื้อแขนยาวผู้หญิงสไตล์	139	10พัน+	hannahrak	10%	฿13.90	https://shopee.co.th/product/1207546043/24371486628	https://s.shopee.co.th/8KlhW4z5pS
+23052867469	(หนาขึ้น) พลาสติกคลุมดิน ผ้าคลุมหญ้า พลาสติกคลุมวัชพืช กำจัดวัชพืช ผ้าคลุมวัชพืช พลาสติกเกรดส่งออก ผสมUV ฆ่าหญ้า 1×100	50	20พัน+	Molly Richard	10%	฿5.00	https://shopee.co.th/product/795920895/23052867469	https://s.shopee.co.th/8V57iNySUV
+25364862743	【รับประกัน 1 ปี】 TWS หูฟังบลูทูธไร้สาย เสียงดัง คมชัด คุณภาพดี ระบบสัมผัส ใช้งานง่าย ใช้ได้กับ IOS & Android	1	7พัน+	waranya.shop&8693	9%	฿0.09	https://shopee.co.th/product/276671426/25364862743	https://s.shopee.co.th/8fOXugxp9Y
+27761672450	⚡ ลูกค้าใหม่ 1 บาท! พัดลมมือถือเทอร์โบ 💨 ลมแรง 5 ระดับ แบตอึด ใช้งานได้นาน น้ำหนักเบา พกง่าย ส่งด่วนไวทันใจ!	168	8พัน+	Genesis Auto Specialist	8%	฿13.44	https://shopee.co.th/product/119240974/27761672450	https://s.shopee.co.th/8phy6zxBob
+27634263552	สมาร์ทวอทช์ Y68 สมาร์ทวอทช์บลูทูธนาฬิกาหน้าจอสัมผัส IOS Android Heart Rate Monitor เดินวิ่ง Smart Watch ส่งที่ชาร์จ	250	6พัน+	Hairstylishs 💈 เครื่องหนีบผม  ไดร์ผม นำเข้าสินค้าเอง ราคากันเอ๊งกันเอง	8%	฿20.00	https://shopee.co.th/product/4062349/27634263552	https://s.shopee.co.th/901OJIwYTe
+3957344131	ต้นไม้มงคล ต้นไม้ฟอกอากาศ🪴 (ซื้อ 6 ต้นลด 20 บาท)**เลือกต้นแถมได้เอง** ชุด 1 ^แถมฟรีปุ๋ยออสโมโค้ท^	19	100พัน+	BaanSuanGarden	10%	฿1.90	https://shopee.co.th/product/68918784/3957344131	https://s.shopee.co.th/9AKoVbvv8h
+27077224231	มอนอิงข้างเตียง ลายการ์ตูน ใหญ่ หนุนเอว - แพ็คนิ่ม ถอดออกซักได้ ทั้งร้านส่งฟรี(Delin store)	133	10พัน+	Delin store	8%	฿10.64	https://shopee.co.th/product/973850817/27077224231	https://s.shopee.co.th/9KeEhuvHnk
+14284689336	Remax Power Bank  ความจุ 15,000 mAh (W1501) - แบตสำรอง ชาร์จไว มีสายชาร์จและปลั๊กในตัว	719	100พัน+	REMAX Thailand Official Store	7%	฿50.33	https://shopee.co.th/product/522095732/14284689336	https://s.shopee.co.th/9UxeuDueSn
+28526243756	🌺919JEANS🌺กางเกงยีนส์วินเทจ Fade Long Tube กางเกงยีนส์ผู้หญิง กางเกงยีน ทรงหลวม	160	50พัน+	919JEANS	7%	฿11.20	https://shopee.co.th/product/1431942181/28526243756	https://s.shopee.co.th/9fH56Wu17q
+17451573828	หัวพ่นหมอก พ่นละอองน้ำ 10 และ20 หัวพร้อมสายไมโคร 11 และ25 เมตร ลดฝุ่นPM 2.5 พร้อมชุดต่อก๊อกสนาม	85	50พัน+	Uone Garden	10%	฿8.50	https://shopee.co.th/product/397549204/17451573828	https://s.shopee.co.th/9paVIptNmt
+9710526854	[Official] 🔥 [KETO] Wholesweet น้ำเชื่อมหญ้าหวาน ไซรัปหญ้าหวาน สูตรคีโต 320 มล.	159	60พัน+	Whole Sweet	7%	฿11.13	https://shopee.co.th/product/281805527/9710526854	https://s.shopee.co.th/9ztvV8skRw
+921438059	[ส่งด่วน] Orsen by Eloop E29 30000mAh / E37 22000mAh / E36 12000mAh แบตสำรอง PD 20W ชาร์จเร็ว PowerBank	619	200พัน+	Orsen & Eloop Thailand	7%	฿43.33	https://shopee.co.th/product/28426506/921438059	https://s.shopee.co.th/AADLhRs76z
+26762221322	[ 10 กระป๋อง ] 🐟🍅แชมป์แม่ครัว🐟🍅ปลากระป๋อง มีฮาลาน อยู่ได้ 3 ปี หอม กลมกล่อม ถูกมาก ปลาป๋อง ถูก อร่อย ดี ต้องลอง	109	8พัน+	Nippan b&m	7%	฿7.63	https://shopee.co.th/product/958470529/26762221322	https://s.shopee.co.th/AKWltkrTm2
+42866396286	กลูโฟซิเนต แอมโมเนียม สูตรพิเศษ แกลลอนแดง เผาไหม้+ดูดซึม (1)	229	6พัน+	ปุ๋ย ยาเคมี เกษตรรุ่งเรือง🌾	10%	฿22.90	https://shopee.co.th/product/588782250/42866396286	https://s.shopee.co.th/AUqC63qqR5
+27126400016	💜919JEANS💜 สีฟ้าซีดจาง กางเกงยีนส์ กางเกงยีนส์ผู้หญิง กางเกงยีน ยีนส์ เอวสูง	160	30พัน+	919JEANS	7%	฿11.20	https://shopee.co.th/product/1431942181/27126400016	https://s.shopee.co.th/5L85wZAVv6
+23572870632	No.1 Hot ขายดี🔥 KETO [Wholesweet]  น้ำเชื่อมคีโต ไซรัปคีโต ไซรัปหญ้าหวาน หล่อฮังก๊วย 0 แคลอรี่ ไม่มีน้ำตาล	149	20พัน+	Healthy Hippo	7%	฿10.43	https://shopee.co.th/product/990738175/23572870632	https://s.shopee.co.th/5VRW8s9sa9
+28264558700	คีโต ซอส | น้ำจิ้ม | น้ำสลัด คีโตแท้ น้ำตาล 0% ลดโซเดียม 40% | ตาแป๊ะ 🥗	4	40พัน+	Keto Sauce by "ตาแป๊ะ"	7%	฿0.28	https://shopee.co.th/product/12211581/28264558700	https://s.shopee.co.th/5fkwLB9FFC
+22051433666	(หนาขึ้น) พลาสติกคลุมดิน ผ้าคลุมหญ้า พลาสติกคลุมวัชพืช กำจัดวัชพืช ผ้าคลุมวัชพืช พลาสติกเกรดส่งออก ผสมUV ฆ่าหญ้า 1×100	1	20พัน+	altitude_climber	10%	฿0.10	https://shopee.co.th/product/836357763/22051433666	https://s.shopee.co.th/5q4MXU8buF
+24724645710	Janet เก้าอี้แคมป์ปิ้งTop Sun เก้าอี้สนามรุ่นทรงอ้วนเก้าอี้สนาม พร้อมกระเป๋าจัดเก็บ ท่ออลูมิเนียมหนา	99	8พัน+	Janet melody	7%	฿6.93	https://shopee.co.th/product/239775228/24724645710	https://s.shopee.co.th/60Nmjn7yZI
+24594714408	A9proหูฟังไร้สาย หูฟังบลูทูธ Wireless Bluetooth Headset บลูทูธเวอร์ชั่นล่าสุด5.4 หน้าจอLCD ระบบสัมผัส​ ตัดเสียงรบกวน	79	20พัน+	บ๊อบ ไทยแลนด์	6%	฿4.74	https://shopee.co.th/product/1118936514/24594714408	https://s.shopee.co.th/6AhCw67LEL
+41800106916	KETO น้ำสลัดคีโต คลีน 🥗 หอมงาคั่ว เข้มข้น ไม่มีน้ำตาล ไขมันดี ลดโซเดียม 40% เพื่อสุขภาพ | ตาแป๊ะ คีโต	1	10พัน+	Keto Sauce by "ตาแป๊ะ"	7%	฿0.07	https://shopee.co.th/product/12211581/41800106916	https://s.shopee.co.th/6L0d8P6htO
+27202550635	หนาขึ้น 4 ซม พืนคอนกรีตปูโดยตรง หญ้าเทียม ทนไฟไม่หดตัว 100%ไม่มีเศษสนามหญ้า หญ้าปลอม หญ้าเทียมปูพื้น	1	50พัน+	Alexia	10%	฿0.10	https://shopee.co.th/product/485340179/27202550635	https://s.shopee.co.th/6VK3Ki64YR
+24501498078	3 in 1ลำโพงบลูทูธ นาฬิกาปลุก ชาร์จไร้สาย สร้างบรรยากาศข้างเตียง ไฟLED 256แบบ จำลองแสงพระอาทิตย์	10	30พัน+	บ๊อบ ไทยแลนด์	6%	฿0.60	https://shopee.co.th/product/1118936514/24501498078	https://s.shopee.co.th/6fdTX15RDU
+1878246941	Spin Mop ไม้ถูพื้น ถังปั่นสแตนเลส พร้อมผ้าม็อบ 2 ผืน ( ไม้ม๊อบถูพื้น ถังถูพื้น ไม้ถู ) HHsociety	159	100พัน+	HouseHold Society	4%	฿6.36	https://shopee.co.th/product/772461/1878246941	https://s.shopee.co.th/6pwtjK4nsX
+27114559186	KETO ซอสคีโต น้ำจิ้มคีโต น้ำสลัดคีโต 🥗 อร่อยเข้มข้น ไม่อ้วน ไม่มีน้ำตาล ลดโซเดียม 40% คลีนแท้ 100% | ตาแป๊ะ คีโต	10	20พัน+	Keto Sauce by "ตาแป๊ะ"	7%	฿0.70	https://shopee.co.th/product/12211581/27114559186	https://s.shopee.co.th/70GJvd4AXa
+21947204679	ต้นกล้วยยักษ์อินโดนีเซีย ติดผลเร็ว ติดผลเพียง 7 - 9 เดือนหลังจากปลูก	161	474	Gold_garden123	10%	฿16.10	https://shopee.co.th/product/844431507/21947204679	https://s.shopee.co.th/7AZk7w3XCd
+24633068166	ใหม่ K12ลำโพงบลูทูธ ไมโครโฟน  RGB มินิ แบบพกพา ลำโพงคาราโอเกะไร้สายกลางแจ้งขนาดเล็ก USB TF AUX Blutooth Speaker	1	40พัน+	บ๊อบ ไทยแลนด์	6%	฿0.06	https://shopee.co.th/product/1118936514/24633068166	https://s.shopee.co.th/7KtAKF2trg
+626783853	ผ้าปูที่นอน 6ฟุต + ปลอกหมอน (ไม่รวมผ้านวม/ไม่รวมปลอกหมอนข้าง) (รัดเตียงสูงสุด6-11นิ้ว) 💕	199	10พัน+	mISSHOUSE 1988	4%	฿7.96	https://shopee.co.th/product/151995/626783853	https://s.shopee.co.th/7VCaWY2GWj
+15224256935	สินค้าจากไทย 🎉 HOLO S-18 หูฟัง แจ๊ค 3.5มม. หูฟังมีสาย ใช้ได้ทุกรุ่น Earphone มีปุ่มเพิ่มลดเสียงหูฟัง	48	6พัน+	HOLO_store	4%	฿1.92	https://shopee.co.th/product/88983286/15224256935	https://s.shopee.co.th/7fW0ir1dBm
+25321934263	พลาสติกคลุมดิน ผ้าคลุมหญ้า พลาสติกคลุมวัชพืช กำจัดวัชพืช ผ้าคลุมวัชพืช พลาสติกเกรดส่งออก ผสมUV ฆ่าหญ้า เห็นผลไวถายใน	22	40พัน+	Lueon Farmer's Market	9%	฿1.98	https://shopee.co.th/product/1128602922/25321934263	https://s.shopee.co.th/7ppQvA0zqp
+3716295861	Naturista เจลล้างหน้าทีทรี สำหรับคนเป็นสิว และผิวแพ้ง่าย Tea Tree Facial Cleanser 300ml	4	1ล้าน+	Naturista Official	18%	฿0.72	https://shopee.co.th/product/223832803/3716295861	https://s.shopee.co.th/2qQkxyK1zs
+28737877770	GOOJODOQ 5000mAh Mini Power Bank การชั่งน้ําหนักประมาณ 100 กรัมสายเคเบิล LN ในตัวและปลั๊ก Type-C ไร้สายเคเบิล	129	60พัน+	GOOJODOQ Mall Store	8%	฿10.32	https://shopee.co.th/product/813485708/28737877770	https://s.shopee.co.th/2g7KlfKfKr
+7901762275	[Hello Kitty มาแล้ว!] MAYBELLINE FIT ME MATTE & PORELESS POWDER เมย์เบลลีน แป้งคุมมัน ฟิต มี คุมมัน	149	200พัน+	MAYBELLINE	9%	฿13.41	https://shopee.co.th/product/29668843/7901762275	https://s.shopee.co.th/3B3bMaIlJy
+16005463341	ต้นไม้ปลอม(ฟรี!!หินโรย) ต้นไทรใบสัก,มอนสเตอร่า ฯลฯ สูง40-78ซม. ต้นไม้มงคล พร้อมกระถางและหินสีขาว	99	60พัน+	THE.Airfilterplants	7%	฿6.93	https://shopee.co.th/product/492402139/16005463341	https://s.shopee.co.th/30kBAHJOex
+1867293688	เซราวี CERAVE Moisturising Cream ครีมบำรุงผิวหน้าและผิวกาย สำหรับผิวแห้งมาก 50g	213	400พัน+	cerave official shop	11%	฿23.43	https://shopee.co.th/product/121205602/1867293688	https://s.shopee.co.th/3VgRlCHUe4
+2310618269	WARRIX กางเกงฟุตบอล เบสิค WP-1509	100	400พัน+	Warrix Official Store	10%	฿10.00	https://shopee.co.th/product/32706050/2310618269	https://s.shopee.co.th/3LN1YtI7z3
+26866392814	Crayon Shin-Chan อะนิเมะขี ้เกียจผู ้ถือโทรศัพท ์มือถือผู ้ถือเดสก ์ท ็ อปเครื ่ องประดับอินเทรนด ์ Phone Holder	1	70พัน+	GOO2 shop	10%	฿0.10	https://shopee.co.th/product/1192210848/26866392814	https://s.shopee.co.th/3qJI9oGDyA
+20479309648	กระถางเบลล่าสไตล์มินิมอล กระถางพลาติก  5" 7" 9" 12"	26	100พัน+	Fish's brain	7%	฿1.82	https://shopee.co.th/product/160586502/20479309648	https://s.shopee.co.th/3fzrxVGrJ9
+41202168589	[สินค้าขายดี]นีเวีย ลูมินัส630 สกิน โกลว์ เซรั่ม เซรั่มผิวใส เซรั่มทาหน้า30 มล. NIVEA เซรั่ม เซรั่มลดจุดด่างดำ	446	60พัน+	NIVEA_Official_Store	10%	฿44.60	https://shopee.co.th/product/172431741/41202168589	https://s.shopee.co.th/4Aw8YQExIG
+21111627562	[ลิปฉ่ำวาวยอดขายอันดับ 1*] MAYBELLINE SUPER STAY VINYL INK LIPSTICK เมย์เบลลีน ซุปเปอร์สเตย์ ไวนิลอิงค์ ลิปสติก	279	600พัน+	MAYBELLINE	9%	฿25.11	https://shopee.co.th/product/29668843/21111627562	https://s.shopee.co.th/40ciM7FadF
+52751216092	GoldenCup Brand Balm 2493 | ยาหม่องตราถ้วยทอง  2493 (ชนิดแท่งขนาด 5g)	39	10พัน+	GoldenCupBalm	10%	฿3.90	https://shopee.co.th/product/165237863/52751216092	https://s.shopee.co.th/4VYyx2DgcM
+28952833322	DoCoMallชั้นวางของ​ขั้นบันใด ขาตั้งกระถางต้นไม้ วางต้นไม้ ดอกไม้ ตกแต่งสวน ดอกไม้ ชั้นวางกระถาง แข็งแรงมาก	455	1พัน+	DoCoMall	7%	฿31.85	https://shopee.co.th/product/393014471/28952833322	https://s.shopee.co.th/4LFYkjEJxL
+44004194995	[รีฟิล] เซราวี CERAVE Moisturising Lotion โลชั่นบำรุงผิว ชุ่มชื้น เนื้อสัมผัสบางเบา 473ml	589	30พัน+	cerave official shop	11%	฿64.79	https://shopee.co.th/product/121205602/44004194995	https://s.shopee.co.th/4qBpLeCPwS
+17896521331	[9 เฉดนู้ด] MAYBELLINE SUPER STAY MATTE INK ลิปจิ้มจุ่มเนื้อแมท เมย์เบลลีน ซุปเปอร์ สเตย์ แมท อิ้งค์ ลิปสติก	249	50พัน+	MAYBELLINE	9%	฿22.41	https://shopee.co.th/product/29668843/17896521331	https://s.shopee.co.th/4fsP9LD3HR
+23162251364	ย้อมผมเองโดยไม่ทำให้ผมเสีย🌸 สีย้อมผม ใช้ง่ายย้อมสีง่าย ฟรีอุปกรณ์ทําสีผม(สีผม ยาย้อมผม น้ํายาย้อมผม)	15	100พัน+	PAIM | OFFICIAL	12%	฿1.80	https://shopee.co.th/product/435141923/23162251364	https://s.shopee.co.th/5AofkGB9GY
+25342230702	💥ได้ผลจริงๆไม่ผิดหวัง💥ยาฆ่าต้นไม้ใหญ เข้มข้นสุดๆ1000ml ยาฆ่าตอต้นไม้ ตรงไปที่ราก ยากำจัดต้นไม้ รากเน่าจริง1000% ยาฆ่าตอไม้ใหญ่ บอกลาการตัดต้นไม้ด้วยตนเอง สารกําจัดกอไผ่ ไม่เป็นอันตรายต่อดิน ยากําจัดต้นไม้ใหญ่ ยาฆ่ากอไผ่ ยาฆ่าหญ้า	149	2พัน+	Agricultural Department Store	7%	฿10.43	https://shopee.co.th/product/1382307249/25342230702	https://s.shopee.co.th/50VFXxBmbX
+19829143852	Lucky😸มีพร้อมส่ง แผ่นมาส์กหน้าSADOER Mask เพิ่มความชุ่มชื่นให้ผิวหน้า	1	200พัน+	LuckyCat.Home	15%	฿0.15	https://shopee.co.th/product/485843066/19829143852	https://s.shopee.co.th/BPzn4UBPc
+1438282399	[Hello Kitty มาแล้ว!] MAYBELLINE HYPERCURL WATERPROOF MASCARA เมย์เบลลีน มาสคาร่ากันน้ำ ไฮเปอร์เคิร์ล	149	100พัน+	MAYBELLINE	8%	฿11.92	https://shopee.co.th/product/29668843/1438282399	https://s.shopee.co.th/16ZalUokb
+19444805967	[ลดถูกชัวร์] ซองใส่บัตร atm บัตรเครดิต บัตรประชาชน ซองใส ปกใส กระเป๋าใส่บัตร ออกใบกำกับภาษี Etax ได้	1	100พัน+	IRONMAN S. SHOP (ส่งจากไทย)	12%	฿0.12	https://shopee.co.th/product/18823873/19444805967	https://s.shopee.co.th/W2qBgSuji
+21888186824	กระถาง 2.5” 3” 4” 5” 6” 8” 11” กระถางต้นไม้พลาสติก กระถางดำ ราคาถูก‼️	2	600พัน+	Fish's brain	7%	฿0.14	https://shopee.co.th/product/160586502/21888186824	https://s.shopee.co.th/LjPzNTY4h
+22587982429	Dogegg🐶มาส์กแอมพูล มาส์กหน้าแบบแอมพูล มาส์กบำรุงผิว มาส์กหน้าแผ่นแอมพูล	1	300พัน+	Dogegg	15%	฿0.15	https://shopee.co.th/product/328372516/22587982429	https://s.shopee.co.th/qfgaIRe3o
+25432214222	น้ำตาลหล่อฮังก๊วย 0แคลลอรี่ (มี อ.ย รับรอง) ขนาด500กรัม หวานเท่ากับน้ำตาล1:1	118	100พัน+	Ps-upper	10%	฿11.80	https://shopee.co.th/product/105555092/25432214222	https://s.shopee.co.th/gMGNzSHOn
+22757872273	หัวชาร์จเร็ว+สายชาร์จเร็ว PD 20W 30W 45W charger ชุดชาร์จ  Fastcharge type c to L รองรับรุ่น 7~15	39	200พัน+	oscrop.design.th	13%	฿5.07	https://shopee.co.th/product/1023881453/22757872273	https://s.shopee.co.th/1BIWyuQNNu
+6219735884	(5 ฟรี 1) ต้นไม้มงคล ไม้ฟอกอากาศ ต้นใหญ่ รากแน่น ต้นไม้เสริมดวง (ภาค 1)	14	90พัน+	ป๊าม๊าการ์เด้น (Pamathegardener)	4%	฿0.56	https://shopee.co.th/product/21056724/6219735884	https://s.shopee.co.th/10z6mbR0it
+41201423004	SKINTIFIC Radiance Booster Serum Spray | เซรั่มสเปรย์ 3 in 1 บำรุงผิว เติมความสดชื่น ไพรเมอร์ พร้อมเซ็ตติ้งเมคอัพ	144	70พัน+	SKINTIFIC Official Store	10%	฿14.40	https://shopee.co.th/product/1459654235/41201423004	https://s.shopee.co.th/1VvNNWP6i0
+40950700556	ลิปสติก ลอรีอัล ปารีส L'Oreal Paris Infallible Laque Resistance ลิปสติกเนื้อวาว ติดทน 16 ชม.	319	100พัน+	L'Oreal Paris	9%	฿28.71	https://shopee.co.th/product/29667634/40950700556	https://s.shopee.co.th/1LbxBDPk2z
+42853622441	โปรโมชั่นกาแฟ 50 แคปซูล 699 บาท คละรสชาติได้	14	100พัน+	Capresso Coffee	20%	฿2.80	https://shopee.co.th/product/1013591204/42853622441	https://s.shopee.co.th/1qYDm8Nq26
+41851384126	เมล็ดผัก เจียไต๋ ซื้อ 10 แถม 2 มีโค๊ดส่วนลด (เมล็ดพันธุ์ผัก เจียไต๋ OP)	1	300พัน+	tonymuakfang	15%	฿0.15	https://shopee.co.th/product/46060500/41851384126	https://s.shopee.co.th/1gEnZpOTN5
+19689503029	JisuLife Pro1s FA53 Pro1  พัดลมมือถือ ปรับระดับได้ 100 ระดับ พัดลมพกพา ไม่มีใบมีด ชาร์จใหม่ได้ ใช้งานได้ 15 ชม	939	200พัน+	JisuLife Official Shop	6%	฿56.34	https://shopee.co.th/product/310024922/19689503029	https://s.shopee.co.th/2BB4AkMZMC
+27754749372	Butterfly🎓 **ปกวุฒิบัตรปกผ้าไหม ขนาด A5** 🎓	95	20พัน+	BUTTERFLY   	19%	฿18.05	https://shopee.co.th/product/1266839715/27754749372	https://s.shopee.co.th/20rdyRNChB
+25309435125	【จัดส่งจากประเทศไทย】สีย้อมผม น้ํายาย้อมสีผม ย้อมผม ล็อคสีติดทนนาน ย้อมสีง่าย เครื่องมือทําสีผมจะส่งฟรี ครีมย้อมสีผม	15	40พัน+	PAIM | OFFICIAL	12%	฿1.80	https://shopee.co.th/product/435141923/25309435125	https://s.shopee.co.th/2VnuZMLIgI
+23345266733	[ขายดีอันดับ 1]🌱เมล็ดผักสลัด 800+ เมล็ด 2 บาท 📌งอกดีมีคู่มือการปลูก [10 แถม 2 คละได้] / เมล็ดพันธุ์ผักสลัด อินทรีย์	1	200พัน+	goodharvest	14%	฿0.14	https://shopee.co.th/product/1009134665/23345266733	https://s.shopee.co.th/2LUUN3Lw1H
+27508427626	[20ห่อ ] ทิชชู่KIM GB/T 20808 Air Cushion Soft Tissue 5 ชั้น 420 แผ่น ทิชชู่ยกแพ็คส่งฟรี	49	100พัน+	KIM Tissue	10%	฿4.90	https://shopee.co.th/product/1333857623/27508427626	https://s.shopee.co.th/8ASHJlzjBQ
+25472120862	โปรโมชั่นกาแฟ 100 แคปซูล 1199 บาท คละรสชาติได้	12	300พัน+	Capresso Coffee	20%	฿2.40	https://shopee.co.th/product/1013591204/25472120862	https://s.shopee.co.th/808r7T0MWP
+21650286130	ลา โรช-โพเซย์ La Roche-Posay CICAPLAST BAUME B5+ บาล์ม บาล์มบำรุงผิวช่วยปลอบประโลมและฟื้นบำรุง บำรุงผิว 40ml.	575	200พัน+	LA ROCHE-POSAY Official Shop	9%	฿51.75	https://shopee.co.th/product/56542501/21650286130	https://s.shopee.co.th/8V57iNySVW
+27881523032	ถาดเพาะกล้า, ถาดเพาะผัก, ถาดปลูกต้นไม้, ถาดเพาะต้นกล้า, ถาดพลาสติก,  ถาดป้องกันราก, ขนาด 21/32/50/72/105/128/200 หลุม	7	100พัน+	Tyson Gardens	12%	฿0.84	https://shopee.co.th/product/1503177125/27881523032	https://s.shopee.co.th/8KlhW4z5qV
+"""
+
+def generate_smart_keywords(name):
+    # กำหนด "Stop Words" หรือคำที่ไม่ควรเอามาทำเป็น Keyword เพื่อความแม่นยำ
+    ignore_words = {"ส่งฟรี", "ลูกค้าใหม่", "ของเเถม", "พร้อมส่ง", "จัดส่ง", "รุ่น", "แบบ", "สไตล์", "คุณภาพ"}
+    # คัดเฉพาะภาษาไทยและอังกฤษ
+    clean_name = re.sub(r'[^\u0e00-\u0e7fa-zA-Z0-9\s]', ' ', name)
+    words = clean_name.split()
+    
+    keywords = []
+    for w in words:
+        if len(w) > 2 and w not in ignore_words:
+            keywords.append(w)
+    
+    # ส่งคืนแค่ 5 คำหลักที่สั้นและกระชับที่สุด
+    return list(dict.fromkeys(keywords))[:5]
+
+def process_data(raw_text):
+    products_list = []
+    f = io.StringIO(raw_text.strip())
+    
+    for line in f:
+        cols = line.split('\t')
+        if len(cols) >= 9:
+            # ทำความสะอาดราคา (เผื่อมีคำว่า พัน หรือ ฿)
+            price = cols[2].strip().replace('฿', '')
+            
+            product = {
+                "id": cols[0].strip(),
+                "name": cols[1].strip(),
+                "price": price,
+                "shop": cols[4].strip(),
+                "commission": cols[5].strip(),
+                "affLink": cols[8].strip(), # ใช้ลิงก์ข้อเสนอสั้นๆ
+                "keywords": generate_smart_keywords(cols[1].strip())
+            }
+            products_list.append(product)
+    
+    return products_list
+
+# รันประมวลผล
+all_products = process_data(raw_data_input)
+
+# บันทึกไฟล์
+with open('products.json', 'w', encoding='utf-8') as f:
+    json.dump(all_products, f, ensure_ascii=False, indent=4)
+
+print(f"🚀 เรียบร้อย! ประมวลผลสินค้าทั้งหมด {len(all_products)} รายการลงใน products.json แล้ว")
