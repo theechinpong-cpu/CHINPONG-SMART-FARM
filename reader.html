@@ -3,61 +3,177 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CHINPONG SMART FARM | Reader</title>
+    <title>CHINPONG SMART FARM | AI Reader & Smart Shop</title>
+    
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
     <style>
-        body { font-family: 'Kanit', sans-serif; background: #020617; color: #f8fafc; }
+        :root { --primary: #3b82f6; --dark: #020617; }
+        body { font-family: 'Kanit', sans-serif; background: var(--dark); color: #f8fafc; overflow-x: hidden; }
         .glass { background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.05); }
-        /* สไตล์เนื้อหาภายในบทความ */
-        #content h1 { font-size: 2.5rem; font-weight: 900; margin-bottom: 1.5rem; color: #fff; line-height: 1.2; }
-        #content p { font-size: 1.1rem; line-height: 1.8; margin-bottom: 1.2rem; color: #cbd5e1; }
-        #content strong { color: #60a5fa; }
-        #content ul { margin-bottom: 2rem; }
-        #content li { background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.2); padding: 1.5rem; border-radius: 1.5rem; margin-bottom: 1rem; list-style: none; }
-        /* แปลงลิงก์ Affiliate ให้เป็นปุ่ม */
-        #content a { display: inline-block; background: #3b82f6; color: white; padding: 0.6rem 1.5rem; border-radius: 1rem; font-weight: bold; text-decoration: none; margin-top: 0.5rem; transition: all 0.2s; font-size: 0.9rem; }
-        #content a:hover { background: #2563eb; transform: scale(1.05); }
+        
+        /* Article Styling */
+        #content h1 { font-size: 2.2rem; font-weight: 900; color: #fff; margin: 2rem 0 1.5rem; line-height: 1.2; text-align: center; background: linear-gradient(to right, #60a5fa, #a78bfa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        #content h2 { font-size: 1.5rem; font-weight: 700; color: #60a5fa; margin: 1.5rem 0 1rem; }
+        #content p { font-size: 1.1rem; line-height: 1.8; margin-bottom: 1.5rem; color: #cbd5e1; }
+        
+        /* Auto-Image Styling */
+        #content img { width: 100%; border-radius: 2.5rem; margin: 2rem 0; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); }
+        
+        /* Auto-Affiliate Button Styling */
+        .affiliate-btn { 
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            width: 100%; background: linear-gradient(45deg, #2563eb, #3b82f6);
+            color: white !important; padding: 1.5rem; border-radius: 2rem; font-weight: 800; font-size: 1.25rem;
+            text-decoration: none !important; margin: 2.5rem 0; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 15px 30px -5px rgba(59, 130, 246, 0.4); border: 1px solid rgba(255,255,255,0.1);
+        }
+        .affiliate-btn:hover { transform: translateY(-5px) scale(1.02); box-shadow: 0 20px 40px -5px rgba(59, 130, 246, 0.6); filter: brightness(1.1); }
+        
+        .voice-control { background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border: 1px solid rgba(59, 130, 246, 0.2); transition: all 0.3s; }
+        .voice-control.active { border-color: #3b82f6; box-shadow: 0 0 20px rgba(59, 130, 246, 0.2); }
     </style>
 </head>
 <body>
-    <nav class="glass sticky top-0 z-50 px-8 py-4 mb-8">
-        <div class="max-w-4xl mx-auto flex justify-between items-center">
-            <a href="index.html" class="text-blue-500 font-bold hover:text-white transition-all"><i class="fas fa-chevron-left mr-2"></i> กลับหน้าแรก</a>
-            <span class="text-xs font-black tracking-tighter uppercase text-slate-500">CHINPONG SMART FARM</span>
+
+    <nav class="glass sticky top-0 z-50 px-6 py-4">
+        <div class="max-w-3xl mx-auto flex justify-between items-center">
+            <a href="index.html" class="text-slate-400 hover:text-white transition-all flex items-center gap-2 font-bold text-sm">
+                <i class="fas fa-chevron-left"></i> กลับหน้าหลัก
+            </a>
+            <span class="text-[10px] font-black tracking-[0.2em] uppercase text-slate-500">CHINPONG SMART FARM</span>
         </div>
     </nav>
 
-    <main class="max-w-3xl mx-auto px-6 pb-20">
+    <main class="max-w-3xl mx-auto px-6 pt-10 pb-20">
+        
+        <div id="player" class="voice-control p-6 rounded-[2.5rem] mb-12 flex flex-col sm:flex-row items-center justify-between gap-6 shadow-2xl">
+            <div class="flex items-center gap-5">
+                <div class="w-14 h-14 bg-blue-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-blue-500/20">
+                    <i id="voice-icon" class="fas fa-volume-up text-2xl"></i>
+                </div>
+                <div>
+                    <h4 class="font-bold text-white">ระบบอ่านข่าวอัจฉริยะ</h4>
+                    <p class="text-[10px] text-blue-400 font-bold uppercase tracking-widest">Speed 1.5x | AI CHINPONG</p>
+                </div>
+            </div>
+            <button onclick="toggleSpeech()" id="speak-btn" class="w-full sm:w-auto px-8 py-3 bg-blue-500 hover:bg-blue-400 text-white rounded-2xl font-black text-sm transition-all shadow-lg flex items-center justify-center gap-3">
+                <i class="fas fa-play"></i> START LISTENING
+            </button>
+        </div>
+
         <article id="content" class="animate-fade-in">
-            <div class="py-20 text-center"><i class="fas fa-spinner fa-spin text-3xl text-blue-500"></i></div>
+            <div class="flex flex-col items-center justify-center py-20">
+                <div class="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+                <p class="text-slate-500 font-bold text-xs uppercase tracking-widest">Analyzing Metadata...</p>
+            </div>
         </article>
+
     </main>
 
     <script>
-        async function loadContent() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const file = urlParams.get('file');
-            if (!file) return;
+        // ==========================================
+        // 1. ฐานข้อมูลสินค้า (เพิ่ม/ลด ตรงนี้ที่เดียวจบ!)
+        // ==========================================
+        const myProducts = {
+            "กล้องวงจรปิด": "https://shope.ee/ตัวอย่างลิงก์1",
+            "โซล่าเซลล์": "https://shope.ee/ตัวอย่างลิงก์2",
+            "เซนเซอร์": "https://shope.ee/ตัวอย่างลิงก์3",
+            "เครื่องรดน้ำอัตโนมัติ": "https://shope.ee/ตัวอย่างลิงก์4",
+            "โดรนเกษตร": "https://shope.ee/ตัวอย่างลิงก์5"
+        };
 
-            const GITHUB_USER = 'theechinpong-cpu';
-            const REPO_NAME = 'king-mongkut-tutor';
-            const rawUrl = `https://raw.githubusercontent.com/${GITHUB_USER}/${REPO_NAME}/main/blog/${file}`;
+        const GITHUB_USER = 'theechinpong-cpu'; 
+        const REPO_NAME = 'king-mongkut-tutor';
+
+        let synth = window.speechSynthesis;
+        let utterance = null;
+        let isSpeaking = false;
+
+        async function initReader() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const fileName = urlParams.get('file');
+            if (!fileName) return;
+
+            const rawUrl = `https://raw.githubusercontent.com/${GITHUB_USER}/${REPO_NAME}/main/blog/${fileName}`;
 
             try {
                 const response = await fetch(rawUrl);
-                const text = await response.text();
-                // แสดงผล Markdown เป็น HTML
-                document.getElementById('content').innerHTML = marked.parse(text);
-                
-                // ตกแต่งเพิ่มเติม: ลบข้อความที่ AI อาจจะแถมมา (ถ้ามี)
-                document.title = "อ่านข่าว: " + file.replace('.md', '');
+                let text = await response.text();
+
+                // ==========================================
+                // 2. AUTO-AFFILIATE ENGINE
+                // ==========================================
+                Object.keys(myProducts).forEach(name => {
+                    const link = myProducts[name];
+                    // ค้นหาคีย์เวิร์ดในเนื้อหา แล้วแปลงเป็นปุ่มกดซื้อทันที
+                    const safeName = name.replace(/[.*+?^${}()|[\]\]/g, '\\$&');
+                    const regex = new RegExp(safeName, 'g');
+                    
+                    // สร้าง HTML สำหรับปุ่ม Affiliate
+                    const btnHtml = `<a href="${link}" target="_blank" class="affiliate-btn"><i class="fas fa-shopping-cart"></i> สั่งซื้อ ${name} ราคาพิเศษ</a>`;
+                    
+                    // แทนที่เฉพาะจุดที่เหมาะสม (เช่น หลังจบประโยคที่มีชื่อสินค้า)
+                    text = text.replace(regex, `**${name}**`); 
+                    // เพิ่มปุ่มต่อท้ายบทความถ้าเจอคีย์เวิร์ด
+                    if (text.includes(`**${name}**`)) {
+                        text += `\n\n${btnHtml}`;
+                    }
+                });
+
+                // แปลง Markdown เป็น HTML
+                const finalHtml = marked.parse(text);
+                document.getElementById('content').innerHTML = finalHtml;
+
+                // เตรียมเสียง AI
+                prepareVO(document.getElementById('content').innerText);
+
             } catch (e) {
-                document.getElementById('content').innerHTML = "<p>ขออภัย ไม่พบเนื้อหาข่าว</p>";
+                document.getElementById('content').innerHTML = "<p class='text-center text-rose-500'>Error loading article.</p>";
             }
         }
-        loadContent();
+
+        function prepareVO(rawText) {
+            utterance = new SpeechSynthesisUtterance(rawText);
+            utterance.lang = 'th-TH';
+            utterance.rate = 1.5; // ความเร็ว 1.5x ตามที่คุณต้องการ
+            utterance.onend = () => { isSpeaking = false; updateUI(); };
+        }
+
+        function toggleSpeech() {
+            if (!utterance) return;
+            if (isSpeaking) {
+                synth.cancel();
+                isSpeaking = false;
+            } else {
+                synth.speak(utterance);
+                isSpeaking = true;
+            }
+            updateUI();
+        }
+
+        function updateUI() {
+            const btn = document.getElementById('speak-btn');
+            const icon = document.getElementById('voice-icon');
+            const player = document.getElementById('player');
+            
+            if (isSpeaking) {
+                btn.innerHTML = '<i class="fas fa-stop"></i> STOP READING';
+                btn.classList.replace('bg-blue-500', 'bg-rose-500');
+                icon.classList.add('animate-bounce');
+                player.classList.add('active');
+            } else {
+                btn.innerHTML = '<i class="fas fa-play"></i> START LISTENING';
+                btn.classList.replace('bg-rose-500', 'bg-blue-500');
+                icon.classList.remove('animate-bounce');
+                player.classList.remove('active');
+            }
+        }
+
+        window.onload = initReader;
     </script>
 </body>
 </html>
