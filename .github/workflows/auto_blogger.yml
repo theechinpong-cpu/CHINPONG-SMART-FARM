@@ -1,0 +1,35 @@
+name: Auto Blogger and Affiliate Injector
+
+on:
+  workflow_dispatch: # ปุ่มกดรันเอง
+  schedule:
+    - cron: '0 */6 * * *' # รันทุก 6 ชม.
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Install dependencies
+        run: |
+          pip install feedparser google-generativeai
+
+      - name: Run Script
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: python auto-blogger/main.py
+
+      - name: Commit and Push
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git add .
+          git commit -m "Auto-update: New Blog Post" || exit 0
+          git push
