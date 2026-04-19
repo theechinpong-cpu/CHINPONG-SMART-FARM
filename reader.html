@@ -3,39 +3,64 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CHINPONG SMART FARM - Reader</title>
+    <title>CHINPONG SMART FARM - Premium Reader</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Anuphan:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
-        .glass { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(10px); }
-        body { background: #050505; color: #e5e7eb; font-family: 'Inter', sans-serif; }
-        #content-area img { border-radius: 1.5rem; margin: 2rem 0; width: 100%; object-fit: cover; border: 1px solid rgba(255,255,255,0.1); }
-        #content-area h1, #content-area h2 { color: white; font-weight: 800; margin-top: 2rem; margin-bottom: 1rem; }
-        #content-area p { line-height: 1.8; margin-bottom: 1.2rem; color: #9ca3af; }
+        body { 
+            background: radial-gradient(circle at top right, #111, #000); 
+            color: #d1d5db; 
+            font-family: 'Anuphan', sans-serif; 
+        }
+        .glass { background: rgba(255, 255, 255, 0.02); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.05); }
+        .gradient-text { background: linear-gradient(to right, #60a5fa, #3b82f6, #93c5fd); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        
+        /* สไตล์เนื้อหา Markdown */
+        #content-area { font-size: 1.15rem; line-height: 2; }
+        #content-area h2 { color: white; font-size: 1.75rem; font-weight: 700; margin: 3rem 0 1.5rem 0; display: flex; items-center; gap: 0.5rem; }
+        #content-area h2::before { content: ""; width: 4px; height: 1.5rem; background: #3b82f6; border-radius: 10px; display: inline-block; }
+        #content-area p { margin-bottom: 1.8rem; color: #a1a1aa; text-align: justify; }
+        #content-area img { border-radius: 2rem; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); }
+        #content-area strong { color: white; border-bottom: 2px solid #3b82f6; }
+
+        /* Loader Animation */
+        .loader-ring { width: 80px; height: 80px; border-radius: 50%; border: 2px solid transparent; border-top-color: #3b82f6; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
-<body>
+<body class="min-h-screen">
 
-    <div id="loader" class="fixed inset-0 z-50 flex items-center justify-center bg-black">
-        <div class="text-center">
-            <div class="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-            <p id="status" class="text-blue-500 font-mono text-xs tracking-widest uppercase">Initializing System...</p>
-        </div>
+    <div id="loader" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black">
+        <div class="loader-ring mb-4"></div>
+        <p id="status" class="text-xs font-bold tracking-[0.3em] text-blue-500 uppercase animate-pulse">Initializing Interface</p>
     </div>
 
-    <nav class="p-6 border-b border-white/5">
-        <a href="index.html" class="text-gray-400 hover:text-white transition-colors flex items-center gap-2 text-sm">
-            <i class="fas fa-arrow-left"></i> กลับหน้าหลัก
-        </a>
+    <nav class="sticky top-0 z-40 w-full glass border-b border-white/5 py-4 px-6 mb-8">
+        <div class="max-w-4xl mx-auto flex justify-between items-center">
+            <a href="index.html" class="flex items-center gap-2 text-sm font-bold text-gray-400 hover:text-white transition-all">
+                <i class="fas fa-chevron-left"></i> ย้อนกลับ
+            </a>
+            <div class="text-[10px] font-black tracking-widest text-blue-500 uppercase">CHINPONG SMART FARM</div>
+        </div>
     </nav>
 
-    <main class="max-w-3xl mx-auto px-6 py-12">
-        <article>
-            <h1 id="post-title" class="text-4xl md:text-5xl font-black text-white mb-8 leading-tight"></h1>
-            <div id="content-area" class="prose prose-invert max-w-none">
-                </div>
-        </article>
+    <main class="max-w-4xl mx-auto px-6 pb-24">
+        <header class="mb-12">
+            <div id="category" class="text-blue-500 text-xs font-black tracking-[0.2em] uppercase mb-4">Trending Intelligence</div>
+            <h1 id="post-title" class="text-4xl md:text-6xl font-black text-white leading-[1.1] mb-6"></h1>
+            <div class="flex items-center gap-4 text-xs text-gray-500 font-medium">
+                <span id="read-time"><i class="far fa-clock mr-1"></i> อ่านประมาณ 5 นาที</span>
+                <span class="w-1 h-1 bg-gray-700 rounded-full"></span>
+                <span><i class="far fa-calendar-alt mr-1"></i> เมษายน 2026</span>
+            </div>
+        </header>
+
+        <article id="content-area" class="relative">
+            </article>
+
+        <section id="ads-section" class="mt-20"></section>
     </main>
 
     <script>
@@ -45,89 +70,90 @@
             const file = urlParams.get('file');
 
             if (!file) {
-                statusEl.innerText = "Error: No file specified.";
+                statusEl.innerText = "ERROR: ACCESS DENIED";
                 return;
             }
 
             try {
-                // 1. ดึงเนื้อหาข่าว
-                statusEl.innerText = "FETCHING SMART CONTENT...";
+                statusEl.innerText = "ACCESSING CLOUD DATA...";
                 const response = await fetch(`blog/${file}`);
-                if (!response.ok) throw new Error("File not found in /blog directory");
+                if (!response.ok) throw new Error("File Missing");
                 
                 const rawData = await response.text();
-                
-                // 2. แยก Metadata (ถ้ามี)
-                statusEl.innerText = "PARSING DATA...";
+                statusEl.innerText = "RENDERING INTERFACE...";
+
                 let content = rawData;
                 let title = file.replace('.md', '').replace(/_/g, ' ');
 
+                // Parse Metadata
                 const metaMatch = rawData.match(/^---([\s\S]*?)---/);
                 if (metaMatch) {
                     const metaLines = metaMatch[1].split('\n');
                     metaLines.forEach(line => {
-                        if (line.toLowerCase().includes('title:')) {
-                            title = line.split(':')[1].trim();
-                        }
+                        if (line.toLowerCase().includes('title:')) title = line.split(':')[1].trim();
                     });
                     content = rawData.replace(metaMatch[0], '').trim();
                 }
 
-                // 3. แสดงเนื้อหา
                 document.getElementById('post-title').innerText = title;
                 document.getElementById('content-area').innerHTML = marked.parse(content);
 
-                // 4. แทรกสินค้า (Smart Ads)
+                // Load Smart Ads from products.json
                 await injectSmartAds();
 
-                // ปิด Loader
-                document.getElementById('loader').style.display = 'none';
+                setTimeout(() => {
+                    document.getElementById('loader').style.opacity = '0';
+                    setTimeout(() => document.getElementById('loader').style.display = 'none', 500);
+                }, 800);
 
             } catch (error) {
-                console.error(error);
-                statusEl.innerHTML = `<span class="text-red-500 font-bold underline">SYSTEM ERROR: ${error.message}</span><br><a href="index.html" class="text-white mt-4 block text-[10px]">GO BACK</a>`;
+                statusEl.innerHTML = `<span class="text-red-500 font-bold">${error.message}</span>`;
             }
         }
 
         async function injectSmartAds() {
             try {
                 const res = await fetch('products.json');
-                if (!res.ok) return;
                 const products = await res.json();
-                
-                // สุ่มสินค้ามา 3 ชิ้นจาก 100 ชิ้น
                 const randomItems = products.sort(() => 0.5 - Math.random()).slice(0, 3);
                 
                 let adsHtml = `
-                    <div class="mt-16 pt-10 border-t border-white/10">
-                        <div class="flex items-center justify-between mb-6">
-                            <h3 class="text-white font-bold italic flex items-center gap-2">
-                                <i class="fas fa-shopping-cart text-blue-500"></i> สินค้าที่น่าสนใจจากฟาร์ม
-                            </h3>
-                            <span class="text-[10px] bg-white/5 px-3 py-1 rounded-full text-gray-500">ADVERTISEMENT</span>
+                    <div class="mt-20 p-8 rounded-[3rem] glass border border-blue-500/10">
+                        <div class="flex flex-col md:flex-row justify-between items-center mb-10 gap-4 text-center md:text-left">
+                            <div>
+                                <h3 class="text-2xl font-black text-white italic">SMART DEALS</h3>
+                                <p class="text-xs text-gray-500 uppercase tracking-widest mt-1">คัดสรรสินค้าคุณภาพโดย CHINPONG SMART FARM</p>
+                            </div>
+                            <div class="h-px flex-1 bg-white/5 mx-6 hidden md:block"></div>
+                            <i class="fas fa-shopping-bag text-blue-500 text-2xl"></i>
                         </div>
-                        <div class="grid grid-cols-1 gap-4">
+                        <div class="grid grid-cols-1 gap-6">
                 `;
 
                 randomItems.forEach(p => {
                     adsHtml += `
-                    <div class="glass p-5 rounded-[2rem] border border-white/5 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 hover:border-blue-500/50 transition-all">
-                        <div class="flex-1">
-                            <span class="text-[9px] font-black text-blue-500 uppercase tracking-widest">${p.shop}</span>
-                            <h4 class="text-white font-bold text-base mt-1">${p.name}</h4>
-                        </div>
-                        <div class="flex items-center gap-4 w-full md:w-auto justify-between">
-                            <span class="text-xl font-black text-white">฿${p.price}</span>
-                            <a href="${p.affLink}" target="_blank" class="bg-blue-600 hover:bg-blue-500 px-6 py-2.5 rounded-2xl text-xs font-black text-white transition-all whitespace-nowrap shadow-lg shadow-blue-900/20">
-                                สั่งซื้อเลย
-                            </a>
+                    <div class="group relative overflow-hidden p-6 rounded-[2rem] bg-white/[0.02] border border-white/5 hover:border-blue-500/30 transition-all duration-500">
+                        <div class="flex flex-col md:flex-row justify-between items-center gap-6">
+                            <div class="flex-1 text-center md:text-left">
+                                <span class="text-[10px] font-bold text-blue-400 uppercase tracking-tighter">${p.shop}</span>
+                                <h4 class="text-white font-bold text-lg leading-snug mt-1 group-hover:text-blue-400 transition-colors">${p.name}</h4>
+                            </div>
+                            <div class="flex items-center gap-8">
+                                <div class="text-center md:text-right">
+                                    <p class="text-[10px] text-gray-500 uppercase">ราคาพิเศษ</p>
+                                    <p class="text-2xl font-black text-white">฿${p.price}</p>
+                                </div>
+                                <a href="${p.affLink}" target="_blank" class="bg-white text-black hover:bg-blue-500 hover:text-white px-8 py-3 rounded-full text-xs font-black transition-all shadow-xl">
+                                    SHOP NOW
+                                </a>
+                            </div>
                         </div>
                     </div>`;
                 });
 
                 adsHtml += '</div></div>';
-                document.getElementById('content-area').innerHTML += adsHtml;
-            } catch (e) { console.log("Ads system offline"); }
+                document.getElementById('ads-section').innerHTML = adsHtml;
+            } catch (e) { console.log("Ads Offline"); }
         }
 
         window.onload = loadContent;
