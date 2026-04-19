@@ -4,36 +4,48 @@ import feedparser
 import requests
 from datetime import datetime
 
+def get_available_models(api_key):
+    """ฟังก์ชันสแกนหา Model ที่ Key นี้ใช้ได้จริง"""
+    url = f"https://generativelanguage.googleapis.com/v1beta/models?key={api_key}"
+    try:
+        response = requests.get(url)
+        if response.status_code == 200:
+            models = [m['name'] for m in response.json().get('models', []) if 'generateContent' in m.get('supportedGenerationMethods', [])]
+            return models
+    except:
+        return []
+    return []
+
 def generate_with_gemini(api_key, prompt):
-    # รายชื่อ URL ที่เราจะลอง (เรียงจากอันที่เสถียรที่สุดไปหาอันสำรอง)
-    endpoints = [
-        f"https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key={api_key}",
-        f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}",
-        f"https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key={api_key}"
-    ]
+    # ดึงรายชื่อ Model ที่ใช้ได้จริงจากบัญชีของคุณมาเลย (ไม่ต้องเดาชื่ออีกต่อไป)
+    available_models = get_available_models(api_key)
+    if not available_models:
+        # ถ้าดึงไม่ได้ ให้ใช้ลิสต์มาตรฐานสำรองไว้
+        available_models = ["models/gemini-1.5-flash", "models/gemini-pro", "models/gemini-1.5-flash-latest"]
     
     headers = {'Content-Type': 'application/json'}
     data = {"contents": [{"parts": [{"text": prompt}]}]}
 
-    for url in endpoints:
+    for model_path in available_models:
+        # สร้าง URL ตามชื่อ Model ที่ระบบอนุญาต
+        url = f"https://generativelanguage.googleapis.com/v1beta/{model_path}:generateContent?key={api_key}"
         try:
-            print(f"กำลังลองเรียก API: {url.split('/')[4]}") # พิมพ์บอกว่าใช้ v1 หรือ v1beta
+            print(f"กำลังลองใช้โมเดลจริงในเครื่องคุณ: {model_path}")
             response = requests.post(url, headers=headers, json=data, timeout=30)
             if response.status_code == 200:
                 return response.json()['candidates'][0]['content']['parts'][0]['text']
             else:
-                print(f"ลองแล้วไม่ได้ (Status {response.status_code}) -> กำลังลองตัวถัดไป...")
-        except Exception as e:
-            print(f"Error: {e}")
+                print(f"ตัวนี้ไม่ได้ (Status {response.status_code}) -> ลองตัวถัดไป")
+        except:
             continue
-    
     return None
 
 def main():
     api_key = os.getenv("GEMINI_API_KEY")
-    if not api_key: return
+    if not api_key: 
+        print("Error: ลืมใส่ API Key ใน Secrets หรือเปล่าครับ?")
+        return
 
-    # ตรวจสอบไฟล์ DB
     try:
         with open('data/affiliate_db.json', 'r', encoding='utf-8') as f:
             affiliate_db = json.load(f)
@@ -46,10 +58,10 @@ def main():
     if not os.path.exists('blog'): os.makedirs('blog')
 
     for feed in rss_feeds:
-        print(f"--- เริ่มประมวลผล: {feed['name']} ---")
+        print(f"\n--- Processing: {feed['name']} ---")
         news = feedparser.parse(feed['url'])
         if not news.entries:
-            print("ไม่พบข่าวใหม่")
+            print("No new news entries found.")
             continue
         
         entry = news.entries[0]
@@ -62,9 +74,9 @@ def main():
             filename = f"blog/{datetime.now().strftime('%Y%m%d')}_{feed['category']}.md"
             with open(filename, 'w', encoding='utf-8') as f:
                 f.write(content)
-            print(f"สร้างบทความสำเร็จ: {filename}")
+            print(f"✅ สำเร็จ! สร้างบทความที่: {filename}")
         else:
-            print("บอทพยายามทุกทางแล้วแต่ API ไม่ตอบสนอง")
+            print("❌ พยายามทุกโมเดลแล้วแต่ API ไม่ยอมรัน")
 
 if __name__ == "__main__":
     main()
