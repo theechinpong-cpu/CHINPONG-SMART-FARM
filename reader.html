@@ -3,127 +3,138 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CHINPONG SMART FARM - Reader</title>
+    <title>CHINPONG SMART FARM - Affiliate Reader</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Anuphan:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
-        body { background: radial-gradient(circle at top right, #111, #000); color: #d1d5db; font-family: 'Anuphan', sans-serif; overflow-x: hidden; }
-        .glass { background: rgba(255, 255, 255, 0.02); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.05); }
-        #content-area { font-size: 1.15rem; line-height: 2; }
-        #content-area p { margin-bottom: 1.8rem; color: #a1a1aa; text-align: justify; }
-        #content-area strong { color: white; border-bottom: 2px solid #3b82f6; }
-        .clickable-btn { position: relative; z-index: 50 !important; cursor: pointer !important; pointer-events: auto !important; }
+        body { background: #0a0a0a; color: #d1d5db; font-family: 'Anuphan', sans-serif; }
+        .glass { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.05); }
+        #content-area p { margin-bottom: 1.5rem; line-height: 1.8; color: #9ca3af; text-align: justify; }
+        .aff-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); border: 1px solid rgba(59, 130, 246, 0.1); }
+        .aff-card:hover { transform: translateY(-5px); border-color: rgba(59, 130, 246, 0.5); box-shadow: 0 10px 30px -10px rgba(59, 130, 246, 0.3); }
+        .gradient-text { background: linear-gradient(to right, #60a5fa, #a855f7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
     </style>
 </head>
-<body class="min-h-screen">
+<body class="min-h-screen pb-20">
 
     <div id="loader" class="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-black transition-opacity duration-500">
-        <div class="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-4"></div>
-        <p id="status" class="text-[10px] font-bold tracking-widest text-blue-500 uppercase font-mono">Loading Neural Data...</p>
+        <div class="w-10 h-10 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
     </div>
 
     <nav class="sticky top-0 z-[40] w-full glass border-b border-white/5 py-4 px-6">
-        <div class="max-w-4xl mx-auto flex justify-between items-center">
-            <a href="index.html" class="flex items-center gap-2 text-sm font-bold text-gray-400 hover:text-white transition-all"><i class="fas fa-arrow-left"></i> BACK</a>
-            <div class="text-[10px] font-black tracking-[0.3em] text-blue-500 uppercase">CHINPONG SMART FARM</div>
+        <div class="max-w-5xl mx-auto flex justify-between items-center">
+            <a href="index.html" class="text-xs font-bold text-gray-500 hover:text-white uppercase tracking-tighter transition-all">← Back</a>
+            <div class="text-xs font-black tracking-[0.2em] text-blue-500 uppercase italic">CHINPONG SMART FARM</div>
         </div>
     </nav>
 
-    <main class="max-w-4xl mx-auto px-6 pb-24 pt-12">
-        <header class="mb-12 border-l-4 border-blue-600 pl-6">
-            <h1 id="post-title" class="text-4xl md:text-6xl font-black text-white leading-[1.1] mb-4 uppercase"></h1>
-            <div id="post-meta" class="text-[10px] text-gray-500 tracking-widest uppercase font-bold"></div>
-        </header>
+    <main class="max-w-5xl mx-auto px-6 pt-12">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-12">
+            
+            <div class="lg:col-span-8">
+                <header class="mb-8">
+                    <h1 id="post-title" class="text-3xl md:text-5xl font-black text-white leading-tight mb-4 italic uppercase"></h1>
+                    <div id="post-meta" class="text-[10px] text-gray-500 font-bold tracking-widest uppercase"></div>
+                </header>
+                <article id="content-area" class="text-lg"></article>
+            </div>
 
-        <article id="content-area" class="relative">
-            </article>
+            <div class="lg:col-span-4">
+                <div class="sticky top-24">
+                    <div class="flex items-center gap-2 mb-6">
+                        <div class="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                        <h3 class="text-xs font-black text-white tracking-widest uppercase italic">Recommended Deals</h3>
+                    </div>
+                    <div id="side-ads" class="space-y-4">
+                        </div>
+                </div>
+            </div>
 
-        <div id="ads-section" class="mt-16 border-t border-white/5 pt-16"></div>
+        </div>
     </main>
 
     <script>
         async function loadContent() {
-            const statusEl = document.getElementById('status');
             const urlParams = new URLSearchParams(window.location.search);
             const fileName = urlParams.get('file');
 
-            if (!fileName) {
-                statusEl.innerHTML = "ERROR: FILE NOT SPECIFIED";
-                return;
-            }
-
             try {
-                // 1. Fetch บทความ
-                const filePath = fileName.startsWith('blog/') ? fileName : `blog/${fileName}`;
-                const response = await fetch(filePath);
-                if (!response.ok) throw new Error("File not found");
-                let content = await response.text();
+                // 1. Fetch Database & Article
+                const [prodRes, postRes] = await Promise.all([
+                    fetch('products.json'),
+                    fetch(`blog/${fileName}`)
+                ]);
 
-                // 2. Fetch สินค้า
-                const prodRes = await fetch('products.json');
-                const products = prodRes.ok ? await prodRes.json() : [];
+                if (!prodRes.ok || !postRes.ok) throw new Error("Data Sync Failed");
 
-                // ฟังก์ชันสร้าง UI กล่องสินค้า
-                const createAdBox = (item) => `
-                    <div class="my-10 p-6 rounded-[2rem] bg-gradient-to-br from-blue-600/10 to-transparent border border-blue-500/20 shadow-2xl overflow-hidden">
-                        <div class="flex flex-col md:flex-row justify-between items-center gap-6">
-                            <div class="flex-1 text-center md:text-left">
-                                <span class="text-[9px] font-black text-blue-500 uppercase tracking-widest">${item.shop || 'CHINPONG SELECTION'}</span>
-                                <h4 class="text-white font-bold text-lg leading-tight mt-1">${item.name}</h4>
-                            </div>
-                            <div class="flex items-center gap-6">
-                                <div class="text-right">
-                                    <p class="text-2xl font-black text-white italic">฿${item.price}</p>
-                                </div>
-                                <a href="${item.affLink}" target="_blank" rel="noopener" class="clickable-btn bg-blue-600 hover:bg-white hover:text-black text-white px-8 py-3 rounded-full text-[10px] font-black transition-all">SHOP NOW</a>
-                            </div>
-                        </div>
-                    </div>`;
+                const products = await prodRes.json();
+                let content = await postRes.text();
 
-                // 3. แทนที่ข้อความที่เป็น Placeholder ด้วยกล่องสินค้า
-                if (products.length > 0) {
-                    // ใช้ Regex ค้นหาข้อความแบบที่พี่เขียนเป๊ะๆ
-                    const placeholderRegex = /\[\(ใส่ลิงก์ Affiliate ของคุณตรงนี้\)\]|\(ใส่ลิงก์ Affiliate ของคุณตรงนี้\)/g;
-                    content = content.replace(placeholderRegex, () => {
-                        const randomItem = products[Math.floor(Math.random() * products.length)];
-                        return createAdBox(randomItem);
-                    });
-                }
-
-                // 4. Render Markdown
+                // 2. จัดการหน้าข่าว
                 document.getElementById('post-title').innerText = fileName.replace('.md', '').replace(/_/g, ' ');
+                document.getElementById('post-meta').innerText = `Updated: ${new Date().toLocaleDateString()} | CHINPONG AI-BOT`;
+
+                // 3. ระบบฉีด Ad Block สลับในเนื้อหา (สุ่มแทรกทุกๆ 2-3 ย่อหน้า)
+                const adTag = /\[\(ใส่ลิงก์ Affiliate ของคุณตรงนี้\)\]|\(ใส่ลิงก์ Affiliate ของคุณตรงนี้\)/g;
+                content = content.replace(adTag, () => {
+                    const item = products[Math.floor(Math.random() * products.length)];
+                    return createCompactAd(item);
+                });
                 document.getElementById('content-area').innerHTML = marked.parse(content);
-                document.getElementById('post-meta').innerText = `PUBLISHED: ${new Date().toLocaleDateString()}`;
 
-                // สุ่มสินค้าปิดท้ายข่าวอีก 2 ชิ้น
-                injectBottomAds(products);
+                // 4. สุ่มสินค้า 10-15 รายการมาใส่ Side Bar (เหมือน Feed Social)
+                renderSideAds(products, 12);
 
-                // ปิด Loader
+                // Hide Loader
                 const loader = document.getElementById('loader');
                 loader.style.opacity = '0';
                 setTimeout(() => loader.style.display = 'none', 500);
 
-            } catch (error) {
-                statusEl.innerHTML = `<span class="text-red-500 uppercase">SYNCHRONIZATION FAILED</span>`;
-                console.error(error);
+            } catch (err) {
+                console.error(err);
+                document.body.innerHTML = `<div class="p-20 text-center text-red-500 font-black">CRITICAL ERROR: PLEASE RUN VIA SERVER</div>`;
             }
         }
 
-        function injectBottomAds(products) {
-            if (products.length === 0) return;
-            const randomItems = products.sort(() => 0.5 - Math.random()).slice(0, 2);
-            let html = '<h3 class="text-xs font-black text-blue-500 tracking-[0.3em] uppercase mb-8 text-center">More Recommended Items</h3><div class="grid gap-4">';
-            randomItems.forEach(item => {
-                html += `
-                <div class="p-4 rounded-3xl glass border border-white/5 flex justify-between items-center">
-                    <span class="text-white text-sm font-bold truncate pr-4">${item.name}</span>
-                    <a href="${item.affLink}" target="_blank" class="text-blue-500 text-[10px] font-black underline uppercase">View Details</a>
-                </div>`;
-            });
-            html += '</div>';
-            document.getElementById('ads-section').innerHTML = html;
+        // ฟังก์ชันสร้าง Ad Block เล็กๆ สลับข่าว
+        function createCompactAd(item) {
+            return `
+            <div class="aff-card my-8 p-4 rounded-2xl bg-white/[0.02] border border-white/5 flex items-center gap-4">
+                <div class="w-16 h-16 bg-blue-600/20 rounded-xl flex items-center justify-center text-blue-500 text-xl">
+                    <i class="fas fa-shopping-bag"></i>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-[9px] font-bold text-blue-500 uppercase tracking-widest mb-1">${item.shop}</p>
+                    <h4 class="text-white font-bold text-sm truncate">${item.name}</h4>
+                    <p class="text-[10px] text-gray-500 mt-1 italic">ดีลพิเศษเพื่อทุกคน! รีบเลยก่อนหมด</p>
+                </div>
+                <div class="text-right">
+                    <p class="text-sm font-black text-white">฿${item.price}</p>
+                    <a href="${item.affLink}" target="_blank" class="inline-block mt-2 text-[10px] font-black bg-blue-600 text-white px-3 py-1.5 rounded-lg">ซื้อเลย</a>
+                </div>
+            </div>`;
+        }
+
+        // ฟังก์ชันสุ่มสินค้า 10-15 ชิ้นมาเรียงแบบ Social Feed
+        function renderSideAds(products, count) {
+            const container = document.getElementById('side-ads');
+            const shuffled = products.sort(() => 0.5 - Math.random()).slice(0, count);
+            
+            container.innerHTML = shuffled.map(item => `
+                <div class="aff-card p-4 rounded-2xl glass mb-4 group">
+                    <div class="flex justify-between items-start mb-3">
+                        <span class="text-[9px] font-black text-gray-500 uppercase tracking-[0.2em]">${item.shop}</span>
+                        <span class="text-[10px] font-black text-blue-500 italic">฿${item.price}</span>
+                    </div>
+                    <h4 class="text-gray-200 font-bold text-xs mb-3 leading-relaxed">${item.name}</h4>
+                    <div class="flex gap-1 mb-4">
+                        ${item.keywords ? item.keywords.slice(0,2).map(k => `<span class="text-[8px] bg-white/5 text-gray-500 px-2 py-0.5 rounded">#${k}</span>`).join('') : ''}
+                    </div>
+                    <a href="${item.affLink}" target="_blank" class="block w-full text-center py-2.5 rounded-xl bg-white/5 hover:bg-blue-600 text-[10px] font-black text-white transition-all uppercase tracking-widest">View Details</a>
+                </div>
+            `).join('');
         }
 
         window.onload = loadContent;
