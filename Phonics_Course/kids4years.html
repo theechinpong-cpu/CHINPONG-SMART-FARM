@@ -1,0 +1,245 @@
+import os
+
+# Define the HTML content for the Phonics App
+html_content = """
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phonics Adventure - พระจอมเกล้าติวเตอร์</title>
+    <style>
+        :root {
+            --primary-color: #FF5722;
+            --secondary-color: #4CAF50;
+            --bg-color: #FFF9C4;
+            --text-color: #333;
+        }
+        body {
+            font-family: 'Sarabun', 'Arial', sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+        .app-container {
+            width: 100%;
+            max-width: 500px;
+            background: white;
+            height: 100%;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+        .header {
+            background: var(--primary-color);
+            color: white;
+            padding: 15px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+        .content-card {
+            flex: 1;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            overflow-y: auto;
+        }
+        .letter-display {
+            font-size: 80px;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin: 10px 0;
+            cursor: pointer;
+        }
+        .main-image {
+            width: 250px;
+            height: 250px;
+            border-radius: 20px;
+            object-fit: cover;
+            border: 5px solid var(--secondary-color);
+            margin-bottom: 20px;
+            background: #eee;
+        }
+        .phonics-sound {
+            font-size: 24px;
+            background: #E8F5E9;
+            padding: 10px 20px;
+            border-radius: 50px;
+            margin-bottom: 20px;
+            border: 2px dashed var(--secondary-color);
+        }
+        .word-list {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .word-item {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            transition: 0.3s;
+        }
+        .word-item:active { transform: scale(0.98); }
+        .word-info { text-align: left; }
+        .word-eng { font-size: 20px; font-weight: bold; color: #2196F3; }
+        .word-phonics { font-size: 14px; color: #666; font-style: italic; }
+        .btn-audio {
+            background: var(--secondary-color);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            font-size: 18px;
+        }
+        .nav-buttons {
+            display: flex;
+            justify-content: space-between;
+            padding: 20px;
+            background: #f1f1f1;
+        }
+        .btn-nav {
+            padding: 10px 25px;
+            border-radius: 25px;
+            border: none;
+            background: var(--primary-color);
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .btn-nav:disabled { background: #ccc; }
+        .tpr-box {
+            font-size: 14px;
+            color: #d32f2f;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <div class="header">พระจอมเกล้าติวเตอร์ - Phonics Fun</div>
+    
+    <div id="content" class="content-card">
+        </div>
+
+    <div class="nav-buttons">
+        <button class="btn-nav" id="prevBtn" onclick="changePage(-1)">Back</button>
+        <button class="btn-nav" id="nextBtn" onclick="changePage(1)">Next</button>
+    </div>
+</div>
+
+<script>
+    const alphabetData = [
+        {
+            letter: "Aa",
+            sound: "/æ/",
+            tpr: "ท่าทาง: ทำเหมือนถือแอปเปิ้ลแล้วกัด 'แอะ แอะ'",
+            image: "https://img5.pic.in.th/file/secure-sv1/apple-3d.png", // Placeholder: แทนที่ด้วยรูป AI ของคุณ
+            words: [
+                { eng: "Ant", phonics: "/æ/ - /n/ - /t/", thai: "มด" },
+                { eng: "Apple", phonics: "/æ/ - /p/ - /l/", thai: "แอปเปิ้ล" },
+                { eng: "Arm", phonics: "/ɑːr/ - /m/", thai: "แขน" }
+            ]
+        },
+        {
+            letter: "Bb",
+            sound: "/b/",
+            tpr: "ท่าทาง: ขยับมือเป็นปีกนกพร้อมพูด 'เบอะ เบอะ'",
+            image: "https://img5.pic.in.th/file/secure-sv1/bird-3d.png",
+            words: [
+                { eng: "Bird", phonics: "/b/ - /ɜːrd/", thai: "นก" },
+                { eng: "Ball", phonics: "/b/ - /ɔːl/", thai: "ลูกบอล" },
+                { eng: "Bear", phonics: "/b/ - /eər/", thai: "หมี" }
+            ]
+        },
+        {
+            letter: "Ss",
+            sound: "/s/",
+            tpr: "ท่าทาง: ทำมือเลื้อยเป็นงู 'ซสสสสส'",
+            image: "https://img5.pic.in.th/file/secure-sv1/snake-3d.png",
+            words: [
+                { eng: "Snake", phonics: "/s/ - /n/ - /eɪ/ - /k/", thai: "งู" },
+                { eng: "Sun", phonics: "/s/ - /ʌ/ - /n/", thai: "พระอาทิตย์" },
+                { eng: "Star", phonics: "/s/ - /t/ - /ɑːr/", thai: "ดาว" }
+            ]
+        }
+        // คุณสามารถเพิ่มข้อมูลให้ครบ 100 คำได้ที่นี่
+    ];
+
+    let currentIndex = 0;
+
+    function renderPage() {
+        const data = alphabetData[currentIndex];
+        const contentDiv = document.getElementById('content');
+        
+        contentDiv.innerHTML = `
+            <div class="letter-display" onclick="speak('The letter is ${data.letter.charAt(0)}')">${data.letter}</div>
+            <img src="${data.image}" alt="${data.letter}" class="main-image">
+            <div class="phonics-sound" onclick="speak('It makes the sound ${data.sound}')">Sound: ${data.sound} 🔊</div>
+            <div class="tpr-box">${data.tpr}</div>
+            <div class="word-list">
+                ${data.words.map(w => `
+                    <div class="word-item" onclick="speakPhonics('${w.eng}', '${w.phonics}')">
+                        <div class="word-info">
+                            <div class="word-eng">${w.eng} (${w.thai})</div>
+                            <div class="word-phonics">${w.phonics}</div>
+                        </div>
+                        <button class="btn-audio">▶</button>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+
+        document.getElementById('prevBtn').disabled = currentIndex === 0;
+        document.getElementById('nextBtn').disabled = currentIndex === alphabetData.length - 1;
+    }
+
+    // ฟังก์ชันสำหรับเรียกใช้ Google Studio TTS (จำลองผ่าน Web Speech API ในเบื้องต้น)
+    // ในโปรดักชั่นจริง คุณควรเปลี่ยนเป็นเรียก API ของคุณที่เชื่อมกับ Google Cloud
+    function speak(text) {
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'en-US';
+        utterance.rate = 0.8; // ความเร็วช้าลงเพื่อให้เด็กฟังทัน
+        window.speechSynthesis.speak(utterance);
+    }
+
+    function speakPhonics(word, phonics) {
+        // อ้างอิงจาก Saved Info: Phonics breakdown
+        const cleanPhonics = phonics.replace(/[/]/g, '');
+        speak(`${word}. ${cleanPhonics}. ${word}`);
+    }
+
+    function changePage(dir) {
+        currentIndex += dir;
+        renderPage();
+    }
+
+    renderPage();
+</script>
+
+</body>
+</html>
+"""
+
+# Save to file
+file_name = "phonics_app_kmitl_tutor.html"
+with open(file_name, "w", encoding="utf-8") as f:
+    f.write(html_content)
+
+print(f"File created: {file_name}")
