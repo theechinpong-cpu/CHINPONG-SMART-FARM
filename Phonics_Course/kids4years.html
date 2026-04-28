@@ -1,12 +1,11 @@
 import os
 
-# --- 1. เตรียมข้อมูล Base64 (ใส่ค่าว่างไว้ให้เติมเหมือนเดิม) ---
+# --- 1. เตรียมข้อมูล Base64 ---
 apple_b64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==" 
 bird_b64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=="
 snake_b64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=="
 
-# --- 2. สร้างโครงสร้าง HTML ---
-# ใช้ double curly braces {{ }} สำหรับ CSS/JS เพื่อไม่ให้ f-string ของ Python พยายามไปประมวลผลมัน
+# --- 2. สร้างโครงสร้าง HTML (ใช้ Double Braces {{ }} สำหรับ CSS/JS) ---
 html_template = f"""
 <!DOCTYPE html>
 <html lang="th">
@@ -42,7 +41,6 @@ html_template = f"""
             color: white;
             padding: 15px;
             text-align: center;
-            font-size: 1.2rem;
             font-weight: bold;
         }}
         .content-card {{
@@ -104,19 +102,19 @@ html_template = f"""
     function render() {{
         const item = data[idx];
         document.getElementById('content').innerHTML = `
-            <h1 style="font-size: 80px; color: #FF5722;">${{item.letter}}</h1>
+            <h1 style="font-size: 80px; color: #FF5722; margin: 10px;">${{item.letter}}</h1>
             <div class="main-image-frame">
                 <img src="${{item.img}}" class="main-image">
             </div>
-            <h2>${{item.eng}}</h2>
-            <button onclick="speak('${{item.eng}}')" style="padding: 10px; border-radius: 10px;">🔊 ฟังเสียง (2.0x)</button>
+            <h2 style="font-size: 32px;">${{item.eng}}</h2>
+            <button onclick="speak('${{item.eng}}')" style="padding: 15px 30px; font-size: 18px; border-radius: 15px; background: #4CAF50; color: white; border: none; cursor: pointer;">🔊 ฟังเสียง (2.0x)</button>
         `;
     }}
 
     function speak(text) {{
         window.speechSynthesis.cancel();
         const msg = new SpeechSynthesisUtterance(text);
-        msg.rate = 2.0; // ความเร็วตามสั่ง
+        msg.rate = 2.0; 
         window.speechSynthesis.speak(msg);
     }}
 
@@ -131,20 +129,24 @@ html_template = f"""
 </html>
 """
 
-# --- 3. การบันทึกไฟล์ (เน้นความปลอดภัยสำหรับ GitHub) ---
+# --- 3. การบันทึกไฟล์ลง Path: Phonics_Course/ ---
+target_folder = "Phonics_Course"
 file_name = "phonics_app_v2.html"
 
 try:
-    # ใช้ Path แบบสัมบูรณ์เพื่อให้ GitHub Actions หาที่วางไฟล์เจอแน่นอน
-    current_dir = os.getcwd()
-    file_path = os.path.join(current_dir, file_name)
+    # สร้างโฟลเดอร์ถ้ายังไม่มี (สำคัญมากสำหรับการรันบน GitHub)
+    if not os.path.exists(target_folder):
+        os.makedirs(target_folder)
+        print(f"Created directory: {target_folder}")
+
+    file_path = os.path.join(target_folder, file_name)
     
     with open(file_path, "w", encoding="utf-8") as f:
         f.write(html_template)
     
-    print(f"--- [SUCCESS] แก้ไขสำเร็จ ---")
-    print(f"ไฟล์ถูกสร้างที่: {file_path}")
-    print(f"ขนาดไฟล์: {os.path.getsize(file_path)} bytes")
+    print(f"--- [SUCCESS] แก้ไขและบันทึกสำเร็จ ---")
+    print(f"Path: {file_path}")
+    print(f"สถานะ: พร้อม Push ขึ้น GitHub")
 
 except Exception as e:
-    print(f"--- [ERROR] เกิดข้อผิดพลาด: {e} ---")
+    print(f"--- [ERROR] พบปัญหา: {e} ---")
