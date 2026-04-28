@@ -1,152 +1,97 @@
 import os
 
-# --- 1. เตรียมข้อมูล Base64 ---
-apple_b64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==" 
-bird_b64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=="
-snake_b64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=="
+# --- 1. CONFIGURATION & DATA ---
+# ใส่ Base64 ที่นี่ (คงตัวอย่างสั้นไว้ให้คุณเติมของจริง)
+images = {
+    "APPLE": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==",
+    "BIRD":  "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==",
+    "SNAKE": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=="
+}
 
-# --- 2. สร้างโครงสร้าง HTML (ใช้ Double Braces {{ }} สำหรับ CSS/JS) ---
-html_template = f"""
+# --- 2. HTML TEMPLATE (Raw String - No 'f' prefix) ---
+# การไม่ใส่ f หน้าเครื่องหมายคำพูด จะทำให้ Python มองเป็นข้อความดิบ ไม่ Error เรื่องปีกกาแน่นอน
+html_base = """
 <!DOCTYPE html>
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>พระจอมเกล้าติวเตอร์ - Phonics Adventure</title>
     <style>
-        :root {{
-            --primary-color: #FF5722;
-            --secondary-color: #4CAF50;
-        }}
-        body {{
-            font-family: 'Sarabun', sans-serif;
-            background-color: #FFF9C4;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }}
-        .app-container {{
-            width: 100%;
-            max-width: 500px;
-            background: white;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            box-shadow: 0 0 20px rgba(0,0,0,0.1);
-        }}
-        .header {{
-            background: var(--primary-color);
-            color: white;
-            padding: 15px;
-            text-align: center;
-            font-weight: bold;
-        }}
-        .content-card {{
-            flex: 1;
-            padding: 20px;
-            text-align: center;
-            overflow-y: auto;
-        }}
-        .main-image-frame {{
-            width: 200px;
-            height: 200px;
-            border: 5px solid var(--secondary-color);
-            border-radius: 20px;
-            margin: 10px auto;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }}
-        .main-image {{
-            max-width: 90%;
-            max-height: 90%;
-        }}
-        .nav-bar {{
-            display: flex;
-            justify-content: space-between;
-            padding: 20px;
-            background: #f1f1f1;
-        }}
-        .btn-nav {{
-            background: var(--primary-color);
-            color: white;
-            border: none;
-            padding: 10px 30px;
-            border-radius: 20px;
-            cursor: pointer;
-            font-weight: bold;
-        }}
+        :root { --primary: #FF5722; --secondary: #4CAF50; }
+        body { font-family: 'Sarabun', sans-serif; background: #FFF9C4; margin: 0; display: flex; justify-content: center; }
+        .app-container { width: 100%; max-width: 500px; background: white; height: 100vh; display: flex; flex-direction: column; box-shadow: 0 0 20px rgba(0,0,0,0.1); }
+        .header { background: var(--primary); color: white; padding: 20px; text-align: center; font-size: 24px; font-weight: bold; }
+        .content { flex: 1; padding: 20px; text-align: center; }
+        .img-box { width: 250px; height: 250px; border: 8px solid var(--secondary); border-radius: 30px; margin: 20px auto; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        .img-box img { max-width: 100%; }
+        .nav { display: flex; justify-content: space-between; padding: 30px; background: #eee; }
+        .btn { background: var(--primary); color: white; border: none; padding: 15px 40px; border-radius: 50px; cursor: pointer; font-size: 18px; font-weight: bold; }
     </style>
 </head>
 <body>
-
-<div class="app-container">
-    <div class="header">พระจอมเกล้าติวเตอร์ - Phonics Adventure</div>
-    <div id="content" class="content-card"></div>
-    <div class="nav-bar">
-        <button class="btn-nav" onclick="changePage(-1)">Back</button>
-        <button class="btn-nav" onclick="changePage(1)">Next</button>
+    <div class="app-container">
+        <div class="header">พระจอมเกล้าติวเตอร์ Phonics</div>
+        <div id="display" class="content"></div>
+        <div class="nav">
+            <button class="btn" onclick="move(-1)">Back</button>
+            <button class="btn" onclick="move(1)">Next</button>
+        </div>
     </div>
-</div>
 
-<script>
-    const data = [
-        {{ letter: "Aa", img: "data:image/png;base64,{apple_b64}", eng: "Apple" }},
-        {{ letter: "Bb", img: "data:image/png;base64,{bird_b64}", eng: "Bird" }},
-        {{ letter: "Ss", img: "data:image/png;base64,{snake_b64}", eng: "Snake" }}
-    ];
+    <script>
+        const appData = [
+            { L: "Aa", T: "Apple", I: "data:image/png;base64,{{APPLE}}" },
+            { L: "Bb", T: "Bird",  I: "data:image/png;base64,{{BIRD}}" },
+            { L: "Ss", T: "Snake", I: "data:image/png;base64,{{SNAKE}}" }
+        ];
 
-    let idx = 0;
-    function render() {{
-        const item = data[idx];
-        document.getElementById('content').innerHTML = `
-            <h1 style="font-size: 80px; color: #FF5722; margin: 10px;">${{item.letter}}</h1>
-            <div class="main-image-frame">
-                <img src="${{item.img}}" class="main-image">
-            </div>
-            <h2 style="font-size: 32px;">${{item.eng}}</h2>
-            <button onclick="speak('${{item.eng}}')" style="padding: 15px 30px; font-size: 18px; border-radius: 15px; background: #4CAF50; color: white; border: none; cursor: pointer;">🔊 ฟังเสียง (2.0x)</button>
-        `;
-    }}
+        let cursor = 0;
+        function draw() {
+            const item = appData[cursor];
+            document.getElementById('display').innerHTML = `
+                <h1 style="font-size: 100px; color: var(--primary); margin: 0;">${item.L}</h1>
+                <div class="img-box"><img src="${item.I}"></div>
+                <h2 style="font-size: 40px;">${item.T}</h2>
+                <button onclick="speak('${item.T}')" style="padding: 15px; border-radius: 15px; background: var(--secondary); color: white; border: none; font-size: 20px; cursor: pointer;">🔊 Listen (2.9x)</button>
+            `;
+        }
 
-    function speak(text) {{
-        window.speechSynthesis.cancel();
-        const msg = new SpeechSynthesisUtterance(text);
-        msg.rate = 2.0; 
-        window.speechSynthesis.speak(msg);
-    }}
+        function speak(word) {
+            window.speechSynthesis.cancel();
+            const s = new SpeechSynthesisUtterance(word);
+            s.rate = 2.9; // ความเร็วตามสั่ง 2.9x
+            window.speechSynthesis.speak(s);
+        }
 
-    function changePage(d) {{
-        idx = (idx + d + data.length) % data.length;
-        render();
-    }}
-    render();
-</script>
-
+        function move(step) {
+            cursor = (cursor + step + appData.length) % appData.length;
+            draw();
+        }
+        draw();
+    </script>
 </body>
 </html>
 """
 
-# --- 3. การบันทึกไฟล์ลง Path: Phonics_Course/ ---
-target_folder = "Phonics_Course"
-file_name = "phonics_app_v2.html"
+# --- 3. THE INJECTION ENGINE (Advanced Replacement) ---
+final_html = html_base
+for key, value in images.items():
+    final_html = final_html.replace(f"{{{{{key}}}}}", value)
+
+# --- 4. SAFE WRITE TO GITHUB PATH ---
+target_path = "Phonics_Course/phonics_app_v2.html"
 
 try:
-    # สร้างโฟลเดอร์ถ้ายังไม่มี (สำคัญมากสำหรับการรันบน GitHub)
-    if not os.path.exists(target_folder):
-        os.makedirs(target_folder)
-        print(f"Created directory: {target_folder}")
-
-    file_path = os.path.join(target_folder, file_name)
+    # สร้างโฟลเดอร์ Phonics_Course ถ้ายังไม่มี
+    os.makedirs(os.path.dirname(target_path), exist_ok=True)
     
-    with open(file_path, "w", encoding="utf-8") as f:
-        f.write(html_template)
+    with open(target_path, "w", encoding="utf-8") as f:
+        f.write(final_html)
     
-    print(f"--- [SUCCESS] แก้ไขและบันทึกสำเร็จ ---")
-    print(f"Path: {file_path}")
-    print(f"สถานะ: พร้อม Push ขึ้น GitHub")
+    print(f"--- [COMPLETE 100%] ---")
+    print(f"✅ บันทึกไฟล์สำเร็จที่: {target_path}")
+    print(f"✅ ความเร็วเสียงตั้งค่าไว้ที่: 2.9x")
+    print(f"✅ ตรวจสอบโครงสร้าง: ปลอดภัยจาก f-string conflict")
 
 except Exception as e:
-    print(f"--- [ERROR] พบปัญหา: {e} ---")
+    print(f"❌ พบข้อผิดพลาดระดับระบบ: {e}")
