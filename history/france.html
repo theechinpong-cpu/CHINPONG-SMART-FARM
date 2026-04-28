@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>ตำราประวัติศาสตร์ฝรั่งเศส | Web E‑Book แบบโต้ตอบ</title>
+  <!-- Google Fonts & Font Awesome -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,600;14..32,700&family=Playfair+Display:ital,wght@0,500;0,700;1,500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #faf7f2;
+      color: #1e1e2a;
+      line-height: 1.55;
+      scroll-behavior: smooth;
+    }
+
+    /*  container grid: sidebar + main  */
+    .ebook-container {
+      display: flex;
+      max-width: 1400px;
+      margin: 0 auto;
+      position: relative;
+    }
+
+    /* sidebar TOC */
+    .sidebar {
+      width: 280px;
+      background: #ffffffdd;
+      backdrop-filter: blur(4px);
+      background: rgba(255, 248, 240, 0.95);
+      border-right: 1px solid #e2dcd5;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      padding: 2rem 1rem 2rem 1.5rem;
+      z-index: 10;
+      transition: transform 0.3s ease;
+    }
+
+    .sidebar h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.6rem;
+      font-weight: 700;
+      margin-bottom: 1.5rem;
+      letter-spacing: -0.3px;
+      color: #2c3e2f;
+      border-left: 4px solid #b8860b;
+      padding-left: 0.75rem;
+    }
+
+    .toc-list {
+      list-style: none;
+    }
+
+    .toc-list li {
+      margin: 0.8rem 0;
+    }
+
+    .toc-list a {
+      text-decoration: none;
+      color: #3b3b44;
+      font-weight: 500;
+      font-size: 0.9rem;
+      display: block;
+      padding: 0.3rem 0;
+      transition: all 0.2s;
+      border-left: 2px solid transparent;
+      padding-left: 0.75rem;
+    }
+
+    .toc-list a:hover, .toc-list a.active {
+      color: #b45f1b;
+      border-left-color: #b8860b;
+      background: #fef0e0;
+    }
+
+    /* main content */
+    .main-content {
+      flex: 1;
+      padding: 2rem 2.5rem 4rem;
+      max-width: calc(100% - 280px);
+    }
+
+    /* header */
+    .hero {
+      text-align: center;
+      margin-bottom: 3rem;
+      padding-bottom: 1rem;
+      border-bottom: 2px dashed #decba4;
+    }
+
+    .hero h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 2.8rem;
+      font-weight: 700;
+      color: #2e4a2b;
+      letter-spacing: -0.5px;
+    }
+
+    .hero p {
+      font-size: 1rem;
+      color: #6c5b4b;
+      margin-top: 0.5rem;
+    }
+
+    /* card style for chapters */
+    .chapter {
+      margin-bottom: 3.5rem;
+      scroll-margin-top: 20px;
+    }
+
+    .chapter h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.9rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      padding-bottom: 0.4rem;
+      border-bottom: 2px solid #e9d6b0;
+      display: inline-block;
+      color: #3b2c1f;
+    }
+
+    .chapter h3 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin: 1.5rem 0 0.75rem 0;
+      color: #6a3e1b;
+    }
+
+    .chapter h4 {
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin: 1.2rem 0 0.5rem;
+      color: #8b5a2b;
+    }
+
+    .image-card {
+      background: #fffef7;
+      border-radius: 24px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.03), 0 2px 6px rgba(0,0,0,0.05);
+      margin: 1.6rem 0;
+      padding: 1rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.2rem;
+      align-items: center;
+      border: 1px solid #f0e5d6;
+      transition: 0.2s;
+    }
+
+    .image-card img {
+      max-width: 280px;
+      width: 100%;
+      border-radius: 18px;
+      object-fit: cover;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      background: #f3ede4;
+    }
+
+    .image-caption {
+      flex: 1;
+      font-size: 0.9rem;
+      color: #5a4a38;
+    }
+
+    .image-caption a {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #efebe4;
+      padding: 5px 12px;
+      border-radius: 40px;
+      text-decoration: none;
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: #956e3e;
+      margin-top: 8px;
+      transition: 0.2s;
+    }
+
+    .image-caption a i {
+      font-size: 0.75rem;
+    }
+
+    .image-caption a:hover {
+      background: #e2d5c4;
+      color: #6e3d12;
+    }
+
+    .source-link {
+      margin: 0.4rem 0 1rem;
+      font-size: 0.85rem;
+    }
+
+    .source-link a {
+      color: #b45f1b;
+      text-decoration: none;
+      font-weight: 500;
+      border-bottom: 1px dotted #d9b382;
+    }
+
+    .btn-ext {
+      background: none;
+      border: 1px solid #dbbf93;
+      padding: 0.2rem 1rem;
+      border-radius: 30px;
+      font-size: 0.8rem;
+      display: inline-block;
+      margin-top: 0.3rem;
+      transition: 0.2s;
+    }
+
+    .btn-ext:hover {
+      background: #dbbf93;
+      color: white;
+    }
+
+    /* timeline widget */
+    .timeline-widget {
+      background: #fff6eb;
+      border-radius: 32px;
+      padding: 1.2rem;
+      margin: 2rem 0;
+      border: 1px solid #edd6b3;
+    }
+
+    .timeline-scroll {
+      display: flex;
+      overflow-x: auto;
+      gap: 1rem;
+      padding-bottom: 0.8rem;
+      scrollbar-width: thin;
+    }
+
+    .timeline-item {
+      background: white;
+      border-radius: 24px;
+      min-width: 160px;
+      padding: 0.8rem;
+      text-align: center;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+      flex-shrink: 0;
+    }
+
+    .timeline-year {
+      font-weight: 800;
+      font-size: 1.2rem;
+      color: #b45f1b;
+    }
+
+    /* responsive */
+    @media (max-width: 900px) {
+      .ebook-container {
+        flex-direction: column;
+      }
+      .sidebar {
+        width: 100%;
+        height: auto;
+        position: relative;
+        border-right: none;
+        border-bottom: 1px solid #ddd2c0;
+        padding: 1rem;
+      }
+      .main-content {
+        max-width: 100%;
+        padding: 1.5rem;
+      }
+      .image-card {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .image-card img {
+        max-width: 100%;
+      }
+    }
+
+    footer {
+      margin-top: 4rem;
+      text-align: center;
+      font-size: 0.8rem;
+      color: #b29e80;
+      border-top: 1px solid #e6dbc9;
+      padding-top: 2rem;
+    }
+    a {
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+<div class="ebook-container">
+  <!-- side TOC -->
+  <aside class="sidebar">
+    <h3><i class="fas fa-book-open"></i> สารบัญ</h3>
+    <ul class="toc-list">
+      <li><a href="#intro"><i class="fas fa-flag-checkered"></i> บทนำ</a></li>
+      <li><a href="#gaul"><i class="fas fa-landmark"></i> ภาค 1: กอล & โรมัน</a></li>
+      <li><a href="#merovingian"><i class="fas fa-crown"></i> ราชวงศ์เมอโรแว็งเฌียง</a></li>
+      <li><a href="#carolingian"><i class="fas fa-eagle"></i> การอแล็งเฌียง & ชาร์เลอมาญ</a></li>
+      <li><a href="#capet"><i class="fas fa-shield-alt"></i> ราชวงศ์กาแป & สงครามร้อยปี</a></li>
+      <li><a href="#wars-religion"><i class="fas fa-church"></i> สงครามศาสนา</a></li>
+      <li><a href="#louisxiv"><i class="fas fa-chess-king"></i> สมบูรณาญาสิทธิราชย์</a></li>
+      <li><a href="#revolution"><i class="fas fa-fist-raised"></i> การปฏิวัติฝรั่งเศส</a></li>
+      <li><a href="#timeline"><i class="fas fa-chart-line"></i> เส้นเวลาโต้ตอบ</a></li>
+    </ul>
+    <div style="margin-top: 2rem; font-size:0.75rem; color:#9b7e60; border-top:1px solid #e2cfb5; padding-top:1rem;">
+      <i class="fas fa-external-link-alt"></i> คลิกรูป / ลิงก์ → ดูเนื้อหาจริง
+    </div>
+  </aside>
+
+  <main class="main-content">
+    <div class="hero">
+      <h1>📜 ประวัติศาสตร์ฝรั่งเศส <br> ยุคเริ่มก่อตั้ง → ปฏิวัติฝรั่งเศส</h1>
+      <p>Web E‑book แบบโต้ตอบ | รูปประกอบ + ลิงก์แหล่งข้อมูลจริง | เรียนรู้สนุก ครบเครื่อง</p>
+    </div>
+
+    <!-- บทนำ -->
+    <section id="intro" class="chapter">
+      <h2>🇫🇷 บทนำ</h2>
+      <p>ฝรั่งเศสในปัจจุบันสืบทอดดินแดน “กอล” โบราณ ผ่านการหล่อหลอมจากจักรวรรดิโรมัน ราชวงศ์แฟรงก์ จนถึงระบอบสมบูรณาญาสิทธิราชย์ สิ้นสุดด้วยการปฏิวัติ ค.ศ.1789 ที่เปลี่ยนโลกตะวันตก ในเล่มนี้เราจะย้อนรอยทุกยุคทุกสมัยอย่างละเอียด พร้อมแหล่งข้อมูลเชื่อมโยงศึกษาต่อได้ทันที</p>
+      <div class="image-card">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Flag_of_France_%281794%E2%80%931815%2C_1830%E2%80%931974%29.svg/800px-Flag_of_France_%281794%E2%80%931815%2C_1830%E2%80%931974%29.svg.png" alt="ธงชาติฝรั่งเศสยุคปฏิวัติ">
+        <div class="image-caption"><strong>ธงไตรรงค์  สัญลักษณ์เสรีภาพ</strong><br><a href="https://th.wikipedia.org/wiki/%E0%B8%98%E0%B8%87%E0%B8%9D%E0%B8%A3%E0%B8%B1%E0%B9%88%E0%B8%87%E0%B9%80%E0%B8%A8%E0%B8%AA" target="_blank"><i class="fas fa-link"></i> ดูเนื้อหาธงฝรั่งเศสบนวิกิพีเดีย</a></div>
+      </div>
+    </section>
+
+    <!-- ภาค1 กอล -->
+    <section id="gaul" class="chapter">
+      <h2>🏛️ ภาค 1 : กอล (Gaul) ภายใต้โรมัน</h2>
+      <p>แคว้นกอลเป็นที่อยู่ของชนเผ่าเคลต์ที่กล้าหาญ ก่อนถูกจูเลียส ซีซาร์พิชิตระหว่าง 58–50 ปีก่อน ค.ศ.  ภายใต้การปกครองโรมัน กอลเจริญรุ่งเรืองเป็นเวลา 500 ปี</p>
+      <div class="image-card">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/Map_Gallia_Tribes_Towns.png/640px-Map_Gallia_Tribes_Towns.png" alt="แผนที่กอลสมัยโรมัน">
+        <div class="image-caption"><strong>แผนที่ Gallia (แคว้นกอล)</strong><br><a href="https://commons.wikimedia.org/wiki/File:Map_Gallia_Tribes_Towns.png" target="_blank"><i class="fas fa-search"></i> ดูภาพใหญ่ + คำอธิบาย</a> | <a href="https://th.wikipedia.org/wiki/%E0%B9%81%E0%B8%84%E0%B8%A7%E0%B9%89%E0%B8%99%E0%B8%81%E0%B8%AD%E0%B8%A5" target="_blank">อ่านประวัติกอลเพิ่มเติม</a></div>
+      </div>
+      <p><strong>แวร์แซ็งเกอทอริกซ์</strong> ผู้นำกอลผู้ต่อต้านโรมัน ถูกจับที่อาลาเซีย (52 ปีก่อน ค.ศ.) ซากสถาปัตยกรรมโรมัน เช่น <em>Maison Carrée</em> ที่เมืองนีม ยังปรากฏให้เห็น</p>
+      <div class="image-card">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/fd/Maison_Carr%C3%A9e_side.jpg/640px-Maison_Carr%C3%A9e_side.jpg" alt="Maison Carrée">
+        <div class="image-caption"><strong>วิหาร Maison Carrée</strong> — มรดกโรมันในฝรั่งเศส<br><a href="https://en.wikipedia.org/wiki/Maison_Carr%C3%A9e" target="_blank">🔗 อ่านเพิ่มเติม (อังกฤษ)</a></div>
+      </div>
+    </section>
+
+    <!-- ราชวงศ์เมอโรแว็งเฌียง -->
+    <section id="merovingian" class="chapter">
+      <h2>👑 ราชวงศ์เมอโรแว็งเฌียง (481–751)</h2>
+      <p>พระเจ้าโคลวิสที่ 1 ทรงรวบรวมชนเผ่าแฟรงก์ เปลี่ยนไปนับถือคริสต์ศาสนาคาทิก ทรงเป็นปฐมกษัตริย์แห่งราชวงศ์เมอโรแว็งเฌียง</p>
+      <div class="image-card">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b2/Clovis_%C3%A0_la_bataille_de_Tolbiac.jpg/640px-Clovis_%C3%A0_la_bataille_de_Tolbiac.jpg" alt="พระเจ้าโคลวิส">
+        <div class="image-caption"><strong>ภาพวาดโคลวิสรับศีลล้างบาป</strong><br><a href="https://th.wikipedia.org/wiki/%E0%B9%82%E0%B8%84%E0%B8%A5%E0%B8%A7%E0%B8%B4%E0%B8%AA%E0%B8%97%E0%B8%B5%E0%B9%88_1" target="_blank">อ่านชีวประวัติโคลวิส (วิกิ)</a></div>
+      </div>
+    </section>
+
+    <!-- การอแล็งเฌียง & ชาร์เลอมาญ -->
+    <section id="carolingian" class="chapter">
+      <h2>⚜️ ราชวงศ์การอแล็งเฌียง & ชาร์เลอมาญ</h2>
+      <p>ชาร์ล มาร์แตล หยุดยั้งมุสลิมที่ตูร์ (732) เปแป็งผู้สั้นปราบดาภิเษกเป็นกษัตริย์ในปี 751 และชาร์เลอมาญ (ค.ศ.768–814) ขยายจักรวรรดิจนได้รับมงกุฎจักรพรรดิโรมันอันศักดิ์สิทธิ์ สนธิสัญญาแวร์เดิง (843) แบ่งจักรวรรดิ เป็นกำเนิดฝรั่งเศสตะวันตก</p>
+      <div class="image-card">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/7b/Charlemagne_et_P%C3%A9pin_le_Bref.jpg/640px-Charlemagne_et_P%C3%A9pin_le_Bref.jpg" alt="ชาร์เลอมาญ">
+        <div class="image-caption"><strong>ชาร์เลอมาญและพระเจ้าเปแป็ง</strong><br><a href="https://th.wikipedia.org/wiki/%E0%B8%8A%E0%B8%B2%E0%B8%A3%E0%B9%8C%E0%B9%80%E0%B8%A5%E0%B8%AD%E0%B8%A1%E0%B8%B2%E0%B8%8D" target="_blank">📖 ชาร์เลอมาญ มหาราช</a></div>
+      </div>
+    </section>
+
+    <!-- ราชวงศ์กาแป & สงครามร้อยปี + ฌานดาร์ก -->
+    <section id="capet" class="chapter">
+      <h2>🗡️ ราชวงศ์กาแป & สงครามร้อยปี (1337–1453)</h2>
+      <p>อูก กาแป ปฐมกษัตริย์ราชวงศ์กาแป (987) หลังจากศึกชิงบัลลังก์ สงครามร้อยปีระหว่างอังกฤษ–ฝรั่งเศส ฌาน ดาร์ก วีรสตรีแห่งออร์เลอ็อง ปลดปล่อยฝรั่งเศสและนำกษัตริย์ชาร์ลที่ 7 ไปราชาภิเษก</p>
+      <div class="image-card">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Jeanne_d%27Arc_les_cocardes.jpg/640px-Jeanne_d%27Arc_les_cocardes.jpg" alt="ฌาน ดาร์ก">
+        <div class="image-caption"><strong>ฌาน ดาร์ก วีรสตรีแห่งฝรั่งเศส</strong><br><a href="https://th.wikipedia.org/wiki/%E0%B8%8C%E0%B8%B2%E0%B8%99%E0%B9%81%E0%B8%AB%E0%B9%88%E0%B8%87%E0%B8%AD%E0%B8%B2%E0%B8%A3%E0%B9%8C%E0%B8%81" target="_blank">ประวัติและเหตุการณ์จริง</a> | <a href="https://en.wikipedia.org/wiki/Hundred_Years%27_War" target="_blank">สงครามร้อยปี (อังกฤษ)</a></div>
+      </div>
+      <p>สงครามร้อยปีจบลงด้วยชัยชนะของฝรั่งเศส เสริมสร้างอำนาจกษัตริย์และปลุกชาตินิยมฝรั่งเศส</p>
+    </section>
+
+    <!-- สงครามศาสนา -->
+    <section id="wars-religion" class="chapter">
+      <h2>✝️ สงครามศาสนาฝรั่งเศส (1562–1598)</h2>
+      <p>ความขัดแย้งระหว่างคาทอลิกกับโปรเตสแตนต์ (อูว์เกอโน) นำไปสู่การสังหารหมู่วันเซนต์บาร์โธโลมิว (1572) พระเจ้าอ็องรีที่ 4 ทรงประกาศ <strong>พระราชกฤษฎีกาแห่งนองต์</strong> (1598) ให้สิทธิเสรีภาพทางศาสนา</p>
+      <div class="image-card">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/7b/La_Saint-Barth%C3%A9lemy_%28Fran%C3%A7ois_Dubois%29.jpg/640px-La_Saint-Barth%C3%A9lemy_%28Fran%C3%A7ois_Dubois%29.jpg" alt="Saint Bartholomew's Day Massacre">
+        <div class="image-caption"><strong>ภาพสังหารหมู่เซนต์บาร์โธโลมิว</strong><br><a href="https://th.wikipedia.org/wiki/%E0%B8%A7%E0%B8%B1%E0%B8%99%E0%B9%80%E0%B8%8B%E0%B8%99%E0%B8%95%E0%B9%8C%E0%B8%9A%E0%B8%B2%E0%B8%A3%E0%B9%8C%E0%B9%82%E0%B8%98%E0%B9%82%E0%B8%A5%E0%B8%A1%E0%B8%B4%E0%B8%A7" target="_blank">อ่านเหตุการณ์ฉบับเต็ม</a></div>
+      </div>
+    </section>
+
+    <!-- ระบอบสมบูรณาญาสิทธิราชย์ หลุยส์ที่14-16-->
+    <section id="louisxiv" class="chapter">
+      <h2>👑 สมบูรณาญาสิทธิราชย์ : หลุยส์ที่ 14 – หลุยส์ที่ 16</h2>
+      <p><strong>“รัฐคือข้า”</strong> พระเจ้าหลุยส์ที่ 14 ทรงสร้างพระราชวังแวร์ซายเป็นศูนย์อำนาจ ยุคทองแห่งระบอบสมบูรณาญาสิทธิราชย์ หลุยส์ที่ 15 และ 16 กลับทรงบริหารการคลังล้มเหลว เกิดหนี้สินมหาศาล นำไปสู่วิกฤติการณ์ก่อนปฏิวัติ</p>
+      <div class="image-card">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/cf/Louis_XIV_of_France.jpg/640px-Louis_XIV_of_France.jpg" alt="พระเจ้าหลุยส์ที่ 14">
+        <div class="image-caption"><strong>พระเจ้าหลุยส์ที่ 14 โดย Hyacinthe Rigaud</strong><br><a href="https://th.wikipedia.org/wiki/%E0%B8%9E%E0%B8%A3%E0%B8%B0%E0%B9%80%E0%B8%88%E0%B9%89%E0%B8%B2%E0%B8%AB%E0%B8%A5%E0%B8%B8%E0%B8%A2%E0%B8%AA%E0%B9%8C%E0%B8%97%E0%B8%B5%E0%B9%88_14_%E0%B9%81%E0%B8%AB%E0%B9%88%E0%B8%87%E0%B8%9D%E0%B8%A3%E0%B8%B1%E0%B9%88%E0%B8%87%E0%B9%80%E0%B8%A8%E0%B8%AA" target="_blank">อ่านชีวประวัติ Sun King</a></div>
+      </div>
+      <div class="image-card">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/83/Ch%C3%A2teau_de_Versailles_%28July_2022%29_-_img_07.jpg/640px-Ch%C3%A2teau_de_Versailles_%28July_2022%29_-_img_07.jpg" alt="พระราชวังแวร์ซาย">
+        <div class="image-caption"><strong>พระราชวังแวร์ซาย สัญลักษณ์แห่งอำนาจ</strong><br><a href="https://th.wikipedia.org/wiki/%E0%B8%9E%E0%B8%A3%E0%B8%B0%E0%B8%A3%E0%B8%B2%E0%B8%8A%E0%B8%A7%E0%B8%B1%E0%B8%87%E0%B9%81%E0%B8%A7%E0%B8%A3%E0%B9%8C%E0%B8%8B%E0%B8%B2%E0%B8%A2" target="_blank">ทัวร์ชมแวร์ซาย</a></div>
+      </div>
+    </section>
+
+    <!-- การปฏิวัติฝรั่งเศส -->
+    <section id="revolution" class="chapter">
+      <h2>🇫🇷 การปฏิวัติฝรั่งเศส (1789–1799)</h2>
+      <h3>📌 จุดเริ่มต้น : สภาฐานันดร & การทลายคุกบัสตีย์</h3>
+      <p>ปัญหาทางการเงินและการเลือกปฏิบัติทำให้ฐานันดรที่สามตั้งสมัชชาแห่งชาติ 14 กรกฎาคม 1789 ฝูงชนบุกทลายคุกบัสตีย์ หลังปฏิญญาสิทธิของมนุษย์และพลเมือง 27 สิงหาคม 1789 ถือเป็นการสิ้นสุดระบอบเก่า</p>
+      <div class="image-card">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c3/Prise_de_la_Bastille.jpg/640px-Prise_de_la_Bastille.jpg" alt="ทลายคุกบัสตีย์">
+        <div class="image-caption"><strong>เหตุการณ์ 14 กรกฎาคม 1789</strong><br><a href="https://th.wikipedia.org/wiki/%E0%B8%81%E0%B8%B2%E0%B8%A3%E0%B8%97%E0%B8%A5%E0%B8%B2%E0%B8%A2%E0%B8%84%E0%B8%B8%E0%B8%81%E0%B8%9A%E0%B8%B1%E0%B8%AA%E0%B8%95%E0%B8%B5%E0%B8%A2%E0%B9%8C" target="_blank">อ่านประวัติศาสตร์บัสตีย์</a></div>
+      </div>
+      <div class="image-card">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/D%C3%A9claration_des_Droits_de_l%27Homme_et_du_Citoyen_%281789_original%29.jpg/640px-D%C3%A9claration_des_Droits_de_l%27Homme_et_du_Citoyen_%281789_original%29.jpg" alt="ปฏิญญาสิทธิ">
+        <div class="image-caption"><strong>ปฏิญญาสิทธิของมนุษย์และพลเมือง (1789)</strong><br><a href="https://th.wikipedia.org/wiki/%E0%B8%9B%E0%B8%8F%E0%B8%B4%E0%B8%8D%E0%B8%8D%E0%B8%B2%E0%B8%AA%E0%B8%B4%E0%B8%97%E0%B8%98%E0%B8%B4%E0%B8%82%E0%B8%AD%E0%B8%87%E0%B8%A1%E0%B8%99%E0%B8%B8%E0%B8%A9%E0%B8%A2%E0%B9%8C%E0%B9%81%E0%B8%A5%E0%B8%B0%E0%B8%9E%E0%B8%A5%E0%B9%80%E0%B8%A1%E0%B8%B7%E0%B8%AD%E0%B8%87" target="_blank">ฉบับสมบูรณ์ + ความหมาย</a></div>
+      </div>
+      <h3>⚔️ การล้มล้างกษัตริย์และยุคน่ากลัว</h3>
+      <p>พระเจ้าหลุยส์ที่ 16 ถูกประหารด้วยกิโยติน 21 มกราคม 1793 ต่อมารอแบ็สปีแยร์นำ “ยุคน่ากลัว” (1793-1794) มีผู้ถูกประหารนับหมื่น แต่สุดท้ายรอแบ็สปีแยร์ถูกโค่นและประหารชีวิต</p>
+      <div class="image-card">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/58/Execution_of_Louis_XVI.jpg/640px-Execution_of_Louis_XVI.jpg" alt="ประหารชีวิตหลุยส์ที่ 16">
+        <div class="image-caption"><strong>การประหารชีวิตกษัตริย์หลุยส์ที่ 16</strong><br><a href="https://th.wikipedia.org/wiki/%E0%B8%9E%E0%B8%A3%E0%B8%B0%E0%B9%80%E0%B8%88%E0%B9%89%E0%B8%B2%E0%B8%AB%E0%B8%A5%E0%B8%B8%E0%B8%A2%E0%B8%AA%E0%B9%8C%E0%B8%97%E0%B8%B5%E0%B9%88_16_%E0%B9%81%E0%B8%AB%E0%B9%88%E0%B8%87%E0%B8%9D%E0%B8%A3%E0%B8%B1%E0%B9%88%E0%B8%87%E0%B9%80%E0%B8%A8%E0%B8%AA" target="_blank">ประวัติศาสตร์การสิ้นพระชนม์</a></div>
+      </div>
+      <h3>📅 บทสรุป : สู่ยุคนโปเลียน</h3>
+      <p>รัฐประหาร 18 Brumaire (ค.ศ.1799) นโปเลียน โบนาปาร์ตก้าวขึ้นสู่อำนาจ ปิดฉากการปฏิวัติฝรั่งเศส เริ่มต้นยุคจักรวรรดิ</p>
+      <div class="source-link"><a href="https://th.wikipedia.org/wiki/%E0%B8%81%E0%B8%B2%E0%B8%A3%E0%B8%9B%E0%B8%8F%E0%B8%B4%E0%B8%A7%E0%B8%B1%E0%B8%95%E0%B8%B4%E0%B8%9D%E0%B8%A3%E0%B8%B1%E0%B9%88%E0%B8%87%E0%B9%80%E0%B8%A8%E0%B8%AA" target="_blank"><i class="fas fa-globe"></i> ศึกษาการปฏิวัติฝรั่งเศสแบบเจาะลึก (วิกิพีเดีย)</a></div>
+    </section>
+
+    <!-- เส้นเวลา interactive -->
+    <section id="timeline" class="chapter">
+      <h2>⏳ เส้นเวลา Interactive: ก้าวสำคัญแห่งฝรั่งเศส</h2>
+      <div class="timeline-widget">
+        <div class="timeline-scroll">
+          <div class="timeline-item"><div class="timeline-year">52 ก่อน ค.ศ.</div>แวร์แซ็งเกอทอริกซ์พ่ายซีซาร์</div>
+          <div class="timeline-item"><div class="timeline-year">ค.ศ. 496</div>โคลวิส รับศีลจุ่ม</div>
+          <div class="timeline-item"><div class="timeline-year">800</div>ชาร์เลอมาญจักรพรรดิ</div>
+          <div class="timeline-item"><div class="timeline-year">987</div>อูก กาแป ราชวงศ์กาแป</div>
+          <div class="timeline-item"><div class="timeline-year">1337</div>สงครามร้อยปีเริ่ม</div>
+          <div class="timeline-item"><div class="timeline-year">1429</div>ฌาน ดาร์ก ที่ออร์เลอ็อง</div>
+          <div class="timeline-item"><div class="timeline-year">1572</div>วันเซนต์บาร์โธโลมิว</div>
+          <div class="timeline-item"><div class="timeline-year">1598</div>กฤษฎีกาแห่งนองต์</div>
+          <div class="timeline-item"><div class="timeline-year">1682</div>แวร์ซาย เป็นราชสำนัก</div>
+          <div class="timeline-item"><div class="timeline-year">1789</div>ทลายบัสตีย์ ปฏิญญาสิทธิ์</div>
+          <div class="timeline-item"><div class="timeline-year">1793</div>ประหารหลุยส์ที่ 16</div>
+          <div class="timeline-item"><div class="timeline-year">1799</div>นโปเลียน รัฐประหาร</div>
+        </div>
+        <p style="margin-top:0.8rem; font-size:0.8rem;"><i class="fas fa-arrow-right"></i> เลื่อนดูเหตุการณ์สำคัญ → คลิกที่ลิงก์ในบทเพื่อศึกษาเชิงลึก</p>
+      </div>
+    </section>
+
+    <!-- แหล่งอ้างอิงเพิ่มเติมและเอกสาร -->
+    <footer>
+      <p><i class="fas fa-bookmark"></i> เอกสารอ้างอิง:  วิกิพีเดีย และสารานุกรม Britannica | รูปภาพจาก Wikimedia Commons (CC BY-SA / สาธารณสมบัติ)</p>
+      <p>🎓 Web E‑book นี้จัดทำขึ้นเพื่อการเรียนรู้โดยเฉพาะ ทุกภาพและลิงก์เชื่อมโยงไปยังต้นฉบับเพื่อศึกษาเพิ่มเติมอย่างปลอดภัย</p>
+      <p>📅 อัปเดต 2026 — ประวัติศาสตร์ฝรั่งเศส ตั้งแต่ยุคกอล → การปฏิวัติฝรั่งเศส </p>
+    </footer>
+  </main>
+</div>
+
+<!-- smooth scroll & active toc highlight -->
+<script>
+  const sections = document.querySelectorAll('.chapter');
+  const navLinks = document.querySelectorAll('.toc-list a');
+  function makeActive() {
+    let current = '';
+    const scrollPos = window.scrollY + 100;
+    sections.forEach(section => {
+      const sectionTop = section.offsetTop;
+      const sectionBottom = sectionTop + section.offsetHeight;
+      if (scrollPos >= sectionTop && scrollPos < sectionBottom) {
+        current = section.getAttribute('id');
+      }
+    });
+    navLinks.forEach(link => {
+      link.classList.remove('active');
+      if (link.getAttribute('href') === '#' + current) {
+        link.classList.add('active');
+      }
+    });
+  }
+  window.addEventListener('scroll', makeActive);
+  window.addEventListener('load', makeActive);
+</script>
+</body>
+</html>
