@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Professional Tic Tac Toe 4x4</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --accent-x: #e74c3c;
+            --accent-o: #3498db;
+            --bg-color: #f4f7f6;
+            --board-bg: #ffffff;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .status-container {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        #status-text {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        .board {
+            display: grid;
+            grid-template-columns: repeat(4, 80px);
+            grid-template-rows: repeat(4, 80px);
+            gap: 10px;
+            background-color: #bdc3c7;
+            padding: 10px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+
+        .cell {
+            width: 80px;
+            height: 80px;
+            background-color: var(--board-bg);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            user-select: none;
+        }
+
+        .cell:hover {
+            background-color: #ecf0f1;
+            transform: scale(1.02);
+        }
+
+        .cell.x { color: var(--accent-x); }
+        .cell.o { color: var(--accent-o); }
+
+        .btn-reset {
+            margin-top: 30px;
+            padding: 12px 30px;
+            font-size: 1rem;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .btn-reset:hover {
+            background-color: #34495e;
+        }
+
+        @media (max-width: 400px) {
+            .board {
+                grid-template-columns: repeat(4, 60px);
+                grid-template-rows: repeat(4, 60px);
+            }
+            .cell {
+                width: 60px;
+                height: 60px;
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="status-container">
+        <div id="status-text">ตาของฝ่าย X</div>
+    </div>
+
+    <div class="board" id="board">
+        </div>
+
+    <button class="btn-reset" onclick="resetGame()">เริ่มเกมใหม่</button>
+
+    <script>
+        const boardElement = document.getElementById('board');
+        const statusText = document.getElementById('status-text');
+        let currentPlayer = 'X';
+        let gameState = ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""];
+        let gameActive = true;
+
+        const encouragement = [
+            "สู้เขานะ!",
+            "ตาคุณแล้ว คิดให้ดีล่ะ",
+            "เดินเกมได้สวย!",
+            "วางหมากได้เฉียบคมมาก",
+            "อย่าเพิ่งยอมแพ้นะ",
+            "เกมกำลังตื่นเต้นเลย"
+        ];
+
+        // ระบบเสียงพูด
+        function speak(text) {
+            window.speechSynthesis.cancel(); // ตัดเสียงเก่าทิ้งทันที
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'th-TH';
+            utterance.rate = 1.2;
+            window.speechSynthesis.speak(utterance);
+        }
+
+        function createBoard() {
+            boardElement.innerHTML = '';
+            for (let i = 0; i < 16; i++) {
+                const cell = document.createElement('div');
+                cell.classList.add('cell');
+                cell.setAttribute('data-index', i);
+                cell.addEventListener('click', handleCellClick);
+                boardElement.appendChild(cell);
+            }
+            speak("เริ่มเกมใหม่ ตาของฝ่ายเอกซ์ สู้เขานะครับ");
+        }
+
+        function handleCellClick(e) {
+            const clickedCell = e.target;
+            const index = parseInt(clickedCell.getAttribute('data-index'));
+
+            if (gameState[index] !== "" || !gameActive) return;
+
+            gameState[index] = currentPlayer;
+            clickedCell.innerText = currentPlayer;
+            clickedCell.classList.add(currentPlayer.toLowerCase());
+
+            checkResult();
+        }
+
+        function checkResult() {
+            const winConditions = [
+                // Rows
+                [0, 1, 2, 3], [4, 5, 6, 7], [8, 9, 10, 11], [12, 13, 14, 15],
+                // Cols
+                [0, 4, 8, 12], [1, 5, 9, 13], [2, 6, 10, 14], [3, 7, 11, 15],
+                // Diagonals
+                [0, 5, 10, 15], [3, 6, 9, 12]
+            ];
+
+            let roundWon = false;
+            for (let condition of winConditions) {
+                const [a, b, c, d] = condition;
+                if (gameState[a] && gameState[a] === gameState[b] && gameState[a] === gameState[c] && gameState[a] === gameState[d]) {
+                    roundWon = true;
+                    break;
+                }
+            }
+
+            if (roundWon) {
+                statusText.innerText = `ฝ่าย ${currentPlayer} ชนะแล้ว!`;
+                speak(`ยินดีด้วยครับ ฝ่าย ${currentPlayer} เป็นผู้ชนะ สุดยอดไปเลย`);
+                gameActive = false;
+                return;
+            }
+
+            if (!gameState.includes("")) {
+                statusText.innerText = "เสมอกัน!";
+                speak("จบเกมแล้ว เสมอ กันครับ เก่งทั้งคู่เลย");
+                gameActive = false;
+                return;
+            }
+
+            currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+            statusText.innerText = `ตาของฝ่าย ${currentPlayer}`;
+            
+            // สุ่มคำพูดให้กำลังใจ
+            const randomMsg = encouragement[Math.floor(Math.random() * encouragement.length)];
+            speak(`ฝ่าย ${currentPlayer} เดินหมากแล้ว ${randomMsg}`);
+        }
+
+        function resetGame() {
+            currentPlayer = 'X';
+            gameState = ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""];
+            gameActive = true;
+            statusText.innerText = "ตาของฝ่าย X";
+            document.querySelectorAll('.cell').forEach(cell => {
+                cell.innerText = "";
+                cell.classList.remove('x', 'o');
+            });
+            speak("รีเซ็ตเกมใหม่เรียบร้อย ตาของฝ่ายเอกซ์ เริ่มได้เลย");
+        }
+
+        // Initialize
+        createBoard();
+    </script>
+</body>
+</html>
