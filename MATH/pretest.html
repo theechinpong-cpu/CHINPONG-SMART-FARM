@@ -76,6 +76,7 @@
         .wb-toolbar {
             padding: 10px; background: var(--secondary);
             display: flex; gap: 10px; align-items: center; color: white;
+            flex-wrap: wrap;
         }
 
         canvas {
@@ -84,28 +85,27 @@
             cursor: crosshair;
         }
 
-        /* Floating Calculator */
         #calc-container {
             position: absolute; bottom: 20px; right: 20px;
-            width: 220px; background: #333;
+            width: 240px; background: #333;
             padding: 15px; border-radius: 15px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            display: none;
+            display: none; z-index: 100;
         }
 
         .calc-screen {
-            width: 100%; height: 40px; background: #eee;
+            width: 100%; height: 45px; background: #eee;
             margin-bottom: 10px; text-align: right;
-            padding: 5px; box-sizing: border-box; font-size: 20px;
+            padding: 5px 10px; box-sizing: border-box; font-size: 22px;
+            border-radius: 5px; border: none;
         }
 
-        .calc-btns { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; }
-        .calc-btns button { padding: 10px; cursor: pointer; border: none; border-radius: 5px; }
+        .calc-btns { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+        .calc-btns button { padding: 12px; cursor: pointer; border: none; border-radius: 8px; font-weight: bold; }
         .btn-num { background: #555; color: white; }
         .btn-op { background: var(--primary); color: white; }
 
         .toggle-calc {
-            position: absolute; top: 10px; right: 10px;
             padding: 8px 15px; background: var(--primary);
             color: white; border: none; border-radius: 5px; cursor: pointer;
         }
@@ -114,45 +114,42 @@
 <body>
 
 <div class="main-wrapper">
-    <!-- ฝั่งซ้าย: ข้อสอบ -->
     <div class="quiz-frame" id="quiz-frame">
         <div class="header">
             <h2>พระจอมเกล้าติวเตอร์</h2>
-            <p>โดย ครูตู่ (Chinpong Smart Farm)</p>
+            <p>แบบทดสอบโจทย์ปัญหา 50 ข้อ (ฉบับปรับปรุงไม่ซ้ำกัน)</p>
         </div>
         
         <div class="summary-box">
-            <b>🏠 สรุปหัวใจสำคัญ:</b><br>
-            ใช้พื้นที่ด้านขวาทดเลขได้เต็มที่! เน้นการตั้งสมการจากโจทย์ปัญหา
+            <b>🏠 คำแนะนำจากครูตู่:</b>[cite: 1]
+            <p>อ่านโจทย์ให้รอบคอบ ใช้กระดานด้านขวาเพื่อทดเลขหรือวาดแผนภาพประกอบการตัดสินใจครับ</p>[cite: 1]
         </div>
 
         <div id="quiz-content"></div>
     </div>
 
-    <!-- ฝั่งขวา: Whiteboard -->
     <div class="whiteboard-frame">
         <div class="wb-toolbar">
-            <span>🎨 กระดานทดเลข</span>
+            <span>🎨 ไวท์บอร์ดทดเลข</span>
             <input type="color" id="pen-color" value="#000000">
-            <input type="range" id="pen-size" min="1" max="10" value="3">
-            <button onclick="clearCanvas()" style="background: #e74c3c; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;">ล้างกระดาน</button>
+            <input type="range" id="pen-size" min="1" max="15" value="3">
+            <button onclick="clearCanvas()" style="background: #e74c3c; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer;">ล้างกระดาน</button>
             <button class="toggle-calc" onclick="toggleCalc()">🧮 เครื่องคิดเลข</button>
         </div>
         
         <canvas id="whiteboard"></canvas>
 
-        <!-- เครื่องคิดเลขลอยตัว -->
         <div id="calc-container">
             <input type="text" id="calc-display" class="calc-screen" readonly>
             <div class="calc-btns">
                 <button class="btn-num" onclick="press('7')">7</button>
                 <button class="btn-num" onclick="press('8')">8</button>
                 <button class="btn-num" onclick="press('9')">9</button>
-                <button class="btn-op" onclick="press('/')">/</button>
+                <button class="btn-op" onclick="press('/')">÷</button>
                 <button class="btn-num" onclick="press('4')">4</button>
                 <button class="btn-num" onclick="press('5')">5</button>
                 <button class="btn-num" onclick="press('6')">6</button>
-                <button class="btn-op" onclick="press('*')">x</button>
+                <button class="btn-op" onclick="press('*')">×</button>
                 <button class="btn-num" onclick="press('1')">1</button>
                 <button class="btn-num" onclick="press('2')">2</button>
                 <button class="btn-num" onclick="press('3')">3</button>
@@ -161,28 +158,35 @@
                 <button class="btn-num" onclick="press('.')">.</button>
                 <button class="btn-op" onclick="calculate()">=</button>
                 <button class="btn-op" onclick="press('+')">+</button>
-                <button class="btn-op" onclick="clrCalc()" style="grid-column: span 4; background: #666;">Clear</button>
+                <button class="btn-op" onclick="clrCalc()" style="grid-column: span 4; background: #666;">ล้างค่า (C)</button>
             </div>
         </div>
     </div>
 </div>
 
 <script>
-// --- ส่วนของข้อสอบ ---
 const questions = [
-    { q: "ครูตู่มีเงิน 2,540 บาท ได้เพิ่ม 1,260 บาท ซื้อของ 800 บาท เหลือเท่าไหร่?", a: "3,000", options: ["3,000", "3,800", "2,800", "3,100"], exp: "วิธีคิด: (2,540 + 1,260) - 800 = 3,000" },
+    { q: "ครูตู่มีเงิน 2,540 บาท ได้เพิ่ม 1,260 บาท ซื้อของ 800 บาท เหลือเท่าไหร่?", a: "3,000", options: ["3,000", "3,800", "2,800", "3,100"], exp: "(2,540 + 1,260) - 800 = 3,000" },
     { q: "จัดส้มใส่ถุง ถุงละ 45 เม็ด จำนวน 11 ถุง รวมมีส้มกี่เม็ด?", a: "495", options: ["455", "495", "505", "411"], exp: "ทริคคูณ 11: 4 (4+5) 5 = 495" },
-    { q: "ถังน้ำมีน้ำ 3/4 เติมเพิ่ม 1/2 ขณะนี้มีน้ำเท่าใด?", a: "1 1/4", options: ["4/6", "1 1/4", "1", "1/4"], exp: "3/4 + 2/4 = 5/4 = 1 1/4" }
-    // (สามารถเพิ่มข้อ 4-50 ได้ตามรูปแบบเดิม)
+    { q: "ถังน้ำมีน้ำ 3/4 เติมเพิ่ม 1/2 ขณะนี้มีน้ำเท่าใด?", a: "1 1/4", options: ["4/6", "1 1/4", "1", "1/4"], exp: "3/4 + 2/4 = 5/4 = 1 1/4" },
+    { q: "สี่เหลี่ยมผืนผ้ากว้าง 12 ซม. ยาว 15 ซม. มีพื้นที่กี่ตารางซม.?", a: "180", options: ["180", "150", "120", "200"], exp: "12 x 15 = 180" },
+    { q: "ซื้อปากกา 7 ด้าม ราคาด้ามละ 15 บาท ให้แบงค์ 200 จะได้รับเงินทอนกี่บาท?", a: "95", options: ["95", "105", "85", "115"], exp: "200 - (7 x 15) = 200 - 105 = 95" },
+    { q: "ไข่ไก่ 30 ฟอง ทำแตกไป 20% เหลือไข่กี่ฟอง?", a: "24", options: ["24", "6", "20", "22"], exp: "แตกไป 6 ฟอง เหลือ 30 - 6 = 24" },
+    { q: "ระยะทาง 120 กม. ขับรถด้วยความเร็ว 60 กม./ชม. ใช้เวลากี่ชั่วโมง?", a: "2", options: ["2", "3", "1.5", "4"], exp: "120 / 60 = 2" },
+    { q: "นาฬิกาเรือนหนึ่งราคา 1,200 บาท ลดราคา 15% จะเหลือราคากี่บาท?", a: "1,020", options: ["1,020", "1,000", "1,080", "980"], exp: "ลดไป 180 บาท เหลือ 1,200 - 180 = 1,020" },
+    { q: "เลข 5, 10, 15, 20 ค่าเฉลี่ยคือเท่าใด?", a: "12.5", options: ["12.5", "10", "15", "13"], exp: "(5+10+15+20)/4 = 50/4 = 12.5" },
+    { q: "วงกลมมีรัศมี 7 ซม. เส้นรอบวงยาวประมาณเท่าใด (กำหนด pi=22/7)?", a: "44", options: ["44", "154", "22", "88"], exp: "2 x (22/7) x 7 = 44" }
 ];
 
-// Mock up ให้ครบ 50 ข้ออย่างเร็ว
-for(let i=4; i<=50; i++) {
+// เพิ่มโจทย์อัตโนมัติให้ครบ 50 ข้อโดยคำนวณค่าไม่ให้ซ้ำกัน
+for(let i=11; i<=50; i++) {
+    let val1 = i * 4;
+    let val2 = i + 10;
     questions.push({
-        q: `โจทย์ปัญหาข้อที่ ${i}: ถ้ามีสินค้าราคา ${i*10} บาท ลดราคา 10% จะเหลือราคากี่บาท?`,
-        a: `${(i*10)*0.9}`,
-        options: [`${(i*10)*0.9}`, `${i*10}`, `${(i*10)*0.8}`, `${i*9}`],
-        exp: `วิธีคิด: เอา ${i*10} ลบออก 10%`
+        q: `โจทย์ปัญหาข้อที่ ${i}: ถ้าคุณมีสินค้า ${val1} ชิ้น แบ่งให้เพื่อน ${val2} คน คนละเท่าๆ กัน จะเหลือเศษกี่ชิ้น?`,
+        a: `${val1 % val2}`,
+        options: [`${val1 % val2}`, `${(val1 % val2) + 1}`, `${Math.abs((val1 % val2) - 1)}`, "0"],
+        exp: `วิธีคิด: ${val1} หารด้วย ${val2} เหลือเศษคือคำตอบ`
     });
 }
 
@@ -217,7 +221,6 @@ function check(idx, sel, btn) {
     exp.style.display = 'block';
 }
 
-// --- ส่วนของ Whiteboard ---
 const canvas = document.getElementById('whiteboard');
 const ctx = canvas.getContext('2d');
 let drawing = false;
@@ -231,8 +234,10 @@ window.addEventListener('resize', resizeCanvas);
 setTimeout(resizeCanvas, 100);
 
 canvas.addEventListener('mousedown', () => drawing = true);
+canvas.addEventListener('touchstart', (e) => { drawing = true; e.preventDefault(); }, {passive: false});
 canvas.addEventListener('mouseup', () => { drawing = false; ctx.beginPath(); });
 canvas.addEventListener('mousemove', draw);
+canvas.addEventListener('touchmove', (e) => { draw(e.touches[0]); e.preventDefault(); }, {passive: false});
 
 function draw(e) {
     if(!drawing) return;
@@ -241,18 +246,20 @@ function draw(e) {
     ctx.strokeStyle = document.getElementById('pen-color').value;
 
     const rect = canvas.getBoundingClientRect();
-    ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    ctx.lineTo(x, y);
     ctx.stroke();
     ctx.beginPath();
-    ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
+    ctx.moveTo(x, y);
 }
 
 function clearCanvas() { ctx.clearRect(0, 0, canvas.width, canvas.height); }
 
-// --- เครื่องคิดเลข ---
 function toggleCalc() {
     const calc = document.getElementById('calc-container');
-    calc.style.display = calc.style.display === 'block' ? 'none' : 'block';
+    calc.style.display = (calc.style.display === 'block') ? 'none' : 'block';
 }
 
 function press(val) { document.getElementById('calc-display').value += val; }
@@ -260,9 +267,10 @@ function clrCalc() { document.getElementById('calc-display').value = ''; }
 function calculate() {
     try {
         const res = eval(document.getElementById('calc-display').value);
-        document.getElementById('calc-display').value = res;
+        document.getElementById('calc-display').value = Number.isInteger(res) ? res : res.toFixed(2);
     } catch {
-        alert('รูปแบบไม่ถูกต้อง');
+        alert('การคำนวณผิดพลาด');
+        clrCalc();
     }
 }
 
