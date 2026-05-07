@@ -3,228 +3,270 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>แบบฝึกหัดโจทย์ปัญหาคณิตศาสตร์ 50 ข้อ - พระจอมเกล้าติวเตอร์</title>
+    <title>ระบบสอบอัจฉริยะ - พระจอมเกล้าติวเตอร์</title>
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary-color: #ff6600;
-            --secondary-color: #2c3e50;
-            --success-color: #27ae60;
-            --error-color: #e74c3c;
-            --bg-color: #f4f7f6;
+            --primary: #ff6600;
+            --secondary: #2c3e50;
+            --whiteboard-bg: #ffffff;
+            --ui-bg: #f8f9fa;
         }
 
-        body {
+        body, html {
+            margin: 0; padding: 0; height: 100%;
             font-family: 'Sarabun', sans-serif;
-            background-color: var(--bg-color);
-            color: var(--secondary-color);
-            line-height: 1.6;
-            margin: 0;
-            padding: 20px;
+            overflow: hidden;
         }
 
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            background: white;
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        .main-wrapper {
+            display: flex;
+            height: 100vh;
+            width: 100vw;
         }
 
-        .header {
-            text-align: center;
-            border-bottom: 3px solid var(--primary-color);
-            padding-bottom: 20px;
-            margin-bottom: 30px;
+        /* --- Frame ซ้าย: ข้อสอบ --- */
+        .quiz-frame {
+            flex: 1;
+            overflow-y: auto;
+            padding: 25px;
+            background: var(--ui-bg);
+            border-right: 4px solid #ddd;
         }
 
-        .header h1 { color: var(--primary-color); margin: 0; }
-        .header p { font-weight: bold; color: #555; }
+        .header { text-align: center; border-bottom: 3px solid var(--primary); margin-bottom: 20px; }
+        .header h2 { color: var(--primary); margin: 5px 0; }
 
         .summary-box {
-            background: #fff3e0;
-            padding: 20px;
-            border-left: 5px solid var(--primary-color);
-            margin-bottom: 30px;
-            border-radius: 5px;
+            background: #fff3e0; padding: 15px;
+            border-radius: 8px; font-size: 0.9em; margin-bottom: 20px;
         }
 
-        .question-block {
-            margin-bottom: 25px;
-            padding: 20px;
-            border: 1px solid #eee;
-            border-radius: 10px;
-            transition: 0.3s;
+        .question-card {
+            background: white; padding: 20px;
+            border-radius: 12px; margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
         }
 
-        .question-block:hover { border-color: var(--primary-color); }
-
-        .options {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-top: 15px;
+        .options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
+        .btn-opt {
+            padding: 12px; border: 2px solid #eee;
+            background: white; border-radius: 8px; cursor: pointer;
+            transition: 0.2s; font-weight: bold;
         }
-
-        button.option {
-            padding: 12px;
-            border: 2px solid #ddd;
-            background: white;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 16px;
-            transition: 0.2s;
-        }
-
-        button.option:hover { background: #f0f0f0; border-color: #bbb; }
-        
-        button.correct { background: var(--success-color) !important; color: white; border-color: var(--success-color); }
-        button.wrong { background: var(--error-color) !important; color: white; border-color: var(--error-color); }
+        .btn-opt:hover { border-color: var(--primary); background: #fff5ee; }
+        .correct { background: #27ae60 !important; color: white; border-color: #27ae60; }
+        .wrong { background: #e74c3c !important; color: white; border-color: #e74c3c; }
 
         .explanation {
-            margin-top: 15px;
-            padding: 10px;
-            background: #e8f5e9;
-            border-radius: 5px;
-            display: none;
-            font-size: 14px;
+            margin-top: 15px; padding: 12px;
+            background: #e8f5e9; border-radius: 6px;
+            display: none; font-size: 0.85em;
         }
 
-        #result-area {
-            display: none;
-            text-align: center;
-            margin-top: 40px;
-            padding: 30px;
-            background: var(--secondary-color);
-            color: white;
-            border-radius: 15px;
+        /* --- Frame ขวา: Whiteboard & Calculator --- */
+        .whiteboard-frame {
+            flex: 1.2;
+            display: flex;
+            flex-direction: column;
+            background: #eee;
+            position: relative;
         }
 
-        @media (max-width: 600px) {
-            .options { grid-template-columns: 1fr; }
+        .wb-toolbar {
+            padding: 10px; background: var(--secondary);
+            display: flex; gap: 10px; align-items: center; color: white;
+        }
+
+        canvas {
+            flex-grow: 1;
+            background: var(--whiteboard-bg);
+            cursor: crosshair;
+        }
+
+        /* Floating Calculator */
+        #calc-container {
+            position: absolute; bottom: 20px; right: 20px;
+            width: 220px; background: #333;
+            padding: 15px; border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            display: none;
+        }
+
+        .calc-screen {
+            width: 100%; height: 40px; background: #eee;
+            margin-bottom: 10px; text-align: right;
+            padding: 5px; box-sizing: border-box; font-size: 20px;
+        }
+
+        .calc-btns { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; }
+        .calc-btns button { padding: 10px; cursor: pointer; border: none; border-radius: 5px; }
+        .btn-num { background: #555; color: white; }
+        .btn-op { background: var(--primary); color: white; }
+
+        .toggle-calc {
+            position: absolute; top: 10px; right: 10px;
+            padding: 8px 15px; background: var(--primary);
+            color: white; border: none; border-radius: 5px; cursor: pointer;
         }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <div class="header">
-        <h1>พระจอมเกล้าติวเตอร์</h1>
-        <p>แบบทดสอบโจทย์ปัญหาคณิตศาสตร์พื้นฐาน (50 ข้อ)</p>
+<div class="main-wrapper">
+    <!-- ฝั่งซ้าย: ข้อสอบ -->
+    <div class="quiz-frame" id="quiz-frame">
+        <div class="header">
+            <h2>พระจอมเกล้าติวเตอร์</h2>
+            <p>โดย ครูตู่ (Chinpong Smart Farm)</p>
+        </div>
+        
+        <div class="summary-box">
+            <b>🏠 สรุปหัวใจสำคัญ:</b><br>
+            ใช้พื้นที่ด้านขวาทดเลขได้เต็มที่! เน้นการตั้งสมการจากโจทย์ปัญหา
+        </div>
+
+        <div id="quiz-content"></div>
     </div>
 
-    <div class="summary-box">
-        <h3>💡 สรุปเนื้อหาและเทคนิคการทำโจทย์</h3>
-        <p>โจทย์ปัญหาคณิตศาสตร์ระดับประถมปลาย-มัธยมต้น เน้นการแปลง "ข้อความ" ให้เป็น "ประโยคสัญลักษณ์" โดยมีจุดสังเกตดังนี้:</p>
-        <ul>
-            <li><strong>การบวก/ลบ:</strong> สังเกตคำว่า "รวม", "เพิ่ม", "เหลือ", "ต่างกัน"</li>
-            <li><strong>การคูณ/หาร:</strong> สังเกตคำว่า "ละ", "เท่าๆ กัน", "ของ" (มักหมายถึงการคูณ)</li>
-            <li><strong>ร้อยละ/เปอร์เซ็นต์:</strong> ให้เปลี่ยน % เป็นส่วน 100 เสมอ</li>
-            <li><strong>ทริคคิดเลขเร็ว:</strong> การคูณด้วย 11 (แยกหน้าหลังตรงกลางบวก) หรือการคูณด้วย 5 (เติม 0 แล้วหาร 2)</li>
-        </ul>
-    </div>
+    <!-- ฝั่งขวา: Whiteboard -->
+    <div class="whiteboard-frame">
+        <div class="wb-toolbar">
+            <span>🎨 กระดานทดเลข</span>
+            <input type="color" id="pen-color" value="#000000">
+            <input type="range" id="pen-size" min="1" max="10" value="3">
+            <button onclick="clearCanvas()" style="background: #e74c3c; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;">ล้างกระดาน</button>
+            <button class="toggle-calc" onclick="toggleCalc()">🧮 เครื่องคิดเลข</button>
+        </div>
+        
+        <canvas id="whiteboard"></canvas>
 
-    <div id="quiz-area"></div>
-
-    <div id="result-area">
-        <h2>สรุปคะแนนของคุณ</h2>
-        <h1 id="score-display">0/50</h1>
-        <p id="analysis-text"></p>
-        <button onclick="location.reload()" style="padding: 10px 20px; cursor: pointer;">เริ่มทำใหม่</button>
+        <!-- เครื่องคิดเลขลอยตัว -->
+        <div id="calc-container">
+            <input type="text" id="calc-display" class="calc-screen" readonly>
+            <div class="calc-btns">
+                <button class="btn-num" onclick="press('7')">7</button>
+                <button class="btn-num" onclick="press('8')">8</button>
+                <button class="btn-num" onclick="press('9')">9</button>
+                <button class="btn-op" onclick="press('/')">/</button>
+                <button class="btn-num" onclick="press('4')">4</button>
+                <button class="btn-num" onclick="press('5')">5</button>
+                <button class="btn-num" onclick="press('6')">6</button>
+                <button class="btn-op" onclick="press('*')">x</button>
+                <button class="btn-num" onclick="press('1')">1</button>
+                <button class="btn-num" onclick="press('2')">2</button>
+                <button class="btn-num" onclick="press('3')">3</button>
+                <button class="btn-op" onclick="press('-')">-</button>
+                <button class="btn-num" onclick="press('0')">0</button>
+                <button class="btn-num" onclick="press('.')">.</button>
+                <button class="btn-op" onclick="calculate()">=</button>
+                <button class="btn-op" onclick="press('+')">+</button>
+                <button class="btn-op" onclick="clrCalc()" style="grid-column: span 4; background: #666;">Clear</button>
+            </div>
+        </div>
     </div>
 </div>
 
 <script>
+// --- ส่วนของข้อสอบ ---
 const questions = [
-    { q: "ครูตู่มีเงินสะสม 2,540 บาท ได้รับเงินสนับสนุนเพิ่ม 1,260 บาท ต่อมานำเงินไปซื้อหนังสือคู่มือ 800 บาท ครูตู่จะเหลือเงินกี่บาท", a: "3,000", options: ["3,000", "3,800", "2,800", "3,100"], exp: "วิธีคิด: (2,540 + 1,260) - 800 = 3,000 บาท" },
-    { q: "ร้านค้าจัดลูกอมใส่ถุง ถุงละ 45 เม็ด ถ้ามีลูกอมทั้งหมด 11 ถุง จะมีลูกอมรวมกี่เม็ด", a: "495", options: ["455", "495", "505", "411"], exp: "ทริคคูณ 11: แยก 4 กับ 5 ไว้หัวท้าย ตรงกลางคือ 4+5=9 ได้ 495" },
-    { q: "ถังน้ำใบหนึ่งมีน้ำอยู่ 3/4 ของถัง เติมน้ำเข้าไปอีก 1/2 ของถัง ขณะนี้น้ำในถังคิดเป็นเศษส่วนเท่าใด", a: "1 1/4", options: ["4/6", "1 1/4", "4/4", "1/4"], exp: "วิธีคิด: 3/4 + 2/4 = 5/4 หรือ 1 1/4" },
-    { q: "ที่ดินรูปสี่เหลี่ยมผืนผ้ากว้าง 0.5 กม. ยาว 0.4 กม. มีพื้นที่กี่ตารางกิโลเมตร", a: "0.2", options: ["2.0", "0.02", "0.2", "0.9"], exp: "วิธีคิด: 0.5 x 0.4 = 0.20 (ทศนิยม 2 ตำแหน่ง)" },
-    { q: "กล่องบรรจุส้ม 8 กล่อง แต่ละกล่องมีส้ม 125 ผล รวมมีส้มกี่ผล", a: "1,000", options: ["800", "900", "1,000", "1,200"], exp: "จำไว้ว่า 125 x 8 = 1,000 เสมอ!" },
-    { q: "มีขนม 50 ชิ้น แบ่งให้เด็กไป 2/5 ของทั้งหมด เด็กได้รับขนมกี่ชิ้น", a: "20", options: ["10", "20", "25", "15"], exp: "วิธีคิด: (50 ÷ 5) x 2 = 20 ชิ้น" },
-    { q: "เชือกยาว 1,000 เมตร ตัดออกไปใช้ 455 เมตร จะเหลือเชือกกี่เมตร", a: "545", options: ["545", "645", "555", "445"], exp: "ใช้กฎ All from 9, Last from 10: 9-4=5, 9-5=4, 10-5=5" },
-    { q: "สนามสี่เหลี่ยมจัตุรัสยาวด้านละ 5 เมตร พื้นที่เท่ากับกี่ตารางเมตร", a: "25", options: ["20", "25", "15", "10"], exp: "พื้นที่จัตุรัส = ด้าน x ด้าน = 5 x 5 = 25" },
-    { q: "นักเรียน 200 คน เป็นหญิง 10% จะมีนักเรียนหญิงกี่คน", a: "20", options: ["10", "20", "30", "40"], exp: "10% ของ 200 คือ 200/10 = 20" },
-    { q: "มีนักเรียน 4,800 คน รถโรงเรียนบรรจุได้คันละ 60 คน ต้องใช้รถกี่คัน", a: "80", options: ["8", "80", "800", "60"], exp: "4800 ÷ 60 = 80" }
-    // ... เพื่อความกระชับ สามารถเพิ่มข้อ 11-50 ตามโครงสร้างเดียวกันนี้ ...
+    { q: "ครูตู่มีเงิน 2,540 บาท ได้เพิ่ม 1,260 บาท ซื้อของ 800 บาท เหลือเท่าไหร่?", a: "3,000", options: ["3,000", "3,800", "2,800", "3,100"], exp: "วิธีคิด: (2,540 + 1,260) - 800 = 3,000" },
+    { q: "จัดส้มใส่ถุง ถุงละ 45 เม็ด จำนวน 11 ถุง รวมมีส้มกี่เม็ด?", a: "495", options: ["455", "495", "505", "411"], exp: "ทริคคูณ 11: 4 (4+5) 5 = 495" },
+    { q: "ถังน้ำมีน้ำ 3/4 เติมเพิ่ม 1/2 ขณะนี้มีน้ำเท่าใด?", a: "1 1/4", options: ["4/6", "1 1/4", "1", "1/4"], exp: "3/4 + 2/4 = 5/4 = 1 1/4" }
+    // (สามารถเพิ่มข้อ 4-50 ได้ตามรูปแบบเดิม)
 ];
 
-// เพิ่มตัวอย่างข้อที่เหลือแบบสุ่มเพื่อให้ครบ 50 (ในงานจริงใส่ข้อมูลจนครบ)
-while(questions.length < 50) {
-    let i = questions.length + 1;
+// Mock up ให้ครบ 50 ข้ออย่างเร็ว
+for(let i=4; i<=50; i++) {
     questions.push({
-        q: `โจทย์ปัญหาข้อที่ ${i}: ร้านค้าขายสินค้าชิ้นละ ${i*10} บาท ซื้อ 2 ชิ้นจ่ายกี่บาท`,
-        a: `${i*20}`,
-        options: [`${i*20}`, `${i*20+5}`, `${i*10}`, `${i*20-10}`],
-        exp: `วิธีคิด: ${i*10} คูณ 2 เท่ากับ ${i*20}`
+        q: `โจทย์ปัญหาข้อที่ ${i}: ถ้ามีสินค้าราคา ${i*10} บาท ลดราคา 10% จะเหลือราคากี่บาท?`,
+        a: `${(i*10)*0.9}`,
+        options: [`${(i*10)*0.9}`, `${i*10}`, `${(i*10)*0.8}`, `${i*9}`],
+        exp: `วิธีคิด: เอา ${i*10} ลบออก 10%`
     });
 }
 
-let score = 0;
-let answered = 0;
-
-function initQuiz() {
-    const quizArea = document.getElementById('quiz-area');
-    questions.forEach((item, index) => {
-        const qDiv = document.createElement('div');
-        qDiv.className = 'question-block';
-        qDiv.innerHTML = `
-            <strong>ข้อที่ ${index + 1}:</strong> ${item.q}
-            <div class="options" id="opt-container-${index}">
-                ${item.options.map(opt => `<button class="option" onclick="checkAnswer(${index}, '${opt}', this)">${opt}</button>`).join('')}
+function renderQuiz() {
+    const container = document.getElementById('quiz-content');
+    questions.forEach((item, idx) => {
+        const div = document.createElement('div');
+        div.className = 'question-card';
+        div.innerHTML = `
+            <strong>ข้อที่ ${idx+1}:</strong> ${item.q}
+            <div class="options" id="opt-${idx}">
+                ${item.options.map(o => `<button class="btn-opt" onclick="check(${idx},'${o}',this)">${o}</button>`).join('')}
             </div>
-            <div class="explanation" id="exp-${index}">
-                <b>เฉลย:</b> ${item.a}<br>
-                <b>คำอธิบาย:</b> ${item.exp}
-            </div>
+            <div class="explanation" id="exp-${idx}"><b>เฉลย:</b> ${item.a} | ${item.exp}</div>
         `;
-        quizArea.appendChild(qDiv);
+        container.appendChild(div);
     });
 }
 
-function checkAnswer(qIdx, selected, btn) {
-    const container = document.getElementById(`opt-container-${qIdx}`);
-    if (container.style.pointerEvents === 'none') return;
-
-    const correct = questions[qIdx].a;
-    const expDiv = document.getElementById(`exp-${qIdx}`);
+function check(idx, sel, btn) {
+    const correct = questions[idx].a;
+    const exp = document.getElementById(`exp-${idx}`);
+    const opts = document.getElementById(`opt-${idx}`);
     
-    if (selected === correct) {
-        btn.classList.add('correct');
-        score++;
-    } else {
-        btn.classList.add('wrong');
-        // ไฮไลท์ข้อที่ถูก
-        Array.from(container.children).forEach(b => {
-            if(b.innerText === correct) b.classList.add('correct');
-        });
-    }
+    if(sel === correct) btn.classList.add('correct');
+    else btn.classList.add('wrong');
+    
+    Array.from(opts.children).forEach(b => {
+        if(b.innerText === correct) b.classList.add('correct');
+        b.disabled = true;
+    });
+    exp.style.display = 'block';
+}
 
-    container.style.pointerEvents = 'none';
-    expDiv.style.display = 'block';
-    answered++;
+// --- ส่วนของ Whiteboard ---
+const canvas = document.getElementById('whiteboard');
+const ctx = canvas.getContext('2d');
+let drawing = false;
 
-    if (answered === questions.length) {
-        showResult();
+function resizeCanvas() {
+    canvas.width = canvas.offsetWidth;
+    canvas.height = canvas.offsetHeight;
+}
+
+window.addEventListener('resize', resizeCanvas);
+setTimeout(resizeCanvas, 100);
+
+canvas.addEventListener('mousedown', () => drawing = true);
+canvas.addEventListener('mouseup', () => { drawing = false; ctx.beginPath(); });
+canvas.addEventListener('mousemove', draw);
+
+function draw(e) {
+    if(!drawing) return;
+    ctx.lineWidth = document.getElementById('pen-size').value;
+    ctx.lineCap = 'round';
+    ctx.strokeStyle = document.getElementById('pen-color').value;
+
+    const rect = canvas.getBoundingClientRect();
+    ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
+}
+
+function clearCanvas() { ctx.clearRect(0, 0, canvas.width, canvas.height); }
+
+// --- เครื่องคิดเลข ---
+function toggleCalc() {
+    const calc = document.getElementById('calc-container');
+    calc.style.display = calc.style.display === 'block' ? 'none' : 'block';
+}
+
+function press(val) { document.getElementById('calc-display').value += val; }
+function clrCalc() { document.getElementById('calc-display').value = ''; }
+function calculate() {
+    try {
+        const res = eval(document.getElementById('calc-display').value);
+        document.getElementById('calc-display').value = res;
+    } catch {
+        alert('รูปแบบไม่ถูกต้อง');
     }
 }
 
-function showResult() {
-    document.getElementById('result-area').style.display = 'block';
-    document.getElementById('score-display').innerText = `${score} / ${questions.length}`;
-    
-    let analysis = "";
-    if (score >= 40) analysis = "ยอดเยี่ยมมาก! คุณมีความเข้าใจในโจทย์ปัญหาอย่างดีเยี่ยม";
-    else if (score >= 25) analysis = "ดีมาก! ลองทบทวนเรื่องทศนิยมและเศษส่วนเพิ่มเติมจะเก่งขึ้นอีกครับ";
-    else analysis = "พยายามต่อไปนะ! แนะนำให้กลับไปทบทวนพื้นฐานการคูณและหารเลขเร็วกับครูตู่ครับ";
-    
-    document.getElementById('analysis-text').innerText = analysis;
-    window.scrollTo(0, document.body.scrollHeight);
-}
-
-initQuiz();
+renderQuiz();
 </script>
-
 </body>
 </html>
