@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>พระจอมเกล้าติวเตอร์ - เทคนิคผีเสื้อ (Butterfly Method)</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; }
+        body, html { 
+            margin: 0; 
+            padding: 0; 
+            height: 100%; 
+            font-family: 'Sarabun', sans-serif; 
+            background-color: #f0f2f5;
+            overflow: hidden;
+        }
+
+        .main-wrapper {
+            display: flex;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        /* Left Side: Whiteboard (30%) */
+        .whiteboard-container {
+            width: 30%;
+            background: #2c3e50;
+            display: flex;
+            flex-direction: column;
+            border-right: 4px solid #34495e;
+        }
+
+        .wb-header {
+            background: #1a252f;
+            color: #f1c40f;
+            padding: 10px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        #whiteboard {
+            flex-grow: 1;
+            background: #ffffff;
+            cursor: crosshair;
+            touch-action: none;
+        }
+
+        .wb-controls {
+            background: #1a252f;
+            padding: 15px;
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .btn-wb {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85em;
+            background: #3498db;
+            color: white;
+            font-family: 'Sarabun', sans-serif;
+        }
+
+        .btn-clear { background: #e74c3c; }
+
+        /* Right Side: Quiz (70%) */
+        .quiz-container {
+            width: 70%;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .container { 
+            max-width: 850px; 
+            margin: auto; 
+            background: white; 
+            padding: 30px; 
+            border-radius: 15px; 
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1); 
+        }
+
+        header { text-align: center; border-bottom: 4px solid #f1c40f; margin-bottom: 30px; }
+        
+        .exam-header { 
+            background: #fff9db; 
+            padding: 25px; 
+            border-radius: 10px; 
+            margin-bottom: 30px; 
+            border-left: 5px solid #f1c40f; 
+        }
+
+        .question-card { margin-bottom: 25px; padding: 20px; border: 1px solid #eee; border-radius: 12px; background: #fff; }
+        .options { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 15px; }
+        
+        button.opt-btn { 
+            padding: 15px; 
+            border: 2px solid #f1c40f; 
+            background: white; 
+            border-radius: 10px; 
+            cursor: pointer; 
+            font-size: 1.1em;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+        button.opt-btn:hover { background: #fff9db; }
+        
+        .explanation { display: none; margin-top: 15px; padding: 15px; border-radius: 8px; font-size: 0.95em; border-left: 5px solid; }
+        .correct { background-color: #d4edda; color: #155724; border-color: #28a745; }
+        .wrong { background-color: #f8d7da; color: #721c24; border-color: #dc3545; }
+        
+        .summary-box { display: none; text-align: center; padding: 35px; background: #e8f4fd; border-radius: 15px; margin-top: 30px; border: 2px dashed #3498db; }
+        
+        @media (max-width: 1024px) {
+            .main-wrapper { flex-direction: column; overflow-y: auto; }
+            .whiteboard-container, .quiz-container { width: 100%; height: auto; }
+            #whiteboard { height: 350px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="main-wrapper">
+    <!-- Whiteboard Section -->
+    <div class="whiteboard-container">
+        <div class="wb-header">✍️ กระดานวาดผีเสื้อ (Butterfly Sketch)</div>
+        <canvas id="whiteboard"></canvas>
+        <div class="wb-controls">
+            <input type="color" id="colorPicker" value="#2c3e50" style="height: 35px;">
+            <button class="btn-wb" onclick="setPen()">ปากกา</button>
+            <button class="btn-wb" onclick="setEraser()">ยางลบ</button>
+            <button class="btn-wb btn-clear" onclick="clearBoard()">ล้างกระดาน</button>
+        </div>
+    </div>
+
+    <!-- Quiz Section -->
+    <div class="quiz-container">
+        <div class="container">
+            <header>
+                <h1>แบบทดสอบ: การบวกเศษส่วน (วิธีคูณไขว้ผีเสื้อ)</h1>
+                <p>โดย: พระจอมเกล้าติวเตอร์</p>
+            </header>
+
+            <div class="exam-header">
+                <h3>🦋 เทคนิคการบวกแบบ "Butterfly Method"</h3>
+                <p>วิธีนี้ใช้เมื่อตัวส่วนไม่เท่ากัน น้องๆ สามารถหาคำตอบได้ง่ายๆ ใน 3 สเต็ป:</p>
+                <ol>
+                    <li><b>วาดปีก:</b> คูณไขว้ (บนซ้าย x ล่างขวา) และ (บนขวา x ล่างซ้าย) เพื่อหาตัวเลขบนปีก</li>
+                    <li><b>หาตัวเศษ:</b> นำตัวเลขบนปีกทั้งสองมา <b>บวกกัน</b></li>
+                    <li><b>หาตัวส่วน:</b> นำตัวล่างทั้งสองมา <b>คูณกัน</b></li>
+                </ol>
+                <p><i>ทริค: อย่าลืมเช็คว่าเป็นเศษส่วนอย่างต่ำหรือยังนะครับ!</i></p>
+            </div>
+
+            <div id="quiz-area"></div>
+
+            <div style="text-align: center; margin: 40px 0;">
+                <button id="submit-btn" style="background: #f1c40f; border:none; color: #2c3e50; padding: 18px 50px; font-size: 1.3em; font-weight: bold; border-radius: 50px; cursor: pointer; shadow: 0 4px 10px rgba(0,0,0,0.2);" onclick="showResult()">ส่งคำตอบและดูผลวิเคราะห์</button>
+            </div>
+
+            <div id="result" class="summary-box">
+                <h2 id="score-title"></h2>
+                <div id="score-text" style="font-size: 3em; font-weight: bold; color: #2980b9; margin: 15px 0;"></div>
+                <div id="analysis-text" style="text-align: left; background: white; padding: 20px; border-radius: 10px;"></div>
+            </div>
+
+            <footer style="text-align: center; margin-top: 50px; color: #95a5a6; font-size: 0.9em;">
+                <p>เขียนโดย CHINPONG SMART FARM</p>
+            </footer>
+        </div>
+    </div>
+</div>
+
+<script>
+    // --- Whiteboard System ---
+    const canvas = document.getElementById('whiteboard');
+    const ctx = canvas.getContext('2d');
+    const colorPicker = document.getElementById('colorPicker');
+    let painting = false;
+    let currentColor = '#2c3e50';
+
+    function resizeCanvas() {
+        canvas.width = canvas.parentElement.offsetWidth;
+        canvas.height = canvas.parentElement.offsetHeight - 120;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    function startDraw(e) { painting = true; draw(e); }
+    function stopDraw() { painting = false; ctx.beginPath(); }
+    function draw(e) {
+        if (!painting) return;
+        ctx.lineWidth = 4;
+        ctx.lineCap = 'round';
+        ctx.strokeStyle = currentColor;
+        const rect = canvas.getBoundingClientRect();
+        const x = (e.clientX || e.touches[0].clientX) - rect.left;
+        const y = (e.clientY || e.touches[0].clientY) - rect.top;
+        ctx.lineTo(x, y);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+    }
+    canvas.addEventListener('mousedown', startDraw);
+    canvas.addEventListener('mouseup', stopDraw);
+    canvas.addEventListener('mousemove', draw);
+    canvas.addEventListener('touchstart', startDraw);
+    canvas.addEventListener('touchend', stopDraw);
+    canvas.addEventListener('touchmove', draw);
+
+    function clearBoard() { ctx.clearRect(0, 0, canvas.width, canvas.height); }
+    function setEraser() { currentColor = '#ffffff'; }
+    function setPen() { currentColor = colorPicker.value; }
+    colorPicker.addEventListener('input', (e) => currentColor = e.target.value);
+
+    // --- Quiz Data (Butterfly Method Specific) ---
+    const quizData = [
+        { q: "1) 1/2 + 1/3 = ?", a: ["2/5", "5/6", "2/6", "1/5"], correct: 1, exp: "ปีกซ้าย (1x3=3) ปีกขวา (1x2=2) เศษคือ 3+2=5, ส่วนคือ 2x3=6 ได้ 5/6" },
+        { q: "2) 1/4 + 1/5 = ?", a: ["2/9", "9/20", "1/20", "5/4"], correct: 1, exp: "ปีกซ้าย (1x5=5) ปีกขวา (1x4=4) เศษคือ 5+4=9, ส่วนคือ 4x5=20 ได้ 9/20" },
+        { q: "3) 2/3 + 1/5 = ?", a: ["3/8", "13/15", "3/15", "11/15"], correct: 1, exp: "ปีกซ้าย (2x5=10) ปีกขวา (1x3=3) เศษคือ 10+3=13, ส่วนคือ 3x5=15 ได้ 13/15" },
+        { q: "4) 1/2 + 2/5 = ?", a: ["9/10", "3/7", "3/10", "7/10"], correct: 0, exp: "ปีกซ้าย (1x5=5) ปีกขวา (2x2=4) เศษคือ 5+4=9, ส่วนคือ 2x5=10 ได้ 9/10" },
+        { q: "5) 3/4 + 1/7 = ?", a: ["4/11", "25/28", "21/28", "11/28"], correct: 1, exp: "ปีกซ้าย (3x7=21) ปีกขวา (1x4=4) เศษคือ 21+4=25, ส่วนคือ 4x7=28 ได้ 25/28" },
+        { q: "6) 2/5 + 1/3 = ?", a: ["11/15", "3/8", "7/15", "1/15"], correct: 0, exp: "ปีกซ้าย (2x3=6) ปีกขวา (1x5=5) เศษคือ 6+5=11, ส่วนคือ 5x3=15 ได้ 11/15" },
+        { q: "7) 1/6 + 1/5 = ?", a: ["11/30", "2/11", "1/30", "6/5"], correct: 0, exp: "ปีกซ้าย (1x5=5) ปีกขวา (1x6=6) เศษคือ 5+6=11, ส่วนคือ 6x5=30 ได้ 11/30" },
+        { q: "8) 3/5 + 1/2 = ?", a: ["4/7", "11/10", "5/10", "4/10"], correct: 1, exp: "ปีกซ้าย (3x2=6) ปีกขวา (1x5=5) เศษคือ 6+5=11, ส่วนคือ 5x2=10 ได้ 11/10" },
+        { q: "9) 2/7 + 1/4 = ?", a: ["3/11", "15/28", "9/28", "11/28"], correct: 1, exp: "ปีกซ้าย (2x4=8) ปีกขวา (1x7=7) เศษคือ 8+7=15, ส่วนคือ 7x4=28 ได้ 15/28" },
+        { q: "10) 4/5 + 2/3 = ?", a: ["6/8", "22/15", "12/15", "8/15"], correct: 1, exp: "ปีกซ้าย (4x3=12) ปีกขวา (2x5=10) เศษคือ 12+10=22, ส่วนคือ 5x3=15 ได้ 22/15" },
+        { q: "11) 1/8 + 1/3 = ?", a: ["11/24", "2/11", "9/24", "3/24"], correct: 0, exp: "ปีกซ้าย (1x3=3) ปีกขวา (1x8=8) เศษคือ 3+8=11, ส่วนคือ 8x3=24 ได้ 11/24" },
+        { q: "12) 3/8 + 1/5 = ?", a: ["4/13", "23/40", "15/40", "11/40"], correct: 1, exp: "ปีกซ้าย (3x5=15) ปีกขวา (1x8=8) เศษคือ 15+8=23, ส่วนคือ 8x5=40 ได้ 23/40" },
+        { q: "13) 2/9 + 1/2 = ?", a: ["13/18", "3/11", "11/18", "5/18"], correct: 0, exp: "ปีกซ้าย (2x2=4) ปีกขวา (1x9=9) เศษคือ 4+9=13, ส่วนคือ 9x2=18 ได้ 13/18" },
+        { q: "14) 1/10 + 2/3 = ?", a: ["3/13", "23/30", "12/30", "7/30"], correct: 1, exp: "ปีกซ้าย (1x3=3) ปีกขวา (2x10=20) เศษคือ 3+20=23, ส่วนคือ 10x3=30 ได้ 23/30" },
+        { q: "15) 3/7 + 2/5 = ?", a: ["29/35", "5/12", "6/35", "5/35"], correct: 0, exp: "ปีกซ้าย (3x5=15) ปีกขวา (2x7=14) เศษคือ 15+14=29, ส่วนคือ 7x5=35 ได้ 29/35" }
+    ];
+
+    let userAnswers = new Array(quizData.length).fill(null);
+    const quizArea = document.getElementById('quiz-area');
+
+    quizData.forEach((item, index) => {
+        const card = document.createElement('div');
+        card.className = 'question-card';
+        card.innerHTML = `<p style="font-size: 1.2em;"><b>${item.q}</b></p>
+            <div class="options" id="opt-${index}">
+                ${item.a.map((opt, i) => `<button class="opt-btn" onclick="checkAnswer(${index}, ${i})">${opt}</button>`).join('')}
+            </div>
+            <div id="exp-${index}" class="explanation"></div>`;
+        quizArea.appendChild(card);
+    });
+
+    function checkAnswer(qIdx, choiceIdx) {
+        if (userAnswers[qIdx] !== null) return;
+        userAnswers[qIdx] = choiceIdx;
+        const expDiv = document.getElementById(`exp-${qIdx}`);
+        const buttons = document.querySelectorAll(`#opt-${qIdx} button`);
+        
+        expDiv.style.display = 'block';
+        if (choiceIdx === quizData[qIdx].correct) {
+            expDiv.className = 'explanation correct';
+            expDiv.innerHTML = `<b>ถูกต้อง! 🦋</b> ${quizData[qIdx].exp}`;
+            buttons[choiceIdx].style.background = '#28a745';
+            buttons[choiceIdx].style.color = 'white';
+            buttons[choiceIdx].style.borderColor = '#28a745';
+        } else {
+            expDiv.className = 'explanation wrong';
+            expDiv.innerHTML = `<b>ยังไม่ถูกนะ...</b> เฉลยคือ ${quizData[qIdx].a[quizData[qIdx].correct]} <br>💡 ${quizData[qIdx].exp}`;
+            buttons[choiceIdx].style.background = '#dc3545';
+            buttons[choiceIdx].style.color = 'white';
+            buttons[choiceIdx].style.borderColor = '#dc3545';
+        }
+    }
+
+    function showResult() {
+        let score = 0;
+        userAnswers.forEach((ans, i) => { if (ans === quizData[i].correct) score++; });
+
+        const resultDiv = document.getElementById('result');
+        const scoreText = document.getElementById('score-text');
+        const analysisText = document.getElementById('analysis-text');
+        const title = document.getElementById('score-title');
+
+        resultDiv.style.display = 'block';
+        title.innerText = score >= 12 ? "สุดยอด! คุณคือมาสเตอร์ผีเสื้อ" : "พยายามอีกนิดนะ น้องทำได้!";
+        scoreText.innerText = `${score} / ${quizData.length}`;
+
+        let comment = "<b>💡 บทวิเคราะห์จากพระจอมเกล้าติวเตอร์:</b><br><br>";
+        if (score === 15) comment += "ยอดเยี่ยมมาก! น้องใช้เทคนิคคูณไขว้ได้คล่องแคล่วมาก ขั้นตอนต่อไปลองฝึกบวกเศษส่วน 3 จำนวนดูนะครับ";
+        else if (score >= 10) comment += "ทำได้ดีมากครับ! จุดที่ผิดอาจจะเป็นเรื่องการบวกเลขบนปีก หรือการคูณตัวส่วน ลองใช้กระดาน Whiteboard วาดรูปผีเสื้อประกอบจะช่วยได้เยอะเลย";
+        else comment += "ไม่เป็นไรนะ! หัวใจของวิธีนี้คือ <b>'คูณไขว้บน บวกกัน'</b> และ <b>'คูณข้างล่าง'</b> ลองกลับไปทบทวนข้อที่ผิดบนกระดานทดอีกรอบนะครับ";
+        
+        analysisText.innerHTML = comment;
+        resultDiv.scrollIntoView({ behavior: 'smooth' });
+    }
+</script>
+</body>
+</html>
