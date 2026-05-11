@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ครูแมธเซียน - แบบทดสอบเศษส่วน ป.5</title>
+    <style>
+        body { font-family: 'Sarabun', sans-serif; background-color: #f4f7f6; padding: 20px; line-height: 1.6; }
+        .container { max-width: 900px; margin: auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        header { text-align: center; border-bottom: 4px solid #3498db; margin-bottom: 30px; }
+        .exam-header { background: #e8f4fd; padding: 20px; border-radius: 10px; margin-bottom: 30px; border-left: 5px solid #2980b9; }
+        .question-card { margin-bottom: 30px; padding: 20px; border: 1px solid #ddd; border-radius: 10px; transition: 0.3s; }
+        .question-card:hover { border-color: #3498db; }
+        .options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
+        button { padding: 12px; border: 2px solid #3498db; background: white; border-radius: 8px; cursor: pointer; font-size: 1em; }
+        button:hover { background: #3498db; color: white; }
+        .explanation { display: none; margin-top: 15px; padding: 15px; border-radius: 8px; font-size: 0.95em; }
+        .correct { background-color: #d4edda; color: #155724; }
+        .wrong { background-color: #f8d7da; color: #721c24; }
+        .summary-box { display: none; text-align: center; padding: 30px; background: #fff3cd; border-radius: 15px; margin-top: 30px; }
+        .analysis { text-align: left; margin-top: 20px; font-weight: bold; }
+        .math { font-weight: bold; color: #e67e22; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>แบบทดสอบคณิตศาสตร์ ป.5 บทที่ 1: เศษส่วน</h1>
+        <p>โดย: พระจอมเกล้าติวเตอร์</p>
+    </header>
+
+    <div class="exam-header">
+        <h3>🌟 สรุปสาระสำคัญ (Exam Summary)</h3>
+        <p>เศษส่วนคือการแบ่งของออกเป็นส่วนๆ เท่าๆ กัน สิ่งสำคัญที่น้องๆ ต้องแม่นคือ <b>การทำส่วนให้เท่ากัน</b> เมื่อต้องบวกหรือลบ และการใช้ <b>กฎ KFC</b> เมื่อเจอการหาร ทริคสำคัญคือการมองภาพให้ออก เช่น การคูณเศษส่วนคือการหา "พื้นที่" หรือส่วนแบ่งของส่วนแบ่งอีกที และอย่าลืม <b>"การตัดทอน"</b> ทุกครั้งที่มีโอกาส เพื่อทำให้ตัวเลขง่ายขึ้นครับ!</p>
+        <p><b>💡 เทคนิค KFC:</b> Keep (ตัวหน้าคงที่) - Flip (กลับเศษส่วนตัวหลัง) - Change (เปลี่ยนหารเป็นคูณ)</p>
+    </div>
+
+    <div id="quiz-area"></div>
+
+    <div style="text-align: center;">
+        <button id="submit-btn" style="background: #27ae60; color: white; padding: 15px 40px; font-size: 1.2em;" onclick="showResult()">ส่งข้อสอบและวิเคราะห์ผล</button>
+    </div>
+
+    <div id="result" class="summary-box">
+        <h2>สรุปคะแนนของคุณ</h2>
+        <div id="score-text" style="font-size: 2em; color: #2c3e50;"></div>
+        <div id="analysis-text" class="analysis"></div>
+    </div>
+
+    <footer style="text-align: center; margin-top: 50px; color: #7f8c8d;">
+        <p>เขียนโดย CHINPONG SMART FARM</p>
+    </footer>
+</div>
+
+<script>
+    const quizData = [
+        { q: "1. ข้อใดคือเศษส่วนที่เท่ากับ 3/4?", a: ["6/8", "9/10", "3/8", "12/14"], correct: 0, exp: "นำ 2 มาคูณทั้งเศษและส่วน (3x2)/(4x2) = 6/8", cat: "basic" },
+        { q: "2. ผลบวกของ 1/2 + 1/3 คือข้อใด?", a: ["2/5", "1/5", "5/6", "2/6"], correct: 2, exp: "ทำส่วนให้เท่ากันคือ 6 จะได้ 3/6 + 2/6 = 5/6", cat: "add" },
+        { q: "3. 2 1/4 ทำเป็นเศษเกินได้เท่าใด?", a: ["7/4", "9/4", "5/4", "8/4"], correct: 1, exp: "(ล่าง x หน้า) + บน = (4x2)+1 = 9/4", cat: "basic" },
+        { q: "4. 3/5 ของเงิน 500 บาท เป็นเท่าใด?", a: ["150 บาท", "300 บาท", "200 บาท", "350 บาท"], correct: 1, exp: "3/5 x 500 = 3 x 100 = 300 บาท", cat: "word" },
+        { q: "5. ผลคูณของ 2/3 x 9/10 คือข้อใด?", a: ["11/13", "18/30", "3/5", "1/5"], correct: 2, exp: "ตัดทอนก่อน: 2 ตัด 10 ได้ 5, 3 ตัด 9 ได้ 3 ผลลัพธ์คือ 3/5", cat: "mul" },
+        { q: "6. 4 ÷ 1/2 มีค่าเท่ากับเท่าใด?", a: ["2", "4", "8", "1/8"], correct: 2, exp: "ใช้กฎ KFC: 4 x 2/1 = 8", cat: "div" },
+        { q: "7. เปรียบเทียบ 5/8 กับ 7/12 ข้อใดถูกต้อง?", a: ["5/8 > 7/12", "5/8 < 7/12", "เท่ากัน", "สรุปไม่ได้"], correct: 0, exp: "คูณไขว้: 5x12=60, 8x7=56 ดังนั้น 60 > 56", cat: "compare" },
+        { q: "8. (1/2 + 1/4) x 4 มีค่าเท่าใด?", a: ["1", "2", "3", "4"], correct: 2, exp: "ในวงเล็บได้ 3/4 แล้วคูณ 4 จะเหลือ 3", cat: "mul" },
+        { q: "9. แม่ซื้อเนื้อไก่ 1/2 กก. ซื้อเนื้อหมู 3/4 กก. รวมแม่ซื้อของกี่กก.?", a: ["1 1/4", "1 1/2", "4/6", "1"], correct: 0, exp: "2/4 + 3/4 = 5/4 หรือ 1 1/4", cat: "word" },
+        { q: "10. ผลหารของ 5/6 ÷ 5 คือข้อใด?", a: ["25/6", "1/6", "6", "1/5"], correct: 1, exp: "5/6 x 1/5 ตัดทอน 5 จะเหลือ 1/6", cat: "div" },
+        { q: "11. 1 - 2/5 มีค่าเท่ากับข้อใด?", a: ["1/5", "3/5", "2/5", "5/2"], correct: 1, exp: "มอง 1 เป็น 5/5 ดังนั้น 5/5 - 2/5 = 3/5", cat: "add" },
+        { q: "12. ข้อใดเรียงลำดับจากน้อยไปมากได้ถูกต้อง?", a: ["1/2, 1/3, 1/4", "1/4, 1/3, 1/2", "1/3, 1/4, 1/2", "เท่ากันหมด"], correct: 1, exp: "เมื่อเศษเท่ากัน ส่วนยิ่งมาก ค่ายิ่งน้อย", cat: "compare" },
+        { q: "13. มีน้ำดื่ม 10 ลิตร แบ่งใส่ขวดละ 1/4 ลิตร ได้กี่ขวด?", a: ["2.5 ขวด", "40 ขวด", "20 ขวด", "14 ขวด"], correct: 1, exp: "10 ÷ 1/4 = 10 x 4 = 40 ขวด", cat: "word" },
+        { q: "14. 0.5 เขียนเป็นเศษส่วนอย่างต่ำได้เท่าใด?", a: ["5/10", "1/2", "2/5", "1/5"], correct: 1, exp: "0.5 = 5/10 ตัดทอนได้ 1/2", cat: "basic" },
+        { q: "15. (2/3 x 3/4) + 1/2 มีค่าเท่าใด?", a: ["1", "1 1/4", "3/4", "1/2"], correct: 0, exp: "ในวงเล็บตัดทอนได้ 1/2 ดังนั้น 1/2 + 1/2 = 1", cat: "mul" }
+    ];
+
+    let userAnswers = new Array(quizData.length).fill(null);
+    const quizArea = document.getElementById('quiz-area');
+
+    quizData.forEach((item, index) => {
+        const card = document.createElement('div');
+        card.className = 'question-card';
+        card.innerHTML = `<p class="question-text"><b>${item.q}</b></p>
+            <div class="options" id="opt-${index}">
+                ${item.a.map((opt, i) => `<button onclick="checkAnswer(${index}, ${i})">${opt}</button>`).join('')}
+            </div>
+            <div id="exp-${index}" class="explanation"></div>`;
+        quizArea.appendChild(card);
+    });
+
+    function checkAnswer(qIdx, choiceIdx) {
+        if (userAnswers[qIdx] !== null) return;
+        userAnswers[qIdx] = choiceIdx;
+        const expDiv = document.getElementById(`exp-${qIdx}`);
+        const buttons = document.querySelectorAll(`#opt-${qIdx} button`);
+        
+        expDiv.style.display = 'block';
+        if (choiceIdx === quizData[qIdx].correct) {
+            expDiv.className = 'explanation correct';
+            expDiv.innerHTML = `✅ ถูกต้อง! ${quizData[qIdx].exp}`;
+            buttons[choiceIdx].style.background = '#27ae60';
+            buttons[choiceIdx].style.color = 'white';
+        } else {
+            expDiv.className = 'explanation wrong';
+            expDiv.innerHTML = `❌ ยังไม่ถูกนะ... เฉลยคือ ${quizData[qIdx].a[quizData[qIdx].correct]} เพราะ ${quizData[qIdx].exp}`;
+            buttons[choiceIdx].style.background = '#e74c3c';
+            buttons[choiceIdx].style.color = 'white';
+        }
+    }
+
+    function showResult() {
+        let score = 0;
+        let analysis = { basic: 0, add: 0, mul: 0, div: 0, compare: 0, word: 0 };
+        let wrongCats = [];
+
+        userAnswers.forEach((ans, i) => {
+            if (ans === quizData[i].correct) score++;
+            else {
+                if (!wrongCats.includes(quizData[i].cat)) wrongCats.push(quizData[i].cat);
+            }
+        });
+
+        const scoreDiv = document.getElementById('result');
+        const scoreText = document.getElementById('score-text');
+        const analysisText = document.getElementById('analysis-text');
+
+        scoreDiv.style.display = 'block';
+        scoreText.innerText = `${score} / ${quizData.length} (${Math.round(score/quizData.length*100)}%)`;
+
+        let advice = "🔍 วิเคราะห์จุดอ่อน: <br>";
+        if (wrongCats.length === 0) advice += "ยอดเยี่ยมมาก! คุณคือแมธเซียนตัวจริง";
+        else {
+            wrongCats.forEach(cat => {
+                if (cat === 'div') advice += "- เรื่องการหาร: อย่าลืมกฎ KFC และการใช้ส่วนกลับนะครับ <br>";
+                if (cat === 'word') advice += "- โจทย์ปัญหา: ลองฝึกวาดรูปบาร์โมเดล (Bar Model) เพื่อช่วยวิเคราะห์โจทย์ <br>";
+                if (cat === 'add') advice += "- การบวก/ลบ: ต้องแม่นเรื่องการหา ค.ร.น. เพื่อทำส่วนให้เท่ากันนะ <br>";
+                if (cat === 'mul') advice += "- การคูณ: ฝึกการตัดทอนเลขบ่อยๆ จะช่วยให้คิดเลขเร็วขึ้นมากครับ <br>";
+                if (cat === 'compare') advice += "- การเปรียบเทียบ: ใช้เทคนิคคูณไขว้ผีเสื้อจะช่วยได้เยอะเลย <br>";
+            });
+        }
+        analysisText.innerHTML = advice;
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+</script>
+</body>
+</html>
