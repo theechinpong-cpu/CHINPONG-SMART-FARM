@@ -5,35 +5,58 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>คลังข้อสอบปีทาโกรัส + กระดานทดเลข - พระจอมเกล้าติวเตอร์</title>
     <style>
-        body { font-family: 'Sarabun', sans-serif; line-height: 1.6; color: #333; max-width: 1000px; margin: 0 auto; padding: 20px; background-color: #f0f2f5; }
-        .header { background-color: #1a5f7a; color: white; padding: 30px; text-align: center; border-radius: 10px; margin-bottom: 25px; }
+        body { font-family: 'Sarabun', sans-serif; line-height: 1.6; color: #333; margin: 0; background-color: #f0f2f5; }
+        .header { background-color: #1a5f7a; color: white; padding: 20px; text-align: center; }
         
+        /* Layout แบ่ง 80:20 */
+        .main-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 20px auto;
+            gap: 20px;
+            padding: 0 20px;
+        }
+
+        /* ฝั่งข้อสอบ (80%) */
+        .quiz-section {
+            flex: 8;
+            min-width: 0; /* ป้องกันเนื้อหาดัน flex */
+        }
+
+        /* ฝั่งกระดานทด (20%) */
+        .scratchpad-section {
+            flex: 2;
+            position: sticky;
+            top: 20px;
+            height: fit-content;
+            min-width: 250px;
+        }
+
         /* สไตล์กระดานทด */
         .scratchpad-container {
             background: #fff;
             border: 2px solid #1a5f7a;
             border-radius: 10px;
-            margin-bottom: 30px;
-            padding: 10px;
+            padding: 15px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
         }
         .canvas-controls {
             display: flex;
-            gap: 10px;
+            gap: 8px;
             margin-bottom: 10px;
-            flex-wrap: wrap;
-            align-items: center;
+            flex-direction: column; /* ปรับให้เรียงแนวตั้งในพื้นที่จำกัด */
         }
         canvas {
             border: 1px solid #ddd;
             background-color: #fafafa;
             cursor: crosshair;
             width: 100%;
-            height: 300px;
-            touch-action: none; /* สำหรับมือถือ */
+            height: 450px; /* เพิ่มความสูงให้เหมาะกับแนวตั้ง */
+            touch-action: none;
         }
-        .btn-tool { padding: 5px 15px; border: 1px solid #ccc; border-radius: 5px; cursor: pointer; background: white; }
-        .btn-clear { background: #dc3545; color: white; border: none; }
+        .btn-group { display: flex; gap: 5px; flex-wrap: wrap; }
+        .btn-tool { flex: 1; padding: 5px; border: 1px solid #ccc; border-radius: 5px; cursor: pointer; background: white; font-size: 12px; }
+        .btn-clear { background: #dc3545; color: white; border: none; padding: 8px; border-radius: 5px; cursor: pointer; margin-top: 5px; width: 100%; }
 
         /* สไตล์ข้อสอบ */
         .summary-box { background-color: white; padding: 25px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 25px; }
@@ -48,63 +71,76 @@
         .incorrect { background-color: #f8d7da; color: #721c24; }
         .btn-submit { width: 100%; padding: 20px; background: #1a5f7a; color: white; border: none; border-radius: 10px; font-size: 1.2em; cursor: pointer; margin-top: 20px; }
         .results { display: none; text-align: center; padding: 30px; background: white; margin-top: 30px; border-radius: 10px; border: 3px solid #1a5f7a; }
-        @media (max-width: 600px) { .options { grid-template-columns: 1fr; } }
+        
+        @media (max-width: 900px) {
+            .main-wrapper { flex-direction: column; }
+            .scratchpad-section { position: relative; top: 0; flex: none; width: 100%; order: -1; }
+            canvas { height: 300px; }
+            .canvas-controls { flex-direction: row; }
+        }
     </style>
 </head>
 <body>
 
 <div class="header">
-    <h1>ติวเข้มปีทาโกรัส + กระดานทดดิจิทัล</h1>
-    <p>โดย พระจอมเกล้าติวเตอร์</p>
+    <h1>ติวเข้มปีทาโกรัส - พระจอมเกล้าติวเตอร์</h1>
 </div>
 
-<!-- ส่วนกระดานทด -->
-<div class="scratchpad-container">
-    <div class="canvas-controls">
-        <strong>🎨 กระดานทดเลข:</strong>
-        <button class="btn-tool" onclick="changeColor('#000000')">สีดำ</button>
-        <button class="btn-tool" onclick="changeColor('#ff0000')" style="color:red">สีแดง</button>
-        <button class="btn-tool" onclick="changeColor('#0000ff')" style="color:blue">สีน้ำเงิน</button>
-        <select id="lineWidth" class="btn-tool" onchange="changeWidth(this.value)">
-            <option value="2">เส้นบาง</option>
-            <option value="5" selected>เส้นปกติ</option>
-            <option value="10">เส้นหนา</option>
-        </select>
-        <button class="btn-clear" onclick="clearCanvas()">ล้างกระดาน</button>
+<div class="main-wrapper">
+    <!-- ฝั่งซ้าย: ข้อสอบ (80%) -->
+    <div class="quiz-section">
+        <div class="summary-box">
+            <h2>สรุปเทคนิคการคิด</h2>
+            <div class="formula">a² + b² = c²</div>
+            <p>ทดเลขหรือวาดรูปประกอบที่กระดานทางด้านขวามือได้เลยครับ!</p>
+        </div>
+
+        <div class="quiz-container">
+            <div id="quiz-list"></div>
+            <button class="btn-submit" onclick="showResults()">ส่งคำตอบและดูบทวิเคราะห์</button>
+        </div>
+
+        <div id="results" class="results">
+            <h2>ผลการวิเคราะห์</h2>
+            <div id="score-text" style="font-size: 2.5em; font-weight: bold; color: #1a5f7a;"></div>
+            <div id="analysis-box" style="margin-top: 20px; text-align: left; padding: 15px; background: #f9f9f9;"></div>
+        </div>
     </div>
-    <canvas id="scratchPad"></canvas>
-</div>
 
-<div class="summary-box">
-    <h2>สรุปเทคนิคการคิด</h2>
-    <div class="formula">a² + b² = c²</div>
-    <p>ใช้กระดานด้านบนทดเลขหรือวาดรูปสามเหลี่ยมได้เลยครับ! อย่าลืมว่าด้าน <strong>c</strong> คือด้านที่ยาวที่สุดเสมอ</p>
-</div>
-
-<div class="quiz-container">
-    <div id="quiz-list"></div>
-    <button class="btn-submit" onclick="showResults()">ส่งคำตอบและดูบทวิเคราะห์</button>
-</div>
-
-<div id="results" class="results">
-    <h2>ผลการวิเคราะห์</h2>
-    <div id="score-text" style="font-size: 2.5em; font-weight: bold; color: #1a5f7a;"></div>
-    <div id="analysis-box" style="margin-top: 20px; text-align: left; padding: 15px; background: #f9f9f9;"></div>
+    <!-- ฝั่งขวา: กระดานทด (20%) -->
+    <div class="scratchpad-section">
+        <div class="scratchpad-container">
+            <div class="canvas-controls">
+                <strong>🎨 กระดานทดเลข</strong>
+                <div class="btn-group">
+                    <button class="btn-tool" onclick="changeColor('#000000')">ดำ</button>
+                    <button class="btn-tool" onclick="changeColor('#ff0000')" style="color:red">แดง</button>
+                    <button class="btn-tool" onclick="changeColor('#0000ff')" style="color:blue">น้ำเงิน</button>
+                </div>
+                <select id="lineWidth" class="btn-tool" onchange="changeWidth(this.value)">
+                    <option value="2">เส้นบาง</option>
+                    <option value="5" selected>ปกติ</option>
+                    <option value="10">เส้นหนา</option>
+                </select>
+                <button class="btn-clear" onclick="clearCanvas()">ล้างกระดาน</button>
+            </div>
+            <canvas id="scratchPad"></canvas>
+        </div>
+    </div>
 </div>
 
 <script>
-// --- ส่วนของระบบ Canvas (กระดานทด) ---
+// --- ระบบ Canvas ---
 const canvas = document.getElementById('scratchPad');
 const ctx = canvas.getContext('2d');
 let drawing = false;
 
-// ปรับขนาด Canvas ให้เต็มความกว้าง container
 function resizeCanvas() {
-    canvas.width = canvas.parentElement.clientWidth - 20;
-    canvas.height = 300;
+    // ปรับขนาดให้พอดีกับ container ฝั่งขวา
+    canvas.width = canvas.parentElement.clientWidth - 30;
     ctx.lineCap = 'round';
     ctx.strokeStyle = '#000';
-    ctx.lineWidth = 5;
+    ctx.lineWidth = document.getElementById('lineWidth').value;
 }
 window.addEventListener('resize', resizeCanvas);
 resizeCanvas();
@@ -138,43 +174,42 @@ function changeColor(c) { ctx.strokeStyle = c; }
 function changeWidth(w) { ctx.lineWidth = w; }
 function clearCanvas() { ctx.clearRect(0, 0, canvas.width, canvas.height); }
 
-// --- ส่วนของระบบข้อสอบ (30 ข้อเดิม) ---
+// --- ระบบข้อสอบ (30 ข้อ) ---
 const questions = [
-    // (ชุดข้อสอบ 30 ข้อตามเวอร์ชันก่อนหน้าที่ผมจัดทำไว้ให้)
     { q: "สามเหลี่ยมมุมฉากมีด้านประกอบยาว 6 และ 8 ซม. ด้านตรงข้ามมุมฉากยาวเท่าใด?", options: ["10 ซม.", "12 ซม.", "14 ซม.", "100 ซม."], correct: 0, exp: "6² + 8² = 36 + 64 = 100. ถอดรากได้ 10" },
     { q: "ถ้า c = 13 และ a = 5 ค่าของ b คือ?", options: ["8", "12", "15", "18"], correct: 1, exp: "13² - 5² = 169 - 25 = 144. ถอดรากได้ 12" },
-    { q: "บันได 10 ม. พาดกำแพง ปลายบนสูง 8 ม. เชิงบันไดห่างกำแพงเท่าใด?", options: ["2 ม.", "4 ม.", "6 ม.", "9 ม."], correct: 2, exp: "√(10² - 8²) = √36 = 6" },
-    { q: "7, 24, 25 เป็นสามเหลี่ยมชนิดใด?", options: ["มุมแหลม", "มุมป้าน", "มุมฉาก", "หน้าจั่ว"], correct: 2, exp: "7² + 24² = 625 = 25² พอดี" },
-    { q: "ข้อใดไม่ใช่ชุดตัวเลขปีทาโกรัส?", options: ["3, 4, 5", "5, 12, 13", "4, 5, 6", "8, 15, 17"], correct: 2, exp: "4² + 5² = 41 ไม่เท่ากับ 6² (36)" },
-    { q: "เสาธงสูง 12 ม. เชือกผูกยอดเสาห่างโคนเสา 5 ม. เชือกยาวเท่าใด?", options: ["13 ม.", "15 ม.", "17 ม.", "20 ม."], correct: 0, exp: "√(12² + 5²) = √169 = 13" },
-    { q: "สี่เหลี่ยมผืนผ้ากว้าง 9 ยาว 12 เส้นทแยงมุมยาวเท่าใด?", options: ["15", "18", "21", "25"], correct: 0, exp: "√(9² + 12²) = √225 = 15" },
-    { q: "สามเหลี่ยมที่มีด้าน 1 และ 0.6 อีกด้านหนึ่งยาวเท่าใดจึงเป็นมุมฉาก?", options: ["0.4", "0.8", "0.7", "0.5"], correct: 1, exp: "√(1² - 0.6²) = √0.64 = 0.8" },
-    { q: "ชุดตัวเลข x, 15, 17 (17 ยาวสุด) ค่า x คือ?", options: ["7", "8", "9", "10"], correct: 1, exp: "√(17² - 15²) = √64 = 8" },
-    { q: "พื้นที่สามเหลี่ยมมุมฉากด้านประกอบยาว 5 และ 12 คือ?", options: ["30", "60", "65", "13"], correct: 0, exp: "(1/2) * 5 * 12 = 30" },
-    { q: "รูปสามเหลี่ยมมีด้านยาว 1.5 ซม. และ 2 ซม. ด้านที่สามยาวเท่าใดจึงจะเป็นสามเหลี่ยมมุมฉาก?", options: ["2.2 ซม.", "2.5 ซม.", "3 ซม.", "3.5 ซม."], correct: 1, exp: "(1.5)² + (2)² = 2.25 + 4 = 6.25. √6.25 = 2.5" },
-    { q: "สี่เหลี่ยมจัตุรัสมีเส้นทแยงมุมยาว √50 ซม. ด้านของสี่เหลี่ยมยาวเท่าใด?", options: ["5 ซม.", "7 ซม.", "10 ซม.", "25 ซม."], correct: 0, exp: "x² + x² = (√50)². 2x² = 50. x² = 25. x = 5" },
-    { q: "สามเหลี่ยมหน้าจั่วมีฐานยาว 16 ซม. ด้านประกอบยาว 10 ซม. ความสูงเท่าใด?", options: ["4 ซม.", "6 ซม.", "8 ซม.", "10 ซม."], correct: 1, exp: "แบ่งครึ่งฐานได้ 8. ใช้สูตรหาความสูง: √(10² - 8²) = 6" },
-    { q: "มดเดินไปทางทิศเหนือ 9 ม. เลี้ยวไปทิศตะวันออก 12 ม. มดห่างจากจุดเริ่มต้นเท่าใด?", options: ["15 ม.", "21 ม.", "18 ม.", "20 ม."], correct: 0, exp: "√(9² + 12²) = 15" },
-    { q: "ด้านตรงข้ามมุมฉากยาว 25 ด้านประกอบหนึ่งยาว 20 อีกด้านหนึ่งยาวเท่าใด?", options: ["5", "10", "15", "20"], correct: 2, exp: "√(25² - 20²) = √225 = 15" },
-    { q: "สี่เหลี่ยมขนมเปียกปูนมีเส้นทแยงมุมยาว 12 และ 16 ซม. ด้านยาวเท่าใด?", options: ["8 ซม.", "10 ซม.", "12 ซม.", "14 ซม."], correct: 1, exp: "เส้นทแยงมุมตัดกันแบ่งครึ่งและตั้งฉาก ได้สามเหลี่ยมด้านยาว 6 และ 8. ด้านสี่เหลี่ยม = √(6² + 8²) = 10" },
-    { q: "วงกลมที่มีคอร์ดยาว 24 ซม. ห่างจากจุดศูนย์กลาง 5 ซม. รัศมียาวเท่าใด?", options: ["11 ซม.", "12 ซม.", "13 ซม.", "15 ซม."], correct: 2, exp: "แบ่งครึ่งคอร์ดได้ 12. รัศมีคือ √(12² + 5²) = 13" },
-    { q: "บันได 25 ฟุตพาดกำแพง เชิงบันไดห่างกำแพง 7 ฟุต ถ้าบันไดรูดลงมา 4 ฟุต ปลายบนจะสูงจากพื้นเท่าใด?", options: ["20 ฟุต", "21 ฟุต", "24 ฟุต", "15 ฟุต"], correct: 0, exp: "ตอนแรกสูง √(25² - 7²) = 24. รูดลงมา 4 ฟุต เหลือ 24 - 4 = 20" },
-    { q: "สามเหลี่ยมที่มีด้าน 9, 12, 15 มีพื้นที่เท่าใด?", options: ["54", "90", "108", "135"], correct: 0, exp: "เช็คแล้วเป็นมุมฉาก. พื้นที่ = (1/2) * 9 * 12 = 54" },
-    { q: "สี่เหลี่ยมผืนผ้ากว้าง 5 ยาว 12 เส้นทแยงมุมยาวกว่าด้านกว้างเท่าใด?", options: ["7", "8", "10", "13"], correct: 1, exp: "เส้นทแยงมุม = 13. ต่างจากด้านกว้าง (5) คือ 13 - 5 = 8" },
-    { q: "กล่องทรงสี่เหลี่ยมกว้าง 3 ยาว 4 สูง 12 ซม. เส้นทแยงมุมภายในกล่องยาวเท่าใด?", options: ["13 ซม.", "15 ซม.", "17 ซม.", "19 ซม."], correct: 0, exp: "√(w² + l² + h²) = √(3² + 4² + 12²) = √169 = 13" },
-    { q: "สามเหลี่ยมมุมฉากมีด้านประกอบยาว x และ x+7 ด้านตรงข้ามยาว 13 ค่า x คือ?", options: ["3", "5", "7", "12"], correct: 1, exp: "x² + (x+7)² = 13². แก้สมการได้ x = 5" },
-    { q: "สามเหลี่ยมด้านเท่ามีด้านยาว 10 ซม. จะมีความสูงประมาณเท่าใด?", options: ["5 ซม.", "7.5 ซม.", "8.66 ซม.", "10 ซม."], correct: 2, exp: "√(10² - 5²) = √75 ≈ 8.66" },
-    { q: "เรือใบสองลำออกจากจุดเดียวกัน ลำหนึ่งไปทิศเหนือ 12 กม./ชม. อีกลำไปทิศตะวันตก 5 กม./ชม. ผ่านไป 2 ชม. เรือห่างกันเท่าใด?", options: ["13 กม.", "20 กม.", "26 กม.", "30 กม."], correct: 2, exp: "ระยะทาง 24 และ 10 กม. ห่างกัน √(24² + 10²) = 26" },
-    { q: "สี่เหลี่ยมคางหมูมีด้านคู่ขนานยาว 10 และ 16 ซม. ด้านที่ตั้งฉากยาว 8 ซม. อีกด้านยาวเท่าใด?", options: ["8 ซม.", "10 ซม.", "12 ซม.", "14 ซม."], correct: 1, exp: "ส่วนต่างฐานคือ 6. ด้านเฉียง = √(8² + 6²) = 10" },
-    { q: "จุด A(2,3) และ B(5,7) ห่างกันกี่หน่วย?", options: ["4", "5", "6", "7"], correct: 1, exp: "Δx=3, Δy=4. ระยะห่าง = √(3² + 4²) = 5" },
-    { q: "รูปสามเหลี่ยมที่มีด้าน 21, 28, 35 มีรัศมีวงกลมล้อมรอบเท่าใด?", options: ["15", "17.5", "20", "35"], correct: 1, exp: "รัศมีคือครึ่งหนึ่งของด้านตรงข้ามมุมฉาก = 35/2 = 17.5" },
-    { q: "พีระมิดฐานจัตุรัสยาวด้านละ 10 ซม. สูงตรง 12 ซม. สูงเอียงยาวเท่าใด?", options: ["13 ซม.", "15 ซม.", "17 ซม.", "18 ซม."], correct: 0, exp: "สูงเอียง = √(5² + 12²) = 13" },
-    { q: "ถ้าพื้นที่สี่เหลี่ยมจัตุรัสบนด้านประกอบคือ 25 และ 144 ตร.หน่วย เส้นรอบรูปสามเหลี่ยมนี้ยาวเท่าใด?", options: ["30", "35", "40", "60"], correct: 0, exp: "ด้านยาว 5, 12, 13. รอบรูป = 5+12+13 = 30" },
-    { q: "เสาไฟสูง 15 ม. ตึกสูง 30 ม. ห่างกัน 8 ม. สายไฟที่เชื่อมยอดเสาและยอดตึกยาวเท่าใด?", options: ["10 ม.", "15 ม.", "17 ม.", "20 ม."], correct: 2, exp: "Δสูง=15. สายไฟ = √(15² + 8²) = 17" }
+    { q: "บันได 10 ม. พาดกำแพง ปลายบนสูง 8 ม. เชิงบันไดห่างกำแพงเท่าใด?", options: ["2 ม.", "4 ม.", "6 ม.", "9 ม."], correct: 2, exp: "6 ม." },
+    { q: "7, 24, 25 เป็นสามเหลี่ยมชนิดใด?", options: ["มุมแหลม", "มุมป้าน", "มุมฉาก", "หน้าจั่ว"], correct: 2, exp: "มุมฉาก (7² + 24² = 25²)" },
+    { q: "ข้อใดไม่ใช่ชุดตัวเลขปีทาโกรัส?", options: ["3, 4, 5", "5, 12, 13", "4, 5, 6", "8, 15, 17"], correct: 2, exp: "4, 5, 6 (16 + 25 ≠ 36)" },
+    { q: "เสาธงสูง 12 ม. เชือกผูกยอดเสาห่างโคนเสา 5 ม. เชือกยาวเท่าใด?", options: ["13 ม.", "15 ม.", "17 ม.", "20 ม."], correct: 0, exp: "13 ม." },
+    { q: "สี่เหลี่ยมผืนผ้ากว้าง 9 ยาว 12 เส้นทแยงมุมยาวเท่าใด?", options: ["15", "18", "21", "25"], correct: 0, exp: "15" },
+    { q: "สามเหลี่ยมที่มีด้าน 1 และ 0.6 อีกด้านหนึ่งยาวเท่าใดจึงเป็นมุมฉาก?", options: ["0.4", "0.8", "0.7", "0.5"], correct: 1, exp: "0.8" },
+    { q: "ชุดตัวเลข x, 15, 17 (17 ยาวสุด) ค่า x คือ?", options: ["7", "8", "9", "10"], correct: 1, exp: "8" },
+    { q: "พื้นที่สามเหลี่ยมมุมฉากด้านประกอบยาว 5 และ 12 คือ?", options: ["30", "60", "65", "13"], correct: 0, exp: "(1/2)*5*12 = 30" },
+    { q: "รูปสามเหลี่ยมมีด้านยาว 1.5 ซม. และ 2 ซม. ด้านที่สามยาวเท่าใดจึงจะเป็นสามเหลี่ยมมุมฉาก?", options: ["2.2 ซม.", "2.5 ซม.", "3 ซม.", "3.5 ซม."], correct: 1, exp: "2.5 ซม." },
+    { q: "สี่เหลี่ยมจัตุรัสมีเส้นทแยงมุมยาว √50 ซม. ด้านของสี่เหลี่ยมยาวเท่าใด?", options: ["5 ซม.", "7 ซม.", "10 ซม.", "25 ซม."], correct: 0, exp: "5 ซม." },
+    { q: "สามเหลี่ยมหน้าจั่วมีฐานยาว 16 ซม. ด้านประกอบยาว 10 ซม. ความสูงเท่าใด?", options: ["4 ซม.", "6 ซม.", "8 ซม.", "10 ซม."], correct: 1, exp: "6 ซม." },
+    { q: "มดเดินไปทางทิศเหนือ 9 ม. เลี้ยวไปทิศตะวันออก 12 ม. มดห่างจากจุดเริ่มต้นเท่าใด?", options: ["15 ม.", "21 ม.", "18 ม.", "20 ม."], correct: 0, exp: "15 ม." },
+    { q: "ด้านตรงข้ามมุมฉากยาว 25 ด้านประกอบหนึ่งยาว 20 อีกด้านหนึ่งยาวเท่าใด?", options: ["5", "10", "15", "20"], correct: 2, exp: "15" },
+    { q: "สี่เหลี่ยมขนมเปียกปูนมีเส้นทแยงมุมยาว 12 และ 16 ซม. ด้านยาวเท่าใด?", options: ["8 ซม.", "10 ซม.", "12 ซม.", "14 ซม."], correct: 1, exp: "10 ซม." },
+    { q: "วงกลมที่มีคอร์ดยาว 24 ซม. ห่างจากจุดศูนย์กลาง 5 ซม. รัศมียาวเท่าใด?", options: ["11 ซม.", "12 ซม.", "13 ซม.", "15 ซม."], correct: 2, exp: "13 ซม." },
+    { q: "บันได 25 ฟุตพาดกำแพง เชิงบันไดห่างกำแพง 7 ฟุต ถ้าบันไดรูดลงมา 4 ฟุต ปลายบนจะสูงจากพื้นเท่าใด?", options: ["20 ฟุต", "21 ฟุต", "24 ฟุต", "15 ฟุต"], correct: 0, exp: "20 ฟุต" },
+    { q: "สามเหลี่ยมที่มีด้าน 9, 12, 15 มีพื้นที่เท่าใด?", options: ["54", "90", "108", "135"], correct: 0, exp: "54" },
+    { q: "สี่เหลี่ยมผืนผ้ากว้าง 5 ยาว 12 เส้นทแยงมุมยาวกว่าด้านกว้างเท่าใด?", options: ["7", "8", "10", "13"], correct: 1, exp: "8 (13-5)" },
+    { q: "กล่องทรงสี่เหลี่ยมกว้าง 3 ยาว 4 สูง 12 ซม. เส้นทแยงมุมภายในกล่องยาวเท่าใด?", options: ["13 ซม.", "15 ซม.", "17 ซม.", "19 ซม."], correct: 0, exp: "13 ซม." },
+    { q: "สามเหลี่ยมมุมฉากมีด้านประกอบยาว x และ x+7 ด้านตรงข้ามยาว 13 ค่า x คือ?", options: ["3", "5", "7", "12"], correct: 1, exp: "5" },
+    { q: "สามเหลี่ยมด้านเท่ามีด้านยาว 10 ซม. จะมีความสูงประมาณเท่าใด?", options: ["5 ซม.", "7.5 ซม.", "8.66 ซม.", "10 ซม."], correct: 2, exp: "8.66 ซม." },
+    { q: "เรือใบสองลำออกจากจุดเดียวกัน ลำหนึ่งไปทิศเหนือ 12 กม./ชม. อีกลำไปทิศตะวันตก 5 กม./ชม. ผ่านไป 2 ชม. เรือห่างกันเท่าใด?", options: ["13 กม.", "20 กม.", "26 กม.", "30 กม."], correct: 2, exp: "26 กม." },
+    { q: "สี่เหลี่ยมคางหมูมีด้านคู่ขนานยาว 10 และ 16 ซม. ด้านที่ตั้งฉากยาว 8 ซม. อีกด้านยาวเท่าใด?", options: ["8 ซม.", "10 ซม.", "12 ซม.", "14 ซม."], correct: 1, exp: "10 ซม." },
+    { q: "จุด A(2,3) และ B(5,7) ห่างกันกี่หน่วย?", options: ["4", "5", "6", "7"], correct: 1, exp: "5" },
+    { q: "รูปสามเหลี่ยมที่มีด้าน 21, 28, 35 มีรัศมีวงกลมล้อมรอบเท่าใด?", options: ["15", "17.5", "20", "35"], correct: 1, exp: "17.5" },
+    { q: "พีระมิดฐานจัตุรัสยาวด้านละ 10 ซม. สูงตรง 12 ซม. สูงเอียงยาวเท่าใด?", options: ["13 ซม.", "15 ซม.", "17 ซม.", "18 ซม."], correct: 0, exp: "13 ซม." },
+    { q: "ถ้าพื้นที่สี่เหลี่ยมจัตุรัสบนด้านประกอบคือ 25 และ 144 ตร.หน่วย เส้นรอบรูปสามเหลี่ยมนี้ยาวเท่าใด?", options: ["30", "35", "40", "60"], correct: 0, exp: "30" },
+    { q: "เสาไฟสูง 15 ม. ตึกสูง 30 ม. ห่างกัน 8 ม. สายไฟที่เชื่อมยอดเสาและยอดตึกยาวเท่าใด?", options: ["10 ม.", "15 ม.", "17 ม.", "20 ม."], correct: 2, exp: "17 ม." }
 ];
 
-// ฟังก์ชันแสดงข้อสอบ
 let userAnswers = new Array(questions.length).fill(null);
+
 function renderQuiz() {
     const quizList = document.getElementById('quiz-list');
     questions.forEach((q, i) => {
@@ -203,13 +238,12 @@ function showResults() {
     let score = userAnswers.filter((a,i)=> a === questions[i].correct).length;
     document.getElementById('results').style.display = 'block';
     document.getElementById('score-text').innerHTML = `${score} / 30`;
-    let analysis = score >= 25 ? "เยี่ยมมาก! คุณคือเซียนปีทาโกรัส" : (score >= 15 ? "ดีมาก! ทบทวนโจทย์ประยุกต์อีกนิดจะดีมาก" : "พยายามอีกนิด! ฝึกทดเลขในกระดานด้านบนบ่อยๆ นะครับ");
+    let analysis = score >= 25 ? "เยี่ยมมาก! คุณคือเซียนปีทาโกรัส" : (score >= 15 ? "ดีมาก! ทบทวนโจทย์ประยุกต์อีกนิดจะดีมาก" : "พยายามอีกนิด! ฝึกทดเลขในกระดานบ่อยๆ นะครับ");
     document.getElementById('analysis-box').innerHTML = analysis;
-    window.scrollTo(0, document.body.scrollHeight);
+    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
 }
 
 renderQuiz();
 </script>
-
 </body>
 </html>
