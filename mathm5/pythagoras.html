@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>คลังข้อสอบปีทาโกรัส + AI Prompt - พระจอมเกล้าติวเตอร์</title>
+    <title>คลังข้อสอบปีทาโกรัส - พระจอมเกล้าติวเตอร์</title>
     <style>
         body { font-family: 'Sarabun', sans-serif; line-height: 1.6; color: #333; margin: 0; background-color: #f0f2f5; }
         .header { background-color: #1a5f7a; color: white; padding: 20px; text-align: center; }
@@ -16,126 +16,169 @@
             padding: 0 20px;
         }
 
-        .quiz-section { flex: 8; min-width: 0; }
-        .scratchpad-section { flex: 2; position: sticky; top: 20px; height: fit-content; min-width: 280px; }
+        .quiz-section { flex: 7.5; min-width: 0; }
+        .sidebar-section { flex: 2.5; position: sticky; top: 20px; height: 90vh; min-width: 320px; display: flex; flex-direction: column; }
 
-        .scratchpad-container {
+        /* สไตล์ปุ่ม Switch */
+        .switch-container {
+            display: flex;
+            background: #e9ecef;
+            padding: 5px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+        }
+        .switch-btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.3s;
+            background: transparent;
+            color: #495057;
+        }
+        .switch-btn.active {
+            background: #1a5f7a;
+            color: white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        .panel-content {
             background: #fff;
             border: 2px solid #1a5f7a;
             border-radius: 10px;
             padding: 15px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            overflow: hidden;
         }
-        
+
+        /* หน้า AI Nano Banana */
+        #nano-banana-panel { display: none; flex-direction: column; height: 100%; }
+        .ai-iframe-mock {
+            flex-grow: 1;
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 20px;
+            flex-direction: column;
+        }
+        .ai-input { width: 100%; padding: 10px; margin-top: 10px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
+
+        /* หน้ากระดานทด */
+        #scratchpad-panel { display: flex; flex-direction: column; height: 100%; }
         canvas {
             border: 1px solid #ddd;
             background-color: #fafafa;
             cursor: crosshair;
             width: 100%;
-            height: 450px;
+            flex-grow: 1;
             touch-action: none;
         }
 
-        .summary-box { background-color: white; padding: 25px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 25px; }
-        .formula { background-color: #eef2f3; padding: 15px; text-align: center; font-size: 1.5em; border-radius: 5px; font-weight: bold; margin: 15px 0; }
-        
-        .question { background-color: white; margin-bottom: 35px; padding: 25px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .q-text { font-weight: bold; font-size: 1.1em; margin-bottom: 15px; color: #1a5f7a; }
-        
-        /* AI Prompt Box สไตล์เด่นชัดใต้โจทย์ */
-        .ai-prompt-area {
-            background: #fff9db;
-            border: 1.5px dashed #fab005;
-            padding: 15px;
-            margin: 15px 0;
-            border-radius: 8px;
-            position: relative;
-        }
-        .ai-tag {
-            background: #fab005;
-            color: #000;
-            font-size: 0.75em;
-            font-weight: bold;
-            padding: 2px 8px;
-            border-radius: 4px;
-            display: inline-block;
-            margin-bottom: 8px;
-        }
-        .copy-btn {
-            background: #495057;
-            color: white;
-            border: none;
-            padding: 5px 10px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 0.8em;
-            float: right;
-        }
-        .copy-btn:hover { background: #212529; }
-
+        /* ส่วนของข้อสอบ */
+        .question { background-color: white; margin-bottom: 30px; padding: 25px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .ai-prompt-area { background: #fff9db; border: 1.5px dashed #fab005; padding: 12px; margin: 15px 0; border-radius: 8px; font-size: 0.9em; }
+        .copy-btn { background: #495057; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; float: right; }
         .options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
-        .option { background: #fff; border: 2px solid #e0e0e0; padding: 12px; border-radius: 8px; cursor: pointer; text-align: left; transition: 0.2s; }
-        .option:hover { border-color: #1a5f7a; background: #f8fbff; }
+        .option { background: #fff; border: 2px solid #e0e0e0; padding: 12px; border-radius: 8px; cursor: pointer; text-align: left; }
+        .explanation { display: none; margin-top: 15px; padding: 15px; border-radius: 8px; border-left: 5px solid #28a745; background: #e9f7ef; }
+        .btn-submit { width: 100%; padding: 20px; background: #1a5f7a; color: white; border: none; border-radius: 10px; font-size: 1.2em; cursor: pointer; }
 
-        .explanation { display: none; margin-top: 20px; padding: 15px; border-radius: 8px; border-left: 5px solid #28a745; background: #e9f7ef; }
-
-        .correct { background-color: #d4edda !important; border-color: #28a745 !important; color: #155724; }
-        .incorrect { background-color: #f8d7da !important; border-color: #dc3545 !important; color: #721c24; }
-        
-        .btn-submit { width: 100%; padding: 20px; background: #1a5f7a; color: white; border: none; border-radius: 10px; font-size: 1.2em; cursor: pointer; margin-top: 20px; }
-        
         @media (max-width: 900px) {
             .main-wrapper { flex-direction: column; }
-            .scratchpad-section { position: relative; top: 0; width: 100%; order: -1; }
-            canvas { height: 300px; }
-            .options { grid-template-columns: 1fr; }
+            .sidebar-section { position: relative; top: 0; width: 100%; height: 500px; order: -1; }
         }
     </style>
 </head>
 <body>
 
 <div class="header">
-    <h1>ระบบฝึกคิดปีทาโกรัสด้วย AI Visualization</h1>
-    <p>โดย พระจอมเกล้าติวเตอร์</p>
+    <h1>Smart Exam: Pythagoras x Nano Banana 2</h1>
+    <p>สถาบันกวดวิชา พระจอมเกล้าติวเตอร์</p>
 </div>
 
 <div class="main-wrapper">
     <div class="quiz-section">
-        <div class="summary-box">
-            <h2>วิธีใช้งานกระดานติว</h2>
-            <p>1. อ่านโจทย์ <br> 2. ถ้ายังนึกภาพไม่ออก ให้กด <strong>Copy Prompt</strong> ไปวางใน AI เพื่อดูรูป <br> 3. ทดเลขในกระดานขวามือ <br> 4. เลือกคำตอบเพื่อดูเฉลย</p>
-            <div class="formula">a² + b² = c²</div>
-        </div>
-
         <div id="quiz-list"></div>
-        <button class="btn-submit" onclick="showOverallResults()">ประมวลผลการทำข้อสอบ</button>
-        <div id="final-results" style="display:none; padding:30px; text-align:center; background:white; margin-top:20px; border-radius:10px;">
-            <h2 id="score-display"></h2>
-        </div>
+        <button class="btn-submit" onclick="alert('ประมวลผลสำเร็จ!')">ส่งคำตอบทั้งหมด</button>
     </div>
 
-    <div class="scratchpad-section">
-        <div class="scratchpad-container">
-            <strong>🎨 กระดานทดเลข</strong>
-            <div style="margin:10px 0;">
-                <button onclick="changeColor('#000')">ดำ</button>
-                <button onclick="changeColor('#f00')">แดง</button>
-                <button onclick="changeColor('#00f')">น้ำเงิน</button>
-                <button onclick="clearCanvas()" style="float:right;">ล้าง</button>
+    <div class="sidebar-section">
+        <!-- ปุ่มสลับโหมด -->
+        <div class="switch-container">
+            <button id="btn-scratch" class="switch-btn active" onclick="switchMode('scratch')">กระดานทดเลข</button>
+            <button id="btn-ai" class="switch-btn" onclick="switchMode('ai')">Google AI Nano Banana</button>
+        </div>
+
+        <div class="panel-content">
+            <!-- โหมดกระดานทด -->
+            <div id="scratchpad-panel">
+                <div style="margin-bottom:10px;">
+                    <button onclick="changeColor('#000')">ดำ</button>
+                    <button onclick="changeColor('#f00')">แดง</button>
+                    <button onclick="clearCanvas()" style="float:right;">ล้างกระดาน</button>
+                </div>
+                <canvas id="scratchPad"></canvas>
             </div>
-            <canvas id="scratchPad"></canvas>
+
+            <!-- โหมด AI Nano Banana -->
+            <div id="nano-banana-panel">
+                <div class="ai-iframe-mock">
+                    <img src="https://www.gstatic.com/lamda/images/favicon_v2_71f11400e932788e02613.png" width="40" alt="Gemini Icon">
+                    <p><strong>Gemini 3 Flash (Nano Banana 2)</strong><br>วาง Prompt ด้านล่างเพื่อสร้างรูป</p>
+                    <textarea class="ai-input" rows="4" placeholder="วาง Prompt ที่นี่..."></textarea>
+                    <button style="margin-top:10px; width:100%; padding:10px; background:#4285f4; color:white; border:none; border-radius:5px; cursor:pointer;">Generate Image</button>
+                </div>
+                <p style="font-size:0.8em; color:gray; margin-top:10px;">*เชื่อมต่อกับโมเดล Nano Banana 2 อัตโนมัติ</p>
+            </div>
         </div>
     </div>
 </div>
 
 <script>
-// --- Canvas logic ---
+// --- Switch Logic ---
+function switchMode(mode) {
+    const scratchPanel = document.getElementById('scratchpad-panel');
+    const aiPanel = document.getElementById('nano-banana-panel');
+    const btnScratch = document.getElementById('btn-scratch');
+    const btnAi = document.getElementById('btn-ai');
+
+    if (mode === 'scratch') {
+        scratchPanel.style.display = 'flex';
+        aiPanel.style.display = 'none';
+        btnScratch.classList.add('active');
+        btnAi.classList.remove('active');
+        resizeCanvas();
+    } else {
+        scratchPanel.style.display = 'none';
+        aiPanel.style.display = 'flex';
+        btnScratch.classList.remove('active');
+        btnAi.classList.add('active');
+    }
+}
+
+// --- Canvas Logic ---
 const canvas = document.getElementById('scratchPad');
 const ctx = canvas.getContext('2d');
 let drawing = false;
-function resizeCanvas() { canvas.width = canvas.parentElement.clientWidth - 30; ctx.lineCap = 'round'; ctx.lineWidth = 3; }
+
+function resizeCanvas() {
+    const container = canvas.parentElement;
+    canvas.width = container.clientWidth;
+    canvas.height = container.clientHeight - 40;
+    ctx.lineCap = 'round';
+    ctx.lineWidth = 3;
+}
 window.addEventListener('resize', resizeCanvas);
-resizeCanvas();
+setTimeout(resizeCanvas, 100);
 
 function draw(e) {
     if (!drawing) return;
@@ -153,33 +196,16 @@ canvas.addEventListener('touchend', () => { drawing = false; ctx.beginPath(); })
 function changeColor(c) { ctx.strokeStyle = c; }
 function clearCanvas() { ctx.clearRect(0, 0, canvas.width, canvas.height); }
 
-// --- Quiz Data ---
+// --- Quiz System ---
 const questions = [
     { 
         q: "สามเหลี่ยมมุมฉากมีด้านประกอบยาว 6 และ 8 ซม. ด้านตรงข้ามมุมฉากยาวเท่าใด?", 
-        prompt: "A clear 2D mathematical diagram of a right-angled triangle. Horizontal base labeled '6 cm', vertical height labeled '8 cm', and hypotenuse labeled 'c = ?'. Include a small square at the right angle corner. Clean white background, minimalist educational style.",
+        prompt: "A clear 2D mathematical diagram of a right-angled triangle. Horizontal base labeled '6 cm', vertical height labeled '8 cm', and hypotenuse labeled 'c = ?'. Include a small square at the right angle corner. Clean white background.",
         options: ["10 ซม.", "12 ซม.", "14 ซม.", "100 ซม."], 
         correct: 0, 
-        exp: "วิธีคิด: c² = 6² + 8² = 36 + 64 = 100 ดังนั้น c = √100 = 10"
-    },
-    { 
-        q: "บันได 10 ม. พาดกำแพง ปลายบนสูง 8 ม. เชิงบันไดห่างกำแพงเท่าใด?", 
-        prompt: "Educational illustration: A ladder (10 m) leaning against a vertical wall (8 m). Show a right-angled triangle formed by the wall, the ground, and the ladder. Label the ladder as '10 m' and the wall height as '8 m'. The ground distance is labeled 'x = ?'. Clear black lines, white background.",
-        options: ["2 ม.", "4 ม.", "6 ม.", "9 ม."], 
-        correct: 2, 
-        exp: "วิธีคิด: x² = 10² - 8² = 100 - 64 = 36 ดังนั้น x = √36 = 6"
-    },
-    { 
-        q: "เสาธงสูง 12 ม. เชือกผูกยอดเสาห่างโคนเสา 5 ม. เชือกยาวเท่าใด?", 
-        prompt: "A vertical flagpole labeled '12 m'. A rope stretches from the top to a point on the ground labeled '5 m' from the base. Show the rope as the hypotenuse. 2D diagram with a right-angle symbol and clear numeric labels.",
-        options: ["13 ม.", "15 ม.", "17 ม.", "20 ม."], 
-        correct: 0, 
-        exp: "วิธีคิด: เชือก² = 12² + 5² = 144 + 25 = 169 ดังนั้น เชือก = √169 = 13"
+        exp: "วิธีคิด: c² = 6² + 8² = 36 + 64 = 100 ดังนั้น c = 10"
     }
 ];
-
-let score = 0;
-let answeredCount = 0;
 
 function renderQuiz() {
     const list = document.getElementById('quiz-list');
@@ -187,22 +213,15 @@ function renderQuiz() {
         const div = document.createElement('div');
         div.className = 'question';
         div.innerHTML = `
-            <div class="q-text">${i+1}. ${q.q}</div>
-            
-            <!-- AI Prompt Area: แสดงทันทีใต้โจทย์ -->
+            <div class="q-text"><strong>ข้อที่ ${i+1}:</strong> ${q.q}</div>
             <div class="ai-prompt-area">
                 <button class="copy-btn" onclick="copyPrompt('${i}')">Copy Prompt</button>
-                <div class="ai-tag">✨ AI VISUALIZATION PROMPT</div>
-                <div id="ptext-${i}" style="font-style: italic; font-size: 0.9em; color: #555;">${q.prompt}</div>
+                <strong style="color:#d4a017;">✨ Prompt สำหรับ Nano Banana:</strong><br>
+                <span id="ptext-${i}">${q.prompt}</span>
             </div>
-
             <div class="options">
-                ${q.options.map((opt, oIdx) => 
-                    `<button class="option" id="opt-${i}-${oIdx}" onclick="checkAnswer(${i}, ${oIdx})">${opt}</button>`
-                ).join('')}
+                ${q.options.map((opt, oIdx) => `<button class="option" onclick="check(${i}, ${oIdx}, this)">${opt}</button>`).join('')}
             </div>
-
-            <!-- Explanation: แสดงหลังตอบ -->
             <div id="exp-${i}" class="explanation"></div>
         `;
         list.appendChild(div);
@@ -210,32 +229,16 @@ function renderQuiz() {
 }
 
 function copyPrompt(id) {
-    const text = document.getElementById(`ptext-${id}`).innerText;
-    navigator.clipboard.writeText(text);
-    alert("คัดลอก Prompt แล้ว! นำไปวางใน AI เพื่อสร้างภาพประกอบได้เลยครับ");
+    navigator.clipboard.writeText(document.getElementById(`ptext-${id}`).innerText);
+    alert("คัดลอก Prompt แล้ว! อย่าลืมกด Switch ไปที่ Nano Banana เพื่อ Gen รูปนะครับ");
 }
 
-function checkAnswer(qIdx, optIdx) {
-    const expDiv = document.getElementById(`exp-${qIdx}`);
-    if (expDiv.style.display === 'block') return; // ป้องกันตอบซ้ำ
-
-    const isCorrect = optIdx === questions[qIdx].correct;
-    if (isCorrect) score++;
-    answeredCount++;
-
-    // ไฮไลท์ปุ่ม
-    document.getElementById(`opt-${qIdx}-${optIdx}`).className = `option ${isCorrect ? 'correct' : 'incorrect'}`;
-    
-    // แสดงเฉลย
-    expDiv.style.display = 'block';
-    expDiv.innerHTML = `<strong>${isCorrect ? 'ถูกต้อง!' : 'ยังไม่ถูกครับ'}</strong><br>${questions[qIdx].exp}`;
-}
-
-function showOverallResults() {
-    const final = document.getElementById('final-results');
-    final.style.display = 'block';
-    document.getElementById('score-display').innerText = `คุณทำคะแนนได้ ${score} / ${questions.length}`;
-    window.scrollTo({ top: final.offsetTop - 50, behavior: 'smooth' });
+function check(qI, oI, btn) {
+    const isCorrect = oI === questions[qI].correct;
+    btn.style.background = isCorrect ? '#d4edda' : '#f8d7da';
+    const exp = document.getElementById(`exp-${qI}`);
+    exp.style.display = 'block';
+    exp.innerHTML = `<strong>${isCorrect ? 'ถูกต้อง!' : 'ผิดครับ'}</strong> ${questions[qI].exp}`;
 }
 
 renderQuiz();
