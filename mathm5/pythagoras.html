@@ -8,12 +8,14 @@
         body { font-family: 'Sarabun', sans-serif; line-height: 1.6; color: #333; margin: 0; background-color: #f0f2f5; }
         .header { background-color: #1a5f7a; color: white; padding: 20px; text-align: center; }
         
+        /* แก้ไข: ปรับให้ขยายเต็มหน้าจอ 100% */
         .main-wrapper {
             display: flex;
-            max-width: 1400px;
-            margin: 20px auto;
+            max-width: 100%;    /* ขยายเต็มจอ */
+            margin: 0;          /* เอา margin ออกเพื่อให้ชิดขอบ */
             gap: 20px;
-            padding: 0 20px;
+            padding: 20px;      /* เว้นระยะขอบเล็กน้อยเพื่อความสวยงาม */
+            box-sizing: border-box; /* ป้องกันขนาดเกินจอ */
         }
 
         .quiz-section { flex: 7.5; min-width: 0; }
@@ -26,11 +28,11 @@
         .panel-content { background: #fff; border: 2px solid #1a5f7a; border-radius: 10px; padding: 15px; flex-grow: 1; display: flex; flex-direction: column; box-shadow: 0 4px 15px rgba(0,0,0,0.1); overflow: hidden; }
 
         #nano-banana-panel { display: none; flex-direction: column; height: 100%; }
-        .ai-iframe-mock { flex-grow: 1; background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 5px; display: flex; align-items: center; justify-content: center; text-align: center; padding: 20px; flex-direction: column; }
+        .ai-iframe-mock { flex-grow: 1; background: #fff; border: 2px solid #4285f4; border-radius: 5px; display: flex; align-items: center; justify-content: center; text-align: center; padding: 20px; flex-direction: column; overflow-y: auto; }
         .ai-input { width: 100%; padding: 10px; margin-top: 10px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
 
         #scratchpad-panel { display: flex; flex-direction: column; height: 100%; }
-        canvas { border: 1px solid #ddd; background-color: #fafafa; cursor: crosshair; width: 100%; flex-grow: 1; touch-action: none; }
+        canvas { border: 1px solid #ddd; background-color: #fafafa; cursor: crosshair; width: 100%; flex-grow: 1; touch-action: none; border-radius: 5px; }
 
         .question { background-color: white; margin-bottom: 30px; padding: 25px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         .ai-prompt-area { background: #fff9db; border: 1.5px dashed #fab005; padding: 12px; margin: 15px 0; border-radius: 8px; font-size: 0.9em; }
@@ -38,7 +40,7 @@
         .options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
         .option { background: #fff; border: 2px solid #e0e0e0; padding: 12px; border-radius: 8px; cursor: pointer; text-align: left; }
         .explanation { display: none; margin-top: 15px; padding: 15px; border-radius: 8px; border-left: 5px solid #28a745; background: #e9f7ef; }
-        .btn-submit { width: 100%; padding: 20px; background: #1a5f7a; color: white; border: none; border-radius: 10px; font-size: 1.2em; cursor: pointer; }
+        .btn-submit { width: 100%; padding: 20px; background: #1a5f7a; color: white; border: none; border-radius: 10px; font-size: 1.2em; cursor: pointer; margin-top: 20px; }
 
         @media (max-width: 900px) {
             .main-wrapper { flex-direction: column; }
@@ -53,16 +55,15 @@
     <p>โดย พระจอมเกล้าติวเตอร์ | CHINPONG SMART FARM</p>
 </div>
 
-/* ใหม่: ขยายเต็มจอ */
-.main-wrapper {
-    display: flex;
-    max-width: 100%;    /* ขยายให้เต็ม 100% ของความกว้างจอ */
-    margin: 0;          /* เอา margin ออก */
-    gap: 20px;
-    padding: 20px;      /* ใส่ padding เล็กน้อยเพื่อให้เนื้อหาไม่ติดขอบจอจนเกินไป */
-    box-sizing: border-box; /* ป้องกันไม่ให้ padding ทำให้ขนาดเกินหน้าจอ */
-}
+<div class="main-wrapper">
+    <!-- ส่วนข้อสอบ (ซ้าย) -->
+    <div class="quiz-section">
+        <div id="quiz-list"></div>
+        <button class="btn-submit" onclick="showSummary()">ส่งคำตอบและวิเคราะห์ผล</button>
+        <div id="final-analysis" style="display:none; margin-top:20px; padding:20px; background:white; border-radius:10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);"></div>
+    </div>
 
+    <!-- ส่วน Sidebar (ขวา) -->
     <div class="sidebar-section">
         <div class="switch-container">
             <button id="btn-scratch" class="switch-btn active" onclick="switchMode('scratch')">กระดานทดเลข</button>
@@ -70,109 +71,35 @@
         </div>
 
         <div class="panel-content">
+            <!-- กระดานทดเลข -->
             <div id="scratchpad-panel">
-                <div style="margin-bottom:10px;">
-                    <button onclick="changeColor('#000')">ดำ</button>
-                    <button onclick="changeColor('#f00')">แดง</button>
-                    <button onclick="clearCanvas()" style="float:right;">ล้างกระดาน</button>
+                <div style="margin-bottom:10px; display:flex; gap:5px;">
+                    <button onclick="changeColor('#000')" style="cursor:pointer; padding:5px 10px;">ดำ</button>
+                    <button onclick="changeColor('#f00')" style="cursor:pointer; padding:5px 10px; color:red;">แดง</button>
+                    <button onclick="clearCanvas()" style="margin-left:auto; cursor:pointer; padding:5px 10px;">ล้างกระดาน</button>
                 </div>
                 <canvas id="scratchPad"></canvas>
             </div>
 
-            <!-- แทนที่ส่วน nano-banana-panel เดิม -->
-<div id="nano-banana-panel">
-    <div class="ai-iframe-mock" style="background: #fff; border: 2px solid #4285f4;">
-        <img src="https://www.gstatic.com/lamda/images/favicon_v2_71f11400e932788e02613.png" width="30" alt="AI Icon">
-        <p><strong>ระบบสร้างรูปประกอบโจทย์ (Embedded AI)</strong></p>
-        
-        <textarea id="ai-prompt-input" class="ai-input" rows="3" placeholder="วาง Prompt ที่นี่..."></textarea>
-        
-        <button onclick="generateImage()" style="margin-top:10px; width:100%; padding:12px; background:#4285f4; color:white; border:none; border-radius:5px; cursor:pointer; font-weight:bold;">
-            🎨 สร้างรูปภาพทันที
-        </button>
-
-        <!-- พื้นที่แสดงรูปภาพที่ Gen ออกมา -->
-        <div id="ai-result-container" style="margin-top:15px; width:100%; min-height:200px; border:1px dashed #ccc; display:flex; align-items:center; justify-content:center; overflow:hidden; border-radius:8px;">
-            <p id="ai-placeholder-text" style="color:gray; font-size:0.8em;">รูปภาพจะปรากฏที่นี่</p>
-            <img id="generated-image" src="" style="display:none; width:100%; height:auto; border-radius:5px;">
+            <!-- Embedded AI Panel -->
+            <div id="nano-banana-panel">
+                <div class="ai-iframe-mock">
+                    <img src="https://www.gstatic.com/lamda/images/favicon_v2_71f11400e932788e02613.png" width="30" alt="AI Icon">
+                    <p><strong>ระบบสร้างรูปประกอบโจทย์ (Embedded AI)</strong></p>
+                    <textarea id="ai-prompt-input" class="ai-input" rows="3" placeholder="วาง Prompt ที่นี่..."></textarea>
+                    <button onclick="generateImage()" style="margin-top:10px; width:100%; padding:12px; background:#4285f4; color:white; border:none; border-radius:5px; cursor:pointer; font-weight:bold;">🎨 สร้างรูปภาพทันที</button>
+                    
+                    <div id="ai-result-container" style="margin-top:15px; width:100%; min-height:200px; border:1px dashed #ccc; display:flex; align-items:center; justify-content:center; overflow:hidden; border-radius:8px; background:#f9f9f9;">
+                        <p id="ai-placeholder-text" style="color:gray; font-size:0.8em; padding:10px;">รูปภาพจะปรากฏที่นี่</p>
+                        <img id="generated-image" src="" style="display:none; width:100%; height:auto; border-radius:5px;">
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
 
 <script>
-function generateImage() {
-    const prompt = document.getElementById('ai-prompt-input').value;
-    const imgElement = document.getElementById('generated-image');
-    const placeholder = document.getElementById('ai-placeholder-text');
-    
-    if (!prompt) {
-        alert("กรุณาวาง Prompt ก่อนครับ");
-        return;
-    }
-
-    placeholder.innerText = "กำลังสร้างรูปภาพ... (กรุณารอสักครู่)";
-    imgElement.style.display = "none";
-
-    // ใช้ Pollinations.ai API ในการ Gen รูปแบบฝัง (Embedded)
-    // เพิ่มความละเอียดและ Seed แบบสุ่มเพื่อให้ได้รูปใหม่เสมอ
-    const seed = Math.floor(Math.random() * 1000000);
-    const imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?seed=${seed}&width=512&height=512&nologo=true`;
-
-    imgElement.src = imageUrl;
-    
-    imgElement.onload = function() {
-        placeholder.style.display = "none";
-        imgElement.style.display = "block";
-    };
-}
-</script>
-
-<script>
-// --- Switch & Canvas Logic ---
-function switchMode(mode) {
-    const scratchPanel = document.getElementById('scratchpad-panel');
-    const aiPanel = document.getElementById('nano-banana-panel');
-    const btnScratch = document.getElementById('btn-scratch');
-    const btnAi = document.getElementById('btn-ai');
-    if (mode === 'scratch') {
-        scratchPanel.style.display = 'flex'; aiPanel.style.display = 'none';
-        btnScratch.classList.add('active'); btnAi.classList.remove('active');
-        resizeCanvas();
-    } else {
-        scratchPanel.style.display = 'none'; aiPanel.style.display = 'flex';
-        btnScratch.classList.remove('active'); btnAi.classList.add('active');
-    }
-}
-
-const canvas = document.getElementById('scratchPad');
-const ctx = canvas.getContext('2d');
-let drawing = false;
-
-function resizeCanvas() {
-    const container = canvas.parentElement;
-    canvas.width = container.clientWidth;
-    canvas.height = container.clientHeight - 40;
-    ctx.lineCap = 'round'; ctx.lineWidth = 3;
-}
-window.addEventListener('resize', resizeCanvas);
-setTimeout(resizeCanvas, 100);
-
-function draw(e) {
-    if (!drawing) return;
-    const rect = canvas.getBoundingClientRect();
-    const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
-    const y = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
-    ctx.lineTo(x, y); ctx.stroke(); ctx.beginPath(); ctx.moveTo(x, y);
-}
-canvas.addEventListener('mousedown', () => drawing = true);
-canvas.addEventListener('mouseup', () => { drawing = false; ctx.beginPath(); });
-canvas.addEventListener('mousemove', draw);
-canvas.addEventListener('touchstart', (e) => { e.preventDefault(); drawing = true; });
-canvas.addEventListener('touchmove', (e) => { e.preventDefault(); draw(e); });
-canvas.addEventListener('touchend', () => { drawing = false; ctx.beginPath(); });
-function changeColor(c) { ctx.strokeStyle = c; }
-function clearCanvas() { ctx.clearRect(0, 0, canvas.width, canvas.height); }
-
 // --- Quiz Data ---
 const questions = [
     { q: "สามเหลี่ยมมุมฉากมีด้านประกอบยาว 6 และ 8 ซม. ด้านตรงข้ามมุมฉากยาวเท่าใด?", prompt: "2D math diagram, right triangle, base 6cm, height 8cm, hypotenuse labeled 'c', include right angle symbol, minimalist style, high contrast.", options: ["10 ซม.", "12 ซม.", "14 ซม.", "100 ซม."], correct: 0, exp: "6² + 8² = 36 + 64 = 100. ถอดรากได้ 10" },
@@ -215,7 +142,7 @@ function renderQuiz() {
         const div = document.createElement('div');
         div.className = 'question';
         div.innerHTML = `
-            <div class="q-text"><strong>ข้อที่ ${i+1}:</strong> ${q.q}</div>
+            <div><strong>ข้อที่ ${i+1}:</strong> ${q.q}</div>
             <div class="ai-prompt-area">
                 <button class="copy-btn" onclick="copyPrompt('${i}')">Copy Prompt</button>
                 <strong style="color:#d4a017;">✨ Prompt สำหรับ Nano Banana:</strong><br>
@@ -233,7 +160,7 @@ function renderQuiz() {
 function copyPrompt(id) {
     const text = document.getElementById(`ptext-${id}`).innerText;
     navigator.clipboard.writeText(text);
-    alert("คัดลอก Prompt แล้ว! อย่าลืมกดสลับไปหน้า AI เพื่อวางและ Gen รูปประกอบนะครับ");
+    alert("คัดลอก Prompt แล้ว! สลับไปหน้า AI เพื่อวางและสร้างรูปได้เลยครับ");
 }
 
 function check(qI, oI, btn) {
@@ -247,16 +174,80 @@ function check(qI, oI, btn) {
     exp.innerHTML = `<strong>${isCorrect ? 'ถูกต้อง!' : 'ยังไม่ถูกครับ'}</strong> ${questions[qI].exp}`;
 }
 
+function generateImage() {
+    const prompt = document.getElementById('ai-prompt-input').value;
+    const imgElement = document.getElementById('generated-image');
+    const placeholder = document.getElementById('ai-placeholder-text');
+    
+    if (!prompt) { alert("กรุณาวาง Prompt ก่อนครับ"); return; }
+
+    placeholder.innerText = "กำลังสร้างรูปภาพ... กรุณารอสักครู่";
+    imgElement.style.display = "none";
+    placeholder.style.display = "block";
+
+    const seed = Math.floor(Math.random() * 1000000);
+    imgElement.src = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?seed=${seed}&width=512&height=512&nologo=true`;
+    
+    imgElement.onload = function() {
+        placeholder.style.display = "none";
+        imgElement.style.display = "block";
+    };
+}
+
+function switchMode(mode) {
+    const sPanel = document.getElementById('scratchpad-panel');
+    const aPanel = document.getElementById('nano-banana-panel');
+    const bScratch = document.getElementById('btn-scratch');
+    const bAi = document.getElementById('btn-ai');
+    if (mode === 'scratch') {
+        sPanel.style.display = 'flex'; aPanel.style.display = 'none';
+        bScratch.classList.add('active'); bAi.classList.remove('active');
+        resizeCanvas();
+    } else {
+        sPanel.style.display = 'none'; aPanel.style.display = 'flex';
+        bScratch.classList.remove('active'); bAi.classList.add('active');
+    }
+}
+
+const canvas = document.getElementById('scratchPad');
+const ctx = canvas.getContext('2d');
+let drawing = false;
+
+function resizeCanvas() {
+    const container = canvas.parentElement;
+    canvas.width = container.clientWidth;
+    canvas.height = container.clientHeight - 50;
+    ctx.lineCap = 'round'; ctx.lineWidth = 3;
+}
+window.addEventListener('resize', resizeCanvas);
+setTimeout(resizeCanvas, 100);
+
+function draw(e) {
+    if (!drawing) return;
+    const rect = canvas.getBoundingClientRect();
+    const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+    const y = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
+    ctx.lineTo(x, y); ctx.stroke(); ctx.beginPath(); ctx.moveTo(x, y);
+}
+canvas.addEventListener('mousedown', () => drawing = true);
+canvas.addEventListener('mouseup', () => { drawing = false; ctx.beginPath(); });
+canvas.addEventListener('mousemove', draw);
+canvas.addEventListener('touchstart', (e) => { e.preventDefault(); drawing = true; });
+canvas.addEventListener('touchmove', (e) => { e.preventDefault(); draw(e); });
+canvas.addEventListener('touchend', () => { drawing = false; ctx.beginPath(); });
+function changeColor(c) { ctx.strokeStyle = c; }
+function clearCanvas() { ctx.clearRect(0, 0, canvas.width, canvas.height); }
+
 function showSummary() {
     let score = userAnswers.filter((a, i) => a === questions[i].correct).length;
     const analysis = document.getElementById('final-analysis');
     analysis.style.display = 'block';
     let text = `<h2>สรุปผลคะแนน: ${score} / 30</h2>`;
     if(score < 15) text += "<p>วิเคราะห์: พื้นฐานปีทาโกรัสยังไม่แน่น ควรเน้นการวาดรูปสามเหลี่ยมมุมฉากประกอบโจทย์</p>";
-    else if(score < 25) text += "<p>วิเคราะห์: ทำได้ดีแล้ว แต่ยังมีจุดบกพร่องในโจทย์ประยุกต์ 3 มิติและทิศทาง</p>";
-    else text += "<p>วิเคราะห์: ยอดเยี่ยม! คุณมีความเข้าใจในเรื่องทฤษฎีบทปีทาโกรัสในระดับสูง</p>";
+    else if(score < 25) text += "<p>วิเคราะห์: ทำได้ดีแล้ว แต่ยังมีจุดบกพร่องในโจทย์ประยุกต์ 3 มิติ</p>";
+    else text += "<p>วิเคราะห์: ยอดเยี่ยม! คุณมีความเข้าใจในระดับสูง</p>";
     analysis.innerHTML = text;
-    window.scrollTo(0, document.body.scrollHeight);
+    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
 }
 
 renderQuiz();
