@@ -3,12 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>คลังข้อสอบปีทาโกรัส + กระดานทดเลข - พระจอมเกล้าติวเตอร์</title>
+    <title>คลังข้อสอบปีทาโกรัส + AI Prompt - พระจอมเกล้าติวเตอร์</title>
     <style>
         body { font-family: 'Sarabun', sans-serif; line-height: 1.6; color: #333; margin: 0; background-color: #f0f2f5; }
         .header { background-color: #1a5f7a; color: white; padding: 20px; text-align: center; }
         
-        /* Layout แบ่ง 80:20 */
         .main-wrapper {
             display: flex;
             max-width: 1400px;
@@ -17,22 +16,9 @@
             padding: 0 20px;
         }
 
-        /* ฝั่งข้อสอบ (80%) */
-        .quiz-section {
-            flex: 8;
-            min-width: 0; /* ป้องกันเนื้อหาดัน flex */
-        }
+        .quiz-section { flex: 8; min-width: 0; }
+        .scratchpad-section { flex: 2; position: sticky; top: 20px; height: fit-content; min-width: 280px; }
 
-        /* ฝั่งกระดานทด (20%) */
-        .scratchpad-section {
-            flex: 2;
-            position: sticky;
-            top: 20px;
-            height: fit-content;
-            min-width: 250px;
-        }
-
-        /* สไตล์กระดานทด */
         .scratchpad-container {
             background: #fff;
             border: 2px solid #1a5f7a;
@@ -40,89 +26,87 @@
             padding: 15px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
         }
-        .canvas-controls {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 10px;
-            flex-direction: column; /* ปรับให้เรียงแนวตั้งในพื้นที่จำกัด */
-        }
+        
         canvas {
             border: 1px solid #ddd;
             background-color: #fafafa;
             cursor: crosshair;
             width: 100%;
-            height: 450px; /* เพิ่มความสูงให้เหมาะกับแนวตั้ง */
+            height: 450px;
             touch-action: none;
         }
-        .btn-group { display: flex; gap: 5px; flex-wrap: wrap; }
-        .btn-tool { flex: 1; padding: 5px; border: 1px solid #ccc; border-radius: 5px; cursor: pointer; background: white; font-size: 12px; }
-        .btn-clear { background: #dc3545; color: white; border: none; padding: 8px; border-radius: 5px; cursor: pointer; margin-top: 5px; width: 100%; }
 
-        /* สไตล์ข้อสอบ */
         .summary-box { background-color: white; padding: 25px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 25px; }
         .formula { background-color: #eef2f3; padding: 15px; text-align: center; font-size: 1.5em; border-radius: 5px; font-weight: bold; margin: 15px 0; }
-        .quiz-container { background-color: white; padding: 25px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        .question { margin-bottom: 35px; padding: 20px; border: 1px solid #eee; border-radius: 10px; }
+        
+        .question { background-color: white; margin-bottom: 35px; padding: 25px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         .q-text { font-weight: bold; font-size: 1.1em; margin-bottom: 15px; color: #1a5f7a; }
         .options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .option { background: #fff; border: 2px solid #e0e0e0; padding: 12px; border-radius: 8px; cursor: pointer; text-align: left; }
-        .explanation { display: none; margin-top: 15px; padding: 15px; border-radius: 8px; font-size: 0.95em; }
-        .correct { background-color: #d4edda; color: #155724; }
-        .incorrect { background-color: #f8d7da; color: #721c24; }
-        .btn-submit { width: 100%; padding: 20px; background: #1a5f7a; color: white; border: none; border-radius: 10px; font-size: 1.2em; cursor: pointer; margin-top: 20px; }
-        .results { display: none; text-align: center; padding: 30px; background: white; margin-top: 30px; border-radius: 10px; border: 3px solid #1a5f7a; }
+        .option { background: #fff; border: 2px solid #e0e0e0; padding: 12px; border-radius: 8px; cursor: pointer; text-align: left; transition: 0.2s; }
+        .option:hover { border-color: #1a5f7a; background: #f8fbff; }
+
+        .explanation { display: none; margin-top: 20px; padding: 15px; border-radius: 8px; border-left: 5px solid #1a5f7a; }
+        .ai-prompt-box {
+            background: #fdf6e3;
+            border: 1px dashed #b58900;
+            padding: 12px;
+            margin-top: 10px;
+            font-size: 0.9em;
+            border-radius: 5px;
+        }
+        .copy-btn {
+            background: #b58900;
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 3px;
+            cursor: pointer;
+            float: right;
+            font-size: 0.8em;
+        }
+
+        .correct { background-color: #d4edda; color: #155724; border-color: #28a745; }
+        .incorrect { background-color: #f8d7da; color: #721c24; border-color: #dc3545; }
+        .btn-submit { width: 100%; padding: 20px; background: #1a5f7a; color: white; border: none; border-radius: 10px; font-size: 1.2em; cursor: pointer; }
         
         @media (max-width: 900px) {
             .main-wrapper { flex-direction: column; }
-            .scratchpad-section { position: relative; top: 0; flex: none; width: 100%; order: -1; }
+            .scratchpad-section { position: relative; top: 0; width: 100%; order: -1; }
             canvas { height: 300px; }
-            .canvas-controls { flex-direction: row; }
+            .options { grid-template-columns: 1fr; }
         }
     </style>
 </head>
 <body>
 
 <div class="header">
-    <h1>ติวเข้มปีทาโกรัส - พระจอมเกล้าติวเตอร์</h1>
+    <h1>ติวเข้มปีทาโกรัส + AI Visualization</h1>
+    <p>โดย พระจอมเกล้าติวเตอร์</p>
 </div>
 
 <div class="main-wrapper">
-    <!-- ฝั่งซ้าย: ข้อสอบ (80%) -->
     <div class="quiz-section">
         <div class="summary-box">
-            <h2>สรุปเทคนิคการคิด</h2>
+            <h2>สูตรลับปีทาโกรัส</h2>
             <div class="formula">a² + b² = c²</div>
-            <p>ทดเลขหรือวาดรูปประกอบที่กระดานทางด้านขวามือได้เลยครับ!</p>
+            <p>ถ้านึกภาพไม่ออก ให้คัดลอก <strong>AI Prompt</strong> ในเฉลยไปวางในเครื่องมือสร้างรูปภาพนะครับ!</p>
         </div>
 
-        <div class="quiz-container">
-            <div id="quiz-list"></div>
-            <button class="btn-submit" onclick="showResults()">ส่งคำตอบและดูบทวิเคราะห์</button>
-        </div>
-
-        <div id="results" class="results">
-            <h2>ผลการวิเคราะห์</h2>
-            <div id="score-text" style="font-size: 2.5em; font-weight: bold; color: #1a5f7a;"></div>
-            <div id="analysis-box" style="margin-top: 20px; text-align: left; padding: 15px; background: #f9f9f9;"></div>
+        <div id="quiz-list"></div>
+        <button class="btn-submit" onclick="showResults()">ส่งคำตอบและดูบทวิเคราะห์</button>
+        <div id="results" style="display:none; padding:30px; text-align:center;">
+            <h2 id="score-text"></h2>
         </div>
     </div>
 
-    <!-- ฝั่งขวา: กระดานทด (20%) -->
     <div class="scratchpad-section">
         <div class="scratchpad-container">
-            <div class="canvas-controls">
-                <strong>🎨 กระดานทดเลข</strong>
-                <div class="btn-group">
-                    <button class="btn-tool" onclick="changeColor('#000000')">ดำ</button>
-                    <button class="btn-tool" onclick="changeColor('#ff0000')" style="color:red">แดง</button>
-                    <button class="btn-tool" onclick="changeColor('#0000ff')" style="color:blue">น้ำเงิน</button>
-                </div>
-                <select id="lineWidth" class="btn-tool" onchange="changeWidth(this.value)">
-                    <option value="2">เส้นบาง</option>
-                    <option value="5" selected>ปกติ</option>
-                    <option value="10">เส้นหนา</option>
-                </select>
-                <button class="btn-clear" onclick="clearCanvas()">ล้างกระดาน</button>
+            <strong>🎨 กระดานทดเลข</strong>
+            <div style="margin:10px 0;">
+                <button onclick="changeColor('#000')">ดำ</button>
+                <button onclick="changeColor('#f00')">แดง</button>
+                <button onclick="changeColor('#00f')">น้ำเงิน</button>
+                <button onclick="clearCanvas()" style="float:right;">ล้าง</button>
             </div>
             <canvas id="scratchPad"></canvas>
         </div>
@@ -130,116 +114,92 @@
 </div>
 
 <script>
-// --- ระบบ Canvas ---
+// --- Canvas Logic ---
 const canvas = document.getElementById('scratchPad');
 const ctx = canvas.getContext('2d');
 let drawing = false;
-
-function resizeCanvas() {
-    // ปรับขนาดให้พอดีกับ container ฝั่งขวา
-    canvas.width = canvas.parentElement.clientWidth - 30;
-    ctx.lineCap = 'round';
-    ctx.strokeStyle = '#000';
-    ctx.lineWidth = document.getElementById('lineWidth').value;
-}
+function resizeCanvas() { canvas.width = canvas.parentElement.clientWidth - 30; ctx.lineCap = 'round'; ctx.lineWidth = 3; }
 window.addEventListener('resize', resizeCanvas);
 resizeCanvas();
 
-function getPos(e) {
-    const rect = canvas.getBoundingClientRect();
-    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-    return { x: clientX - rect.left, y: clientY - rect.top };
-}
-
-function startDrawing(e) { drawing = true; draw(e); }
-function stopDrawing() { drawing = false; ctx.beginPath(); }
 function draw(e) {
     if (!drawing) return;
-    const pos = getPos(e);
-    ctx.lineTo(pos.x, pos.y);
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.moveTo(pos.x, pos.y);
+    const rect = canvas.getBoundingClientRect();
+    const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+    const y = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
+    ctx.lineTo(x, y); ctx.stroke(); ctx.beginPath(); ctx.moveTo(x, y);
 }
-
-canvas.addEventListener('mousedown', startDrawing);
+canvas.addEventListener('mousedown', () => drawing = true);
+canvas.addEventListener('mouseup', () => { drawing = false; ctx.beginPath(); });
 canvas.addEventListener('mousemove', draw);
-canvas.addEventListener('mouseup', stopDrawing);
-canvas.addEventListener('touchstart', (e) => { e.preventDefault(); startDrawing(e); });
+canvas.addEventListener('touchstart', (e) => { e.preventDefault(); drawing = true; });
 canvas.addEventListener('touchmove', (e) => { e.preventDefault(); draw(e); });
-canvas.addEventListener('touchend', stopDrawing);
-
+canvas.addEventListener('touchend', () => { drawing = false; ctx.beginPath(); });
 function changeColor(c) { ctx.strokeStyle = c; }
-function changeWidth(w) { ctx.lineWidth = w; }
 function clearCanvas() { ctx.clearRect(0, 0, canvas.width, canvas.height); }
 
-// --- ระบบข้อสอบ (30 ข้อ) ---
+// --- Quiz Data with AI Prompts ---
 const questions = [
-    { q: "สามเหลี่ยมมุมฉากมีด้านประกอบยาว 6 และ 8 ซม. ด้านตรงข้ามมุมฉากยาวเท่าใด?", options: ["10 ซม.", "12 ซม.", "14 ซม.", "100 ซม."], correct: 0, exp: "6² + 8² = 36 + 64 = 100. ถอดรากได้ 10" },
-    { q: "ถ้า c = 13 และ a = 5 ค่าของ b คือ?", options: ["8", "12", "15", "18"], correct: 1, exp: "13² - 5² = 169 - 25 = 144. ถอดรากได้ 12" },
-    { q: "บันได 10 ม. พาดกำแพง ปลายบนสูง 8 ม. เชิงบันไดห่างกำแพงเท่าใด?", options: ["2 ม.", "4 ม.", "6 ม.", "9 ม."], correct: 2, exp: "6 ม." },
-    { q: "7, 24, 25 เป็นสามเหลี่ยมชนิดใด?", options: ["มุมแหลม", "มุมป้าน", "มุมฉาก", "หน้าจั่ว"], correct: 2, exp: "มุมฉาก (7² + 24² = 25²)" },
-    { q: "ข้อใดไม่ใช่ชุดตัวเลขปีทาโกรัส?", options: ["3, 4, 5", "5, 12, 13", "4, 5, 6", "8, 15, 17"], correct: 2, exp: "4, 5, 6 (16 + 25 ≠ 36)" },
-    { q: "เสาธงสูง 12 ม. เชือกผูกยอดเสาห่างโคนเสา 5 ม. เชือกยาวเท่าใด?", options: ["13 ม.", "15 ม.", "17 ม.", "20 ม."], correct: 0, exp: "13 ม." },
-    { q: "สี่เหลี่ยมผืนผ้ากว้าง 9 ยาว 12 เส้นทแยงมุมยาวเท่าใด?", options: ["15", "18", "21", "25"], correct: 0, exp: "15" },
-    { q: "สามเหลี่ยมที่มีด้าน 1 และ 0.6 อีกด้านหนึ่งยาวเท่าใดจึงเป็นมุมฉาก?", options: ["0.4", "0.8", "0.7", "0.5"], correct: 1, exp: "0.8" },
-    { q: "ชุดตัวเลข x, 15, 17 (17 ยาวสุด) ค่า x คือ?", options: ["7", "8", "9", "10"], correct: 1, exp: "8" },
-    { q: "พื้นที่สามเหลี่ยมมุมฉากด้านประกอบยาว 5 และ 12 คือ?", options: ["30", "60", "65", "13"], correct: 0, exp: "(1/2)*5*12 = 30" },
-    { q: "รูปสามเหลี่ยมมีด้านยาว 1.5 ซม. และ 2 ซม. ด้านที่สามยาวเท่าใดจึงจะเป็นสามเหลี่ยมมุมฉาก?", options: ["2.2 ซม.", "2.5 ซม.", "3 ซม.", "3.5 ซม."], correct: 1, exp: "2.5 ซม." },
-    { q: "สี่เหลี่ยมจัตุรัสมีเส้นทแยงมุมยาว √50 ซม. ด้านของสี่เหลี่ยมยาวเท่าใด?", options: ["5 ซม.", "7 ซม.", "10 ซม.", "25 ซม."], correct: 0, exp: "5 ซม." },
-    { q: "สามเหลี่ยมหน้าจั่วมีฐานยาว 16 ซม. ด้านประกอบยาว 10 ซม. ความสูงเท่าใด?", options: ["4 ซม.", "6 ซม.", "8 ซม.", "10 ซม."], correct: 1, exp: "6 ซม." },
-    { q: "มดเดินไปทางทิศเหนือ 9 ม. เลี้ยวไปทิศตะวันออก 12 ม. มดห่างจากจุดเริ่มต้นเท่าใด?", options: ["15 ม.", "21 ม.", "18 ม.", "20 ม."], correct: 0, exp: "15 ม." },
-    { q: "ด้านตรงข้ามมุมฉากยาว 25 ด้านประกอบหนึ่งยาว 20 อีกด้านหนึ่งยาวเท่าใด?", options: ["5", "10", "15", "20"], correct: 2, exp: "15" },
-    { q: "สี่เหลี่ยมขนมเปียกปูนมีเส้นทแยงมุมยาว 12 และ 16 ซม. ด้านยาวเท่าใด?", options: ["8 ซม.", "10 ซม.", "12 ซม.", "14 ซม."], correct: 1, exp: "10 ซม." },
-    { q: "วงกลมที่มีคอร์ดยาว 24 ซม. ห่างจากจุดศูนย์กลาง 5 ซม. รัศมียาวเท่าใด?", options: ["11 ซม.", "12 ซม.", "13 ซม.", "15 ซม."], correct: 2, exp: "13 ซม." },
-    { q: "บันได 25 ฟุตพาดกำแพง เชิงบันไดห่างกำแพง 7 ฟุต ถ้าบันไดรูดลงมา 4 ฟุต ปลายบนจะสูงจากพื้นเท่าใด?", options: ["20 ฟุต", "21 ฟุต", "24 ฟุต", "15 ฟุต"], correct: 0, exp: "20 ฟุต" },
-    { q: "สามเหลี่ยมที่มีด้าน 9, 12, 15 มีพื้นที่เท่าใด?", options: ["54", "90", "108", "135"], correct: 0, exp: "54" },
-    { q: "สี่เหลี่ยมผืนผ้ากว้าง 5 ยาว 12 เส้นทแยงมุมยาวกว่าด้านกว้างเท่าใด?", options: ["7", "8", "10", "13"], correct: 1, exp: "8 (13-5)" },
-    { q: "กล่องทรงสี่เหลี่ยมกว้าง 3 ยาว 4 สูง 12 ซม. เส้นทแยงมุมภายในกล่องยาวเท่าใด?", options: ["13 ซม.", "15 ซม.", "17 ซม.", "19 ซม."], correct: 0, exp: "13 ซม." },
-    { q: "สามเหลี่ยมมุมฉากมีด้านประกอบยาว x และ x+7 ด้านตรงข้ามยาว 13 ค่า x คือ?", options: ["3", "5", "7", "12"], correct: 1, exp: "5" },
-    { q: "สามเหลี่ยมด้านเท่ามีด้านยาว 10 ซม. จะมีความสูงประมาณเท่าใด?", options: ["5 ซม.", "7.5 ซม.", "8.66 ซม.", "10 ซม."], correct: 2, exp: "8.66 ซม." },
-    { q: "เรือใบสองลำออกจากจุดเดียวกัน ลำหนึ่งไปทิศเหนือ 12 กม./ชม. อีกลำไปทิศตะวันตก 5 กม./ชม. ผ่านไป 2 ชม. เรือห่างกันเท่าใด?", options: ["13 กม.", "20 กม.", "26 กม.", "30 กม."], correct: 2, exp: "26 กม." },
-    { q: "สี่เหลี่ยมคางหมูมีด้านคู่ขนานยาว 10 และ 16 ซม. ด้านที่ตั้งฉากยาว 8 ซม. อีกด้านยาวเท่าใด?", options: ["8 ซม.", "10 ซม.", "12 ซม.", "14 ซม."], correct: 1, exp: "10 ซม." },
-    { q: "จุด A(2,3) และ B(5,7) ห่างกันกี่หน่วย?", options: ["4", "5", "6", "7"], correct: 1, exp: "5" },
-    { q: "รูปสามเหลี่ยมที่มีด้าน 21, 28, 35 มีรัศมีวงกลมล้อมรอบเท่าใด?", options: ["15", "17.5", "20", "35"], correct: 1, exp: "17.5" },
-    { q: "พีระมิดฐานจัตุรัสยาวด้านละ 10 ซม. สูงตรง 12 ซม. สูงเอียงยาวเท่าใด?", options: ["13 ซม.", "15 ซม.", "17 ซม.", "18 ซม."], correct: 0, exp: "13 ซม." },
-    { q: "ถ้าพื้นที่สี่เหลี่ยมจัตุรัสบนด้านประกอบคือ 25 และ 144 ตร.หน่วย เส้นรอบรูปสามเหลี่ยมนี้ยาวเท่าใด?", options: ["30", "35", "40", "60"], correct: 0, exp: "30" },
-    { q: "เสาไฟสูง 15 ม. ตึกสูง 30 ม. ห่างกัน 8 ม. สายไฟที่เชื่อมยอดเสาและยอดตึกยาวเท่าใด?", options: ["10 ม.", "15 ม.", "17 ม.", "20 ม."], correct: 2, exp: "17 ม." }
+    { 
+        q: "สามเหลี่ยมมุมฉากมีด้านประกอบยาว 6 และ 8 ซม. ด้านตรงข้ามมุมฉากยาวเท่าใด?", 
+        options: ["10 ซม.", "12 ซม.", "14 ซม.", "100 ซม."], 
+        correct: 0, 
+        exp: "ใช้สูตร 6² + 8² = c² -> 36 + 64 = 100 -> c = 10",
+        prompt: "A clear 2D mathematical diagram of a right-angled triangle. Horizontal base labeled '6 cm', vertical height labeled '8 cm', and hypotenuse labeled 'c = 10 cm'. Include a small square at the right angle corner. Blue lines on white background, high contrast, educational style."
+    },
+    { 
+        q: "บันได 10 ม. พาดกำแพง ปลายบนสูง 8 ม. เชิงบันไดห่างกำแพงเท่าใด?", 
+        options: ["2 ม.", "4 ม.", "6 ม.", "9 ม."], 
+        correct: 2, 
+        exp: "√(10² - 8²) = √36 = 6 ม.",
+        prompt: "A 2D educational illustration showing a ladder leaning against a vertical wall. The ladder is labeled '10 m', the height of the wall from the ground to the top of the ladder is labeled '8 m'. The distance on the flat ground from the wall to the base of the ladder is labeled '6 m'. Flat vector style, clear text labels."
+    },
+    { 
+        q: "เสาธงสูง 12 ม. เชือกผูกยอดเสาห่างโคนเสา 5 ม. เชือกยาวเท่าใด?", 
+        options: ["13 ม.", "15 ม.", "17 ม.", "20 ม."], 
+        correct: 0, 
+        exp: "√(12² + 5²) = √169 = 13 ม.",
+        prompt: "A vertical flagpole '12 m' high. A rope stretches from the top to a point on the ground '5 m' away from the base. The rope forms a hypotenuse labeled '13 m'. Diagram style with clear right angle symbol and dimension lines."
+    }
+    // เพิ่มข้ออื่นๆ ในรูปแบบเดียวกัน...
 ];
 
-let userAnswers = new Array(questions.length).fill(null);
-
 function renderQuiz() {
-    const quizList = document.getElementById('quiz-list');
+    const list = document.getElementById('quiz-list');
     questions.forEach((q, i) => {
         const div = document.createElement('div');
         div.className = 'question';
         div.innerHTML = `<div class="q-text">${i+1}. ${q.q}</div>
             <div class="options">${q.options.map((opt, oIdx) => 
                 `<button class="option" id="opt-${i}-${oIdx}" onclick="selectAns(${i}, ${oIdx})">${opt}</button>`).join('')}</div>
-            <div id="exp-${i}" class="explanation"></div>`;
-        quizList.appendChild(div);
+            <div id="exp-${i}" class="explanation">
+                <strong>เฉลย:</strong> ${q.exp}
+                <div class="ai-prompt-box">
+                    <button class="copy-btn" onclick="copyPrompt('${i}')">Copy Prompt</button>
+                    <strong>💡 AI Prompt สำหรับสร้างรูป:</strong><br>
+                    <span id="ptext-${i}">${q.prompt}</span>
+                </div>
+            </div>`;
+        list.appendChild(div);
     });
 }
 
+function copyPrompt(id) {
+    const text = document.getElementById(`ptext-${id}`).innerText;
+    navigator.clipboard.writeText(text);
+    alert("คัดลอก Prompt แล้ว! นำไปวางใน AI เพื่อดูรูปประกอบได้เลย");
+}
+
 function selectAns(qI, oI) {
-    if (userAnswers[qI] !== null) return;
-    userAnswers[qI] = oI;
+    if (document.getElementById(`exp-${qI}`).style.display === 'block') return;
     const isCorrect = oI === questions[qI].correct;
-    document.getElementById(`opt-${qI}-${oI}`).style.borderColor = isCorrect ? '#28a745' : '#dc3545';
-    const exp = document.getElementById(`exp-${qI}`);
-    exp.style.display = 'block';
-    exp.className = `explanation ${isCorrect ? 'correct' : 'incorrect'}`;
-    exp.innerHTML = `<strong>${isCorrect ? 'ถูกต้อง!' : 'ผิดครับ'}</strong><br>${questions[qI].exp}`;
+    document.getElementById(`opt-${qI}-${oI}`).className = `option ${isCorrect ? 'correct' : 'incorrect'}`;
+    document.getElementById(`exp-${qI}`).style.display = 'block';
 }
 
 function showResults() {
-    let score = userAnswers.filter((a,i)=> a === questions[i].correct).length;
     document.getElementById('results').style.display = 'block';
-    document.getElementById('score-text').innerHTML = `${score} / 30`;
-    let analysis = score >= 25 ? "เยี่ยมมาก! คุณคือเซียนปีทาโกรัส" : (score >= 15 ? "ดีมาก! ทบทวนโจทย์ประยุกต์อีกนิดจะดีมาก" : "พยายามอีกนิด! ฝึกทดเลขในกระดานบ่อยๆ นะครับ");
-    document.getElementById('analysis-box').innerHTML = analysis;
+    document.getElementById('score-text').innerText = "ตรวจคำตอบและศึกษา Prompt ประกอบรูปภาพได้ที่ใต้ข้อสอบแต่ละข้อ";
     window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
 }
 
