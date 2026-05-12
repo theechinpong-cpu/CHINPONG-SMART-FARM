@@ -76,17 +76,53 @@
                 <canvas id="scratchPad"></canvas>
             </div>
 
-            <div id="nano-banana-panel">
-                <div class="ai-iframe-mock">
-                    <img src="https://www.gstatic.com/lamda/images/favicon_v2_71f11400e932788e02613.png" width="30" alt="Gemini">
-                    <p style="font-size: 0.9em;">วาง Prompt เพื่อสร้างรูปภาพประกอบโจทย์</p>
-                    <textarea class="ai-input" rows="4" placeholder="วาง Prompt ที่นี่..."></textarea>
-                    <a href="https://gemini.google.com" target="_blank" style="width:100%;"><button style="margin-top:10px; width:100%; padding:10px; background:#4285f4; color:white; border:none; border-radius:5px; cursor:pointer;">คลิกเพื่อเปิด AI ตัวจริง</button></a>
-                </div>
-            </div>
+            <!-- แทนที่ส่วน nano-banana-panel เดิม -->
+<div id="nano-banana-panel">
+    <div class="ai-iframe-mock" style="background: #fff; border: 2px solid #4285f4;">
+        <img src="https://www.gstatic.com/lamda/images/favicon_v2_71f11400e932788e02613.png" width="30" alt="AI Icon">
+        <p><strong>ระบบสร้างรูปประกอบโจทย์ (Embedded AI)</strong></p>
+        
+        <textarea id="ai-prompt-input" class="ai-input" rows="3" placeholder="วาง Prompt ที่นี่..."></textarea>
+        
+        <button onclick="generateImage()" style="margin-top:10px; width:100%; padding:12px; background:#4285f4; color:white; border:none; border-radius:5px; cursor:pointer; font-weight:bold;">
+            🎨 สร้างรูปภาพทันที
+        </button>
+
+        <!-- พื้นที่แสดงรูปภาพที่ Gen ออกมา -->
+        <div id="ai-result-container" style="margin-top:15px; width:100%; min-height:200px; border:1px dashed #ccc; display:flex; align-items:center; justify-content:center; overflow:hidden; border-radius:8px;">
+            <p id="ai-placeholder-text" style="color:gray; font-size:0.8em;">รูปภาพจะปรากฏที่นี่</p>
+            <img id="generated-image" src="" style="display:none; width:100%; height:auto; border-radius:5px;">
         </div>
     </div>
 </div>
+
+<script>
+function generateImage() {
+    const prompt = document.getElementById('ai-prompt-input').value;
+    const imgElement = document.getElementById('generated-image');
+    const placeholder = document.getElementById('ai-placeholder-text');
+    
+    if (!prompt) {
+        alert("กรุณาวาง Prompt ก่อนครับ");
+        return;
+    }
+
+    placeholder.innerText = "กำลังสร้างรูปภาพ... (กรุณารอสักครู่)";
+    imgElement.style.display = "none";
+
+    // ใช้ Pollinations.ai API ในการ Gen รูปแบบฝัง (Embedded)
+    // เพิ่มความละเอียดและ Seed แบบสุ่มเพื่อให้ได้รูปใหม่เสมอ
+    const seed = Math.floor(Math.random() * 1000000);
+    const imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?seed=${seed}&width=512&height=512&nologo=true`;
+
+    imgElement.src = imageUrl;
+    
+    imgElement.onload = function() {
+        placeholder.style.display = "none";
+        imgElement.style.display = "block";
+    };
+}
+</script>
 
 <script>
 // --- Switch & Canvas Logic ---
