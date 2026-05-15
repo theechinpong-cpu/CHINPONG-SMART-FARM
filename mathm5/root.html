@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Square Root Mastery Lab</title>
+    <script>
+        MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] },
+            startup: { ready() { MathJax.startup.defaultReady(); } }
+        };
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-chtml.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;700&family=Sarabun:wght@300;400;600&display=swap');
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body, html {
+            height: 100%;
+            font-family: 'Sarabun', sans-serif;
+            background: #0d1117;
+            color: #e6edf3;
+            overflow: hidden;
+            line-height: 1.6;
+        }
+
+        .app-container { display: flex; height: 100vh; width: 100vw; }
+
+        /* ─── LEFT: Quiz panel ─── */
+        .quiz-frame {
+            flex: 0 0 70%;
+            height: 100%;
+            overflow-y: auto;
+            padding: 36px 44px;
+            background: #0d1117;
+            border-right: 1px solid #21262d;
+            scrollbar-width: thin;
+            scrollbar-color: #30363d #0d1117;
+        }
+        .quiz-frame::-webkit-scrollbar { width: 6px; }
+        .quiz-frame::-webkit-scrollbar-track { background: #0d1117; }
+        .quiz-frame::-webkit-scrollbar-thumb { background: #30363d; border-radius: 3px; }
+
+        /* Header */
+        .header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 32px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #21262d;
+        }
+        .header-icon {
+            width: 48px; height: 48px;
+            background: linear-gradient(135deg, #f0883e, #e3b341);
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 24px;
+        }
+        .header-text h1 {
+            font-family: 'Kanit', sans-serif;
+            font-size: 1.6rem;
+            font-weight: 700;
+            background: linear-gradient(90deg, #f0883e, #e3b341);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .header-text p {
+            font-size: 0.85rem;
+            color: #8b949e;
+            margin-top: 2px;
+        }
+
+        /* Progress bar */
+        .progress-bar-wrap {
+            background: #21262d;
+            border-radius: 99px;
+            height: 6px;
+            margin-bottom: 28px;
+            overflow: hidden;
+        }
+        .progress-bar-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #f0883e, #e3b341);
+            border-radius: 99px;
+            transition: width 0.5s ease;
+        }
+        .progress-text {
+            font-size: 0.8rem;
+            color: #8b949e;
+            text-align: right;
+            margin-top: 4px;
+            margin-bottom: 20px;
+        }
+
+        /* Question card */
+        .question-card {
+            background: #161b22;
+            border-radius: 16px;
+            padding: 24px 28px;
+            margin-bottom: 24px;
+            border: 1px solid #21262d;
+            border-left: 4px solid #f0883e;
+            transition: border-color 0.2s;
+        }
+        .question-card.answered { border-left-color: #3fb950; }
+
+        .concept-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            background: rgba(240, 136, 62, 0.12);
+            color: #f0883e;
+            border: 1px solid rgba(240, 136, 62, 0.25);
+            padding: 3px 10px;
+            border-radius: 99px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+        .q-number {
+            font-size: 0.75rem;
+            color: #8b949e;
+            margin-bottom: 6px;
+            font-family: 'Kanit', sans-serif;
+        }
+        .q-text {
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: #e6edf3;
+            margin-bottom: 16px;
+            line-height: 1.55;
+        }
+
+        /* Options */
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        .option {
+            background: #0d1117;
+            padding: 13px 16px;
+            border-radius: 10px;
+            border: 1px solid #30363d;
+            cursor: pointer;
+            font-size: 0.95rem;
+            transition: all 0.18s;
+            color: #c9d1d9;
+        }
+        .option:hover:not(.correct):not(.wrong) {
+            background: rgba(240, 136, 62, 0.08);
+            border-color: #f0883e;
+            color: #f0883e;
+        }
+        .option.selected { border-color: #e3b341; background: rgba(227, 179, 65, 0.1); color: #e3b341; }
+        .option.correct  { border-color: #3fb950; background: rgba(63, 185, 80, 0.12); color: #3fb950; font-weight: 600; }
+        .option.wrong    { border-color: #f85149; background: rgba(248, 81, 73, 0.1);  color: #f85149; text-decoration: line-through; }
+
+        /* Solution box */
+        .solution-box {
+            display: none;
+            background: #0d1117;
+            padding: 16px 20px;
+            border-radius: 10px;
+            margin-top: 16px;
+            border: 1px dashed #30363d;
+            font-size: 0.9rem;
+            line-height: 1.8;
+        }
+        .solution-box .label-ans  { color: #58a6ff; font-weight: 600; }
+        .solution-box .label-how  { color: #e3b341; font-weight: 600; }
+        .solution-box .label-note { color: #8b949e; font-size: 0.82rem; }
+
+        /* Score summary */
+        .score-box {
+            background: #161b22;
+            border: 1px solid #21262d;
+            border-radius: 16px;
+            padding: 24px 28px;
+            margin-bottom: 28px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        .score-circle {
+            width: 72px; height: 72px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #f0883e, #e3b341);
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            flex-shrink: 0;
+        }
+        .score-circle span { font-family: 'Kanit', sans-serif; font-size: 1.5rem; font-weight: 700; color: #0d1117; line-height: 1; }
+        .score-circle small { font-size: 0.65rem; color: rgba(13,17,23,0.7); }
+        .score-info h3 { font-family: 'Kanit', sans-serif; font-size: 1.1rem; color: #e6edf3; }
+        .score-info p  { font-size: 0.85rem; color: #8b949e; margin-top: 4px; }
+
+        /* ─── RIGHT: Whiteboard ─── */
+        .whiteboard-frame {
+            flex: 0 0 30%;
+            height: 100%;
+            padding: 20px;
+            background: #ffffff;
+            color: #1e293b;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .wb-header {
+            display: flex; align-items: center; gap: 8px;
+            font-family: 'Kanit', sans-serif;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #1e293b;
+            flex-shrink: 0;
+        }
+        .wb-dot { width: 10px; height: 10px; border-radius: 50%; background: #f0883e; }
+
+        /* Color picker */
+        .color-row {
+            display: flex; gap: 8px; align-items: center; flex-shrink: 0;
+        }
+        .color-btn {
+            width: 26px; height: 26px;
+            border-radius: 50%;
+            border: 3px solid transparent;
+            cursor: pointer;
+            transition: border-color 0.15s, transform 0.15s;
+            flex-shrink: 0;
+        }
+        .color-btn.active { border-color: #1e293b; transform: scale(1.15); }
+        .size-slider { flex: 1; accent-color: #f0883e; }
+
+        canvas {
+            flex: 1;
+            min-height: 0;
+            display: block;
+            background: #f8fafc;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 12px;
+            cursor: crosshair;
+            touch-action: none;
+        }
+
+        .btn-row { display: flex; gap: 8px; flex-shrink: 0; }
+        .btn {
+            flex: 1; padding: 10px 0;
+            border: none; border-radius: 8px;
+            cursor: pointer; font-weight: 600;
+            font-family: 'Sarabun', sans-serif;
+            font-size: 0.9rem;
+            transition: opacity 0.15s;
+        }
+        .btn:hover { opacity: 0.85; }
+        .btn-clear { background: #fee2e2; color: #dc2626; }
+        .btn-save  { background: #dcfce7; color: #16a34a; }
+        .btn-undo  { background: #f1f5f9; color: #475569; }
+
+        /* Hint box (guideline before answering) */
+        .hint-box {
+            background: rgba(88, 166, 255, 0.07);
+            border: 1px solid rgba(88, 166, 255, 0.22);
+            border-left: 3px solid #58a6ff;
+            border-radius: 8px;
+            padding: 10px 14px;
+            margin-bottom: 14px;
+            font-size: 0.85rem;
+            color: #a8c7fa;
+            line-height: 1.6;
+        }
+        .hint-label {
+            font-weight: 700;
+            color: #58a6ff;
+            font-size: 0.78rem;
+            letter-spacing: 0.04em;
+            display: block;
+            margin-bottom: 3px;
+        }
+
+        /* Trick chip inside solution */
+        .trick-box {
+            margin-top: 12px;
+            background: rgba(227, 179, 65, 0.09);
+            border: 1px solid rgba(227, 179, 65, 0.28);
+            border-left: 3px solid #e3b341;
+            border-radius: 8px;
+            padding: 10px 14px;
+            font-size: 0.85rem;
+            color: #f0c060;
+            line-height: 1.65;
+        }
+        .trick-label {
+            font-weight: 700;
+            color: #e3b341;
+            font-size: 0.78rem;
+            letter-spacing: 0.04em;
+            display: block;
+            margin-bottom: 3px;
+        }
+
+        /* Scroll reveal anim */
+        .question-card { animation: fadeUp 0.3s ease both; }
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(12px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+
+    <!-- ─── Quiz Panel ─── -->
+    <div class="quiz-frame">
+        <div class="header">
+            <div class="header-icon">√</div>
+            <div class="header-text">
+                <h1>Square Root Mastery Lab</h1>
+                <p>รากที่สอง (Square Root) • ม.2 • 30 ข้อ พร้อมเฉลยอย่างละเอียด</p>
+            </div>
+        </div>
+
+        <div class="score-box" id="scoreBox" style="display:none;">
+            <div class="score-circle">
+                <span id="scoreNum">0</span>
+                <small>/ 30</small>
+            </div>
+            <div class="score-info">
+                <h3 id="scoreMsg">ยอดเยี่ยม!</h3>
+                <p id="scoreDetail">ทำข้อสอบเสร็จแล้ว ตรวจสอบเฉลยด้านล่างได้เลย</p>
+            </div>
+        </div>
+
+        <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progressFill"></div></div>
+        <div class="progress-text" id="progressText">ตอบแล้ว 0 / 30 ข้อ</div>
+
+        <div id="quiz-container">
+            <p style="color:#8b949e;">กำลังโหลดข้อสอบ...</p>
+        </div>
+    </div>
+
+    <!-- ─── Whiteboard ─── -->
+    <div class="whiteboard-frame">
+        <div class="wb-header">
+            <div class="wb-dot"></div>
+            ไวท์บอร์ดทดเลข
+        </div>
+
+        <div class="color-row">
+            <div class="color-btn active" style="background:#1e293b;" data-color="#1e293b" onclick="setColor(this)"></div>
+            <div class="color-btn" style="background:#dc2626;" data-color="#dc2626" onclick="setColor(this)"></div>
+            <div class="color-btn" style="background:#2563eb;" data-color="#2563eb" onclick="setColor(this)"></div>
+            <div class="color-btn" style="background:#16a34a;" data-color="#16a34a" onclick="setColor(this)"></div>
+            <div class="color-btn" style="background:#f0883e;" data-color="#f0883e" onclick="setColor(this)"></div>
+            <input type="range" min="1" max="12" value="3" class="size-slider" id="brushSize" oninput="setBrushSize(this.value)">
+        </div>
+
+        <canvas id="mainCanvas"></canvas>
+
+        <div class="btn-row">
+            <button class="btn btn-undo"  onclick="undoCanvas()">↩ ย้อนกลับ</button>
+            <button class="btn btn-clear" onclick="clearCanvas()">✕ ล้าง</button>
+            <button class="btn btn-save"  onclick="downloadCanvas()">↓ บันทึก</button>
+        </div>
+    </div>
+</div>
+
+<script>
+const quizData = [
+  {
+    id:1, concept:"นิยามพื้นฐาน",
+    question:"√25 มีค่าเท่าใด?",
+    hint:"💭 ถามตัวเองว่า: มีจำนวนบวกอะไรที่คูณตัวเองแล้วได้ 25? ลองนึก: 4×4=16, 5×5=?, 6×6=36",
+    options:["3","4","5","6"],
+    answer:3, ansText:"5",
+    detail:"$\\sqrt{25} = 5$ เพราะ $5 \\times 5 = 25$ และรากที่สองหลักคือ \"ค่าบวก\" เสมอ",
+    trick:"⚡ จำตาราง Perfect Square ให้ขึ้นใจ: $1,4,9,16,\\mathbf{25},36,49,64,81,100$ — เห็น 25 ตอบ 5 ทันที ไม่ต้องคิด"
+  },
+  {
+    id:2, concept:"นิยามพื้นฐาน",
+    question:"รากที่สองหลัก (Principal Square Root) ของ 49 คือข้อใด?",
+    hint:"💭 สังเกตคำว่า \"หลัก\" (Principal) — นิยามนี้บอกให้เลือกค่า +/− ข้างไหน? และ 14 = 2×7 ≠ √49 ให้ตัดออก",
+    options:["−7","7","±7","14"],
+    answer:2, ansText:"7",
+    detail:"$\\sqrt{49} = 7$ สัญลักษณ์ $\\sqrt{\\phantom{x}}$ หมายถึง \"รากที่สองหลัก\" ซึ่งนิยามให้เป็นค่าบวกเสมอ (−7 เป็นรากที่สองอีกค่า แต่ไม่ใช่ค่าหลัก)",
+    trick:"⚡ กฎง่ายๆ: ถ้าโจทย์เขียน $\\sqrt{\\phantom{x}}$ (มีสัญลักษณ์รูท) = ค่าบวกเท่านั้น ถ้าโจทย์เขียน $x^2 = 49$ = มีสองคำตอบ $\\pm 7$"
+  },
+  {
+    id:3, concept:"นิยามพื้นฐาน",
+    question:"ข้อใดคือนิยามของ $\\sqrt{x}$ ที่ถูกต้อง?",
+    hint:"💭 คำว่า 'สแควรูท' มาจาก Square (กำลังสอง) + Root (ราก) = การถอยกลับจากการยกกำลังสอง ลองนึกว่า 'รูท' ทำ 'ทางกลับ' ของอะไร?",
+    options:["จำนวนที่บวกกับตัวเองแล้วได้ x","จำนวนที่คูณตัวเองแล้วได้ x","ครึ่งหนึ่งของ x","x หารด้วย 2"],
+    answer:2, ansText:"จำนวนที่คูณตัวเองแล้วได้ x",
+    detail:"นิยามอย่างเป็นทางการ: $\\sqrt{x} = a$ เมื่อ $a \\geq 0$ และ $a^2 = x$ นั่นคือ $a$ คือจำนวนที่ 'คูณตัวเอง' แล้วได้ $x$ ข้อ 1 ผิดเพราะบวกไม่ใช่คูณ ข้อ 3-4 ผิดเพราะหาร/ครึ่งหนึ่งไม่ใช่กระบวนการรูท",
+    trick:"⚡ จำสั้น: $\\sqrt{x}$ = \"กลับจากการยกกำลัง 2\" เช่น $5^2=25 \\Rightarrow \\sqrt{25}=5$ คิดย้อนทิศเสมอ"
+  },
+  {
+    id:4, concept:"Perfect Square",
+    question:"จำนวนใดต่อไปนี้ถอดรากได้ลงตัว?",
+    hint:"💭 'ถอดรากลงตัว' = ผลลัพธ์เป็นจำนวนเต็ม ลองถามว่าแต่ละตัวเลือกมีจำนวนเต็มที่ยกกำลังสองแล้วได้พอดีไหม? ลอง 36 = 6×6",
+    options:["√2","√7","√36","√15"],
+    answer:3, ansText:"√36",
+    detail:"$\\sqrt{36} = 6$ เพราะ $6^2 = 36$ — 36 เป็น Perfect Square ส่วน $\\sqrt{2}\\approx1.41$, $\\sqrt{7}\\approx2.65$, $\\sqrt{15}\\approx3.87$ ล้วนได้ทศนิยมไม่รู้จบ",
+    trick:"⚡ จำตาราง Perfect Square 1–15: $1,4,9,16,25,36,49,64,81,100,121,144,169,196,225$ — ตัวไหนอยู่ในตาราง = ถอดลงตัว"
+  },
+  {
+    id:5, concept:"Perfect Square",
+    question:"ข้อใดไม่ใช่กำลังสองสมบูรณ์ (Perfect Square)?",
+    hint:"💭 ลองหาว่าแต่ละตัวเลข = (จำนวนเต็ม)² ได้ไหม: 16=4², 25=5², 81=9² แล้ว 50 ล่ะ?",
+    options:["16","25","50","81"],
+    answer:3, ansText:"50",
+    detail:"$\\sqrt{50} = \\sqrt{25\\times2} = 5\\sqrt{2} \\approx 7.07...$ ไม่ลงตัว เพราะ 50 ไม่ใช่กำลังสองของจำนวนเต็มใดๆ ส่วน $16=4^2$, $25=5^2$, $81=9^2$ ล้วนถอดได้",
+    trick:"⚡ วิธีเช็คเร็ว: แยกตัวประกอบ 50 = 2 × 5² — มีเลข 2 ที่ยกกำลังเป็นคี่ (2¹) หมายความว่าถอดไม่หมด ถ้ากำลังทุกตัวประกอบเป็นคู่ = Perfect Square"
+  },
+  {
+    id:6, concept:"การคำนวณ",
+    question:"$\\sqrt{144}$ มีค่าเท่าใด?",
+    hint:"💭 ลองไล่ตัวเลือก: 11²=121, 12²=?, 13²=169 — ค่าไหนตรงกับ 144?",
+    options:["11","12","13","14"],
+    answer:2, ansText:"12",
+    detail:"$12 \\times 12 = 144$ ดังนั้น $\\sqrt{144} = 12$ (สังเกต: 144 = 12² อยู่ในตาราง Perfect Square)",
+    trick:"⚡ จำ 12² = 144 ไว้เลย — ออกข้อสอบบ่อยมาก เพราะเป็นโจ๊กเกอร์ที่หลายคนสับสนกับ 11²=121 และ 13²=169"
+  },
+  {
+    id:7, concept:"การคำนวณ",
+    question:"$\\sqrt{0.04}$ มีค่าเท่าใด?",
+    hint:"💭 เปลี่ยนทศนิยมเป็นเศษส่วนก่อน: 0.04 = 4/100 จากนั้นถอดรากเศษและส่วนแยกกัน",
+    options:["0.002","0.02","0.2","2"],
+    answer:3, ansText:"0.2",
+    detail:"$\\sqrt{0.04} = \\sqrt{\\dfrac{4}{100}} = \\dfrac{\\sqrt{4}}{\\sqrt{100}} = \\dfrac{2}{10} = 0.2$",
+    trick:"⚡ ทริกทศนิยม: จำนวนทศนิยมตัวที่ถอดราก จำนวนตำแหน่งทศนิยมจะ 'ลดครึ่งหนึ่ง' เสมอ เช่น 0.04 (2 ตำแหน่ง) → 0.2 (1 ตำแหน่ง)"
+  },
+  {
+    id:8, concept:"การคำนวณ",
+    question:"$\\sqrt{\\dfrac{9}{16}}$ มีค่าเท่าใด?",
+    hint:"💭 สมบัติ: $\\sqrt{\\frac{a}{b}} = \\frac{\\sqrt{a}}{\\sqrt{b}}$ — ถอดรากเศษและส่วนแยกกันได้เลย ทั้ง 9 และ 16 เป็น Perfect Square",
+    options:["$\\dfrac{1}{2}$","$\\dfrac{3}{4}$","$\\dfrac{3}{8}$","$\\dfrac{9}{4}$"],
+    answer:2, ansText:"3/4",
+    detail:"$\\sqrt{\\dfrac{9}{16}} = \\dfrac{\\sqrt{9}}{\\sqrt{16}} = \\dfrac{3}{4}$ — ถอดรากเศษส่วนแยกกัน ข้อ 3 ผิดเพราะ 8 ≠ √16 ข้อ 4 ผิดเพราะนำ 9 มาหาร 4 แทน",
+    trick:"⚡ เศษส่วนใต้รูท: ถ้าทั้งเศษและส่วนเป็น Perfect Square → ถอดรากแยกทันที ไม่ต้องแปลงเป็นทศนิยม"
+  },
+  {
+    id:9, concept:"ลดรูปรูท",
+    question:"$\\sqrt{12}$ เขียนในรูปอย่างต่ำได้เป็น?",
+    hint:"💭 หาตัวประกอบที่เป็น Perfect Square ของ 12: 12 = 4 × 3 หรือ 12 = 2 × 6 ตัวไหนมี Perfect Square?",
+    options:["$2\\sqrt{3}$","$3\\sqrt{2}$","$4\\sqrt{3}$","$6\\sqrt{2}$"],
+    answer:1, ansText:"2√3",
+    detail:"$\\sqrt{12} = \\sqrt{4 \\times 3} = \\sqrt{4} \\cdot \\sqrt{3} = 2\\sqrt{3}$ — 4 คือ Perfect Square ใหญ่สุดที่หาร 12 ลงตัว จึงดึง $\\sqrt{4}=2$ ออกมานอกรูท",
+    trick:"⚡ หลักการดึงออก: หา Perfect Square ที่ใหญ่ที่สุดที่หาร 12 ลงตัว = 4 (ไม่ใช่ 2) การหยิบ 4 ทำให้ลดรูปได้ 'สุด' ในครั้งเดียว"
+  },
+  {
+    id:10, concept:"ลดรูปรูท",
+    question:"$\\sqrt{72}$ เขียนในรูปอย่างต่ำได้เป็น?",
+    hint:"💭 แยกตัวประกอบ 72 = ? × ? โดยให้ตัวหน้าเป็น Perfect Square ที่ใหญ่ที่สุด: ลอง 4, 9, 36...",
+    options:["$6\\sqrt{2}$","$8\\sqrt{3}$","$4\\sqrt{6}$","$3\\sqrt{8}$"],
+    answer:1, ansText:"6√2",
+    detail:"$\\sqrt{72} = \\sqrt{36 \\times 2} = \\sqrt{36}\\cdot\\sqrt{2} = 6\\sqrt{2}$ — 36 คือ Perfect Square ใหญ่สุดที่หาร 72 ได้ (ไม่ใช่ 4 หรือ 9 ที่เล็กกว่า)",
+    trick:"⚡ ถ้าเลือกตัวประกอบที่ไม่ใหญ่สุด จะลดรูปไม่จบ: $\\sqrt{72}=\\sqrt{4\\times18}=2\\sqrt{18}$ — ยังลดได้อีก! เลือก Perfect Square ใหญ่สุดเสมอ"
+  },
+  {
+    id:11, concept:"ลดรูปรูท",
+    question:"$\\sqrt{200}$ เขียนในรูปอย่างต่ำได้เป็น?",
+    hint:"💭 200 = 2 × 100 = 4 × 50 = 8 × 25 ตัวไหนที่ทั้งสองตัวประกอบ 'ดีที่สุด'? ให้ Perfect Square ใหญ่ที่สุดอยู่หน้า",
+    options:["$10\\sqrt{2}$","$5\\sqrt{8}$","$20\\sqrt{2}$","$2\\sqrt{50}$"],
+    answer:1, ansText:"10√2",
+    detail:"$\\sqrt{200} = \\sqrt{100 \\times 2} = \\sqrt{100}\\cdot\\sqrt{2} = 10\\sqrt{2}$ — ข้อ 2 ผิดเพราะ $5\\sqrt{8}$ ยังลดได้อีก ($\\sqrt{8}=2\\sqrt{2}$ ดังนั้นได้ $10\\sqrt{2}$) ข้อ 4 ก็ยังลดได้",
+    trick:"⚡ วิธีเช็คว่า 'อย่างต่ำแล้ว': เลขในรูทต้องไม่มีตัวประกอบที่เป็น Perfect Square หลงเหลืออยู่ เลข 2 ในรูท $10\\sqrt{2}$ ผ่าน เพราะ 2 ไม่มีตัวประกอบซ้ำ"
+  },
+  {
+    id:12, concept:"สมบัติการคูณ",
+    question:"$\\sqrt{3} \\times \\sqrt{27}$ มีค่าเท่าใด?",
+    hint:"💭 ใช้สมบัติ $\\sqrt{a}\\times\\sqrt{b} = \\sqrt{a \\times b}$ — คูณเลขในรูทก่อน แล้วค่อยถอดราก: 3 × 27 = ?",
+    options:["3","9","$3\\sqrt{3}$","$\\sqrt{81}$"],
+    answer:2, ansText:"9",
+    detail:"$\\sqrt{3} \\times \\sqrt{27} = \\sqrt{3\\times27} = \\sqrt{81} = 9$ — ข้อ 4 ($\\sqrt{81}$) ถูกแต่ยังไม่ถอดราก ข้อ 3 ผิดเพราะ $3\\sqrt{3}\\approx5.2\\neq9$",
+    trick:"⚡ ก่อนคูณ สังเกตก่อน: 3 × 27 = 81 = 9² → รู้ทันทีว่าคำตอบ = 9 โดยไม่ต้องเขียนทีละขั้น"
+  },
+  {
+    id:13, concept:"สมบัติการคูณ",
+    question:"$\\sqrt{2} \\times \\sqrt{8}$ มีค่าเท่าใด?",
+    hint:"💭 ใช้สมบัติ $\\sqrt{a}\\times\\sqrt{b}=\\sqrt{ab}$ หรือลองมองว่า 2 × 8 = 16 ซึ่งเป็น Perfect Square",
+    options:["2","4","$\\sqrt{10}$","$2\\sqrt{4}$"],
+    answer:2, ansText:"4",
+    detail:"$\\sqrt{2}\\times\\sqrt{8}=\\sqrt{16}=4$ — $\\sqrt{10}$ ผิด (10≠2×8... ไม่ใช่การบวก) $2\\sqrt{4}$ ยังลดได้เป็น $2\\times2=4$",
+    trick:"⚡ ทริกสังเกต: 2 × 8 = 16 ซึ่งเป็น 4² → คำตอบ = 4 ทันที เทคนิคนี้ใช้ได้ทุกครั้งที่ผลคูณใน รูทเป็น Perfect Square"
+  },
+  {
+    id:14, concept:"สมบัติการหาร",
+    question:"$\\dfrac{\\sqrt{18}}{\\sqrt{2}}$ มีค่าเท่าใด?",
+    hint:"💭 ใช้สมบัติ $\\frac{\\sqrt{a}}{\\sqrt{b}}=\\sqrt{\\frac{a}{b}}$ — หารเลขในรูทก่อน: 18 ÷ 2 = ?",
+    options:["3","$\\sqrt{16}$","6","$\\sqrt{8}$"],
+    answer:1, ansText:"3",
+    detail:"$\\dfrac{\\sqrt{18}}{\\sqrt{2}} = \\sqrt{\\dfrac{18}{2}} = \\sqrt{9} = 3$ — $\\sqrt{16}$ ผิด (16≠9) ข้อ 3 (=6) ผิดเพราะ $\\sqrt{9}=3$ ไม่ใช่ 6",
+    trick:"⚡ คำตอบแบบทันที: 18÷2=9 → $\\sqrt{9}=3$ ไม่ต้องเขียนทีละขั้น แค่หารเลขในรูทแล้วถอดราก"
+  },
+  {
+    id:15, concept:"สมบัติการหาร",
+    question:"$\\dfrac{\\sqrt{50}}{\\sqrt{2}}$ มีค่าเท่าใด?",
+    hint:"💭 หารเลขในรูทก่อน: 50 ÷ 2 = 25 จากนั้น $\\sqrt{25}$ = ?",
+    options:["$\\sqrt{25}$","$\\sqrt{5}$","5","25"],
+    answer:3, ansText:"5",
+    detail:"$\\dfrac{\\sqrt{50}}{\\sqrt{2}} = \\sqrt{\\dfrac{50}{2}} = \\sqrt{25} = 5$ — $\\sqrt{25}$ ถูกแต่ยังไม่ถอดรากสุด ข้อ 4 (25) ผิดเพราะ $\\sqrt{25}\\neq25$",
+    trick:"⚡ กับดัก: ข้อ 1 ($\\sqrt{25}$) ดูถูก แต่โจทย์ถามค่าตัวเลข ต้องถอดรากให้สุด $\\sqrt{25}=5$ เสมอ"
+  },
+  {
+    id:16, concept:"ยกกำลังสองรูท",
+    question:"$(\\sqrt{7})^2$ มีค่าเท่าใด?",
+    hint:"💭 นึกถึงกฎ: รูทและยกกำลัง 2 เป็น 'ทางกลับกัน' ของกัน เมื่อทำทั้งสองอย่างพร้อมกัน จะ 'ตัดกัน' เหลือแค่...",
+    options:["$\\sqrt{7}$","14","7","49"],
+    answer:3, ansText:"7",
+    detail:"$(\\sqrt{a})^2 = a$ เสมอ เพราะรูทและกำลังสองเป็น inverse กัน ดังนั้น $(\\sqrt{7})^2 = 7$ — ข้อ 2 (14) ผิดเพราะ 7×2≠(√7)² ข้อ 4 (49) ผิดเพราะ 7²=49 ไม่ใช่ (√7)²",
+    trick:"⚡ จำสูตรทอง: $(\\sqrt{a})^2 = a$ และ $\\sqrt{a^2} = |a|$ — สองสูตรนี้ออกข้อสอบบ่อยมาก เห็นรูทล้อมด้วยกำลังสอง = ตัดออกทั้งคู่ทันที"
+  },
+  {
+    id:17, concept:"ยกกำลังสองรูท",
+    question:"$\\sqrt{x^2}$ มีค่าเท่าใด (เมื่อ $x$ อาจติดลบ)?",
+    hint:"💭 ลองแทนค่า x = −3: $\\sqrt{(-3)^2} = \\sqrt{9} = ?$ คำตอบเป็น −3 หรือ 3? รูทหลักต้องบวกเสมอ!",
+    options:["$x$","$-x$","$|x|$","$x^2$"],
+    answer:3, ansText:"|x|",
+    detail:"$\\sqrt{x^2} = |x|$ เพราะรากที่สองหลักต้องเป็นค่าบวกเสมอ เช่น $\\sqrt{(-3)^2}=\\sqrt{9}=3=|-3|$ ข้อ 1 ผิดเพราะถ้า x<0 จะได้ค่าติดลบ ซึ่งรูทให้ไม่ได้",
+    trick:"⚡ กับดักคลาสสิก: หลายคนตอบ x (ข้อ 1) เพราะคิดว่ารูทตัดกับกำลังสอง แต่ต้องระวัง! ถ้า x อาจติดลบ ต้องใส่ค่าสัมบูรณ์ $|x|$ เสมอ"
+  },
+  {
+    id:18, concept:"บวก-ลบรูท",
+    question:"$3\\sqrt{5} + 2\\sqrt{5}$ มีค่าเท่าใด?",
+    hint:"💭 มองรูทเหมือน 'หน่วย': $3\\sqrt{5}+2\\sqrt{5}$ เหมือน '3 แอปเปิล + 2 แอปเปิล' บวกสัมประสิทธิ์ข้างหน้าได้เลย",
+    options:["$5\\sqrt{10}$","$5\\sqrt{5}$","$6\\sqrt{5}$","$\\sqrt{25}$"],
+    answer:2, ansText:"5√5",
+    detail:"$3\\sqrt{5}+2\\sqrt{5}=(3+2)\\sqrt{5}=5\\sqrt{5}$ — ข้อ 1 ผิดเพราะบวกเลขในรูทด้วย (ทำไม่ได้!) ข้อ 3 ผิดเพราะ 3×2=6 (คูณแทนบวก)",
+    trick:"⚡ กฎบวกลบรูท: บวก/ลบได้เฉพาะ 'สัมประสิทธิ์' (เลขหน้ารูท) เมื่อเลขใน√เหมือนกัน เหมือนบวก like terms ในพีชคณิต: $3x+2x=5x$"
+  },
+  {
+    id:19, concept:"บวก-ลบรูท",
+    question:"$\\sqrt{2} + \\sqrt{3}$ เท่ากับข้อใด?",
+    hint:"💭 เลขในรูทต่างกัน (2 ≠ 3) — ลองนึกแอนาโลจี: '2 แอปเปิล + 3 ส้ม' รวมกันได้ไหม? บวกรูทต่างชนิดเหมือนบวกผลไม้ต่างชนิด",
+    options:["$\\sqrt{5}$","$\\sqrt{6}$","$\\sqrt{2}+\\sqrt{3}$ (ทำต่อไม่ได้)","$2\\sqrt{5}$"],
+    answer:3, ansText:"√2+√3 (ทำต่อไม่ได้)",
+    detail:"เลขในรูทต่างกัน (2≠3) ทำให้บวกรวมกันไม่ได้ $\\sqrt{2}+\\sqrt{3}$ คือคำตอบสุดท้าย (≠$\\sqrt{5}$) ลองตรวจ: $\\sqrt{2}\\approx1.41$, $\\sqrt{3}\\approx1.73$, รวม≈3.14 แต่ $\\sqrt{5}\\approx2.24$ ≠ 3.14",
+    trick:"⚡ ข้อผิดพลาดที่พบบ่อยที่สุด: $\\sqrt{2}+\\sqrt{3}\\neq\\sqrt{5}$ (บวกเลขในรูทไม่ได้!) แต่ $\\sqrt{2}\\times\\sqrt{3}=\\sqrt{6}$ (คูณได้!) กฎนี้ต่างกันโดยสิ้นเชิง"
+  },
+  {
+    id:20, concept:"บวก-ลบรูท",
+    question:"$5\\sqrt{3} - 2\\sqrt{3}$ มีค่าเท่าใด?",
+    hint:"💭 เลขในรูทเหมือนกันทั้งคู่ (ต่างกันแค่สัมประสิทธิ์) ลบสัมประสิทธิ์ได้เลย: 5 − 2 = ?",
+    options:["$3\\sqrt{3}$","$3\\sqrt{6}$","$\\sqrt{3}$","$7\\sqrt{3}$"],
+    answer:1, ansText:"3√3",
+    detail:"$5\\sqrt{3}-2\\sqrt{3}=(5-2)\\sqrt{3}=3\\sqrt{3}$ — ข้อ 4 ($7\\sqrt{3}$) ผิดเพราะบวกแทนลบ ข้อ 2 ผิดเพราะลบเลขในรูทด้วย",
+    trick:"⚡ ลบรูท = ลบแค่สัมประสิทธิ์หน้า $\\sqrt{3}$ เป็นตัวร่วม ดึงออกมา: $(5-2)\\sqrt{3}$ — คิดเหมือน $5x-2x=3x$ ทุกประการ"
+  },
+  {
+    id:21, concept:"ทำส่วนไม่ติดรูท",
+    question:"$\\dfrac{1}{\\sqrt{2}}$ ทำให้ส่วนไม่ติดรูทได้เป็น?",
+    hint:"💭 วิธี Rationalize: คูณเศษและส่วนด้วย $\\sqrt{2}$ (ตัวเดียวกับในส่วน) เพื่อให้ส่วนกลายเป็นจำนวนเต็ม: $\\sqrt{2}\\times\\sqrt{2}=?$",
+    options:["$\\dfrac{\\sqrt{2}}{4}$","$\\dfrac{\\sqrt{2}}{2}$","$\\dfrac{1}{2}$","$2\\sqrt{2}$"],
+    answer:2, ansText:"√2/2",
+    detail:"$\\dfrac{1}{\\sqrt{2}} \\times \\dfrac{\\sqrt{2}}{\\sqrt{2}} = \\dfrac{\\sqrt{2}}{\\sqrt{2}\\times\\sqrt{2}} = \\dfrac{\\sqrt{2}}{2}$ — ข้อ 1 ผิดเพราะ $\\sqrt{2}\\times\\sqrt{2}=2$ ไม่ใช่ 4",
+    trick:"⚡ ทำไมต้องทำส่วนไม่ติดรูท? ในคณิตศาสตร์ถือว่าเศษส่วนที่ส่วนติดรูทยัง 'ไม่ลดรูปสุด' เปรียบเสมือนเขียน $\\frac{6}{4}$ แทนที่จะเป็น $\\frac{3}{2}$"
+  },
+  {
+    id:22, concept:"ทำส่วนไม่ติดรูท",
+    question:"$\\dfrac{6}{\\sqrt{3}}$ ทำให้ส่วนไม่ติดรูทแล้วลดรูป ได้เป็น?",
+    hint:"💭 คูณทั้งบนล่างด้วย $\\sqrt{3}$: ส่วนจะได้ $\\sqrt{3}\\times\\sqrt{3}=3$ แล้วค่อยหารเศษด้วย 3 เพื่อลดรูป",
+    options:["$\\sqrt{3}$","$2\\sqrt{3}$","$3\\sqrt{3}$","$6\\sqrt{3}$"],
+    answer:2, ansText:"2√3",
+    detail:"$\\dfrac{6}{\\sqrt{3}}\\times\\dfrac{\\sqrt{3}}{\\sqrt{3}}=\\dfrac{6\\sqrt{3}}{3}=2\\sqrt{3}$ — ข้อ 4 ($6\\sqrt{3}$) ลืมหารด้วย 3 ข้อ 1 ลดรูปผิด ($\\frac{6}{3}=2$ ไม่ใช่ 1)",
+    trick:"⚡ อย่าลืมขั้นตอนสุดท้าย: หลัง Rationalize แล้วต้อง 'ลดรูปเศษส่วน' ด้วย $\\frac{6\\sqrt{3}}{3}=2\\sqrt{3}$ มือใหม่มักหยุดที่ $\\frac{6\\sqrt{3}}{3}$ โดยไม่หาร"
+  },
+  {
+    id:23, concept:"จำนวนอตรรกยะ",
+    question:"$\\sqrt{2}$ เป็นจำนวนชนิดใด?",
+    hint:"💭 ลองถามตัวเองสองข้อ: (1) $\\sqrt{2}$ ถอดรากลงตัวไหม? (2) เขียนในรูปเศษส่วนได้ไหม? ถ้าไม่ทั้งคู่ = อตรรกยะ",
+    options:["จำนวนเต็ม","จำนวนตรรกยะ","จำนวนอตรรกยะ","จำนวนจินตภาพ"],
+    answer:3, ansText:"จำนวนอตรรกยะ",
+    detail:"$\\sqrt{2}=1.41421356...$ ทศนิยมไม่รู้จบไม่ซ้ำ เขียนเป็นเศษส่วน $\\frac{p}{q}$ ไม่ได้ จึงเป็นจำนวนอตรรกยะ (Irrational) — จำนวนจินตภาพ ($i$) ต่างออกไป ใช้กับ $\\sqrt{\\text{ลบ}}$",
+    trick:"⚡ กฎจำง่าย: $\\sqrt{n}$ เป็นตรรกยะ ก็ต่อเมื่อ $n$ เป็น Perfect Square เท่านั้น เช่น $\\sqrt{4}=2$ (ตรรกยะ) แต่ $\\sqrt{2}$ (อตรรกยะ)"
+  },
+  {
+    id:24, concept:"จำนวนอตรรกยะ",
+    question:"ข้อใดเป็นจำนวนตรรกยะ?",
+    hint:"💭 ตรรกยะ = เขียนเป็นเศษส่วนได้ ลองถอดรากทุกตัวเลือก: ตัวไหนได้จำนวนเต็มสวยๆ?",
+    options:["$\\sqrt{3}$","$\\sqrt{5}$","$\\sqrt{9}$","$\\sqrt{7}$"],
+    answer:3, ansText:"√9",
+    detail:"$\\sqrt{9}=3$ ซึ่งเป็นจำนวนเต็ม จึงเป็นจำนวนตรรกยะ ($=\\frac{3}{1}$) ส่วน $\\sqrt{3}\\approx1.732$, $\\sqrt{5}\\approx2.236$, $\\sqrt{7}\\approx2.646$ ล้วนเป็นอตรรกยะ",
+    trick:"⚡ วิธีเช็คเร็ว: ดูว่าเลขในรูทอยู่ในตาราง Perfect Square ไหม — 9 อยู่ (3²=9) ส่วน 3, 5, 7 ไม่อยู่ → ตอบ $\\sqrt{9}$ ได้ทันที"
+  },
+  {
+    id:25, concept:"รูทของลบ",
+    question:"$\\sqrt{-4}$ ในระบบจำนวนจริงมีค่าเท่าใด?",
+    hint:"💭 ถามตัวเองว่า: มีจำนวนจริงใดที่ยกกำลังสองแล้วได้ −4 ไหม? ลองคิด: บวก²=บวก, ลบ²=บวก เสมอ → ยกกำลังสองได้ผลลบได้ไหม?",
+    options:["−2","2","±2","ไม่มีค่า (undefined)"],
+    answer:4, ansText:"ไม่มีค่า",
+    detail:"ในระบบจำนวนจริง $\\sqrt{x}$ หาค่าไม่ได้เมื่อ $x<0$ เพราะไม่มีจำนวนจริงใดที่ $a^2=-4$ (จำนวนจริงยกกำลังสองได้ค่า ≥ 0 เสมอ) — ค่า $i=\\sqrt{-1}$ มีในระบบจำนวนเชิงซ้อนซึ่งเรียนระดับสูงขึ้น",
+    trick:"⚡ กฎเหล็ก: 'ใต้กรณฑ์ที่สอง ห้ามติดลบ' ในระดับ ม.ต้น ถ้าเห็น $\\sqrt{\\text{ลบ}}$ = ตอบ 'ไม่มีค่า' ทันทีโดยไม่ต้องคิดต่อ"
+  },
+  {
+    id:26, concept:"โจทย์ปัญหา",
+    question:"สี่เหลี่ยมจัตุรัสมีพื้นที่ 196 ตร.ซม. ด้านยาวเท่าใด?",
+    hint:"💭 สูตร: พื้นที่จัตุรัส = ด้าน² ดังนั้น ด้าน = $\\sqrt{\\text{พื้นที่}}$ — แทนค่า: ด้าน = $\\sqrt{196}$ = ?",
+    options:["12 ซม.","13 ซม.","14 ซม.","15 ซม."],
+    answer:3, ansText:"14 ซม.",
+    detail:"ด้าน $= \\sqrt{196} = 14$ ซม. เพราะ $14^2 = 196$ (จำไว้: $14\\times14=196$ เป็นอีกหนึ่งในตาราง Perfect Square ที่ควรจำ)",
+    trick:"⚡ แทนค่าตัวเลือกกลับ: $14^2=196$ ✓ ประหยัดเวลากว่าถอดราก 196 ตรงๆ — เทคนิคนี้ใช้ได้เมื่อตัวเลือกเป็นจำนวนเต็มและคุณจำตารางกำลังสองได้"
+  },
+  {
+    id:27, concept:"โจทย์ปัญหา",
+    question:"สี่เหลี่ยมจัตุรัสมีพื้นที่ 2 ตร.ม. ด้านยาวเท่าใด?",
+    hint:"💭 ด้าน = $\\sqrt{2}$ — ถามตัวเองว่า 2 เป็น Perfect Square ไหม? ถ้าไม่ใช่ คำตอบจะเป็น 'รูทติด' (อตรรกยะ)",
+    options:["$\\sqrt{2}$ ม.","$2$ ม.","$\\dfrac{1}{2}$ ม.","$4$ ม."],
+    answer:1, ansText:"√2 ม.",
+    detail:"ด้าน $= \\sqrt{2}$ ม. ซึ่งเป็นจำนวนอตรรกยะ $\\approx 1.414$ ม. — ข้อ 2 ผิดเพราะ $2^2=4\\neq2$ ข้อ 3 ผิดเพราะ $(\\frac{1}{2})^2=\\frac{1}{4}\\neq2$",
+    trick:"⚡ ข้อนี้สอนว่า: คำตอบไม่จำเป็นต้องเป็นจำนวนเต็มเสมอ ในชีวิตจริง ด้านจัตุรัสที่มีพื้นที่ 2 ม² ยาว $\\approx 1.41$ ม. และทิ้งเป็น $\\sqrt{2}$ ม. ถือว่าแม่นยำที่สุด"
+  },
+  {
+    id:28, concept:"โจทย์ปัญหา",
+    question:"ค่า $\\sqrt{5}$ อยู่ระหว่างจำนวนเต็มคู่ใด?",
+    hint:"💭 หาจำนวนเต็ม $n$ ที่ $n^2 < 5 < (n+1)^2$ ลอง: 2²=4, 3²=9 — เปรียบเทียบกับ 5",
+    options:["1 และ 2","2 และ 3","3 และ 4","4 และ 5"],
+    answer:2, ansText:"2 และ 3",
+    detail:"$2^2=4 < 5 < 9=3^2$ ดังนั้น $2 < \\sqrt{5} < 3$ (ค่าจริง $\\approx2.236$) — วิธีนี้ใช้หาช่วงของ $\\sqrt{n}$ ทุกตัวได้",
+    trick:"⚡ เทคนิค 'แซนด์วิช': หา Perfect Square 2 ตัวที่ 'หนีบ' เลขในรูทไว้ $4<5<9$ → $\\sqrt{4}<\\sqrt{5}<\\sqrt{9}$ → $2<\\sqrt{5}<3$ ใช้ได้กับทุกรูทที่ไม่ลงตัว"
+  },
+  {
+    id:29, concept:"ประยุกต์",
+    question:"$\\sqrt{3} \\times \\sqrt{3} \\times \\sqrt{3} \\times \\sqrt{3}$ มีค่าเท่าใด?",
+    hint:"💭 จัดกลุ่มใหม่: $\\underbrace{(\\sqrt{3}\\times\\sqrt{3})}_{?}\\times\\underbrace{(\\sqrt{3}\\times\\sqrt{3})}_{?}$ แต่ละกลุ่มคือ $(\\sqrt{3})^2$ = ?",
+    options:["3","6","9","12"],
+    answer:3, ansText:"9",
+    detail:"$(\\sqrt{3})^4 = (\\sqrt{3})^2 \\times (\\sqrt{3})^2 = 3 \\times 3 = 9$ หรือเขียนเป็นกำลัง: $(3^{\\frac{1}{2}})^4 = 3^2 = 9$",
+    trick:"⚡ ทริกกำลัง: $\\sqrt{3}=(3)^{\\frac{1}{2}}$ ดังนั้น $(\\sqrt{3})^4 = (3^{\\frac{1}{2}})^4 = 3^{\\frac{4}{2}} = 3^2 = 9$ — วิธีนี้เร็วกว่าจัดกลุ่มมาก เหมาะกับ $(\\sqrt{a})^n$ ทุกรูปแบบ"
+  },
+  {
+    id:30, concept:"ประยุกต์",
+    question:"ถ้า $x^2 = 50$ แล้ว $x$ (ค่าบวก) เขียนในรูปอย่างต่ำได้เป็น?",
+    hint:"💭 ขั้น 1: ถอดราก → $x=\\sqrt{50}$ | ขั้น 2: ลดรูป → หา Perfect Square ที่หาร 50 ลงตัว: 50 = 25 × 2",
+    options:["$5\\sqrt{2}$","$10\\sqrt{2}$","$2\\sqrt{5}$","$25\\sqrt{2}$"],
+    answer:1, ansText:"5√2",
+    detail:"$x = \\sqrt{50} = \\sqrt{25\\times2} = \\sqrt{25}\\cdot\\sqrt{2} = 5\\sqrt{2}$ — ข้อ 2 ($10\\sqrt{2}$) ผิดเพราะ $(10\\sqrt{2})^2=200\\neq50$ ข้อ 3 ผิดเพราะ $(2\\sqrt{5})^2=20\\neq50$",
+    trick:"⚡ วิธีเช็คคำตอบ: แทนกลับ $(5\\sqrt{2})^2 = 25\\times2 = 50$ ✓ — ทริกนี้ใช้เวลาไม่ถึง 5 วินาทีและยืนยันคำตอบได้ชัวร์ 100%"
+  }
+];
+
+let answered = 0;
+let score = 0;
+
+function renderQuiz() {
+    const container = document.getElementById('quiz-container');
+    container.innerHTML = quizData.map((q, qi) => `
+        <div class="question-card" id="card-${q.id}" style="animation-delay:${qi * 0.04}s">
+            <div class="q-number">ข้อ ${q.id} จาก 30</div>
+            <span class="concept-tag">⚡ ${q.concept}</span>
+            <div class="q-text">${q.question}</div>
+            <div class="options-grid">
+                ${q.options.map((opt, i) => `
+                    <div class="option" id="opt-${q.id}-${i+1}" onclick="checkAnswer(${q.id}, ${i+1})">${i+1}. ${opt}</div>
+                `).join('')}
+            </div>
+            <div id="sol-${q.id}" class="solution-box"></div>
+        </div>
+    `).join('');
+
+    if (window.MathJax) MathJax.typesetPromise();
+}
+
+function checkAnswer(qId, chosen) {
+    const q = quizData.find(x => x.id === qId);
+    const card = document.getElementById(`card-${qId}`);
+    if (card.classList.contains('answered')) return;
+
+    card.classList.add('answered');
+    answered++;
+
+    const correct = q.answer;
+    for (let i = 1; i <= 4; i++) {
+        const el = document.getElementById(`opt-${qId}-${i}`);
+        if (i === correct) el.classList.add('correct');
+        else if (i === chosen) el.classList.add('wrong');
+    }
+
+    if (chosen === correct) score++;
+
+    const sol = document.getElementById(`sol-${qId}`);
+    sol.innerHTML = `
+        <span class="label-ans">✔ เฉลย:</span> ${q.ansText}<br>
+        <span class="label-how">📐 วิธีทำ:</span> ${q.detail}
+        ${q.note ? `<br><span class="label-note">💡 ${q.note}</span>` : ''}
+    `;
+    sol.style.display = 'block';
+
+    updateProgress();
+    if (window.MathJax) MathJax.typesetPromise([sol]);
+
+    if (answered === 30) showScore();
+}
+
+function updateProgress() {
+    const pct = (answered / 30) * 100;
+    document.getElementById('progressFill').style.width = pct + '%';
+    document.getElementById('progressText').textContent = `ตอบแล้ว ${answered} / 30 ข้อ`;
+}
+
+function showScore() {
+    const box = document.getElementById('scoreBox');
+    box.style.display = 'flex';
+    document.getElementById('scoreNum').textContent = score;
+    const pct = Math.round((score / 30) * 100);
+    let msg = pct >= 80 ? '🏆 ยอดเยี่ยมมาก!' : pct >= 60 ? '👍 ดีมาก ฝึกต่อไป!' : '💪 ทบทวนแล้วลองใหม่!';
+    document.getElementById('scoreMsg').textContent = msg;
+    document.getElementById('scoreDetail').textContent = `คะแนน ${score}/30 (${pct}%) — ตรวจเฉลยในแต่ละข้อด้านล่าง`;
+    box.scrollIntoView({ behavior: 'smooth' });
+}
+
+// ─── Canvas / Whiteboard ───────────────────────────────────────
+const canvas = document.getElementById('mainCanvas');
+const ctx    = canvas.getContext('2d');
+let isDrawing = false;
+let currentColor = '#1e293b';
+let brushSize = 3;
+let snapshots = [];
+
+function initCanvas() {
+    canvas.width  = canvas.offsetWidth;
+    canvas.height = canvas.offsetHeight;
+    ctx.lineWidth   = brushSize;
+    ctx.lineCap     = 'round';
+    ctx.lineJoin    = 'round';
+    ctx.strokeStyle = currentColor;
+}
+
+function setColor(btn) {
+    document.querySelectorAll('.color-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentColor = btn.dataset.color;
+    ctx.strokeStyle = currentColor;
+}
+
+function setBrushSize(val) {
+    brushSize = val;
+    ctx.lineWidth = val;
+}
+
+function getPos(e) {
+    const rect = canvas.getBoundingClientRect();
+    const src  = e.touches ? e.touches[0] : e;
+    return {
+        x: (src.clientX - rect.left) * (canvas.width  / rect.width),
+        y: (src.clientY - rect.top)  * (canvas.height / rect.height)
+    };
+}
+
+function startDrawing(e) {
+    snapshots.push(ctx.getImageData(0, 0, canvas.width, canvas.height));
+    if (snapshots.length > 30) snapshots.shift();
+    isDrawing = true;
+    const p = getPos(e);
+    ctx.beginPath();
+    ctx.moveTo(p.x, p.y);
+}
+
+function draw(e) {
+    if (!isDrawing) return;
+    const p = getPos(e);
+    ctx.lineTo(p.x, p.y);
+    ctx.stroke();
+}
+
+function stopDrawing() { isDrawing = false; }
+
+function undoCanvas() {
+    if (snapshots.length === 0) return;
+    ctx.putImageData(snapshots.pop(), 0, 0);
+}
+
+function clearCanvas() {
+    snapshots.push(ctx.getImageData(0, 0, canvas.width, canvas.height));
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+}
+
+function downloadCanvas() {
+    const link    = document.createElement('a');
+    link.download = 'sqrt-note.png';
+    link.href     = canvas.toDataURL();
+    link.click();
+}
+
+canvas.addEventListener('mousedown',  startDrawing);
+canvas.addEventListener('mousemove',  draw);
+window.addEventListener('mouseup',    stopDrawing);
+canvas.addEventListener('touchstart', e => { startDrawing(e); e.preventDefault(); }, { passive: false });
+canvas.addEventListener('touchmove',  e => { draw(e);         e.preventDefault(); }, { passive: false });
+canvas.addEventListener('touchend',   stopDrawing);
+
+window.addEventListener('load', () => {
+    renderQuiz();
+    initCanvas();
+    window.addEventListener('resize', initCanvas);
+});
+</script>
+
+</body>
+</html>
