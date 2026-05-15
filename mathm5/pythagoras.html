@@ -966,65 +966,82 @@ html_content = """
     const canvas = document.getElementById('mainCanvas');
     const ctx = canvas.getContext('2d');
     let isDrawing = false;
-    let lastX = 0;
-    let lastY = 0;
 
-    // ตั้งค่าเส้นปากกา
-    ctx.strokeStyle = '#1e293b'; // สีปากกา
+    // ฟังก์ชันปรับขนาด Canvas ให้เข้ากับ Container จริง
+    function resizeCanvas() {
+        const container = canvas.parentElement;
+        canvas.width = container.clientWidth - 40; // ลบ padding
+        canvas.height = window.innerHeight * 0.6; // ให้สูง 60% ของความสูงจอ
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    // ตั้งค่าปากกา
+    ctx.strokeStyle = '#1e293b';
     ctx.lineJoin = 'round';
     ctx.lineCap = 'round';
     ctx.lineWidth = 3;
 
-    function draw(e) {
-        if (!isDrawing) return;
-        
-        // รองรับทั้ง Mouse และ Touch
+    function getMousePos(e) {
         const rect = canvas.getBoundingClientRect();
-        const x = (e.clientX || e.touches[0].clientX) - rect.left;
-        const y = (e.clientY || e.touches[0].clientY) - rect.top;
+        // คำนวณ Scale กรณี CSS ยืด/หด Canvas
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+        
+        let clientX, clientY;
+        if (e.touches && e.touches.length > 0) {
+            clientX = e.touches[0].clientX;
+            clientY = e.touches[0].clientY;
+        } else {
+            clientX = e.clientX;
+            clientY = e.clientY;
+        }
 
-        ctx.beginPath();
-        ctx.moveTo(lastX, lastY);
-        ctx.lineTo(x, y);
-        ctx.stroke();
-        [lastX, lastY] = [x, y];
+        return {
+            x: (clientX - rect.left) * scaleX,
+            y: (clientY - rect.top) * scaleY
+        };
     }
 
-    canvas.addEventListener('mousedown', (e) => {
+    function startDrawing(e) {
         isDrawing = true;
-        const rect = canvas.getBoundingClientRect();
-        [lastX, lastY] = [e.clientX - rect.left, e.clientY - rect.top];
-    });
+        const pos = getMousePos(e);
+        ctx.beginPath();
+        ctx.moveTo(pos.x, pos.y);
+        e.preventDefault();
+    }
 
+    function draw(e) {
+        if (!isDrawing) return;
+        const pos = getMousePos(e);
+        ctx.lineTo(pos.x, pos.y);
+        ctx.stroke();
+        e.preventDefault();
+    }
+
+    function stopDrawing() {
+        isDrawing = false;
+        ctx.closePath();
+    }
+
+    // Event Listeners สำหรับเมาส์
+    canvas.addEventListener('mousedown', startDrawing);
     canvas.addEventListener('mousemove', draw);
-    canvas.addEventListener('mouseup', () => isDrawing = false);
-    canvas.addEventListener('mouseout', () => isDrawing = false);
+    canvas.addEventListener('mouseup', stopDrawing);
+    canvas.addEventListener('mouseleave', stopDrawing);
 
-    // สำหรับ Mobile/Tablet
-    canvas.addEventListener('touchstart', (e) => {
-        isDrawing = true;
-        const rect = canvas.getBoundingClientRect();
-        lastX = e.touches[0].clientX - rect.left;
-        lastY = e.touches[0].clientY - rect.top;
-        e.preventDefault();
-    }, { passive: false });
+    // Event Listeners สำหรับ Touch (iPad/Tablet)
+    canvas.addEventListener('touchstart', startDrawing, { passive: false });
+    canvas.addEventListener('touchmove', draw, { passive: false });
+    canvas.addEventListener('touchend', stopDrawing);
 
-    canvas.addEventListener('touchmove', (e) => {
-        draw(e);
-        e.preventDefault();
-    }, { passive: false });
-
-    canvas.addEventListener('touchend', () => isDrawing = false);
-
-    // ฟังก์ชันล้างหน้าจอ
     function clearCanvas() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
     }
 
-    // ฟังก์ชันบันทึกภาพ
     function downloadCanvas() {
         const link = document.createElement('a');
-        link.download = 'my-note.png';
+        link.download = 'whiteboard-note.png';
         link.href = canvas.toDataURL();
         link.click();
     }
