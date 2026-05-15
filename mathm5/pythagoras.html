@@ -3,204 +3,108 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pythagoras Mastery Lab - Full Application</title>
-    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <title>Pythagoras Mastery Lab - Fix</title>
     <style>
-        /* --- CSS Layout & Style --- */
         body, html {
             margin: 0; padding: 0; height: 100%;
             font-family: 'Sarabun', sans-serif;
-            overflow: hidden;
             background-color: #0f172a; color: #f1f5f9;
+            overflow: hidden;
         }
-
         .app-container { display: flex; height: 100vh; width: 100vw; }
-
+        
+        /* ฝั่งซ้าย: โจทย์ */
         .quiz-frame {
             flex: 0 0 70%; height: 100%; overflow-y: auto;
             padding: 40px; box-sizing: border-box;
             background-color: #1e293b; border-right: 3px solid #334155;
         }
-
+        
+        /* ฝั่งขวา: ไวท์บอร์ด */
         .whiteboard-frame {
-            flex: 0 0 30%; height: 100%; overflow-y: auto;
-            padding: 20px; box-sizing: border-box;
-            background-color: #ffffff; color: #1e293b;
-            box-shadow: inset 5px 0 10px rgba(0,0,0,0.1);
+            flex: 0 0 30%; height: 100%; padding: 20px;
+            box-sizing: border-box; background-color: #ffffff;
+            color: #1e293b; display: flex; flex-direction: column;
         }
-
-        /* --- Quiz UI --- */
-        .header { border-bottom: 2px solid #38bdf8; padding-bottom: 20px; margin-bottom: 40px; }
-        .header h1 { margin: 0; color: #38bdf8; }
 
         .question-card {
             background: #334155; border-radius: 15px; padding: 25px;
-            margin-bottom: 35px; border-left: 6px solid #38bdf8;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            margin-bottom: 30px; border-left: 6px solid #38bdf8;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
         }
-
         .concept-tag {
-            display: inline-block; background: rgba(56, 189, 248, 0.15);
-            color: #7dd3fc; padding: 5px 12px; border-radius: 20px;
-            font-size: 0.85rem; margin-bottom: 10px; border: 1px solid #38bdf8;
+            display: inline-block; background: rgba(56, 189, 248, 0.2);
+            color: #7dd3fc; padding: 4px 12px; border-radius: 15px;
+            font-size: 0.85rem; margin-bottom: 10px;
         }
-
-        .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
-
+        .options-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 15px;
+        }
         .option {
             background: #1e293b; padding: 15px; border-radius: 10px;
             border: 1px solid #475569; cursor: pointer; transition: 0.2s;
         }
-        .option:hover { background: #475569; }
-        .option.selected { background: #38bdf8 !important; color: #0f172a !important; font-weight: bold; }
-
+        .option:hover { background: #38bdf8; color: #0f172a; }
+        .option.selected { background: #38bdf8; color: #0f172a; font-weight: bold; }
+        
         .solution-box {
             display: none; background: #0f172a; padding: 20px;
             border-radius: 10px; margin-top: 20px; border: 1px dashed #38bdf8;
         }
 
-        /* --- Whiteboard UI --- */
-        .tool-btn {
-            width: 100%; padding: 12px; margin-bottom: 8px;
-            background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px;
-            cursor: pointer; font-weight: bold; color: #475569;
+        canvas {
+            width: 100%; height: 400px; background: #f8fafc;
+            border: 2px solid #cbd5e1; border-radius: 10px; cursor: crosshair;
         }
-        .tool-btn.active { background: #38bdf8; color: white; }
-        canvas { background: #f1f5f9; border: 2px dashed #cbd5e1; border-radius: 10px; cursor: crosshair; touch-action: none; }
-        .cheat-sheet { background: #f8fafc; padding: 15px; border-radius: 10px; margin-top: 20px; font-size: 0.85rem; }
+        .btn {
+            width: 100%; padding: 12px; margin-bottom: 10px;
+            border: none; border-radius: 8px; cursor: pointer; font-weight: bold;
+        }
+        .btn-clear { background: #ef4444; color: white; }
+        .btn-save { background: #10b981; color: white; }
     </style>
 </head>
 <body>
 
 <div class="app-container">
     <div class="quiz-frame">
-        <div class="header">
-            <h1>Pythagoras Mastery Lab</h1>
-            <p>เลือกตัวเลือกเพื่อดูเฉลยและวิธีทำ</p>
-        </div>
+        <h1 style="color: #38bdf8;">Pythagoras Mastery Lab</h1>
         <div id="quiz-container">
-            </div>
+            <p style="color: #94a3b8;">กำลังโหลดข้อสอบ...</p>
+        </div>
     </div>
 
     <div class="whiteboard-frame">
-        <h2 style="color:#0ea5e9; margin-top:0;">Whiteboard</h2>
-        <button class="tool-btn active">🖊 ปากกาอัจฉริยะ</button>
-        <button class="tool-btn" onclick="clearCanvas()">🧽 ล้างหน้าจอ</button>
-        <button class="tool-btn" onclick="downloadCanvas()">📥 บันทึกภาพ</button>
-        
+        <h2 style="margin-top:0;">ไวท์บอร์ดทดเลข</h2>
         <canvas id="mainCanvas"></canvas>
-
-        <div class="cheat-sheet">
-            <h4 style="margin:0; color:#0ea5e9;">💡 เลขชุดจำง่าย</h4>
-            <p>3, 4, 5 | 5, 12, 13 | 7, 24, 25 | 8, 15, 17</p>
+        <div style="margin-top: 15px;">
+            <button class="btn btn-clear" onclick="clearCanvas()">ล้างหน้าจอ</button>
+            <button class="btn btn-save" onclick="downloadCanvas()">บันทึกภาพโน้ต</button>
         </div>
     </div>
 </div>
 
 <script>
-// 1. ข้อมูลโจทย์ 36 ข้อ
+// ข้อมูลโจทย์ 1-36
 const quizData = [
-    { id: 1, question: "ทฤษฎีบทพีทาโกรัสเกี่ยวข้องกับรูปใดมากที่สุด?", concept: "นิยามพื้นฐาน", options: ["รูปสามเหลี่ยมมุมฉาก", "รูปสามเหลี่ยมหน้าจั่ว", "รูปสามเหลี่ยมด้านเท่า", "รูปสามเหลี่ยมมุมป้าน"], answer: "1. รูปสามเหลี่ยมมุมฉาก", detail: "ใช้หาความสัมพันธ์ของด้านในสามเหลี่ยมที่มีมุม 90 องศา" },
-    { id: 2, question: "จากรูปสามเหลี่ยมมุมฉาก ข้อใดถูก?", concept: "สูตรมาตรฐาน", options: ["a² + b² = c²", "a² + c² = b²", "b² + c² = a²", "ถูกทุกข้อ"], answer: "1. a² + b² = c²", detail: "เมื่อ c คือด้านตรงข้ามมุมฉาก" },
-    { id: 3, question: "ข้อใดกล่าวผิดเกี่ยวกับ b² = a² + c² (เมื่อ b คือด้านตรงข้ามมุมฉาก)?", concept: "การย้ายข้าง", options: ["b² - c² = a²", "a² + c² = b²", "b² = a² + c²", "a² - c² = b²"], answer: "4. a² - c² = b²", detail: "ด้านสั้นลบกันไม่เท่ากับด้านยาวที่สุด" },
+    { id: 1, question: "ทฤษฎีบทพีทาโกรัสเกี่ยวข้องกับรูปใดมากที่สุด?", concept: "นิยามพื้นฐาน", options: ["รูปสามเหลี่ยมมุมฉาก", "รูปสามเหลี่ยมหน้าจั่ว", "รูปสามเหลี่ยมด้านเท่า", "รูปสามเหลี่ยมมุมป้าน"], answer: "1. รูปสามเหลี่ยมมุมฉาก", detail: "ใช้กับสามเหลี่ยมที่มีมุม 90 องศา" },
+    { id: 2, question: "จากรูปสามเหลี่ยมมุมฉาก ข้อใดถูก?", concept: "สูตรมาตรฐาน", options: ["a² + b² = c²", "a² + c² = b²", "b² + c² = a²", "ถูกทุกข้อ"], answer: "1. a² + b² = c²", detail: "เมื่อ c เป็นด้านที่ยาวที่สุด" },
+    { id: 3, question: "ข้อใดกล่าวผิดเกี่ยวกับ b² = a² + c² (เมื่อ b คือด้านตรงข้ามมุมฉาก)?", concept: "ความสัมพันธ์ด้าน", options: ["b² - c² = a²", "a² + c² = b²", "b² = a² + c²", "a² - c² = b²"], answer: "4. a² - c² = b²", detail: "ด้านสั้นลบกันไม่เท่ากับด้านยาวที่สุด" },
     { id: 4, question: "ด้านประกอบยาว 6 และ 8 ด้านตรงข้ามยาวเท่าใด?", concept: "คำนวณ", options: ["9", "10", "11", "12"], answer: "2. 10", detail: "6² + 8² = 100, √100 = 10" },
     { id: 5, question: "ด้านตรงข้ามยาว 15 ด้านประกอบยาว 12 อีกด้านยาวเท่าใด?", concept: "หาด้านประกอบ", options: ["8", "9", "11", "13"], answer: "2. 9", detail: "15² - 12² = 81, √81 = 9" },
-    { id: 6, question: "ด้านประกอบยาว 12 และ 16 ด้านตรงข้ามยาวเท่าใด?", concept: "คำนวณ", options: ["17", "18", "20", "25"], answer: "3. 20", detail: "12² + 16² = 400" },
+    { id: 6, question: "ด้านประกอบยาว 12 และ 16 ด้านตรงข้ามยาวเท่าใด?", concept: "คำนวณ", options: ["17", "18", "20", "25"], answer: "3. 20", detail: "12² + 16² = 400, √400 = 20" },
     { id: 7, question: "ด้านประกอบ 2 และ 1.5 ด้านตรงข้ามยาวเท่าใด?", concept: "ทศนิยม", options: ["2.5", "3", "3.5", "4"], answer: "1. 2.5", detail: "4 + 2.25 = 6.25, √6.25 = 2.5" },
     { id: 8, question: "ด้านประกอบ 1 และ 2.4 ด้านตรงข้ามยาวเท่าใด?", concept: "ทศนิยม", options: ["1.5", "1.8", "2.5", "2.6"], answer: "4. 2.6", detail: "1 + 5.76 = 6.76, √6.76 = 2.6" },
     { id: 9, question: "ด้านประกอบ 5 และ 5√2 ด้านตรงข้ามยาวเท่าใด?", concept: "ติดรูท", options: ["3√5", "5√3", "6√2", "6√3"], answer: "2. 5√3", detail: "25 + 50 = 75, √75 = 5√3" },
     { id: 10, question: "ด้านประกอบ 4√3 และ 2√2 ด้านตรงข้ามยาวเท่าใด?", concept: "ติดรูท", options: ["2√14", "4√5", "5√6", "6√6"], answer: "1. 2√14", detail: "48 + 8 = 56, √56 = 2√14" },
     { id: 11, question: "ด้านประกอบ 105 และ 140 ด้านตรงข้ามยาวเท่าใด?", concept: "เลขเยอะ", options: ["145", "155", "165", "175"], answer: "4. 175", detail: "ใช้เลขชุด 3-4-5 คูณด้วย 35" },
-    { id: 12, question: "ด้านตรงข้าม 156 ด้านประกอบ 144 อีกด้านยาวเท่าใด?", concept: "หาด้านประกอบ", options: ["60", "65", "70", "75"], answer: "1. 60", detail: "156² - 144² = 3600" },
-    { id: 13, question: "ด้านยาว 15, 20, 24 เป็นสามเหลี่ยมชนิดใด?", concept: "ตรวจสอบ", options: ["มุมแหลม", "มุมป้าน", "มุมฉาก", "ไม่เป็นสามเหลี่ยม"], answer: "1. รูปสามเหลี่ยมมุมแหลม", detail: "24² (576) < 15² + 20² (625)" },
-    { id: 14, question: "ด้านยาว 8, 11, 14 เป็นสามเหลี่ยมชนิดใด?", concept: "ตรวจสอบ", options: ["มุมแหลม", "มุมป้าน", "มุมฉาก", "ไม่เป็นสามเหลี่ยม"], answer: "2. รูปสามเหลี่ยมมุมป้าน", detail: "14² (196) > 8² + 11² (185)" },
-    { id: 15, question: "ชุดตัวเลขใด ไม่ใช่สามเหลี่ยมมุมฉาก?", concept: "วิเคราะห์", options: ["3, 4, 5", "5, 12, 13", "7, 24, 25", "8, 15, 16"], answer: "4. 8, 15, 16", detail: "8² + 15² = 289 แต่ 16² = 256" },
-    { id: 16, question: "ชุดตัวเลขใดเป็นสามเหลี่ยมมุมป้าน?", concept: "อสมการ", options: ["3, 4, 4.5", "5, 11, 12", "6, 8, 11", "7, 24, 25"], answer: "3. 6, 8, 11", detail: "121 > 36 + 64" },
-    { id: 17, question: "รูปสามเหลี่ยมซ้อนกัน CD ยาวกว่า BC กี่หน่วย?", concept: "รูปผสม", options: ["20", "80", "90", "100"], answer: "2. 80", detail: "คำนวณด้านทีละรูปแล้วหาผลต่าง" },
-    { id: 18, question: "จากรูปทรงที่กำหนด AB ยาวเท่าใด?", concept: "มิติ", options: ["10", "11", "12", "13"], answer: "3. 12", detail: "ใช้พีทาโกรัสหาความยาวด้านที่หายไป" },
-    { id: 19, question: "จากพิกัดรูปภาพ AB ยาวเท่าใด?", concept: "ระยะห่าง", options: ["25", "25.5", "26", "30"], answer: "3. 26", detail: "√24² + 10² = 26" },
-    { id: 20, question: "สามเหลี่ยม ABC มี AB=25, AC=26, AD⊥BC, BD=7 หา BC?", concept: "เส้นตั้งฉาก", options: ["10", "17", "24", "31"], answer: "4. 31", detail: "AD=24, DC=10 ดังนั้น BC = 7+24 = 31" },
-    { id: 21, question: "พื้นที่สี่เหลี่ยม ABCD ในรูปคือเท่าใด?", concept: "พื้นที่", options: ["132", "144", "288", "672"], answer: "2. 144", detail: "แบ่งเป็นสามเหลี่ยมสองรูปแล้วหาพื้นที่รวม" },
-    { id: 22, question: "สามเหลี่ยมที่มีด้าน 7, 24, 25 เป็นชนิดใด?", concept: "ชนิดรูป", options: ["มุมแหลม", "มุมป้าน", "มุมฉาก", "หน้าจั่ว"], answer: "3. รูปสามเหลี่ยมมุมฉาก", detail: "7² + 24² = 25²" },
-    { id: 23, question: "จงหาค่าความสูง h ในรูป?", concept: "ความสูง", options: ["11", "12", "13", "14"], answer: "2. 12", detail: "ใช้พีทาโกรัสหาด้านประกอบมุมฉาก" },
-    { id: 24, question: "ค่าของ m + n ในรูปคือเท่าใด?", concept: "รวมด้าน", options: ["43", "52", "53", "61"], answer: "3. 53", detail: "m=41, n=12 รวมเป็น 53" },
-    { id: 25, question: "ค่าของ 2x - y คือเท่าใด?", concept: "พีชคณิต", options: ["12", "14", "16", "18"], answer: "2. 14", detail: "หา x และ y ก่อนแล้วค่อยเข้าสมการ" },
-    { id: 26, question: "พื้นที่สี่เหลี่ยมคางหมู ABCD คือเท่าใด?", concept: "พื้นที่", options: ["70", "95", "98", "100"], answer: "3. 98", detail: "หาความสูงก่อนแล้วเข้าสูตรคางหมู" },
-    { id: 27, question: "สี่เหลี่ยมกว้าง 16 ทแยงมุม 34 พื้นที่เท่าใด?", concept: "สี่เหลี่ยม", options: ["480", "500", "520", "544"], answer: "1. 480", detail: "ยาว = 30, พื้นที่ = 16x30 = 480" },
-    { id: 28, question: "เสาธงหักสูงจากพื้น 8 ห่างโคน 15 เสาเดิมสูงเท่าใด?", concept: "โจทย์ปัญหา", options: ["17", "20", "23", "25"], answer: "4. 25", detail: "ส่วนหัก 17 + ส่วนตั้ง 8 = 25" },
-    { id: 29, question: "ตึกห่าง 8 สูง 25 และ 40 สลิงเชื่อมยอดหนายาวเท่าใด?", concept: "ระยะห่าง", options: ["15", "17", "20", "25"], answer: "2. 17", detail: "√8² + 15² = 17" },
-    { id: 30, question: "สามเหลี่ยมหน้าจั่วฐาน 20 ด้านข้าง 26 พื้นที่เท่าใด?", concept: "พื้นที่", options: ["240", "260", "480", "520"], answer: "1. 240", detail: "สูง=24, พื้นที่=0.5x20x24 = 240" },
-    { id: 31, question: "เดินเหนือ 2+2 ตะวันออก 1+2 ห่างจุดเริ่มเท่าใด?", concept: "การเดินทาง", options: ["5", "6", "7", "8"], answer: "1. 5", detail: "√4² + 3² = 5" },
-    { id: 32, question: "บันได 12 พาดกำแพง ห่างโคน 4 กำแพงสูงเท่าใด?", concept: "บันได", options: ["10.2", "10.8", "11.3", "11.8"], answer: "3. 11.3", detail: "√144 - 16 = √128 ≈ 11.3" },
-    { id: 33, question: "สามเหลี่ยมรอบรูป 15 ด้านหนึ่ง 6 พื้นที่เท่าใด?", concept: "ประยุกต์", options: ["7.5", "8.5", "9.5", "10"], answer: "1. 7.5", detail: "ด้านคือ 2.5, 6, 6.5 พื้นที่=0.5x6x2.5" },
-    { id: 34, question: "ข้อใดถูก ก.ชุด10,24,26 ข.พื้นที่จัตุรัส ค.ใช้กับทุกสามเหลี่ยม?", concept: "ทฤษฎี", options: ["ก และ ข", "ข และ ค", "ก ข และ ค", "ก เท่านั้น"], answer: "1. ก และ ข", detail: "ค ผิด เพราะใช้ได้แค่สามเหลี่ยมมุมฉาก" },
-    { id: 35, question: "บันได 50 พาดตึก 48 กลับไปพาดกำแพงสูง 14 ระยะห่างรวมคือ?", concept: "ซับซ้อน", options: ["60", "62", "64", "66"], answer: "2. 62", detail: "14 + 48 = 62" },
-    { id: 36, question: "สามเหลี่ยมด้าน 12√2, 12√2 และ 24 พื้นที่เท่าใด?", concept: "ติดรูท", options: ["140", "144", "150", "160"], answer: "2. 144", detail: "0.5 x 12√2 x 12√2 = 144" }
-];
-
-// 2. ฟังก์ชันแสดงผลโจทย์
-function renderQuiz() {
-    const container = document.getElementById('quiz-container');
-    container.innerHTML = quizData.map(q => `
-        <div class="question-card">
-            <span class="concept-tag">(แนวคิด: ${q.concept})</span>
-            <div class="question-text">${q.id}. ${q.question}</div>
-            <div class="options-grid">
-                ${q.options.map((opt, i) => `
-                    <div class="option" onclick="checkAnswer(this)">${i+1}. ${opt}</div>
-                `).join('')}
-            </div>
-            <div class="solution-box">
-                <strong style="color:#38bdf8;">เฉลย:</strong> ${q.answer}<br>
-                <strong style="color:#facc15;">วิธีทำ:</strong> ${q.detail}
-            </div>
-        </div>
-    `).join('');
-}
-
-// 3. ฟังก์ชันตรวจคำตอบ
-function checkAnswer(el) {
-    const card = el.closest('.question-card');
-    card.querySelectorAll('.option').forEach(o => o.classList.remove('selected'));
-    el.classList.add('selected');
-    card.querySelector('.solution-box').style.display = 'block';
-}
-
-// 4. ฟังก์ชันไวท์บอร์ด
-const canvas = document.getElementById('mainCanvas');
-const ctx = canvas.getContext('2d');
-let drawing = false;
-
-function setupCanvas() {
-    canvas.width = canvas.parentElement.clientWidth - 40;
-    canvas.height = 450;
-    ctx.lineWidth = 3; ctx.lineCap = 'round'; ctx.strokeStyle = '#1e293b';
-}
-
-function startPos(e) { drawing = true; draw(e); }
-function endPos() { drawing = false; ctx.beginPath(); }
-function draw(e) {
-    if (!drawing) return;
-    const rect = canvas.getBoundingClientRect();
-    const x = (e.clientX || e.touches[0].clientX) - rect.left;
-    const y = (e.clientY || e.touches[0].clientY) - rect.top;
-    ctx.lineTo(x, y); ctx.stroke(); ctx.beginPath(); ctx.moveTo(x, y);
-}
-
-canvas.addEventListener('mousedown', startPos);
-canvas.addEventListener('mousemove', draw);
-window.addEventListener('mouseup', endPos);
-canvas.addEventListener('touchstart', (e) => { startPos(e); e.preventDefault(); }, {passive:false});
-canvas.addEventListener('touchmove', (e) => { draw(e); e.preventDefault(); }, {passive:false});
-canvas.addEventListener('touchend', endPos);
-
-function clearCanvas() { ctx.clearRect(0, 0, canvas.width, canvas.height); }
-function downloadCanvas() {
-    const link = document.createElement('a');
-    link.download = 'notes.png'; link.href = canvas.toDataURL(); link.click();
-}
-
-window.onload = () => { renderQuiz(); setupCanvas(); };
-</script>
-</body>
-</html>
+    { id: 12, question: "ด้านตรงข้าม 156 ด้านประกอบ 144 อีกด้านยาวเท่าใด?", concept: "หาด้านประกอบ", options: ["60", "65", "70", "75"], answer: "1. 60", detail: "156² - 144² = 3600, √3600 = 60" },
+    { id: 13, question: "ด้านยาว 15, 20, 24 เป็นสามเหลี่ยมชนิดใด?", concept: "ตรวจสอบชนิด", options: ["มุมแหลม", "มุมป้าน", "มุมฉาก", "ไม่เป็นสามเหลี่ยม"], answer: "1. รูปสามเหลี่ยมมุมแหลม", detail: "24² < 15² + 20²" },
+    { id: 14, question: "ด้านยาว 8, 11, 14 เป็นสามเหลี่ยมชนิดใด?", concept: "ตรวจสอบชนิด", options: ["มุมแหลม", "มุมป้าน", "มุมฉาก", "ไม่เป็นสามเหลี่ยม"], answer: "2. รูปสามเหลี่ยมมุมป้าน", detail: "14² > 8² + 11²" },
+    { id: 15, question: "ชุดตัวเลขใด ไม่ใช่สามเหลี่ยมมุมฉาก?", concept: "ตัวเลขชุด", options: ["3, 4, 5", "5, 12, 13", "7, 24, 25", "8, 15, 16"], answer: "4. 8, 15, 16", detail: "8² + 15² = 289 แต่ 16² = 256" },
+    { id: 16, question: "ชุดตัวเลขใดเป็นสามเหลี่ยมมุมป้าน?", concept: "อสมการ", options: ["3, 4, 4.5", "5, 11, 12", "6, 8, 11", "7, 24, 25"], answer: "3. 6, 8, 11", detail: "121 > 36 + 100" },
+    { id: 17, question: "รูปสามเหลี่ยมซ้อนกัน CD ยาวกว่า BC กี่หน่วย?", concept: "รูปผสม", options: ["20", "80", "90", "100"], answer: "2. 80", detail: "หาความยาวด้านทีละขั้น" },
+    { id: 18, question: "จากรูปทรงที่กำหนด AB ยาวเท่าใด?", concept: "ระยะห่าง", options: ["10", "11", "12", "13"], answer: "3. 12", detail: "ใช้พีทาโกรัสหาด้านที่หายไป" },
+    { id: 19, question: "จากพิกัดในโจทย์ AB ยาวเท่าใด?", concept: "ระยะห่าง", options: ["25", "25.5", "26", "30"], answer: "3. 26", detail: "√24² + 10² = 26" },
+    { id: 20, question: "สามเหลี่ยม ABC มี AB=25, AC=26, AD⊥BC, BD=7 หา BC?", concept: "เส้นตั้งฉาก", options: ["10", "17", "24", "31"], answer: "4. 31", detail: "หา AD=24 และ DC=10" },
+    { id: 21, question: "พื้นที่สี่เหลี่ยม ABCD ในรูปคือเท่าใด?", concept: "พื้นที่", options: ["132", "144",
