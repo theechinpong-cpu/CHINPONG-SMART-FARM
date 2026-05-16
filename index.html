@@ -524,6 +524,209 @@
                 });
         });
     </script>
+<div id="ai-chat-widget" style="position: fixed; bottom: 25px; right: 25px; z-index: 10000; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; box-sizing: border-box;">
+    
+    <button id="chat-launcher" onclick="toggleAIChat()" style="width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, #111111 0%, #222222 100%); border: 1px solid #333; box-shadow: 0 10px 30px rgba(0,0,0,0.6); cursor: pointer; display: flex; align-items: center; justify-content: center; position: relative; transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); padding: 0;"
+            onmouseover="this.style.borderColor='#00e676'; this.style.transform='scale(1.05) translateY(-2px)';"
+            onmouseout="this.style.borderColor='#333'; this.style.transform='scale(1) translateY(0)';">
+        <span style="position: absolute; top: 3px; right: 3px; width: 12px; height: 12px; background-color: #00e676; border-radius: 50%; border: 2px solid #111; box-shadow: 0 0 8px #00e676;"></span>
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2V5M12 5C15.866 5 19 8.13401 19 12V18C19 19.6569 17.6569 21 16 21H8C6.34315 21 5 19.6569 5 18V12C5 8.13401 8.13401 5 12 5Z" stroke="#00e676" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M9 11H9.01M15 11H15.01" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M10 15H14" stroke="#00e676" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M2 14H4M20 14H22" stroke="#333333" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+    </button>
 
+    <div id="chat-window" style="display: none; width: 380px; height: 520px; background-color: #141414; border: 1px solid #262626; border-radius: 20px; box-shadow: 0 15px 40px rgba(0,0,0,0.8); overflow: hidden; position: absolute; bottom: 75px; right: 0; flex-direction: column;">
+        
+        <div style="background: linear-gradient(135deg, #1a1a1a 0%, #0d0d0d 100%); padding: 15px 20px; border-bottom: 1px solid #262626; display: flex; align-items: center; justify-content: space-between;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <div style="width: 10px; height: 10px; background-color: #00e676; border-radius: 50%; box-shadow: 0 0 8px #00e676;"></div>
+                <div>
+                    <h4 style="margin: 0; color: #ffffff; font-size: 0.95em; font-weight: 600; letter-spacing: 0.3px;">ผู้ช่วยอัจฉริยะ</h4>
+                    <span style="font-size: 0.75em; color: #8c8c8c;">พร้อมแนะนำเทคนิคและพิกัดสินค้า</span>
+                </div>
+            </div>
+            <button onclick="toggleAIChat()" style="background: transparent; border: none; color: #666; cursor: pointer; font-size: 1.3em; padding: 5px; display: flex; align-items: center; justify-content: center;" onmouseover="this.style.color='#ff5252'" onmouseout="this.style.color='#666'">✕</button>
+        </div>
+
+        <div id="chat-messages" style="flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; background-color: #141414;">
+            <div style="display: flex; gap: 10px; max-width: 85%;">
+                <div style="flex-shrink: 0; width: 28px; height: 28px; background: #222; border: 1px solid #333; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.75em;">🤖</div>
+                <div style="background-color: #1f1f1f; border: 1px solid #2d2d2d; color: #e5e5e5; padding: 10px 14px; border-radius: 4px 16px 16px 16px; font-size: 0.9em; line-height: 1.4;">
+                    สวัสดีครับ! ผมเป็นผู้ช่วย AI ยินดีให้ข้อมูลเชิงวิชาการด้านการเกษตรและเทคโนโลยีฟาร์ม คุณกำลังมองหาวิธีแก้ปัญหาเรื่องใด หรือต้องการพิกัดเครื่องมือตัวไหน สอบถามได้เลยครับ
+                </div>
+            </div>
+        </div>
+
+        <div id="chat-loading" style="display: none; padding: 10px 20px; gap: 10px; align-items: center; background-color: #141414;">
+            <div style="width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-size: 0.75em;">🤖</div>
+            <div style="display: flex; gap: 4px;">
+                <span style="width: 6px; height: 6px; background-color: #00e676; border-radius: 50%; animation: pulse-dot 1.4s infinite ease-in-out; animation-delay: 0s;"></span>
+                <span style="width: 6px; height: 6px; background-color: #00e676; border-radius: 50%; animation: pulse-dot 1.4s infinite ease-in-out; animation-delay: 0.2s;"></span>
+                <span style="width: 6px; height: 6px; background-color: #00e676; border-radius: 50%; animation: pulse-dot 1.4s infinite ease-in-out; animation-delay: 0.4s;"></span>
+            </div>
+        </div>
+
+        <div style="padding: 15px; border-top: 1px solid #262626; background-color: #1a1a1a; display: flex; gap: 10px; align-items: center;">
+            <input type="text" id="chat-input" onkeypress="handleChatKeyPress(event)" placeholder="พิมพ์คำถามของคุณที่นี่..." 
+                   style="flex: 1; background-color: #111; border: 1px solid #333; border-radius: 25px; padding: 10px 18px; color: #fff; font-size: 0.9em; outline: none; transition: border-color 0.2s;"
+                   onfocus="this.style.borderColor='#00e676'" onblur="this.style.borderColor='#333'">
+            <button onclick="sendChatMessage()" style="background: #00e676; border: none; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.2s; padding: 0;"
+                    onmouseover="this.style.background='#00c853'" onmouseout="this.style.background='#00e676'">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M22 2L11 13M22 2L15 22L11 13M11 13L2 9L22 2" stroke="#111111" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </button>
+        </div>
+    </div>
+</div>
+
+<style>
+@keyframes pulse-dot {
+    0%, 100% { transform: scale(0.6); opacity: 0.4; }
+    50% { transform: scale(1.2); opacity: 1; }
+}
+#chat-messages::-webkit-scrollbar { width: 5px; }
+#chat-messages::-webkit-scrollbar-track { background: #141414; }
+#chat-messages::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
+</style>
+
+<script>
+// 1. คลังข้อมูลสำหรับดึงคำตอบและจัดวางพิกัดสินค้า Affiliate (คุณสามารถเพิ่มรายการสินค้าตรงนี้ได้เรื่อยๆ)
+const AFFILIATE_PRODUCT_DB = [
+    {
+        keywords: ['ปั๊มน้ำ', 'โซล่าเซลล์', 'น้ำแรง', 'รดน้ำ', 'ปั๊มคู่', 'สปริงเกอร์', 'ปั้ม', 'พ่นหมอก'],
+        title: 'ชุดมอเตอร์ปั๊มน้ำคู่แรงดันสูง 12V ระบบสมาร์ทฟาร์ม',
+        description: 'ผ่านการทดสอบประสิทธิภาพการทำงานร่วมกับโซล่าเซลล์ เหมาะสำหรับการประหยัดพลังงานในระบบจ่ายน้ำโรงเรือนปิด',
+        url: 'https://th.shp.ee/iabvtho5?smtt=0.0.9'
+    },
+    {
+        keywords: ['เซนเซอร์', 'วัดดิน', 'ความชื้น', 'rs485', 'ph', 'npk', 'ค่าดิน', 'ปุ๋ย'],
+        title: 'เซนเซอร์ตรวจวัดคุณภาพแร่ธาตุและระดับความชื้นในดิน RS485 NPK',
+        description: 'เซนเซอร์วิเคราะห์ระดับแร่ธาตุในชั้นดินอย่างแม่นยำสูง โครงสร้างทนทานต่อสารเคมีและการกัดกร่อนในระยะยาว',
+        url: 'https://www.tiktok.com/@khongdeemuangtai?_r=1&_t=ZS-96PPZetzOzP'
+    },
+    {
+        keywords: ['โรงเรือน', 'เห็ด', 'เพาะปลูก', 'อุณหภูมิ', 'ร้อน', 'แห้ง', 'คุมความชื้น'],
+        title: 'ระบบโมดูลควบคุมความชื้นและสภาพแวดล้อมอัตโนมัติ',
+        description: 'ช่วยรักษาระดับสภาพแวดล้อมที่เหมาะสมภายในโรงเรือนเพื่อการเจริญเติบโตที่มีประสิทธิภาพสูงสุดของพืชพรรณ',
+        url: 'https://th.shp.ee/iabvtho5?smtt=0.0.9'
+    }
+];
+
+// 2. ฟังก์ชันเปิด-ปิด หน้าต่างกล่องแชท
+function toggleAIChat() {
+    const chatWindow = document.getElementById('chat-window');
+    if (chatWindow.style.display === 'none' || chatWindow.style.display === '') {
+        chatWindow.style.display = 'flex';
+        document.getElementById('chat-input').focus();
+    } else {
+        chatWindow.style.display = 'none';
+    }
+}
+
+// 3. ดักจับปุ่มส่งเมื่อกดปุ่ม Enter
+function handleChatKeyPress(event) {
+    if (event.key === 'Enter') {
+        sendChatMessage();
+    }
+}
+
+// 4. ระบบวิเคราะห์ประมวลผลความต้องการของลูกค้าเพื่อจับคู่ลิงก์รับนายหน้า
+function sendChatMessage() {
+    const inputEl = document.getElementById('chat-input');
+    const queryText = inputEl.value.trim();
+    if (!queryText) return;
+
+    // แสดงข้อความที่ลูกค้าพิมพ์ส่งมา
+    appendMessage(queryText, 'user');
+    inputEl.value = '';
+
+    // แสดงสถานะบอทกำลังประมวลผลความรู้สึกคิดคำตอบ
+    const loader = document.getElementById('chat-loading');
+    loader.style.display = 'flex';
+    
+    const messageContainer = document.getElementById('chat-messages');
+    messageContainer.scrollTop = messageContainer.scrollHeight;
+
+    // จำลองการใช้เวลาคิดวิเคราะห์เชิงลึกของระบบ AI (650ms)
+    setTimeout(() => {
+        loader.style.display = 'none';
+        
+        let matchedProduct = null;
+        const lowerQuery = queryText.toLowerCase();
+
+        // ประมวลผลคำสำคัญ (Keywords Matching)
+        for (const prod of AFFILIATE_PRODUCT_DB) {
+            const hasKeyword = prod.keywords.some(keyword => lowerQuery.includes(keyword));
+            if (hasKeyword) {
+                matchedProduct = prod;
+                break;
+            }
+        }
+
+        let responseHTML = '';
+        if (matchedProduct) {
+            // โครงสร้างคำตอบเมื่อเจอสินค้าที่ตรงความต้องการ (นำทางไปยังลิงก์ Affiliate ทันที)
+            responseHTML = `
+                <div>
+                    จากการวิเคราะห์ข้อมูลความต้องการเชิงวิศวกรรมเกษตรที่คุณระบุ แนะนำให้พิจารณาเลือกติดตั้งอุปกรณ์ที่ตรงตามสเปกมาตรฐานดังนี้เพื่อประสิทธิภาพสูงสุดครับ:<br><br>
+                    <div style="background: #111; border-left: 3px solid #00e676; padding: 12px; margin: 8px 0; border-radius: 6px;">
+                        <strong style="color: #ffffff; font-size: 0.95em;">${matchedProduct.title}</strong><br>
+                        <span style="font-size: 0.85em; color: #a0a0a0; display:block; margin-top:4.5px; line-height:1.4;">${matchedProduct.description}</span>
+                    </div>
+                    <a href="${matchedProduct.url}" target="_blank" style="display: inline-block; background-color: #00e676; color: #111111; text-decoration: none; font-weight: bold; padding: 9px 18px; border-radius: 20px; font-size: 0.85em; margin-top: 8px; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">
+                        ตรวจสอบข้อมูลสเปกและพิกัดอุปกรณ์เพิ่มเติม →
+                    </a>
+                </div>
+            `;
+        } else {
+            // โครงสร้างคำตอบทั่วไปเมื่อไม่เจอคำสำคัญ (ส่งกลุ่มเป้าหมายไปกดดูคอนเทนต์หลักที่ฝังลิงก์นายหน้าตัวอื่นๆ ไว้)
+            responseHTML = `
+                <div>
+                    ขอบคุณสำหรับข้อมูลข้อสอบถามครับ ในส่วนของรายละเอียดคำแนะนำเชิงลึก รวมถึงแนวทางการบริหารจัดการสเปกอุปกรณ์อัจฉริยะเพิ่มเติม คุณสามารถเข้าไปศึกษารายละเอียด วิดีโอสาธิตการใช้งาน และผลลัพธ์การทดสอบจริงจากระบบควบคุมของทางเราได้ผ่านช่องทางหลักโดยตรงครับ:<br><br>
+                    <a href="https://www.tiktok.com/@khongdeemuangtai?_r=1&_t=ZS-96PPZetzOzP" target="_blank" style="display: inline-block; background-color: #1f1f1f; color: #00e676; border: 1px solid #333; text-decoration: none; font-weight: bold; padding: 9px 18px; border-radius: 20px; font-size: 0.85em; transition: all 0.2s;" onmouseover="this.style.borderColor='#00e676'" onmouseout="this.style.borderColor='#333'">
+                        เข้าชมศูนย์ข้อมูลวิดีโอสาธิตทางเทคนิคฟรี →
+                    </a>
+                </div>
+            `;
+        }
+
+        appendMessage(responseHTML, 'ai');
+    }, 650);
+}
+
+// 5. ฟังก์ชันแสดงองค์ประกอบการจัดวางกล่องแชทลงสู่หน้าเว็บเพจ
+function appendMessage(content, sender) {
+    const messageContainer = document.getElementById('chat-messages');
+    const msgWrapper = document.createElement('div');
+    msgWrapper.style.display = 'flex';
+    msgWrapper.style.gap = '10px';
+    msgWrapper.style.maxWidth = '85%';
+    
+    if (sender === 'user') {
+        msgWrapper.style.alignSelf = 'flex-end';
+        msgWrapper.style.justifyContent = 'flex-end';
+        msgWrapper.innerHTML = `
+            <div style="background-color: #00e676; color: #111111; padding: 10px 14px; border-radius: 16px 16px 4px 16px; font-size: 0.9em; line-height: 1.4; font-weight: 500;">
+                ${content}
+            </div>
+        `;
+    } else {
+        msgWrapper.style.alignSelf = 'flex-start';
+        msgWrapper.innerHTML = `
+            <div style="flex-shrink: 0; width: 28px; height: 28px; background: #222; border: 1px solid #333; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.75em;">🤖</div>
+            <div style="background-color: #1f1f1f; border: 1px solid #2d2d2d; color: #e5e5e5; padding: 10px 14px; border-radius: 4px 16px 16px 16px; font-size: 0.9em; line-height: 1.4;">
+                ${content}
+            </div>
+        `;
+    }
+    
+    messageContainer.appendChild(msgWrapper);
+    messageContainer.scrollTop = messageContainer.scrollHeight;
+}
+</script>
 </body>
 </html>
