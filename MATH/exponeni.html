@@ -2608,7 +2608,160 @@ function revealNextStepPost(quizNum) {
 }
 </script>
     
+<div class="pro-whiteboard-wrapper" style="max-width: 850px; margin: 20px auto; font-family: 'Sarabun', sans-serif; background: #ffffff; border: 1px solid #e0e0e0; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); overflow: hidden;">
+    
+    <div class="wb-toolbar" style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; padding: 12px 20px; background: #f8f9fa; border-bottom: 1px solid #e9ecef; gap: 10px;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="font-weight: 600; font-size: 14px; color: #495057; margin-right: 5px;">🛠️ เครื่องมือ:</span>
+            <button onclick="setWbMode('draw')" id="btn-wb-draw" class="wb-btn active-wb-btn" style="background: #228be6; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 500;">✏️ ดินสอ</button>
+            <button onclick="setWbMode('line')" id="btn-wb-line" class="wb-btn" style="background: #ffffff; color: #495057; border: 1px solid #ced4da; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 500;">📏 เส้นตรง</button>
+            <button onclick="setWbMode('erase')" id="btn-wb-erase" class="wb-btn" style="background: #ffffff; color: #495057; border: 1px solid #ced4da; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 500;">🧽 ยางลบ</button>
+        </div>
 
+        <div style="display: flex; align-items: center; gap: 15px;">
+            <div style="display: flex; align-items: center; gap: 5px;">
+                <label style="font-size: 13px; color: #495057; font-weight: 500;">สี:</label>
+                <input type="color" id="wb-color" value="#1a1a1a" style="border: none; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; background: none;">
+            </div>
+            
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <label style="font-size: 13px; color: #495057; font-weight: 500;">ขนาด:</label>
+                <input type="range" id="wb-size" min="2" max="20" value="4" style="cursor: pointer; width: 80px;">
+            </div>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 8px;">
+            <button onclick="clearWbCanvas()" style="background: #fff5f5; color: #e03131; border: 1px solid #ffc9c9; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 500;">🗑️ ล้างบอร์ด</button>
+            <button onclick="saveWbCanvas()" style="background: #ebfbee; color: #2b8a3e; border: 1px solid #b2f2bb; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 500;">💾 บันทึกรูป</button>
+        </div>
+    </div>
+
+    <div style="position: relative; background: #fafafa; width: 100%; height: 450px;">
+        <canvas id="proWhiteboard" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: block; cursor: crosshair;"></canvas>
+    </div>
+</div>
+
+<script>
+    const canvas = document.getElementById('proWhiteboard');
+    const ctx = canvas.getContext('2d');
+    const colorPicker = document.getElementById('wb-color');
+    const sizePicker = document.getElementById('wb-size');
+
+    let isDrawing = false;
+    let mode = 'draw'; // draw, line, erase
+    let startX = 0;
+    let startY = 0;
+    let snapshot = null; // เก็บภาพก่อนลากเส้นตรง
+
+    // ฟังก์ชันปรับขนาด Canvas ให้คมชัดตามความกว้างของหน้าจอจริง
+    function resizeCanvas() {
+        const rect = canvas.parentElement.getBoundingClientRect();
+        canvas.width = rect.width;
+        canvas.height = rect.height;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        // เติมพื้นหลังสีขาวเพื่อให้เวลาเซฟรูปไม่โปร่งแสง
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+
+    // เรียกใช้งานเมื่อโหลดหน้าเว็บ
+    window.addEventListener('load', () => {
+        resizeCanvas();
+        // ป้องกันการเลื่อนหน้าจอบนมือถือเวลาวาดรูป
+        canvas.addEventListener('touchstart', (e) => e.preventDefault(), { passive: false });
+        canvas.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
+    });
+
+    // ฟังชันสลับโหมดและเปลี่ยนสไตล์ปุ่ม
+    function setWbMode(newMode) {
+        mode = newMode;
+        document.querySelectorAll('.wb-btn').forEach(btn => btn.style.background = '#ffffff').forEach(btn => btn.style.color = '#495057');
+        
+        const activeBtn = document.getElementById(`btn-wb-${newMode}`);
+        if(newMode === 'draw') { activeBtn.style.background = '#228be6'; activeBtn.style.color = '#white'; }
+        else if(newMode === 'line') { activeBtn.style.background = '#12b886'; activeBtn.style.color = 'white'; }
+        else if(newMode === 'erase') { activeBtn.style.background = '#fa5252'; activeBtn.style.color = 'white'; }
+    }
+
+    // หาตำแหน่งพิกัดเมาส์/นิ้วสัมผัส
+    function getPos(e) {
+        const rect = canvas.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        return {
+            x: clientX - rect.left,
+            y: clientY - rect.top
+        };
+    }
+
+    // เริ่มต้นวาด
+    function startDraw(e) {
+        isDrawing = true;
+        const pos = getPos(e);
+        startX = pos.x;
+        startY = pos.y;
+        
+        ctx.beginPath();
+        ctx.moveTo(startX, startY);
+        
+        // ตั้งค่าฝีแปรง
+        ctx.lineWidth = sizePicker.value;
+        ctx.strokeStyle = (mode === 'erase') ? '#ffffff' : colorPicker.value;
+        
+        // เซฟภาพหน้าจอไว้เผื่อวาดเส้นตรง
+        snapshot = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    }
+
+    // ระหว่างลากเมาส์วาด
+    function drawing(e) {
+        if (!isDrawing) return;
+        const pos = getPos(e);
+
+        if (mode === 'draw' || mode === 'erase') {
+            ctx.lineTo(pos.x, pos.y);
+            ctx.stroke();
+        } else if (mode === 'line') {
+            // คืนค่าภาพก่อนหน้าไม่ให้เกิดเส้นซ้อนซ่อนเงาเวลาลาก
+            ctx.putImageData(snapshot, 0, 0);
+            ctx.beginPath();
+            ctx.moveTo(startX, startY);
+            ctx.lineTo(pos.x, pos.y);
+            ctx.stroke();
+        }
+    }
+
+    // หยุดวาด
+    function stopDraw() {
+        isDrawing = false;
+        ctx.closePath();
+    }
+
+    // ผูก Event การวาด (รองรับทั้ง Mouse และ Touch Screen)
+    canvas.addEventListener('mousedown', startDraw);
+    canvas.addEventListener('mousemove', drawing);
+    window.addEventListener('mouseup', stopDraw);
+
+    canvas.addEventListener('touchstart', startDraw);
+    canvas.addEventListener('touchmove', drawing);
+    window.addEventListener('touchend', stopDraw);
+
+    // ล้างหน้าจอคีย์บอร์ด
+    function clearWbCanvas() {
+        if(confirm('คุณต้องการล้างภาพวาดทั้งหมดบนกระดานใช่หรือไม่?')) {
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+    }
+
+    // บันทึกรูปภาพดาวน์โหลดออกไป
+    function saveWbCanvas() {
+        const link = document.createElement('a');
+        link.download = `whiteboard-${Date.now()}.png`;
+        link.href = canvas.toDataURL();
+        link.click();
+    }
+</script>
    
 <!-- สิ้นสุดส่วน Interactive HTML Component สำหรับ ข้อ 2 ใหญ่ -->
 <!-- สิ้นสุดส่วน Div คลังข้อสอบอัตนัย -->
