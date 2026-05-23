@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <title>แบบทดสอบจำนวนเฉพาะ ป.5 - พระจอมเกล้าติวเตอร์</title>
+    <style>
+        body {
+            font-family: 'Sarabun', Arial, sans-serif;
+            background-color: #f0f3f6;
+            margin: 0;
+            padding: 15px;
+            display: flex;
+            gap: 15px;
+            box-sizing: border-box;
+        }
+        #quiz-section {
+            flex: 7; /* พื้นที่ฝั่งซ้าย 70% */
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            overflow-y: auto;
+            height: calc(100vh - 40px);
+        }
+        #whiteboard-section {
+            flex: 3; /* พื้นที่ฝั่งขวา 30% ตามสั่ง */
+            background: #1e272e;
+            border-radius: 12px;
+            padding: 15px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            position: sticky;
+            top: 15px;
+            height: calc(100vh - 40px);
+            display: flex;
+            flex-direction: column;
+            box-sizing: border-box;
+        }
+        #wb-title {
+            color: #ffdd59;
+            margin-top: 0;
+            margin-bottom: 8px;
+            font-size: 1rem;
+            font-weight: bold;
+            text-align: center;
+        }
+        canvas {
+            background: #05c46b; /* กระดานสีเขียวชอล์ก */
+            border: 3px solid #04a758;
+            border-radius: 8px;
+            flex-grow: 1;
+            cursor: crosshair;
+        }
+        .wb-btn-group {
+            margin-top: 8px;
+            display: flex;
+            gap: 8px;
+        }
+        .wb-btn {
+            flex: 1;
+            padding: 8px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.85rem;
+        }
+        .btn-clear { background: #ff5e57; color: white; }
+        .btn-eraser { background: #ffa801; color: white; }
+        .btn-draw { background: #0fbcf9; color: white; }
+        
+        h1 { color: #1e3799; border-bottom: 4px solid #4a69bd; padding-bottom: 8px; margin-top: 0; font-size: 1.6rem; }
+        .q-box {
+            background: #f8f9fa;
+            border-left: 5px solid #4a69bd;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 0 8px 8px 0;
+        }
+        .q-title { font-size: 1.05rem; font-weight: bold; color: #2c3e50; margin-bottom: 10px; }
+        .options-list { display: flex; flex-direction: column; gap: 8px; }
+        .opt-card {
+            background: white;
+            border: 1px solid #dcdde1;
+            padding: 10px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.95rem;
+            transition: background 0.2s;
+        }
+        .opt-card:hover { background: #f1f2f6; }
+        
+        .ans-feedback {
+            margin-top: 12px;
+            padding: 12px;
+            border-radius: 6px;
+            display: none;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+        .is-correct { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .is-incorrect { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        
+        #btn-submit-quiz {
+            background: #10ac84;
+            color: white;
+            border: none;
+            padding: 12px;
+            font-size: 1.1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            width: 100%;
+            font-weight: bold;
+        }
+        #btn-submit-quiz:hover { background: #0f9673; }
+        
+        #summary-report {
+            display: none;
+            background: #f1f2f6;
+            border: 2px dashed #10ac84;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 25px;
+        }
+        .final-score { font-size: 1.6rem; font-weight: bold; color: #10ac84; text-align: center; margin-bottom: 15px; }
+        .analysis-card { background: white; padding: 15px; border-radius: 6px; border-top: 4px solid #ff9f43; }
+    </style>
+</head>
+<body>
+
+    <!-- ฝั่งซ้าย: ตัวข้อสอบ 70% -->
+    <div id="quiz-section">
+        <h1>✏️ แบบทดสอบความรู้เรื่อง "จำนวนเฉพาะ" สำหรับระดับชั้น ป.5</h1>
+        <p style="color: #57606f; font-size: 0.95rem; margin-bottom: 20px;">มาลองท้าทายตัวเองกันครับน้อง ๆ ค่อยๆ คิด ค่อยๆ ทดเลขในกระดานขวาได้เลยน้า!</p>
+
+        <form id="quiz-form">
+            <!-- ข้อ 1 -->
+            <div class="q-box" data-cat="def">
+                <div class="q-title">ข้อ 1. จำนวนเฉพาะมีลักษณะสำคัญอย่างไรตามนิยามคณิตศาสตร์ ป.5?</div>
+                <div class="options-list">
+                    <label class="opt-card"><input type="radio" name="q1" value="A"> ก. เป็นจำนวนคี่ที่ไม่มีเลขใดหารลงตัวเลย</label>
+                    <label class="opt-card"><input type="radio" name="q1" value="B"> ข. เป็นจำนวนนับที่มีตัวประกอบเพียง 2 ตัว คือ 1 และตัวมันเอง</label>
+                    <label class="opt-card"><input type="radio" name="q1" value="C"> ค. เป็นจำนวนนับที่มีตัวประกอบมากมายหลายตัว</label>
+                    <label class="opt-card"><input type="radio" name="q1" value="D"> ง. เป็นจำนวนคู่ที่หารด้วย 2 ลงตัวเสมอ</label>
+                </div>
+                <div class="ans-feedback" id="fb1"></div>
+            </div>
+
+            <!-- ข้อ 2 -->
+            <div class="q-box" data-cat="trick">
+                <div class="q-title">ข้อ 2. ตัวเลขในข้อใดต่อไปนี้ "ไม่ใช่" จำนวนเฉพาะ? (ระวังโดนหลอกน้า)</div>
+                <div class="options-list">
+                    <label class="opt-card"><input type="radio" name="q2" value="A"> ก. 1</label>
+                    <label class="opt-card"><input type="radio" name="q2" value="B"> ข. 2</label>
+                    <label class="opt-card"><input type="radio" name="q2" value="C"> ค. 3</label>
+                    <label class="opt-card"><input type="radio" name="q2" value="D"> ง. 5</label>
+                </div>
+                <div class="ans-feedback" id="fb2"></div>
+            </div>
+
+            <!-- ข้อ 3 -->
+            <div class="q-box" data-cat="even">
+                <div class="q-title">ข้อ 3. จำนวนคู่ในข้อใดต่อไปนี้ที่เป็น "จำนวนเฉพาะ"?</div>
+                <div class="options-list">
+                    <label class="opt-card"><input type="radio" name="q3" value="A"> ก. 0</label>
+                    <label class="opt-card"><input type="radio" name="q3" value="B"> ข. 2</label>
+                    <label class="opt-card"><input type="radio" name="q3" value="C"> ค. 4</label>
+                    <label class="opt-card"><input type="radio" name="q3" value="D"> ง. ไม่มีจำนวนคู่ตัวใดเลยที่เป็นจำนวนเฉพาะ</label>
+                </div>
+                <div class="ans-feedback" id="fb3"></div>
+            </div>
+
+            <!-- ข้อ 4 -->
+            <div class="q-box" data-cat="range">
+                <div class="q-title">ข้อ 4. ระหว่างเลข 1 ถึง 10 มีจำนวนเฉพาะอยู่ทั้งหมดกี่จำนวน? (ลองนับดูดีๆ นะครับ)</div>
+                <div class="options-list">
+                    <label class="opt-card"><input type="radio" name="q4" value="A"> ก. 3 จำนวน</label>
+                    <label class="opt-card"><input type="radio" name="q4" value="B"> ข. 4 จำนวน</label>
+                    <label class="opt-card"><input type="radio" name="q4" value="C"> ค. 5 จำนวน</label>
+                    <label class="opt-card"><input type="radio" name="q4" value="D"> ง. 6 จำนวน</label>
+                </div>
+                <div class="ans-feedback" id="fb4"></div>
+            </div>
+
+            <!-- ข้อ 5 -->
+            <div class="q-box" data-cat="trick">
+                <div class="q-title">ข้อ 5. ตัวเลขในข้อใดเป็น "จำนวนเฉพาะ" ทุกตัว?</div>
+                <div class="options-list">
+                    <label class="opt-card"><input type="radio" name="q5" value="A"> ก. 2, 4, 6</label>
+                    <label class="opt-card"><input type="radio" name="q5" value="B"> ข. 3, 5, 9</label>
+                    <label class="opt-card"><input type="radio" name="q5" value="C"> ค. 5, 7, 11</label>
+                    <label class="opt-card"><input type="radio" name="q5" value="D"> ง. 1, 2, 3</label>
+                </div>
+                <div class="ans-feedback" id="fb5"></div>
+            </div>
+
+            <!-- ข้อ 6 -->
+            <div class="q-box" data-cat="screening">
+                <div class="q-title">ข้อ 6. ทำไมเลข "15" จึง "ไม่เป็น" จำนวนเฉพาะ?</div>
+                <div class="options-list">
+                    <label class="opt-card"><input type="radio" name="q6" value="A"> ก. เพราะเป็นจำนวนคี่</label>
+                    <label class="opt-card"><input type="radio" name="q6" value="B"> ข. เพราะมีเลข 3 และ 5 ที่นำไปหาร 15 ได้ลงตัวด้วย ทำให้มีตัวประกอบมากกว่า 2 ตัว</label>
+                    <label class="opt-card"><input type="radio" name="q6" value="C"> ค. เพราะมันมีค่ามากกว่า 10</label>
+                    <label class="opt-card"><input type="radio" name="q6" value="D"> ง. เพราะไม่มีเลขอะไรหารมันลงตัวเลย</label>
+                </div>
+                <div class="ans-feedback" id="fb6"></div>
+            </div>
+
+            <!-- ข้อ 7 -->
+            <div class="q-box" data-cat="range">
+                <div class="q-title">ข้อ 7. จำนวนเฉพาะที่อยู่ถัดจากเลข 19 คือจำนวนใด?</div>
+                <div class="options-list">
+                    <label class="opt-card"><input type="radio" name="q7" value="A"> ก. 20</label>
+                    <label class="opt-card"><input type="radio" name="q7" value="B"> ข. 21</label>
+                    <label class="opt-card"><input type="radio" name="q7" value="C"> ค. 23</label>
+                    <label class="opt-card"><input type="radio" name="q7" value="D"> ง. 25</label>
+                </div>
+                <div class="ans-feedback" id="fb7"></div>
+            </div>
+
+            <!-- ข้อ 8 -->
+            <div class="q-box" data-cat="screening">
+                <div class="q-title">ข้อ 8. ตัวเลขใดต่อไปนี้เป็น "จำนวนเฉพาะ"? (ใช้สูตรลับสกรีนที่พี่สอนไปทดเลขดูนะ!)</div>
+                <div class="options-list">
+                    <label class="opt-card"><input type="radio" name="q8" value="A"> ก. 27</label>
+                    <label class="opt-card"><input type="radio" name="q8" value="B"> ข. 33</label>
+                    <label class="opt-card"><input type="radio" name="q8" value="C"> ค. 37</label>
+                    <label class="opt-card"><input type="radio" name="q8" value="D"> ง. 45</label>
+                </div>
+                <div class="ans-feedback" id="fb8"></div>
+            </div>
+
+            <!-- ข้อ 9 -->
+            <div class="q-box" data-cat="screening">
+                <div class="q-title">ข้อ 9. ตัวเลข "49" เป็นจำนวนเฉพาะหรือไม่ เพราะเหตุใด?</div>
+                <div class="options-list">
+                    <label class="opt-card"><input type="radio" name="q9" value="A"> ก. เป็น เพราะไม่มีใครหารลงตัวนอกจาก 1 และ 49</label>
+                    <label class="opt-card"><input type="radio" name="q9" value="B"> ข. ไม่เป็น เพราะเป็นจำนวนคู่</label>
+                    <label class="opt-card"><input type="radio" name="q9" value="C"> ค. ไม่เป็น เพราะมีสูตรคูณแม่ 7 ($7 \times 7 = 49$) หารได้ลงตัวพอดี</label>
+                    <label class="opt-card"><input type="radio" name="q9" value="D"> ง. เป็น เพราะลงท้ายด้วยเลข 9</label>
+                </div>
+                <div class="ans-feedback" id="fb9"></div>
+            </div>
+
+            <!-- ข้อ 10 -->
+            <div class="q-box" data-cat="applied">
+                <div class="q-title">ข้อ 10. ถ้านำจำนวนเฉพาะสองจำนวนคือ 3 และ 5 มาบวกกัน ผลลัพธ์ที่ได้จะเป็นจำนวนเฉพาะหรือไม่?</div>
+                <div class="options-list">
+                    <label class="opt-card"><input type="radio" name="q10" value="A"> ก. เป็น เพราะได้ผลรวมคือ 8 ซึ่งเป็นจำนวนเฉพาะ</label>
+                    <label class="opt-card"><input type="radio" name="q10" value="B"> ข. ไม่เป็น เพราะได้ผลรวมคือ 8 ซึ่งมีเลข 2 และ 4 หารลงตัวด้วย</label>
+                    <label class="opt-card"><input type="radio" name="q10" value="C"> ค. เป็น เพราะจำนวนเฉพาะบวกกันต้องได้จำนวนเฉพาะเสมอ</label>
+                    <label class="opt-card"><input type="radio" name="q10" value="D"> ง. ไม่เป็น เพราะได้ผลรวมคือ 15</label>
+                </div>
+                <div class="ans-feedback" id="fb10"></div>
+            </div>
+
+            <button type="button" id="btn-submit-quiz" onclick="processQuizGrade()">ตรวจคะแนนและวิเคราะห์จุดอ่อน</button>
+        </form>
+
+        <!-- โซนสรุปคะแนนและบทวิเคราะห์หลังส่งข้อสอบ -->
+        <div id="summary-report">
+            <div class="final-score" id="text-score-result"></div>
+            <div class="analysis-card">
+                <h3 style="margin-top:0; color: #d35400;">📊 พี่พระจอมเกล้าติวเตอร์สรุปจุดอ่อนให้:</h3>
+                <div id="text-analysis-detail"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ฝั่งขวา: กระดานทดเลข Whiteboard ขนาด 30% ตามสั่ง -->
+    <div id="whiteboard-section">
+        <div id="wb-title">📝 กระดานทดเลขชอล์กเขียว (30%)</div>
+        <canvas id="paint_board"></canvas>
+        <div class="wb-btn-group">
+            <button class="wb-btn btn-draw" onclick="setBoardMode('draw')">✏️ ปากกา</button>
+            <button class="wb-btn btn-eraser" onclick="setBoardMode('erase')">🧽 ยางลบ</button>
+            <button class="wb-btn btn-clear" onclick="clearBoardCanvas()">🗑️ ล้างกระดาน</button>
+        </div>
+    </div>
+
+    <script>
+        // --- ส่วนควบคุมกระดานทดเลขฝั่งขวา ---
+        const cv = document.getElementById('paint_board');
+        const context = cv.getContext('2d');
+        let activeDraw = false;
+        let currentMode = 'draw';
+
+        function adjustCanvasSize() {
+            cv.width = cv.parentElement.clientWidth - 30;
+            cv.height = cv.parentElement.clientHeight - 85;
+            clearBoardCanvas();
+        }
+
+        window.addEventListener('resize', adjustCanvasSize);
+        window.addEventListener('load', () => {
+            adjustCanvasSize();
+            setupDrawingEngine();
+        });
+
+        function setupDrawingEngine() {
+            context.lineWidth = 3;
+            context.lineCap = 'round';
+
+            const grabStart = (e) => {
+                activeDraw = true;
+                context.beginPath();
+                const boundary = cv.getBoundingClientRect();
+                const mx = (e.clientX || e.touches[0].clientX) - boundary.left;
+                const my = (e.clientY || e.touches[0].clientY) - boundary.top;
+                context.moveTo(mx, my);
+            };
+
+            const dragMove = (e) => {
+                if (!activeDraw) return;
+                e.preventDefault();
+                const boundary = cv.getBoundingClientRect();
+                const mx = (e.clientX || (e.touches && e.touches[0].clientX)) - boundary.left;
+                const my = (e.clientY || (e.touches && e.touches[0].clientY)) - boundary.top;
+                
+                if (currentMode === 'erase') {
+                    context.strokeStyle = '#05c46b'; // สีเดียวกับพื้นหลังกระดานเพื่อลบ
+                    context.lineWidth = 20;
+                } else {
+                    context.strokeStyle = '#ffffff'; // ใช้สีขาวชอล์กเขียน
+                    context.lineWidth = 3;
+                }
+                
+                context.lineTo(mx, my);
+                context.stroke();
+            };
+
+            const releaseEnd = () => activeDraw = false;
+
+            cv.addEventListener('mousedown', grabStart);
+            cv.addEventListener('mousemove', dragMove);
+            cv.addEventListener('mouseup', releaseEnd);
+            
+            cv.addEventListener('touchstart', grabStart);
+            cv.addEventListener('touchmove', dragMove);
+            cv.addEventListener('touchend', releaseEnd);
+        }
+
+        function setBoardMode(m) { currentMode = m; }
+        function clearBoardCanvas() {
+            context.fillStyle = '#05c46b';
+            context.fillRect(0, 0, cv.width, cv.height);
+        }
+
+        // --- คีย์เฉลยและคลังคำอธิบายแบบ Line by Line ---
+        const quizSolutions = {
+            q1: { core: "B", info: "ตรงตามนิยามเป๊ะ ๆ ครับ จำนวนเฉพาะต้องเป็นจำนวนนับที่มีค่ามากกว่า 1 และมีตัวประกอบเพียงสองตัวเท่านั้น คือเลข 1 และตัวมันเองครับ ตัวเลือกอื่นจึงยังไม่ใช่คำนิยามที่ถูกต้อง" },
+            q2: { core: "A", info: "เลข 1 เป็นหลุมพรางที่ใหญ่ที่สุดในระดับ ป.5 เลยครับ! เลข 1 ไม่ใช่จำนวนเฉพาะ เพราะมันมีตัวประกอบเพียงตัวเดียวคือตัวมันเอง (1) ในขณะที่นิยามกำหนดว่าต้องมี 2 ตัวพอดีครับ ส่วน 2, 3, 5 ล้วนมีตัวประกอบ 2 ตัวครบถ้วน" },
+            q3: { core: "B", info: "เลข 2 คือหนึ่งเดียวในโลกใบนี้ที่เป็นทั้งจำนวนคู่และเป็นจำนวนเฉพาะด้วยครับ เพราะมีแค่ 1 กับ 2 ที่หารมันลงตัว ส่วนจำนวนคู่ตัวอื่น ๆ เช่น 4 จะมีเลข 2 หารลงตัวเพิ่มขึ้นมา ทำให้มีตัวประกอบเกิน 2 ตัวเสมอครับ" },
+            q4: { core: "B", info: "มานับไปพร้อมกันในช่วงเลข 1 ถึง 10 ครับ: เลขที่เข้าเกณฑ์คือ 2, 3, 5, 7 รวมทั้งหมดมี 4 จำนวนพอดีครับ (อย่าเผลอนับเลข 1 หรือเลข 9 เข้ามาน้า แม่ 3 หาร 9 ลงตัวครับ)" },
+            q5: { core: "C", info: "พิจารณาข้อ ค. 5, 7, 11 ทุกตัวมีตัวประกอบแค่ 1 และตัวมันเอง จึงเป็นจำนวนเฉพาะทั้งหมด! ส่วนข้ออื่น ๆ มีตัวปลอมผสมอยู่ครับ เช่น ข. มี 9 (ไม่ใช่เฉพาะ), ก. มี 4 และ 6 (ไม่ใช่เฉพาะ), ง. มีเลข 1 (ไม่ใช่เฉพาะ)" },
+            q6: { core: "B", info: "เลข 15 นอกจะมี 1 และ 15 หารลงตัวแล้ว ถ้าเราท่องสูตรคูณจะพบว่า $3 \\times 5 = 15$ แปลว่ามีเลข 3 และเลข 5 คอยหารมันลงตัวด้วย ทำให้ตัวประกอบรวมมีตั้ง 4 ตัว (1, 3, 5, 15) จึงหมดสิทธิ์เป็นจำนวนเฉพาะครับ" },
+            q7: { core: "C", info: "ถัดจาก 19 ลองเช็คดูทีละตัวครับ: 20 เป็นเลขคู่ (ไม่ใช่), 21 มีแม่ 3 กับ 7 หารลงตัว (ไม่ใช่), 22 เป็นเลขคู่ (ไม่ใช่)... ตัวถัดไปที่ไม่มีใครหารลงตัวนอกจาก 1 กับตัวมันเองจึงเป็นเลข 23 ครับช้อยส์ข้อ ค." },
+            q8: { core: "C", info: "ข้อนี้ลองใช้ทริคสูตรคูณสกรีนครับ: 27 มีแม่ 3 หารลงตัว ($3 \\times 9$), 33 มีแม่ 3 หารลงตัว ($3 \\times 11$), 45 ลงท้ายด้วย 5 มีแม่ 5 หารลงตัวแน่นอน ดังนั้นเหลือเพียง 37 ตัวเดียวที่ไม่มีสูตรคูณแม่ไหนหารได้เลย จึงเป็นจำนวนเฉพาะครับ" },
+            q9: { core: "C", info: "เลข 49 หลายคนชอบคิดว่าเป็นเลขคี่น่าจะเป็นจำนวนเฉพาะแน่ ๆ แต่ถ้าเราแม่นสูตรคูณแม่ 7 จะรู้ทันทีว่า $7 \\times 7 = 49$ ทำให้มันมีเลข 7 เป็นตัวประกอบเพิ่มขึ้นมาอีกตัว จึงไม่เป็นจำนวนเฉพาะครับตอบข้อ ค." },
+            q10: { core: "B", info: "เมื่อเรานำ $3 + 5$ จะได้ผลลัพธ์เท่ากับ 8 ซึ่งเลข 8 เป็นจำนวนคู่ที่มีเลข 1, 2, 4, 8 หารลงตัว (มีตัวประกอบ 4 ตัว) ผลรวมนี้จึงไม่ใช่จำนวนเฉพาะครับ" }
+        };
+
+        function processQuizGrade() {
+            let totalCorrect = 0;
+            const categoryCounters = { 
+                "def": { hit: 0, max: 0 }, 
+                "trick": { hit: 0, max: 0 }, 
+                "even": { hit: 0, max: 0 }, 
+                "range": { hit: 0, max: 0 }, 
+                "screening": { hit: 0, max: 0 }, 
+                "applied": { hit: 0, max: 0 } 
+            };
+            
+            const quizForm = document.getElementById('quiz-form');
+            const qCards = document.querySelectorAll('.q-box');
+            
+            qCards.forEach((card, index) => {
+                const qNum = `q${index + 1}`;
+                const catGroup = card.getAttribute('data-cat');
+                categoryCounters[catGroup].max++;
+                
+                const studentSelection = quizForm.elements[qNum].value;
+                const feedbackDiv = document.getElementById(`fb${index + 1}`);
+                feedbackDiv.style.display = "block";
+                
+                if (studentSelection === quizSolutions[qNum].core) {
+                    totalCorrect++;
+                    categoryCounters[catGroup].hit++;
+                    feedbackDiv.className = "ans-feedback is-correct";
+                    feedbackDiv.innerHTML = `<strong>ถูกต้องเก่งมากครับ! 🎉</strong><br>${quizSolutions[qNum].info}`;
+                } else {
+                    feedbackDiv.className = "ans-feedback is-incorrect";
+                    feedbackDiv.innerHTML = `<strong>ยังไม่ถูกน้าข้อนี้ (เฉลยข้อ ${quizSolutions[qNum].core}) 📝</strong><br>${quizSolutions[qNum].info}`;
+                }
+            });
+
+            // เปิดแสดงกล่องคะแนนสรุป
+            document.getElementById('summary-report').style.display = "block";
+            document.getElementById('text-score-result').innerHTML = `🎉 น้องทำได้คะแนนรวม: ${totalCorrect} / 10 คะแนน 🎉`;
+
+            // วิเคราะห์และแนะนำจุดอ่อนให้นักเรียน ป.5
+            let adviceHTML = "<ul style='padding-left:20px; line-height:1.5;'>";
+            
+            if (categoryCounters["def"].hit < categoryCounters["def"].max) {
+                adviceHTML += `<li>🌱 <strong>เรื่องนิยามและเงื่อนไขพื้นฐาน:</strong> น้องยังสับสนความหมายของคำว่าตัวประกอบและจำนวนเฉพาะอยู่เล็กน้อย ให้จำง่าย ๆ ว่าต้องมีคนหารลงตัวแค่ 2 คนเท่านั้นนะคือ เลข 1 และตัวเองครับ</li>`;
+            }
+            if (categoryCounters["trick"].hit < categoryCounters["trick"].max) {
+                adviceHTML += `<li>⚠️ <strong>เรื่องหลุมพรางตัวเลขยอดฮิต:</strong> เกือบไปแล้ว! น้องยังโดนตัวเลขเจ้าเล่ห์อย่าง เลข 1 หรือเลข 9 หลอกอยู่ จำไว้แม่น ๆ เลยนะว่า <u>เลข 1 ไม่ใช่จำนวนเฉพาะ</u> เด็ดขาดเลยครับ</li>`;
+            }
+            if (categoryCounters["even"].hit < categoryCounters["even"].max) {
+                adviceHTML += `<li>2️⃣ <strong>เรื่องสมบัติของจำนวนคู่:</strong> อย่าลืมทริคที่พี่ให้ไปน้า จำนวนคู่ทั้งหมดบนโลกนี้ตกขอบหมด ยกเว้น **เลข 2** ตัวเดียวเท่านั้นที่เป็นพระเอกจำนวนเฉพาะคู่ครับ</li>`;
+            }
+            if (categoryCounters["range"].hit < categoryCounters["range"].max || categoryCounters["screening"].hit < categoryCounters["screening"].max) {
+                adviceHTML += `<li>🔍 <strong>เรื่องการตรวจหาและไล่นับตัวเลข:</strong> เวลาเจอเลขคี่เยอะ ๆ เช่น 27 หรือ 49 แนะนำให้ใช้กระดานทดลองเอาแม่ 3 หรือแม่ 7 ไปหารดูก่อนเสมอ ถ้าท่องสูตรคูณเจอแปลว่าไม่ใช่จำนวนเฉพาะครับ</li>`;
+            }
+            if (categoryCounters["applied"].hit < categoryCounters["applied"].max) {
+                adviceHTML += `<li>🧩 <strong>เรื่องการคิดขั้นประยุกต์:</strong> เวลาโจทย์สั่งให้เอามาบวกหรือลบกัน น้องต้องคิดหาผลลัพธ์สุดท้ายออกมาก่อน (อย่างเช่นได้ 8) แล้วค่อยเอากลุ่มผลลัพธ์นั้นมาเช็คนิยามใหม่อีกรอบน้า อย่าพึ่งรีบด่วนสรุปครับ</li>`;
+            }
+            
+            if (totalCorrect === 10) {
+                adviceHTML += `<li>🏆 <strong>ยอดเยี่ยมระดับเหรียญทอง!:</strong> น้องเก่งมาก ๆ ครับ พื้นฐานเรื่องจำนวนเฉพาะแน่นเป๊ะไม่มีที่ติเลย พร้อมที่จะเติบโตไปเรียนเรื่องการหา ห.ร.ม. และ ค.ร.น. ต่อได้อย่างสบายหายห่วงแล้วครับ!</li>`;
+            }
+            
+            adviceHTML += "</ul>";
+            document.getElementById('text-analysis-detail').innerHTML = adviceHTML;
+            
+            // เลื่อนหน้าจอพาลงมาดูคะแนน
+            document.getElementById('summary-report').scrollIntoView({ behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>
