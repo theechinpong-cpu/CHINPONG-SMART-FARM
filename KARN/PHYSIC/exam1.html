@@ -1,53 +1,65 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-<meta charset="UTF-8">
-<style>
-    body { font-family: sans-serif; padding: 20px; background: #f4f7f6; }
-    .question-container { background: #fff; padding: 20px; margin-bottom: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-    .option { display: block; margin: 10px 0; cursor: pointer; padding: 10px; border: 1px solid #ddd; border-radius: 4px; }
-    .correct { background-color: #d4edda; border-color: #c3e6cb; }
-    .wrong { background-color: #f8d7da; border-color: #f5c6cb; }
-    .explanation { display: none; margin-top: 10px; font-size: 0.9em; color: #333; }
-</style>
+    <meta charset="UTF-8">
+    <title>แบบฝึกหัดวิทยาศาสตร์กายภาพ 2: พระจอมเกล้าติวเตอร์</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; padding: 20px; line-height: 1.6; }
+        .container { max-width: 800px; margin: auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        h2 { color: #2c3e50; border-bottom: 3px solid #3498db; padding-bottom: 10px; }
+        .question-container { margin-bottom: 25px; padding: 20px; border: 1px solid #e1e1e1; border-radius: 8px; }
+        .options-list { list-style: none; padding: 0; }
+        .option-btn { display: block; width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #bdc3c7; border-radius: 5px; cursor: pointer; text-align: left; background: #fff; transition: 0.3s; }
+        .option-btn:hover { background: #ecf0f1; }
+        .correct { background-color: #27ae60 !important; color: white; border-color: #27ae60; }
+        .wrong { background-color: #c0392b !important; color: white; border-color: #c0392b; }
+        .feedback { margin-top: 10px; padding: 10px; display: none; background: #f9f9f9; border-left: 4px solid #3498db; }
+        .secret-tip { font-weight: bold; color: #e67e22; margin-top: 5px; }
+    </style>
 </head>
 <body>
 
-<h2>แบบฝึกหัดทบทวน: การเคลื่อนที่และแรง</h2>
-
-<div id="quiz"></div>
+<div class="container">
+    <h2>แบบฝึกหัด: การเคลื่อนที่และแรง</h2>
+    <div id="quiz-area"></div>
+</div>
 
 <script>
-const questions = [
-    { q: "นักเรียนวิ่งรอบสนามวงกลมได้ 1 รอบ พอดี การกระจัดมีค่าเท่าใด", o: ["เท่ากับเส้นรอบวง", "เท่ากับรัศมี", "เป็นศูนย์", "มากกว่ารัศมี"], a: 2, e: "เพราะจุดเริ่มต้นและจุดสุดท้ายอยู่ที่เดียวกัน การกระจัดจึงเป็นศูนย์เสมอ", tip: "จำไว้ว่า การกระจัด = จุดปลาย - จุดต้น" },
-    { q: "ข้อใดเป็นปริมาณเวกเตอร์ทั้งหมด", o: ["ระยะทาง อัตราเร็ว", "การกระจัด ความเร็ว", "มวล เวลา", "อุณหภูมิ งาน"], a: 1, e: "การกระจัดและความเร็วต้องระบุทิศทางด้วย จึงเป็นปริมาณเวกเตอร์", tip: "เวกเตอร์ = ขนาด + ทิศทาง" },
-    { q: "นาย ก เดินไปทางทิศเหนือ 4 เมตร แล้วเดินไปทางทิศตะวันออก 3 เมตร เขาจะมีการกระจัดเท่าใด", o: ["7 เมตร", "5 เมตร", "1 เมตร", "12 เมตร"], a: 1, e: "ใช้ทฤษฎีบทพีทาโกรัส √4^2 + 3^2 = 5 เมตร", tip: "วาดรูปสามเหลี่ยมมุมฉากจะช่วยให้เห็นภาพชัดขึ้น" },
-    { q: "อัตราเร็วเฉลี่ย คำนวณอย่างไร", o: ["ระยะทางรวม / เวลาทั้งหมด", "การกระจัดรวม / เวลาทั้งหมด", "ความเร็วต้น + ความเร็วปลาย / 2", "การเปลี่ยนแปลงตำแหน่ง / เวลา"], a: 0, e: "อัตราเร็วใช้ระยะทางทั้งหมดที่เคลื่อนที่จริง", tip: "อัตราเร็วใช้สเกลาร์ ความเร็วใช้เวกเตอร์" },
-    { q: "หากเข็มไมล์รถยนต์บอก 80 km/h สิ่งนี้คืออะไร", o: ["อัตราเร็วขณะหนึ่ง", "ความเร็วเฉลี่ย", "การกระจัด", "ความเร่ง"], a: 0, e: "เป็นอัตราเร็วในขณะที่รถกำลังเคลื่อนที่ผ่านจุดนั้น", tip: "ขณะหนึ่ง = ณ เวลานั้นเป๊ะๆ" },
-    { q: "เครื่องมือใดเหมาะที่สุดในการวัดมวลของยา 1 เม็ด", o: ["เครื่องชั่งสปริง", "เครื่องชั่งดิจิทัลละเอียดสูง", "ไม้บรรทัด", "ถ้วยตวง"], a: 1, e: "มวลของยาเม็ดมีค่าน้อยมาก ต้องใช้เครื่องชั่งที่มีความละเอียดสูง", tip: "เลือกเครื่องมือให้เหมาะกับสเกลของสิ่งที่จะวัด" },
-    { q: "ปริมาณที่ใช้บอกการเปลี่ยนแปลงตำแหน่งของวัตถุเทียบกับจุดอ้างอิงคือ", o: ["ระยะทาง", "การกระจัด", "ความเร็ว", "แรง"], a: 1, e: "การกระจัดเป็นการบอกระยะและทิศทางที่เปลี่ยนไปจากจุดเดิม", tip: "เน้นการเปลี่ยนตำแหน่ง" },
-    { q: "หากวัตถุเคลื่อนที่เป็นเส้นตรงโดยไม่เปลี่ยนทิศทาง ระยะทางจะเท่ากับข้อใด", o: ["เป็นศูนย์", "น้อยกว่าการกระจัด", "มากกว่าการกระจัด", "เท่ากับการกระจัด"], a: 3, e: "เมื่อทิศทางเดียว เส้นทางจริงกับเส้นตรงที่ลากผ่านจะทับกันพอดี", tip: "เส้นตรงคือทางที่สั้นที่สุด" },
-    { q: "รถคันหนึ่งวิ่ง 100 เมตร ในเวลา 10 วินาที จะมีอัตราเร็วเท่าใด", o: ["5 m/s", "10 m/s", "20 m/s", "1000 m/s"], a: 1, e: "จากสูตร v = s/t = 100/10 = 10 m/s", tip: "อย่าลืมตรวจสอบหน่วยของโจทย์" },
-    { q: "หน่วยของกระแสไฟฟ้าในข้อใดถูกต้อง", o: ["กิโลกรัม", "แอมแปร์", "วินาที", "เมตร"], a: 1, e: "หน่วยมาตรฐานของกระแสไฟฟ้าคือ แอมแปร์ (A)", tip: "ทบทวนหน่วย SI พื้นฐานให้แม่น" }
+const quizData = [
+    { q: "นักเรียนวิ่งรอบสนามวงกลมได้ 1 รอบ การกระจัดมีค่าเท่าใด", options: ["เส้นรอบวง", "รัศมี", "เป็นศูนย์", "มากกว่ารัศมี"], a: 2, tip: "จุดเริ่มและจุดจบอยู่ที่เดิม" },
+    { q: "ข้อใดเป็นปริมาณเวกเตอร์ทั้งหมด", options: ["ระยะทาง, อัตราเร็ว", "การกระจัด, ความเร็ว", "มวล, เวลา", "อุณหภูมิ, งาน"], a: 1, tip: "เวกเตอร์ต้องมีทิศทาง" },
+    { q: "เดินไปเหนือ 4 ม. แล้วตะวันออก 3 ม. จะมีการกระจัดเท่าใด", options: ["7 เมตร", "5 เมตร", "1 เมตร", "12 เมตร"], a: 1, tip: "ใช้ทฤษฎีบทพีทาโกรัส" },
+    { q: "อัตราเร็วเฉลี่ย คำนวณอย่างไร", options: ["ระยะทางรวม/เวลา", "การกระจัดรวม/เวลา", "ความเร็วต้น+ปลาย/2", "การเปลี่ยนตำแหน่ง/เวลา"], a: 0, tip: "อัตราเร็วใช้สเกลาร์" },
+    { q: "เข็มไมล์รถยนต์บอกค่าใด", options: ["อัตราเร็วขณะหนึ่ง", "ความเร็วเฉลี่ย", "การกระจัด", "ความเร่ง"], a: 0, tip: "ดูที่ขณะนั้นเป๊ะๆ" },
+    { q: "เครื่องมือวัดมวลของยา 1 เม็ด ที่เหมาะสมที่สุด", options: ["เครื่องชั่งสปริง", "เครื่องชั่งดิจิทัลละเอียด", "ไม้บรรทัด", "ถ้วยตวง"], a: 1, tip: "มวลน้อยมากต้องละเอียดสูง" },
+    { q: "ปริมาณที่บอกการเปลี่ยนตำแหน่งเทียบจุดอ้างอิง", options: ["ระยะทาง", "การกระจัด", "ความเร็ว", "แรง"], a: 1, tip: "ตำแหน่งที่เปลี่ยนไป" },
+    { q: "วัตถุเคลื่อนที่เป็นเส้นตรงไม่เปลี่ยนทิศ ระยะทางจะมีค่าอย่างไร", options: ["เป็นศูนย์", "น้อยกว่าการกระจัด", "มากกว่าการกระจัด", "เท่ากับการกระจัด"], a: 3, tip: "ทางสั้นสุดคือเส้นตรง" },
+    { q: "รถวิ่ง 100 เมตร ใน 10 วินาที มีอัตราเร็วเท่าใด", options: ["5 m/s", "10 m/s", "20 m/s", "1000 m/s"], a: 1, tip: "v = s/t" },
+    { q: "หน่วย SI ของกระแสไฟฟ้าคือข้อใด", options: ["กิโลกรัม", "แอมแปร์", "วินาที", "เมตร"], a: 1, tip: "หน่วยพื้นฐานไฟฟ้า" }
 ];
 
-const quizDiv = document.getElementById('quiz');
-questions.forEach((item, index) => {
-    let qDiv = document.createElement('div');
-    qDiv.className = 'question-container';
-    qDiv.innerHTML = `<strong>${index + 1}. ${item.q} <span style="color:red;">(Clue: ${item.tip})</span></strong>`;
-    item.o.forEach((opt, oIndex) => {
+const area = document.getElementById('quiz-area');
+quizData.forEach((item, i) => {
+    let div = document.createElement('div');
+    div.className = 'question-container';
+    div.innerHTML = `<p><strong>ข้อที่ ${i+1}: ${item.q}</strong> <span style="color:red;">(Clue: ${item.tip})</span></p>`;
+    item.options.forEach((opt, oIdx) => {
         let btn = document.createElement('button');
-        btn.className = 'option';
+        btn.className = 'option-btn';
         btn.textContent = opt;
-        btn.onclick = () => {
-            if(oIndex === item.a) { btn.className += ' correct'; } else { btn.className += ' wrong'; }
-            qDiv.querySelector('.explanation').style.display = 'block';
+        btn.onclick = (e) => {
+            let parent = e.target.parentElement;
+            let btns = parent.querySelectorAll('.option-btn');
+            btns.forEach(b => b.disabled = true);
+            if(oIdx === item.a) { btn.classList.add('correct'); } 
+            else { btn.classList.add('wrong'); btns[item.a].classList.add('correct'); }
+            parent.querySelector('.feedback').style.display = 'block';
         };
-        qDiv.appendChild(btn);
+        div.appendChild(btn);
     });
-    qDiv.innerHTML += `<div class="explanation">เฉลย: ${item.e}</div>`;
-    quizDiv.appendChild(qDiv);
+    div.innerHTML += `<div class="feedback">เฉลยถูกต้อง! 
+                      <div class="secret-tip">Tutor's Secret Tip: ฝึกวาดเวกเตอร์เสมอจะแม่นยำขึ้นครับ</div></div>`;
+    area.appendChild(div);
 });
 </script>
 </body>
