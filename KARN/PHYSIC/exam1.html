@@ -1,390 +1,53 @@
 <!DOCTYPE html>
-<html lang="th">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>แบบทดสอบ วิทยาศาสตร์กายภาพ 2: การเคลื่อนที่และแรง</title>
-    <style>
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; line-height: 1.6; padding: 20px; background-color: #f4f7f6; color: #333; }
-        .header { text-align: center; background: #2c3e50; color: #fff; padding: 20px; border-radius: 10px; margin-bottom: 30px; }
-        .question-container { background: #fff; padding: 20px; margin-bottom: 20px; border-radius: 8px; border-left: 6px solid #3498db; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        .clue { color: #e74c3c; font-weight: bold; }
-        .answer-box { display: none; margin-top: 15px; padding: 15px; background: #e8f6f3; border-left: 5px solid #27ae60; border-radius: 4px; }
-        button { background: #3498db; color: white; border: none; padding: 10px 20px; cursor: pointer; border-radius: 5px; font-weight: bold; transition: 0.3s; }
-        button:hover { background: #2980b9; }
-        ul { list-style-type: none; padding: 0; }
-        li { margin: 5px 0; }
-    </style>
+<style>
+    body { font-family: sans-serif; padding: 20px; }
+    .question-container { margin-bottom: 20px; border: 1px solid #ccc; padding: 15px; border-radius: 8px; }
+    .feedback { margin-top: 10px; font-weight: bold; }
+    .correct { color: green; }
+    .incorrect { color: red; }
+</style>
 </head>
 <body>
+    <h2>พระจอมเกล้าติวเตอร์: แบบทดสอบ Unit 1</h2>
+    <div id="quiz"></div>
 
-<div class="header">
-    <h1>พระจอมเกล้าติวเตอร์</h1>
-    <h3>แบบทดสอบการเคลื่อนที่และแรง (ปรนัย 10 ข้อ)</h3>
-</div>
+    <script>
+        const questions = [
+            { id: 1, q: "การวัดที่ดีที่สุดควรมีลักษณะอย่างไร?", a: ["มีตัวเลขเท่านั้น", "มีหน่วยที่ชัดเจนและแม่นยำ", "เป็นการประมาณค่า", "ไม่มีข้อใดถูก"], correct: 1, tip: "หน่วยคือหัวใจของการวัดครับ!" },
+            { id: 2, q: "จุดอ้างอิง (Reference Point) มีไว้เพื่ออะไร?", a: ["เพื่อความสวยงาม", "เพื่อบอกว่าวัตถุเคลื่อนที่หรือไม่", "เพื่อกำหนดทิศทางลม", "เพื่อวัดอุณหภูมิ"], correct: 1, tip: "จุดอ้างอิงต้องอยู่นิ่งครับ" },
+            { id: 3, q: "ระยะทาง (Distance) แตกต่างจากการกระจัด (Displacement) อย่างไร?", a: ["ระยะทางเป็นเวกเตอร์", "การกระจัดคือเส้นทางจริงที่เดิน", "ระยะทางคือเส้นทางจริง การกระจัดคือเส้นตรงสั้นที่สุด", "ทั้งสองเหมือนกัน"], correct: 2, tip: "นึกถึงเส้นทางเดินจริง vs ทางลัดครับ" },
+            { id: 4, q: "หากเดินเป็นวงกลม 1 รอบ การกระจัดจะเป็นเท่าใด?", a: ["มากกว่าศูนย์", "เท่ากับเส้นรอบวง", "เท่ากับศูนย์", "หาค่าไม่ได้"], correct: 2, tip: "จุดเริ่มกับจุดจบอยู่ที่เดียวกัน การกระจัดคือ 0" },
+            { id: 5, q: "ปริมาณใดเป็นปริมาณเวกเตอร์?", a: ["ระยะทาง", "อัตราเร็ว", "การกระจัด", "เวลา"], correct: 2, tip: "เวกเตอร์ต้องมีทั้งขนาดและทิศทาง" },
+            { id: 6, q: "ความเร็วเฉลี่ย คำนวณจากสูตรใด?", a: ["ระยะทาง / เวลา", "การกระจัด / เวลา", "ระยะทาง x เวลา", "มวล x ความเร่ง"], correct: 1, tip: "ความเร็วคู่กับการกระจัดครับ" },
+            { id: 7, q: "กราฟตำแหน่ง-เวลา ความชันของกราฟแสดงถึงอะไร?", a: ["ระยะทาง", "ความเร่ง", "ความเร็ว", "เวลา"], correct: 2, tip: "ความชัน = $\Delta y / \Delta x$ = ตำแหน่ง / เวลา" },
+            { id: 8, q: "หน่วยของมวลในระบบ SI คืออะไร?", a: ["กรัม", "มิลลิกรัม", "กิโลกรัม", "นิวตัน"], correct: 2, tip: "อย่าลืม kg นะครับ" },
+            { id: 9, q: "หากวัตถุเคลื่อนที่ด้วยความเร็วคงที่ กราฟตำแหน่ง-เวลาจะเป็นอย่างไร?", a: ["เส้นโค้ง", "เส้นตรงเฉียง", "เส้นดิ่ง", "กราฟรูปตัว U"], correct: 1, tip: "ความเร็วคงที่ = ความชันคงที่" },
+            { id: 10, q: "อัตราเร็วเฉลี่ย ต่างจาก ความเร็วเฉลี่ย อย่างไร?", a: ["อัตราเร็วไม่มีทิศทาง", "อัตราเร็วใช้การกระจัด", "ความเร็วไม่มีทิศทาง", "ไม่มีข้อใดถูก"], correct: 0, tip: "อัตราเร็วเป็นสเกลาร์ครับ" }
+        ];
 
-<script>
-    function toggleAnswer(id) {
-        var x = document.getElementById("answer" + id);
-        x.style.display = (x.style.display === "block") ? "none" : "block";
-    }
-</script>
+        function checkAnswer(id, selected, correct, tip) {
+            const container = document.getElementById('q'+id);
+            const feedback = document.createElement('div');
+            feedback.className = 'feedback';
+            if (selected == correct) {
+                feedback.innerHTML = '<span class="correct">ถูกต้อง!</span><br>Tutor\'s Secret Tip: ' + tip;
+            } else {
+                feedback.innerHTML = '<span class="incorrect">ผิดครับ!</span><br>เฉลย: ข้อ ' + (correct + 1) + '<br>Tutor\'s Secret Tip: ' + tip;
+            }
+            container.appendChild(feedback);
+        }
 
-<div class="question-container">
-    <p>1. ปริมาณใดต่อไปนี้เป็นปริมาณเวกเตอร์ทั้งหมด? <br> <span class="clue">(Clue: ปริมาณเวกเตอร์ต้องระบุทั้งขนาดและทิศทาง)</span></p>
-    <ul>
-        <li>ก. ระยะทาง, อัตราเร็ว</li>
-        <li>ข. การกระจัด, ความเร็ว</li>
-        <li>ค. มวล, อุณหภูมิ</li>
-        <li>ง. เวลา, ระยะทาง</li>
-    </ul>
-    <button onclick="toggleAnswer(1)">ดูเฉลย</button>
-    <div id="answer1" class="answer-box"><strong>เฉลย: ข. การกระจัด, ความเร็ว</strong><br><em>Tutor's Secret Tip:</em> เวกเตอร์ต้องมี "ทิศทาง" กำกับเสมอ ส่วนสเกลาร์บอกแค่ขนาดครับ</div>
-</div>
-
-<div class="question-container">
-    <p>2. การวัดมวลของยา 1 เม็ด ควรใช้เครื่องมือใดที่เหมาะสมที่สุด? <br> <span class="clue">(Clue: ยามีมวลน้อยมาก หน่วยเป็น mg)</span></p>
-    <ul>
-        <li>ก. ตาชั่งสปริง</li>
-        <li>ข. เครื่องชั่งดิจิทัลความละเอียดสูง</li>
-        <li>ค. ไม้เมตร</li>
-        <li>ง. เทอร์มอมิเตอร์</li>
-    </ul>
-    <button onclick="toggleAnswer(2)">ดูเฉลย</button>
-    <div id="answer2" class="answer-box"><strong>เฉลย: ข. เครื่องชั่งดิจิทัลความละเอียดสูง</strong><br><em>Tutor's Secret Tip:</em> ความละเอียดของเครื่องมือต้องสัมพันธ์กับปริมาณที่ต้องการวัดครับ</div>
-</div>
-
-<div class="question-container">
-    <p>3. หากวัตถุเคลื่อนที่ครบ 1 รอบของวงกลม การกระจัดจะเป็นเท่าใด? <br> <span class="clue">(Clue: การกระจัดคือเส้นตรงจากจุดเริ่มถึงจุดจบ)</span></p>
-    <ul>
-        <li>ก. 2πr</li>
-        <li>ข. πr</li>
-        <li>ค. 0</li>
-        <li>ง. r</li>
-    </ul>
-    <button onclick="toggleAnswer(3)">ดูเฉลย</button>
-    <div id="answer3" class="answer-box"><strong>เฉลย: ค. 0</strong><br><em>Tutor's Secret Tip:</em> การกลับมาที่จุดเริ่มต้นทำให้การกระจัดเป็นศูนย์เสมอครับ</div>
-</div>
-
-<div class="question-container">
-    <p>4. กราฟตำแหน่ง-เวลา ถ้าเส้นกราฟเป็นเส้นตรงขนานกับแกนเวลา หมายความว่าอย่างไร? <br> <span class="clue">(Clue: ตำแหน่งไม่เปลี่ยนแปลงเมื่อเวลาผ่านไป)</span></p>
-    <ul>
-        <li>ก. เคลื่อนที่ด้วยความเร็วคงที่</li>
-        <li>ข. เคลื่อนที่ด้วยความเร่ง</li>
-        <li>ค. วัตถุหยุดนิ่ง</li>
-        <li>ง. วัตถุเคลื่อนที่ถอยหลัง</li>
-    </ul>
-    <button onclick="toggleAnswer(4)">ดูเฉลย</button>
-    <div id="answer4" class="answer-box"><strong>เฉลย: ค. วัตถุหยุดนิ่ง</strong><br><em>Tutor's Secret Tip:</em> กราฟแนวราบแสดงว่าตำแหน่ง (y) เท่าเดิมตลอดเวลา</div>
-</div>
-
-<div class="question-container">
-    <p>5. รถยนต์เคลื่อนที่ได้ 120 km ในเวลา 2 ชั่วโมง อัตราเร็วเฉลี่ยเป็นเท่าใด? <br> <span class="clue">(Clue: อัตราเร็ว = ระยะทาง / เวลา)</span></p>
-    <ul>
-        <li>ก. 50 km/h</li>
-        <li>ข. 60 km/h</li>
-        <li>ค. 120 km/h</li>
-        <li>ง. 240 km/h</li>
-    </ul>
-    <button onclick="toggleAnswer(5)">ดูเฉลย</button>
-    <div id="answer5" class="answer-box"><strong>เฉลย: ข. 60 km/h</strong><br><em>Tutor's Secret Tip:</em> สูตรพื้นฐานที่ต้องแม่น คือ ระยะทางตั้ง หารด้วย เวลาที่ใช้ครับ</div>
-</div>
-
-<div class="question-container">
-    <p>6. หน่วย SI ของการกระจัดคือข้อใด? <br> <span class="clue">(Clue: หน่วยมาตรฐานสากลของความยาว)</span></p>
-    <ul>
-        <li>ก. กิโลเมตร</li>
-        <li>ข. เซนติเมตร</li>
-        <li>ค. เมตร</li>
-        <li>ง. มิลลิเมตร</li>
-    </ul>
-    <button onclick="toggleAnswer(6)">ดูเฉลย</button>
-    <div id="answer6" class="answer-box"><strong>เฉลย: ค. เมตร</strong><br><em>Tutor's Secret Tip:</em> ในวิชาฟิสิกส์ต้องแปลงหน่วยให้เป็นเมตร (m) ก่อนคำนวณเสมอ</div>
-</div>
-
-<div class="question-container">
-    <p>7. "ความเร่ง" หมายถึงอะไร? <br> <span class="clue">(Clue: การเปลี่ยนแปลงความเร็วในหนึ่งหน่วยเวลา)</span></p>
-    <ul>
-        <li>ก. อัตราการเปลี่ยนแปลงตำแหน่ง</li>
-        <li>ข. อัตราการเปลี่ยนแปลงความเร็ว</li>
-        <li>ค. ระยะทางทั้งหมด</li>
-        <li>ง. การกระจัดรวม</li>
-    </ul>
-    <button onclick="toggleAnswer(7)">ดูเฉลย</button>
-    <div id="answer7" class="answer-box"><strong>เฉลย: ข. อัตราการเปลี่ยนแปลงความเร็ว</strong><br><em>Tutor's Secret Tip:</em> ความเร็วที่เปลี่ยนไป (เร็วขึ้นหรือช้าลง) หารด้วยเวลา คือความเร่งครับ</div>
-</div>
-
-<div class="question-container">
-    <p>8. กราฟตำแหน่ง-เวลาที่เป็นเส้นโค้งหงายขึ้น บอกถึงสถานะใด? <br> <span class="clue">(Clue: ความชันของกราฟที่เพิ่มขึ้นเรื่อยๆ)</span></p>
-    <ul>
-        <li>ก. ความเร็วคงที่</li>
-        <li>ข. ความเร็วลดลง</li>
-        <li>ค. วัตถุมีความเร่ง</li>
-        <li>ง. วัตถุหยุดนิ่ง</li>
-    </ul>
-    <button onclick="toggleAnswer(8)">ดูเฉลย</button>
-    <div id="answer8" class="answer-box"><strong>เฉลย: ค. วัตถุมีความเร่ง</strong><br><em>Tutor's Secret Tip:</em> ความชันที่เพิ่มขึ้นหมายถึงความเร็วที่เพิ่มขึ้น ซึ่งคือการมีความเร่งครับ</div>
-</div>
-
-<div class="question-container">
-    <p>9. แรงลัพธ์ในหน่วย SI มีหน่วยเป็นอะไร? <br> <span class="clue">(Clue: หน่วยที่ให้เกียรติแก่เซอร์ไอแซก นิวตัน)</span></p>
-    <ul>
-        <li>ก. จูล</li>
-        <li>ข. วัตต์</li>
-        <li>ค. นิวตัน</li>
-        <li>ง. ปาสคาล</li>
-    </ul>
-    <button onclick="toggleAnswer(9)">ดูเฉลย</button>
-    <div id="answer9" class="answer-box"><strong>เฉลย: ค. นิวตัน</strong><br><em>Tutor's Secret Tip:</em> แรง = มวล × ความเร่ง (kg·m/s²) มีชื่อเรียกเฉพาะว่า นิวตัน (N)</div>
-</div>
-
-<div class="question-container">
-    <p>10. ถ้านักเรียนเดินไปทางทิศเหนือ 3 เมตร แล้วเดินไปทางทิศตะวันออก 4 เมตร ระยะทางรวมเป็นกี่เมตร? <br> <span class="clue">(Clue: ระยะทางคือผลรวมของเส้นทางที่เดินจริง)</span></p>
-    <ul>
-        <li>ก. 3 เมตร</li>
-        <li>ข. 4 เมตร</li>
-        <li>ค. 5 เมตร</li>
-        <li>ง. 7 เมตร</li>
-    </ul>
-    <button onclick="toggleAnswer(10)">ดูเฉลย</button>
-    <div id="answer10" class="answer-box"><strong>เฉลย: ง. 7 เมตร</strong><br><em>Tutor's Secret Tip:</em> ระยะทางเป็นสเกลาร์ เอาความยาวเส้นทางมาบวกกันตรงๆ ได้เลยครับ</div>
-</div>
-<div class="question-container">
-    <p>11. หากนักเรียนเดินไปทางทิศเหนือ 3 เมตร แล้วเดินไปทางทิศตะวันออก 4 เมตร การกระจัดเป็นกี่เมตร? <br> <span class="clue">(Clue: การกระจัดคือเส้นตรงจากจุดเริ่มถึงจุดสิ้นสุด ใช้ทฤษฎีบทพีทาโกรัส)</span></p>
-    <ul>
-        <li>ก. 1 เมตร</li>
-        <li>ข. 5 เมตร</li>
-        <li>ค. 7 เมตร</li>
-        <li>ง. 12 เมตร</li>
-    </ul>
-    <button onclick="toggleAnswer(11)">ดูเฉลย</button>
-    <div id="answer11" class="answer-box"><strong>เฉลย: ข. 5 เมตร</strong><br><em>Tutor's Secret Tip:</em> ใช้สูตร $c = \sqrt{a^2 + b^2} = \sqrt{3^2 + 4^2} = 5$ ครับ</div>
-</div>
-
-<div class="question-container">
-    <p>12. ปริมาณใดที่เปลี่ยนไปเมื่อรถยนต์เลี้ยวโค้งด้วยอัตราเร็วคงที่? <br> <span class="clue">(Clue: ความเร็วเป็นปริมาณเวกเตอร์ประกอบด้วยขนาดและทิศทาง)</span></p>
-    <ul>
-        <li>ก. ขนาดของความเร็ว</li>
-        <li>ข. อัตราเร็ว</li>
-        <li>ค. ทิศทางของการเคลื่อนที่</li>
-        <li>ง. ระยะทาง</li>
-    </ul>
-    <button onclick="toggleAnswer(12)">ดูเฉลย</button>
-    <div id="answer12" class="answer-box"><strong>เฉลย: ค. ทิศทางของการเคลื่อนที่</strong><br><em>Tutor's Secret Tip:</em> แม้อัตราเร็ว (ขนาด) จะเท่าเดิม แต่เมื่อทิศเปลี่ยน "ความเร็ว" ก็ถือว่าเปลี่ยนครับ</div>
-</div>
-
-<div class="question-container">
-    <p>13. ถ้ากราฟตำแหน่ง-เวลาเป็นเส้นตรงที่ลาดชันลง หมายความว่าอย่างไร? <br> <span class="clue">(Clue: ความชันของกราฟคือความเร็ว)</span></p>
-    <ul>
-        <li>ก. วัตถุหยุดนิ่ง</li>
-        <li>ข. วัตถุเคลื่อนที่ไปข้างหน้าด้วยความเร็วเพิ่มขึ้น</li>
-        <li>ค. วัตถุเคลื่อนที่กลับทิศทาง (ย้อนกลับจุดเริ่มต้น)</li>
-        <li>ง. วัตถุมีความเร่งเป็นบวก</li>
-    </ul>
-    <button onclick="toggleAnswer(13)">ดูเฉลย</button>
-    <div id="answer13" class="answer-box"><strong>เฉลย: ค. วัตถุเคลื่อนที่กลับทิศทาง (ย้อนกลับจุดเริ่มต้น)</strong><br><em>Tutor's Secret Tip:</em> ความชันลบ หมายถึงความเร็วมีทิศตรงข้ามกับที่กำหนดไว้ตอนแรกครับ</div>
-</div>
-
-<div class="question-container">
-    <p>14. แรงเสียดทานสถิต (Static Friction) มีคุณสมบัติอย่างไร? <br> <span class="clue">(Clue: แรงเสียดทานที่เกิดขึ้นขณะวัตถุยังไม่เคลื่อนที่)</span></p>
-    <ul>
-        <li>ก. มีค่าคงที่เสมอ</li>
-        <li>ข. มีค่ามากกว่าแรงเสียดทานจลน์เสมอ</li>
-        <li>ค. แปรผันตามแรงที่มากระทำจนถึงขีดจำกัด</li>
-        <li>ง. ไม่มีทิศทาง</li>
-    </ul>
-    <button onclick="toggleAnswer(14)">ดูเฉลย</button>
-    <div id="answer14" class="answer-box"><strong>เฉลย: ค. แปรผันตามแรงที่มากระทำจนถึงขีดจำกัด</strong><br><em>Tutor's Secret Tip:</em> แรงเสียดทานสถิตจะ "สู้" กับแรงภายนอกเท่าที่จำเป็นจนกว่าจะถึงจุดที่วัตถุเริ่มเคลื่อนที่ครับ</div>
-</div>
-
-<div class="question-container">
-    <p>15. วัตถุหนึ่งตกอย่างอิสระ 2 วินาที (ไม่คิดแรงต้านอากาศ) วัตถุจะมีความเร็วเท่าใด? (ให้ g = 10 m/s²) <br> <span class="clue">(Clue: v = u + gt, ความเร็วต้น u = 0)</span></p>
-    <ul>
-        <li>ก. 10 m/s</li>
-        <li>ข. 20 m/s</li>
-        <li>ค. 30 m/s</li>
-        <li>ง. 40 m/s</li>
-    </ul>
-    <button onclick="toggleAnswer(15)">ดูเฉลย</button>
-    <div id="answer15" class="answer-box"><strong>เฉลย: ข. 20 m/s</strong><br><em>Tutor's Secret Tip:</em> ความเร็วเพิ่มขึ้นวินาทีละ 10 m/s ผ่านไป 2 วินาที ก็กลายเป็น 20 m/s ครับ</div>
-</div>
-
-<div class="question-container">
-    <p>16. หากแรงลัพธ์ที่กระทำต่อวัตถุเป็นศูนย์ วัตถุจะไม่อยู่ในสภาวะใด? <br> <span class="clue">(Clue: กฎข้อที่ 1 ของนิวตัน)</span></p>
-    <ul>
-        <li>ก. หยุดนิ่ง</li>
-        <li>ข. เคลื่อนที่ด้วยความเร็วคงที่</li>
-        <li>ค. เคลื่อนที่ด้วยความเร่ง</li>
-        <li>ง. สมดุลกล</li>
-    </ul>
-    <button onclick="toggleAnswer(16)">ดูเฉลย</button>
-    <div id="answer16" class="answer-box"><strong>เฉลย: ค. เคลื่อนที่ด้วยความเร่ง</strong><br><em>Tutor's Secret Tip:</em> แรงลัพธ์เป็นศูนย์ = ความเร่งเป็นศูนย์ (ไม่มีการเปลี่ยนความเร็ว) ครับ</div>
-</div>
-
-<div class="question-container">
-    <p>17. หน่วยของความเร่งในระบบ SI คือข้อใด? <br> <span class="clue">(Clue: ความเร็วต่อหนึ่งหน่วยเวลา)</span></p>
-    <ul>
-        <li>ก. m/s</li>
-        <li>ข. m/s²</li>
-        <li>ค. km/h</li>
-        <li>ง. N</li>
-    </ul>
-    <button onclick="toggleAnswer(17)">ดูเฉลย</button>
-    <div id="answer17" class="answer-box"><strong>เฉลย: ข. m/s²</strong><br><em>Tutor's Secret Tip:</em> เพราะความเร่งคือ (เมตร/วินาที) หารด้วย วินาที อีกครั้งครับ</div>
-</div>
-
-<div class="question-container">
-    <p>18. เครื่องมือใดที่เหมาะสำหรับวัดปริมาณกระแสไฟฟ้า? <br> <span class="clue">(Clue: ตามแบบฝึกหัดในบทเรียน)</span></p>
-    <ul>
-        <li>ก. โวลต์มิเตอร์</li>
-        <li>ข. แอมมิเตอร์</li>
-        <li>ค. มัลติมิเตอร์วัดมวล</li>
-        <li>ง. ไม้บรรทัด</li>
-    </ul>
-    <button onclick="toggleAnswer(18)">ดูเฉลย</button>
-    <div id="answer18" class="answer-box"><strong>เฉลย: ข. แอมมิเตอร์</strong><br><em>Tutor's Secret Tip:</em> หน่วยของกระแสไฟฟ้าคือ แอมแปร์ (A) เครื่องมือวัดคือ แอมมิเตอร์ ครับ</div>
-</div>
-
-<div class="question-container">
-    <p>19. การระบุตำแหน่งของวัตถุให้แม่นยำที่สุด ต้องระบุสิ่งใดร่วมด้วย? <br> <span class="clue">(Clue: หัวข้อแรกของบทเรียน)</span></p>
-    <ul>
-        <li>ก. เวลา</li>
-        <li>ข. ความเร็ว</li>
-        <li>ค. จุดอ้างอิง</li>
-        <li>ง. แรง</li>
-    </ul>
-    <button onclick="toggleAnswer(19)">ดูเฉลย</button>
-    <div id="answer19" class="answer-box"><strong>เฉลย: ค. จุดอ้างอิง</strong><br><em>Tutor's Secret Tip:</em> หากไม่มีจุดอ้างอิง เราจะไม่สามารถบอกได้เลยว่าวัตถุเปลี่ยนตำแหน่งไปจากจุดเดิมอย่างไร</div>
-</div>
-
-<div class="question-container">
-    <p>20. ความแตกต่างหลักระหว่างอัตราเร็วเฉลี่ยและความเร็วเฉลี่ยคืออะไร? <br> <span class="clue">(Clue: เปรียบเทียบระยะทางกับการกระจัด)</span></p>
-    <ul>
-        <li>ก. ใช้หน่วยต่างกัน</li>
-        <li>ข. อัตราเร็วเป็นสเกลาร์, ความเร็วเป็นเวกเตอร์</li>
-        <li>ค. ความเร็วใช้ระยะทางจริง, อัตราเร็วใช้การกระจัด</li>
-        <li>ง. ไม่มีข้อแตกต่าง</li>
-    </ul>
-    <button onclick="toggleAnswer(20)">ดูเฉลย</button>
-    <div id="answer20" class="answer-box"><strong>เฉลย: ข. อัตราเร็วเป็นสเกลาร์, ความเร็วเป็นเวกเตอร์</strong><br><em>Tutor's Secret Tip:</em> ความเร็วต้องระบุทิศทาง (เวกเตอร์) ส่วนอัตราเร็วบอกเพียงขนาด (สเกลาร์) ครับ</div>
-</div>
-    <div class="question-container">
-    <p>21. รถยนต์วิ่งด้วยความเร็ว 20 m/s แล้วเบรกจนหยุดนิ่งภายใน 5 วินาที ความเร่ง (ความหน่วง) มีค่าเท่าใด? <br> <span class="clue">(Clue: a = (v - u) / t, v=0)</span></p>
-    <ul>
-        <li>ก. 2 m/s²</li>
-        <li>ข. -2 m/s²</li>
-        <li>ค. 4 m/s²</li>
-        <li>ง. -4 m/s²</li>
-    </ul>
-    <button onclick="toggleAnswer(21)">ดูเฉลย</button>
-    <div id="answer21" class="answer-box"><strong>เฉลย: ง. -4 m/s²</strong><br><em>Tutor's Secret Tip:</em> ความเร่งติดลบหมายถึงความเร็วลดลง หรือการเบรกนั่นเองครับ</div>
-</div>
-
-<div class="question-container">
-    <p>22. ถ้าวัตถุเคลื่อนที่ในแนวเส้นตรงแล้วเลี้ยวกลับทิศทาง ข้อใดถูกต้อง? <br> <span class="clue">(Clue: เปรียบเทียบระยะทางกับการกระจัด)</span></p>
-    <ul>
-        <li>ก. ระยะทางเท่ากับการกระจัด</li>
-        <li>ข. ระยะทางมากกว่าการกระจัด</li>
-        <li>ค. การกระจัดมากกว่าระยะทาง</li>
-        <li>ง. ระยะทางเป็นศูนย์</li>
-    </ul>
-    <button onclick="toggleAnswer(22)">ดูเฉลย</button>
-    <div id="answer22" class="answer-box"><strong>เฉลย: ข. ระยะทางมากกว่าการกระจัด</strong><br><em>Tutor's Secret Tip:</em> ระยะทางคือเส้นทางทั้งหมดที่เดิน แต่การกระจัดคือระยะห่างที่สั้นที่สุดจากจุดเริ่มต้นครับ</div>
-</div>
-
-<div class="question-container">
-    <p>23. แรงลัพธ์มีค่าเท่ากับ 10 N กระทำต่อวัตถุมวล 2 kg วัตถุจะมีความเร่งเท่าใด? <br> <span class="clue">(Clue: F = ma)</span></p>
-    <ul>
-        <li>ก. 2 m/s²</li>
-        <li>ข. 5 m/s²</li>
-        <li>ค. 8 m/s²</li>
-        <li>ง. 20 m/s²</li>
-    </ul>
-    <button onclick="toggleAnswer(23)">ดูเฉลย</button>
-    <div id="answer23" class="answer-box"><strong>เฉลย: ข. 5 m/s²</strong><br><em>Tutor's Secret Tip:</em> จาก F = ma จะได้ a = F/m = 10/2 = 5 m/s² ครับ</div>
-</div>
-
-<div class="question-container">
-    <p>24. กราฟความเร็ว-เวลา พื้นที่ใต้กราฟบอกถึงปริมาณใด? <br> <span class="clue">(Clue: พื้นที่ใต้กราฟ คือ การคูณระหว่างความเร็วกับเวลา)</span></p>
-    <ul>
-        <li>ก. ความเร่ง</li>
-        <li>ข. ระยะทางหรือการกระจัด</li>
-        <li>ค. แรงลัพธ์</li>
-        <li>ง. ความเร็วเฉลี่ย</li>
-    </ul>
-    <button onclick="toggleAnswer(24)">ดูเฉลย</button>
-    <div id="answer24" class="answer-box"><strong>เฉลย: ข. ระยะทางหรือการกระจัด</strong><br><em>Tutor's Secret Tip:</em> กราฟ v-t พื้นที่ใต้กราฟ = v × t ซึ่งก็คือการกระจัดนั่นเองครับ</div>
-</div>
-
-<div class="question-container">
-    <p>25. ข้อใดกล่าวถูกต้องที่สุดเกี่ยวกับ "มวล" และ "น้ำหนัก"? <br> <span class="clue">(Clue: มวลเป็นสเกลาร์, น้ำหนักเป็นเวกเตอร์)</span></p>
-    <ul>
-        <li>ก. มวลและน้ำหนักมีค่าเท่ากันทุกที่</li>
-        <li>ข. น้ำหนักเปลี่ยนไปตามสถานที่ แต่มวลมีค่าคงที่</li>
-        <li>ค. มวลเปลี่ยนไปตามสถานที่ แต่น้ำหนักมีค่าคงที่</li>
-        <li>ง. มวลและน้ำหนักเป็นปริมาณเดียวกัน</li>
-    </ul>
-    <button onclick="toggleAnswer(25)">ดูเฉลย</button>
-    <div id="answer25" class="answer-box"><strong>เฉลย: ข. น้ำหนักเปลี่ยนไปตามสถานที่ แต่มวลมีค่าคงที่</strong><br><em>Tutor's Secret Tip:</em> น้ำหนักขึ้นอยู่กับแรงโน้มถ่วง (g) ในแต่ละที่ แต่มวลคือเนื้อสารซึ่งเท่าเดิมเสมอครับ</div>
-</div>
-
-<div class="question-container">
-    <p>26. ปรากฏการณ์ใดที่อธิบายด้วยกฎข้อที่ 3 ของนิวตัน (แรงกิริยา = แรงปฏิกิริยา)? <br> <span class="clue">(Clue: ทุกแรงกิริยามีแรงปฏิกิริยาที่เท่ากันและทิศตรงข้าม)</span></p>
-    <ul>
-        <li>ก. การปล่อยลูกโป่งแล้วลมพุ่งออก</li>
-        <li>ข. รถยนต์หยุดทันทีเมื่อเบรก</li>
-        <li>ค. วัตถุตกลงพื้นด้วยความเร่ง g</li>
-        <li>ง. การหมุนของพัดลม</li>
-    </ul>
-    <button onclick="toggleAnswer(26)">ดูเฉลย</button>
-    <div id="answer26" class="answer-box"><strong>เฉลย: ก. การปล่อยลูกโป่งแล้วลมพุ่งออก</strong><br><em>Tutor's Secret Tip:</em> ลมพุ่งออกไป (Action) ทำให้ตัวลูกโป่งพุ่งไปข้างหน้า (Reaction) ครับ</div>
-</div>
-
-<div class="question-container">
-    <p>27. เมื่อวัตถุมีความเร็วคงที่ ความเร่งของวัตถุเป็นเท่าใด? <br> <span class="clue">(Clue: ความเร่งคืออัตราการเปลี่ยนแปลงความเร็ว)</span></p>
-    <ul>
-        <li>ก. มากกว่าศูนย์</li>
-        <li>ข. น้อยกว่าศูนย์</li>
-        <li>ค. เป็นศูนย์</li>
-        <li>ง. ไม่สามารถระบุได้</li>
-    </ul>
-    <button onclick="toggleAnswer(27)">ดูเฉลย</button>
-    <div id="answer27" class="answer-box"><strong>เฉลย: ค. เป็นศูนย์</strong><br><em>Tutor's Secret Tip:</em> ความเร็วไม่เปลี่ยน แปลว่าไม่มีความเร่งครับ</div>
-</div>
-
-<div class="question-container">
-    <p>28. เครื่องชั่งสปริงอ่านค่าได้ 50 N บนโลก หากนำไปชั่งบนดวงจันทร์ (ที่มี g น้อยกว่าโลก) ค่าที่อ่านได้จะเป็นอย่างไร? <br> <span class="clue">(Clue: น้ำหนักขึ้นอยู่กับค่า g)</span></p>
-    <ul>
-        <li>ก. มากกว่า 50 N</li>
-        <li>ข. เท่ากับ 50 N</li>
-        <li>ค. น้อยกว่า 50 N</li>
-        <li>ง. เป็นศูนย์</li>
-    </ul>
-    <button onclick="toggleAnswer(28)">ดูเฉลย</button>
-    <div id="answer28" class="answer-box"><strong>เฉลย: ค. น้อยกว่า 50 N</strong><br><em>Tutor's Secret Tip:</em> แรงดึงดูดน้อยลง น้ำหนัก (แรงที่กดลง) ก็จะน้อยลงตามไปด้วยครับ</div>
-</div>
-
-<div class="question-container">
-    <p>29. กราฟตำแหน่ง-เวลาของวัตถุที่เคลื่อนที่ด้วยความเร็วคงที่เป็นลักษณะใด? <br> <span class="clue">(Clue: ความชันคงที่)</span></p>
-    <ul>
-        <li>ก. เส้นโค้งพาราโบลา</li>
-        <li>ข. เส้นตรงเอียง</li>
-        <li>ค. เส้นตรงแนวราบ</li>
-        <li>ง. เส้นซิกแซก</li>
-    </ul>
-    <button onclick="toggleAnswer(29)">ดูเฉลย</button>
-    <div id="answer29" class="answer-box"><strong>เฉลย: ข. เส้นตรงเอียง</strong><br><em>Tutor's Secret Tip:</em> ความชันของเส้นตรงเอียงมีค่าคงที่เสมอ จึงหมายถึงความเร็วคงที่ครับ</div>
-</div>
-
-<div class="question-container">
-    <p>30. หากผลักกล่องไม้ด้วยแรงที่น้อยกว่าแรงเสียดทานสถิต กล่องไม้จะเป็นอย่างไร? <br> <span class="clue">(Clue: วัตถุยังไม่เคลื่อนที่)</span></p>
-    <ul>
-        <li>ก. เคลื่อนที่ด้วยความเร็วคงที่</li>
-        <li>ข. เคลื่อนที่ด้วยความเร่ง</li>
-        <li>ค. ไม่เคลื่อนที่</li>
-        <li>ง. เคลื่อนที่ถอยหลัง</li>
-    </ul>
-    <button onclick="toggleAnswer(30)">ดูเฉลย</button>
-    <div id="answer30" class="answer-box"><strong>เฉลย: ค. ไม่เคลื่อนที่</strong><br><em>Tutor's Secret Tip:</em> ถ้าแรงผลักไม่มากพอที่จะชนะแรงเสียดทาน วัตถุก็ยังอยู่นิ่งเหมือนเดิมครับ</div>
-</div>
+        const quizDiv = document.getElementById('quiz');
+        questions.forEach((item, index) => {
+            const div = document.createElement('div');
+            div.className = 'question-container';
+            div.id = 'q' + index;
+            let options = item.a.map((opt, i) => `<input type="radio" name="q${index}" value="${i}"> ${opt}<br>`).join('');
+            div.innerHTML = `<p>${index + 1}. ${item.q} <span style="color:red;">(Clue: คิดถึงความหมายของนิยามในบทเรียน)</span></p>${options}<button onclick="checkAnswer(${index}, document.querySelector('input[name=q${index}]:checked').value, ${item.correct}, '${item.tip}')">ส่งคำตอบ</button>`;
+            quizDiv.appendChild(div);
+        });
+    </script>
 </body>
 </html>
