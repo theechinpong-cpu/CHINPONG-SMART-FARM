@@ -1,66 +1,45 @@
 <!DOCTYPE html>
-<html lang="th">
+<html>
 <head>
-    <style>
-        :root { --primary: #2c3e50; --accent: #3498db; --success: #27ae60; --error: #c0392b; }
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: #f4f7f6; padding: 20px; color: #333; }
-        .header { text-align: center; color: var(--primary); border-bottom: 3px solid var(--accent); padding-bottom: 10px; margin-bottom: 20px; }
-        .question-container { background: #fff; padding: 20px; margin-bottom: 15px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        .clue { color: var(--error); font-size: 0.9em; font-weight: bold; }
-        .options { margin: 15px 0; }
-        .btn { background: var(--accent); color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; transition: 0.3s; }
-        .btn:hover { background: #2980b9; }
-        .feedback { margin-top: 15px; padding: 10px; border-radius: 5px; font-weight: bold; display: none; }
-    </style>
+<style>
+    body { font-family: sans-serif; padding: 20px; background-color: #f4f4f9; }
+    .question-container { background: white; padding: 15px; margin-bottom: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    .correct { background-color: #d4edda !important; border: 2px solid #28a745; }
+    .wrong { background-color: #f8d7da !important; border: 2px solid #dc3545; }
+    .hint { color: red; font-size: 0.9em; display: block; margin-top: 5px; }
+    .explanation { margin-top: 10px; font-weight: bold; }
+    .tip { font-style: italic; color: #555; }
+</style>
 </head>
 <body>
-    <div class="header"><h1>พระจอมเกล้าติวเตอร์: แบบทดสอบ Unit 1 (ตอนที่ 2)</h1></div>
-    <div id="quiz-area"></div>
 
-    <script>
-        const questions = [
-            { id: 1, q: "การวัดที่ดีที่สุดควรมีลักษณะอย่างไร?", a: ["มีตัวเลขเท่านั้น", "มีหน่วยที่ชัดเจนและแม่นยำ", "เป็นการประมาณค่า", "ไม่มีข้อใดถูก"], correct: 1, tip: "หน่วยคือหัวใจของการวัดครับ!" },
-            { id: 2, q: "จุดอ้างอิง (Reference Point) มีไว้เพื่ออะไร?", a: ["เพื่อความสวยงาม", "เพื่อบอกว่าวัตถุเคลื่อนที่หรือไม่", "เพื่อกำหนดทิศทางลม", "เพื่อวัดอุณหภูมิ"], correct: 1, tip: "จุดอ้างอิงต้องอยู่นิ่งครับ" },
-            { id: 3, q: "ระยะทาง (Distance) แตกต่างจากการกระจัด (Displacement) อย่างไร?", a: ["ระยะทางเป็นเวกเตอร์", "การกระจัดคือเส้นทางจริงที่เดิน", "ระยะทางคือเส้นทางจริง การกระจัดคือเส้นตรงสั้นที่สุด", "ทั้งสองเหมือนกัน"], correct: 2, tip: "นึกถึงเส้นทางเดินจริง vs ทางลัดครับ" },
-            { id: 4, q: "หากเดินเป็นวงกลม 1 รอบ การกระจัดจะเป็นเท่าใด?", a: ["มากกว่าศูนย์", "เท่ากับเส้นรอบวง", "เท่ากับศูนย์", "หาค่าไม่ได้"], correct: 2, tip: "จุดเริ่มกับจุดจบอยู่ที่เดียวกัน การกระจัดคือ 0" },
-            { id: 5, q: "ปริมาณใดเป็นปริมาณเวกเตอร์?", a: ["ระยะทาง", "อัตราเร็ว", "การกระจัด", "เวลา"], correct: 2, tip: "เวกเตอร์ต้องมีทั้งขนาดและทิศทาง" },
-            { id: 6, q: "ความเร็วเฉลี่ย คำนวณจากสูตรใด?", a: ["ระยะทาง / เวลา", "การกระจัด / เวลา", "ระยะทาง x เวลา", "มวล x ความเร่ง"], correct: 1, tip: "ความเร็วคู่กับการกระจัดครับ" },
-            { id: 7, q: "กราฟตำแหน่ง-เวลา ความชันของกราฟแสดงถึงอะไร?", a: ["ระยะทาง", "ความเร่ง", "ความเร็ว", "เวลา"], correct: 2, tip: "ความชัน = $\Delta y / \Delta x$ = ตำแหน่ง / เวลา" },
-            { id: 8, q: "หน่วยของมวลในระบบ SI คืออะไร?", a: ["กรัม", "มิลลิกรัม", "กิโลกรัม", "นิวตัน"], correct: 2, tip: "อย่าลืม kg นะครับ" },
-            { id: 9, q: "หากวัตถุเคลื่อนที่ด้วยความเร็วคงที่ กราฟตำแหน่ง-เวลาจะเป็นอย่างไร?", a: ["เส้นโค้ง", "เส้นตรงเฉียง", "เส้นดิ่ง", "กราฟรูปตัว U"], correct: 1, tip: "ความเร็วคงที่ = ความชันคงที่" },
-            { id: 10, q: "อัตราเร็วเฉลี่ย ต่างจาก ความเร็วเฉลี่ย อย่างไร?", a: ["อัตราเร็วไม่มีทิศทาง", "อัตราเร็วใช้การกระจัด", "ความเร็วไม่มีทิศทาง", "ไม่มีข้อใดถูก"], correct: 0, tip: "อัตราเร็วเป็นสเกลาร์ครับ" },
-            { id: 11, q: "หากกราฟ $s-t$ เป็นเส้นตรงขนานกับแกนเวลา วัตถุมีลักษณะอย่างไร?", a: ["เคลื่อนที่ด้วยความเร็วคงที่", "หยุดนิ่ง", "เคลื่อนที่ด้วยความเร่ง", "เคลื่อนที่ย้อนกลับ"], correct: 1, tip: "ตำแหน่งไม่เปลี่ยน แสดงว่าไม่มีการเคลื่อนที่" },
-            { id: 12, q: "พื้นที่ใต้กราฟ $v-t$ แทนปริมาณใด?", a: ["ความเร็ว", "ความเร่ง", "การกระจัด", "ระยะทาง"], correct: 2, tip: "พื้นที่ = ความสูง $\times$ ฐาน = $v \times t = s$" },
-            { id: 13, q: "การเคลื่อนที่เป็นวงกลม 1 รอบเต็ม ข้อใดถูกต้อง?", a: ["ระยะทาง = 0", "การกระจัด = 0", "ทั้งระยะทางและการกระจัด = 0", "ไม่สามารถหาค่าได้"], correct: 1, tip: "จุดจบอยู่ที่จุดเริ่ม การกระจัดคือ 0" },
-            { id: 14, q: "ความเร็วเฉลี่ยมีทิศทางอย่างไร?", a: ["ทิศเดียวกับการกระจัด", "ทิศเดียวกับระยะทาง", "ไม่มีทิศทาง", "ตามแรงโน้มถ่วง"], correct: 0, tip: "เวกเตอร์ต้องมีทิศทางตามการกระจัด" },
-            { id: 15, q: "วัตถุ A มีกราฟ $s-t$ ชันกว่าวัตถุ B หมายความว่าอย่างไร?", a: ["A เคลื่อนที่ช้ากว่า B", "A เคลื่อนที่เร็วกว่า B", "A และ B เร็วเท่ากัน", "สรุปไม่ได้"], correct: 1, tip: "ความชันมาก = ความเร็วมาก" },
-            { id: 16, q: "หน่วยของความเร็วในระบบ SI คืออะไร?", a: ["km/h", "m/s", "cm/s", "m/s^2"], correct: 1, tip: "หน่วยฐานฟิสิกส์คือ เมตร/วินาที" },
-            { id: 17, q: "ปริมาณที่บอก 'อัตรา' การเปลี่ยนแปลงตำแหน่งคืออะไร?", a: ["ระยะทาง", "ความเร็ว", "ความเร่ง", "มวล"], correct: 1, tip: "การเปลี่ยนตำแหน่งต่อหน่วยเวลาคือความเร็ว" },
-            { id: 18, q: "ถ้าวัตถุเคลื่อนที่กลับทิศทาง การกระจัดจะมีค่าอย่างไร?", a: ["เพิ่มขึ้นเสมอ", "อาจน้อยกว่าระยะทาง", "เท่ากับระยะทางเสมอ", "เป็นศูนย์เสมอ"], correct: 1, tip: "ระยะทางคิดทุกก้าว การกระจัดคิดแค่จุดเริ่มถึงจบ" },
-            { id: 19, q: "ความเร่ง (Acceleration) คืออะไร?", a: ["ความเร็วที่เปลี่ยนไปในหนึ่งหน่วยเวลา", "ระยะทางที่เพิ่มขึ้น", "การกระจัดรวม", "แรงที่กระทำต่อวัตถุ"], correct: 0, tip: "ความเร่ง = อัตราการเปลี่ยนความเร็ว" },
-            { id: 20, q: "ถ้ากราฟ $v-t$ มีความชันเป็นศูนย์ แสดงว่า?", a: ["ความเร่งเป็นศูนย์", "วัตถุหยุดนิ่ง", "วัตถุเคลื่อนที่ถอยหลัง", "ความเร็วเพิ่มขึ้น"], correct: 0, tip: "ความชันกราฟ $v-t$ คือความเร่ง" }
-        ];
+<h2>แบบฝึกหัดทบทวน: การเคลื่อนที่และแรง (20 ข้อ)</h2>
 
-        const area = document.getElementById('quiz-area');
-        questions.forEach((q, i) => {
-            area.innerHTML += `
-                <div class="question-container" id="q${q.id}">
-                    <p><strong>ข้อ ${i+11}:</strong> ${q.q} <span class="clue">(Clue: ${q.tip})</span></p>
-                    <div class="options">${q.a.map((opt, idx) => `<label><input type="radio" name="q${q.id}" value="${idx}"> ${opt}</label><br>`).join('')}</div>
-                    <button class="btn" onclick="check(${q.id}, ${q.correct}, '${q.tip}')">ส่งคำตอบ</button>
-                    <div class="feedback" id="f${q.id}"></div>
-                </div>`;
-        });
+<div id="quiz">
+    <div class="question-container" id="q1">
+        <p>1. ปริมาณใดต่อไปนี้เป็นปริมาณเวกเตอร์ทั้งหมด? <span class="hint">(Clue: ปริมาณเวกเตอร์ต้องมีทิศทาง)</span></p>
+        <label><input type="radio" name="q1" value="wrong"> ก. ระยะทาง, อัตราเร็ว</label><br>
+        <label><input type="radio" name="q1" value="correct"> ข. การกระจัด, ความเร็ว</label><br>
+        <div class="explanation" style="display:none;"></div>
+    </div>
+</div>
 
-        function check(id, correct, tip) {
-            const selected = document.querySelector(`input[name="q${id}"]:checked`);
-            const fb = document.getElementById(`f${id}`);
-            if(!selected) return alert("กรุณาเลือกคำตอบครับ");
-            fb.style.display = "block";
-            fb.style.backgroundColor = (selected.value == correct) ? "#d4edda" : "#f8d7da";
-            fb.style.color = (selected.value == correct) ? "var(--success)" : "var(--error)";
-            fb.innerHTML = (selected.value == correct) ? "ถูกต้อง! ยอดเยี่ยมมากครับ" : "ผิดครับ! เฉลยคือตัวเลือกที่ " + (correct+1) + ". " + tip;
+<script>
+document.querySelectorAll('input').forEach(input => {
+    input.addEventListener('change', function() {
+        const container = this.closest('.question-container');
+        const explanation = container.querySelector('.explanation');
+        if (this.value === 'correct') {
+            container.classList.add('correct');
+            explanation.innerHTML = "ถูกต้อง! เพราะทั้งการกระจัดและความเร็วต้องระบุทิศทางเสมอ";
+        } else {
+            container.classList.add('wrong');
+            explanation.innerHTML = "ยังไม่ใช่ครับ ลองนึกถึงนิยามเวกเตอร์อีกครั้ง";
         }
-    </script>
+        explanation.style.display = 'block';
+    });
+});
+</script>
+
 </body>
 </html>
