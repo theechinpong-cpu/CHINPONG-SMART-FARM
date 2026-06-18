@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบข้อสอบคณิตศาสตร์ ม.2 (ระดับยาก) - พระจอมเกล้าติวเตอร์</title>
+    <style>
+        :root {
+            --primary-color: #003366;
+            --secondary-color: #f4f6f9;
+            --accent-color: #ff6600;
+            --success-color: #d4edda;
+            --success-border: #c3e6cb;
+            --success-text: #155724;
+            --danger-color: #f8d7da;
+            --danger-border: #f5c6cb;
+            --danger-text: #721c24;
+            --text-color: #333333;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif, 'Angsana New';
+            background-color: var(--secondary-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 850px;
+            margin: 0 auto;
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .header {
+            text-align: center;
+            border-bottom: 3px solid var(--primary-color);
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: var(--primary-color);
+            margin: 0;
+            font-size: 28px;
+        }
+
+        .header p {
+            color: #666;
+            font-style: italic;
+            margin: 5px 0 0 0;
+        }
+
+        .question-container {
+            background: #fdfdfd;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 25px;
+            transition: all 0.3s ease;
+        }
+
+        .question-title {
+            font-weight: bold;
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: var(--primary-color);
+        }
+
+        .options-list {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .option-item {
+            margin-bottom: 10px;
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            display: flex;
+            align-items: center;
+        }
+
+        .option-item:hover {
+            background-color: #f0f4f8;
+        }
+
+        .option-item input[type="radio"] {
+            margin-right: 12px;
+            transform: scale(1.2);
+        }
+
+        .disabled-option {
+            pointer-events: none;
+            opacity: 0.8;
+        }
+
+        /* Feedback Styles */
+        .correct-choice {
+            background-color: var(--success-color) !important;
+            border-color: var(--success-border) !important;
+            color: var(--success-text);
+            font-weight: bold;
+        }
+
+        .incorrect-choice {
+            background-color: var(--danger-color) !important;
+            border-color: var(--danger-border) !important;
+            color: var(--danger-text);
+        }
+
+        .explanation-box {
+            display: none;
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 5px solid var(--primary-color);
+            background-color: #f9f9f9;
+        }
+
+        .explanation-title {
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 5px;
+        }
+
+        .tutor-tip {
+            margin-top: 8px;
+            font-style: italic;
+            color: var(--accent-color);
+            font-weight: 500;
+        }
+
+        /* Result Section */
+        #result-section {
+            display: none;
+            margin-top: 40px;
+            padding: 25px;
+            background: #f0f7ff;
+            border: 2px solid var(--primary-color);
+            border-radius: 10px;
+        }
+
+        .result-header {
+            font-size: 24px;
+            color: var(--primary-color);
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .score-display {
+            text-align: center;
+            font-size: 36px;
+            font-weight: bold;
+            color: var(--accent-color);
+            margin-bottom: 20px;
+        }
+
+        .analysis-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        .analysis-table th, .analysis-table td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+
+        .analysis-table th {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .status-good {
+            color: green;
+            font-weight: bold;
+        }
+
+        .status-weak {
+            color: red;
+            font-weight: bold;
+        }
+
+        .btn-action {
+            display: block;
+            width: 250px;
+            margin: 30px auto 0 auto;
+            padding: 12px 20px;
+            background-color: var(--primary-color);
+            color: white;
+            text-align: center;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .btn-action:hover {
+            background-color: #002244;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1>ข้อสอบจำลองกลางภาคเรียนที่ 1 วิชาคณิตศาสตร์ ม.2 (ระดับยากพิเศษ)</h1>
+        <p>จัดทำโดย พระจอมเกล้าติวเตอร์ - คลังข้อสอบแข่งขันคัดสรรเน้นกระบวนการวิเคราะห์เชิงลึก</p>
+    </div>
+
+    <div class="question-container" id="q1-meta" data-topic="สมบัติของเลขยกกำลัง">
+        <div class="question-title">ข้อ 1. จงหาค่าของ (2⁵⁰ + 2⁵⁰) / 4²⁴ มีค่าเท่ากับข้อใดต่อไปนี้? <span style="color:red;">(Clue: การบวกเลขยกกำลังที่ตัวฐานและเลขชี้กำลังเท่ากัน สามารถยุบรวมให้อยู่ในรูปการคูณได้ และอย่าลืมแปลงฐาน 4 ให้เป็นฐาน 2)</span></div>
+        <ul class="options-list">
+            <li class="option-item"><input type="radio" name="q1" value="A"> A. 2²</li>
+            <li class="option-item"><input type="radio" name="q1" value="B"> B. 2³</li>
+            <li class="option-item"><input type="radio" name="q1" value="C"> C. 2²⁵</li>
+            <li class="option-item"><input type="radio" name="q1" value="D"> D. 2²⁶</li>
+        </ul>
+        <div class="explanation-box" id="exp-q1">
+            <div class="explanation-title">คำตอบที่ถูกต้อง: B</div>
+            <div><strong>คำอธิบายอย่างละเอียด:</strong> <br>
+                พิจารณาตัวเศษ: 2⁵⁰ + 2⁵⁰ สามารถมองเป็น 2 ตัวของ 2⁵⁰ นั่นคือ 2 × 2⁵⁰ = 2¹⁺⁵⁰ = 2⁵¹ <br>
+                พิจารณาตัวส่วน: 4²⁴ = (2²)²⁴ = 2⁴⁸ <br>
+                นำเศษและส่วนมาหารกัน: 2⁵¹ / 2⁴⁸ = 2⁵¹⁻⁴⁸ = 2³
+            </div>
+            <div class="tutor-tip">Tutor's Secret Tip: เด็กๆ มักจะเผลอเอาเลขชี้กำลังมาบวกกันดื้อๆ เป็น 2¹⁰⁰ ซึ่งผิดมหันต์! จำไว้ว่าฐานเท่ากันบวกกัน ให้ดึงตัวร่วมออกมาคูณ 2 เสมอจ้า</div>
+        </div>
+    </div>
+
+    <div class="question-container" id="q2-meta" data-topic="สมบัติของเลขยกกำลัง">
+        <div class="question-title">ข้อ 2. ถ้า 3^(x-1) = 5 แล้ว ค่าของ 27^x มีค่าเท่ากับข้อใด? <span style="color:red;">(Clue: จัดรูปกระจาย 3^(x-1) ให้อยู่ในรูปเศษส่วน เพื่อหาค่าของ 3^x ก่อน จากนั้นค่อยเปลี่ยนฐาน 27 เป็น 3³)</span></div>
+        <ul class="options-list">
+            <li class="option-item"><input type="radio" name="q2" value="A"> A. 125</li>
+            <li class="option-item"><input type="radio" name="q2" value="B"> B. 225</li>
+            <li class="option-item"><input type="radio" name="q2" value="C"> C. 3,375</li>
+            <li class="option-item"><input type="radio" name="q2" value="D"> D. 15,625</li>
+        </ul>
+        <div class="explanation-box" id="exp-q2">
+            <div class="explanation-title">คำตอบที่ถูกต้อง: C</div>
+            <div><strong>คำอธิบายอย่างละเอียด:</strong> <br>
+                จากโจทย์ 3^(x-1) = 5 ย้ายรูปตามกฎเลขยกกำลังได้เป็น (3^x) / 3 = 5 <br>
+                ดังนั้น 3^x = 5 × 3 = 15 <br>
+                โจทย์ต้องการหา 27^x ซึ่งสามารถแปลงได้เป็น (3³)^x = (3^x)³ <br>
+                แทนค่า 3^x = 15 ลงไป จะได้เป็น 15³ = 15 × 15 × 15 = 3,375
+            </div>
+            <div class="tutor-tip">Tutor's Secret Tip: เราสามารถสลับที่เลขชี้กำลังของ (a^m)^n เป็น (a^n)^m ได้เสมอ การมอง 27^x เป็น (3^x)³ จะช่วยให้สวมรอยแทนค่าคำตอบได้เร็วขึ้นมาก!</div>
+        </div>
+    </div>
+
+    <div class="question-container" id="q3-meta" data-topic="สัญกรณ์วิทยาศาสตร์">
+        <div class="question-title">ข้อ 3. ผลลัพธ์ของ (4 × 10⁻⁵) × (8 × 10⁹) ในรูปสัญกรณ์วิทยาศาสตร์ที่ถูกต้องตรงกับข้อใด? <span style="color:red;">(Clue: นำตัวเลขข้างหน้าคูณกัน และนำสิบยกกำลังมาคูณกันโดยนำเลขชี้กำลังมาบวกกัน จากนั้นจัดรูปให้ตัวหน้าอยู่ระหว่าง 1 ถึง 10)</span></div>
+        <ul class="options-list">
+            <li class="option-item"><input type="radio" name="q3" value="A"> A. 32 × 10⁴</li>
+            <li class="option-item"><input type="radio" name="q3" value="B"> B. 3.2 × 10⁵</li>
+            <li class="option-item"><input type="radio" name="q3" value="C"> C. 3.2 × 10⁴</li>
+            <li class="option-item"><input type="radio" name="q3" value="D"> D. 0.32 × 10⁶</li>
+        </ul>
+        <div class="explanation-box" id="exp-q3">
+            <div class="explanation-title">คำตอบที่ถูกต้อง: B</div>
+            <div><strong>คำอธิบายอย่างละเอียด:</strong> <br>
+                จับกลุ่มตัวเลขและเลขฐานสิบ: (4 × 8) × (10⁻⁵ × 10⁹) <br>
+                จะได้ผลลัพธ์ขั้นแรกเป็น 32 × 10⁽⁻⁵⁺⁹⁾ = 32 × 10⁴ <br>
+                แต่เนื่องจาก 32 เกิน 10 จึงต้องปรับให้อยู่ในรูปสัญกรณ์วิทยาศาสตร์: 32 = 3.2 × 10¹ <br>
+                ดังนั้น (3.2 × 10¹) × 10⁴ = 3.2 × 10⁵
+            </div>
+            <div class="tutor-tip">Tutor's Secret Tip: จำกฎสัญกรณ์วิทยาศาสตร์ให้ดี รูปแบบมาตรฐานคือ A × 10ⁿ โดยที่ตัว A ห้ามเป็น 10 และห้ามเยี่ยงต่ำกว่า 1 ทริคคือ "เลื่อนจุดไปทางซ้าย เลขชี้กำลังบวกเพิ่มขึ้น" จ้า</div>
+        </div>
+    </div>
+
+    <div class="question-container" id="q4-meta" data-topic="การหารพหุนาม">
+        <div class="question-title">ข้อ 4. เศษที่ได้จากการหารพหุนาม 2x² - 5x + 7 ด้วย x - 3 เท่ากับข้อใด? <span style="color:red;">(Clue: สามารถตั้งหารยาว หารสั้น หรือจะใช้ทฤษฎีบทเศษเหลือโดยการแทนค่า x = 3 ลงในพหุนามตัวตั้งก็ได้นะ)</span></div>
+        <ul class="options-list">
+            <li class="option-item"><input type="radio" name="q4" value="A"> A. 4</li>
+            <li class="option-item"><input type="radio" name="q4" value="B"> B. 10</li>
+            <li class="option-item"><input type="radio" name="q4" value="C"> C. 14</li>
+            <li class="option-item"><input type="radio" name="q4" value="D"> D. 22</li>
+        </ul>
+        <div class="explanation-box" id="exp-q4">
+            <div class="explanation-title">คำตอบที่ถูกต้อง: B</div>
+            <div><strong>คำอธิบายอย่างละเอียด:</strong> <br>
+                วิธีที่เร็วที่สุดคือใช้ทฤษฎีบทเศษเหลือ (Remainder Theorem) <br>
+                ตัวหารคือ x - 3 ให้จับ x - 3 = 0 จะได้ x = 3 <br>
+                นำ x = 3 ไปแทนค่าในพหุนามตัวตั้ง 2x² - 5x + 7 <br>
+                จะได้ เศษ = 2(3)² - 5(3) + 7 <br>
+                = 2(9) - 15 + 7 = 18 - 15 + 7 = 10
+            </div>
+            <div class="tutor-tip">Tutor's Secret Tip: ไม่จำเป็นต้องไปตั้งหารยาวให้เสียเวลาและเสี่ยงคิดเลขผิด! ถ้าโจทย์ถามหา "เศษเหลือ" จากการหารด้วย (x - c) ให้หยิบค่า c ไปยัดไส้แทนที่ x ได้คำตอบทันใจเลย!</div>
+        </div>
+    </div>
+
+    <div class="question-container" id="q5-meta" data-topic="การคูณและพหุนาม">
+        <div class="question-title">ข้อ 5. ถ้า (3x - 2)(2x + 5) = ax² + bx + c แล้ว ค่าของ a + b + c เท่ากับข้อใด? <span style="color:red;">(Clue: ทำการกระจายการคูณแบบหน้าคูณหน้า หน้าคูณหลัง หลังคูณหน้า หลังคูณหลัง แล้วรวบรวมสัมประสิทธิ์เพื่อหาค่า a, b และ c)</span></div>
+        <ul class="options-list">
+            <li class="option-item"><input type="radio" name="q5" value="A"> A. 7</li>
+            <li class="option-item"><input type="radio" name="q5" value="B"> B. 11</li>
+            <li class="option-item"><input type="radio" name="q5" value="C"> C. 15</li>
+            <li class="option-item"><input type="radio" name="q5" value="D"> D. 21</li>
+        </ul>
+        <div class="explanation-box" id="exp-q5">
+            <div class="explanation-title">คำตอบที่ถูกต้อง: A</div>
+            <div><strong>คำอธิบายอย่างละเอียด:</strong> <br>
+                กระจายผลคูณพหุนาม: (3x - 2)(2x + 5) <br>
+                = (3x)(2x) + (3x)(5) + (-2)(2x) + (-2)(5) <br>
+                = 6x² + 15x - 4x - 10 <br>
+                = 6x² + 11x - 10 <br>
+                เมื่อเทียบกับสมการ ax² + bx + c จะได้ a = 6, b = 11, c = -10 <br>
+                ดังนั้น a + b + c = 6 + 11 + (-10) = 7
+            </div>
+            <div class="tutor-tip">Tutor's Secret Tip: ทริคสายลับระดับโอลิมปิก! ถ้าโจทย์สั่งหาค่า "ผลรวมสัมประสิทธิ์" อย่าง a + b + c ให้ลองแทนค่า x = 1 ลงไปในวงเล็บตั้งแต่แรกได้เลย! จะได้ (3(1)-2)(2(1)+5) = (1)(7) = 7 ตอบได้ใน 3 วินาที!</div>
+        </div>
+    </div>
+
+    <button class="btn-action" id="submit-quiz-btn">ส่งข้อสอบเพื่อวิเคราะห์ผล</button>
+
+    <div id="result-section">
+        <div class="result-header">📊 ผลการวิเคราะห์คะแนนระบบเรียลไทม์</div>
+        <div class="score-display" id="score-text">0 / 5 คะแนน</div>
+        <table class="analysis-table">
+            <thead>
+                <tr>
+                    <th>บทเรียน / หัวข้อประเมิน</th>
+                    <th>คะแนนที่ได้</th>
+                    <th>status การประเมิน</th>
+                </tr>
+            </thead>
+            <tbody id="analysis-rows">
+                </tbody>
+        </table>
+        <button class="btn-action" onclick="window.location.reload();">ทำข้อสอบใหม่อีกครั้ง</button>
+    </div>
+</div>
+
+<script>
+    // สารบัญเฉลยข้อสอบที่ถูกต้อง
+    const solutions = {
+        q1: 'B', q2: 'C', q3: 'B', q4: 'B', q5: 'A'
+    };
+
+    let userAnswers = {};
+
+    // 1. ตรวจสอบการเลือกช้อยส์แบบเรียลไทม์
+    document.querySelectorAll('.option-item').forEach(item => {
+        item.addEventListener('click', function() {
+            const radioBtn = this.querySelector('input[type="radio"]');
+            if (!radioBtn) return;
+
+            const qName = radioBtn.name;
+            
+            // ป้องกันการแอบเปลี่ยนคำตอบทีหลัง
+            if (userAnswers[qName]) return;
+
+            radioBtn.checked = true;
+            const chosenValue = radioBtn.value;
+            userAnswers[qName] = chosenValue;
+
+            const correctAns = solutions[qName];
+            const parentContainer = this.closest('.question-container');
+
+            const allOptions = parentContainer.querySelectorAll('.option-item');
+            allOptions.forEach(opt => {
+                opt.classList.add('disabled-option');
+                const currentRadio = opt.querySelector('input[type="radio"]');
+                
+                if (currentRadio.value === correctAns) {
+                    opt.classList.add('correct-choice');
+                } else if (currentRadio.value === chosenValue && chosenValue !== correctAns) {
+                    opt.classList.add('incorrect-choice');
+                }
+            });
+
+            const expBox = parentContainer.querySelector('.explanation-box');
+            if (expBox) {
+                expBox.style.display = 'block';
+            }
+        });
+    });
+
+    // 2. ประมวลผลลัพธ์และวิเคราะห์จุดอ่อนรายกลุ่มบทเรียน
+    document.getElementById('submit-quiz-btn').addEventListener('click', function() {
+        let score = 0;
+        const totalQuestions = Object.keys(solutions).length;
+
+        if (Object.keys(userAnswers).length < totalQuestions) {
+            alert('พระจอมเกล้าติวเตอร์แนะนำให้น้องๆ ตอบให้ครบทุกข้อก่อนส่ง เพื่อระบบคำนวณสถิติจุดอ่อนที่แม่นยำนะครับ!');
+            return;
+        }
+
+        let topicAnalysis = {};
+
+        for (let i = 1; i <= totalQuestions; i++) {
+            const qKey = 'q' + i;
+            const metaContainer = document.getElementById(qKey + '-meta');
+            const topic = metaContainer ? metaContainer.getAttribute('data-topic') : 'บทเรียนทั่วไป';
+            
+            if (!topicAnalysis[topic]) {
+                topicAnalysis[topic] = { correct: 0, total: 0 };
+            }
+            
+            topicAnalysis[topic].total++;
+            
+            if (userAnswers[qKey] === solutions[qKey]) {
+                score++;
+                topicAnalysis[topic].correct++;
+            }
+        }
+
+        document.getElementById('score-text').innerText = `${score} / ${totalQuestions} คะแนน`;
+
+        const rowsTarget = document.getElementById('analysis-rows');
+        rowsTarget.innerHTML = '';
+
+        for (const topic in topicAnalysis) {
+            const data = topicAnalysis[topic];
+            const percentage = (data.correct / data.total) * 100;
+            let statusText = '';
+            
+            if (percentage >= 80) {
+                statusText = '<span class="status-good">⭐ ดีเยี่ยม (พื้นฐานปึกมาก)</span>';
+            } else if (percentage >= 50) {
+                statusText = '<span class="status-good">👍 พอใช้ (ระวังคิดเลขผิดพลาด)</span>';
+            } else {
+                statusText = '<span class="status-weak">⚠️ ควรทบทวนด่วน (เนื้อหายังไม่แน่น)</span>';
+            }
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><strong>${topic}</strong></td>
+                <td>${data.correct} / ${data.total}</td>
+                <td>${statusText}</td>
+            `;
+            rowsTarget.appendChild(tr);
+        }
+
+        const resSection = document.getElementById('result-section');
+        resSection.style.display = 'block';
+        resSection.scrollIntoView({ behavior: 'smooth' });
+        this.style.display = 'none';
+    });
+</script>
+
+</body>
+</html>
