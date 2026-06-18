@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบข้อสอบคณิตศาสตร์ ม.6 - พระจอมเกล้าติวเตอร์</title>
+    <style>
+        :root {
+            --primary-color: #003366;
+            --secondary-color: #f4f6f9;
+            --accent-color: #ff6600;
+            --success-color: #d4edda;
+            --success-border: #c3e6cb;
+            --success-text: #155724;
+            --danger-color: #f8d7da;
+            --danger-border: #f5c6cb;
+            --danger-text: #721c24;
+            --text-color: #333333;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif, 'Angsana New';
+            background-color: var(--secondary-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 850px;
+            margin: 0 auto;
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .header {
+            text-align: center;
+            border-bottom: 3px solid var(--primary-color);
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: var(--primary-color);
+            margin: 0;
+            font-size: 28px;
+        }
+
+        .header p {
+            color: #666;
+            font-style: italic;
+            margin: 5px 0 0 0;
+        }
+
+        .question-container {
+            background: #fdfdfd;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 25px;
+            transition: all 0.3s ease;
+        }
+
+        .question-title {
+            font-weight: bold;
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: var(--primary-color);
+        }
+
+        .options-list {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .option-item {
+            margin-bottom: 10px;
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            display: flex;
+            align-items: center;
+        }
+
+        .option-item:hover {
+            background-color: #f0f4f8;
+        }
+
+        .option-item input[type="radio"] {
+            margin-right: 12px;
+            transform: scale(1.2);
+        }
+
+        .disabled-option {
+            pointer-events: none;
+            opacity: 0.8;
+        }
+
+        /* Feedback Styles */
+        .correct-choice {
+            background-color: var(--success-color) !important;
+            border-color: var(--success-border) !important;
+            color: var(--success-text);
+            font-weight: bold;
+        }
+
+        .incorrect-choice {
+            background-color: var(--danger-color) !important;
+            border-color: var(--danger-border) !important;
+            color: var(--danger-text);
+        }
+
+        .explanation-box {
+            display: none;
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 5px solid var(--primary-color);
+            background-color: #f9f9f9;
+        }
+
+        .explanation-title {
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 5px;
+        }
+
+        .tutor-tip {
+            margin-top: 8px;
+            font-style: italic;
+            color: var(--accent-color);
+            font-weight: 500;
+        }
+
+        /* Result Section */
+        #result-section {
+            display: none;
+            margin-top: 40px;
+            padding: 25px;
+            background: #f0f7ff;
+            border: 2px solid var(--primary-color);
+            border-radius: 10px;
+        }
+
+        .result-header {
+            font-size: 24px;
+            color: var(--primary-color);
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .score-display {
+            text-align: center;
+            font-size: 36px;
+            font-weight: bold;
+            color: var(--accent-color);
+            margin-bottom: 20px;
+        }
+
+        .analysis-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        .analysis-table th, .analysis-table td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+
+        .analysis-table th {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .status-good {
+            color: green;
+            font-weight: bold;
+        }
+
+        .status-weak {
+            color: red;
+            font-weight: bold;
+        }
+
+        .btn-action {
+            display: block;
+            width: 250px;
+            margin: 30px auto 0 auto;
+            padding: 12px 20px;
+            background-color: var(--primary-color);
+            color: white;
+            text-align: center;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .btn-action:hover {
+            background-color: #002244;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1>ข้อสอบจำลองกลางภาคเรียนที่ 1 วิชาคณิตศาสตร์ ม.6</h1>
+        <p>จัดทำโดย พระจอมเกล้าติวเตอร์ - คลังข้อสอบคัดสรรตามหลักสูตรแกนกลางเพื่อเตรียมความพร้อมสู่ห้องสอบ</p>
+    </div>
+
+    <div class="question-container" id="q1-meta" data-topic="ลำดับและอนุกรม">
+        <div class="question-title">ข้อ 1. พจน์ที่ 20 ของลำดับเลขคณิต 3, 7, 11, 15, ... มีค่าเท่ากับข้อใด? <span style="color:red;">(Clue: ใช้สูตรพจน์ทั่วไปของลำดับเลขคณิต a_n = a_1 + (n - 1)d)</span></div>
+        <ul class="options-list">
+            <li class="option-item"><input type="radio" name="q1" value="A"> A. 76</li>
+            <li class="option-item"><input type="radio" name="q1" value="B"> B. 79</li>
+            <li class="option-item"><input type="radio" name="q1" value="C"> C. 83</li>
+            <li class="option-item"><input type="radio" name="q1" value="D"> D. 80</li>
+        </ul>
+        <div class="explanation-box" id="exp-q1">
+            <div class="explanation-title">คำตอบที่ถูกต้อง: B</div>
+            <div><strong>คำอธิบายอย่างละเอียด:</strong> <br>
+                จากลำดับ 3, 7, 11, 15, ... จะได้ พจน์แรก a_1 = 3 และผลต่างร่วม d = 7 - 3 = 4 <br>
+                ต้องการหาพจน์ที่ 20 (n = 20): <br>
+                a_20 = a_1 + (20 - 1)d <br>
+                a_20 = 3 + 19(4) = 3 + 76 = 79
+            </div>
+            <div class="tutor-tip">Tutor's Secret Tip: ทริคคิดเลขเร็ว ให้มองหาค่าเพิ่มขึ้นต่อสเต็ป ในที่นี้คือแม่ 4 ดังนั้นพจน์ทั่วไปคือ 4n - 1 อยากได้พจน์ที่ 20 ก็เอา 4(20) - 1 = 79 ได้คำตอบไวสุดๆ ครับ!</div>
+        </div>
+    </div>
+
+    <div class="question-container" id="q2-meta" data-topic="ลำดับและอนุกรม">
+        <div class="question-title">ข้อ 2. พจน์ทั่วไป (a_n) ของลำดับเรขาคณิต 2, 6, 18, 54, ... ตรงกับข้อใด? <span style="color:red;">(Clue: หาอัตราส่วนร่วม r = a_2 / a_1 แล้วแทนในสูตร a_n = a_1 * r^(n-1))</span></div>
+        <ul class="options-list">
+            <li class="option-item"><input type="radio" name="q2" value="A"> A. a_n = 2 * 3^n</li>
+            <li class="option-item"><input type="radio" name="q2" value="B"> B. a_n = 2 * 3^(n-1)</li>
+            <li class="option-item"><input type="radio" name="q2" value="C"> C. a_n = 3 * 2^(n-1)</li>
+            <li class="option-item"><input type="radio" name="q2" value="D"> D. a_n = 6^(n-1)</li>
+        </ul>
+        <div class="explanation-box" id="exp-q2">
+            <div class="explanation-title">คำตอบที่ถูกต้อง: B</div>
+            <div><strong>คำอธิบายอย่างละเอียด:</strong> <br>
+                พจน์แรก a_1 = 2 <br>
+                หาอัตราส่วนร่วม r = 6 / 2 = 3 <br>
+                จากสูตรพจน์ทั่วไปของลำดับเรขาคณิต: a_n = a_1 * r^(n-1) <br>
+                แทนค่าได้: a_n = 2 * 3^(n-1)
+            </div>
+            <div class="tutor-tip">Tutor's Secret Tip: ถ้าจำสูตรไม่ได้ ให้ใช้วิธีลองแทนค่า n = 1 ลงในช้อยส์ ช้อยส์ไหนได้คำตอบเท่ากับ 2 (พจน์แรก) และ n = 2 ได้ 6 ช้อยส์นั้นแหละครับคือคำตอบ!</div>
+        </div>
+    </div>
+
+    <div class="question-container" id="q3-meta" data-topic="ลำดับและอนุกรม">
+        <div class="question-title">ข้อ 3. ผลบวก 15 พจน์แรกของลำดับเลขคณิต 5, 9, 13, 17, ... เท่ากับข้อใด? <span style="color:red;">(Clue: ใช้สูตรอนุกรมเลขคณิต S_n = (n/2) * [2a_1 + (n - 1)d])</span></div>
+        <ul class="options-list">
+            <li class="option-item"><input type="radio" name="q3" value="A"> A. 495</li>
+            <li class="option-item"><input type="radio" name="q3" value="B"> B. 510</li>
+            <li class="option-item"><input type="radio" name="q3" value="C"> C. 525</li>
+            <li class="option-item"><input type="radio" name="q3" value="D"> D. 600</li>
+        </ul>
+        <div class="explanation-box" id="exp-q3">
+            <div class="explanation-title">คำตอบที่ถูกต้อง: A</div>
+            <div><strong>คำอธิบายอย่างละเอียด:</strong> <br>
+                จากโจทย์ a_1 = 5, d = 4, n = 15 <br>
+                ใช้สูตร: S_15 = (15/2) * [2(5) + (15 - 1)4] <br>
+                S_15 = (15/2) * [10 + 14(4)] <br>
+                S_15 = (15/2) * [10 + 56] = (15/2) * 66 <br>
+                S_15 = 15 * 33 = 495
+            </div>
+            <div class="tutor-tip">Tutor's Secret Tip: สังเกตตัวเลขให้ดีๆ ถ้านำ 2 ไปตัดกับ 66 ในวงเล็บก่อนจะเหลือเลข 33 ซึ่งทำให้เราคูณกับ 15 ได้ง่ายและแม่นยำขึ้นมาก ลดโอกาสคิดเลขผิดในห้องสอบครับ</div>
+        </div>
+    </div>
+
+    <div class="question-container" id="q4-meta" data-topic="ลำดับและอนุกรม">
+        <div class="question-title">ข้อ 4. อนุกรมเรขาคณิตอนันต์ 4 + 2 + 1 + 0.5 + ... มีผลบวกตรงกับข้อใด? <span style="color:red;">(Clue: เป็นอนุกรมอนันต์ที่ลู่เข้า เนื่องจาก |r| < 1 ให้ใช้สูตร S_&infin; = a_1 / (1 - r))</span></div>
+        <ul class="options-list">
+            <li class="option-item"><input type="radio" name="q4" value="A"> A. 7</li>
+            <li class="option-item"><input type="radio" name="q4" value="B"> B. 8</li>
+            <li class="option-item"><input type="radio" name="q4" value="C"> C. 12</li>
+            <li class="option-item"><input type="radio" name="q4" value="D"> D. หาผลบวกไม่ได้เพราะเป็นอนุกรมอนันต์</li>
+        </ul>
+        <div class="explanation-box" id="exp-q4">
+            <div class="explanation-title">คำตอบที่ถูกต้อง: B</div>
+            <div><strong>คำอธิบายอย่างละเอียด:</strong> <br>
+                จากอนุกรม: a_1 = 4 <br>
+                หาอัตราส่วนร่วม r = 2 / 4 = 1/2 (ซึ่ง |1/2| < 1 อนุกรมลู่เข้า) <br>
+                ใช้สูตรอนุกรมอนันต์: S_&infin; = a_1 / (1 - r) <br>
+                S_&infin; = 4 / (1 - 1/2) = 4 / (1/2) = 4 * 2 = 8
+            </div>
+            <div class="tutor-tip">Tutor's Secret Tip: จำกฎเหล็กไว้เลย! สูตร S_&infin; = a_1 / (1-r) จะใช้ได้ก็ต่อเมื่อค่า r ต้องอยู่ระหว่าง -1 กับ 1 เท่านั้น ถ้า r มากกว่าหรือเท่ากับ 1 จะตอบทันทีว่า "หาค่าไม่ได้ (Divergent)" ครับ</div>
+        </div>
+    </div>
+
+    <div class="question-container" id="q5-meta" data-topic="ลำดับและอนุกรม">
+        <div class="question-title">ข้อ 5. ค่าของลิมิต lim (n&rarr;&infin;) ของลำดับ a_n = (3n^2 - 5n) / (2n^2 + 7) เท่ากับข้อใด? <span style="color:red;">(Clue: พิจารณาดีกรีสูงสุดของพจน์เศษและส่วน ถดีกรีเท่ากัน ลิมิตคือสัญญลักษณ์สัมประสิทธิ์หน้าดีกรีนั้น)</span></div>
+        <ul class="options-list">
+            <li class="option-item"><input type="radio" name="q5" value="A"> A. 0</li>
+            <li class="option-item"><input type="radio" name="q5" value="B"> B. 3/2</li>
+            <li class="option-item"><input type="radio" name="q5" value="C"> C. -5/7</li>
+            <li class="option-item"><input type="radio" name="q5" value="D"> D. หาค่าไม่ได้ (&infin;)</li>
+        </ul>
+        <div class="explanation-box" id="exp-q5">
+            <div class="explanation-title">คำตอบที่ถูกต้อง: B</div>
+            <div><strong>คำอธิบายอย่างละเอียด:</strong> <br>
+                พิจารณาลำดับเศษส่วนพหุนามเมื่อ n เข้าใกล้ &infin;: <br>
+                ดีกรีสูงสุดของเศษคือ n^2 (สัมประสิทธิ์คือ 3) <br>
+                ดีกรีสูงสุดของส่วนคือ n^2 (สัมประสิทธิ์คือ 2) <br>
+                เนื่องจากกำลังสูงสุดเท่ากัน (ดีกรี 2 เท่ากัน) สามารถตัดพจน์ย่อยทิ้งแล้วนำสัมประสิทธิ์มาตอบได้ทันที <br>
+                ดังนั้น ลิมิตเท่ากับ 3/2
+            </div>
+            <div class="tutor-tip">Tutor's Secret Tip: สูตรลัดลิมิตอนันต์: "กำลังบน = กำลังล่าง ตอบ สปส. ตัวบนหารตัวล่าง", "กำลังบน < กำลังล่าง ตอบ 0", "กำลังบน > กำลังล่าง ตอบ หาค่าไม่ได้" จำไปใช้สอบเสร็จไวแน่นอน!</div>
+        </div>
+    </div>
+
+    <div class="question-container" id="q6-meta" data-topic="ลำดับและอนุกรม">
+        <div class="question-title">ข้อ 6. ลำดับในข้อใดต่อไปนี้เป็น "ลำดับลู่เข้า" (Convergent Sequence)? <span style="color:red;">(Clue: ลำดับลู่เข้าคือลำดับที่เมื่อหาลิมิตเมื่อ n&rarr;&infin; แล้วได้ผลลัพธ์เป็นจำนวนจริงคงที่)</span></div>
+        <ul class="options-list">
+            <li class="option-item"><input type="radio" name="q6" value="A"> A. a_n = 2^n</li>
+            <li class="option-item"><input type="radio" name="q6" value="B"> B. a_n = (-1)^n</li>
+            <li class="option-item"><input type="radio" name="q6" value="C"> C. a_n = (n + 1) / n</li>
+            <li class="option-item"><input type="radio" name="q6" value="D"> D. a_n = n^2 - 3</li>
+        </ul>
+        <div class="explanation-box" id="exp-q6">
+            <div class="explanation-title">คำตอบที่ถูกต้อง: C</div>
+            <div><strong>คำอธิบายอย่างละเอียด:</strong> <br>
+                - ข้อ A: lim 2^n = &infin; (ลู่ออก) <br>
+                - ข้อ B: lim (-1)^n แกว่งกวัดระหว่าง -1, 1 ไม่มีค่าแน่นอน (ลู่ออก) <br>
+                - ข้อ C: lim (n + 1) / n = 1 พุ่งเข้าหาเลข 1 แน่นอน (ลู่เข้า) <br>
+                - ข้อ D: lim (n^2 - 3) = &infin; (ลู่ออก)
+            </div>
+            <div class="tutor-tip">Tutor's Secret Tip: ลำดับแบบข้อ B มีชื่อเฉพาะเรียกว่า ลำดับแกว่งกวัด (Oscillating sequence) ถือเป็นกลุ่มหนึ่งของลำดับลู่ออกเพราะเราไม่สามารถฟันธงปลายทางของมันได้ครับ</div>
+        </div>
+    </div>
+
+    <div class="question-container" id="q7-meta" data-topic="ลำดับและอนุกรม">
+        <div class="question-title">ข้อ 7. ผลบวกของอนุกรม ซิกมา &sum; (จาก i=1 ถึง 10) ของ (2i + 3) มีค่าเท่ากับข้อใด? <span style="color:red;">(Clue: กระจายซิกมาเข้าไปตามสมบัติ &sum;(2i) + &sum;3 แล้วใช้สูตร &sum;i = n(n+1)/2 และ &sum;c = c*n)</span></div>
+        <ul class="options-list">
+            <li class="option-item"><input type="radio" name="q7" value="A"> A. 110</li>
+            <li class="option-item"><input type="radio" name="q7" value="B"> B. 140</li>
+            <li class="option-item"><input type="radio" name="q7" value="C"> C. 143</li>
+            <li class="option-item"><input type="radio" name="q7" value="D"> D. 150</li>
+        </ul>
+        <div class="explanation-box" id="exp-q7">
+            <div class="explanation-title">คำตอบที่ถูกต้อง: B</div>
+            <div><strong>คำอธิบายอย่างละเอียด:</strong> <br>
+                &sum;(2i + 3) = 2&sum;i + &sum;3 <br>
+                = 2 * [10(10 + 1) / 2] + (3 * 10) <br>
+                = 2 * [110 / 2] + 30 <br>
+                = 110 + 30 = 140
+            </div>
+            <div class="tutor-tip">Tutor's Secret Tip: ระวังจุดพลาดบ่อย! &sum;3 จาก 1 ถึง 10 ไม่ใช่ได้ 3 นะครับ แต่มันคือเลข 3 บวกกัน 10 ตัว จึงต้องจับเอา 3 คูณกับ 10 ได้เป็น 30 ครับผม</div>
+        </div>
+    </div>
+
+    <div class="question-container" id="q8-meta" data-topic="แคลคูลัสเบื้องต้น">
+        <div class="question-title">ข้อ 8. ค่าของ lim (x&rarr;3) ของ (x^2 - 9) / (x - 3) เท่ากับข้อใด? <span style="color:red;">(Clue: แทนค่าตรงๆ จะได้รูป 0/0 ให้ใช้วิธีแยกตัวประกอบส่วนต่างกำลังสองเพื่อตัดทอนพจน์เจ้าปัญหา)</span></div>
+        <ul class="options-list">
+            <li class="option-item"><input type="radio" name="q8" value="A"> A. 0</li>
+            <li class="option-item"><input type="radio" name="q8" value="B"> B. 3</li>
+            <li class="option-item"><input type="radio" name="q8" value="C"> C. 6</li>
+            <li class="option-item"><input type="radio" name="q8" value="D"> D. หาค่าไม่ได้</li>
+        </ul>
+        <div class="explanation-box" id="exp-q8">
+            <div class="explanation-title">คำตอบที่ถูกต้อง: C</div>
+            <div><strong>คำอธิบายอย่างละเอียด:</strong> <br>
+                แทนค่า x = 3 ทันที จะได้ (3^2 - 9)/(3 - 3) = 0/0 ซึ่งสรุปไม่ได้ <br>
+                จัดรูปใหม่โดยแยกตัวประกอบเศษ: x^2 - 9 = (x - 3)(x + 3) <br>
+                จะได้ lim (x&rarr;3) [(x - 3)(x + 3) / (x - 3)] <br>
+                ตัดพจน์ (x - 3) ออก จะเหลือแค่ lim (x&rarr;3) (x + 3) <br>
+                แทนค่า x = 3 จะได้ 3 + 3 = 6
+            </div>
+            <div class="tutor-tip">Tutor's Secret Tip: ถ้าน้องเรียนดิฟฟ์มาแล้ว สามารถใช้ "กฎของโลปีตาล (L'H&ocirc;pital's Rule)" โดยการดิฟเศษและดิฟส่วนแยกกันได้เลย ดิฟเศษได้ 2x ดิฟส่วนได้ 1 แทนค่า x=3 ตอบ 6 เท่ากัน เร็วกว่าเดิมเยอะ!</div>
+        </div>
+    </div>
+
+    <div class="question-container" id="q9-meta" data-topic="แคลคูลัสเบื้องต้น">
+        <div class="question-title">ข้อ 9. กำหนดให้ f(x) = 2x^2 - 5x + 3 อัตราการเปลี่ยนแปลงเฉลี่ยของ f(x) เทียบกับ x เมื่อ x เปลี่ยนจาก 1 ไปเป็น 3 เท่ากับข้อใด? <span style="color:red;">(Clue: อัตราการเปลี่ยนแปลงเฉลี่ยใช้สูตร [f(x_2) - f(x_1)] / (x_2 - x_1))</span></div>
+        <ul class="options-list">
+            <li class="option-item"><input type="radio" name="q9" value="A"> A. 3</li>
+            <li class="option-item"><input type="radio" name="q9" value="B"> B. 4</li>
+            <li class="option-item"><input type="radio" name="q9" value="C"> C. 5</li>
+            <li class="option-item"><input type="radio" name="q9" value="D"> D. 6</li>
+        </ul>
+        <div class="explanation-box" id="exp-q9">
+            <div class="explanation-title">คำตอบที่ถูกต้อง: A</div>
+            <div><strong>คำอธิบายอย่างละเอียด:</strong> <br>
+                สูตร: อัตราการเปลี่ยนแปลงเฉลี่ย = [f(3) - f(1)] / (3 - 1) <br>
+                - หา f(3) = 2(3)^2 - 5(3) + 3 = 18 - 15 + 3 = 6 <br>
+                - หา f(1) = 2(1)^2 - 5(1) + 3 = 2 - 5 + 3 = 0 <br>
+                แทนค่ากลับในสูตร: [6 - 0] / [3 - 1] = 6 / 2 = 3
+            </div>
+            <div class="tutor-tip">Tutor's Secret Tip: คำว่า "อัตราการเปลี่ยนแปลงเฉลี่ย" ให้คิดเสมือนว่าเรากำลังหาความชัน (m) ของเส้นตรงที่ลากผ่านจุดสองจุดนั่นเองครับ อย่าสับสนกับอัตราการเปลี่ยนแปลง ณ ขณะใดขณะหนึ่ง (อันนั้นต้องดิฟนะ)</div>
+        </div>
+    </div>
+
+    <div class="question-container" id="q10-meta" data-topic="แคลคูลัสเบื้องต้น">
+        <div class="question-title">ข้อ 10. ฟังก์ชัน f(x) จะมีความต่อเนื่อง (Continuity) ที่จุด x = a ก็ต่อเมื่อเงื่อนไขใดเป็นจริง? <span style="color:red;">(Clue: ความต่อเนื่องต้องใช้ 3 เงื่อนไข: มีค่าฟังก์ชัน, มีลิมิตซ้ายขวาที่เท่ากัน และทั้งสองข้อต้องมีค่าเท่ากัน)</span></div>
+        <ul class="options-list">
+            <li class="option-item"><input type="radio" name="q10" value="A"> A. f(a) หาค่าได้ และ lim(x&rarr;a) f(x) หาค่าได้</li>
+            <li class="option-item"><input type="radio" name="q10" value="B"> B. lim(x&rarr;a⁻) f(x) = lim(x&rarr;a⁺) f(x)</li>
+            <li class="option-item"><input type="radio" name="q10" value="C"> C. f(a) หาค่าได้ และ lim(x&rarr;a) f(x) = f(a)</li>
+            <li class="option-item"><input type="radio" name="q10" value="D"> D. f'(a) หาค่าได้เท่านั้น</li>
+        </ul>
+        <div class="explanation-box" id="exp-q10">
+            <div class="explanation-title">คำตอบที่ถูกต้อง: C</div>
+            <div><strong>คำอธิบายอย่างละเอียด:</strong> <br>
+                นิยามความต่อเนื่องที่จุด x = a ประกอบด้วยเงื่อนไขสมบูรณ์คือ: <br>
+                1. f(a) หาค่าได้เป็นจำนวนจริง <br>
+                2. lim(x&rarr;a) f(x) ต้องหาค่าได้ (ลิมิตซ้ายเท่ากับลิมิตขวา) <br>
+                3. ค่าที่ได้จากข้อ 1 และข้อ 2 ต้องเท่ากันเป๊ะ นั่นคือ lim(x&rarr;a) f(x) = f(a)
+            </div>
+            <div class="tutor-tip">Tutor's Secret Tip: สรุปสั้นๆ ให้จำง่ายๆ ไปห้องสอบคือกราฟไม่ขาดตอน จุดทึบ (f(a)) และเส้นวิ่งเข้าหาจากสองข้าง (Limit) ต้องมาสบและถมเต็มที่จุดเดียวกันพอดีครับ</div>
+        </div>
+    </div>
+
+    <div class="question-container" id="q11-meta" data-topic="แคลคูลัสเบื้องต้น">
+        <div class="question-title">ข้อ 11. อนุพันธ์ของฟังก์ชัน f(x) = 4x^3 - 5x^2 + 7x - 9 คือข้อใด? <span style="color:red;">(Clue: ใช้สูตรพื้นฐานของการดิฟพหุนามตบกำลังลงมาคูณแล้วกำลังลดลงไป 1)</span></div>
+        <ul class="options-list">
+            <li class="option-item"><input type="radio" name="q11" value="A"> A. f'(x) = 12x^2 - 10x + 7</li>
+            <li class="option-item"><input type="radio" name="q11" value="B"> B. f'(x) = 12x^3 - 10x^2 + 7</li>
+            <li class="option-item"><input type="radio" name="q11" value="C"> C. f'(x) = 4x^2 - 5x + 7</li>
+            <li class="option-item"><input type="radio" name="q11" value="D"> D. f'(x) = 12x^2 - 10x</li>
+        </ul>
+        <div class="explanation-box" id="exp-q11">
+            <div class="explanation-title">คำตอบที่ถูกต้อง: A</div>
+            <div><strong>คำอธิบายอย่างละเอียด:</strong> <br>
+                ทำการหาอนุพันธ์ทีละพจน์ (Differentiate): <br>
+                - d/dx(4x^3) = 4 * 3x^2 = 12x^2 <br>
+                - d/dx(-5x^2) = -5 * 2x^1 = -10x <br>
+                - d/dx(7x) = 7 <br>
+                - d/dx(-9) = 0 (ดิฟค่าคงที่ได้ 0) <br>
+                รวมคำตอบได้: f'(x) = 12x^2 - 10x + 7
+            </div>
+            <div class="tutor-tip">Tutor's Secret Tip: จำกฎการดิฟฟ์พหุนามเบื้องต้น: "ตบกำลังลงมาคูณข้างหน้า แล้วลดกำลังของเดิมลงไปหนึ่ง" ส่วนตัวเลขเดี่ยวๆ ที่ไม่มี x ติดอยู่ ดิฟแล้วหายวับกลายเป็น 0 เสมอครับ!</div>
+        </div>
+    </div>
+
+    <div class="question-container" id="q12-meta" data-topic="แคลคูลัสเบื้องต้น">
+        <div class="question-title">ข้อ 12. ความชันของเส้นสัมผัสเส้นโค้ง y = x^2 - 3x ที่จุด (2, -2) มีค่าเท่ากับเท่าใด? <span style="color:red;">(Clue: ความชันของเส้นสัมผัสเส้นโค้งที่จุดใดๆ คือค่าของอนุพันธ์ f'(x) ณ จุด x นั้นๆ)</span></div>
+        <ul class="options-list">
+            <li class="option-item"><input type="radio" name="q12" value="A"> A. -2</li>
+            <li class="option-item"><input type="radio" name="q12" value="B"> B. 1</li>
+            <li class="option-item"><input type="radio" name="q12" value="C"> C. 4</li>
+            <li class="option-item"><input type="radio" name="q12" value="D"> D. 2</li>
+        </ul>
+        <div class="explanation-box" id="exp-12">
+            <div class="explanation-title">คำตอบที่ถูกต้อง: B</div>
+            <div><strong>คำอธิบายอย่างละเอียด:</strong> <br>
+                จากสมการเส้นโค้ง f(x) = x^2 - 3x <br>
+                หาอนุพันธ์เพื่อสร้างสมการความชัน: f'(x) = 2x - 3 <br>
+                โจทย์ระบุจุดสัมผัสคือ (2, -2) นำพิกัด x = 2 ไปแทนค่าใน f'(x): <br>
+                ความชัน (m) = f'(2) = 2(2) - 3 = 4 - 3 = 1
+            </div>
+            <div class="tutor-tip">Tutor's Secret Tip: โจทย์เรขาคณิตแคลคูลัสชอบให้พิกัดมาเป็นคู่อันดับ (x, y) หลอกตา จำไว้แม่นๆ ว่าตอนนำไปแทนค่าในสมการความชัน f'(x) เราใช้แค่ตัวแปร x เท่านั้นครับ ตัว y ไม่ต้องเอามาเกี่ยว</div>
+        </div>
+    </div>
+
+    <div class="question-container" id="q13-meta" data-topic="แคลคูลัสเบื้องต้น">
+        <div class="question-title">ข้อ 13. ถ้า f(x) = (2x - 1)(x + 4) แล้วค่าของ f'(x) เท่ากับข้อใด? <span style="color:red;">(Clue: สามารถใช้สูตรดิฟผลคูณ (หน้าดิฟหลัง + หลังดิฟหน้า) หรือจะคูณกระจายวงเล็บก่อนแล้วค่อยดิฟปกติก็ได้)</span></div>
+        <ul class="options-list">
+            <li class="option-item"><input type="radio" name="q13" value="A"> A. 4x + 7</li>
+            <li class="option-item"><input type="radio" name="q13" value="B"> B. 2x + 7</li>
+            <li class="option-item"><input type="radio" name="q13" value="C"> C. 4x - 7</li>
+            <li class="option-item"><input type="radio" name="q13" value="D"> D. 2</li>
+        </ul>
+        <div class="explanation-box" id="exp-q13">
+            <div class="explanation-title">คำตอบที่ถูกต้อง: A</div>
+            <div><strong>คำอธิบายอย่างละเอียด:</strong> <br>
+                วิธีที่ง่ายที่สุดคูณกระจายฟังก์ชันก่อนดิฟ: <br>
+                f(x) = (2x - 1)(x + 4) = 2x^2 + 8x - x - 4 = 2x^2 + 7x - 4 <br>
+                หาอนุพันธ์ f'(x) = d/dx(2x^2 + 7x - 4) = 4x + 7
+            </div>
+            <div class="tutor-tip">Tutor's Secret Tip: ถ้าเป็นพหุนามดีกรีต่ำๆ แนะนำให้คูณกระจายให้อยู่ในรูปการบวกลบธรรมดาก่อนค่อยดิฟ จะไวกว่าและลดโอกาสพลาดสูตรดิฟผลคูณ "หน้าดิฟหลัง บวก หลังดิฟหน้า" ได้ดีมากเลยครับ</div>
+        </div>
+    </div>
+
+    <div class="question-container" id="q14-meta" data-topic="แคลคูลัสเบื้องต้น">
+        <div class="question-title">ข้อ 14. กำหนด f(x) = (3x^2 + 1)^5 จงหาค่าของ f'(x) โดยใช้กฎลูกโซ่ (Chain Rule) <span style="color:red;">(Clue: มองภาพรวมเป็นดิฟไส้นอกก่อน ยกลูกกำลังลงมา แล้วคูณด้วยดิฟฟังก์ชันข้างในวงเล็บซ้ำอีกรอบ)</span></div>
+        <ul class="options-list">
+            <li class="option-item"><input type="radio" name="q14" value="A"> A. 5(3x^2 + 1)^4</li>
+            <li class="option-item"><input type="radio" name="q14" value="B"> B. 30x(3x^2 + 1)^4</li>
+            <li class="option-item"><input type="radio" name="q14" value="C"> C. 6x(3x^2 + 1)^4</li>
+            <li class="option-item"><input type="radio" name="q14" value="D"> D. 15x^2(3x^2 + 1)^4</li>
+        </ul>
+        <div class="explanation-box" id="exp-q14">
+            <div class="explanation-title">คำตอบที่ถูกต้อง: B</div>
+            <div><strong>คำอธิบายอย่างละเอียด:</strong> <br>
+                จากกฎลูกโซ่: ดิฟนอกคูณดิฟใน <br>
+                f'(x) = 5(3x^2 + 1)^(5-1) * d/dx(3x^2 + 1) <br>
+                f'(x) = 5(3x^2 + 1)^4 * (6x) <br>
+                นำตัวเลขสัมประสิทธิ์มาคูณกัน: 5 * 6x = 30x <br>
+                ดังนั้น f'(x) = 30x(3x^2 + 1)^4
+            </div>
+            <div class="tutor-tip">Tutor's Secret Tip: คาถาจำกฎลูกโซ่: "มองเป็นกล่องใบหนึ่ง ดิฟกล่องนอกสุดก่อน แล้วเอื้อมมือเข้าไปล้วงดิฟสิ่งของที่อยู่ในกล่องมาคูณปิดท้าย" อย่าลืมดิฟไส้ในเด็ดขาดนะครับ</div>
+        </div>
+    </div>
+
+    <div class="question-container" id="q15-meta" data-topic="แคลคูลัสเบื้องต้น">
+        <div class="question-title">ข้อ 15. ค่าของอินทิกรัลไม่จำกัดเขต &int;(6x^2 - 4x + 2) dx เท่ากับข้อใด? <span style="color:red;">(Clue: การอินทิเกรตตรงข้ามกับดิฟ เพิ่มกำลังขึ้น 1 แล้วหารด้วยเลขกำลังใหม่ และห้ามลืมบวกค่าคงตัว C)</span></div>
+        <ul class="options-list">
+            <li class="option-item"><input type="radio" name="q15" value="A"> A. 2x^3 - 2x^2 + 2x + C</li>
+            <li class="option-item"><input type="radio" name="q15" value="B"> B. 12x - 4 + C</li>
+            <li class="option-item"><input type="radio" name="q15" value="C"> C. 3x^3 - 2x^2 + 2x + C</li>
+            <li class="option-item"><input type="radio" name="q15" value="D"> D. 2x^3 - 4x^2 + 2x + C</li>
+        </ul>
+        <div class="explanation-box" id="exp-q15">
+            <div class="explanation-title">คำตอบที่ถูกต้อง: A</div>
+            <div><strong>คำอธิบายอย่างละเอียด:</strong> <br>
+                หาอินทิกรัลทีละพจน์โดยเพิ่มกำลังขึ้น 1 และหารด้วยกำลังใหม่: <br>
+                - &int;6x^2 dx = 6 * (x^3 / 3) = 2x^3 <br>
+                - &int;-4x dx = -4 * (x^2 / 2) = -2x^2 <br>
+                - &int;2 dx = 2x <br>
+                รวมทั้งหมดและเติมตัวแปรค่าคงที่อินทิเกรต: 2x^3 - 2x^2 + 2x + C
+            </div>
+            <div class="tutor-tip">Tutor's Secret Tip: ท่องสั้นๆ สำหรับการอินทิเกรตพหุนาม: "บวกกำลังเพิ่มไปหนึ่ง แล้วดึงลงมาหารข้างล่าง" และจำไว้เสมอว่าถ้าไม่มีขอบเขตบนล่าง ต้องห้อยท้ายด้วย +C ทุกครั้งนะครับ</div>
+        </div>
+    </div>
+
+    <div class="question-container" id="q16-meta" data-topic="แคลคูลัสเบื้องต้น">
+        <div class="question-title">ข้อ 16. ค่าของอินทิกรัลจำกัดเขต &int; (จาก x=1 ถึง 2) ของ 3x^2 dx เท่ากับข้อใด? <span style="color:red;">(Clue: อินทิเกรตให้เสร็จก่อน แล้วแทนค่าขอบเขตบน ลบด้วย แทนค่าขอบเขตล่าง [F(b) - F(a)])</span></div>
+        <ul class="options-list">
+            <li class="option-item"><input type="radio" name="q16" value="A"> A. 3</li>
+            <li class="option-item"><input type="radio" name="q16" value="B"> B. 7</li>
+            <li class="option-item"><input type="radio" name="q16" value="C"> C. 8</li>
+            <li class="option-item"><input type="radio" name="q16" value="D"> D. 9</li>
+        </ul>
+        <div class="explanation-box" id="exp-q16">
+            <div class="explanation-title">คำตอบที่ถูกต้อง: B</div>
+            <div><strong>คำอธิบายอย่างละเอียด:</strong> <br>
+                1. อินทิเกรตหาฟังก์ชันต้นแบบ: &int;3x^2 dx = 3 * (x^3 / 3) = x^3 <br>
+                2. คำนวณขอบเขตจาก 1 ถึง 2: [x^3] ที่ขอบเขต 1 ถึง 2 <br>
+                3. แทนค่า (ขอบเขตบน) - (ขอบเขตล่าง) = (2)^3 - (1)^3 <br>
+                = 8 - 1 = 7
+            </div>
+            <div class="tutor-tip">Tutor's Secret Tip: สังเกตไหมว่าในอินทิกรัลจำกัดเขต ตัวแปรสัญญลักษณ์ค่าคงที่ +C ไม่จำเป็นต้องบวกเข้าไป เพราะตอนจับบนลบกัน ค่า C - C จะหักล้างหายไปเองโดยอัตโนมัติอยู่ดีครับ</div>
+        </div>
+    </div>
+
+    <div class="question-container" id="q17-meta" data-topic="ลำดับและอนุกรม">
+        <div class="question-title">ข้อ 17. ลำดับเลขคณิตชุดหนึ่งมีพจน์ที่ 5 เท่ากับ 19 และพจน์ที่ 10 เท่ากับ 39 ผลต่างร่วม (d) ของลำดับนี้มีค่าตรงกับข้อใด? <span style="color:red;">(Clue: ตั้งระบบสมการสองตัวแปรจากสูตรพจน์ทั่วไป หรือใช้สูตรลัดระยะห่างช่วงชั้น d = (a_m - a_n) / (m - n))</span></div>
+        <ul class="options-list">
+            <li class="option-item"><input type="radio" name="q17" value="A"> A. 2</li>
+            <li class="option-item"><input type="radio" name="q17" value="B"> B. 4</li>
+            <li class="option-item"><input type="radio" name="q17" value="C"> C. 5</li>
+            <li class="option-item"><input type="radio" name="q17" value="D"> D. 3</li>
+        </ul>
+        <div class="explanation-box" id="exp-q17">
+            <div class="explanation-title">คำตอบที่ถูกต้อง: B</div>
+            <div><strong>คำอธิบายอย่างละเอียด:</strong> <br>
+                ใช้สูตรลัดหาค่าผลต่างร่วมเมื่อรู้สองพจน์ใดๆ: <br>
+                d = (a_10 - a_5) / (10 - 5) <br>
+                d = (39 - 19) / 5 <br>
+                d = 20 / 5 = 4
+            </div>
+            <div class="tutor-tip">Tutor's Secret Tip: จำสูตรลัดนี้ไปใช้ได้เลย: "ผลต่างของค่าพจน์ หารด้วย ผลต่างของเลขพจน์" ไม่จำเป็นต้องเสียเวลาไปแก้ระบบสมการหา a_1 ก่อนให้ยุ่งยากเลยครับ</div>
+        </div>
+    </div>
+
+    <div class="question-container" id="q18-meta" data-topic="ลำดับและอนุกรม">
+        <div class="question-title">ข้อ 18. ถ้าพจน์สามพจน์เรียงกัน x - 1, x + 3, 3x - 1 เป็นลำดับเลขคณิต แล้วค่าของ x ตรงกับข้อใด? <span style="color:red;">(Clue: สมบัติลำดับเลขคณิตระบุว่า ผลต่างพจน์ติดกันต้องเท่ากัน พจน์กลาง - พจน์แรก = พจน์ท้าย - พจน์กลาง)</span></div>
+        <ul class="options-list">
+            <li class="option-item"><input type="radio" name="q18" value="A"> A. 4</li>
+            <li class="option-item"><input type="radio" name="q18" value="B"> B. 6</li>
+            <li class="option-item"><input type="radio" name="q18" value="C"> C. 8</li>
+            <li class="option-item"><input type="radio" name="q18" value="D"> D. 5</li>
+        </ul>
+        <div class="explanation-box" id="exp-q18">
+            <div class="explanation-title">คำตอบที่ถูกต้อง: C</div>
+            <div><strong>คำอธิบายอย่างละเอียด:</strong> <br>
+                ใช้คุณสมบัติของผลต่างร่วม d ที่คงที่: <br>
+                (x + 3) - (x - 1) = (3x - 1) - (x + 3) <br>
+                x + 3 - x + 1 = 3x - 1 - x - 3 <br>
+                4 = 2x - 4 <br>
+                2x = 8 &rarr; x = 8
+            </div>
+            <div class="tutor-tip">Tutor's Secret Tip: ทริคจัดรูปโครงสร้างตรีโกณ/พีชคณิตแบบนี้: "สองเท่าของพจน์กลาง ย่อมมีค่าเท่ากับ พจน์หน้าบวกพจน์หลัง" ย้ายสมการบรรทัดเดียวออกเลยครับ</div>
+        </div>
+    </div>
+
+    <div class="question-container" id="q19-meta" data-topic="ลำดับและอนุกรม">
+        <div class="question-title">ข้อ 19. ผลบวกของอนุกรม 1/2 + 1/4 + 1/8 + 1/16 + ... + 1/1024 มีค่าเท่ากับข้อใด? <span style="color:red;">(Clue: เป็นอนุกรมเรขาคณิตจำกัด ใช้สูตร S_n = a_1(1 - r^n) / (1 - r) โดยต้องนับจำนวนพจน์ n ออกมาให้ถูกก่อน)</span></div>
+        <ul class="options-list">
+            <li class="option-item"><input type="radio" name="q19" value="A"> A. 1023 / 1024</li>
+            <li class="option-item"><input type="radio" name="q19" value="B"> B. 511 / 512</li>
+            <li class="option-item"><input type="radio" name="q19" value="C"> C. 1</li>
+            <li class="option-item"><input type="radio" name="q19" value="D"> D. 2047 / 2048</li>
+        </ul>
+        <div class="explanation-box" id="exp-q19">
+            <div class="explanation-title">คำตอบที่ถูกต้อง: A</div>
+            <div><strong>คำอธิบายอย่างละเอียด:</strong> <br>
+                อนุกรมชุดนี้มี a_1 = 1/2 , r = 1/2 <br>
+                พจน์สุดท้ายคือ 1/1024 ซึ่งคือ (1/2)^10 แสดงว่าจำนวนพจน์ n = 10 <br>
+                ใช้สูตร: S_10 = (1/2) * [1 - (1/2)^10] / [1 - 1/2] <br>
+                เนื่องจากตัวส่วนคือ (1 - 1/2) = 1/2 จะตัดกับ 1/2 ตัวข้างหน้าเศษหมดพอดี <br>
+                จะเหลือเพียง 1 - (1/2)^10 = 1 - 1/1024 = 1023 / 1024
+            </div>
+            <div class="tutor-tip">Tutor's Secret Tip: การหาผลบวกเศษส่วนครึ่งหนึ่งไปเรื่อยๆ ผลลัพธ์สุดท้ายจะติดชิดตัวเลขจำนวนเต็มถัดไปเสมอ รูปแบบคำตอบจะเป็น (ตัวส่วนลบหนึ่ง) หารด้วย (ตัวส่วนของพจน์สุดท้าย) เสมอครับ</div>
+        </div>
+    </div>
+
+    <div class="question-container" id="q20-meta" data-topic="ลำดับและอนุกรม">
+        <div class="question-title">ข้อ 20. จงหาค่าของลิมิต lim (n&rarr;&infin;) ของลำดับ a_n = [5^n + 3^n] / [5^(n+1) - 2^n] <span style="color:red;">(Clue: ลำดับเรขาคณิตดัชนีอนันต์ ให้เลือกนำฐานที่มีค่ามากที่สุดหารทั้งเศษและส่วน หรือพิจารณาเฉพาะฐานที่ใหญ่ที่สุด)</span></div>
+        <ul class="options-list">
+            <li class="option-item"><input type="radio" name="q20" value="A"> A. 1</li>
+            <li class="option-item"><input type="radio" name="q20" value="B"> B. 1/5</li>
+            <li class="option-item"><input type="radio" name="q20" value="C"> C. 0</li>
+            <li class="option-item"><input type="radio" name="q20" value="D"> D. 3/5</li>
+        </ul>
+        <div class="explanation-box" id="exp-q20">
+            <div class="explanation-title">คำตอบที่ถูกต้อง: B</div>
+            <div><strong>คำอธิบายอย่างละเอียด:</strong> <br>
+                ฐานที่มีค่ามากที่สุดและมีอิทธิพลต่อลิมิตมากที่สุดคือ 5^n <br>
+                ตัดฐานตัวที่เล็กกว่า (3^n และ 2^n) ออกจากการพิจารณา <br>
+                จะเหลือโครงสร้างหลักคือ: lim (n&rarr;&infin;) [5^n / 5^(n+1)] <br>
+                จัดรูปเลขยกกำลังด้านล่าง: 5^(n+1) = 5^n * 5^1 <br>
+                ดังนั้นจะได้ lim (n&rarr;&infin;) [5^n / (5^n * 5)] = 1/5
+            </div>
+            <div class="tutor-tip">Tutor's Secret Tip: ทริคสายตาเทพ: มองหา "ฐานราชา" (ตัวเลขที่มีค่ามากที่สุด) แล้วตัดพจน์อื่นๆ ทิ้งให้หมด จากนั้นนำตัวราชามาหารตัดเลขดัชนีกำลัง จะได้ช้อยส์คำตอบที่แม่นยำภายใน 3 วินาทีครับ</div>
+        </div>
+    </div>
+
+    <div class="question-container" id="q21-meta" data-topic="แคลคูลัสเบื้องต้น">
+        <div class="question-title">ข้อ 21. กำหนดให้ f(x) = x^3 - 3x^2 - 9x + 5 จุดวิกฤต (Critical Point) ในส่วนค่าของ x มีค่าเท่ากับข้อใดต่อไปนี้? <span style="color:red;">(Clue: จุดวิกฤตหาได้จากการหาอนุพันธ์อันดับที่หนึ่งแล้วจับเท่ากับศูนย์ f'(x) = 0)</span></div>
+        <ul class="options-list">
+            <li class="option-item"><input type="radio" name="q21" value="A"> A. x = 1, -3</li>
+            <li class="option-item"><input type="radio" name="q21" value="B"> B. x = -1, 3</li>
+            <li class="option-item"><input type="radio" name="q21" value="C"> C. x = 0, 3</li>
+            <li class="option-item"><input type="radio" name="q21" value="D"> D. x = -1, -3</li>
+        </ul>
+        <div class="explanation-box" id="exp-q21">
+            <div class="explanation-title">คำตอบที่ถูกต้อง: B</div>
+            <div><strong>คำอธิบายอย่างละเอียด:</strong> <br>
+                หา f'(x) = 3x^2 - 6x - 9 <br>
+                ตั้งสมการหาจุดวิกฤตโดยกำหนดให้ f'(x) = 0 <br>
+                3x^2 - 6x - 9 = 0 <br>
+                นำ 3 หารตลอดสมการ: x^2 - 2x - 3 = 0 <br>
+                แยกตัวประกอบพหุนาม: (x - 3)(x + 1) = 0 <br>
+                ดังนั้น ค่าวิกฤต x = 3 หรือ x = -1
+            </div>
+            <div class="tutor-tip">Tutor's Secret Tip: จุดวิกฤตคือตำแหน่งบนโค้งที่กราฟเริ่มวกกลับ (ความชันราบเป็นศูนย์) ซึ่งจุดเหล่านี้จะเป็นตัวเลือกหลักที่นำไปสู่การเป็นจุดสูงสุดหรือต่ำสุดสัมพัทธ์ของฟังก์ชันต่อไปครับ</div>
+        </div>
+    </div>
+
+    <div class="question-container" id="q22-meta" data-topic="แคลคูลัสเบื้องต้น">
+        <div class="question-title">ข้อ 22. จากฟังก์ชันในข้อ 21 (f(x) = x^3 - 3x^2 - 9x + 5) จุดวิกฤตใดที่ให้ "ค่าสูงสุดสัมพัทธ์" (Relative Maximum)? <span style="color:red;">(Clue: ทดสอบด้วยอนุพันธ์อันดับสอง f''(x) ถ้าค่าออกมาน้อยกว่า 0 (< 0) จุดนั้นจะเป็นจุดสูงสุดสัมพัทธ์)</span></div>
+        <ul class="options-list">
+            <li class="option-item"><input type="radio" name="q22" value="A"> A. x = 3</li>
+            <li class="option-item"><input type="radio" name="q22" value="B"> B. x = -1</li>
+            <li class="option-item"><input type="radio" name="q22" value="C"> C. x = 5</li>
+            <li class="option-item"><input type="radio" name="q22" value="D"> D. ให้ค่าสูงสุดเท่ากันทั้งสองจุด</li>
+        </ul>
+        <div class="explanation-box" id="exp-q22">
+            <div class="explanation-title">คำตอบที่ถูกต้อง: B</div>
+            <div><strong>คำอธิบายอย่างละเอียด:</strong> <br>
+                จาก f'(x) = 3x^2 - 6x - 9 จะได้อนุพันธ์อันดับสองคือ f''(x) = 6x - 6 <br>
+                นำค่าวิกฤตจากข้อก่อนหน้า (-1 และ 3) มาตรวจสอบ: <br>
+                - แทน x = 3: f''(3) = 6(3) - 6 = 12 ซึ่ง > 0 (ให้จุดต่ำสุดสัมพัทธ์) <br>
+                - แทน x = -1: f''(1) = 6(-1) - 6 = -12 ซึ่ง < 0 (ให้จุดสูงสุดสัมพัทธ์) <br>
+                ดังนั้น x = -1 คือค่าวิกฤตที่ให้ค่าสูงสุดสัมพัทธ์
+            </div>
+            <div class="tutor-tip">Tutor's Secret Tip: ทริคจำสวนทาง: "ดิฟสองครั้งแล้วได้บวก คือหงาย(ต่ำสุด), ดิฟสองครั้งแล้วได้ลบ คือคว่ำ(สูงสุด)" ท่องไว้ให้ดี เครื่องหมายจะสลับความรู้สึกกับชื่อจุดครับ!</div>
+        </div>
+    </div>
+
+    <div class="question-container" id="q23-meta" data-topic="แคลคูลัสเบื้องต้น">
+        <div class="question-title">ข้อ 23. ถ้ากำหนดฟังก์ชันอนุพันธ์ f'(x) = 2x + 3 และบอกเงื่อนไขเพิ่มว่า f(1) = 5 แล้วตัวฟังก์ชันดั้งเดิม f(x) คือข้อใด? <span style="color:red;">(Clue: อินทิเกรตคืนกลับ f'(x) เพื่อหาพจน์ติดค่า C แล้วใช้ f(1) = 5 ในการแก้หาค่าคงที่ C ตัวนั้นออกมา)</span></div>
+        <ul class="options-list">
+            <li class="option-item"><input type="radio" name="q23" value="A"> A. f(x) = x^2 + 3x</li>
+            <li class="option-item"><input type="radio" name="q23" value="B"> B. f(x) = x^2 + 3x + 1</li>
+            <li class="option-item"><input type="radio" name="q23" value="C"> C. f(x) = x^2 + 3x + 5</li>
+            <li class="option-item"><input type="radio" name="q23" value="D"> D. f(x) = 2x^2 + 3x</li>
+        </ul>
+        <div class="explanation-box" id="exp-q23">
+            <div class="explanation-title">คำตอบที่ถูกต้อง: B</div>
+            <div><strong>คำอธิบายอย่างละเอียด:</strong> <br>
+                อินทิเกรต f'(x) เพื่อหา f(x): f(x) = &int;(2x + 3) dx = x^2 + 3x + C <br>
+                ใช้ข้อมูลเงื่อนไข f(1) = 5 แทนค่าเพื่อหาตัวแปร C: <br>
+                5 = (1)^2 + 3(1) + C <br>
+                5 = 1 + 3 + C &rarr; 5 = 4 + C &rarr; C = 1 <br>
+                ดังนั้นสมการฟังก์ชันที่สมบูรณ์คือ f(x) = x^2 + 3x + 1
+            </div>
+            <div class="tutor-tip">Tutor's Secret Tip: แนวโจทย์ประเภทนี้เรียกว่า ปัญหาค่าเริ่มต้น (Initial Value Problem) ออกข้อสอบเพื่อเช็กว่านักเรียนเข้าใจความสัมพันธ์ย้อนกลับของอนุพันธ์และปฏิยานุพันธ์ไหมนั่นเองครับ</div>
+        </div>
+    </div>
+
+    <div class="question-container" id="q24-meta" data-topic="แคลคูลัสเบื้องต้น">
+        <div class="question-title">ข้อ 24. พื้นที่ปิดล้อมด้วยเส้นโค้ง y = 2x จาก x = 0 ถึง x = 4 เหนือแกน x มีขนาดพื้นที่เท่ากับกี่ตารางหน่วย? <span style="color:red;">(Clue: การหาพื้นที่ปิดล้อมใต้เส้นโค้งและเหนือแกน x ทำได้โดยการหาอินทิกรัลจำกัดเขตของฟังก์ชันนั้น)</span></div>
+        <ul class="options-list">
+            <li class="option-item"><input type="radio" name="q24" value="A"> A. 8 ตารางหน่วย</li>
+            <li class="option-item"><input type="radio" name="q24" value="B"> B. 16 ตารางหน่วย</li>
+            <li class="option-item"><input type="radio" name="q24" value="C"> C. 4 ตารางหน่วย</li>
+            <li class="option-item"><input type="radio" name="q24" value="D"> D. 32 ตารางหน่วย</li>
+        </ul>
+        <div class="explanation-box" id="exp-q24">
+            <div class="explanation-title">คำตอบที่ถูกต้อง: B</div>
+            <div><strong>คำอธิบายอย่างละเอียด:</strong> <br>
+                พื้นที่ (Area) = &int; (จาก 0 ถึง 4) ของ 2x dx <br>
+                ผลการอินทิเกรตได้: [x^2] ที่ขอบเขต 0 ถึง 4 <br>
+                แทนค่าขอบเขตบนลบขอบเขตล่าง: (4)^2 - (0)^2 = 16 - 0 = 16 ตารางหน่วย
+            </div>
+            <div class="tutor-tip">Tutor's Secret Tip: เนื่องจากกราฟ y = 2x เป็นเส้นตรงสร้างรูปสามเหลี่ยม ข้อนี้ถ้าวาดรูปธรรมดาแล้วใช้สูตร 1/2 * ฐาน * สูง = 1/2 * 4 * 8 = 16 ก็ได้คำตอบตรงกันและไวมากเหมือนกันครับ!</div>
+        </div>
+    </div>
+
+    <div class="question-container" id="q25-meta" data-topic="แคลคูลัสเบื้องต้น">
+        <div class="question-title">ข้อ 25. กำหนดให้ h(x) = f(g(x)) โดยที่ g(2) = 3, g'(2) = 4 และ f'(3) = 5 จงหาค่าของ h'(2) <span style="color:red;">(Clue: ใช้กฎลูกโซ่รูปฟังก์ชันคอมโพสิต: h'(x) = f'(g(x)) * g'(x))</span></div>
+        <ul class="options-list">
+            <li class="option-item"><input type="radio" name="q25" value="A"> A. 12</li>
+            <li class="option-item"><input type="radio" name="q25" value="B"> B. 15</li>
+            <li class="option-item"><input type="radio" name="q25" value="C"> C. 20</li>
+            <li class="option-item"><input type="radio" name="q25" value="D"> D. 9</li>
+        </ul>
+        <div class="explanation-box" id="exp-q25">
+            <div class="explanation-title">คำตอบที่ถูกต้อง: C</div>
+            <div><strong>คำอธิบายอย่างละเอียด:</strong> <br>
+                จากสูตรกฎลูกโซ่คอมโพสิตฟังก์ชัน: h'(x) = f'(g(x)) * g'(x) <br>
+                ต้องการหา h'(2) แทนค่า x = 2 ลงไป: <br>
+                h'(2) = f'(g(2)) * g'(2) <br>
+                แทนค่า g(2) = 3 ในฟังก์ชันชั้นใน: h'(2) = f'(3) * g'(2) <br>
+                แทนค่าข้อมูลที่เหลือตามโจทย์ให้: h'(2) = 5 * 4 = 20
+            </div>
+            <div class="tutor-tip">Tutor's Secret Tip: นี่คือโจทย์ระดับกลางค่อนสูงที่ข้อสอบแนวคัดเลือกชอบออกมากๆ ครับ หลักการคืออย่าเพิ่งตกใจตัวแปร ให้เขียนสูตรแกนหลักออกมาก่อนแล้วค่อยๆ แปะหยอดตัวเลขตามลำดับจะหลุดง่ายมากครับ</div>
+        </div>
+    </div>
+
+    <button class="btn-action" id="submit-quiz-btn">ส่งข้อสอบเพื่อวิเคราะห์ผล</button>
+
+    <div id="result-section">
+        <div class="result-header">📊 ผลการวิเคราะห์คะแนนระบบเรียลไทม์</div>
+        <div class="score-display" id="score-text">0 / 25 คะแนน</div>
+        <table class="analysis-table">
+            <thead>
+                <tr>
+                    <th>บทเรียน / หัวข้อประเมิน</th>
+                    <th>คะแนนที่ได้</th>
+                    <th>status การประเมิน</th>
+                </tr>
+            </thead>
+            <tbody id="analysis-rows">
+                </tbody>
+        </table>
+        <button class="btn-action" onclick="window.location.reload();">ทำข้อสอบใหม่อีกครั้ง</button>
+    </div>
+</div>
+
+<script>
+    // สารบัญเฉลยข้อสอบที่ถูกต้องทั้ง 25 ข้อ สำหรับ ม.6
+    const solutions = {
+        q1: 'B', q2: 'B', q3: 'A', q4: 'B', q5: 'B',
+        q6: 'C', q7: 'B', q8: 'C', q9: 'A', q10: 'C',
+        q11: 'A', q12: 'B', q13: 'A', q14: 'B', q15: 'A',
+        q16: 'B', q17: 'B', q18: '8', q18: 'C', q19: 'A', q20: 'B',
+        q21: 'B', q22: 'B', q23: 'B', q24: 'B', q25: 'C'
+    };
+
+    let userAnswers = {};
+
+    // 1. ตรวจสอบการเลือกช้อยส์แบบเรียลไทม์
+    document.querySelectorAll('.option-item').forEach(item => {
+        item.addEventListener('click', function() {
+            const radioBtn = this.querySelector('input[type="radio"]');
+            if (!radioBtn) return;
+
+            const qName = radioBtn.name;
+            
+            // ป้องกันการแอบเปลี่ยนคำตอบทีหลัง
+            if (userAnswers[qName]) return;
+
+            radioBtn.checked = true;
+            const chosenValue = radioBtn.value;
+            userAnswers[qName] = chosenValue;
+
+            const correctAns = solutions[qName];
+            const parentContainer = this.closest('.question-container');
+
+            const allOptions = parentContainer.querySelectorAll('.option-item');
+            allOptions.forEach(opt => {
+                opt.classList.add('disabled-option');
+                const currentRadio = opt.querySelector('input[type="radio"]');
+                
+                if (currentRadio.value === correctAns) {
+                    opt.classList.add('correct-choice');
+                } else if (currentRadio.value === chosenValue && chosenValue !== correctAns) {
+                    opt.classList.add('incorrect-choice');
+                }
+            });
+
+            const expBox = parentContainer.querySelector('.explanation-box');
+            if (expBox) {
+                expBox.style.display = 'block';
+            }
+        });
+    });
+
+    // 2. ประมวลผลลัพธ์และวิเคราะห์จุดอ่อนรายกลุ่มบทเรียน
+    document.getElementById('submit-quiz-btn').addEventListener('click', function() {
+        let score = 0;
+        const totalQuestions = Object.keys(solutions).length;
+
+        if (Object.keys(userAnswers).length < totalQuestions) {
+            alert('พระจอมเกล้าติวเตอร์แนะนำให้น้องๆ ตอบให้ครบทั้ง 25 ข้อก่อนส่ง เพื่อระบบคำนวณสถิติจุดอ่อนที่แม่นยำนะครับ!');
+            return;
+        }
+
+        let topicAnalysis = {};
+
+        for (let i = 1; i <= totalQuestions; i++) {
+            const qKey = 'q' + i;
+            const metaContainer = document.getElementById(qKey + '-meta');
+            const topic = metaContainer ? metaContainer.getAttribute('data-topic') : 'บทเรียนทั่วไป';
+            
+            if (!topicAnalysis[topic]) {
+                topicAnalysis[topic] = { correct: 0, total: 0 };
+            }
+            
+            topicAnalysis[topic].total++;
+            
+            if (userAnswers[qKey] === solutions[qKey]) {
+                score++;
+                topicAnalysis[topic].correct++;
+            }
+        }
+
+        document.getElementById('score-text').innerText = `${score} / ${totalQuestions} คะแนน`;
+
+        const rowsTarget = document.getElementById('analysis-rows');
+        rowsTarget.innerHTML = '';
+
+        for (const topic in topicAnalysis) {
+            const data = topicAnalysis[topic];
+            const percentage = (data.correct / data.total) * 100;
+            let statusText = '';
+            
+            if (percentage >= 80) {
+                statusText = '<span class="status-good">⭐ ดีเยี่ยม (พื้นฐานปึกมาก)</span>';
+            } else if (percentage >= 50) {
+                statusText = '<span class="status-good">👍 พอใช้ (ระวังคิดเลขผิดพลาด)</span>';
+            } else {
+                statusText = '<span class="status-weak">⚠️ ควรทบทวนด่วน (เนื้อหายังไม่แน่น)</span>';
+            }
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><strong>${topic}</strong></td>
+                <td>${data.correct} / ${data.total}</td>
+                <td>${statusText}</td>
+            `;
+            rowsTarget.appendChild(tr);
+        }
+
+        const resSection = document.getElementById('result-section');
+        resSection.style.display = 'block';
+        resSection.scrollIntoView({ behavior: 'smooth' });
+        this.style.display = 'none';
+    });
+</script>
+
+</body>
+</html>
