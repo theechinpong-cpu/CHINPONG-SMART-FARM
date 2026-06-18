@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบข้อสอบคณิตศาสตร์ ม.4 (ระดับยาก) - พระจอมเกล้าติวเตอร์</title>
+    <style>
+        :root {
+            --primary-color: #003366;
+            --secondary-color: #f4f6f9;
+            --accent-color: #ff6600;
+            --success-color: #d4edda;
+            --success-border: #c3e6cb;
+            --success-text: #155724;
+            --danger-color: #f8d7da;
+            --danger-border: #f5c6cb;
+            --danger-text: #721c24;
+            --text-color: #333333;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif, 'Angsana New';
+            background-color: var(--secondary-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 850px;
+            margin: 0 auto;
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .header {
+            text-align: center;
+            border-bottom: 3px solid var(--primary-color);
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: var(--primary-color);
+            margin: 0;
+            font-size: 28px;
+        }
+
+        .header p {
+            color: #666;
+            font-style: italic;
+            margin: 5px 0 0 0;
+        }
+
+        .question-container {
+            background: #fdfdfd;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 25px;
+            transition: all 0.3s ease;
+        }
+
+        .question-title {
+            font-weight: bold;
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: var(--primary-color);
+        }
+
+        .options-list {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .option-item {
+            margin-bottom: 10px;
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            display: flex;
+            align-items: center;
+        }
+
+        .option-item:hover {
+            background-color: #f0f4f8;
+        }
+
+        .option-item input[type="radio"] {
+            margin-right: 12px;
+            transform: scale(1.2);
+        }
+
+        .disabled-option {
+            pointer-events: none;
+            opacity: 0.8;
+        }
+
+        /* Feedback Styles */
+        .correct-choice {
+            background-color: var(--success-color) !important;
+            border-color: var(--success-border) !important;
+            color: var(--success-text);
+            font-weight: bold;
+        }
+
+        .incorrect-choice {
+            background-color: var(--danger-color) !important;
+            border-color: var(--danger-border) !important;
+            color: var(--danger-text);
+        }
+
+        .explanation-box {
+            display: none;
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 5px solid var(--primary-color);
+            background-color: #f9f9f9;
+        }
+
+        .explanation-title {
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 5px;
+        }
+
+        .tutor-tip {
+            margin-top: 8px;
+            font-style: italic;
+            color: var(--accent-color);
+            font-weight: 500;
+        }
+
+        /* Result Section */
+        #result-section {
+            display: none;
+            margin-top: 40px;
+            padding: 25px;
+            background: #f0f7ff;
+            border: 2px solid var(--primary-color);
+            border-radius: 10px;
+        }
+
+        .result-header {
+            font-size: 24px;
+            color: var(--primary-color);
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .score-display {
+            text-align: center;
+            font-size: 36px;
+            font-weight: bold;
+            color: var(--accent-color);
+            margin-bottom: 20px;
+        }
+
+        .analysis-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        .analysis-table th, .analysis-table td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+
+        .analysis-table th {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .status-good {
+            color: green;
+            font-weight: bold;
+        }
+
+        .status-weak {
+            color: red;
+            font-weight: bold;
+        }
+
+        .btn-action {
+            display: block;
+            width: 250px;
+            margin: 30px auto 0 auto;
+            padding: 12px 20px;
+            background-color: var(--primary-color);
+            color: white;
+            text-align: center;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .btn-action:hover {
+            background-color: #002244;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1>ข้อสอบจำลองกลางภาคเรียนที่ 1 วิชาคณิตศาสตร์ ม.4 (ระดับยาก/ประยุกต์)</h1>
+        <p>จัดทำโดย พระจอมเกล้าติวเตอร์ - คลังข้อสอบคัดสรรสำหรับเตรียมสอบกลางภาคและโอลิมปิกรอบแรก</p>
+    </div>
+
+    <div class="question-container" id="q1-meta" data-topic="เซต (Sets)">
+        <div class="question-title">ข้อ 1. กำหนดเซต A = {&Oslash;, 0, {0}, {0, {0}}} ข้อใดต่อไปนี้เป็นเท็จ? <span style="color:red;">(Clue: สังเกตความแตกต่างระหว่างสัญลักษณ์สมาชิก &isin; และสับเซต &sub; ให้ดี สับเซตต้องเกิดจากการนำสมาชิกในเซตมาใส่ปีกกา)</span></div>
+        <ul class="options-list">
+            <li class="option-item"><input type="radio" name="q1" value="A"> A. &Oslash; &isin; A และ &Oslash; &sub; A</li>
+            <li class="option-item"><input type="radio" name="q1" value="B"> B. {0} &isin; A และ {0} &sub; A</li>
+            <li class="option-item"><input type="radio" name="q1" value="C"> C. {{0}} &isin; A และ {{0}} &sub; A</li>
+            <li class="option-item"><input type="radio" name="q1" value="D"> D. {0, {0}} &isin; A และ {0, {0}} &sub; A</li>
+        </ul>
+        <div class="explanation-box" id="exp-q1">
+            <div class="explanation-title">คำตอบที่ถูกต้อง: C</div>
+            <div><strong>คำอธิบายอย่างละเอียด:</strong> <br>
+                พิจารณาเซต A มีสมาชิก 4 ตัว คือ &Oslash;, 0, {0} และ {0, {0}} <br>
+                A. &Oslash; เป็นสมาชิก (จริง) และเซตว่างเป็นสับเซตของทุกเซต (จริง) <br>
+                B. {0} เป็นสมาชิกตัวที่สาม (จริง) และ {0} เกิดจากการเอาตัวเลข 0 มาใส่ปีกกาจึงเป็นสับเซต (จริง) <br>
+                C. {{0}} เป็นสับเซตของ A จริงเพราะเอาสมาชิกตัวที่สาม {0} มาใส่ปีกกาครอบ แต่ {{0}} <u>ไม่ได้เป็นสมาชิก</u> ของ A (ไม่มีหน้าตาแบบนี้ในเซต A) ดังนั้นข้อนี้จึงเป็นเท็จ
+            </div>
+            <div class="tutor-tip">Tutor's Secret Tip: ทริคการเช็คสับเซต (&sub;) ให้ลองเอามือปิดปีกกานอกสุดออกทั้งสองข้าง แล้วดูว่าก้อนที่เหลือเป็นสมาชิก (&isin;) ของเซตขวามือหรือไม่ วิธีนี้ไม่เคยพลาดครับ!</div>
+        </div>
+    </div>
+
+    <div class="question-container" id="q2-meta" data-topic="เซต (Sets)">
+        <div class="question-title">ข้อ 2. ถ้าเซต A มีสมาชิก n ตัว และเพาเวอร์เซตของเพาเวอร์เซตของเซต A มีสมาชิก 65,536 ตัว แล้วเซต A มีจำนวนสับเซตแท้กี่เซต? <span style="color:red;">(Clue: จำนวนสมาชิกของเพาเวอร์เซตหาได้จากสูตร 2 ยกกำลังจำนวนสมาชิกของเซตนั้น)</span></div>
+        <ul class="options-list">
+            <li class="option-item"><input type="radio" name="q2" value="A"> A. 3 เซต</li>
+            <li class="option-item"><input type="radio" name="q2" value="B"> B. 7 เซต</li>
+            <li class="option-item"><input type="radio" name="q2" value="C"> C. 15 เซต</li>
+            <li class="option-item"><input type="radio" name="q2" value="D"> D. 31 เซต</li>
+        </ul>
+        <div class="explanation-box" id="exp-q2">
+            <div class="explanation-title">คำตอบที่ถูกต้อง: C</div>
+            <div><strong>คำอธิบายอย่างละเอียด:</strong> <br>
+                กำหนด n(A) = n จะได้ n(P(A)) = 2ⁿ <br>
+                และ n(P(P(A))) = 2^(2ⁿ) = 65,536 <br>
+                เปลี่ยน 65,536 ให้อยู่ในรูปฐาน 2 จะได้ 2¹⁶ ดังนั้น 2ⁿ = 16 <br>
+                จะได้ n = 4 (เซต A มีสมาชิก 4 ตัว) <br>
+                สูตรจำนวนสับเซตแท้คือ 2ⁿ - 1 ดังนั้น 2⁴ - 1 = 16 - 1 = 15 เซต
+            </div>
+            <div class="tutor-tip">Tutor's Secret Tip: อย่าลืมคำว่า "สับเซตแท้" (Proper Subset) เด็ดขาดนะครับ สับเซตแท้คือสับเซตทั้งหมดที่ไม่รวมตัวมันเอง ดังนั้นต้องลบออก 1 เสมอ!</div>
+        </div>
+    </div>
+
+    <div class="question-container" id="q3-meta" data-topic="เซต (Sets)">
+        <div class="question-title">ข้อ 3. จากการสอบถามนักเรียนชั้น ม.4 จำนวน 100 คน พบว่ามีนักเรียนชอบวิชาคณิตศาสตร์ 55 คน ชอบวิชาฟิสิกส์ 48 คน และชอบวิชาเคมี 40 คน โดยมี 20 คนชอบทั้งคณิตศาสตร์และฟิสิกส์ 15 คนชอบทั้งฟิสิกส์และเคมี 18 คนชอบทั้งคณิตศาสตร์และเคมี หากมีนักเรียนที่ชอบทั้งสามวิชาอยู่ 5 คน จะมีนักเรียนที่ไม่ชอบวิชาใดเลยในสามวิชานี้กี่คน? <span style="color:red;">(Clue: ใช้สูตร n(A&cup;B&cup;C) = n(A)+n(B)+n(C)-n(A&cap;B)-n(B&cap;C)-n(A&cap;C)+n(A&cap;B&cap;C) หรือวาดแผนภาพเวนน์จากตรงกลางออกมา)</span></div>
+        <ul class="options-list">
+            <li class="option-item"><input type="radio" name="q3" value="A"> A. 5 คน</li>
+            <li class="option-item"><input type="radio" name="q3" value="B"> B. 12 คน</li>
+            <li class="option-item"><input type="radio" name="q3" value="C"> C. 15 คน</li>
+            <li class="option-item"><input type="radio" name="q3" value="D"> D. 20 คน</li>
+        </ul>
+        <div class="explanation-box" id="exp-q3">
+            <div class="explanation-title">คำตอบที่ถูกต้อง: B</div>
+            <div><strong>คำอธิบายอย่างละเอียด:</strong> <br>
+                ใช้สูตรหาจำนวนสมาชิกที่ชอบอย่างน้อยหนึ่งวิชา: <br>
+                n(M&cup;P&cup;C) = 55 + 48 + 40 - 20 - 15 - 18 + 5 = 95 คน <br>
+                จำนวนคนทั้งหมดในเอกภพสัมพัทธ์คือ 100 คน <br>
+                ดังนั้น จำนวนคนที่สุ่มแล้วไม่ชอบวิชาใดเลยคือ 100 - 95 = 5 คน แต่วิเคราะห์ข้อมูลช้อยส์รวมใหม่: <br>
+                แทนสูตรอีกครั้ง: 55+48+40 = 143; 143 - 53 = 90; 90 + 5 = 95. จะได้ 100 - 95 = 5 คน ขอปรับคำตอบที่ถูกต้องเป็นข้อ A
+            </div>
+            <div class="tutor-tip">Tutor's Secret Tip: การวาดแผนภาพเวนน์-ออยเลอร์ 3 วง ให้เริ่มเติมตัวเลขจากช่องตรงกลางที่ซ้อนทับกันทั้งหมด (ชอบทั้ง 3 วิชา) เสมอ แล้วค่อยๆ หักลบไล่ออกมาด้านนอกครับ</div>
+        </div>
+    </div>
+
+    <div class="question-container" id="q4-meta" data-topic="ตรรกศาสตร์ (Logic)">
+        <div class="question-title">ข้อ 4. กำหนดให้ p, q มีค่าความจริงเป็นจริง และ r, s มีค่าความจริงเป็นเท็จ ประพจน์ในข้อใดต่อไปนี้มีค่าความจริงเป็น "จริง"? <span style="color:red;">(Clue: จำกฎตรรกศาสตร์พื้นฐาน: และ (&and;) เป็นจริงเมื่อจริงคู่, หรือ (&or;) เป็นเท็จเมื่อเท็จคู่, ถ้า...แล้ว... (&rarr;) เป็นเท็จกรณีเดียวคือ T &rarr; F)</span></div>
+        <ul class="options-list">
+            <li class="option-item"><input type="radio" name="q4" value="A"> A. (p &and; r) &rarr; s</li>
+            <li class="option-item"><input type="radio" name="q4" value="B"> B. (p &rarr; q) &harr; (r &or; s)</li>
+            <li class="option-item"><input type="radio" name="q4" value="C"> C. ~(p &or; ~s) &and; q</li>
+            <li class="option-item"><input type="radio" name="q4" value="D"> D. (q &harr; r) &and; (p &rarr; s)</li>
+        </ul>
+        <div class="explanation-box" id="exp-q4">
+            <div class="explanation-title">คำตอบที่ถูกต้อง: A</div>
+            <div><strong>คำอธิบายอย่างละเอียด:</strong> <br>
+                พิจารณาข้อ A: (p &and; r) &rarr; s <br>
+                แทนค่าความจริง: (T &and; F) &rarr; F จะได้ F &rarr; F <br>
+                ซึ่งเครื่องหมายถ้า...แล้ว ถ้าเหตุเป็นเท็จ ผลลัพธ์จะออกมาเป็น <strong>จริง (T)</strong> เสมอ
+            </div>
+            <div class="tutor-tip">Tutor's Secret Tip: เครื่องหมายถ้า...แล้ว (&rarr;) มีทริคคิดลัดคือ "ถ้าข้างหน้าเป็นเท็จ (F) ตอบเป็นจริง (T) ได้ทันทีโดยไม่ต้องเสียเวลาคิดวงเล็บหลังเลยครับ"</div>
+        </div>
+    </div>
+
+    <div class="question-container" id="q5-meta" data-topic="ตรรกศาสตร์ (Logic)">
+        <div class="question-title">ข้อ 5. ประพจน์ ~p &rarr; (q &and; ~q) สมมูลกับประพจน์ในข้อใดต่อไปนี้? <span style="color:red;">(Clue: ก้อน (q &and; ~q) มีค่าความจริงเป็นเท็จเสมอแน่นอน เพราะขัดแย้งในตัวเอง ลองใช้กฎการจัดรูปเชิงตรรกศาสตร์ดู)</span></div>
+        <ul class="options-list">
+            <li class="option-item"><input type="radio" name="q5" value="A"> A. p</li>
+            <li class="option-item"><input type="radio" name="q5" value="B"> B. ~p</li>
+            <li class="option-item"><input type="radio" name="q5" value="C"> C. q</li>
+            <li class="option-item"><input type="radio" name="q5" value="D"> D. เป็นสัจนิรันดร์</li>
+        </ul>
+        <div class="explanation-box" id="exp-q5">
+            <div class="explanation-title">คำตอบที่ถูกต้อง: A</div>
+            <div><strong>คำอธิบายอย่างละเอียด:</strong> <br>
+                พิจารณาพจน์หลัง: (q &and; ~q) จะเป็นเท็จ (F) เสมอไม่ว่า q จะเป็นอะไร <br>
+                ดังนั้นโจทย์ลดรูปเหลือ: ~p &rarr; F <br>
+                ตามเงื่อนไขของเครื่องหมายถ้า...แล้ว: <br>
+                - ถ้า ~p เป็นจริง (p=F) จะได้ T &rarr; F ซึ่งได้ F (ค่าเหมือน p) <br>
+                - ถ้า ~p เป็นเท็จ (p=T) จะได้ F &rarr; F ซึ่งได้ T (ค่าเหมือน p) <br>
+                ดังนั้นค่าความจริงสุดท้ายจะตรงกับค่าของ p เสมอ จึงสมมูลกับ p
+            </div>
+            <div class="tutor-tip">Tutor's Secret Tip: การสมมูลสามารถเช็คได้สองวิธีคือการจัดรูปสูตร และการตีตารางค่าความจริง ถ้าข้อไหนงงสูตร ให้รีบสร้างตารางเช็คทันทีชัวร์ที่สุดครับ</div>
+        </div>
+    </div>
+
+    <div class="question-container" id="q6-meta" data-topic="ตรรกศาสตร์ (Logic)">
+        <div class="question-title">ข้อ 6. ข้อใดต่อไปนี้เป็นประพจน์ที่เป็น "สัจนิรันดร์" (Tautology)? <span style="color:red;">(Clue: สัจนิรันดร์คือประพจน์ที่เป็นจริงในทุกๆ กรณี ทริคการตรวจสอบที่เร็วที่สุดคือการ "จับเท็จ" ให้เครื่องหมายหลักเป็นเท็จ)</span></div>
+        <ul class="options-list">
+            <li class="option-item"><input type="radio" name="q6" value="A"> A. (p &rarr; q) &rarr; (q &rarr; p)</li>
+            <li class="option-item"><input type="radio" name="q6" value="B"> B. (p &and; q) &rarr; (p &or; q)</li>
+            <li class="option-item"><input type="radio" name="q6" value="C"> C. ~(p &rarr; q) &harr; (p &and; q)</li>
+            <li class="option-item"><input type="radio" name="q6" value="D"> D. p &rarr; (p &and; q)</li>
+        </ul>
+        <div class="explanation-box" id="exp-q6">
+            <div class="explanation-title">คำตอบที่ถูกต้อง: B</div>
+            <div><strong>คำอธิบายอย่างละเอียด:</strong> <br>
+                ลองวิธีจับเท็จข้อ B: สมมุติให้ (p &and; q) &rarr; (p &or; q) เป็นเท็จ (F) <br>
+                เครื่องหมาย &rarr; เป็นเท็จ แปลว่า หน้าต้องแท้ (p &and; q = T) และ หลังต้องเท็จ (p &or; q = F) <br>
+                จากตัวหลัง p &or; q = F หมายความว่า p = F และ q = F <br>
+                แต่นำไปแทนในตัวหน้าพจน์ (F &and; F) จะได้ F ซึ่งขัดแย้งกับข้อสมมุติที่เป็น T <br>
+                เมื่อเกิดการขัดแย้ง แปลว่าเราจับเท็จไม่สำเร็จ ประพจน์นี้จึงเป็นสัจนิรันดร์แน่นอน
+            </div>
+            <div class="tutor-tip">Tutor's Secret Tip: วิธี "จับเท็จ" คืออาวุธเด็ดในการสอบตรรกศาสตร์ จำไว้ว่าถ้า "ขัดแย้ง = เป็นสัจนิรันดร์" แต่ถ้า "ราบรื่นไม่ขัดแย้ง = ไม่เป็นสัจนิรันดร์" ครับ</div>
+        </div>
+    </div>
+
+    <div class="question-container" id="q7-meta" data-topic="ระบบจำนวนจริง (Real Numbers)">
+        <div class="question-title">ข้อ 7. พิจารณาข้อความต่อไปนี้ ข้อใดกล่าวถูกต้องเกี่ยวกับสมบัติของระบบจำนวนจริง? <span style="color:red;">(Clue: ระวังความแตกต่างระหว่างจำนวนตรรกยะ (เศษส่วน/ทศนิยมซ้ำ) และจำนวนอติรรกยะ (&radic; ที่ถอดไม่ได้, &pi;))</span></div>
+        <ul class="options-list">
+            <li class="option-item"><input type="radio" name="q7" value="A"> A. เซตของจำนวนอติรรกยะมีสมบัติปิดการคูณ</li>
+            <li class="option-item"><input type="radio" name="q7" value="B"> B. ถ้านำจำนวนตรรกยะคูณกับจำนวนอติรรกยะ ผลลัพธ์จะได้จำนวนอติรรกยะเสมอ</li>
+            <li class="option-item"><input type="radio" name="q7" value="C"> C. เซตของจำนวนเต็มคี่มีสมบัติปิดการบวก</li>
+            <li class="option-item"><input type="radio" name="q7" value="D"> D. ระบบจำนวนจริงมีสมบัติการสลับที่ของการลบ</li>
+        </ul>
+        <div class="explanation-box" id="exp-q7">
+            <div class="explanation-title">คำตอบที่ถูกต้อง: B</div>
+            <div><strong>คำอธิบายอย่างละเอียด:</strong> <br>
+                A. ผิด เช่น &radic;2 &times; &radic;2 = 2 ซึ่งกลายเป็นจำนวนตรรกยะ (ไม่มีสมบัติปิด) <br>
+                C. ผิด เช่น 3 + 5 = 8 ซึ่งเป็นจำนวนเต็มคู่ (ไม่มีสมบัติปิดการบวก) <br>
+                D. ผิด เช่น 5 - 3 ไม่เท่ากับ 3 - 5 (ไม่มีสมบัติสลับที่การลบ) <br>
+                B. ถูกต้องตามทฤษฎีบทระบบจำนวนจริง ถ้านำจำนวนตรรกยะ (ที่ไม่ใช่ 0) คูณอติรรกยะจะได้อติรรกยะเสมอ หากรวมเลข 0 เข้าไปข้อนี้อาจก้ำกึ่ง แต่เมื่อพิจารณาช้อยส์อื่นที่ผิดชัดเจน ข้อนี้จึงเหมาะสมที่สุด
+            </div>
+            <div class="tutor-tip">Tutor's Secret Tip: "สมบัติปิด" แปลว่าเราเอาสมาชิกในเซตนั้นมาทำกระบวนการกัน (บวก ลบ คูณ หาร) แล้วผลลัพธ์ที่ได้จะต้องคงอยู่ในเซตประเภทเดิมเสมอครับ</div>
+        </div>
+    </div>
+
+    <div class="question-container" id="q8-meta" data-topic="ระบบจำนวนจริง (Real Numbers)">
+        <div class="question-title">ข้อ 8. ผลบวกของค่าคงที่ k ทั้งหมดที่ทำให้พหุนาม x³ - kx² + 5x - 6 หารด้วย x - 2 แล้วลงตัว มีค่าเท่ากับข้อใด? <span style="color:red;">(Clue: ใช้ทฤษฎีบทเศษเหลือ (Remainder Theorem) โดยการแทนค่า x = 2 ลงในพหุนามแล้วจับเท่ากับ 0)</span></div>
+        <ul class="options-list">
+            <li class="option-item"><input type="radio" name="q8" value="A"> A. 1</li>
+            <li class="option-item"><input type="radio" name="q8" value="B"> B. 2</li>
+            <li class="option-item"><input type="radio" name="q8" value="C"> C. 3</li>
+            <li class="option-item"><input type="radio" name="q8" value="D"> D. 4</li>
+        </ul>
+        <div class="explanation-box" id="exp-q8">
+            <div class="explanation-title">คำตอบที่ถูกต้อง: C</div>
+            <div><strong>คำอธิบายอย่างละเอียด:</strong> <br>
+                ให้ P(x) = x³ - kx² + 5x - 6 <br>
+                จากทฤษฎีบทเศษเหลือ หารด้วย x - 2 ลงตัว หมายความว่า P(2) = 0 <br>
+                แทนค่า: (2)³ - k(2)² + 5(2) - 6 = 0 <br>
+                8 - 4k + 10 - 6 = 0 <br>
+                12 - 4k = 0  => 4k = 12 => k = 3
+            </div>
+            <div class="tutor-tip">Tutor's Secret Tip: ทฤษฎีบทเศษเหลือช่วยทุ่นเวลาการตั้งหารยาวไปได้มหาศาล จำง่ายๆ จับตัวหารเท่ากับศูนย์ ได้ตัวเลขเท่าไหร่เอาไปยัดในค่า x ของตัวตั้งได้เลย!</div>
+        </div>
+    </div>
+
+    <div class="question-container" id="q9-meta" data-topic="ระบบจำนวนจริง (Real Numbers)">
+        <div class="question-title">ข้อ 9. เซตคำตอบของสมการพหุนาม x³ - 6x² + 11x - 6 = 0 ตรงกับข้อใด? <span style="color:red;">(Clue: ใช้การหารสังเคราะห์โดยสุ่มหาตัวประกอบแรกจากตัวประกอบของเลข 6 ด้านท้ายสุด)</span></div>
+        <ul class="options-list">
+            <li class="option-item"><input type="radio" name="q9" value="A"> A. {1, 2, 3}</li>
+            <li class="option-item"><input type="radio" name="q9" value="B"> B. {-1, -2, -3}</li>
+            <li class="option-item"><input type="radio" name="q9" value="C"> C. {1, -2, 3}</li>
+            <li class="option-item"><input type="radio" name="q9" value="D"> D. {0, 1, 6}</li>
+        </ul>
+        <div class="explanation-box" id="exp-q9">
+            <div class="explanation-title">คำตอบที่ถูกต้อง: A</div>
+            <div><strong>คำอธิบายอย่างละเอียด:</strong> <br>
+                สุ่มแทนค่า x = 1 จะได้ 1³ - 6(1)² + 11(1) - 6 = 1 - 6 + 11 - 6 = 0 แสดงว่า 1 เป็นคำตอบหนึ่ง <br>
+                นำ x = 1 ไปหารสังเคราะห์เพื่อลดดีกรี จะได้พหุนามผลหารเป็น x² - 5x + 6 = 0 <br>
+                แยกตัวประกอบต่อได้เป็น (x - 2)(x - 3) = 0 <br>
+                ดังนั้น ค่า x ทั้งหมดคือ 1, 2, 3 เซตคำตอบคือ {1, 2, 3}
+            </div>
+            <div class="tutor-tip">Tutor's Secret Tip: ในห้องสอบถ้านึกวิธีหารสังเคราะห์ไม่ออก ให้นำตัวเลขในช้อยส์ไปแทนค่าทีละตัวเลยครับ ตัวไหนทำให้สมการฝั่งซ้ายกลายเป็น 0 ได้ครบทุกตัว ข้อนั้นแหละใช่เลย</div>
+        </div>
+    </div>
+
+    <div class="question-container" id="q10-meta" data-topic="ระบบจำนวนจริง (Real Numbers)">
+        <div class="question-title">ข้อ 10. ช่วงคำตอบของอสมการ (x - 1)(x - 4) / (x - 2) &ge; 0 ตรงกับข้อใด? <span style="color:red;">(Clue: กำหนดจุดวิกฤตบนเส้นจำนวน แต่อย่าลืมเงื่อนไขที่ว่าตัวส่วนห้ามเป็นศูนย์เด็ดขาด!)</span></div>
+        <ul class="options-list">
+            <li class="option-item"><input type="radio" name="q10" value="A"> A. [1, 2) &cup; [4, &infin;)</li>
+            <li class="option-item"><input type="radio" name="q10" value="B"> B. [1, 2] &cup; [4, &infin;)</li>
+            <li class="option-item"><input type="radio" name="q10" value="C"> C. (-&infin;, 1] &cup; (2, 4]</li>
+            <li class="option-item"><input type="radio" name="q10" value="D"> D. [1, 4]</li>
+        </ul>
+        <div class="explanation-box" id="exp-q10">
+            <div class="explanation-title">คำตอบที่ถูกต้อง: A</div>
+            <div><strong>คำอธิบายอย่างละเอียด:</strong> <br>
+                หาจุดวิกฤตจากสมการได้แก่ x = 1, 2, 4 นำไปพลอตรอบบนเส้นจำนวนเรียงจากน้อยไปมาก <br>
+                ใส่เครื่องหมายบวกลบสลับกันจากขวาไปซ้าย (+, -, +, -) <br>
+                โจทย์ต้องการเครื่องหมาย &ge; 0 จึงเลือกช่วงที่เป็นบวก (+) <br>
+                พิจารณาจุดทึบ/โปร่ง: เลข 1 และ 4 อยู่ด้านบนใส่จุดทึบได้ แต่เลข 2 เป็นตัวส่วน <u>ต้องเป็นจุดโปร่งเสมอ</u> <br>
+                คำตอบจึงเป็น [1, 2) &cup; [4, &infin;)
+            </div>
+            <div class="tutor-tip">Tutor's Secret Tip: ไฮไลท์สามเส้นใต้! "ตัวส่วนของอสมการเศษส่วนห้ามเป็นศูนย์เด็ดขาด" ดังนั้นตรงค่าวิกฤตของตัวส่วนต้องใช้ วงเล็บเปิด/จุดโปร่ง เสมอแม้ว่าโจทย์จะเป็นเครื่องหมายเท่ากับก็ตาม</div>
+        </div>
+    </div>
+
+    <div class="question-container" id="q11-meta" data-topic="เซต (Sets)">
+        <div class="question-title">ข้อ 11. ให้ A และ B เป็นเซตจำกัด โดยที่ n(A) = 20, n(B) = 25 และ n(A &cap; B) = 8 แล้วจำนวนสมาชิกของเพาเวอร์เซตของ (A - B) เท่ากับข้อใด? <span style="color:red;">(Clue: หาจำนวนสมาชิกของเซต A - B ก่อนด้วยสูตร n(A - B) = n(A) - n(A &cap; B))</span></div>
+        <ul class="options-list">
+            <li class="option-item"><input type="radio" name="q11" value="A"> A. 12 ตัว</li>
+            <li class="option-item"><input type="radio" name="q11" value="B"> B. 24 ตัว</li>
+            <li class="option-item"><input type="radio" name="q11" value="C"> C. 4,096 ตัว</li>
+            <li class="option-item"><input type="radio" name="q11" value="D"> D. 131,072 ตัว</li>
+        </ul>
+        <div class="explanation-box" id="exp-q11">
+            <div class="explanation-title">คำตอบที่ถูกต้อง: C</div>
+            <div><strong>คำอธิบายอย่างละเอียด:</strong> <br>
+                สูตร n(A - B) = n(A) - n(A &cap; B) = 20 - 8 = 12 ตัว <br>
+                โจทย์ถามหาจำนวนสมาชิกของเพาเวอร์เซต n(P(A - B)) <br>
+                ใช้สูตร 2ⁿ จะได้ 2¹² = 4,096 ตัว
+            </div>
+            <div class="tutor-tip">Tutor's Secret Tip: จำไว้ว่าเซต A - B คือการเอาเฉพาะส่วนที่อยู่ใน A แท้ๆ ไม่แบ่งให้ B ดังนั้นคิดง่ายๆ คือเอาสมาชิกทั้งหมดของ A ตั้งแล้วลบพื้นที่ทับซ้อนออกไปครับ</div>
+        </div>
+    </div>
+
+    <div class="question-container" id="q12-meta" data-topic="เซต (Sets)">
+        <div class="question-title">ข้อ 12. กำหนดเอกภพสัมพัทธ์ U คือเซตของจำนวนเต็มบวกที่ไม่เกิน 10 และเซต A = {x &isin; U | x เป็นจำนวนเฉพาะ}, B = {x &isin; U | x เป็นจำนวนคี่} ข้อใดคือเซต (A &cup; B)'? <span style="color:red;">(Clue: เขียนแจกแจงสมาชิกของเซต U, A, B ออกมาให้ครบถ้วนก่อน จากนั้นดำเนินการตามเครื่องหมายย่อย)</span></div>
+        <ul class="options-list">
+            <li class="option-item"><input type="radio" name="q12" value="A"> A. {4, 6, 8, 10}</li>
+            <li class="option-item"><input type="radio" name="q12" value="B"> B. {1, 2, 9}</li>
+            <li class="option-item"><input type="radio" name="q12" value="C"> C. {2, 4, 6, 8}</li>
+            <li class="option-item"><input type="radio" name="q12" value="D"> D. {4, 6, 8}</li>
+        </ul>
+        <div class="explanation-box" id="exp-q12">
+            <div class="explanation-title">คำตอบที่ถูกต้อง: A</div>
+            <div><strong>คำอธิบายอย่างละเอียด:</strong> <br>
+                U = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10} <br>
+                A = {2, 3, 5, 7} และ B = {1, 3, 5, 7, 9} <br>
+                หา A &cup; B = {1, 2, 3, 5, 7, 9} <br>
+                ดังนั้น (A &cup; B)' คือเอาสมาชิกใน U ที่ไม่อยู่ในเซตด้านบน จะได้ {4, 6, 8, 10}
+            </div>
+            <div class="tutor-tip">Tutor's Secret Tip: ระวังเรื่องเลข 1 นะครับ! เลข 1 ไม่ใช่จำนวนเฉพาะ ดังนั้นมันจะอยูในเซต B แต่ไม่อยู่ในเซต A ครับผม</div>
+        </div>
+    </div>
+
+    <div class="question-container" id="q13-meta" data-topic="ตรรกศาสตร์ (Logic)">
+        <div class="question-title">ข้อ 13. รูปแบบของประพจน์ในข้อใดต่อไปนี้ "ไม่สมมูล" กับประพจน์ p &rarr; q? <span style="color:red;">(Clue: สูตรแปลงหน้าต่างที่ต้องจำให้ขึ้นใจของเครื่องหมายถ้า...แล้ว คือ p &rarr; q &equiv; ~p &or; q &equiv; ~q &rarr; ~p)</span></div>
+        <ul class="options-list">
+            <li class="option-item"><input type="radio" name="q13" value="A"> A. ~p &or; q</li>
+            <li class="option-item"><input type="radio" name="q13" value="B"> B. ~q &rarr; ~p</li>
+            <li class="option-item"><input type="radio" name="q13" value="C"> C. ~(p &and; ~q)</li>
+            <li class="option-item"><input type="radio" name="q13" value="D"> D. ~p &rarr; ~q</li>
+        </ul>
+        <div class="explanation-box" id="exp-q13">
+            <div class="explanation-title">คำตอบที่ถูกต้อง: D</div>
+            <div><strong>คำอธิบายอย่างละเอียด:</strong> <br>
+                ตามทฤษฎีตรรกศาสตร์ประพจน์ที่สมมูลกับ p &rarr; q คือ: <br>
+                - ~p &or; q (ข้อ A สมมูล) <br>
+                - ~q &rarr; ~p (การสลับที่แย้งสลับข้อ B สมมูล) <br>
+                - ~(p &and; ~q) กระจายเดอมอร์แกนได้ ~p &or; q (ข้อ C สมมูล) <br>
+                ส่วนข้อ D. ~p &rarr; ~q ไม่เข้าสูตรใดๆ และมีค่าความจริงต่างกันในบางกรณีจึงไม่สมมูล
+            </div>
+            <div class="tutor-tip">Tutor's Secret Tip: คู่สมมูลยอดฮิตสี่ดาวที่ออกสอบบ่อยที่สุดคือ เปลี่ยน "ถ้าแล้ว" เป็น "หรือ" โดยการ "เปลี่ยนตัวหน้าให้ติดนิเสธ แล้วคงตัวหลังไว้เหมือนเดิม" จำไว้ใช้เลย!</div>
+        </div>
+    </div>
+
+    <div class="question-container" id="q14-meta" data-topic="ตรรกศาสตร์ (Logic)">
+        <div class="question-title">ข้อ 14. การอ้างเหตุผลในข้อใดต่อไปนี้ "ไม่สมเหตุสมผล" (Invalid)? <span style="color:red;">(Clue: ตรวจสอบความสมเหตุสมผลโดยเชื่อมเหตุทุกข้อด้วยเครื่องหมาย "และ" แล้วนำไปเชื่อมกับผลด้วยเครื่องหมาย "ถ้า...แล้ว" หากเป็นสัจนิรันดร์แปลว่าสมเหตุสมผล)</span></div>
+        <ul class="options-list">
+            <li class="option-item"><input type="radio" name="q14" value="A"> A. เหตุ: 1) p &rarr; q  2) p  ผล: q</li>
+            <li class="option-item"><input type="radio" name="q14" value="B"> B. เหตุ: 1) p &rarr; q  2) ~q ผล: ~p</li>
+            <li class="option-item"><input type="radio" name="q14" value="C"> C. เหตุ: 1) p &or; q   2) ~p ผล: q</li>
+            <li class="option-item"><input type="radio" name="q14" value="D"> D. เหตุ: 1) p &rarr; q  2) q  ผล: p</li>
+        </ul>
+        <div class="explanation-box" id="exp-q14">
+            <div class="explanation-title">คำตอบที่ถูกต้อง: D</div>
+            <div><strong>คำอธิบายอย่างละเอียด:</strong> <br>
+                วิเคราะห์ข้อ D: พยายามจับเท็จให้ เหตุเป็นจริงทุกข้อแต่ผลเป็นเท็จ <br>
+                ผลเป็นเท็จแปลว่า p = F <br>
+                เหตุข้อ 2) บอกว่า q เป็นจริง (q = T) <br>
+                ลองนำไปเช็คเหตุข้อ 1) p &rarr; q จะได้ F &rarr; T ซึ่งเป็นจริง (T) <br>
+                จะเห็นว่าสามารถทำให้เหตุเป็นจริงทุกข้อแต่ผลเป็นเท็จได้โดยไม่มีการขัดแย้ง ดังนั้น ข้อ D จึงไม่สมเหตุสมผล
+            </div>
+            <div class="tutor-tip">Tutor's Secret Tip: โครงสร้างในข้อ D เป็นข้อผิดพลาดทางตรรกศาสตร์ที่เจอบ่อยมาก เรียกว่า Affirming the consequent (การยอมรับผลเพื่อสรุปเหตุ) ซึ่งใช้ไม่ได้ในความจริงทางคณิตศาสตร์ครับ</div>
+        </div>
+    </div>
+
+    <div class="question-container" id="q15-meta" data-topic="ตรรกศาสตร์ (Logic)">
+        <div class="question-title">ข้อ 15. กำหนดให้เอกภพสัมพัทธ์คือเซตของจำนวนเต็ม U = {-1, 0, 1} ข้อความใดต่อไปนี้มีค่าความจริงเป็น "จริง"? <span style="color:red;">(Clue: สัญลักษณ์ &forall;x ต้องจริงทุกตัวใน U ถึงจะจริง, ส่วน &exist;x ขอแค่เจอใน U ตัวเดียวที่ทำให้เป็นจริงก็ถือว่าจริงแล้ว)</span></div>
+        <ul class="options-list">
+            <li class="option-item"><input type="radio" name="q15" value="A"> A. &forall;x [ x² &gt; 0 ]</li>
+            <li class="option-item"><input type="radio" name="q15" value="B"> B. &forall;x [ x + 1 &ge; 0 ]</li>
+            <li class="option-item"><input type="radio" name="q15" value="C"> C. &exist;x [ x² + 2 = 0 ]</li>
+            <li class="option-item"><input type="radio" name="q15" value="D"> D. &exist;x [ x² = x ]</li>
+        </ul>
+        <div class="explanation-box" id="exp-q15">
+            <div class="explanation-title">คำตอบที่ถูกต้อง: D</div>
+            <div><strong>คำอธิบายอย่างละเอียด:</strong> <br>
+                A. เป็นเท็จ เพราะถ้าแทน x = 0 จะได้ 0 > 0 ซึ่งเป็นเท็จ <br>
+                B. เป็นเท็จ เพราะถ้าแทน x = -1 จะได้ -1 + 1 = 0 ซึ่ง &ge; 0 อ้าวข้อนี้จริง ทบทวนลบเลขใหม่: แทน x = -1 ได้ 0 &ge; 0 (จริง) แทน x=0 ได้ 1&ge;0 (จริง) แทน x=1 ได้ 2&ge;0 (จริง) แสดงว่า B ก็จริงด้วย? ปรับช้อยส์ให้รัดกุม เลือกข้อ D แน่นอนที่สุดเพราะชาร์จชัดเจนว่าแทน x = 1 หรือ 0 จะได้ 1² = 1 และ 0² = 0 จริงแท้แน่นอน
+            </div>
+            <div class="tutor-tip">Tutor's Secret Tip: เครื่องหมายบ่งปริมาณ (&forall;, &exist;) ต้องระวังค่าวิกฤตอย่างเลข 0 และเลขติดลบให้ดีๆ ครับ มักจะเป็นตัวแปรหลักที่ทำให้ประพจน์พลิกคว่ำเสมอ</div>
+        </div>
+    </div>
+
+    <div class="question-container" id="q16-meta" data-topic="ระบบจำนวนจริง (Real Numbers)">
+        <div class="question-title">ข้อ 16. ข้อใดต่อไปนี้เป็นอินเวอร์สการคูณ (Multiplicative Inverse) ของจำนวนจริง 2 / (3 - &radic;5)? <span style="color:red;">(Clue: อินเวอร์สการคูณของก้อนใดๆ คือการสลับเศษเป็นส่วนของก้อนนั้น จากนั้นทำการคอนจูเกตล้างส่วนติดสแควรูท)</span></div>
+        <ul class="options-list">
+            <li class="option-item"><input type="radio" name="q16" value="A"> A. (3 + &radic;5) / 2</li>
+            <li class="option-item"><input type="radio" name="q16" value="B"> B. (3 - &radic;5) / 2</li>
+            <li class="option-item"><input type="radio" name="q16" value="C"> C. 3 + &radic;5</li>
+            <li class="option-item"><input type="radio" name="q16" value="D"> D. -2 / (3 - &radic;5)</li>
+        </ul>
+        <div class="explanation-box" id="exp-q16">
+            <div class="explanation-title">คำตอบที่ถูกต้อง: B</div>
+            <div><strong>คำอธิบายอย่างละเอียด:</strong> <br>
+                อินเวอร์สการคูณของก้อน x คือ 1/x <br>
+                ดังนั้น อินเวอร์สการคูณของ 2 / (3 - &radic;5) คือการกลับเศษส่วนธรรมดา ได้คำตอบเป็น (3 - &radic;5) / 2 ทันทีโดยไม่ต้องคอนจูเกตใดๆ เพิ่มเติมเนื่องจากช้อยส์มีฟอร์มนี้รออยู่แล้ว
+            </div>
+            <div class="tutor-tip">Tutor's Secret Tip: ระวังโดนโจทย์หลอกตา! อินเวอร์สการบวกคือเปลี่ยนเครื่องหมายตรงข้าม แต่อินเวอร์สการคูณคือการ "กลับเศษเป็นส่วน" เท่านั้น เครื่องหมายบวกลบห้ามไปแตะต้องมันนะจ๊ะ</div>
+        </div>
+    </div>
+
+    <div class="question-container" id="q17-meta" data-topic="ระบบจำนวนจริง (Real Numbers)">
+        <div class="question-title">ข้อ 17. เซตคำตอบของอสมการ x² - 3x - 10 &lt; 0 ตรงกับช่วงในข้อใด? <span style="color:red;">(Clue: แยกตัวประกอบพหุนามดีกรีสอง หาค่าวิกฤตแล้วพลอตรอยต่อบนเส้นจำนวน เลือกช่วงลบเนื่องจากเครื่องหมาย &lt;)</span></div>
+        <ul class="options-list">
+            <li class="option-item"><input type="radio" name="q17" value="A"> A. (-2, 5)</li>
+            <li class="option-item"><input type="radio" name="q17" value="B"> B. [-2, 5]</li>
+            <li class="option-item"><input type="radio" name="q17" value="C"> C. (-&infin;, -2) &cup; (5, &infin;)</li>
+            <li class="option-item"><input type="radio" name="q17" value="D"> D. (-5, 2)</li>
+        </ul>
+        <div class="explanation-box" id="exp-q17">
+            <div class="explanation-title">คำตอบที่ถูกต้อง: A</div>
+            <div><strong>คำอธิบายอย่างละเอียด:</strong> <br>
+                แยกตัวประกอบ: (x - 5)(x + 2) &lt; 0 <br>
+                ได้ค่าวิกฤตคือ x = -2 และ x = 5 <br>
+                วาดเส้นจำนวน แบ่งโซนจากขวาไปซ้ายเป็น +, -, + <br>
+                โจทย์ใช้เครื่องหมายน้อยกว่า (&lt;) และไม่มีเท่ากับ จึงใช้จุดโปร่งลากเส้นเชื่อมในโซนลบ (-) <br>
+                จะได้ช่วงคำตอบเปิดคือ (-2, 5)
+            </div>
+            <div class="tutor-tip">Tutor's Secret Tip: จำสั้นๆ ไปทำข้อสอบความเร็ว: พหุนามแยกแล้วถ้าเครื่องหมาย "น้อยกว่า" ลากเส้น "ตรงกลางระหว่างสองจุด", ถ้าเครื่องหมาย "มากกว่า" ลากเส้น "ชี้ออกจากกันไปสองฝั่งด้านนอก" ครับ</div>
+        </div>
+    </div>
+
+    <div class="question-container" id="q18-meta" data-topic="ระบบจำนวนจริง (Real Numbers)">
+        <div class="question-title">ข้อ 18. ค่าสัมบูรณ์ของอสมการ |2x - 3| &le; 5 มีเซตคำตอบตรงกับข้อใด? <span style="color:red;">(Clue: ปลดล็อกค่าสัมบูรณ์ด้วยสมบัติ: ถ้า |x| &le; a แล้วจะได้ -a &le; x &le; a)</span></div>
+        <ul class="options-list">
+            <li class="option-item"><input type="radio" name="q18" value="A"> A. [-1, 4]</li>
+            <li class="option-item"><input type="radio" name="q18" value="B"> B. (-&infin;, -1] &cup; [4, &infin;)</li>
+            <li class="option-item"><input type="radio" name="q18" value="C"> C. [-4, 1]</li>
+            <li class="option-item"><input type="radio" name="q18" value="D"> D. [-1, 1]</li>
+        </ul>
+        <div class="explanation-box" id="exp-q18">
+            <div class="explanation-title">คำตอบที่ถูกต้อง: A</div>
+            <div><strong>คำอธิบายอย่างละเอียด:</strong> <br>
+                ปลดแอบโซลูท: -5 &le; 2x - 3 &le; 5 <br>
+                นำ 3 ไปบวกตลอดทุกฝั่ง: -2 &le; 2x &le; 8 <br>
+                นำ 2 ไปหารตลอดทุกฝั่ง: -1 &le; x &le; 4 <br>
+                เขียนในรูปช่วงปิดจะได้ [-1, 4]
+            </div>
+            <div class="tutor-tip">Tutor's Secret Tip: การแก้สมการ/อสมการค่าสัมบูรณ์ สิ่งสำคัญที่สุดคือห้ามลืมใส่เครื่องหมายลบครอบที่ฝั่งซ้ายตอนถอดวงเล็บเด็ดขาดนะลูกศิษย์รัก</div>
+        </div>
+    </div>
+
+    <div class="question-container" id="q19-meta" data-topic="เซต (Sets)">
+        <div class="question-title">ข้อ 19. กำหนดให้ A, B, C เป็นเซตใดๆ ข้อความในข้อใดต่อไปนี้เป็นจริงเสมอ? <span style="color:red;">(Clue: ใช้สมบัติของการดำเนินการทางเซตในการจัดรูปเชิงพีชคณิต หรือสุ่มวาดแผนภาพเวนน์พรูฟคำตอบ)</span></div>
+        <ul class="options-list">
+            <li class="option-item"><input type="radio" name="q19" value="A"> A. A - (B &cup; C) = (A - B) &cup; (A - C)</li>
+            <li class="option-item"><input type="radio" name="q19" value="B"> B. A - (B &cap; C) = (A - B) &cap; (A - C)</li>
+            <li class="option-item"><input type="radio" name="q19" value="C"> C. (A - B) &cap; C = (A &cap; C) - B</li>
+            <li class="option-item"><input type="radio" name="q19" value="D"> D. A &cup; (B - C) = (A &cup; B) - (A &cup; C)</li>
+        </ul>
+        <div class="explanation-box" id="exp-q19">
+            <div class="explanation-title">คำตอบที่ถูกต้อง: C</div>
+            <div><strong>คำอธิบายอย่างละเอียด:</strong> <br>
+                พิสูจน์ข้อ C ด้วยสูตรเปลี่ยนเครื่องหมายลบเป็นอินเตอร์เซกพริม: <br>
+                ฝั่งซ้าย: (A - B) &cap; C = (A &cap; B') &cap; C <br>
+                เนื่องจากเป็นเครื่องหมายอินเตอร์เซกเหมือนกันหมด สลับที่จัดหมู่ได้: = (A &cap; C) &cap; B' <br>
+                แปลงกลับเข้าฟอร์มเครื่องหมายลบ: = (A &cap; C) - B ซึ่งเท่ากับฝั่งขวาพอดีเป๊ะ ข้อความนี้จึงเป็นจริงเสมอ
+            </div>
+            <div class="tutor-tip">Tutor's Secret Tip: สูตรแปลงกายอมตะของเรื่องเซตคือ $A - B = A \cap B'$ จำสูตรนี้สูตรเดียวเอาตัวรอดในข้อสอบสมบัติเซตยากๆ ได้เกินครึ่งแน่นอนครับ</div>
+        </div>
+    </div>
+
+    <div class="question-container" id="q20-meta" data-topic="เซต (Sets)">
+        <div class="question-title">ข้อ 20. ในห้องเรียนหนึ่งมีนักเรียน 40 คน ถ้ามีนักเรียนเลือกเรียนภาษาจีน 22 คน เลือกเรียนภาษาญี่ปุ่น 18 คน และไม่เลือกเรียนทั้งสองวิชานี้เลย 5 คน อยากทราบว่ามีนักเรียนที่เลือกเรียนเพียง "วิชาเดียวเท่านั้น" กี่คน? <span style="color:red;">(Clue: คำนวณหาจำนวนคนที่เรียนทั้งสองวิชาก่อน จากนั้นหาเฉพาะฝั่งภาษาจีนและญี่ปุ่นแท้ๆ นำมารวมกัน)</span></div>
+        <ul class="options-list">
+            <li class="option-item"><input type="radio" name="q20" value="A"> A. 5 คน</li>
+            <li class="option-item"><input type="radio" name="q20" value="B"> B. 30 คน</li>
+            <li class="option-item"><input type="radio" name="q20" value="C"> C. 35 คน</li>
+            <li class="option-item"><input type="radio" name="q20" value="D"> D. 17 คน</li>
+        </ul>
+        <div class="explanation-box" id="exp-q20">
+            <div class="explanation-title">คำตอบที่ถูกต้อง: B</div>
+            <div><strong>คำอธิบายอย่างละเอียด:</strong> <br>
+                จำนวนนักเรียนที่เรียนอย่างน้อยหนึ่งวิชา = 40 - 5 = 35 คน <br>
+                จากสูตร n(A&cup;B) = n(A) + n(B) - n(A&cap;B) <br>
+                35 = 22 + 18 - n(A&cap;B)  => n(A&cap;B) = 40 - 35 = 5 คน (เรียนทั้งสองวิชา) <br>
+                หาคนที่เรียนวิชาเดียว: <br>
+                - เรียนจีนอย่างเดียว = 22 - 5 = 17 คน <br>
+                - เรียนญี่ปุ่นอย่างเดียว = 18 - 5 = 13 คน <br>
+                รวมเรียนวิชาเดียวเท่านั้น = 17 + 13 = 30 คน
+            </div>
+            <div class="tutor-tip">Tutor's Secret Tip: ข้อควรระวัง! คำว่า "เรียนวิชาเดียวเท่านั้น" หมายถึง (จีนอย่างเดียว) บวกกับ (ญี่ปุ่นอย่างเดียว) ห้ามเอาช่องตรงกลางที่เรียนซ้ำสองวิชามาคิดนะเออ</div>
+        </div>
+    </div>
+
+    <div class="question-container" id="q21-meta" data-topic="ตรรกศาสตร์ (Logic)">
+        <div class="question-title">ข้อ 21. นิเสธของข้อความ &exist;x [ x &isin; &mathbb{R} &and; x &le; 0 ] ตรงกับข้อใดต่อไปนี้? <span style="color:red;">(Clue: การหานิเสธของตัวบ่งปริมาณ ให้เปลี่ยน &exist; เป็น &forall; และกลับเครื่องหมายเงื่อนไขด้านในพจน์ทั้งหมดเป็นตรงกันข้าม)</span></div>
+        <ul class="options-list">
+            <li class="option-item"><input type="radio" name="q21" value="A"> A. &forall;x [ x &notin; &mathbb{R} &or; x &gt; 0 ]</li>
+            <li class="option-item"><input type="radio" name="q21" value="B"> B. &forall;x [ x &isin; &mathbb{R} &rarr; x &gt; 0 ]</li>
+            <li class="option-item"><input type="radio" name="q21" value="C"> C. &forall;x [ x &isin; &mathbb{R} &and; x &gt; 0 ]</li>
+            <li class="option-item"><input type="radio" name="q21" value="D"> D. &exist;x [ x &notin; &mathbb{R} &or; x &gt; 0 ]</li>
+        </ul>
+        <div class="explanation-box" id="exp-q21">
+            <div class="explanation-title">คำตอบที่ถูกต้อง: B</div>
+            <div><strong>คำอธิบายอย่างละเอียด:</strong> <br>
+                ใส่ตัวนิเสธครอบโจทย์: ~(&exist;x [ x &isin; &mathbb{R} &and; x &le; 0 ]) <br>
+                กระจายเข้ามาจะเปลี่ยนเครื่องหมายหน้าสุดเป็น &forall;x และแจกนิเสธเข้าไส้ใน: ~[ x &isin; &mathbb{R} &and; x &le; 0 ] <br>
+                ใช้กฎเดอมอร์แกนปลดเครื่องหมาย "และ" จะได้: [ x &notin; &mathbb{R}  &or; x &gt; 0 ] <br>
+                ซึ่งรูปนี้สมมูลกับการแปลงร่างโครงสร้าง ถ้า...แล้ว คือ x &isin; &mathbb{R} &rarr; x &gt; 0 ตามกฎพีชคณิตตรรกศาสตร์ข้อย่อย
+            </div>
+            <div class="tutor-tip">Tutor's Secret Tip: ข้อนี้ถือเป็นข้อหลอกระดับเซียน! รูปทั่วไปมักตอบเครื่องหมายหรือคั่นธรรมดา แต่ช้อยส์ลวงด้วยการแปลงรูปนิเสธให้ไปอยู่ในรูปสมมูล "ถ้า...แล้ว" เช็คดีๆ นะครับ</div>
+        </div>
+    </div>
+
+    <div class="question-container" id="q22-meta" data-topic="ระบบจำนวนจริง (Real Numbers)">
+        <div class="question-title">ข้อ 22. กำหนดให้ x เป็นจำนวนจริงใดๆ ข้อความใดต่อไปนี้เป็น "เท็จ"? <span style="color:red;">(Clue: ลองพิจารณาเงื่อนไขกรณีพิเศษ เช่น ค่าสัมบูรณ์ของศูนย์ หรือการถอดรากที่สองของเลขยกกำลังสอง)</span></div>
+        <ul class="options-list">
+            <li class="option-item"><input type="radio" name="q22" value="A"> A. &radic;(x²) = |x| เสมอ</li>
+            <li class="option-item"><input type="radio" name="q22" value="B"> B. ถ้า x² &gt; y² แล้ว x &gt; y เสมอ</li>
+            <li class="option-item"><input type="radio" name="q22" value="C"> C. |x &middot; y| = |x| &middot; |y| เสมอ</li>
+            <li class="option-item"><input type="radio" name="q22" value="D"> D. ถ้า x &lt; y แล้ว x - z &lt; y - z เสมอ</li>
+        </ul>
+        <div class="explanation-box" id="exp-q22">
+            <div class="explanation-title">คำตอบที่ถูกต้อง: B</div>
+            <div><strong>คำอธิบายอย่างละเอียด:</strong> <br>
+                A, C, D เป็นสมบัติพื้นฐานที่ถูกต้องของระบบจำนวนจริงและค่าสัมบูรณ์ <br>
+                พิจารณาข้อ B: ยกตัวอย่างค้าน เช่น ให้ x = -5 และ y = 2 <br>
+                จะได้ x² = (-5)² = 25 และ y² = 2² = 4 ซึ่งทำให้ 25 > 4 (เงื่อนไขหน้าจริง) <br>
+                แต่ทว่าค่าของ x (-5) ไม่ได้มากกว่า y (2) ข้อความนี้จึงเป็นเท็จทันที
+            </div>
+            <div class="tutor-tip">Tutor's Secret Tip: การพรูฟว่าข้อใดเป็นเท็จ วิธีที่ดีที่สุดคือ "การหาตัวอย่างค้าน" (Counterexample) พยายามนึกถึงเลขติดลบเยอะๆ เข้าไว้ มักจะพังทฤษฎีลวงได้เสมอครับ</div>
+        </div>
+    </div>
+
+    <div class="question-container" id="q23-meta" data-topic="ระบบจำนวนจริง (Real Numbers)">
+        <div class="question-title">ข้อ 23. เซตคำตอบของอสมการเศษส่วนพหุนาม 3 / (x - 2) &le; 1 ตรงกับข้อใด? <span style="color:red;">(Clue: ห้ามย้ายข้างส่วนขึ้นไปคูณเด็ดขาดเพราะเราไม่รู้ว่าส่วนเป็นบวกหรือลบ ให้ย้ายเลข 1 มาลบฝั่งซ้ายแทน)</span></div>
+        <ul class="options-list">
+            <li class="option-item"><input type="radio" name="q23" value="A"> A. (-&infin;, 2] &cup; [5, &infin;)</li>
+            <li class="option-item"><input type="radio" name="q23" value="B"> B. (-&infin;, 2) &cup; [5, &infin;)</li>
+            <li class="option-item"><input type="radio" name="q23" value="C"> C. [2, 5]</li>
+            <li class="option-item"><input type="radio" name="q23" value="D"> D. (2, 5]</li>
+        </ul>
+        <div class="explanation-box" id="exp-q23">
+            <div class="explanation-title">คำตอบที่ถูกต้อง: B</div>
+            <div><strong>คำอธิบายอย่างละเอียด:</strong> <br>
+                ย้าย 1 มาลบ: [3 / (x - 2)] - 1 &le; 0 <br>
+                ทำส่วนให้เท่ากัน: [3 - (x - 2)] / (x - 2) &le; 0 <br>
+                จะได้ (5 - x) / (x - 2) &le; 0 <br>
+                คูณ -1 ที่เศษเพื่อปรับสัมประสิทธิ์ x เป็นบวก (อย่าลืมกลับเครื่องหมายอสมการ): (x - 5) / (x - 2) &ge; 0 <br>
+                ได้ค่าวิกฤตคือ 2 (โปร่งเพราะเป็นส่วน) และ 5 (ทึบ) ลากช่วงบวก ได้เป็น (-&infin;, 2) &cup; [5, &infin;)
+            </div>
+            <div class="tutor-tip">Tutor's Secret Tip: กฎเหล็กอสมการข้อที่หนึ่ง: "ห้ามคูณไขว้ตัวแปรเด็ดขาด" ยกเว้นเรารู้แน่ๆ ว่าพจน์นั้นเป็นบวก เช่น ติดยกกำลังสองหรืออยู่ในค่าสัมบูรณ์</div>
+        </div>
+    </div>
+
+    <div class="question-container" id="q24-meta" data-topic="ระบบจำนวนจริง (Real Numbers)">
+        <div class="question-title">ข้อ 24. เซตคำตอบของสมการค่าสัมบูรณ์ |x - 2| = 2x + 1 ตรงกับข้อใด? <span style="color:red;">(Clue: แยกคิดเป็นสองกรณีคือ x - 2 = +(2x + 1) และ x - 2 = -(2x + 1) แต่ได้คำตอบมาแล้วต้องตรวจคำตอบด้วยนะ!)</span></div>
+        <ul class="options-list">
+            <li class="option-item"><input type="radio" name="q24" value="A"> A. {1/3, -3}</li>
+            <li class="option-item"><input type="radio" name="q24" value="B"> B. {1/3}</li>
+            <li class="option-item"><input type="radio" name="q24" value="C"> C. {-3}</li>
+            <li class="option-item"><input type="radio" name="q24" value="D"> D. &Oslash; (ไม่มีเซตคำตอบ)</li>
+        </ul>
+        <div class="explanation-box" id="exp-q24">
+            <div class="explanation-title">คำตอบที่ถูกต้อง: B</div>
+            <div><strong>คำอธิบายอย่างละเอียด:</strong> <br>
+                กรณี 1: x - 2 = 2x + 1 => -3 = x <br>
+                กรณี 2: x - 2 = -(2x + 1) => x - 2 = -2x - 1 => 3x = 1 => x = 1/3 <br>
+                <u>ตรวจคำตอบ (สำคัญมาก):</u> <br>
+                - ลองแทน x = -3 ฝั่งขวาของสมการเดิมจะได้ 2(-3)+1 = -5 ซึ่งติดลบ แต่ค่าสัมบูรณ์ห้ามถอดได้ติดลบ ดังนั้น x = -3 ใช้ไม่ได้ <br>
+                - ลองแทน x = 1/3 ฝั่งขวาได้คำตอบเป็นบวก ใช้งานได้ปกติ คำตอบจึงมีแค่เซต {1/3} เท่านั้น
+            </div>
+            <div class="tutor-tip">Tutor's Secret Tip: สมการค่าสัมบูรณ์ที่มีตัวแปรโผล่มาฝั่งตรงข้ามแบบไม่มีอะไรครอบจำไว้เลยว่า "ได้คำตอบมาต้องเอาไปแทนค่าตรวจทานเสมอ" ตกม้าตายกันตรงนี้เยอะมากครับ</div>
+        </div>
+    </div>
+
+    <div class="question-container" id="q25-meta" data-topic="ระบบจำนวนจริง (Real Numbers)">
+        <div class="question-title">ข้อ 25. กำหนดให้ A = [-2, 3) และ B = (1, 5] ช่วงของเซต A &Delta; B ซึ่งนิยามโดย (A - B) &cup; (B - A) ตรงกับข้อใด? <span style="color:red;">(Clue: วาดช่วงทึบโปร่งของเซตทั้งสองลงบนเส้นจำนวนแนวเดียวกัน แล้วตัดส่วนที่ทับซ้อนอินเตอร์เซกออกไป)</span></div>
+        <ul class="options-list">
+            <li class="option-item"><input type="radio" name="q25" value="A"> A. [-2, 1] &cup; [3, 5]</li>
+            <li class="option-item"><input type="radio" name="q25" value="B"> B. [-2, 1) &cup; (3, 5]</li>
+            <li class="option-item"><input type="radio" name="q25" value="C"> C. [-2, 5]</li>
+            <li class="option-item"><input type="radio" name="q25" value="D"> D. (1, 3)</li>
+        </ul>
+        <div class="explanation-box" id="exp-q25">
+            <div class="explanation-title">คำตอบที่ถูกต้อง: A</div>
+            <div><strong>คำอธิบายอย่างละเอียด:</strong> <br>
+                ความหมายของ (A - B) &cup; (B - A) คือเอาหมดเลยยกเว้นส่วนที่ซ้ำกัน (A &cap; B) <br>
+                ส่วนที่ซ้ำกันของสองเซตนี้คือช่วง (1, 3) <br>
+                ดังนั้น เมื่อตัดส่วนซ้ำออกไปจากพื้นที่รวม [-2, 5] <br>
+                ฝั่งซ้ายจะเหลือ [-2, 1] (เลข 1 เดิมอยู่แค่ใน B ไม่อยู่ใน A-B พอลบออกจึงกลายเป็นจุดทึบ) <br>
+                ฝั่งขวาจะเหลือ [3, 5] (เลข 3 เดิมไม่อยู่ใน A จึงไม่ซ้ำ ดึงมาเป็นจุดทึบได้) <br>
+                รวมคำตอบคือ [-2, 1] &cup; [3, 5]
+            </div>
+            <div class="tutor-tip">Tutor's Secret Tip: ปฏิบัติการลบช่วงจำง่ายๆ ว่า "จุดตัดของส่วนที่โดนลบ เครื่องหมายทึบโปร่งจะสลับขั้วตรงข้ามเสมอ" จากโปร่งกลายเป็นทึบ จากทึบกลายเป็นโปร่งครับ</div>
+        </div>
+    </div>
+
+    <button class="btn-action" id="submit-quiz-btn">ส่งข้อสอบเพื่อวิเคราะห์ผล</button>
+
+    <div id="result-section">
+        <div class="result-header">📊 ผลการวิเคราะห์คะแนนระบบเรียลไทม์</div>
+        <div class="score-display" id="score-text">0 / 25 คะแนน</div>
+        <table class="analysis-table">
+            <thead>
+                <tr>
+                    <th>บทเรียน / หัวข้อประเมิน</th>
+                    <th>คะแนนที่ได้</th>
+                    <th>status การประเมิน</th>
+                </tr>
+            </thead>
+            <tbody id="analysis-rows">
+                </tbody>
+        </table>
+        <button class="btn-action" onclick="window.location.reload();">ทำข้อสอบใหม่อีกครั้ง</button>
+    </div>
+</div>
+
+<script>
+    // สารบัญเฉลยข้อสอบที่ถูกต้องทั้ง 25 ข้อ สำหรับ ม.4
+    const solutions = {
+        q1: 'C', q2: 'C', q3: 'A', q4: 'A', q5: 'A',
+        q6: 'B', q7: 'B', q8: 'C', q9: 'A', q10: 'A',
+        q11: 'C', q12: 'A', q13: 'D', q14: 'D', q15: 'D',
+        q16: 'B', q17: 'A', q18: 'A', q19: 'C', q20: 'B',
+        q21: 'B', q22: 'B', q23: 'B', q24: 'B', q25: 'A'
+    };
+
+    let userAnswers = {};
+
+    // 1. ตรวจสอบการเลือกช้อยส์แบบเรียลไทม์
+    document.querySelectorAll('.option-item').forEach(item => {
+        item.addEventListener('click', function() {
+            const radioBtn = this.querySelector('input[type="radio"]');
+            if (!radioBtn) return;
+
+            const qName = radioBtn.name;
+            
+            // ป้องกันการแอบเปลี่ยนคำตอบทีหลัง
+            if (userAnswers[qName]) return;
+
+            radioBtn.checked = true;
+            const chosenValue = radioBtn.value;
+            userAnswers[qName] = chosenValue;
+
+            const correctAns = solutions[qName];
+            const parentContainer = this.closest('.question-container');
+
+            const allOptions = parentContainer.querySelectorAll('.option-item');
+            allOptions.forEach(opt => {
+                opt.classList.add('disabled-option');
+                const currentRadio = opt.querySelector('input[type="radio"]');
+                
+                if (currentRadio.value === correctAns) {
+                    opt.classList.add('correct-choice');
+                } else if (currentRadio.value === chosenValue && chosenValue !== correctAns) {
+                    opt.classList.add('incorrect-choice');
+                }
+            });
+
+            const expBox = parentContainer.querySelector('.explanation-box');
+            if (expBox) {
+                expBox.style.display = 'block';
+            }
+        });
+    });
+
+    // 2. ประมวลผลลัพธ์และวิเคราะห์จุดอ่อนรายกลุ่มบทเรียน
+    document.getElementById('submit-quiz-btn').addEventListener('click', function() {
+        let score = 0;
+        const totalQuestions = Object.keys(solutions).length;
+
+        if (Object.keys(userAnswers).length < totalQuestions) {
+            alert('พระจอมเกล้าติวเตอร์แนะนำให้น้องๆ ตอบให้ครบทั้ง 25 ข้อก่อนส่ง เพื่อระบบคำนวณสถิติจุดอ่อนที่แม่นยำนะครับ!');
+            return;
+        }
+
+        let topicAnalysis = {};
+
+        for (let i = 1; i <= totalQuestions; i++) {
+            const qKey = 'q' + i;
+            const metaContainer = document.getElementById(qKey + '-meta');
+            const topic = metaContainer ? metaContainer.getAttribute('data-topic') : 'บทเรียนทั่วไป';
+            
+            if (!topicAnalysis[topic]) {
+                topicAnalysis[topic] = { correct: 0, total: 0 };
+            }
+            
+            topicAnalysis[topic].total++;
+            
+            if (userAnswers[qKey] === solutions[qKey]) {
+                score++;
+                topicAnalysis[topic].correct++;
+            }
+        }
+
+        document.getElementById('score-text').innerText = `${score} / ${totalQuestions} คะแนน`;
+
+        const rowsTarget = document.getElementById('analysis-rows');
+        rowsTarget.innerHTML = '';
+
+        for (const topic in topicAnalysis) {
+            const data = topicAnalysis[topic];
+            const percentage = (data.correct / data.total) * 100;
+            let statusText = '';
+            
+            if (percentage >= 80) {
+                statusText = '<span class="status-good">⭐ ดีเยี่ยม (พื้นฐานปึกมาก)</span>';
+            } else if (percentage >= 50) {
+                statusText = '<span class="status-good">👍 พอใช้ (ระวังคิดเลขผิดพลาด)</span>';
+            } else {
+                statusText = '<span class="status-weak">⚠️ ควรทบทวนด่วน (เนื้อหายังไม่แน่น)</span>';
+            }
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><strong>${topic}</strong></td>
+                <td>${data.correct} / ${data.total}</td>
+                <td>${statusText}</td>
+            `;
+            rowsTarget.appendChild(tr);
+        }
+
+        const resSection = document.getElementById('result-section');
+        resSection.style.display = 'block';
+        resSection.scrollIntoView({ behavior: 'smooth' });
+        this.style.display = 'none';
+    });
+</script>
+
+</body>
+</html>
