@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exam ป.6 - พระจอมเกล้าติวเตอร์</title>
+    <style>
+        :root {
+            --primary: #1a3a5f;
+            --secondary: #f4f7f6;
+            --accent: #d32f2f;
+            --success: #2e7d32;
+            --white: #ffffff;
+        }
+        body { font-family: 'Sarabun', sans-serif; background-color: var(--secondary); color: #333; line-height: 1.6; margin: 0; padding: 20px; }
+        .container { max-width: 900px; margin: 0 auto; background: var(--white); padding: 40px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        h1 { color: var(--primary); text-align: center; border-bottom: 3px solid var(--primary); padding-bottom: 10px; }
+        .tutor-header { font-style: italic; color: #666; text-align: right; margin-bottom: 30px; }
+        .question-container { margin-bottom: 40px; padding: 25px; border: 1px solid #e0e0e0; border-radius: 12px; position: relative; transition: all 0.3s; }
+        .question-text { font-size: 1.2em; font-weight: bold; margin-bottom: 15px; }
+        .clue { color: var(--accent); font-weight: normal; font-size: 0.9em; }
+        .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; }
+        .option-label { display: block; padding: 15px; border: 2px solid #eee; border-radius: 8px; cursor: pointer; transition: 0.2s; position: relative; }
+        .option-label:hover { border-color: var(--primary); background: #f0f4f8; }
+        input[type="radio"] { display: none; }
+        
+        /* Interactive Colors */
+        .correct-selected { background-color: #e8f5e9 !important; border-color: var(--success) !important; color: var(--success); font-weight: bold; }
+        .wrong-selected { background-color: #ffebee !important; border-color: var(--accent) !important; color: var(--accent); }
+        
+        .explanation { display: none; margin-top: 20px; padding: 15px; background: #fffde7; border-left: 5px solid #fbc02d; border-radius: 4px; }
+        .secret-tip { font-weight: bold; color: #006064; margin-top: 10px; display: block; border-top: 1px dashed #ccc; padding-top: 5px; }
+        
+        /* Math Formatting */
+        .frac { display: inline-block; vertical-align: middle; text-align: center; margin: 0 4px; }
+        .num { display: block; border-bottom: 1px solid #333; padding: 0 3px; font-size: 0.9em; }
+        .den { display: block; padding: 0 3px; font-size: 0.9em; }
+        .mixed { display: inline-block; vertical-align: middle; }
+        
+        #analysis-box { display: none; margin-top: 30px; padding: 30px; background: var(--primary); color: white; border-radius: 12px; }
+        .btn-analyze { display: block; width: 100%; padding: 20px; font-size: 1.3em; background: var(--primary); color: white; border: none; border-radius: 8px; cursor: pointer; margin-top: 20px; }
+        .btn-analyze:hover { background: #112a46; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>ข้อสอบคณิตศาสตร์ ป.6 (สสวท. Standard)</h1>
+    <div class="tutor-header">โดย พระจอมเกล้าติวเตอร์</div>
+
+    <div id="quiz-area"></div>
+
+    <button class="btn-analyze" onclick="calculatePerformance()">สรุปคะแนนและวิเคราะห์จุดแข็ง/จุดอ่อน</button>
+
+    <div id="analysis-box">
+        <h2>วิเคราะห์ผลการเรียนรายบุคคล</h2>
+        <div id="analysis-content"></div>
+        <p style="margin-top:20px; text-align:right;">เขียนโดย พระจอมเกล้าติวเตอร์</p>
+    </div>
+</div>
+
+<script>
+const quizData = [
+    // ห.ร.ม. & ค.ร.น.
+    { id: 1, topic: "ห.ร.ม./ค.ร.น.", q: "ห.ร.ม. ของ 18, 24 และ 30 คือข้อใด", a: ["3", "6", "9", "12"], c: 1, 
+      exp: "ใช้การหารสั้น: 18, 24, 30 หารด้วย 6 ได้ 3, 4, 5 ซึ่งไม่มีตัวหารร่วมอื่นแล้ว ดังนั้น ห.ร.ม. คือ 6", tip: "ห.ร.ม. ต้องหารลงตัว 'ทุกตัว' และเน้นตัวหารที่มากที่สุด", clue: "หาตัวเลขที่มากที่สุดที่ไปหารทั้งสามจำนวนลงตัว" },
+    { id: 2, topic: "ห.ร.ม./ค.ร.น.", q: "ค.ร.น. ของ 12, 16 และ 20 คือข้อใด", a: ["120", "180", "240", "480"], c: 2, 
+      exp: "หารสั้น: 12, 16, 20 หารด้วย 4 ได้ 3, 4, 5. ผลคูณ 4 × 3 × 4 × 5 = 240", tip: "ค.ร.น. คือการ 'คูณร่วม' ให้นึกถึงเลขที่ตัวตั้งทุกตัววิ่งไปหา", clue: "หาจำนวนที่น้อยที่สุดที่ 12, 16 และ 20 หารลงตัว" },
+    { id: 3, topic: "ห.ร.ม./ค.ร.น.", q: "เชือกยาว 24, 36 และ 60 เมตร ตัดแบ่งให้ยาวเท่าๆ กันและยาวที่สุดโดยไม่เหลือเศษ จะยาวเส้นละกี่เมตร", a: ["6 เมตร", "10 เมตร", "12 เมตร", "15 เมตร"], c: 2, 
+      exp: "โจทย์สั่ง 'แบ่ง' และ 'ยาวที่สุด' คือการหา ห.ร.ม. ของ 24, 36, 60 ซึ่งคือ 12", tip: "คำว่า 'แบ่งเท่ากันและยาวที่สุด' คือ Keyword ของ ห.ร.ม.", clue: "แบ่งของออกเป็นส่วนๆ คือ ห.ร.ม." },
+    { id: 4, topic: "ห.ร.ม./ค.ร.น.", q: "นาฬิกา 3 เรือน เรือนแรกปลุกทุก 10 นาที เรือนที่สองทุก 15 นาที และเรือนที่สามทุก 20 นาที ถ้าเริ่มปลุกพร้อมกันตอน 08:00 น. จะปลุกพร้อมกันอีกครั้งเมื่อเวลาใด", a: ["08:30 น.", "09:00 น.", "09:30 น.", "10:00 น."], c: 1, 
+      exp: "หา ค.ร.น. ของ 10, 15, 20 คือ 60 นาที (1 ชม.) ดังนั้น 08:00 + 1 ชม. = 09:00 น.", tip: "โจทย์ถามเรื่อง 'เวลาบรรจบกัน' ให้ใช้ ค.ร.น.", clue: "หา ค.ร.น. เพื่อหาช่วงเวลาที่เหตุการณ์จะเกิดขึ้นพร้อมกัน" },
+    { id: 5, topic: "ห.ร.ม./ค.ร.น.", q: "จำนวนนับที่น้อยที่สุดที่หารด้วย 15, 20 และ 25 แล้วเหลือเศษ 2 คือข้อใด", a: ["300", "302", "152", "602"], c: 1, 
+      exp: "หา ค.ร.น. ของ 15, 20, 25 ได้ 300 แล้วบวกเศษที่ต้องการ คือ 300 + 2 = 302", tip: "หา ค.ร.น. ให้เจอก่อนแล้วค่อยบวกเศษทีหลัง", clue: "ค.ร.น. + เศษ = คำตอบ" },
+    
+    // เศษส่วนระคน
+    { id: 6, topic: "เศษส่วนระคน", q: "ผลลัพธ์ของ (<span class='frac'><span class='num'>2</span><span class='den'>3</span></span> ＋ <span class='frac'><span class='num'>1</span><span class='den'>4</span></span>) × <span class='frac'><span class='num'>12</span><span class='den'>11</span></span> คือข้อใด", a: ["1", "2", "11/12", "1/2"], c: 0, 
+      exp: "ในวงเล็บ: 8/12 + 3/12 = 11/12. นำไปคูณ 12/11 จะได้ (11/12) × (12/11) = 1", tip: "ทำในวงเล็บให้เสร็จก่อนเสมอ!", clue: "หา ครน. ของส่วนในวงเล็บก่อนบวก" },
+    { id: 7, topic: "เศษส่วนระคน", q: "ผลลัพธ์ของ 2<span class='frac'><span class='num'>1</span><span class='den'>2</span></span> － <span class='frac'><span class='num'>3</span><span class='den'>4</span></span> ÷ <span class='frac'><span class='num'>1</span><span class='den'>2</span></span> คือข้อใด", a: ["1", "2", "3/4", "3<span class='frac'><span class='num'>1</span><span class='den'>2</span></span>"], c: 0, 
+      exp: "ต้องทำ หาร ก่อน: 3/4 ÷ 1/2 = 3/4 × 2/1 = 6/4 = 1.5. จากนั้น 2.5 - 1.5 = 1", tip: "ถ้าไม่มีวงเล็บ ต้องทำ คูณ/หาร ก่อน บวก/ลบ เสมอ", clue: "ระวังลำดับการคำนวณ ทำหารก่อนลบ" },
+    { id: 8, topic: "เศษส่วนระคน", q: "แม่มีข้าวสาร 5<span class='frac'><span class='num'>1</span><span class='den'>2</span></span> กก. หุงวันละ <span class='frac'><span class='num'>1</span><span class='den'>4</span></span> กก. จะหุงได้กี่วัน", a: ["11 วัน", "20 วัน", "22 วัน", "25 วัน"], c: 2, 
+      exp: "เปลี่ยนเป็นเศษเกิน: 11/2 ÷ 1/4 = 11/2 × 4/1 = 22 วัน", tip: "โจทย์ถามว่า 'มีของเท่านี้ แบ่งออกทีละเท่าๆ กัน' คือการหาร", clue: "การแบ่งออกคือการหาร" },
+    { id: 9, topic: "เศษส่วนระคน", q: "ผลลัพธ์ของ <span class='frac'><span class='num'>5</span><span class='den'>6</span></span> × <span class='frac'><span class='num'>2</span><span class='den'>3</span></span> ＋ <span class='frac'><span class='num'>1</span><span class='den'>9</span></span> คือข้อใด", a: ["2/3", "4/9", "5/9", "1"], c: 0, 
+      exp: "คูณก่อน: (5/6 × 2/3) = 10/18 = 5/9. จากนั้น 5/9 + 1/9 = 6/9 = 2/3", tip: "ตัดทอนเป็นเศษส่วนอย่างต่ำจะทำให้คำนวณง่ายขึ้น", clue: "ทำคูณก่อนบวก" },
+    { id: 10, topic: "เศษส่วนระคน", q: "ที่ดินขนาด 10 ไร่ แบ่งขายไป <span class='frac'><span class='num'>3</span><span class='den'>5</span></span> ของที่ดินทั้งหมด เหลือที่ดินกี่ไร่", a: ["3 ไร่", "4 ไร่", "6 ไร่", "7 ไร่"], c: 1, 
+      exp: "ขายไป 10 × 3/5 = 6 ไร่ เหลือที่ดิน 10 - 6 = 4 ไร่", tip: "คำว่า 'ของ' คือการคูณ", clue: "หาที่ขายไปก่อนแล้วค่อยลบออกจากทั้งหมด" },
+
+    // ทศนิยม
+    { id: 11, topic: "ทศนิยม", q: "0.25 × 1.2 มีค่าเท่ากับข้อใด", a: ["0.3", "0.03", "3.0", "0.36"], c: 0, 
+      exp: "25 × 12 = 300. จุดรวม: 2 ตำแหน่ง + 1 ตำแหน่ง = 3 ตำแหน่ง. ดังนั้นได้ 0.300 = 0.3", tip: "คูณเหมือนเลขปกติ แล้วนับตำแหน่งจุดมารวมกัน", clue: "ตำแหน่งคำตอบ = ตำแหน่งตัวตั้ง + ตำแหน่งตัวคูณ" },
+    { id: 12, topic: "ทศนิยม", q: "1.56 ÷ 0.12 มีค่าเท่ากับข้อใด", a: ["1.3", "13", "130", "0.13"], c: 1, 
+      exp: "เลื่อนจุดตัวหารให้เป็นจำนวนนับ: 156 ÷ 12 = 13", tip: "เลื่อนจุดตัวหารไปขวาให้สุด แล้วเลื่อนตัวตั้งเท่ากัน", clue: "ทำให้ตัวหารเป็นเลข 12 ก่อนหาร" },
+    { id: 13, topic: "ทศนิยม", q: "ซื้อปากกา 1.5 โหล ราคาด้ามละ 5.25 บาท ต้องจ่ายเงินกี่บาท", a: ["75.50 บาท", "84.25 บาท", "94.50 บาท", "98.00 บาท"], c: 2, 
+      exp: "1.5 โหล = 1.5 × 12 = 18 ด้าม. ราคาทั้งหมด 18 × 5.25 = 94.50 บาท", tip: "เปลี่ยนหน่วย 'โหล' เป็น 'ด้าม' ก่อนคำนวณ", clue: "1 โหล มี 12 ด้าม" },
+    { id: 14, topic: "ทศนิยม", q: "ถังน้ำมีความจุ 20 ลิตร มีน้ำอยู่ 8.75 ลิตร เติมเพิ่มอีกเท่าไรจึงจะเต็มถัง", a: ["11.25 ลิตร", "12.25 ลิตร", "11.75 ลิตร", "12.75 ลิตร"], c: 0, 
+      exp: "20.00 － 8.75 = 11.25 ลิตร", tip: "การลบทศนิยม ต้องตั้งจุดให้ตรงกันเสมอ", clue: "ใช้การลบโดยเติม 0 ให้ตำแหน่งเท่ากัน" },
+    { id: 15, topic: "ทศนิยม", q: "ค่าเฉลี่ยของ 4.5, 5.2 และ 6.8 คือข้อใด", a: ["5.2", "5.5", "5.8", "16.5"], c: 1, 
+      exp: "(4.5 + 5.2 + 6.8) ÷ 3 = 16.5 ÷ 3 = 5.5", tip: "ค่าเฉลี่ย = ผลรวม ÷ จำนวนชุดข้อมูล", clue: "บวกกันทั้งหมดแล้วหารด้วย 3" },
+
+    // โจทย์ปัญหาผสม (High Frequency)
+    { id: 16, topic: "โจทย์ปัญหา", q: "มีส้ม 48 ผล มะม่วง 60 ผล จัดใส่ถาดละเท่าๆ กันโดยไม่ปนกันและไม่เหลือเศษ จะจัดได้มากที่สุดกี่ผลต่อถาด", a: ["6 ผล", "10 ผล", "12 ผล", "24 ผล"], c: 2, 
+      exp: "หา ห.ร.ม. ของ 48 และ 60 คือ 12", tip: "ไม่ปนกันและมากที่สุด คือหัวใจของ ห.ร.ม.", clue: "จัดของไม่ปนกันและมากที่สุดคือ ห.ร.ม." },
+    { id: 17, topic: "โจทย์ปัญหา", q: "รถเมล์สาย A ออกทุก 15 นาที สาย B ออกทุก 20 นาที ถ้าออกพร้อมกันครั้งแรก 06:00 น. จะออกพร้อมกันครั้งที่ 3 เมื่อเวลาใด", a: ["07:00 น.", "08:00 น.", "09:00 น.", "10:00 น."], c: 1, 
+      exp: "ค.ร.น. คือ 60 นาที (1 ชม.) ครั้งที่ 2 คือ 07:00 น. ครั้งที่ 3 คือ 08:00 น.", tip: "ระวัง! โจทย์ถามครั้งที่เท่าไร ให้นับให้ดี", clue: "หา ค.ร.น. แล้วนับต่อไปตามที่โจทย์ระบุ" },
+    { id: 18, topic: "โจทย์ปัญหา", q: "เงิน 500 บาท ซื้อหนังสือ 2/5 ของเงินที่มี และซื้อขนม 0.25 ของเงินที่มี จะเหลือเงินกี่บาท", a: ["175 บาท", "200 บาท", "300 บาท", "325 บาท"], c: 0, 
+      exp: "หนังสือ 500 × 2/5 = 200. ขนม 500 × 0.25 = 125. รวมจ่าย 325. เหลือ 500 - 325 = 175", tip: "โจทย์นี้เปรียบเทียบเศษส่วนและทศนิยมในข้อเดียว", clue: "คำนวณแยกส่วนแล้วนำมาลบจากเงินทั้งหมด" },
+    { id: 19, topic: "โจทย์ปัญหา", q: "น้ำหวาน 1.25 ลิตร แบ่งใส่แก้วขนาด 0.2 ลิตร จะได้น้ำกี่แก้วและเหลือเศษกี่ลิตร", a: ["6 แก้ว เหลือ 0.05", "6 แก้ว เหลือ 0.5", "5 แก้ว เหลือ 0.25", "6 แก้ว ไม่เหลือเศษ"], c: 0, 
+      exp: "1.25 ÷ 0.2 ได้ 6 แก้ว (ใช้ไป 1.2 ลิตร) เหลือเศษ 0.05 ลิตร", tip: "ระวังเศษของการหารทศนิยม ต้องคืนจุดให้ตรงตัวตั้งเดิม", clue: "ตั้งหารยาวแล้วดูเศษตัวสุดท้าย" },
+    { id: 20, topic: "โจทย์ปัญหา", q: "ไข่ไก่ราคาฟองละ 4.75 บาท ถ้าซื้อ 1 โหล ให้ธนบัตร 100 บาท จะได้รับเงินทอนเท่าไร", a: ["43 บาท", "57 บาท", "40 บาท", "63 บาท"], c: 0, 
+      exp: "12 × 4.75 = 57 บาท. เงินทอน 100 - 57 = 43 บาท", tip: "เงินทอน = เงินที่ให้ - ราคาสินค้า", clue: "คำนวณราคาทั้งโหลก่อนลบจาก 100" },
+    { id: 21, topic: "โจทย์ปัญหา", q: "ห.ร.ม. ของสองจำนวนคือ 4 และ ค.ร.น. คือ 24 ถ้าจำนวนหนึ่งคือ 8 อีกจำนวนคืออะไร", a: ["4", "12", "16", "24"], c: 1, 
+      exp: "(หรม. × ครน.) = (เลข A × เลข B) -> 4 × 24 = 8 × B -> 96 = 8B -> B = 12", tip: "สูตรลับ: หรม. คูณ ครน. เท่ากับเลขสองจำนวนคูณกัน", clue: "ใช้ความสัมพันธ์ ห.ร.ม. × ค.ร.น. = ผลคูณของจำนวนสองจำนวนนั้น" },
+    { id: 22, topic: "เศษส่วนระคน", q: "ผลลัพธ์ของ 3 ÷ 1<span class='frac'><span class='num'>1</span><span class='den'>2</span></span> × <span class='frac'><span class='num'>1</span><span class='den'>4</span></span> คือข้อใด", a: ["1/2", "1", "1/4", "2"], c: 0, 
+      exp: "3 ÷ 3/2 × 1/4 = 3 × 2/3 × 1/4 = 2 × 1/4 = 2/4 = 1/2", tip: "เปลี่ยนหารเป็นคูณกลับเศษเป็นส่วน เฉพาะตัวหลังเครื่องหมายหาร!", clue: "ทำจากซ้ายไปขวาเพราะมีแค่คูณและหาร" },
+    { id: 23, topic: "ทศนิยม", q: "ผ้าชิ้นหนึ่งยาว 15.5 เมตร ตัดไปใช้ครั้งละ 2.25 เมตร จำนวน 4 ครั้ง เหลือผ้ากี่เมตร", a: ["6.5 เมตร", "9.0 เมตร", "10.0 เมตร", "11.5 เมตร"], c: 0, 
+      exp: "ตัดไป 2.25 × 4 = 9 เมตร. เหลือ 15.5 - 9 = 6.5 เมตร", tip: "หาผลรวมที่ตัดไปก่อนแล้วค่อยลบ", clue: "คำนวณส่วนที่ตัดไป 4 ครั้งก่อน" },
+    { id: 24, topic: "โจทย์ปัญหา", q: "มีลวด 3 ขด ยาว 42, 56, 70 เมตร ตัดให้ยาวเท่ากันและยาวที่สุดโดยไม่เหลือเศษ จะตัดลวดได้ทั้งหมดกี่เส้น", a: ["14 เส้น", "12 เส้น", "10 เส้น", "18 เส้น"], c: 1, 
+      exp: "ห.ร.ม. คือ 14 เมตร. จะได้ (42/14) + (56/14) + (70/14) = 3 + 4 + 5 = 12 เส้น", tip: "อ่านโจทย์ดีๆ! โจทย์ถาม 'กี่เส้น' ไม่ได้ถาม 'ยาวเท่าไร'", clue: "หา ห.ร.ม. ก่อนแล้วนำความยาวแต่ละขดมาหารเพื่อหาจำนวนเส้น" },
+    { id: 25, topic: "โจทย์ปัญหา", q: "ซื้อน้ำดื่ม 1.5 ลิตร จำนวน 6 ขวด ราคาขวดละ 13.50 บาท จ่ายเงินเท่าไร (ข้อมูลความจุไม่เกี่ยวกับการคำนวณราคา)", a: ["78 บาท", "81 บาท", "91 บาท", "101 บาท"], c: 1, 
+      exp: "6 × 13.50 = 81.00 บาท", tip: "หลอก! ข้อมูลความจุ 1.5 ลิตร ไม่ต้องนำมาคำนวณ", clue: "คูณจำนวนขวดด้วยราคาต่อขวด" }
+];
+
+function renderQuiz() {
+    const quizArea = document.getElementById('quiz-area');
+    quizData.forEach((item, index) => {
+        const qDiv = document.createElement('div');
+        qDiv.className = 'question-container';
+        qDiv.id = `q-box-${index}`;
+        
+        qDiv.innerHTML = `
+            <div class="question-text">ข้อที่ ${index + 1}: ${item.q} <span class="clue">(Clue: ${item.clue})</span></div>
+            <div class="options-grid">
+                ${item.a.map((opt, i) => `
+                    <label class="option-label" id="label-${index}-${i}">
+                        <input type="radio" name="q${index}" value="${i}" onclick="checkAnswer(${index}, ${i}, ${item.c})">
+                        ${String.fromCharCode(65 + i)}. ${opt}
+                    </label>
+                `).join('')}
+            </div>
+            <div class="explanation" id="exp-${index}">
+                <strong>เฉลย:</strong> ${item.exp}
+                <span class="secret-tip">💡 Tutor's Secret Tip: ${item.tip}</span>
+            </div>
+        `;
+        quizArea.appendChild(qDiv);
+    });
+}
+
+function checkAnswer(qIdx, selected, correct) {
+    const options = document.getElementsByName(`q${qIdx}`);
+    options.forEach(opt => opt.disabled = true); // ปิดการกดซ้ำ
+    
+    const expDiv = document.getElementById(`exp-${qIdx}`);
+    expDiv.style.display = 'block';
+    
+    if(selected === correct) {
+        document.getElementById(`label-${qIdx}-${selected}`).classList.add('correct-selected');
+    } else {
+        document.getElementById(`label-${qIdx}-${selected}`).classList.add('wrong-selected');
+        document.getElementById(`label-${qIdx}-${correct}`).classList.add('correct-selected');
+    }
+}
+
+function calculatePerformance() {
+    let scorePerTopic = { "ห.ร.ม./ค.ร.น.": 0, "เศษส่วนระคน": 0, "ทศนิยม": 0, "โจทย์ปัญหา": 0 };
+    let totalPerTopic = { "ห.ร.ม./ค.ร.น.": 0, "เศษส่วนระคน": 0, "ทศนิยม": 0, "โจทย์ปัญหา": 0 };
+    let totalScore = 0;
+
+    quizData.forEach((item, index) => {
+        const radios = document.getElementsByName(`q${index}`);
+        let selected = -1;
+        radios.forEach(r => { if(r.checked) selected = parseInt(r.value); });
+        
+        totalPerTopic[item.topic]++;
+        if(selected === item.c) {
+            scorePerTopic[item.topic]++;
+            totalScore++;
+        }
+    });
+
+    const analysisBox = document.getElementById('analysis-box');
+    const content = document.getElementById('analysis-content');
+    analysisBox.style.display = 'block';
+    
+    let html = `<h3>คะแนนรวม: ${totalScore} / 25</h3><ul>`;
+    for(let topic in scorePerTopic) {
+        let percent = (scorePerTopic[topic] / totalPerTopic[topic]) * 100;
+        let feedback = percent >= 80 ? "เยี่ยมมาก! เป็นจุดแข็งของคุณ" : (percent >= 50 ? "พอใช้ได้ แต่ยังรอบคอบได้อีก" : "จุดที่ควรเร่งพัฒนา!");
+        html += `<li><strong>${topic}:</strong> ได้ ${scorePerTopic[topic]}/${totalPerTopic[topic]} (${percent.toFixed(0)}%) - ${feedback}</li>`;
+    }
+    html += `</ul><p><strong>คำแนะนำจากพระจอมเกล้าติวเตอร์:</strong> `;
+    if(totalScore >= 20) html += "คุณมีทักษะการคิดเชิงระบบที่ดีมาก พร้อมสำหรับการแข่งขันในสนามสอบจริงแล้วครับ!";
+    else if(totalScore >= 12) html += "พื้นฐานดีแล้ว แต่ต้องเพิ่มความแม่นยำในการตีความโจทย์ปัญหา โดยเฉพาะเรื่อง ห.ร.ม. และ ค.ร.น.";
+    else html += "ไม่ต้องเสียใจครับ แนะนำให้กลับไปทวนเรื่องลำดับการคำนวณและหลักการ 'หั่น' และ 'คอย' อีกครั้ง แล้วกลับมาทำใหม่นะ!";
+    html += "</p>";
+    
+    content.innerHTML = html;
+    window.scrollTo(0, document.body.scrollHeight);
+}
+
+window.onload = renderQuiz;
+</script>
+
+</body>
+</html>
+
+
+หวังว่าชุดข้อสอบนี้จะเป็นประโยชน์ในการพัฒนากระบวนการคิดเชิงระบบของนักเรียนนะครับ หากมีหัวข้อไหนต้องการเจาะลึกเป็นพิเศษ แจ้งพระจอมเกล้าติวเตอร์ได้ทันทีครับ
+
+**เขียนโดย พระจอมเกล้าติวเตอร์**
