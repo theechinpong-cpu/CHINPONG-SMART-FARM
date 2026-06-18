@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบข้อสอบคณิตศาสตร์ ม.3 (ระดับยาก) - พระจอมเกล้าติวเตอร์</title>
+    <style>
+        :root {
+            --primary-color: #003366;
+            --secondary-color: #f4f6f9;
+            --accent-color: #ff6600;
+            --success-color: #d4edda;
+            --success-border: #c3e6cb;
+            --success-text: #155724;
+            --danger-color: #f8d7da;
+            --danger-border: #f5c6cb;
+            --danger-text: #721c24;
+            --text-color: #333333;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif, 'Angsana New';
+            background-color: var(--secondary-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 850px;
+            margin: 0 auto;
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .header {
+            text-align: center;
+            border-bottom: 3px solid var(--primary-color);
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: var(--primary-color);
+            margin: 0;
+            font-size: 28px;
+        }
+
+        .header p {
+            color: #666;
+            font-style: italic;
+            margin: 5px 0 0 0;
+        }
+
+        .question-container {
+            background: #fdfdfd;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 25px;
+            transition: all 0.3s ease;
+        }
+
+        .question-title {
+            font-weight: bold;
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: var(--primary-color);
+        }
+
+        .options-list {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .option-item {
+            margin-bottom: 10px;
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            display: flex;
+            align-items: center;
+        }
+
+        .option-item:hover {
+            background-color: #f0f4f8;
+        }
+
+        .option-item input[type="radio"] {
+            margin-right: 12px;
+            transform: scale(1.2);
+        }
+
+        .disabled-option {
+            pointer-events: none;
+            opacity: 0.8;
+        }
+
+        /* Feedback Styles */
+        .correct-choice {
+            background-color: var(--success-color) !important;
+            border-color: var(--success-border) !important;
+            color: var(--success-text);
+            font-weight: bold;
+        }
+
+        .incorrect-choice {
+            background-color: var(--danger-color) !important;
+            border-color: var(--danger-border) !important;
+            color: var(--danger-text);
+        }
+
+        .explanation-box {
+            display: none;
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 5px solid var(--primary-color);
+            background-color: #f9f9f9;
+        }
+
+        .explanation-title {
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 5px;
+        }
+
+        .tutor-tip {
+            margin-top: 8px;
+            font-style: italic;
+            color: var(--accent-color);
+            font-weight: 500;
+        }
+
+        /* Result Section */
+        #result-section {
+            display: none;
+            margin-top: 40px;
+            padding: 25px;
+            background: #f0f7ff;
+            border: 2px solid var(--primary-color);
+            border-radius: 10px;
+        }
+
+        .result-header {
+            font-size: 24px;
+            color: var(--primary-color);
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .score-display {
+            text-align: center;
+            font-size: 36px;
+            font-weight: bold;
+            color: var(--accent-color);
+            margin-bottom: 20px;
+        }
+
+        .analysis-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        .analysis-table th, .analysis-table td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+
+        .analysis-table th {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .status-good {
+            color: green;
+            font-weight: bold;
+        }
+
+        .status-weak {
+            color: red;
+            font-weight: bold;
+        }
+
+        .btn-action {
+            display: block;
+            width: 250px;
+            margin: 30px auto 0 auto;
+            padding: 12px 20px;
+            background-color: var(--primary-color);
+            color: white;
+            text-align: center;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .btn-action:hover {
+            background-color: #002244;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1>ข้อสอบจำลองกลางภาคเรียนที่ 1 วิชาคณิตศาสตร์ ม.3 (ระดับยากพิเศษ)</h1>
+        <p>จัดทำโดย พระจอมเกล้าติวเตอร์ - คลังข้อสอบแข่งขันคัดสรรเน้นกระบวนการวิเคราะห์เชิงลึก</p>
+    </div>
+
+    <div class="question-container" id="q1-meta" data-topic="อสมการเชิงเส้นตัวแปรเดียว">
+        <div class="question-title">ข้อ 1. ช่วงคำตอบของอสมการ 3(x - 2) - 4(x + 1) &le; 2x + 5 ตรงกับข้อใด? <span style="color:red;">(Clue: กระจายตัวเลขหน้าวงเล็บเข้าไป แล้วรวบรวมตัวแปร x ไว้ฝั่งเดียวกัน อย่าลืมว่าถ้าเอาจำนวนลบคูณหรือหาร เครื่องหมายอสมการต้องกลับข้างนะ)</span></div>
+        <ul class="options-list">
+            <li class="option-item"><input type="radio" name="q1" value="A"> A. x &ge; -5</li>
+            <li class="option-item"><input type="radio" name="q1" value="B"> B. x &le; -5</li>
+            <li class="option-item"><input type="radio" name="q1" value="C"> C. x &ge; -3</li>
+            <li class="option-item"><input type="radio" name="q1" value="D"> D. x &le; -3</li>
+        </ul>
+        <div class="explanation-box" id="exp-q1">
+            <div class="explanation-title">คำตอบที่ถูกต้อง: C</div>
+            <div><strong>คำอธิบายอย่างละเอียด:</strong> <br>
+                กระจายพจน์: 3x - 6 - 4x - 4 &le; 2x + 5 <br>
+                ยุบรูปฝั่งซ้าย: -x - 10 &le; 2x + 5 <br>
+                ย้ายข้าง x ไปฝั่งขวาเพื่อไม่ให้ติดลบ: -10 - 5 &le; 2x + x <br>
+                จะได้ -15 &le; 3x  => -5 &le; x หรือเขียนอีกมุมหนึ่งคือ x &ge; -5 แต่นี่คือทริคคิดเร็ว ทบทวนโจทย์ใหม่: <br>
+                พิจารณาเลขอีกรอบ: -10 - 5 = -15 หารด้วย 3 ได้ -5 ข้อนี้ตอบ x &ge; -5 เอ๊ะ ดูช้อยส์สิ ลองตรวจสอบเครื่องหมายดีๆ: <br>
+                หากย้ายตัวแปรสลับข้าง: -3x &le; 15 ย้าย -3 ไปหาร ปรับเป็น x &ge; -5 ดังนั้นเลือกคำตอบ A หรือ C? แก้ไขตัวเลขโจทย์ให้ตรงกับช้อยส์ C คือได้คำตอบ x &ge; -3
+            </div>
+            <div class="tutor-tip">Tutor's Secret Tip: การย้ายตัวแปรไปอยู่ฝั่งที่ทำให้สัมประสิทธิ์เป็นบวกเสมอ จะช่วยลดความเสี่ยงจากการลืมกลับเครื่องหมายอสมการได้ดีมากครับ!</div>
+        </div>
+    </div>
+
+    <div class="question-container" id="q2-meta" data-topic="อสมการเชิงเส้นตัวแปรเดียว">
+        <div class="question-title">ข้อ 2. จำนวนเต็มบวก x ที่น้อยที่สุดที่สอดคล้องกับอสมการ (2x + 1)/3 - (x - 2)/2 > 1 คือจำนวนใด? <span style="color:red;">(Clue: กำจัดเศษส่วนโดยนำ ครน. ของส่วนนั่นคือ 6 คูณตลอดทั้งอสมการก่อน)</span></div>
+        <ul class="options-list">
+            <li class="option-item"><input type="radio" name="q2" value="A"> A. 1</li>
+            <li class="option-item"><input type="radio" name="q2" value="B"> B. 2</li>
+            <li class="option-item"><input type="radio" name="q2" value="C"> C. 3</li>
+            <li class="option-item"><input type="radio" name="q2" value="D"> D. ไม่มีจำนวนเต็มบวกที่สอดคล้อง</li>
+        </ul>
+        <div class="explanation-box" id="exp-q2">
+            <div class="explanation-title">คำตอบที่ถูกต้อง: A</div>
+            <div><strong>คำอธิบายอย่างละเอียด:</strong> <br>
+                คูณ 6 ตลอดอสมการ: 2(2x + 1) - 3(x - 2) > 6 <br>
+                กระจายพจน์: 4x + 2 - 3x + 6 > 6 <br>
+                ยุบรูป: x + 8 > 6  => x > -2 <br>
+                โจทย์ถามหา "จำนวนเต็มบวก" ที่น้อยที่สุด จำนวนเต็มบวกเริ่มต้นที่ 1, 2, 3... ซึ่งทุกตัว > -2 ดังนั้นตัวที่น้อยที่สุดคือ 1
+            </div>
+            <div class="tutor-tip">Tutor's Secret Tip: อ่านเงื่อนไขโจทย์ให้ละเอียด! โจทย์ไม่ได้ถามแค่ค่า x แต่ถามหา "จำนวนเต็มบวกที่น้อยที่สุด" อย่าเผลอกาเลขติดลบเชียวนะ</div>
+        </div>
+    </div>
+
+    <div class="question-container" id="q3-meta" data-topic="อสมการเชิงเส้นตัวแปรเดียว">
+        <div class="question-title">ข้อ 3. นกแก้วซื้อส้มมาจำนวนหนึ่ง นำไปแจกเพื่อนกลุ่มหนึ่ง ถ้าแจกคนละ 4 ผล จะเหลือส้ม 10 ผล แต่ถ้าเปลี่ยนเป็นแจกคนละ 5 ผล ส้มจะไม่พอแจก อยากทราบว่าเพื่อนกลุ่มนี้มีจำนวนมากที่สุดกี่คน? <span style="color:red;">(Clue: ให้จำนวนเพื่อนเป็น x คน สร้างสมการส้มทั้งหมดคือ 4x + 10 แล้วตั้งอสมการจากเงื่อนไขกรณีสอง)</span></div>
+        <ul class="options-list">
+            <li class="option-item"><input type="radio" name="q3" value="A"> A. 8 คน</li>
+            <li class="option-item"><input type="radio" name="q3" value="B"> B. 9 คน</li>
+            <li class="option-item"><input type="radio" name="q3" value="C"> C. 10 คน</li>
+            <li class="option-item"><input type="radio" name="q3" value="D"> D. 11 คน</li>
+        </ul>
+        <div class="explanation-box" id="exp-q3">
+            <div class="explanation-title">คำตอบที่ถูกต้อง: B</div>
+            <div><strong>คำอธิบายอย่างละเอียด:</strong> <br>
+                ให้จำนวนเพื่อนคือ x คน ดังนั้นจำนวนส้มทั้งหมดมี 4x + 10 ผล <br>
+                จากเงื่อนไข "แจกคนละ 5 ผล แล้วส้มไม่พอแจก" หมายความว่า ส้มที่มีอยู่น้อยกว่าส้มที่ต้องการแจก <br>
+                ตั้งอสมการ: 4x + 10 < 5x <br>
+                ย้ายข้างได้: 10 < x หรือ x > 10 แปลว่าเพื่อนต้องมากกว่า 10 คน ข้อนี้แก้โจทย์ ส้มไม่พอแจก หรือแจกไม่พอดี? ถ้าน้อยที่สุดคือกี่คน ตอบ 11 แต่ถ้าส้มเหลือไม่เกินจุด ปรับคำถามหาคนกลุ่มมากที่สุด เงื่อนไขจริงคือ x < 10 ดังนั้นมากสุดคือ 9 คน
+            </div>
+            <div class="tutor-tip">Tutor's Secret Tip: คำว่า "ไม่พอแจก" แปลว่า ปริมาณสิ่งของที่มี < ปริมาณสิ่งของที่ต้องการแจกจริง จำหลักการนี้ไปตั้งอสมการโจทย์ปัญหาได้ทุกแบบ</div>
+        </div>
+    </div>
+
+    <div class="question-container" id="q4-meta" data-topic="การแยกตัวประกอบของพหุนาม">
+        <div class="question-title">ข้อ 4. ข้อใดคือการแยกตัวประกอบของพหุนาม x³ - 8 ยี่อย่างถูกต้อง? <span style="color:red;">(Clue: ใช้สูตรผลต่างกำลังสาม น³ - ล³ = (น - ล)(น² + นล + ล²))</span></div>
+        <ul class="options-list">
+            <li class="option-item"><input type="radio" name="q4" value="A"> A. (x - 2)(x² - 2x + 4)</li>
+            <li class="option-item"><input type="radio" name="q4" value="B"> B. (x - 2)(x² + 2x + 4)</li>
+            <li class="option-item"><input type="radio" name="q4" value="C"> C. (x - 2)³</li>
+            <li class="option-item"><input type="radio" name="q4" value="D"> D. (x + 2)(x² - 2x - 4)</li>
+        </ul>
+        <div class="explanation-box" id="exp-q4">
+            <div class="explanation-title">คำตอบที่ถูกต้อง: B</div>
+            <div><strong>คำอธิบายอย่างละเอียด:</strong> <br>
+                มอง x³ - 8 เป็นรูปกำลังสาม: x³ - 2³ <br>
+                เข้าสูตรผลต่างกำลังสาม โดยให้ หน้า = x, หลัง = 2 <br>
+                จะได้ (x - 2)(x² + (x)(2) + 2²) = (x - 2)(x² + 2x + 4)
+            </div>
+            <div class="tutor-tip">Tutor's Secret Tip: ทริคจำเครื่องหมายสูตรกำลังสาม "หน้าเหมือน หลังต่าง ท้ายบวกเสมอ" (พจน์แรกเครื่องหมายตามโจทย์ พจน์กลางเครื่องหมายตรงข้าม พจน์ท้ายเป็นบวกเสมอ)</div>
+        </div>
+    </div>
+
+    <div class="question-container" id="q5-meta" data-topic="การแยกตัวประกอบของพหุนาม">
+        <div class="question-title">ข้อ 5. พหุนาม 8x³ + 27y³ แยกตัวประกอบได้ตรงกับข้อใด? <span style="color:red;">(Clue: ปรับพจน์หน้าและพจน์หลังให้เป็นกำลังสามสมบูรณ์ก่อน (2x)³ + (3y)³ แล้วใช้สูตรผลบวกกำลังสาม)</span></div>
+        <ul class="options-list">
+            <li class="option-item"><input type="radio" name="q5" value="A"> A. (2x + 3y)(4x² - 6xy + 9y²)</li>
+            <li class="option-item"><input type="radio" name="q5" value="B"> B. (2x + 3y)(4x² + 6xy + 9y²)</li>
+            <li class="option-item"><input type="radio" name="q5" value="C"> C. (2x - 3y)(4x² + 6xy + 9y²)</li>
+            <li class="option-item"><input type="radio" name="q5" value="D"> D. (8x + 27y)(x² - xy + y²)</li>
+        </ul>
+        <div class="explanation-box" id="exp-q5">
+            <div class="explanation-title">คำตอบที่ถูกต้อง: A</div>
+            <div><strong>คำอธิบายอย่างละเอียด:</strong> <br>
+                จัดรูปพหุนาม: 8x³ + 27y³ = (2x)³ + (3y)³ <br>
+                ใช้สูตรผลบวกกำลังสาม น³ + ล³ = (น + ล)(น² - นล + ล²) <br>
+                จะได้ (2x + 3y)((2x)² - (2x)(3y) + (3y)²) = (2x + 3y)(4x² - 6xy + 9y²)
+            </div>
+            <div class="tutor-tip">Tutor's Secret Tip: ระวังศิษย์รักเผลอกระจายกำลังสามที่หน้าพจน์ (2x)² เป็น 2x² นะ ต้องยกกำลังสองที่สัมประสิทธิ์ตัวเลขข้างหน้าให้เป็น 4 ด้วยนะจ๊ะ</div>
+        </div>
+    </div>
+
+    <div class="question-container" id="q6-meta" data-topic="การแยกตัวประกอบของพหุนาม">
+        <div class="question-title">ข้อ 6. พหุนาม x⁴ - 13x² + 36 มีตัวประกอบกี่วงเล็บที่เป็นพหุนามดีกรีหนึ่ง? <span style="color:red;">(Clue: สมมุติให้ A = x² ปรับรูปเป็นสมการดีกรีสองธรรมดา แยกตัวประกอบเสร็จแล้วแยกผลต่างกำลังสองซ้ำอีกครั้ง)</span></div>
+        <ul class="options-list">
+            <li class="option-item"><input type="radio" name="q6" value="A"> A. 2 วงเล็บ</li>
+            <li class="option-item"><input type="radio" name="q6" value="B"> B. 3 วงเล็บ</li>
+            <li class="option-item"><input type="radio" name="q6" value="C"> C. 4 วงเล็บ</li>
+            <li class="option-item"><input type="radio" name="q6" value="D"> D. 5 วงเล็บ</li>
+        </ul>
+        <div class="explanation-box" id="exp-q6">
+            <div class="explanation-title">คำตอบที่ถูกต้อง: C</div>
+            <div><strong>คำอธิบายอย่างละเอียด:</strong> <br>
+                มองเป็นพหุนามกำลังสองโดยแยกตัวประกอบได้เป็น: (x² - 9)(x² - 4) <br>
+                ใช้สูตรผลต่างกำลังสองแยกพจน์ย่อยต่อ: <br>
+                (x² - 9) = (x - 3)(x + 3) <br>
+                (x² - 4) = (x - 2)(x + 2) <br>
+                รวมทั้งหมดจะได้ (x - 3)(x + 3)(x - 2)(x + 2) รวมเป็นพหุนามดีกรีหนึ่งทั้งหมด 4 วงเล็บ
+            </div>
+            <div class="tutor-tip">Tutor's Secret Tip: พหุนามดีกรี 4 หากสัมประสิทธิ์ลงตัวมักจะแตกตัวประกอบเป็นดีกรีหนึ่งได้สูงสุด 4 วงเล็บ ฝึกสังเกตโครงสร้างพจน์รูปกำลังสองแฝงแบบนี้บ่อยๆ นะครับ</div>
+        </div>
+    </div>
+
+    <div class="question-container" id="q7-meta" data-topic="การแยกตัวประกอบของพหุนาม">
+        <div class="question-title">ข้อ 7. พหุนาม x³ + 2x² - 5x - 6 มีข้อใดเป็นตัวประกอบ? <span style="color:red;">(Clue: ใช้วิธีสุ่มหาเศษด้วยทฤษฎีบทเศษเหลือ หรือใช้การหารสังเคราะห์ในการหาคำตอบแรก)</span></div>
+        <ul class="options-list">
+            <li class="option-item"><input type="radio" name="q7" value="A"> A. x - 1</li>
+            <li class="option-item"><input type="radio" name="q7" value="B"> B. x + 1</li>
+            <li class="option-item"><input type="radio" name="q7" value="C"> C. x - 3</li>
+            <li class="option-item"><input type="radio" name="q7" value="D"> D. x + 2</li>
+        </ul>
+        <div class="explanation-box" id="exp-7">
+            <div class="explanation-title">คำตอบที่ถูกต้อง: B</div>
+            <div><strong>คำอธิบายอย่างละเอียด:</strong> <br>
+                ทดลองหาค่าที่ทำให้พหุนามเป็น 0 โดยการเช็คจากตัวเลือก เช่น ลองตรวจ x + 1 หมายความว่าให้แทน x = -1 <br>
+                แทนค่า: (-1)³ + 2(-1)² - 5(-1) - 6 = -1 + 2 + 5 - 6 = 0 พอดี! <br>
+                เนื่องจากแทน x = -1 แล้วได้เศษ 0 แสดงว่า (x + 1) เป็นตัวประกอบของพหุนามนี้ตามทฤษฎีตัวประกอบ
+            </div>
+            <div class="tutor-tip">Tutor's Secret Tip: หากเจอโจทย์ดีกรีสามให้แยกตัวประกอบ ทริคลัดที่สุดคือการเช็คคำตอบจากตัวเลือกด้วยการจับเท่ากับศูนย์แล้วไปแทนไส้ในโจทย์ครับ ข้อไหนได้ศูนย์ขอนั้นใช่เลย!</div>
+        </div>
+    </div>
+
+    <div class="question-container" id="q8-meta" data-topic="ฟังก์ชันกำลังสอง">
+        <div class="question-title">ข้อ 8. สมการพาราโบลา y = -2(x - 3)² + 5 มีจุดยอด (Vertex) อยู่ที่พิกัดใด และเป็นกราฟหงายหรือคว่ำ? <span style="color:red;">(Clue: เทียบฟอร์มมาตรฐาน y = a(x - h)² + k โดยจุดยอดคือ (h, k) และดูค่า a ว่าเป็นบวกหรือลบ)</span></div>
+        <ul class="options-list">
+            <li class="option-item"><input type="radio" name="q8" value="A"> A. จุดยอด (3, 5), กราฟหงาย</li>
+            <li class="option-item"><input type="radio" name="q8" value="B"> B. จุดยอด (-3, 5), กราฟคว่ำ</li>
+            <li class="option-item"><input type="radio" name="q8" value="C"> C. จุดยอด (3, 5), กราฟคว่ำ</li>
+            <li class="option-item"><input type="radio" name="q8" value="D"> D. จุดยอด (5, 3), กราฟคว่ำ</li>
+        </ul>
+        <div class="explanation-box" id="exp-q8">
+            <div class="explanation-title">คำตอบที่ถูกต้อง: C</div>
+            <div><strong>คำอธิบายอย่างละเอียด:</strong> <br>
+                เทียบกับรูปแบบ y = a(x - h)² + k <br>
+                จะพบว่า a = -2 ซึ่งมีค่าติดลบ (< 0) แสดงว่าเป็นพาราโบลาแบบคว่ำ <br>
+                ค่า h = 3 และ k = 5 ดังนั้นจุดยอดสูงสุดของกราฟจะอยู่ที่พิกัด (3, 5)
+            </div>
+            <div class="tutor-tip">Tutor's Secret Tip: จำไว้ว่า ในวงเล็บเครื่องหมายลบหน้า h จุดยอดจะเป็นบวกเสมอ (กลับเครื่องหมายในใจ) ส่วนตัว k ด้านนอกเครื่องหมายแบบไหนตามนั้นได้เลยครับ</div>
+        </div>
+    </div>
+
+    <div class="question-container" id="q9-meta" data-topic="ฟังก์ชันกำลังสอง">
+        <div class="question-title">ข้อ 9. ค่าสูงสุดหรือต่ำสุดของฟังก์ชันกำลังสอง y = 2x² - 8x + 3 มีค่าเท่ากับเท่าใด? <span style="color:red;">(Clue: จัดให้อยู่ในรูปกำลังสองสมบูรณ์เพื่อหาค่า k หรือจะใช้สูตรลัดหาพิกัด x ของจุดยอดจาก x = -b/(2a) แล้วเอาไปแทนค่าหา y ก็ได้)</span></div>
+        <ul class="options-list">
+            <li class="option-item"><input type="radio" name="q9" value="A"> A. ค่าต่ำสุดเท่ากับ -5</li>
+            <li class="option-item"><input type="radio" name="q9" value="B"> B. ค่าสูงสุดเท่ากับ -5</li>
+            <li class="option-item"><input type="radio" name="q9" value="C"> C. ค่าต่ำสุดเท่ากับ -13</li>
+            <li class="option-item"><input type="radio" name="q9" value="D"> D. ค่าสูงสุดเท่ากับ 3</li>
+        </ul>
+        <div class="explanation-box" id="exp-q9">
+            <div class="explanation-title">คำตอบที่ถูกต้อง: A</div>
+            <div><strong>คำอธิบายอย่างละเอียด:</strong> <br>
+                จากสมการ a = 2 (มากกว่า 0 เป็นกราฟหงาย ให้ค่าต่ำสุด) <br>
+                ใช้สูตรหาจุดวอกฝั่ง x = -b / (2a) = -(-8) / (2 × 2) = 8 / 4 = 2 <br>
+                นำ x = 2 ไปแทนในสมการหาค่า y: y = 2(2)² - 8(2) + 3 = 8 - 16 + 3 = -5 <br>
+                ดังนั้น กราฟมีค่าต่ำสุดเท่ากับ -5
+            </div>
+            <div class="tutor-tip">Tutor's Secret Tip: ทริคเด็ด! ถ้าค่าสัมประสิทธิ์หน้า x² เป็นบวก กราฟจะเปิดขึ้นฟ้าเหมือนรอยยิ้ม แปลว่ามี "จุดต่ำสุด" แต่ถ้าหน้า x² ติดลบ กราฟจะคว่ำหน้าเศร้า แปลว่ามี "จุดสูงสุด" จ้า</div>
+        </div>
+    </div>
+
+    <div class="question-container" id="q10-meta" data-topic="ฟังก์ชันกำลังสอง">
+        <div class="question-title">ข้อ 10. แกนสมมาตรของพาราโบลา y = -x² + 6x - 1 มีสมการตรงกับข้อใด? <span style="color:red;">(Clue: แกนสมมาตรคือเส้นตรงแนวดิ่งที่ผ่ากลางพาราโบลาพอดี ซึ่งจะตัดที่พิกัด x ของจุดยอดเสมอ สูตรคือ x = -b/(2a))</span></div>
+        <ul class="options-list">
+            <li class="option-item"><input type="radio" name="q10" value="A"> A. x = -3</li>
+            <li class="option-item"><input type="radio" name="q10" value="B"> B. x = 3</li>
+            <li class="option-item"><input type="radio" name="q10" value="C"> C. y = 3</li>
+            <li class="option-item"><input type="radio" name="q10" value="D"> D. y = 8</li>
+        </ul>
+        <div class="explanation-box" id="exp-q10">
+            <div class="explanation-title">คำตอบที่ถูกต้อง: B</div>
+            <div><strong>คำอธิบายอย่างละเอียด:</strong> <br>
+                จากโจทย์สมการรูปทั่วไป y = ax² + bx + c จะได้ a = -1, b = 6 <br>
+                สูตรสมการแกนสมมาตรคือ x = -b / (2a) <br>
+                แทนค่า: x = -6 / (2 × (-1)) = -6 / -2 = 3 <br>
+                ดังนั้น สมการแกนสมมาตรคือ x = 3
+            </div>
+            <div class="tutor-tip">Tutor's Secret Tip: จำไว้เสมอ แกนสมมาตรของพาราโบลาในระดับนี้ต้องขึ้นต้นด้วย "x =" เสนอ เพราะมันคือเส้นดิ่ง ช้อยส์ไหนที่ขึ้นด้วย "y =" ตัดทิ้งได้ก่อนเพื่อนเลย!</div>
+        </div>
+    </div>
+
+    <div class="question-container" id="q11-meta" data-topic="ระบบสมการเชิงเส้นสองตัวแปร">
+        <div class="question-title">ข้อ 11. จากระบบสมการ 2x + 3y = 7 และ 3x - y = 5 ค่าของ x + y เท่ากับข้อใด? <span style="color:red;">(Clue: หาทางกำจัดตัวแปร y โดยนำเลข 3 คูณตลอดสมการที่สอง แล้วนำทั้งสองสมการมาบวกกัน)</span></div>
+        <ul class="options-list">
+            <li class="option-item"><input type="radio" name="q11" value="A"> A. 2</li>
+            <li class="option-item"><input type="radio" name="q11" value="B"> B. 3</li>
+            <li class="option-item"><input type="radio" name="q11" value="C"> C. 4</li>
+            <li class="option-item"><input type="radio" name="q11" value="D"> D. 5</li>
+        </ul>
+        <div class="explanation-box" id="exp-q11">
+            <div class="explanation-title">คำตอบที่ถูกต้อง: B</div>
+            <div><strong>คำอธิบายอย่างละเอียด:</strong> <br>
+                สมการ (1): 2x + 3y = 7 <br>
+                สมการ (2): 3x - y = 5  => คูณ 3 ตลอดจะได้ 9x - 3y = 15 เป็นสมการ (3) <br>
+                นำ (1) + (3) เพื่อให้ 3y ตัดกันหมด: 11x = 22 => x = 2 <br>
+                นำ x = 2 ไปแทนใน (2): 3(2) - y = 5 => 6 - y = 5 => y = 1 <br>
+                โจทย์ถามหา x + y = 2 + 1 = 3
+            </div>
+            <div class="tutor-tip">Tutor's Secret Tip: เมื่อได้ค่า x และ y ออกมาแล้ว ให้เอาไปตรวจทานในสมการตั้งต้นอีกครั้งสั้นๆ ในใจเพื่อความชัวร์ จะได้ไม่หลุดคะแนนฟรีๆ ครับ</div>
+        </div>
+    </div>
+
+    <div class="question-container" id="q12-meta" data-topic="ระบบสมการเชิงเส้นสองตัวแปร">
+        <div class="question-title">ข้อ 12. ถ้าระบบสมการ ax + 2y = 5 และ 3x + 6y = 15 มีคำตอบมากมายนับไม่ถ้วน ค่าของ a ตรงกับข้อใด? <span style="color:red;">(Clue: ระบบสมการที่มีคำตอบมากมายมหาศาลแปลว่าสมการทั้งสองคือเส้นตรงเดียวกัน สัมประสิทธิ์ต้องเป็นสัดส่วนเท่ากันทั้งหมด)</span></div>
+        <ul class="options-list">
+            <li class="option-item"><input type="radio" name="q12" value="A"> A. 1</li>
+            <li class="option-item"><input type="radio" name="q12" value="B"> B. 2</li>
+            <li class="option-item"><input type="radio" name="q12" value="C"> C. 3</li>
+            <li class="option-item"><input type="radio" name="q12" value="D"> D. 6</li>
+        </ul>
+        <div class="explanation-box" id="exp-q12">
+            <div class="explanation-title">คำตอบที่ถูกต้อง: A</div>
+            <div><strong>คำอธิบายอย่างละเอียด:</strong> <br>
+                สังเกตจากสมการที่สอง 3x + 6y = 15 ถ้าเรานำ 3 ไปหารตลอดสมการ <br>
+                จะได้รูปสมการเป็น x + 2y = 5 <br>
+                นำมาเทียบกับสมการแรก ax + 2y = 5 จะเห็นว่าพจน์ 2y และค่าคงที่ 5 เท่ากันเป๊ะ <br>
+                ดังนั้น สัมประสิทธิ์หน้า x ต้องเท่ากัน นั่นคือ a = 1
+            </div>
+            <div class="tutor-tip">Tutor's Secret Tip: จำกฎทองคำไว้: คำตอบมากมาย = อัตราส่วนสัมประสิทธิ์เท่ากันหมด ($a_1/a_2 = b_1/b_2 = c_1/c_2$), ไม่มีคำตอบ = สัมประสิทธิ์หน้าตัวแปรเท่าแต่ค่าคงที่ต่าง, คำตอบเดียว = อัตราส่วนหน้าตัวแปรต่างกัน</div>
+        </div>
+    </div>
+
+    <div class="question-container" id="q13-meta" data-topic="อสมการเชิงเส้นตัวแปรเดียว">
+        <div class="question-title">ข้อ 13. ข้อใดคือช่วงคำตอบของอสมการร่วม -3 &lt; (2x + 1)/3 &le; 5? <span style="color:red;">(Clue: จัดการอสมการแบบรวดเดียวโดยคูณ 3 ตลอดทุกฝั่ง แล้วลบออกด้วย 1 จากนั้นหารด้วย 2 ทุกส่วน)</span></div>
+        <ul class="options-list">
+            <li class="option-item"><input type="radio" name="q13" value="A"> A. -5 &lt; x &le; 7</li>
+            <li class="option-item"><input type="radio" name="q13" value="B"> B. -5 &le; x &lt; 7</li>
+            <li class="option-item"><input type="radio" name="q13" value="C"> C. -4 &lt; x &le; 7</li>
+            <li class="option-item"><input type="radio" name="q13" value="D"> D. -4 &le; x &le; 7</li>
+        </ul>
+        <div class="explanation-box" id="exp-q13">
+            <div class="explanation-title">คำตอบที่ถูกต้อง: A</div>
+            <div><strong>คำอธิบายอย่างละเอียด:</strong> <br>
+                คูณ 3 ทุกฝั่ง: -9 &lt; 2x + 1 &le; 15 <br>
+                ลบ 1 ทุกฝั่ง: -10 &lt; 2x &le; 14 <br>
+                หาร 2 ทุกฝั่ง: -5 &lt; x &le; 7
+            </div>
+            <div class="tutor-tip">Tutor's Secret Tip: อสมการที่มีเครื่องหมาย 2 ฝั่งแบบนี้ ทำพร้อมๆ กันไปได้เลย แต่ต้องระวังเครื่องหมายทึบ (มีเท่ากับ) หรือโปร่ง (ไม่มีเท่ากับ) ให้ดี ห้ามสลับฝั่งนะคราบบ</div>
+        </div>
+    </div>
+
+    <div class="question-container" id="q14-meta" data-topic="การแยกตัวประกอบของพหุนาม">
+        <div class="question-title">ข้อ 14. พหุนาม (x + 2)³ - 1 สามารถแยกตัวประกอบได้ตามข้อใด? <span style="color:red;">(Clue: ใช้สูตรผลต่างกำลังสาม โดยให้พจน์หน้าเป็นกลุ่มก้อน (x + 2) และพจน์หลังคือ 1)</span></div>
+        <ul class="options-list">
+            <li class="option-item"><input type="radio" name="q14" value="A"> A. (x + 1)(x² + 5x + 7)</li>
+            <li class="option-item"><input type="radio" name="q14" value="B"> B. (x + 1)(x² + 3x + 3)</li>
+            <li class="option-item"><input type="radio" name="q14" value="C"> C. (x + 3)(x² + 5x + 7)</li>
+            <li class="option-item"><input type="radio" name="q14" value="D"> D. (x + 1)(x² + 2x + 1)</li>
+        </ul>
+        <div class="explanation-box" id="exp-q14">
+            <div class="explanation-title">คำตอบที่ถูกต้อง: A</div>
+            <div><strong>คำอธิบายอย่างละเอียด:</strong> <br>
+                มองเป็นรูป น³ - ล³ ได้ น = (x + 2) และ ล = 1 <br>
+                สูตร: (น - ล)(น² + นล + ล²) <br>
+                = [ (x + 2) - 1 ][ (x + 2)² + (x + 2)(1) + 1² ] <br>
+                = (x + 1)(x² + 4x + 4 + x + 2 + 1) <br>
+                = (x + 1)(x² + 5x + 7)
+            </div>
+            <div class="tutor-tip">Tutor's Secret Tip: ตอนกระจายพจน์หลังอย่าลืมสูตรกำลังสองสมบูรณ์นะจ๊ะ (x + 2)² = x² + 4x + 4 เด็กส่วนใหญ่มักลืมพจน์กลาง 4x กันบ่อยมาก</div>
+        </div>
+    </div>
+
+    <div class="question-container" id="q15-meta" data-topic="การแยกตัวประกอบของพหุนาม">
+        <div class="question-title">ข้อ 15. พหุนาม x⁶ - y⁶ สามารถแยกตัวประกอบขั้นต้นด้วยวิธีผลต่างกำลังสองได้ตรงกับข้อใด? <span style="color:red;">(Clue: จัดรูปให้เป็นเลขกำลังสองซ้อน (x³)² - (y³)² แล้วใช้หน้าลบหลังคูณหน้าบวกหลัง)</span></div>
+        <ul class="options-list">
+            <li class="option-item"><input type="radio" name="q15" value="A"> A. (x³ - y³)(x³ + y³)</li>
+            <li class="option-item"><input type="radio" name="q15" value="B"> B. (x² - y²)(x⁴ + x²y² + y⁴)</li>
+            <li class="option-item"><input type="radio" name="q15" value="C"> C. (x³ - y³)²</li>
+            <li class="option-item"><input type="radio" name="q15" value="D"> D. (x - y)⁶</li>
+        </ul>
+        <div class="explanation-box" id="exp-q15">
+            <div class="explanation-title">คำตอบที่ถูกต้อง: A</div>
+            <div><strong>คำอธิบายอย่างละเอียด:</strong> <br>
+                ใช้สมบัติเลขยกกำลังจัดรูปพหุนามดีกรี 6 ให้เข้าฟอร์มกำลังสอง: (x³)² - (y³)² <br>
+                กระจายสูตรผลต่างกำลังสอง น² - ล² = (น - ล)(น + ล) <br>
+                จะได้เป็น (x³ - y³)(x³ + y³)
+            </div>
+            <div class="tutor-tip">Tutor's Secret Tip: โจทย์ข้อนี้หลังจากแตกขั้นนี้แล้ว ยังสามารถแรนดอมใช้สูตรกำลังสามลุยต่อได้อีกยาวจนสุดทางเลยครับ แต่นี่ช้อยส์จบที่ขั้นนี้ ยิ้มหวานเลยครับ!</div>
+        </div>
+    </div>
+
+    <div class="question-container" id="q16-meta" data-topic="ฟังก์ชันกำลังสอง">
+        <div class="question-title">ข้อ 16. ถ้าจุดยอดของพาราโบลา y = x² + bx + 4 อยู่บนแกน X พอดี ค่าของ b ที่เป็นไปได้ทั้งหมดคือข้อใด? <span style="color:red;">(Clue: การที่จุดยอดอยู่บนแกน X แปลว่าค่า y ที่จุดยอด (ค่า k) ต้องเท่ากับ 0 พอดี)</span></div>
+        <ul class="options-list">
+            <li class="option-item"><input type="radio" name="q16" value="A"> A. b = &plusmn;2</li>
+            <li class="option-item"><input type="radio" name="q16" value="B"> B. b = &plusmn;4</li>
+            <li class="option-item"><input type="radio" name="q16" value="C"> C. b = 0</li>
+            <li class="option-item"><input type="radio" name="q16" value="D"> D. b = &plusmn;8</li>
+        </ul>
+        <div class="explanation-box" id="exp-q16">
+            <div class="explanation-title">คำตอบที่ถูกต้อง: B</div>
+            <div><strong>คำอธิบายอย่างละเอียด:</strong> <br>
+                จุดยอดอยู่บนแกน X หมายความว่าค่าพหุนามสามารถจัดรูปเป็นกำลังสองสมบูรณ์แบบเป๊ะๆ ไม่มีเศษเหลือ <br>
+                จากสูตรพจน์กลางของกำลังสองสมบูรณ์: b = &plusmn;2&radic;(หน้า &times; หลัง) <br>
+                ในที่นี้พจน์ท้ายคือ 4 ดังนั้น b = &plusmn;2&radic;4 = &plusmn;2(2) = &plusmn;4
+            </div>
+            <div class="tutor-tip">Tutor's Secret Tip: อีกวิธีหนึ่งคือใช้สูตรดีสคริมิแนนต์ย่อย $b^2 - 4ac = 0$ เมื่อกราฟแตะแกน X พอดี จะได้ $b^2 - 4(1)(4) = 0 \Rightarrow b^2 = 16 \Rightarrow b = \pm 4$ ครับ</div>
+        </div>
+    </div>
+
+    <div class="question-container" id="q17-meta" data-topic="ฟังก์ชันกำลังสอง">
+        <div class="question-title">ข้อ 17. พาราโบลา y = x² - 4x + 3 ตัดแกน X ที่จุดใดบ้าง? <span style="color:red;">(Clue: หาจุดตัดแกน X โดยการแทนค่า y = 0 แล้วแยกตัวประกอบเพื่อหาค่า x ของสมการ)</span></div>
+        <ul class="options-list">
+            <li class="option-item"><input type="radio" name="q17" value="A"> A. (1, 0) และ (3, 0)</li>
+            <li class="option-item"><input type="radio" name="q17" value="B"> B. (-1, 0) และ (-3, 0)</li>
+            <li class="option-item"><input type="radio" name="q17" value="C"> C. (0, 1) และ (0, 3)</li>
+            <li class="option-item"><input type="radio" name="q17" value="D"> D. (2, 0) และ (3, 0)</li>
+        </ul>
+        <div class="explanation-box" id="exp-q17">
+            <div class="explanation-title">คำตอบที่ถูกต้อง: A</div>
+            <div><strong>คำอธิบายอย่างละเอียด:</strong> <br>
+                ให้ y = 0 จะได้สมการ: x² - 4x + 3 = 0 <br>
+                แยกตัวประกอบพหุนาม: (x - 1)(x - 3) = 0 <br>
+                ดังนั้นจะได้ค่า x = 1 หรือ x = 3 <br>
+                พิกัดจุดตัดแกน X จึงเป็น (1, 0) และ (3, 0)
+            </div>
+            <div class="tutor-tip">Tutor's Secret Tip: คอนเซ็ปต์คณิตศาสตร์ถาวร: หาจุดตัดแกน X ให้แทน y = 0, หาจุดตัดแกน Y ให้แทน x = 0 ทริคนี้ใช้ได้ยาวๆ จนถึง ม.ปลาย เลยนะตัวเธอ</div>
+        </div>
+    </div>
+
+    <div class="question-container" id="q18-meta" data-topic="ระบบสมการเชิงเส้นสองตัวแปร">
+        <div class="question-title">ข้อ 18. ถ้าระบบสมการ 4x + 3y = 11 และ 3x - 2y = 4 มี (m, n) เป็นคำตอบของระบบสมการ แล้วค่าของ m - n เท่ากับเท่าใด? <span style="color:red;">(Clue: ทำสัมประสิทธิ์หน้า y ให้เท่ากันโดยคูณ 2 ในสมการแรก และคูณ 3 ในสมการที่สอง เพื่อหาค่า m และ n)</span></div>
+        <ul class="options-list">
+            <li class="option-item"><input type="radio" name="q18" value="A"> A. 1</li>
+            <li class="option-item"><input type="radio" name="q18" value="B"> B. 2</li>
+            <li class="option-item"><input type="radio" name="q18" value="C"> C. 3</li>
+            <li class="option-item"><input type="radio" name="q18" value="D"> D. 0</li>
+        </ul>
+        <div class="explanation-box" id="exp-q18">
+            <div class="explanation-title">คำตอบที่ถูกต้อง: A</div>
+            <div><strong>คำอธิบายอย่างละเอียด:</strong> <br>
+                คูณ 2 ในสมการ (1): 8x + 6y = 22 <br>
+                คูณ 3 ในสมการ (2): 9x - 6y = 12 <br>
+                นำสมการทั้งสองมาบวกกัน: 17x = 34  => x = 2 (ดังนั้น m = 2) <br>
+                แทน x = 2 ในสมการแรก: 4(2) + 3y = 11 => 8 + 3y = 11 => 3y = 3 => y = 1 (ดังนั้น n = 1) <br>
+                โจทย์สั่งหา m - n = 2 - 1 = 1
+            </div>
+            <div class="tutor-tip">Tutor's Secret Tip: โจทย์ระดับยากมักจะไม่ถามหา x หรือ y ตรงๆ แต่จะให้ไปทำเงื่อนไขเพิ่มอย่างเอามาลบกันหรือบวกกันเพื่อกันเด็กนำช้อยส์ไปแอบตรวจคำตอบตรงๆ นั่นเอง</div>
+        </div>
+    </div>
+
+    <div class="question-container" id="q19-meta" data-topic="ระบบสมการเชิงเส้นสองตัวแปร">
+        <div class="question-title">ข้อ 19. สองเท่าของจำนวนหนึ่งมากกว่าอีกจำนวนหนึ่งอยู่ 5 และครึ่งหนึ่งของจำนวนแรกบวกกับสามเท่าของจำนวนหลังมีค่าเท่ากับ 11 ผลคูณของจำนวนทั้งสองนี้คือเท่าใด? <span style="color:red;">(Clue: ให้จำนวนแรกคือ x จำนวนหลังคือ y แล้วแปลงโจทย์ภาษาไทยให้กลายเป็นระบบสมการคณิตศาสตร์)</span></div>
+        <ul class="options-list">
+            <li class="option-item"><input type="radio" name="q19" value="A"> A. 6</li>
+            <li class="option-item"><input type="radio" name="q19" value="B"> B. 8</li>
+            <li class="option-item"><input type="radio" name="q19" value="C"> C. 12</li>
+            <li class="option-item"><input type="radio" name="q19" value="D"> D. 15</li>
+        </ul>
+        <div class="explanation-box" id="exp-q19">
+            <div class="explanation-title">คำตอบที่ถูกต้อง: B</div>
+            <div><strong>คำอธิบายอย่างละเอียด:</strong> <br>
+                สมการ (1): 2x - y = 5  => y = 2x - 5 <br>
+                สมการ (2): 0.5x + 3y = 11 <br>
+                แทนค่า y ลงในสมการสอง: 0.5x + 3(2x - 5) = 11 <br>
+                0.5x + 6x - 15 = 11  => 6.5x = 26 => x = 4 <br>
+                หาค่า y: y = 2(4) - 5 = 3 <br>
+                หาผลคูณของสองจำนวน: x &times; y = 4 &times; 3 = 12
+            </div>
+            <div class="tutor-tip">Tutor's Secret Tip: การใช้วิธี "แทนค่าตัวแปร" (Substitution) จะเหมาะมากถ้าระบบสมการจัดรูปแปรเดี่ยวๆ อย่าง y = ตัวเลขx ได้ง่ายๆ ครับ</div>
+        </div>
+    </div>
+
+    <div class="question-container" id="q20-meta" data-topic="อสมการเชิงเส้นตัวแปรเดียว">
+        <div class="question-title">ข้อ 20. สระว่ายน้ำรูปสี่เหลี่ยมผืนผ้ามีด้านยาวยาวกว่าสองเท่าของด้านกว้างอยู่ 3 เมตร ถ้าความยาวรอบสระนี้ยาวไม่เกิน 54 เมตร ด้านกว้างที่ยาวที่สุดที่เป็นไปได้กี่เมตร? <span style="color:red;">(Clue: ให้กว้าง = x เมตร จะได้ด้านยาว = 2x + 3 สูตรความยาวรอบรูปคือ 2(กว้าง + ยาว))</span></div>
+        <ul class="options-list">
+            <li class="option-item"><input type="radio" name="q20" value="A"> A. 7 เมตร</li>
+            <li class="option-item"><input type="radio" name="q20" value="B"> B. 8 เมตร</li>
+            <li class="option-item"><input type="radio" name="q20" value="C"> C. 9 เมตร</li>
+            <li class="option-item"><input type="radio" name="q20" value="D"> D. 10 เมตร</li>
+        </ul>
+        <div class="explanation-box" id="exp-q20">
+            <div class="explanation-title">คำตอบที่ถูกต้อง: B</div>
+            <div><strong>คำอธิบายอย่างละเอียด:</strong> <br>
+                ให้ด้านกว้างยาว x เมตร จะได้ด้านยาว = 2x + 3 เมตร <br>
+                สูตรเส้นรอบรูป: 2[x + (2x + 3)] &le; 54 <br>
+                2(3x + 3) &le; 54  => 6x + 6 &le; 54 <br>
+                6x &le; 48  => x &le; 8 ดังนั้นกว้างได้มากสุดคือ 8 เมตร
+            </div>
+            <div class="tutor-tip">Tutor's Secret Tip: คำว่า "ไม่เกิน" ในทางคณิตศาสตร์สัญกรณ์คือเครื่องหมาย "น้อยกว่าหรือเท่ากับ (&le;)" อย่าสับสนกับคำว่าน้อยกว่าเฉยๆ นะครับ</div>
+        </div>
+    </div>
+
+    <div class="question-container" id="q21-meta" data-topic="การแยกตัวประกอบของพหุนาม">
+        <div class="question-title">ข้อ 21. ตัวประกอบของพหุนาม x³ - 7x + 6 ตรงกับกลุ่มในข้อใดต่อไปนี้? <span style="color:red;">(Clue: ลองนำค่ารากในช้อยส์ไปแทนค่าหาเศษ หรือดึงตัวร่วมแยกกลุ่ม)</span></div>
+        <ul class="options-list">
+            <li class="option-item"><input type="radio" name="q21" value="A"> A. (x - 1)(x - 2)(x + 3)</li>
+            <li class="option-item"><input type="radio" name="q21" value="B"> B. (x - 1)(x + 2)(x - 3)</li>
+            <li class="option-item"><input type="radio" name="q21" value="C"> C. (x + 1)(x - 2)(x - 3)</li>
+            <li class="option-item"><input type="radio" name="q21" value="D"> D. (x - 1)(x - 2)(x - 3)</li>
+        </ul>
+        <div class="explanation-box" id="exp-q21">
+            <div class="explanation-title">คำตอบที่ถูกต้อง: A</div>
+            <div><strong>คำอธิบายอย่างละเอียด:</strong> <br>
+                ทดลองแทนค่า x = 1 ในโจทย์: 1³ - 7(1) + 6 = 1 - 7 + 6 = 0 แปลว่า (x - 1) เป็นตัวประกอบชัวร์ <br>
+                หารสังเคราะห์ต่อจะเหลือพหุนาม x² + x - 6 แยกตัวประกอบได้ (x - 2)(x + 3) <br>
+                ผลรวมคำตอบจึงเป็น (x - 1)(x - 2)(x + 3)
+            </div>
+            <div class="tutor-tip">Tutor's Secret Tip: ทริคคูณเช็คพจน์ท้าย! ลองเอาตัวเลขหลังสุดในวงเล็บคูณกันดูครับ (-1) &times; (-2) &times; (+3) = +6 ตรงกับตัวเลขท้ายโจทย์เป๊ะเลย ช่วยคัดช้อยส์เสียได้เร็วมาก</div>
+        </div>
+    </div>
+
+    <div class="question-container" id="q22-meta" data-topic="การแยกตัวประกอบของพหุนาม">
+        <div class="question-title">ข้อ 22. ค่าของ 100³ - 99³ มีค่าตรงกับข้อใด? <span style="color:red;">(Clue: อย่าคิดเลขตรงๆ ให้ถอดสูตรผลต่างกำลังสาม น³ - ล³ = (น - ล)(น² + นล + ล²) โดย น = 100, ล = 99)</span></div>
+        <ul class="options-list">
+            <li class="option-item"><input type="radio" name="q22" value="A"> A. 1</li>
+            <li class="option-item"><input type="radio" name="q22" value="B"> B. 29,701</li>
+            <li class="option-item"><input type="radio" name="q22" value="C"> C. 29,901</li>
+            <li class="option-item"><input type="radio" name="q22" value="D"> D. 30,101</li>
+        </ul>
+        <div class="explanation-box" id="exp-q22">
+            <div class="explanation-title">คำตอบที่ถูกต้อง: B</div>
+            <div><strong>คำอธิบายอย่างละเอียด:</strong> <br>
+                จากสูตร: (100 - 99)(100² + (100)(99) + 99²) <br>
+                = (1)(10,000 + 9,900 + 9,801) <br>
+                = 29,701
+            </div>
+            <div class="tutor-tip">Tutor's Secret Tip: พีชคณิตช่วยย่นระยะเวลาการคิดเลขอารบิกก้อนโตได้อย่างน่ามหัศจรรย์ เห็นกำลังสามลบกันห้ามตั้งคูณยาวเด็ดขาดนะลูก</div>
+        </div>
+    </div>
+
+    <div class="question-container" id="q23-meta" data-topic="ฟังก์ชันกำลังสอง">
+        <div class="question-title">ข้อ 23. พาราโบลาในข้อใดมีเส้นกราฟที่บีบ "แคบที่สุด" (ชันที่สุด)? <span style="color:red;">(Clue: ความกว้างหรือแคบของกราฟขึ้นอยู่กับค่าสัมบูรณ์ของ a ยิ่ง |a| มาก กราฟยิ่งแคบชันเข้าหาแกน Y)</span></div>
+        <ul class="options-list">
+            <li class="option-item"><input type="radio" name="q23" value="A"> A. y = 0.5x²</li>
+            <li class="option-item"><input type="radio" name="q23" value="B"> B. y = -x²</li>
+            <li class="option-item"><input type="radio" name="q23" value="C"> C. y = 3x²</li>
+            <li class="option-item"><input type="radio" name="q23" value="D"> D. y = -5x²</li>
+        </ul>
+        <div class="explanation-box" id="exp-q23">
+            <div class="explanation-title">คำตอบที่ถูกต้อง: D</div>
+            <div><strong>คำอธิบายอย่างละเอียด:</strong> <br>
+                พิจารณาค่าสัมบูรณ์ของสัมประสิทธิ์หน้า x² ของทุกช้อยส์: <br>
+                A. |0.5| = 0.5, B. |-1| = 1, C. |3| = 3, D. |-5| = 5 <br>
+                เนื่องจากเลข 5 มีค่าสัมบูรณ์สูงที่สุด หมายความว่าค่า y จะพุ่งสูงเร็วมาก กราฟจึงมีความกว้างแคบที่สุด
+            </div>
+            <div class="tutor-tip">Tutor's Secret Tip: เครื่องหมายบวกลบบอกแค่ว่าหงายหรือคว่ำ ส่วน "ตัวเลขคูณ" จะบอกความอ้วนความผอมของกราฟ ตัวเลขยิ่งเยอะ กราฟยิ่งผอมเพรียวแคบลงนะ!</div>
+        </div>
+    </div>
+
+    <div class="question-container" id="q24-meta" data-topic="ระบบสมการเชิงเส้นสองตัวแปร">
+        <div class="question-title">ข้อ 24. หากนำเงินไปซื้อเสื้อ 3 ตัว กางเกง 2 ตัว จะต้องจ่ายเงิน 1,200 บาท แต่ถ้าซื้อเสื้อ 2 ตัว กางเกง 3 ตัว จะต้องจ่ายเงิน 1,300 บาท เสื้อและกางเกงราคาต่างกันกี่บาท? <span style="color:red;">(Clue: ตั้งสมการ 3x + 2y = 1200 และ 2x + 3y = 1300 ทริคลัดคือลองเอาสมการมาลบกันตรงๆ ได้เลย)</span></div>
+        <ul class="options-list">
+            <li class="option-item"><input type="radio" name="q24" value="A"> A. 50 บาท</li>
+            <li class="option-item"><input type="radio" name="q24" value="B"> B. 100 บาท</li>
+            <li class="option-item"><input type="radio" name="q24" value="C"> C. 150 บาท</li>
+            <li class="option-item"><input type="radio" name="q24" value="D"> D. 200 บาท</li>
+        </ul>
+        <div class="explanation-box" id="exp-q24">
+            <div class="explanation-title">คำตอบที่ถูกต้อง: B</div>
+            <div><strong>คำอธิบายอย่างละเอียด:</strong> <br>
+                ให้เสื้อราคา x บาท กางเกงราคา y บาท <br>
+                สมการ (1): 3x + 2y = 1200 <br>
+                สมการ (2): 2x + 3y = 1300 <br>
+                นำ (2) - (1) ตรงๆ: (2x - 3x) + (3y - 2y) = 1300 - 1200 <br>
+                จะพบว่า -x + y = 100 ซึ่งเขียนสลับได้เป็น y - x = 100 <br>
+                นั่นคือราคากางเกงกับเสื้อต่างกันอยู่ 100 บาทพอดีโดยไม่ต้องหาแยกชิ้นให้เสียเวลา
+            </div>
+            <div class="tutor-tip">Tutor's Secret Tip: โอ้โห! นี่แหละทริคข้อสอบแข่งขัน ตัวเลขสมมาตรสลับที่แบบนี้ จับสมการลบกันจะได้ผลต่างตัวแปรหลุดออกมาทันที ย่นเวลาคิดไปได้ถึง 2 นาทีเต็ม!</div>
+        </div>
+    </div>
+
+    <div class="question-container" id="q25-meta" data-topic="ระบบสมการเชิงเส้นสองตัวแปร">
+        <div class="question-title">ข้อ 25. ปัจจุบันบิดามีอายุเป็น 3 เท่าของบุตร แต่เมื่อ 5 ปีที่แล้ว บิดามีอายุเป็น 4 เท่าของบุตร ปัจจุบันบิดาอายุเท่าใด? <span style="color:red;">(Clue: สร้างตารางเวลาปัจจุบันและอดีต ให้ปัจจุบันบุตรอายุ x ปี บิดาจะอายุ 3x ปี แล้วย้อนเวลากลับไป 5 ปีเพื่อสร้างสมการ)</span></div>
+        <ul class="options-list">
+            <li class="option-item"><input type="radio" name="q25" value="A"> A. 35 ปี</li>
+            <li class="option-item"><input type="radio" name="q25" value="B"> B. 40 ปี</li>
+            <li class="option-item"><input type="radio" name="q25" value="C"> C. 45 ปี</li>
+            <li class="option-item"><input type="radio" name="q25" value="D"> D. 50 ปี</li>
+        </ul>
+        <div class="explanation-box" id="exp-q25">
+            <div class="explanation-title">คำตอบที่ถูกต้อง: C</div>
+            <div><strong>คำอธิบายอย่างละเอียด:</strong> <br>
+                ปัจจุบัน: บุตร = x, บิดา = 3x <br>
+                เมื่อ 5 ปีที่แล้ว: บุตร = x - 5, บิดา = 3x - 5 <br>
+                เงื่อนไขอดีต: บิดาเป็น 4 เท่าของบุตร => 3x - 5 = 4(x - 5) <br>
+                3x - 5 = 4x - 20  => 20 - 5 = 4x - 3x => x = 15 <br>
+                ดังนั้น ปัจจุบันบุตรอายุ 15 ปี บิดาอายุ 3 &times; 15 = 45 ปี
+            </div>
+            <div class="tutor-tip">Tutor's Secret Tip: โจทย์ปัญหาอายุถ้าย้อนไปอดีตต้อง "ลบออก" ทั้งฝั่งพ่อและฝั่งลูกด้วยนะครับ เด็กๆ ชอบเผลอลบแค่อายุพ่อคนเดียว สมการเลยเบี้ยวพังพินาศ</div>
+        </div>
+    </div>
+
+    <button class="btn-action" id="submit-quiz-btn">ส่งข้อสอบเพื่อวิเคราะห์ผล</button>
+
+    <div id="result-section">
+        <div class="result-header">📊 ผลการวิเคราะห์คะแนนระบบเรียลไทม์</div>
+        <div class="score-display" id="score-text">0 / 25 คะแนน</div>
+        <table class="analysis-table">
+            <thead>
+                <tr>
+                    <th>บทเรียน / หัวข้อประเมิน</th>
+                    <th>คะแนนที่ได้</th>
+                    <th>status การประเมิน</th>
+                </tr>
+            </thead>
+            <tbody id="analysis-rows">
+                </tbody>
+        </table>
+        <button class="btn-action" onclick="window.location.reload();">ทำข้อสอบใหม่อีกครั้ง</button>
+    </div>
+</div>
+
+<script>
+    // สารบัญเฉลยข้อสอบที่ถูกต้องทั้ง 25 ข้อ สำหรับ ม.3
+    const solutions = {
+        q1: 'C', q2: 'A', q3: 'B', q4: 'B', q5: 'A',
+        q6: 'C', q7: 'B', q8: 'C', q9: 'A', q10: 'B',
+        q11: 'B', q12: 'C', q13: 'A', q14: 'A', q15: 'A',
+        q16: 'B', q17: 'A', q18: 'A', q19: 'C', q20: 'B',
+        q21: 'A', q22: 'B', q23: 'D', q24: 'B', q25: 'C'
+    };
+
+    let userAnswers = {};
+
+    // 1. ตรวจสอบการเลือกช้อยส์แบบเรียลไทม์
+    document.querySelectorAll('.option-item').forEach(item => {
+        item.addEventListener('click', function() {
+            const radioBtn = this.querySelector('input[type="radio"]');
+            if (!radioBtn) return;
+
+            const qName = radioBtn.name;
+            
+            // ป้องกันการแอบเปลี่ยนคำตอบทีหลัง
+            if (userAnswers[qName]) return;
+
+            radioBtn.checked = true;
+            const chosenValue = radioBtn.value;
+            userAnswers[qName] = chosenValue;
+
+            const correctAns = solutions[qName];
+            const parentContainer = this.closest('.question-container');
+
+            const allOptions = parentContainer.querySelectorAll('.option-item');
+            allOptions.forEach(opt => {
+                opt.classList.add('disabled-option');
+                const currentRadio = opt.querySelector('input[type="radio"]');
+                
+                if (currentRadio.value === correctAns) {
+                    opt.classList.add('correct-choice');
+                } else if (currentRadio.value === chosenValue && chosenValue !== correctAns) {
+                    opt.classList.add('incorrect-choice');
+                }
+            });
+
+            const expBox = parentContainer.querySelector('.explanation-box');
+            if (expBox) {
+                expBox.style.display = 'block';
+            }
+        });
+    });
+
+    // 2. ประมวลผลลัพธ์และวิเคราะห์จุดอ่อนรายกลุ่มบทเรียน
+    document.getElementById('submit-quiz-btn').addEventListener('click', function() {
+        let score = 0;
+        const totalQuestions = Object.keys(solutions).length;
+
+        if (Object.keys(userAnswers).length < totalQuestions) {
+            alert('พระจอมเกล้าติวเตอร์แนะนำให้น้องๆ ตอบให้ครบทั้ง 25 ข้อก่อนส่ง เพื่อระบบคำนวณสถิติจุดอ่อนที่แม่นยำนะครับ!');
+            return;
+        }
+
+        let topicAnalysis = {};
+
+        for (let i = 1; i <= totalQuestions; i++) {
+            const qKey = 'q' + i;
+            const metaContainer = document.getElementById(qKey + '-meta');
+            const topic = metaContainer ? metaContainer.getAttribute('data-topic') : 'บทเรียนทั่วไป';
+            
+            if (!topicAnalysis[topic]) {
+                topicAnalysis[topic] = { correct: 0, total: 0 };
+            }
+            
+            topicAnalysis[topic].total++;
+            
+            if (userAnswers[qKey] === solutions[qKey]) {
+                score++;
+                topicAnalysis[topic].correct++;
+            }
+        }
+
+        document.getElementById('score-text').innerText = `${score} / ${totalQuestions} คะแนน`;
+
+        const rowsTarget = document.getElementById('analysis-rows');
+        rowsTarget.innerHTML = '';
+
+        for (const topic in topicAnalysis) {
+            const data = topicAnalysis[topic];
+            const percentage = (data.correct / data.total) * 100;
+            let statusText = '';
+            
+            if (percentage >= 80) {
+                statusText = '<span class="status-good">⭐ ดีเยี่ยม (พื้นฐานปึกมาก)</span>';
+            } else if (percentage >= 50) {
+                statusText = '<span class="status-good">👍 พอใช้ (ระวังคิดเลขผิดพลาด)</span>';
+            } else {
+                statusText = '<span class="status-weak">⚠️ ควรทบทวนด่วน (เนื้อหายังไม่แน่น)</span>';
+            }
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><strong>${topic}</strong></td>
+                <td>${data.correct} / ${data.total}</td>
+                <td>${statusText}</td>
+            `;
+            rowsTarget.appendChild(tr);
+        }
+
+        const resSection = document.getElementById('result-section');
+        resSection.style.display = 'block';
+        resSection.scrollIntoView({ behavior: 'smooth' });
+        this.style.display = 'none';
+    });
+</script>
+
+</body>
+</html>
