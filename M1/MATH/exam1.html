@@ -1,74 +1,103 @@
 <!DOCTYPE html>
-<html lang="th">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>แบบทดสอบคณิตศาสตร์ ม.1 (พระจอมเกล้าติวเตอร์)</title>
-    <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; padding: 20px; background: #f0f2f5; max-width: 800px; margin: auto; }
-        .question-container { background: #fff; padding: 20px; margin-bottom: 20px; border-radius: 10px; border-left: 6px solid #2c3e50; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        .feedback { display: none; margin-top: 15px; padding: 15px; border-radius: 5px; font-weight: bold; }
-        .correct { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
-        .wrong { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
-        .tutor-tip { font-style: italic; color: #555; margin-top: 5px; display: block; }
-        h1 { color: #2c3e50; text-align: center; }
-        .score-box { background: #fff; padding: 20px; text-align: center; font-size: 1.2em; border-radius: 10px; margin-top: 20px; }
-    </style>
+<meta charset="UTF-8">
+<title>แบบทดสอบคณิตศาสตร์ ม.1 - พระจอมเกล้าติวเตอร์</title>
+<style>
+    body { font-family: sans-serif; padding: 20px; background: #f4f4f9; max-width: 800px; margin: auto; }
+    .question-container { background: white; padding: 15px; margin-bottom: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    .option { display: block; margin: 5px 0; cursor: pointer; padding: 8px; border: 1px solid #ddd; border-radius: 4px; transition: 0.3s; }
+    .option:hover { background: #f0f0f0; }
+    .correct { background-color: #d4edda !important; border-color: #c3e6cb; }
+    .incorrect { background-color: #f8d7da !important; border-color: #f5c6cb; }
+    .explanation { margin-top: 10px; padding: 10px; display: none; background: #e2e3e5; border-radius: 4px; font-size: 0.9em; }
+    .btn { background: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-size: 16px; }
+</style>
 </head>
 <body>
+    <h2>แบบทดสอบคณิตศาสตร์ ม.1 (25 ข้อ)</h2>
+    <div id="quiz"></div>
+    <button class="btn" onclick="analyze()">สรุปผลการประเมิน</button>
+    <div id="result" style="margin-top:20px; font-weight:bold;"></div>
 
-    <h1>แบบทดสอบคณิตศาสตร์ ม.1 ฉบับปรับปรุง สสวท.</h1>
-    <div id="quiz-app"></div>
-    <div id="result-area"></div>
+<script>
+    const questions = [
+        // จำนวนเต็ม (1-4)
+        { q: "ผลลัพธ์ของ (-15) + (-8) คือเท่าใด?", options: ["-23", "-7", "7", "23"], ans: 0, cat: "จำนวนเต็ม", clue: "การรวมหนี้เพิ่มขึ้นเรื่อยๆ" },
+        { q: "ค่าของ (-12) - (-5) คือเท่าใด?", options: ["-17", "-7", "7", "17"], ans: 1, cat: "จำนวนเต็ม", clue: "ลบชนลบกลายเป็นบวก" },
+        { q: "(-6) × (-4) มีค่าเท่ากับข้อใด?", options: ["-24", "-10", "10", "24"], ans: 3, cat: "จำนวนเต็ม", clue: "ลบคูณลบได้บวก" },
+        { q: "ผลหารของ 56 ÷ (-8) คือเท่าใด?", options: ["-8", "-7", "7", "8"], ans: 1, cat: "จำนวนเต็ม", clue: "ต่างชนิดกันหารกันได้ลบ" },
+        // จำนวนเต็มระคน (5-10)
+        { q: "ผลลัพธ์ของ 12 + (-4) × 2 คือเท่าใด?", options: ["16", "4", "-4", "-16"], ans: 1, cat: "ระคน", clue: "คูณก่อนบวกเสมอ" },
+        { q: "ค่าของ (-2) × (5 - 8) คือเท่าใด?", options: ["-6", "6", "-10", "10"], ans: 1, cat: "ระคน", clue: "ทำในวงเล็บก่อน" },
+        { q: "ผลลัพธ์ของ 20 - 4 ÷ 2 คือเท่าใด?", options: ["8", "12", "18", "10"], ans: 2, cat: "ระคน", clue: "หารก่อนลบ" },
+        { q: "ค่าของ (10 + 5) ÷ (-3) คือเท่าใด?", options: ["-5", "5", "-3", "3"], ans: 0, cat: "ระคน", clue: "ทำในวงเล็บให้เสร็จก่อน" },
+        { q: "ผลลัพธ์ของ (-3) × (-2) + (-4) คือเท่าใด?", options: ["10", "2", "-2", "-10"], ans: 1, cat: "ระคน", clue: "คูณก่อนแล้วค่อยรวม" },
+        { q: "ค่าของ 5 - [2 × (3 - 6)] คือเท่าใด?", options: ["1", "9", "11", "-1"], ans: 2, cat: "ระคน", clue: "วงเล็บในสุดออกมาก่อน" },
+        // เลขยกกำลัง (11-15)
+        { q: "(-2)³ มีค่าเท่ากับเท่าใด?", options: ["-8", "-6", "6", "8"], ans: 0, cat: "เลขยกกำลัง", clue: "ฐานลบเลขชี้คี่ได้ลบ" },
+        { q: "(-3)² มีค่าเท่ากับเท่าใด?", options: ["-9", "-6", "6", "9"], ans: 3, cat: "เลขยกกำลัง", clue: "ฐานลบเลขชี้คู่ได้บวก" },
+        { q: "2⁴ มีค่าเท่ากับเท่าใด?", options: ["8", "16", "32", "64"], ans: 1, cat: "เลขยกกำลัง", clue: "2 คูณกัน 4 ตัว" },
+        { q: "(-1)¹⁰⁰ มีค่าเท่ากับเท่าใด?", options: ["-100", "-1", "1", "100"], ans: 2, cat: "เลขยกกำลัง", clue: "เลขชี้คู่ของฐานติดลบ" },
+        { q: "3² + 4² มีค่าเท่ากับเท่าใด?", options: ["14", "25", "49", "100"], ans: 1, cat: "เลขยกกำลัง", clue: "หาค่าแต่ละตัวก่อนบวก" },
+        // สมการ (16-20)
+        { q: "ถ้า x + 5 = 12 แล้ว x เท่ากับเท่าใด?", options: ["5", "7", "17", "60"], ans: 1, cat: "สมการ", clue: "ย้าย 5 ไปลบ" },
+        { q: "ถ้า 3x = 15 แล้ว x เท่ากับเท่าใด?", options: ["5", "12", "18", "45"], ans: 0, cat: "สมการ", clue: "ย้าย 3 ไปหาร" },
+        { q: "ถ้า 2x - 4 = 10 แล้ว x เท่ากับเท่าใด?", options: ["3", "5", "7", "14"], ans: 2, cat: "สมการ", clue: "ย้ายเลขตัวเดียวไปก่อน" },
+        { q: "จำนวนหนึ่งรวมกับ 8 ได้ 20 เขียนเป็นสมการได้อย่างไร?", options: ["8 - x = 20", "x + 8 = 20", "x - 8 = 20", "20x = 8"], ans: 1, cat: "สมการ", clue: "คำว่ารวมกับคือบวก" },
+        { q: "ถ้า x/2 = 6 แล้ว x เท่ากับเท่าใด?", options: ["3", "4", "8", "12"], ans: 3, cat: "สมการ", clue: "ย้าย 2 ไปคูณ" },
+        // เรขาคณิต (21-25)
+        { q: "มุมตรงมีขนาดกี่องศา?", options: ["90", "180", "270", "360"], ans: 1, cat: "เรขา", clue: "เส้นตรงราบเรียบ" },
+        { q: "ถ้าเส้นขนานถูกตัด มุมแย้งจะมีขนาดเป็นอย่างไร?", options: ["เท่ากัน", "บวกกันได้ 90", "บวกกันได้ 180", "ไม่สัมพันธ์กัน"], ans: 0, cat: "เรขา", clue: "สมบัติเส้นขนาน" },
+        { q: "มุมภายในรูปสามเหลี่ยมรวมกันได้กี่องศา?", options: ["90", "180", "270", "360"], ans: 1, cat: "เรขา", clue: "สมบัติสามเหลี่ยม" },
+        { q: "ถ้ามุมสองมุมรวมกันได้ 90 องศา เรียกว่ามุมอะไร?", options: ["มุมตรง", "มุมกลับ", "มุมประกอบมุมฉาก", "มุมแย้ง"], ans: 2, cat: "เรขา", clue: "มุมฉากคือ 90" },
+        { q: "มุมรอบจุดศูนย์กลางมีขนาดกี่องศา?", options: ["90", "180", "270", "360"], ans: 3, cat: "เรขา", clue: "ครบหนึ่งวงกลม" }
+    ];
 
-    <script>
-        const questions = [
-            { q: "(-15) + 8 มีค่าเท่าใด", o: ["-7", "-23", "7", "23"], a: 0, clue: "การบวกเลขต่างชนิด คือการหาผลต่างและใส่เครื่องหมายตามเลขที่มีค่ามากกว่า", tip: "มองเป็นเงินและหนี้ครับ!" },
-            { q: "(-2)⁴ มีค่าเท่าใด", o: ["-16", "16", "-8", "8"], a: 1, clue: "เลขฐานติดลบยกกำลังเลขคู่ ผลลัพธ์จะเป็นบวกเสมอ", tip: "(-2) × (-2) × (-2) × (-2)" },
-            { q: "แก้สมการ x + 5 = 12 ค่าของ x คือ", o: ["5", "6", "7", "8"], a: 2, clue: "ย้ายข้างจากบวกไปเป็นลบ", tip: "รักษาความเท่ากันของตาชั่งไว้" },
-            { q: "(-3) × (-4) × 2 มีค่าเท่าใด", o: ["-24", "24", "-12", "12"], a: 1, clue: "ลบ × ลบ = บวก", tip: "นับจำนวนตัวลบ ถ้าเป็นคู่ ผลจะเป็นบวก" },
-            { q: "ข้อใดคือสมบัติการแจกแจง", o: ["a + b = b + a", "a(b + c) = ab + ac", "a + (b + c) = (a + b) + c", "a × 1 = a"], a: 1, clue: "การกระจายตัวคูณเข้าไปในวงเล็บ", tip: "แจกของให้ครบทุกคนในวงเล็บ" },
-            { q: "(-5) - (-8) มีค่าเท่าใด", o: ["-13", "13", "3", "-3"], a: 2, clue: "ลบด้วยจำนวนลบ คือการบวกด้วยจำนวนตรงข้าม", tip: "ลบชนลบกลายเป็นบวก" },
-            { q: "ผลลัพธ์ของ 5³ คือข้อใด", o: ["15", "125", "25", "75"], a: 1, clue: "เลขยกกำลังคือการคูณตัวเองซ้ำๆ", tip: "ไม่ใช่ 5 × 3 นะครับ" },
-            { q: "การสร้างมุม 60 องศา ต้องใช้อะไรช่วย", o: ["ไม้บรรทัด", "วงเวียน", "โพรแทรกเตอร์", "ดินสอสี"], a: 1, clue: "ใช้ทักษะการสร้างรูปสามเหลี่ยมด้านเท่า", tip: "รัศมีต้องเท่าเดิมเสมอ" },
-            { q: "ถ้า 2x = 20 แล้ว x มีค่าเท่าใด", o: ["10", "40", "5", "22"], a: 0, clue: "2 คูณอยู่ ย้ายไปหาร", tip: "ย้ายข้างคือการทำตรงข้าม" },
-            { q: "(-100) ÷ (-4) มีค่าเท่าใด", o: ["-25", "25", "-40", "40"], a: 1, clue: "ลบหารลบได้บวก", tip: "กฎเครื่องหมายเหมือนคูณครับ" },
-            { q: "ค่าของ (-1)¹⁰⁰ คือ", o: ["-100", "100", "-1", "1"], a: 3, clue: "ฐานเป็นลบ ยกกำลังเลขคู่", tip: "เลขคู่ทำให้ลบหายไป" },
-            { q: "มุมที่เกิดจากการแบ่งครึ่งมุม 90 องศา คือมุมกี่องศา", o: ["30", "45", "60", "35"], a: 1, clue: "แบ่งครึ่งคือหารสอง", tip: "ความแม่นยำอยู่ที่วงเวียน" },
-            { q: "x - 7 = -10 ค่าของ x คือ", o: ["3", "-3", "17", "-17"], a: 1, clue: "ย้าย -7 ไปฝั่งขวาจะกลายเป็น +7", tip: "ติดลบอยู่มาก บวกเพิ่มนิดหน่อยก็ยังติดลบ" },
-            { q: "ข้อใดถูกต้อง", o: ["(-2)³ = 8", "(-2)³ = -8", "2³ = -8", "(-2)³ = 6"], a: 1, clue: "ฐานติดลบยกกำลังคี่ ผลลัพธ์ติดลบ", tip: "เลขคี่รักษาเครื่องหมายเดิม" },
-            { q: "สมบัติการสลับที่สำหรับการบวกคือ", o: ["a+b = b+a", "a+b = b-a", "a×b = b×a", "a-b = b-a"], a: 0, clue: "เปลี่ยนตำแหน่งแต่ผลเท่าเดิม", tip: "บวกและคูณสลับที่ได้ แต่ลบและหารทำไม่ได้!" },
-            { q: "(-12) ÷ 3 มีค่าเท่าใด", o: ["4", "-4", "9", "-9"], a: 1, clue: "ลบหารบวก ผลเป็นลบ", tip: "เครื่องหมายต่างกัน ผลลัพธ์ติดลบ" },
-            { q: "ค่าของ 0 × (-50) คือ", o: ["-50", "50", "0", "1"], a: 2, clue: "สมบัติของศูนย์", tip: "ศูนย์คือตัวทำลายล้าง" },
-            { q: "แก้สมการ 3x + 1 = 10", o: ["3", "4", "2", "1"], a: 0, clue: "ย้าย +1 ไปลบก่อน แล้วค่อยย้าย 3 ไปหาร", tip: "ทำจากไกลตัวแปรไปหาใกล้ตัวแปร" },
-            { q: "จำนวนเต็มบวกที่น้อยที่สุดคือ", o: ["0", "1", "-1", "ไม่มี"], a: 1, clue: "จำนวนนับเริ่มต้นที่เท่าไหร่", tip: "0 ไม่ใช่จำนวนเต็มบวก" },
-            { q: "(-7) + (-7) + (-7) เขียนในรูปเลขยกกำลังได้เป็น", o: ["(-7)³", "-7 × 3", "3 × (-7)", "(-7) + 3"], a: 2, clue: "การบวกซ้ำๆ คือการคูณ", tip: "ระวังอย่าสับสนกับ (-7)³" },
-            { q: "มุมตรงมีขนาดกี่องศา", o: ["90", "180", "360", "45"], a: 1, clue: "เป็นเส้นตรงราบเรียบ", tip: "จำไว้ว่ามุมตรงคือครึ่งวงกลม" },
-            { q: "แก้สมการ x/2 = 5", o: ["2.5", "7", "10", "3"], a: 2, clue: "หารอยู่ ย้ายไปคูณ", tip: "ย้ายตัวหารไปคูณทั้งสองข้าง" },
-            { q: "ข้อใดคือจำนวนเต็ม", o: ["0.5", "1/2", "-5", "√2"], a: 2, clue: "ตัวเลขที่ไม่มีเศษส่วนหรือทศนิยม", tip: "รวมทั้งลบ ศูนย์ และบวก" },
-            { q: "(-2)⁵ มีค่าเท่าใด", o: ["32", "-32", "10", "-10"], a: 1, clue: "ฐานลบกำลังคี่ ได้ค่าติดลบ", tip: "2 × 2 × 2 × 2 × 2 = 32" },
-            { q: "ถ้า x + x + x = 15 แล้ว x คือ", o: ["3", "4", "5", "6"], a: 2, clue: "3x = 15", tip: "หาเลขที่เหมือนกัน 3 ตัวบวกกันได้ 15" }
-        ];
+    const quizDiv = document.getElementById('quiz');
+    let scores = { "จำนวนเต็ม": 0, "ระคน": 0, "เลขยกกำลัง": 0, "สมการ": 0, "เรขา": 0 };
+    let counts = { "จำนวนเต็ม": 0, "ระคน": 0, "เลขยกกำลัง": 0, "สมการ": 0, "เรขา": 0 };
 
-        const app = document.getElementById('quiz-app');
-        questions.forEach((q, i) => {
-            const div = document.createElement('div');
-            div.className = 'question-container';
-            div.innerHTML = `<p>${i+1}. ${q.q} <span style="color:red;">(Clue: ${q.clue})</span></p>`;
-            q.o.forEach((opt, oi) => {
-                div.innerHTML += `<label><input type="radio" name="q${i}" onclick="check(${i}, ${oi})"> ${opt}</label><br>`;
-            });
-            div.innerHTML += `<div id="f${i}" class="feedback"></div>`;
-            app.appendChild(div);
+    questions.forEach((item, index) => {
+        let div = document.createElement('div');
+        div.className = 'question-container';
+        div.innerHTML = `<p>${index + 1}. ${item.q} <span style="color:red;">(Clue: ${item.clue})</span></p>`;
+        item.options.forEach((opt, oIdx) => {
+            div.innerHTML += `<label class="option"><input type="radio" name="q${index}" onclick="check(${index}, ${oIdx})"> ${opt}</label>`;
         });
+        div.innerHTML += `<div id="exp${index}" class="explanation"></div>`;
+        quizDiv.appendChild(div);
+    });
 
-        function check(qi, oi) {
-            const f = document.getElementById(`f${qi}`);
-            const isCorrect = questions[qi].a === oi;
-            f.style.display = 'block';
-            f.className = 'feedback ' + (isCorrect ? 'correct' : 'wrong');
-            f.innerHTML = isCorrect ? "ถูกต้อง!" : "ผิดครับ!";
-            f.innerHTML += `<br><span class="tutor-tip">Tutor's Secret Tip: ${questions[qi].tip}</span>`;
+    function check(qIdx, oIdx) {
+        let container = document.querySelectorAll('.question-container')[qIdx];
+        let expDiv = document.getElementById('exp'+qIdx);
+        let inputs = container.querySelectorAll('input');
+        inputs.forEach(i => i.disabled = true);
+        
+        let cat = questions[qIdx].cat;
+        counts[cat]++;
+        
+        if(oIdx === questions[qIdx].ans) {
+            container.classList.add('correct');
+            expDiv.innerHTML = "ถูกต้อง! Tutor's Secret Tip: แม่นยำมากครับ";
+            scores[cat]++;
+        } else {
+            container.classList.add('incorrect');
+            expDiv.innerHTML = "พลาดไปนิด! คำตอบที่ถูกคือ: " + questions[qIdx].options[questions[qIdx].ans] + ". Tutor's Secret Tip: ตรวจสอบขั้นตอนการคำนวณอีกครั้ง";
         }
-    </script>
+        expDiv.style.display = 'block';
+    }
+
+    function analyze() {
+        let res = "วิเคราะห์จุดอ่อน: ";
+        for(let key in scores) {
+            if(counts[key] > 0 && (scores[key]/counts[key] < 0.6)) {
+                res += "บทเรียน " + key + " ควรทบทวนเพิ่ม ";
+            }
+        }
+        document.getElementById('result').innerHTML = res === "วิเคราะห์จุดอ่อน: " ? "ยอดเยี่ยม! คุณเข้าใจพื้นฐานทุกบทเรียนได้ดีมากครับ" : res;
+    }
+</script>
 </body>
 </html>
