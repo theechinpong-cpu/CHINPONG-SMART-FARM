@@ -2,56 +2,72 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
+    <title>แบบทดสอบคณิตศาสตร์ ม.1 (พระจอมเกล้าติวเตอร์)</title>
     <style>
-        body { font-family: sans-serif; line-height: 1.6; padding: 20px; background: #f4f7f6; }
-        .question-container { background: #fff; padding: 15px; margin-bottom: 20px; border-radius: 8px; border-left: 5px solid #2c3e50; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        .options { margin-top: 10px; }
-        .feedback { display: none; margin-top: 10px; padding: 10px; border-radius: 5px; }
-        .correct { background-color: #d4edda; color: #155724; }
-        .wrong { background-color: #f8d7da; color: #721c24; }
-        button { cursor: pointer; padding: 10px 20px; background: #2c3e50; color: white; border: none; border-radius: 5px; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; padding: 20px; background: #f0f2f5; max-width: 800px; margin: auto; }
+        .question-container { background: #fff; padding: 20px; margin-bottom: 20px; border-radius: 10px; border-left: 6px solid #2c3e50; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .feedback { display: none; margin-top: 15px; padding: 15px; border-radius: 5px; font-weight: bold; }
+        .correct { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .wrong { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .tutor-tip { font-style: italic; color: #555; margin-top: 5px; display: block; }
+        h1 { color: #2c3e50; text-align: center; }
+        .score-box { background: #fff; padding: 20px; text-align: center; font-size: 1.2em; border-radius: 10px; margin-top: 20px; }
     </style>
 </head>
 <body>
-    <h1>แบบทดสอบคณิตศาสตร์ ม.1 (สสวท.)</h1>
-    <div id="quiz"></div>
-    <button onclick="analyze()">สรุปผลการวิเคราะห์</button>
-    <div id="analysis"></div>
+
+    <h1>แบบทดสอบคณิตศาสตร์ ม.1 ฉบับปรับปรุง สสวท.</h1>
+    <div id="quiz-app"></div>
+    <div id="result-area"></div>
 
     <script>
         const questions = [
-            // Sample of questions (Total 25 requested, here is the structure)
-            { q: "ผลลัพธ์ของ (-15) + 8 มีค่าเท่าใด", o: ["-7", "-23", "7", "23"], a: 0, t: "การดำเนินการจำนวนเต็ม", clue: "มีหนี้ 15 บาท มีเงิน 8 บาท" },
-            { q: "ค่าของ (-2)⁴ คือเท่าใด", o: ["-16", "16", "-8", "8"], a: 1, t: "เลขยกกำลัง", clue: "เลขชี้กำลังเป็นเลขคู่" },
-            // ... (Add 23 more questions following this pattern)
+            { q: "(-15) + 8 มีค่าเท่าใด", o: ["-7", "-23", "7", "23"], a: 0, clue: "การบวกเลขต่างชนิด คือการหาผลต่างและใส่เครื่องหมายตามเลขที่มีค่ามากกว่า", tip: "มองเป็นเงินและหนี้ครับ!" },
+            { q: "(-2)⁴ มีค่าเท่าใด", o: ["-16", "16", "-8", "8"], a: 1, clue: "เลขฐานติดลบยกกำลังเลขคู่ ผลลัพธ์จะเป็นบวกเสมอ", tip: "(-2) × (-2) × (-2) × (-2)" },
+            { q: "แก้สมการ x + 5 = 12 ค่าของ x คือ", o: ["5", "6", "7", "8"], a: 2, clue: "ย้ายข้างจากบวกไปเป็นลบ", tip: "รักษาความเท่ากันของตาชั่งไว้" },
+            { q: "(-3) × (-4) × 2 มีค่าเท่าใด", o: ["-24", "24", "-12", "12"], a: 1, clue: "ลบ × ลบ = บวก", tip: "นับจำนวนตัวลบ ถ้าเป็นคู่ ผลจะเป็นบวก" },
+            { q: "ข้อใดคือสมบัติการแจกแจง", o: ["a + b = b + a", "a(b + c) = ab + ac", "a + (b + c) = (a + b) + c", "a × 1 = a"], a: 1, clue: "การกระจายตัวคูณเข้าไปในวงเล็บ", tip: "แจกของให้ครบทุกคนในวงเล็บ" },
+            { q: "(-5) - (-8) มีค่าเท่าใด", o: ["-13", "13", "3", "-3"], a: 2, clue: "ลบด้วยจำนวนลบ คือการบวกด้วยจำนวนตรงข้าม", tip: "ลบชนลบกลายเป็นบวก" },
+            { q: "ผลลัพธ์ของ 5³ คือข้อใด", o: ["15", "125", "25", "75"], a: 1, clue: "เลขยกกำลังคือการคูณตัวเองซ้ำๆ", tip: "ไม่ใช่ 5 × 3 นะครับ" },
+            { q: "การสร้างมุม 60 องศา ต้องใช้อะไรช่วย", o: ["ไม้บรรทัด", "วงเวียน", "โพรแทรกเตอร์", "ดินสอสี"], a: 1, clue: "ใช้ทักษะการสร้างรูปสามเหลี่ยมด้านเท่า", tip: "รัศมีต้องเท่าเดิมเสมอ" },
+            { q: "ถ้า 2x = 20 แล้ว x มีค่าเท่าใด", o: ["10", "40", "5", "22"], a: 0, clue: "2 คูณอยู่ ย้ายไปหาร", tip: "ย้ายข้างคือการทำตรงข้าม" },
+            { q: "(-100) ÷ (-4) มีค่าเท่าใด", o: ["-25", "25", "-40", "40"], a: 1, clue: "ลบหารลบได้บวก", tip: "กฎเครื่องหมายเหมือนคูณครับ" },
+            { q: "ค่าของ (-1)¹⁰⁰ คือ", o: ["-100", "100", "-1", "1"], a: 3, clue: "ฐานเป็นลบ ยกกำลังเลขคู่", tip: "เลขคู่ทำให้ลบหายไป" },
+            { q: "มุมที่เกิดจากการแบ่งครึ่งมุม 90 องศา คือมุมกี่องศา", o: ["30", "45", "60", "35"], a: 1, clue: "แบ่งครึ่งคือหารสอง", tip: "ความแม่นยำอยู่ที่วงเวียน" },
+            { q: "x - 7 = -10 ค่าของ x คือ", o: ["3", "-3", "17", "-17"], a: 1, clue: "ย้าย -7 ไปฝั่งขวาจะกลายเป็น +7", tip: "ติดลบอยู่มาก บวกเพิ่มนิดหน่อยก็ยังติดลบ" },
+            { q: "ข้อใดถูกต้อง", o: ["(-2)³ = 8", "(-2)³ = -8", "2³ = -8", "(-2)³ = 6"], a: 1, clue: "ฐานติดลบยกกำลังคี่ ผลลัพธ์ติดลบ", tip: "เลขคี่รักษาเครื่องหมายเดิม" },
+            { q: "สมบัติการสลับที่สำหรับการบวกคือ", o: ["a+b = b+a", "a+b = b-a", "a×b = b×a", "a-b = b-a"], a: 0, clue: "เปลี่ยนตำแหน่งแต่ผลเท่าเดิม", tip: "บวกและคูณสลับที่ได้ แต่ลบและหารทำไม่ได้!" },
+            { q: "(-12) ÷ 3 มีค่าเท่าใด", o: ["4", "-4", "9", "-9"], a: 1, clue: "ลบหารบวก ผลเป็นลบ", tip: "เครื่องหมายต่างกัน ผลลัพธ์ติดลบ" },
+            { q: "ค่าของ 0 × (-50) คือ", o: ["-50", "50", "0", "1"], a: 2, clue: "สมบัติของศูนย์", tip: "ศูนย์คือตัวทำลายล้าง" },
+            { q: "แก้สมการ 3x + 1 = 10", o: ["3", "4", "2", "1"], a: 0, clue: "ย้าย +1 ไปลบก่อน แล้วค่อยย้าย 3 ไปหาร", tip: "ทำจากไกลตัวแปรไปหาใกล้ตัวแปร" },
+            { q: "จำนวนเต็มบวกที่น้อยที่สุดคือ", o: ["0", "1", "-1", "ไม่มี"], a: 1, clue: "จำนวนนับเริ่มต้นที่เท่าไหร่", tip: "0 ไม่ใช่จำนวนเต็มบวก" },
+            { q: "(-7) + (-7) + (-7) เขียนในรูปเลขยกกำลังได้เป็น", o: ["(-7)³", "-7 × 3", "3 × (-7)", "(-7) + 3"], a: 2, clue: "การบวกซ้ำๆ คือการคูณ", tip: "ระวังอย่าสับสนกับ (-7)³" },
+            { q: "มุมตรงมีขนาดกี่องศา", o: ["90", "180", "360", "45"], a: 1, clue: "เป็นเส้นตรงราบเรียบ", tip: "จำไว้ว่ามุมตรงคือครึ่งวงกลม" },
+            { q: "แก้สมการ x/2 = 5", o: ["2.5", "7", "10", "3"], a: 2, clue: "หารอยู่ ย้ายไปคูณ", tip: "ย้ายตัวหารไปคูณทั้งสองข้าง" },
+            { q: "ข้อใดคือจำนวนเต็ม", o: ["0.5", "1/2", "-5", "√2"], a: 2, clue: "ตัวเลขที่ไม่มีเศษส่วนหรือทศนิยม", tip: "รวมทั้งลบ ศูนย์ และบวก" },
+            { q: "(-2)⁵ มีค่าเท่าใด", o: ["32", "-32", "10", "-10"], a: 1, clue: "ฐานลบกำลังคี่ ได้ค่าติดลบ", tip: "2 × 2 × 2 × 2 × 2 = 32" },
+            { q: "ถ้า x + x + x = 15 แล้ว x คือ", o: ["3", "4", "5", "6"], a: 2, clue: "3x = 15", tip: "หาเลขที่เหมือนกัน 3 ตัวบวกกันได้ 15" }
         ];
 
-        let results = new Array(25).fill(false);
-        const quizDiv = document.getElementById('quiz');
-
-        questions.forEach((item, idx) => {
+        const app = document.getElementById('quiz-app');
+        questions.forEach((q, i) => {
             const div = document.createElement('div');
             div.className = 'question-container';
-            div.innerHTML = `<p>${idx+1}. ${item.q} <span style="color:red;">(Clue: ${item.clue})</span></p>`;
-            item.o.forEach((opt, oIdx) => {
-                div.innerHTML += `<input type="radio" name="q${idx}" onclick="check(${idx}, ${oIdx})"> ${opt}<br>`;
+            div.innerHTML = `<p>${i+1}. ${q.q} <span style="color:red;">(Clue: ${q.clue})</span></p>`;
+            q.o.forEach((opt, oi) => {
+                div.innerHTML += `<label><input type="radio" name="q${i}" onclick="check(${i}, ${oi})"> ${opt}</label><br>`;
             });
-            div.innerHTML += `<div id="f${idx}" class="feedback"></div>`;
-            quizDiv.appendChild(div);
+            div.innerHTML += `<div id="f${i}" class="feedback"></div>`;
+            app.appendChild(div);
         });
 
-        function check(qIdx, oIdx) {
-            const f = document.getElementById(`f${qIdx}`);
-            const correct = questions[qIdx].a === oIdx;
-            results[qIdx] = correct;
+        function check(qi, oi) {
+            const f = document.getElementById(`f${qi}`);
+            const isCorrect = questions[qi].a === oi;
             f.style.display = 'block';
-            f.className = 'feedback ' + (correct ? 'correct' : 'wrong');
-            f.innerHTML = correct ? "ถูกต้อง! Tutor's Secret Tip: ตรวจสอบเครื่องหมายเสมอ" : "ผิดครับ! Tutor's Secret Tip: ระวังเรื่องค่าสัมบูรณ์ของตัวเลข";
-        }
-
-        function analyze() {
-            const score = results.filter(r => r === true).length;
-            document.getElementById('analysis').innerHTML = `<h3>สรุปคะแนน: ${score}/25</h3><p>วิเคราะห์จุดอ่อน: ${score < 15 ? 'ควรทบทวนการดำเนินการพื้นฐาน' : 'ยอดเยี่ยม!'}</p>`;
+            f.className = 'feedback ' + (isCorrect ? 'correct' : 'wrong');
+            f.innerHTML = isCorrect ? "ถูกต้อง!" : "ผิดครับ!";
+            f.innerHTML += `<br><span class="tutor-tip">Tutor's Secret Tip: ${questions[qi].tip}</span>`;
         }
     </script>
 </body>
