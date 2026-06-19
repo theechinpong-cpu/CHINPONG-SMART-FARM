@@ -9,10 +9,11 @@
         .game-container { display: flex; gap: 30px; justify-content: center; }
         .column { display: flex; flex-direction: column; gap: 10px; width: 320px; }
         .card { background: white; padding: 10px; border-radius: 10px; display: flex; align-items: center; gap: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        button { padding: 8px 12px; cursor: pointer; border: none; border-radius: 5px; background: #3498db; color: white; }
+        button { padding: 8px 12px; cursor: pointer; border: none; border-radius: 5px; background: #3498db; color: white; transition: 0.2s; }
         .btn-clue { background: #f39c12; }
         .btn-ans { background: #e74c3c; }
-        .matched { background: #27ae60 !important; color: white; }
+        .selected { outline: 3px solid #2ecc71; }
+        .matched { background: #27ae60 !important; color: white; cursor: default; }
     </style>
 </head>
 <body>
@@ -68,26 +69,46 @@
             document.getElementById('score').innerText = score;
         }
 
+        // ฟังก์ชันสุ่มลำดับ
+        function shuffleArray(array) {
+            return array.sort(() => Math.random() - 0.5);
+        }
+
         const wDiv = document.getElementById('words');
         const mDiv = document.getElementById('meanings');
 
-        vocabData.forEach(item => {
+        // สุ่มทั้งสองฝั่งแยกกัน
+        const shuffledWords = shuffleArray([...vocabData]);
+        const shuffledMeanings = shuffleArray([...vocabData]);
+
+        shuffledWords.forEach(item => {
             let card = document.createElement('div');
             card.className = 'card';
             card.innerHTML = `
-                <button onclick="speak('${item.w}')">${item.w}</button>
+                <button onclick="speak('${item.w}'); setSelected(this, ${JSON.stringify(item).replace(/"/g, '&quot;')})">${item.w}</button>
                 <button class="btn-clue" onclick="alert('${item.clue}'); updateScore(-2)">Clue</button>
                 <button class="btn-ans" onclick="alert('${item.m}'); updateScore(-5)">เฉลย</button>
             `;
             wDiv.appendChild(card);
+        });
 
+        function setSelected(btn, item) {
+            document.querySelectorAll('#words button').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            selectedWord = item;
+        }
+
+        shuffledMeanings.forEach(item => {
             let btnM = document.createElement('button');
             btnM.innerText = item.m;
             btnM.onclick = () => {
                 if(selectedWord && selectedWord.m === item.m) {
                     btnM.classList.add('matched');
                     updateScore(10);
-                } else { selectedWord = item; }
+                    // ล้างการเลือก
+                    selectedWord = null;
+                    document.querySelectorAll('#words button').forEach(b => b.classList.remove('selected'));
+                }
             };
             mDiv.appendChild(btnM);
         });
