@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <title>Unit 1: Contextual Vocab Mastery</title>
+    <style>
+        body { font-family: 'Kanit', sans-serif; background: #f0f2f5; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .game-area { width: 100%; max-width: 600px; }
+        .sentence-box { background: white; padding: 15px; margin: 10px 0; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); display: flex; align-items: center; gap: 10px; }
+        .drop-zone { border: 2px dashed #3498db; padding: 5px 15px; min-width: 100px; border-radius: 5px; display: inline-block; text-align: center; color: #3498db; }
+        .word-bank { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; justify-content: center; }
+        .word { padding: 10px 15px; background: #3498db; color: white; border-radius: 5px; cursor: grab; }
+        .correct { background: #27ae60 !important; }
+        button { cursor: pointer; padding: 5px 10px; border: none; border-radius: 3px; background: #95a5a6; color: white; }
+    </style>
+</head>
+<body>
+
+    <h1>🌟 Fill in the Blanks: Unit 1</h1>
+    <div class="word-bank" id="wordBank"></div>
+    <div class="game-area" id="gameArea"></div>
+
+    <script>
+        const exercises = [
+            { s: "My brother is such a ______, he works 14 hours a day.", a: "Workaholic", m: "คนบ้างาน" },
+            { s: "Don't be a ______ and help me clean the room!", a: "Lazybones", m: "คนขี้เกียจ" },
+            { s: "She is a total ______, she talks from morning until night.", a: "Chatterbox", m: "คนช่างพูด" },
+            { s: "He always forgets where he puts his keys, he is such a ______.", a: "Scatterbrain", m: "คนขี้ลืม" },
+            { s: "Stop being such a ______, let's have some fun!", a: "Killjoy", m: "คนทำลายบรรยากาศ" }
+        ];
+
+        function speak(text) {
+            const msg = new SpeechSynthesisUtterance(text);
+            msg.lang = 'en-US';
+            msg.rate = 2.9; // ตามกฎ SSML
+            window.speechSynthesis.speak(msg);
+        }
+
+        const bank = document.getElementById('wordBank');
+        const area = document.getElementById('gameArea');
+
+        exercises.forEach((ex, index) => {
+            // สร้างกล่องประโยค
+            let div = document.createElement('div');
+            div.className = 'sentence-box';
+            div.innerHTML = `
+                <button onclick="speak('${ex.s.replace('____', ex.a)}')">🔊</button>
+                <span>${ex.s.replace('____', '<span class="drop-zone" ondrop="drop(event)" ondragover="allowDrop(event)" data-ans="'+ex.a+'">____</span>')}</span>
+                <button onclick="alert('${ex.m}')">แปลไทย</button>
+            `;
+            area.appendChild(div);
+        });
+
+        // สร้างรายการคำใน Word Bank
+        const shuffled = exercises.map(e => e.a).sort(() => Math.random() - 0.5);
+        shuffled.forEach(w => {
+            let btn = document.createElement('div');
+            btn.className = 'word';
+            btn.draggable = true;
+            btn.innerText = w;
+            btn.id = w;
+            btn.ondragstart = (ev) => ev.dataTransfer.setData("text", ev.target.id);
+            bank.appendChild(btn);
+        });
+
+        function allowDrop(ev) { ev.preventDefault(); }
+        function drop(ev) {
+            ev.preventDefault();
+            let data = ev.dataTransfer.getData("text");
+            if (ev.target.dataset.ans === data) {
+                ev.target.innerText = data;
+                ev.target.classList.add('correct');
+                document.getElementById(data).style.display = 'none';
+            } else {
+                alert("ลองใหม่อีกครั้งนะ!");
+            }
+        }
+    </script>
+</body>
+</html>
