@@ -2,113 +2,100 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <title>Vocab Match: Unit 1 Neighbours</title>
+    <title>Unit 1: Contextual Vocab Mastery (Full 25 Words)</title>
     <style>
-        body { font-family: 'Kanit', sans-serif; background: #eef2f3; display: flex; flex-direction: column; align-items: center; padding: 20px; }
-        .score-board { font-size: 24px; font-weight: bold; color: #2c3e50; margin-bottom: 10px; }
-        .game-container { display: flex; gap: 30px; justify-content: center; }
-        .column { display: flex; flex-direction: column; gap: 10px; width: 320px; }
-        .card { background: white; padding: 10px; border-radius: 10px; display: flex; align-items: center; gap: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        button { padding: 8px 12px; cursor: pointer; border: none; border-radius: 5px; background: #3498db; color: white; transition: 0.2s; }
-        .btn-clue { background: #f39c12; }
-        .btn-ans { background: #e74c3c; }
-        .selected { outline: 3px solid #2ecc71; }
-        .matched { background: #27ae60 !important; color: white; cursor: default; }
+        body { font-family: 'Kanit', sans-serif; background: #f0f2f5; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .game-area { width: 100%; max-width: 800px; }
+        .sentence-box { background: white; padding: 15px; margin: 10px 0; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); display: flex; align-items: center; gap: 10px; }
+        .drop-zone { border: 2px dashed #3498db; padding: 5px 15px; min-width: 120px; border-radius: 5px; display: inline-block; text-align: center; color: #3498db; font-weight: bold; }
+        .word-bank { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; justify-content: center; }
+        .word { padding: 8px 12px; background: #3498db; color: white; border-radius: 5px; cursor: grab; font-size: 0.9em; }
+        .correct { background: #27ae60 !important; border: 2px solid #27ae60; color: white; }
+        button { cursor: pointer; padding: 5px 10px; border: none; border-radius: 3px; background: #95a5a6; color: white; }
     </style>
 </head>
 <body>
 
-    <div class="score-board">คะแนน: <span id="score">0</span></div>
-    <h1>🌟 Unit 1: Neighbours Challenge</h1>
-    <div class="game-container">
-        <div class="column" id="words"></div>
-        <div class="column" id="meanings"></div>
-    </div>
+    <h1>🌟 Unit 1: Vocabulary Master (25 Words)</h1>
+    <div class="word-bank" id="wordBank"></div>
+    <div class="game-area" id="gameArea"></div>
 
     <script>
         const vocabData = [
-            {w: "Scatterbrain", m: "คนขี้ลืม", clue: "มักจะลืมสิ่งต่างๆ อยู่เสมอ"},
-            {w: "Lazybones", m: "คนขี้เกียจ", clue: "คนที่หลีกเลี่ยงการทำงาน"},
-            {w: "Chatterbox", m: "คนช่างพูด", clue: "คนที่พูดเยอะมาก"},
-            {w: "Nosey parker", m: "คนชอบยุ่งเรื่องชาวบ้าน", clue: "อยากรู้อยากเห็นเรื่องของคนอื่นตลอดเวลา"},
-            {w: "Killjoy", m: "คนทำลายบรรยากาศ", clue: "คนที่ทำให้ความสนุกของคนอื่นหมดไป"},
-            {w: "Smart alec", m: "คนอวดฉลาด", clue: "คนที่คิดว่าตัวเองรู้ทุกเรื่อง"},
-            {w: "Silly billy", m: "คนทำตัวงี่เง่า", clue: "คนที่ทำตัวไร้สาระหรือดูโง่เขลา"},
-            {w: "High flier", m: "คนทะเยอทะยาน", clue: "คนที่มุ่งมั่นและมีความทะเยอทะยานสูง"},
-            {w: "Workaholic", m: "คนบ้างาน", clue: "คนที่ทำงานหนักตลอดเวลา"},
-            {w: "Troublemaker", m: "คนชอบสร้างปัญหา", clue: "คนที่มักจะก่อเรื่องให้เกิดปัญหา"},
-            {w: "Water the plants", m: "รดน้ำต้นไม้", clue: "การให้น้ำกับต้นไม้หรือดอกไม้"},
-            {w: "Vacuum the carpets", m: "ดูดฝุ่นพรม", clue: "การทำความสะอาดพื้นด้วยเครื่องดูดฝุ่น"},
-            {w: "Do the washing-up", m: "ล้างจาน", clue: "การทำความสะอาดจานและแก้วที่ใช้แล้ว"},
-            {w: "Clear the table", m: "เก็บโต๊ะอาหาร", clue: "การเก็บจานอาหารหลังจากรับประทานเสร็จ"},
-            {w: "Dust the furniture", m: "ปัดฝุ่นเฟอร์นิเจอร์", clue: "การเช็ดทำความสะอาดฝุ่นตามโต๊ะตู้"},
-            {w: "Put away clothes", m: "จัดเก็บเสื้อผ้า", clue: "การนำเสื้อผ้าไปเก็บเข้าตู้ให้เรียบร้อย"},
-            {w: "Look after", m: "ดูแล", clue: "การเอาใจใส่หรือดูแลใครบางคน"},
-            {w: "Take after", m: "หน้าตา/นิสัยเหมือน", clue: "มีลักษณะเหมือนสมาชิกในครอบครัว"},
-            {w: "Run after", m: "วิ่งไล่ตาม", clue: "การวิ่งติดตามบางสิ่งบางอย่าง"},
-            {w: "Sensitive", m: "อ่อนไหว", clue: "คนที่รู้สึกเจ็บปวดหรือได้รับผลกระทบง่าย"},
-            {w: "Ambitious", m: "ทะเยอทะยาน", clue: "มีความปรารถนาอย่างแรงกล้าที่จะประสบความสำเร็จ"},
-            {w: "Creative", m: "มีความคิดสร้างสรรค์", clue: "เก่งในการสร้างสรรค์สิ่งใหม่ๆ"},
-            {w: "Easy-going", m: "สบายๆ", clue: "คนที่ผ่อนคลายและไม่ค่อยโกรธใคร"},
-            {w: "Privacy", m: "ความเป็นส่วนตัว", clue: "สภาวะที่เป็นส่วนตัว ไม่ถูกรบกวน"},
-            {w: "Annoy", m: "ทำให้รำคาญ", clue: "ทำให้คนอื่นรู้สึกหงุดหงิดหรือรำคาญ"}
+            { s: "My brother is a ______, he works 14 hours a day.", a: "Workaholic", m: "คนบ้างาน" },
+            { s: "Don't be a ______ and help me clean the room!", a: "Lazybones", m: "คนขี้เกียจ" },
+            { s: "She is a total ______, she talks from morning until night.", a: "Chatterbox", m: "คนช่างพูด" },
+            { s: "He forgets where he puts his keys; he is such a ______.", a: "Scatterbrain", m: "คนขี้ลืม" },
+            { s: "Stop being such a ______, let's have some fun!", a: "Killjoy", m: "คนทำลายบรรยากาศ" },
+            { s: "He thinks he knows everything; he is a real ______.", a: "Smart alec", m: "คนอวดฉลาด" },
+            { s: "Don't be a ______; act like an adult.", a: "Silly billy", m: "คนทำตัวงี่เง่า" },
+            { s: "She wants to be a CEO; she is a real ______.", a: "High flier", m: "คนทะเยอทะยาน" },
+            { s: "He is a ______ who enjoys creating drama.", a: "Troublemaker", m: "คนชอบสร้างปัญหา" },
+            { s: "Can you help me ______ before the flowers die?", a: "Water the plants", m: "รดน้ำต้นไม้" },
+            { s: "I need to ______ because the room is so dusty.", a: "Vacuum the carpets", m: "ดูดฝุ่นพรม" },
+            { s: "It's your turn to ______ after dinner.", a: "Do the washing-up", m: "ล้างจาน" },
+            { s: "Please ______ after you finish your meal.", a: "Clear the table", m: "เก็บโต๊ะอาหาร" },
+            { s: "I spend every weekend to ______ in my house.", a: "Dust the furniture", m: "ปัดฝุ่นเฟอร์นิเจอร์" },
+            { s: "Please ______ before you go to bed.", a: "Put away clothes", m: "จัดเก็บเสื้อผ้า" },
+            { s: "Who will ______ the baby while we are away?", a: "Look after", m: "ดูแล" },
+            { s: "She really ______ her mother; they look identical.", a: "Take after", m: "หน้าตา/นิสัยเหมือน" },
+            { s: "The dog likes to ______ the ball in the park.", a: "Run after", m: "วิ่งไล่ตาม" },
+            { s: "He is very ______; he cries easily when upset.", a: "Sensitive", m: "อ่อนไหว" },
+            { s: "She is very ______; she wants to be a doctor.", a: "Ambitious", m: "ทะเยอทะยาน" },
+            { s: "She is very ______; she loves painting and art.", a: "Creative", m: "มีความคิดสร้างสรรค์" },
+            { s: "He is very ______; nothing ever stresses him out.", a: "Easy-going", m: "สบายๆ" },
+            { s: "I really value my ______ at home.", a: "Privacy", m: "ความเป็นส่วนตัว" },
+            { s: "Don't ______ your sister while she is studying.", a: "Annoy", m: "ทำให้รำคาญ" },
+            { s: "He is always asking about my salary; he's a ______.", a: "Nosey parker", m: "คนชอบยุ่งเรื่องชาวบ้าน" }
         ];
-
-        let score = 0;
-        let selectedWord = null;
 
         function speak(text) {
             const msg = new SpeechSynthesisUtterance(text);
             msg.lang = 'en-US';
-            msg.rate = 2.9; // SSML Speed 2.9X
+            msg.rate = 2.9; 
             window.speechSynthesis.speak(msg);
         }
 
-        function updateScore(points) {
-            score += points;
-            document.getElementById('score').innerText = score;
-        }
+        const bank = document.getElementById('wordBank');
+        const area = document.getElementById('gameArea');
 
-        function shuffleArray(array) {
-            return array.sort(() => Math.random() - 0.5);
-        }
+        // สุ่มลำดับคำศัพท์
+        const shuffledExercises = [...vocabData].sort(() => Math.random() - 0.5);
 
-        const wDiv = document.getElementById('words');
-        const mDiv = document.getElementById('meanings');
-
-        const shuffledWords = shuffleArray([...vocabData]);
-        const shuffledMeanings = shuffleArray([...vocabData]);
-
-        shuffledWords.forEach(item => {
-            let card = document.createElement('div');
-            card.className = 'card';
-            card.innerHTML = `
-                <button onclick="speak('${item.w}'); setSelected(this, ${JSON.stringify(item).replace(/"/g, '&quot;')})">${item.w}</button>
-                <button class="btn-clue" onclick="alert('${item.clue}'); updateScore(-2)">Clue</button>
-                <button class="btn-ans" onclick="alert('${item.m}'); updateScore(-5)">เฉลย</button>
+        shuffledExercises.forEach((ex, index) => {
+            let div = document.createElement('div');
+            div.className = 'sentence-box';
+            div.innerHTML = `
+                <button onclick="speak('${ex.s.replace('____', ex.a)}')">🔊</button>
+                <span>${ex.s.replace('____', '<span class="drop-zone" ondrop="drop(event)" ondragover="allowDrop(event)" data-ans="'+ex.a+'">____</span>')}</span>
+                <button onclick="alert('${ex.m}')">แปลไทย</button>
             `;
-            wDiv.appendChild(card);
+            area.appendChild(div);
         });
 
-        function setSelected(btn, item) {
-            document.querySelectorAll('#words button').forEach(b => b.classList.remove('selected'));
-            btn.classList.add('selected');
-            selectedWord = item;
+        const shuffledBank = [...vocabData].map(e => e.a).sort(() => Math.random() - 0.5);
+        shuffledBank.forEach(w => {
+            let btn = document.createElement('div');
+            btn.className = 'word';
+            btn.draggable = true;
+            btn.innerText = w;
+            btn.id = w;
+            btn.ondragstart = (ev) => ev.dataTransfer.setData("text", ev.target.id);
+            bank.appendChild(btn);
+        });
+
+        function allowDrop(ev) { ev.preventDefault(); }
+        function drop(ev) {
+            ev.preventDefault();
+            let data = ev.dataTransfer.getData("text");
+            if (ev.target.dataset.ans === data) {
+                ev.target.innerText = data;
+                ev.target.classList.add('correct');
+                document.getElementById(data).style.display = 'none';
+            } else {
+                alert("ผิดครับ ลองใหม่อีกครั้ง!");
+            }
         }
-
-        shuffledMeanings.forEach(item => {
-            let btnM = document.createElement('button');
-            btnM.innerText = item.m;
-            btnM.onclick = () => {
-                if(selectedWord && selectedWord.m === item.m) {
-                    btnM.classList.add('matched');
-                    updateScore(10);
-                    selectedWord = null;
-                    document.querySelectorAll('#words button').forEach(b => b.classList.remove('selected'));
-                }
-            };
-            mDiv.appendChild(btnM);
-        });
     </script>
 </body>
 </html>
