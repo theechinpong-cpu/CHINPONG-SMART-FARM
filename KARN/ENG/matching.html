@@ -2,62 +2,69 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <title>Vocab Matching Game - พระจอมเกล้าติวเตอร์</title>
+    <title>Vocab Match: Unit 1 Neighbours</title>
     <style>
-        .container { display: flex; gap: 50px; justify-content: center; padding: 20px; }
-        .column { display: flex; flex-direction: column; gap: 10px; width: 200px; }
-        button { padding: 10px; cursor: pointer; border: 1px solid #ccc; background: #f9f9f9; transition: 0.3s; }
-        .selected { background-color: #ffd700; }
-        .correct { background-color: #d4edda !important; color: #155724; cursor: default; }
+        body { font-family: sans-serif; background: #f4f7f6; display: flex; flex-direction: column; align-items: center; }
+        .game-container { display: flex; gap: 20px; margin-top: 20px; }
+        .column { display: flex; flex-direction: column; gap: 10px; width: 250px; }
+        button { padding: 15px; cursor: pointer; border: none; border-radius: 8px; background: white; box-shadow: 0 2px 5px rgba(0,0,0,0.1); transition: 0.3s; }
+        button:hover { background: #e0f7fa; }
+        .selected { background: #2196f3 !important; color: white; }
+        .matched { background: #4caf50 !important; color: white; cursor: default; }
     </style>
 </head>
 <body>
+    <h1>Vocab Match: Unit 1</h1>
+    <div class="game-container">
+        <div class="column" id="words"></div>
+        <div class="column" id="meanings"></div>
+    </div>
+    <script>
+        const vocabData = [
+            {w: "Scatterbrain", m: "คนขี้ลืม"}, {w: "Lazybones", m: "คนขี้เกียจ"}, {w: "Chatterbox", m: "คนช่างพูด"},
+            {w: "Nosey parker", m: "คนชอบยุ่งเรื่องชาวบ้าน"}, {w: "Killjoy", m: "คนทำลายบรรยากาศ"}, {w: "Smart alec", m: "คนอวดฉลาด"},
+            {w: "Silly billy", m: "คนทำตัวงี่เง่า"}, {w: "High flier", m: "คนทะเยอทะยาน"}, {w: "Workaholic", m: "คนบ้างาน"},
+            {w: "Troublemaker", m: "คนชอบสร้างปัญหา"}, {w: "Water the plants", m: "รดน้ำต้นไม้"}, {w: "Vacuum the carpets", m: "ดูดฝุ่นพรม"},
+            {w: "Do the washing-up", m: "ล้างจาน"}, {w: "Clear the table", m: "เก็บโต๊ะอาหาร"}, {w: "Dust the furniture", m: "ปัดฝุ่นเฟอร์นิเจอร์"},
+            {w: "Put away clothes", m: "จัดเก็บเสื้อผ้า"}, {w: "Look after", m: "ดูแล"}, {w: "Take after", m: "หน้าตา/นิสัยเหมือน"},
+            {w: "Run after", m: "วิ่งไล่ตาม"}, {w: "Sensitive", m: "อ่อนไหว"}, {w: "Ambitious", m: "ทะเยอทะยาน"},
+            {w: "Creative", m: "ความคิดสร้างสรรค์"}, {w: "Easy-going", m: "สบายๆ"}, {w: "Privacy", m: "ความเป็นส่วนตัว"}, {w: "Annoy", m: "ทำให้รำคาญ"}
+        ];
 
-<h2 style="text-align:center;">Vocab Matching Game: Unit 1</h2>
-<div class="container">
-    <div class="column" id="words"></div>
-    <div class="column" id="meanings"></div>
-</div>
+        let selected = null;
+        const shuffle = (arr) => arr.sort(() => Math.random() - 0.5);
+        
+        const words = shuffle([...vocabData]);
+        const meanings = shuffle([...vocabData]);
 
-<script>
-    const vocabData = [
-        { word: "Scatterbrain", mean: "คนขี้ลืม/ไม่เป็นระเบียบ" },
-        { word: "Lazybones", mean: "คนขี้เกียจ" },
-        // ... (ใส่ให้ครบ 25 คำ)
-    ];
+        const wDiv = document.getElementById('words');
+        const mDiv = document.getElementById('meanings');
 
-    let selectedWord = null;
+        words.forEach(item => {
+            let btn = document.createElement('button');
+            btn.innerText = item.w;
+            btn.onclick = () => {
+                document.querySelectorAll('#words button').forEach(b => b.classList.remove('selected'));
+                btn.classList.add('selected');
+                selected = item;
+                window.speechSynthesis.speak(new SpeechSynthesisUtterance(item.w));
+            };
+            wDiv.appendChild(btn);
+        });
 
-    // ฟังก์ชันสุ่มลำดับ Array
-    function shuffle(array) {
-        return array.sort(() => Math.random() - 0.5);
-    }
-
-    const wordsDiv = document.getElementById('words');
-    const meaningsDiv = document.getElementById('meanings');
-
-    // สร้างปุ่ม
-    vocabData.forEach((item, index) => {
-        let btnW = document.createElement('button');
-        btnW.innerText = item.word;
-        btnW.onclick = () => {
-            selectedWord = index;
-            window.speechSynthesis.speak(new SpeechSynthesisUtterance(item.word));
-        };
-        wordsDiv.appendChild(btnW);
-
-        let btnM = document.createElement('button');
-        btnM.innerText = item.mean;
-        btnM.onclick = () => {
-            if (selectedWord === index) {
-                btnM.classList.add('correct');
-                // เพิ่มเสียงเชียร์ที่นี่
-            } else {
-                alert("ลองใหม่อีกครั้ง!");
-            }
-        };
-        meaningsDiv.appendChild(btnM);
-    });
-</script>
+        meanings.forEach(item => {
+            let btn = document.createElement('button');
+            btn.innerText = item.m;
+            btn.onclick = () => {
+                if(selected && selected.m === item.m) {
+                    btn.classList.add('matched');
+                    document.querySelector('.selected').classList.add('matched');
+                    document.querySelector('.selected').classList.remove('selected');
+                    new Audio('https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3').play();
+                }
+            };
+            mDiv.appendChild(btn);
+        });
+    </script>
 </body>
 </html>
