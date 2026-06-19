@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <title>Vocab Match: Unit 1 Neighbours</title>
     <style>
-        body { font-family: sans-serif; background: #f4f7f6; display: flex; flex-direction: column; align-items: center; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f7f6; display: flex; flex-direction: column; align-items: center; }
         .game-container { display: flex; gap: 20px; margin-top: 20px; }
         .column { display: flex; flex-direction: column; gap: 10px; width: 250px; }
         button { padding: 15px; cursor: pointer; border: none; border-radius: 8px; background: white; box-shadow: 0 2px 5px rgba(0,0,0,0.1); transition: 0.3s; }
@@ -31,20 +31,24 @@
             {w: "Creative", m: "ความคิดสร้างสรรค์"}, {w: "Easy-going", m: "สบายๆ"}, {w: "Privacy", m: "ความเป็นส่วนตัว"}, {w: "Annoy", m: "ทำให้รำคาญ"}
         ];
 
-        // ฟังก์ชันอ่านออกเสียงสำเนียงอเมริกัน
+        // ระบบเลือกเสียงอเมริกันแบบคงที่
+        let targetVoice = null;
+        function updateVoice() {
+            const voices = window.speechSynthesis.getVoices();
+            // เลือกเสียงภาษาอังกฤษสำเนียงอเมริกัน (Google หรือระบบปฏิบัติการ)
+            targetVoice = voices.find(v => v.lang === 'en-US' && v.name.includes('Google')) || 
+                          voices.find(v => v.lang === 'en-US');
+        }
+        window.speechSynthesis.onvoiceschanged = updateVoice;
+        updateVoice();
+
         function speak(text) {
             const msg = new SpeechSynthesisUtterance(text);
-            const voices = window.speechSynthesis.getVoices();
-            // เลือกเสียงที่เป็นภาษาอังกฤษสำเนียงอเมริกัน (en-US)
-            const usVoice = voices.find(v => v.lang === 'en-US' || v.name.includes('Google US English'));
-            if (usVoice) msg.voice = usVoice;
+            if (targetVoice) msg.voice = targetVoice;
             msg.lang = 'en-US';
             msg.rate = 0.9;
             window.speechSynthesis.speak(msg);
         }
-
-        // รอโหลดเสียงก่อนใช้งาน
-        window.speechSynthesis.onvoiceschanged = () => {};
 
         let selected = null;
         const shuffle = (arr) => arr.sort(() => Math.random() - 0.5);
