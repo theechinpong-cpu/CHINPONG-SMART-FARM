@@ -1,0 +1,910 @@
+import base64
+
+html_content = """<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ข้อสอบกลางภาคเรียนที่ 1 วิชาภาษาอังกฤษ ป.5 - พระจอมเกล้าติวเตอร์</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&display=swap');
+        
+        * {
+            box-sizing: border-box;
+            font-family: 'Sarabun', sans-serif;
+        }
+
+        body {
+            background-color: #f4f6f9;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: #ffffff;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+
+        h1 {
+            color: #1a365d;
+            text-align: center;
+            font-size: 28px;
+            margin-bottom: 10px;
+            border-bottom: 3px solid #3182ce;
+            padding-bottom: 15px;
+        }
+
+        h2 {
+            color: #2c5282;
+            font-size: 22px;
+            margin-top: 30px;
+            border-left: 5px solid #3182ce;
+            padding-left: 10px;
+        }
+
+        .summary-box {
+            background-color: #ebf8ff;
+            border-left: 5px solid #3182ce;
+            padding: 20px;
+            border-radius: 4px;
+            margin-bottom: 30px;
+            font-size: 15px;
+        }
+
+        .summary-box ul {
+            padding-left: 20px;
+        }
+
+        .question-container {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            padding: 25px;
+            margin-bottom: 25px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .question-title {
+            font-weight: 600;
+            font-size: 16px;
+            margin-bottom: 15px;
+            color: #2d3748;
+        }
+
+        .clue {
+            color: #e53e3e;
+            font-weight: bold;
+            margin-left: 5px;
+        }
+
+        .options-container {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+        }
+
+        .option-label {
+            display: block;
+            position: relative;
+            padding: 12px 15px 12px 40px;
+            background: #ffffff;
+            border: 2px solid #e2e8f0;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 15px;
+            transition: all 0.2s ease;
+        }
+
+        .option-label:hover {
+            background: #edf2f7;
+            border-color: #cbd5e0;
+        }
+
+        .option-label input {
+            position: absolute;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .checkmark {
+            position: absolute;
+            top: 13px;
+            left: 13px;
+            height: 18px;
+            width: 18px;
+            background-color: #eee;
+            border-radius: 50%;
+        }
+
+        .option-label:hover input ~ .checkmark {
+            background-color: #ccc;
+        }
+
+        .option-label input:checked ~ .checkmark {
+            background-color: #3182ce;
+        }
+
+        .checkmark:after {
+            content: "";
+            position: absolute;
+            display: none;
+        }
+
+        .option-label input:checked ~ .checkmark:after {
+            display: block;
+        }
+
+        .option-label .checkmark:after {
+            top: 5px;
+            left: 5px;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: white;
+        }
+
+        /* Feedback Styles */
+        .question-container.correct-answered {
+            border-color: #48bb78;
+            background-color: #f0fff4;
+        }
+
+        .question-container.wrong-answered {
+            border-color: #f56565;
+            background-color: #fff5f5;
+        }
+
+        .option-label.correct-choice {
+            background-color: #c6f6d5 !important;
+            border-color: #48bb78 !important;
+            color: #22543d;
+            font-weight: 600;
+        }
+
+        .option-label.wrong-choice {
+            background-color: #fed7d7 !important;
+            border-color: #f56565 !important;
+            color: #742a2a;
+        }
+
+        .explanation-box {
+            display: none;
+            margin-top: 15px;
+            padding: 15px;
+            background: #fff;
+            border-radius: 6px;
+            border-left: 4px solid #48bb78;
+            font-size: 14px;
+        }
+
+        .question-container.wrong-answered .explanation-box {
+            border-left-color: #f56565;
+        }
+
+        .tutor-tip {
+            margin-top: 5px;
+            font-weight: 600;
+            color: #2b6cb0;
+        }
+
+        /* Result Section */
+        #result-section {
+            display: none;
+            background: #1a365d;
+            color: white;
+            padding: 30px;
+            border-radius: 12px;
+            margin-top: 40px;
+            text-align: center;
+        }
+
+        .score-display {
+            font-size: 48px;
+            font-weight: 700;
+            margin: 20px 0;
+            color: #63b3ed;
+        }
+
+        .analysis-box {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 8px;
+            text-align: left;
+            margin-top: 20px;
+        }
+
+        .analysis-box h3 {
+            margin-top: 0;
+            color: #fbd38d;
+        }
+
+        .btn-submit {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            background: #3182ce;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 30px;
+            transition: background 0.2s;
+        }
+
+        .btn-submit:hover {
+            background: #2b6cb0;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            font-size: 14px;
+            color: #718096;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>ข้อสอบกลางภาคเรียนที่ 1 วิชาภาษาอังกฤษ ชั้นประถมศึกษาปีที่ 5<br>(ระดับยากเข้มข้น - อ้างอิงแนวทางดรุณศึกษา)</h1>
+    
+    <div class="summary-box">
+        <h3>💡 สรุปเนื้อหาสำคัญและเทคนิคคิดเชิงระบบ (Thought Process)</h3>
+        <p>ยินดีต้อนรับสู่น้องๆ ทุกคน ชุดข้อสอบนี้สร้างขึ้นเพื่อทดสอบความพร้อมในระดับวิเคราะห์และประยุกต์ขั้นสูง ประกอบด้วย 4 ส่วนสำคัญหลักที่มักเป็นจุดตัดคะแนนในการสอบแข่งขันและสอบกลางภาค:</p>
+        
+        <h4>1. Present Simple vs Present Continuous</h4>
+        <p><strong>Thought Process:</strong> การแยกแยะสอง Tense นี้ให้มองหาคำบ่งบอกเวลา (Time Expressions) เป็นอันดับแรก หากประโยคแสดงถึงสัจธรรม ความเป็นจริงทั่วไป หรือนิสัยที่ทำเป็นประจำ (เช่น always, usually, every day) โครงสร้างคือ Present Simple (S + V.1 โดยประธานเอกพจน์กริยาต้องเติม s/es) แต่หากเป็นเหตุการณ์ที่กำลังดำเนินอยู่ในขณะที่พูด มีความตื่นตัว (เช่น Look!, Listen!, now, at present) จะใช้ Present Continuous (S + is/am/are + V.ing) เสมอ</p>
+        <p><strong>Memory Trick:</strong> <em>"ประจำเติม s/es ถ้านิ่ง — กำลังทำวิ่งซิ่งเติม is/am/are + V.ing"</em></p>
+
+        <h4>2. Quantifiers (คำบอกปริมาณ: Some, Any, Much, Many, Few, Little)</h4>
+        <p><strong>Thought Process:</strong> ขั้นแรกให้ตรวจสอบคำนามที่ตามหลังว่าเป็นนามนับได้พหูพจน์ (Countable Plural) หรือนามนับไม่ได้ (Uncountable) นามนับไม่ได้ห้ามเติม s และห้ามใช้ Many/Few เด็ดขาด! จากนั้นดูประเภทประโยค ถ้าประโยคบอกเล่า/ขอร้องยื่นข้อเสนอใช้ Some ถ้าปฏิเสธ/คำถามทั่วไปใช้ Any</p>
+        <p><strong>Memory Trick:</strong> <em>"Many พหูพจน์จำไว้, Much นามนับไม่ได้ก้อนใหญ่, Some บอกเล่าทั่วไป, Any ปฏิเสธ-ถามไถ่จำขึ้นใจ"</em></p>
+
+        <h4>3. Comparison (การเปรียบเทียบขั้นกว่าและขั้นสุด)</h4>
+        <p><strong>Thought Process:</strong> มองหาคำเชื่อมในประโยค ถ้าเจอคำว่า "than" แสดงว่าเป็นขั้นกว่า (Comparative) ต้องใช้โครงสร้าง adjective-er หรือ more + adjective พยางค์ยาว แต่ถ้ามีคำว่า "the" นำหน้าช่องว่างและระบุขอบเขตความเป็นที่สุด (เช่น in the world, of all) แสดงว่าเป็นขั้นสุด (Superlative) ต้องใช้ adjective-est หรือ most + adjective</p>
+        <p><strong>Memory Trick:</strong> <em>"ขั้นกว่ามี than เคียงข้าง (-er/more), ขั้นสุดมี the นำทาง (-est/most)"</em></p>
+
+        <h4>4. Health, Symptoms & Advising (อาการเจ็บป่วยและการให้คำแนะนำ)</h4>
+        <p><strong>Thought Process:</strong> วิเคราะห์อาการที่โจทย์กำหนด (เช่น toothache, sore throat) เพื่อเลือกคำแนะนำให้ตรงจุดผ่านโครงสร้าง Should (ควรจะ) หรือ Shouldn't (ไม่ควรจะ) ระวังคำกริยาที่ตามหลัง Should/Shouldn't ต้องเป็นกริยาฐาน (V.inf) ไม่เติมสิ่งใดๆ ทั้งสิ้น</p>
+    </div>
+
+    <form id="quiz-form" onsubmit="event.preventDefault(); calculateResult();">
+        <!-- Questions will be injected dynamically or listed here -->
+        <div id="questions-wrapper"></div>
+
+        <button type="button" class="btn-submit" onclick="checkAllQuestions()">ส่งกระดาษคำตอบและวิเคราะห์ผล</button>
+    </form>
+
+    <div id="result-section">
+        <h2>📊 ผลการสอบและวิเคราะห์จุดแข็ง-จุดอ่อน</h2>
+        <div class="score-display"><span id="score">0</span> / 50</div>
+        <p id="evaluation-text"></p>
+        <div class="analysis-box" id="analysis-details">
+            <!-- Analysis will appear here -->
+        </div>
+    </div>
+
+    <div class="footer">
+        เขียนโดย พระจอมเกล้าติวเตอร์
+    </div>
+</div>
+
+<script>
+const quizData = [
+    // Part 1: Grammar - Tenses (1-15)
+    {
+        q: "Look! The students __________ the final examination in the main hall.",
+        clue: "คำอุทานบอกเหตุการณ์กำลังเกิดต่อหน้า",
+        options: ["take", "takes", "are taking", "is taking"],
+        correct: 2,
+        explain: "มีคำบอกใบ้เฉียบพลันคือ 'Look!' แสดงว่าเหตุการณ์กำลังเกิดขึ้น ณ วินาทีนี้ ประธาน 'The students' เป็นพหูพจน์ จึงต้องใช้คู่กับ are taking",
+        tip: "เจอ Look!, Listen! ขึ้นต้นประโยคเมื่อไหร่ ให้กาประธานคู่กับ Verb to be + V.ing ได้ทันที!",
+        cat: "Tenses"
+    },
+    {
+        q: "My elder brother always __________ to the local library on Saturday mornings.",
+        clue: "คำบอกความถี่สะท้อนนิสัยถาวร",
+        options: ["go", "goes", "is going", "going"],
+        correct: 1,
+        explain: "คีย์เวิร์ดคือ 'always' และ 'on Saturday mornings' (ทุกๆ เช้าวันเสาร์) บ่งบอกความถี่ที่เป็นกิจวัตรประจำวันของ Present Simple ประธานเป็นเอกพจน์ (My elder brother) กริยา 'go' จึงต้องเติม es เป็น 'goes'",
+        tip: "ประธานเหงา (เอกพจน์) กริยาต้องเติม s/es เป็นเพื่อนใน Present Simple เสมอ",
+        cat: "Tenses"
+    },
+    {
+        q: "Water __________ at 100 degrees Celsius under normal atmospheric pressure.",
+        clue: "ข้อเท็จจริงทางวิทยาศาสตร์ที่เป็นจริงตลอดกาล",
+        options: ["boil", "boils", "is boiling", "boiled"],
+        correct: 1,
+        explain: "โจทย์ข้อนี้แสดงข้อเท็จจริงตามธรรมชาติ (Scientific Fact) ซึ่งต้องใช้ Present Simple ประธาน 'Water' เป็นนามนับไม่ได้ ถือเป็นเอกพจน์ กริยาจึงต้องเติม s เสมอ",
+        tip: "ความจริงทางวิทยาศาสตร์ไม่มีวันเปลี่ยนรูป ใช้โครงสร้างบอกเล่าช่อง 1 เติม s เสมอ",
+        cat: "Tenses"
+    },
+    {
+        q: "Listen! Somebody __________ the piano beautifully next door.",
+        clue: "เสียงประสาทสัมผัสที่กำลังดังขึ้นในปัจจุบัน",
+        options: ["plays", "play", "is playing", "are playing"],
+        correct: 2,
+        explain: "คำสั่ง 'Listen!' บ่งชี้ว่าเสียงนั้นกำลังดังอยู่ตอนนี้ ประธาน 'Somebody' ถือเป็นสรรพนามเอกพจน์บุรุษที่ 3 เสมอ จึงใช้คู่กับ is playing",
+        tip: "Somebody, Anyone, Everyone ถือเป็นประธานเอกพจน์เสมอ ห้ามหลงกล!",
+        cat: "Tenses"
+    },
+    {
+        q: "Mr. Chinpong __________ any meat because he is a strict vegetarian.",
+        clue: "พฤติกรรมถาวรและความเป็นจริงของบุคคล",
+        options: ["not eat", "don't eat", "doesn't eat", "isn't eating"],
+        correct: 2,
+        explain: "ประโยคบอกเหตุผลว่าเขาเป็นมังสวิรัติ แสดงว่านี่คือความจริงถาวรไม่ใช่แค่กำลังทำตอนนี้ ประธาน 'Mr. Chinpong' เป็นเอกพจน์ ประโยคปฏิเสธของ Present Simple จึงต้องใช้ doesn't + V.inf",
+        tip: "หลัง don't / doesn't / didn't กริยาต้องกลับสู่ร่างเดิม (V.inf) ห้ามเติม s เด็ดขาด",
+        cat: "Tenses"
+    },
+    {
+        q: "Right now, the technician __________ the automated soil sensor system.",
+        clue: "เวลาเจาะจงเฉพาะหน้าในขณะนี้",
+        options: ["fixes", "fix", "is fixing", "are fixing"],
+        correct: 2,
+        explain: "คีย์เวิร์ดชัดเจนคือ 'Right now' (ณ ตอนนี้) บ่งบอก Present Continuous ประธาน 'the technician' มีคนเดียว เอกพจน์ใช้คู่กับ is fixing",
+        tip: "ตระกูล 'Now' ทั้งหลายชี้เป้าไปที่ V.to be + V.ing เสมอ",
+        cat: "Tenses"
+    },
+    {
+        q: "How often __________ your cousins visit Nakhon Si Thammarat?",
+        clue: "โครงสร้างคำถามถามความถี่ในอดีตหรือปัจจุบัน",
+        options: ["do", "does", "are", "is"],
+        correct: 0,
+        explain: "ประโยคถามความถี่ด้วย 'How often' แสดงว่าเป็น Present Simple ประธานของประโยคคือ 'your cousins' (เติม s เป็นพหูพจน์) กริยาช่วยในประโยคถามพหูพจน์จึงต้องใช้ do",
+        tip: "ดูประธานให้ดีว่าเติม s หรือไม่ อย่าดูแค่คำหน้านาม",
+        cat: "Tenses"
+    },
+    {
+        q: "The sun __________ in the east and sets in the west.",
+        clue: "ปรากฏการณ์ธรรมชาติไม่มีวันเปลี่ยนแปลง",
+        options: ["is rising", "rise", "rises", "risen"],
+        correct: 2,
+        explain: "เป็นสัจธรรมข้อเท็จจริงของโลก (Universal Truth) ต้องใช้ Present Simple ประธาน 'The sun' มีสิ่งเดียวในโลกเป็นเอกพจน์ กริยา 'rise' ลงท้ายด้วย e เติม s ได้เลยเป็น 'rises'",
+        tip: "ความจริงของจักรวาลใช้ Present Simple เท่านั้น",
+        cat: "Tenses"
+    },
+    {
+        q: "Be quiet! The baby __________ peacefully in the bedroom.",
+        clue: "คำสั่งให้เงียบเพราะมีเหตุการณ์กำลังดำเนินอยู่",
+        options: ["sleeps", "sleep", "is sleeping", "are sleeping"],
+        correct: 2,
+        explain: "คำสั่ง 'Be quiet!' (เงียบๆ หน่อย) บ่งบอกว่าต้องมีบางอย่างกำลังดำเนินอยู่เพื่อไม่ให้ไปรบกวน ประธาน 'The baby' เอกพจน์ ใช้ is sleeping",
+        tip: "คำสั่งเตือนให้ระวังหรือเงียบ มักตามด้วยสิ่งกำลังทำอยู่เสมอ",
+        cat: "Tenses"
+    },
+    {
+        q: "My parents __________ usually __________ coffee at night; they prefer tea.",
+        clue: "โครงสร้างปฏิเสธของนิสัยประจำวัน",
+        options: ["do / drink", "don't / drink", "doesn't / drink", "are not / drinking"],
+        correct: 1,
+        explain: "คำว่า 'usually' บอกความเป็นประจำ และประโยคหลังบอกว่าชอบดื่มชามากกว่า แสดงว่าเป็นพฤติกรรมปฏิเสธในปัจจุบันทั่วไป ประธาน 'My parents' เป็นพหูพจน์ จึงใช้ don't นำหน้าคำระบุความถี่และกริยาแท้",
+        tip: "Adverb of Frequency (usually, always) จะอยู่หลังกริยาช่วย (don't) แต่อยู่หน้ากริยาแท้",
+        cat: "Tenses"
+    },
+    {
+        q: "Why __________ you __________ your jacket? It's burning hot today!",
+        clue: "เหตุการณ์ที่กำลังทำอยู่ต่อหน้าและขัดกับสภาพอากาศ",
+        options: ["do / wear", "are / wearing", "does / wear", "is / wearing"],
+        correct: 1,
+        explain: "ผู้พูดทักท้วงเรื่องสภาพอากาศที่ร้อนในวันนี้ ดังนั้นเขาถามถึงการที่อีกฝ่ายกำลังสวมแจ็กเก็ตอยู่ในขณะนั้น ประธาน 'you' ต้องใช้คู่กับกริยาช่วย are + V.ing",
+        tip: "การถามถึงสภาพการณ์ภายนอกที่กำลังปรากฏให้เห็นชัดเจน ใช้ Present Continuous",
+        cat: "Tenses"
+    },
+    {
+        q: "Cats __________ mice, but this tiny kitten is afraid of them.",
+        clue: "ธรรมชาติทั่วไปของสายพันธุ์สัตว์",
+        options: ["chase", "chases", "are chasing", "is chasing"],
+        correct: 0,
+        explain: "ธรรมชาติของแมวทั่วไปย่อมไล่จับหนู เป็นความจริงสากลของสัตว์ ประธาน 'Cats' เติม s เป็นพหูพจน์ กริยาแท้รูปปัจจุบันจึงไม่ต้องเติม s คงรูปเดิมไว้คือ chase",
+        tip: "เมื่อประธานพหูพจน์ กริยาไม่ต้องมี s เสริมท้าย",
+        cat: "Tenses"
+    },
+    {
+        q: "At the moment, the scientist __________ the data from the weather station.",
+        clue: "คำระบุเวลาชี้ชัดนาทีปัจจุบันอันเป็นข้อยกเว้น",
+        options: ["analyzes", "analyze", "is analyzing", "are analyzing"],
+        correct: 2,
+        explain: "คีย์เวิร์ด 'At the moment' มีความหมายเดียวกับคำว่า 'now' ประธาน 'the scientist' เป็นเอกพจน์ โครงสร้างจึงต้องจบที่ is analyzing",
+        tip: "จำคำว่า At the moment = Now ให้แม่นยำ ออกข้อสอบดรุณศึกษาบ่อยมาก!",
+        cat: "Tenses"
+    },
+    {
+        q: "Every year, our school __________ an English camp for high school students.",
+        clue: "ความถี่ระดับแผนงานประจำปี",
+        options: ["organize", "organizes", "is organizing", "organized"],
+        correct: 1,
+        explain: "คำระบุเวลา 'Every year' (ทุกๆ ปี) แสดงวงรอบความถี่สม่ำเสมอ ประธาน 'our school' โรงเรียนของเราที่เดียวเป็นเอกพจน์ กริยาลงท้ายด้วย e เติม s เป็น organizes",
+        tip: "ถึงแม้คำบอกเวลาจะเป็นช่วงยาว แต่ถ้ามีคำว่า 'Every' คุม ต้องใช้ Present Simple",
+        cat: "Tenses"
+    },
+    {
+        q: "They __________ television right now; they are studying for tomorrow's test.",
+        clue: "การปฏิเสธการกระทำที่กำลังทำอยู่ซ้อนแผน",
+        options: ["don't watch", "doesn't watch", "aren't watching", "isn't watching"],
+        correct: 2,
+        explain: "คีย์เวิร์ดท้ายประโยคระบุชัดว่า 'right now' และประโยคหลังยืนยันว่ากำลังเรียนอยู่ ดังนั้นพจน์แรกต้องเป็นการปฏิเสธสิ่งที่กำลังทำ ประธาน 'They' พหูพจน์คู่กับ aren't watching",
+        tip: "เช็กบริบทหน้าและหลังประโยคให้สอดคล้องกันเรื่องเหตุการณ์ขณะนั้น",
+        cat: "Tenses"
+    },
+
+    // Part 2: Quantifiers (16-28)
+    {
+        q: "We don't have __________ sugar left in the smart farm laboratory. We should buy some.",
+        clue: "คำนามนับไม่ได้ในประโยคปฏิเสธ",
+        options: ["many", "any", "some", "few"],
+        correct: 1,
+        explain: "คำนาม 'sugar' เป็นนามนับไม่ได้ และประโยคนี้เป็นประโยคปฏิเสธที่มีคำว่า 'don't' ตามหลักสากลประโยคปฏิเสธต้องใช้คู่กับ any",
+        tip: "เจอปฏิเสธ (not / n't) หรือประโยคคำถามทั่วไป ให้มองหา ANY เป็นอันดับแรก",
+        cat: "Quantifiers"
+    },
+    {
+        q: "Would you like __________ freshly brewed organic coffee from our farm?",
+        clue: "ประโยคคำถามเชิงยื่นข้อเสนอหรือเชิญชวน",
+        options: ["any", "some", "many", "few"],
+        correct: 1,
+        explain: "แม้ว่าโครงสร้างจะเป็นประโยคคำถาม (มีเครื่องหมาย ?) แต่บริบทคือการยื่นข้อเสนอหรือเชิญชวนด้วยโครงสร้าง 'Would you like...?' ตามกฎไวยากรณ์ขั้นสูงต้องใช้ some",
+        tip: "คำถามขอร้องหรือยื่นข้อเสนอเอื้อเฟื้อ ห้ามใช้ any ให้ใช้ some เพื่อความสุภาพ",
+        cat: "Quantifiers"
+    },
+    {
+        q: "There are too __________ mistakes in your English essay. Please rewrite it.",
+        clue: "คำนามนับได้พหูพจน์ที่มากเกินไป",
+        options: ["much", "many", "little", "any"],
+        correct: 1,
+        explain: "คำนาม 'mistakes' (ความผิดพลาด) เติม s เป็นนามนับได้พหูพจน์ คำบอกปริมาณที่แปลว่า 'มากเกินไป' นำหน้านามนับได้พหูพจน์คือ 'too many'",
+        tip: "too many + นามนับได้พหูพจน์ / too much + นามนับไม่ได้",
+        cat: "Quantifiers"
+    },
+    {
+        q: "The teacher gave us __________ useful advice before the examination started.",
+        clue: "ประเภทของคำนามคำว่า 'คำแนะนำ'",
+        options: ["a few", "many", "some", "an"],
+        correct: 2,
+        explain: "คำว่า 'advice' ในภาษาอังกฤษเป็นนามนับไม่ได้เสมอนิรันดร์ ห้ามเติม s และห้ามใช้คู่กับ many หรือ a few ตัวเลือกเดียวที่สามารถนำหน้านามนับไม่ได้ในประโยคบอกเล่าได้คือ some",
+        tip: "Advice, Information, Furniture, Homework เป็นนามนับไม่ได้ ห้ามหลงกลเติม a/many/few เด็ดขาด!",
+        cat: "Quantifiers"
+    },
+    {
+        q: "There is __________ water in the glass; it is almost empty. We need more.",
+        clue: "ปริมาณน้อยมากจนเกือบหมดกับนามนับไม่ได้",
+        options: ["few", "a few", "little", "many"],
+        correct: 2,
+        explain: "บริบทคือ 'almost empty' (เกือบจะว่างเปล่า) แสดงว่าเหลือน้อยมากในเชิงปฏิเสธ และ 'water' เป็นนามนับไม่ได้ คำที่ระบุปริมาณน้อยมากจนแทบไม่มีและใช้นามนับไม่ได้คือ little",
+        tip: "Little = น้อยจนแทบไม่มี (เชิงลบ), A little = น้อยแต่พอมิอยู่บ้าง (เชิงบวก)",
+        cat: "Quantifiers"
+    },
+    {
+        q: "How __________ textbooks did you borrow from the Phra Chom Klao library?",
+        clue: "การถามจำนวนคำนามนับได้ที่ระบุชัดเจน",
+        options: ["much", "many", "any", "few"],
+        correct: 1,
+        explain: "คำนาม 'textbooks' เติม s เป็นนามนับได้พหูพจน์ การตั้งคำถามถามจำนวนที่นับได้ต้องใช้โครงสร้าง 'How many...?'",
+        tip: "How many + นามพหูพจน์, How much + นามนับไม่ได้ (หรือถามราคา)",
+        cat: "Quantifiers"
+    },
+    {
+        q: "I have only __________ close friends in this school, but we love each other deeply.",
+        clue: "จำนวนน้อยแต่เป็นเชิงบวกกับนามนับได้พหูพจน์",
+        options: ["a little", "little", "a few", "much"],
+        correct: 2,
+        explain: "คำนาม 'friends' มี s แสดงว่าเป็นนามนับได้พหูพจน์ และโครงสร้าง 'only a few' แปลว่า มีเพียงเล็กน้อยแต่ยังพอมีอยู่ (เชิงบวก) จึงสอดคล้องกับเนื้อหาประโยคหลัง",
+        tip: "a few ใช้กับนามนับได้พหูพจน์ แปลว่ามีอยู่บ้างเล็กน้อย",
+        cat: "Quantifiers"
+    },
+    {
+        q: "Could I have __________ information about the English camp program, please?",
+        clue: "ประโยคคำถามเชิงขอร้องอย่างสุภาพ",
+        options: ["any", "some", "many", "few"],
+        correct: 1,
+        explain: "ประโยคนี้ขึ้นต้นด้วย 'Could I have...?' ซึ่งเป็นประโยคขอร้องอย่างสุภาพ (Request) เพื่อต้องการคำตอบรับที่เป็นเชิงบวก กฎระบุให้ใช้ some แม้จะเป็นประโยคคำถาม",
+        tip: "จำไว้ว่าคำถามขอร้อง (Request) และคำถามเสนอให้ (Offer) ใช้ Some เสมอ",
+        cat: "Quantifiers"
+    },
+    {
+        q: "He spent too __________ money on high-end computer gadgets yesterday.",
+        clue: "การแยกแยะสถานะการนับได้ของหน่วยเงิน",
+        options: ["many", "much", "few", "any"],
+        correct: 1,
+        explain: "คำว่า 'money' (เงิน) ในทางไวยากรณ์ภาษาอังกฤษถือเป็นนามนับไม่ได้ (เพราะเรานับหน่วยบาท/ดอลลาร์ แต่นิยามคำว่าเงินนับไม่ได้) ดังนั้น 'มากเกินไป' จึงต้องใช้ too much",
+        tip: "เงิน (Money) และ เวลา (Time) ถือเป็นนามนับไม่ได้เมื่อใช้โดดๆ ต้องคู่กับ Much",
+        cat: "Quantifiers"
+    },
+    {
+        q: "Are there __________ international students studying in your classroom?",
+        clue: "ประโยคคำถามทั่วไปถามความมีอยู่",
+        options: ["some", "any", "much", "little"],
+        correct: 1,
+        explain: "เป็นประโยคคำถามธรรมดาเพื่อถามหาข้อมูลทั่วไป ไม่ใช่การขอร้องหรือยื่นข้อเสนอ ประธานที่ถูกถามคือ 'students' เป็นพหูพจน์ จึงใช้ any นำหน้า",
+        tip: "คำถามทั่วไปธรรมดาที่ต้องการคำตอบ Yes/No ให้ปักธงที่ Any ได้ทันที",
+        cat: "Quantifiers"
+    },
+    {
+        q: "There are __________ sheep grazing in the green field near the mountain.",
+        clue: "คำนามพหูพจน์รูปพิเศษที่ไม่เปลี่ยนรูป",
+        options: ["some", "much", "little", "an"],
+        correct: 0,
+        explain: "คำว่า 'sheep' เป็นนามรูปพิเศษที่เป็นได้ทั้งเอกพจน์และพหูพจน์โดยไม่เติม s (Irregular Plural) ในที่นี้หมายถึงฝูงแกะในทุ่งหญ้า ประโยคบอกเล่าธรรมดาจึงต้องใช้ some นำหน้า",
+        tip: "Sheep, Fish, Deer เป็นคำที่รูปพหูพจน์หน้าตาเหมือนเอกพจน์ อย่าโดนหลอกว่านับไม่ได้!",
+        cat: "Quantifiers"
+    },
+    {
+        q: "We have __________ time left before the train departs. We must hurry!",
+        clue: "เวลาน้อยมากขั้นวิกฤตจนต้องรีบเร่ง",
+        options: ["few", "a few", "little", "a little"],
+        correct: 2,
+        explain: "บริบทคือ 'We must hurry!' (เราต้องรีบแล้ว!) แสดงว่าเวลาเหลือน้อยมากจนเกือบจะไม่มี (เชิงปฏิเสธ/ลบ) คำว่า 'time' เป็นนามนับไม่ได้ จึงต้องใช้ little",
+        tip: "เหลือน้อยจนต้องเร่งรีบคือไม่มีเวลาแล้ว = little (เชิงลบ)",
+        cat: "Quantifiers"
+    },
+    {
+        q: "Does the local market have __________ fresh organic herbs today?",
+        clue: "ประโยคคำถามทั่วไปที่มีกริยาช่วย Does นำหน้า",
+        options: ["some", "any", "much", "many"],
+        correct: 1,
+        explain: "เป็นประโยคคำถามทั่วไปเพื่อตรวจสอบว่ามีสินค้าหรือไม่ ไม่ใช่ประโยคเสนอสิ่งของหรือขอร้อง คำนามคือ herbs (พหูพจน์) ใช้ any เหมาะสมที่สุดตามกฎไวยากรณ์",
+        tip: "คำถามทั่วไปที่มี Do/Does/Is/Are นำหน้า มักใช้ Any ในการสำรวจข้อมูล",
+        cat: "Quantifiers"
+    },
+
+    // Part 3: Comparison (29-40)
+    {
+        q: "The new transit system is __________ than the old traditional bus system.",
+        clue: "คำเชื่อมระบุขั้นกว่าอย่างเด่นชัด",
+        options: ["efficient", "more efficient", "most efficient", "the most efficient"],
+        correct: 1,
+        explain: "มีคำบอกใบ้สำคัญที่สุดคือ 'than' บ่งชี้ว่าประโยคนี้ต้องการการเปรียบเทียบขั้นกว่า (Comparative Degree) คำว่า 'efficient' เป็นคำคุณศัพท์ 3 พยางค์ (พยางค์ยาว) ขั้นกว่าต้องเติม more ข้างหน้าเป็น more efficient",
+        tip: "คำคุณศัพท์ 3 พยางค์ขึ้นไป เวลาทำขั้นกว่าห้ามเติม -er ให้ใช้ more นำหน้า",
+        cat: "Comparison"
+    },
+    {
+        q: "Mount Everest is __________ mountain peak in the entire world.",
+        clue: "ที่สุดในขอบเขตระดับโลก",
+        options: ["high", "higher", "highest", "the highest"],
+        correct: 3,
+        explain: "บริบทกำหนดขอบเขต 'in the entire world' (ในโลกทั้งหมด) แสดงว่าเป็นขั้นสุด (Superlative Degree) กฎเหล็กของขั้นสุดคือต้องมี Article 'the' นำหน้าคำคุณศัพท์ที่เติม -est เสมอ",
+        tip: "ขั้นสุดห้ามลืมตัวเด็ดขาด! ต้องมี 'the' คุมหัวแถวเสมอ",
+        cat: "Comparison"
+    },
+    {
+        q: "This English examination is __________ than the quiz we took last Friday.",
+        clue: "คำเชื่อมขั้นกว่าของคำคุณศัพท์รูปพิเศษ",
+        options: ["bad", "badder", "worse", "the worst"],
+        correct: 2,
+        explain: "มีคำว่า 'than' แสดงถึงขั้นกว่า คำคุณศัพท์เดิมคือ 'bad' (แย่) เป็นคำรูปพิเศษที่จะเปลี่ยนรูปไปเลยในขั้นกว่า โดยเปลี่ยนเป็น 'worse' และขั้นสุดเป็น 'the worst'",
+        tip: "Good -> Better, Bad -> Worse, Far -> Farther/Further ท่องให้ขึ้นใจ!",
+        cat: "Comparison"
+    },
+    {
+        q: "Gold is much __________ than silver, making it ideal for jewelry investment.",
+        clue: "การเพิ่มดีกรีความเข้มข้นในขั้นกว่า",
+        options: ["expensive", "more expensive", "most expensive", "the most expensive"],
+        correct: 1,
+        explain: "มีคำว่า 'than' กำกับชัดเจนว่าเป็นขั้นกว่า คำว่า 'expensive' เป็นคำยาวใช้ more นำหน้า ส่วนคำว่า 'much' ข้างหน้าทำหน้าที่ขยายเพื่อเน้นว่า 'แพงกว่ามาก'",
+        tip: "เราสามารถใช้ much, far, slightly นำหน้าคำคุณศัพท์ขั้นกว่าเพื่อบอกระดับความต่างได้",
+        cat: "Comparison"
+    },
+    {
+        q: "Of all the brilliant students in the academy, Siriporn is __________.",
+        clue: "การเปรียบเทียบคนหนึ่งท่ามกลางกลุ่มทั้งหมด",
+        options: ["intelligent", "more intelligent", "most intelligent", "the most intelligent"],
+        correct: 3,
+        explain: "วลีเปิด 'Of all...' (ในบรรดาทั้งหมด...) บ่งบอกทันทีว่าเป็นการเปรียบเทียบขั้นสุดของกลุ่มคนคำว่า 'intelligent' ยาว 4 พยางค์ จึงใช้โครงสร้าง the most intelligent",
+        tip: "เจอคำว่า Of all... หรือ In the class... ให้เล็งเป้าขั้นสุด (the + most/-est)",
+        cat: "Comparison"
+    },
+    {
+        q: "A blue whale is __________ than any land animal discovered by science.",
+        clue: "การจับคู่คำคุณศัพท์พยางค์สั้นในขั้นกว่า",
+        options: ["heavy", "heavier", "heaviest", "the heaviest"],
+        correct: 1,
+        explain: "มีคำว่า 'than' ชี้เป้าขั้นกว่า คำคุณศัพท์คือ 'heavy' เป็นคำ 2 พยางค์ที่ลงท้ายด้วย y กฎระบุให้เปลี่ยน y เป็น i แล้วเติม -er จึงได้รูปคำเป็น heavier",
+        tip: "คุณศัพท์ลงท้ายด้วย y ให้ตัด y ทิ้ง เปลี่ยนเป็น i แล้วเติม -er หรือ -est ได้เลย",
+        cat: "Comparison"
+    },
+    {
+        q: "This automated hydroponic kit is __________ setup available in the shop.",
+        clue: "การระบุคุณสมบัติที่สุดในร้านค้า",
+        options: ["modern", "more modern", "the most modern", "most modern"],
+        correct: 2,
+        explain: "บริบทบอกว่าเป็นระบบที่ 'available in the shop' คือที่มีอยู่ทั้งหมดในร้านค้า จึงเป็นการเปรียบเทียบขั้นสุด คำว่า modern ใช้โครงสร้าง the most modern",
+        tip: "มีของให้เลือกทั้งร้านแล้วคัดมาชิ้นเดียว แปลว่านั่นคือขั้นสุด",
+        cat: "Comparison"
+    },
+    {
+        q: "The weather in Bangkok is usually __________ than the weather in London.",
+        clue: "คำสั้นพยางค์เดียวที่มีสระและตัวสะกดตัวเดียว",
+        options: ["hot", "hotter", "hottest", "the hottest"],
+        correct: 1,
+        explain: "มีคำว่า 'than' บอกขั้นกว่า คำคุณศัพท์คือ 'hot' เป็นคำพยางค์เดียว เสียงสั้น มีสระตัวเดียว (o) ตัวสะกดตัวเดียว (t) กฎบังคับให้เพิ่มตัวสะกดอีกหนึ่งตัวก่อนเติม -er จึงเป็น hotter",
+        tip: "สระหนึ่ง ตัวสะกดหนึ่ง เสียงสั้นพยางค์เดียว -> เบิ้ลตัวสะกดท้ายก่อนเติม -er/-est",
+        cat: "Comparison"
+    },
+    {
+        q: "Learning a foreign language is __________ than most people imagine.",
+        clue: "คำคุณศัพท์พยางค์สั้นลงท้ายด้วย y ในบริบทขั้นกว่า",
+        options: ["easy", "easier", "easiest", "the easiest"],
+        correct: 1,
+        explain: "มีคำว่า 'than' กำหนดโครงสร้างขั้นกว่า คำว่า 'easy' (ง่าย) ลงท้ายด้วย y เปลี่ยน y เป็น i แล้วเติม -er กลายเป็น easier",
+        tip: "จำกฎการเปลี่ยนรูป y ให้ดี ออกสอบบ่อยสม่ำเสมอในข้อสอบทางการ",
+        cat: "Comparison"
+    },
+    {
+        q: "Who is __________ runner in your school's athletic track team?",
+        clue: "คำถามค้นหาบุคคลที่เป็นที่สุดของทีม",
+        options: ["fast", "faster", "fastest", "the fastest"],
+        correct: 3,
+        explain: "ประโยคถามเจาะจงหาตัวบุคคลที่เป็นอันดับหนึ่งของทีมกรีฑาโรงเรียน จึงเป็นการถามขั้นสุด คำว่า fast เป็นคำพยางค์เดียวขั้นสุดเติม -est และมี the นำหน้าเป็น the fastest",
+        tip: "การถามหาอันดับหนึ่งในกลุ่มหรือโครงสร้างองค์กร ใช้ขั้นสุดเสมอ",
+        cat: "Comparison"
+    },
+    {
+        q: "The internal computer storage is __________ than the external backup cloud.",
+        clue: "คำคุณศัพท์พยางค์สั้นทั่วไปในขั้นกว่า",
+        options: ["safe", "safer", "safest", "the safest"],
+        correct: 1,
+        explain: "มีคำว่า 'than' บ่งชี้ขั้นกว่า คำคณศัพท์คือ 'safe' ลงท้ายด้วย e อยู่แล้วตามธรรมชาติ ไม่ต้องเบิ้ลตัวอักษรใดๆ ให้เติมเฉพาะตัว r ได้เลยในขั้นกว่า กลายเป็น safer",
+        tip: "คำที่ลงท้ายด้วย e อยู่แล้ว เติมแค่ r (ขั้นกว่า) หรือ st (ขั้นสุด) ได้เลย ไม่ต้องเติม e ซ้ำ",
+        cat: "Comparison"
+    },
+    {
+        q: "That math problem was __________ assignment of this entire semester.",
+        clue: "ความยากที่สุดของภารกิจประจำภาคเรียน",
+        options: ["difficult", "more difficult", "most difficult", "the most difficult"],
+        correct: 3,
+        explain: "ขอบเขตคือ 'of this entire semester' (ของทั้งภาคเรียนนี้) แสดงว่าที่สุดในรุ่น เป็นขั้นสุดแน่นอน คำว่า 'difficult' ยาว 3 พยางค์ รูปขั้นสุดคือ the most difficult",
+        tip: "คำยาวเกิน 2 พยางค์ในขั้นสุด ต้องมี 'the most' ประทับตราหน้าคำเสมอ",
+        cat: "Comparison"
+    },
+
+    // Part 4: Health & Hygiene & Conversation (41-50)
+    {
+        q: "Somsak: I have a severe toothache since last night. <br>Tutor: You __________ eat so much candy and candy bars.",
+        clue: "คำแนะนำในสิ่งที่เป็นโทษต่ออาการปวดฟัน",
+        options: ["should", "shouldn't", "must to", "ought"],
+        correct: 1,
+        explain: "Somsak ปวดฟันอย่างรุนแรง (severe toothache) คำแนะนำที่ถูกต้องสำหรับการกินลูกอม (candy) ซึ่งเป็นสาเหตุให้ฟันผุเพิ่มขึ้น คือ 'ไม่ควรจะทำ' จึงต้องตอบ shouldn't",
+        tip: "วิเคราะห์อาการป่วยก่อน แล้วดูว่าสิ่งที่โจทย์ให้มาข้างหลังเป็นผลดีหรือผลเสียต่อแผล",
+        cat: "Health & Advising"
+    },
+    {
+        q: "Patient: My throat is very sore and it hurts when I swallow. <br>Doctor: You should __________ warm water and rest your voice.",
+        clue: "โครงสร้างคำกริยาที่ตามหลัง Modal Verb 'should'",
+        options: ["drink", "drinks", "drinking", "drank"],
+        correct: 0,
+        explain: "ตามกฎไวยากรณ์ คำกริยาที่ตามหลังคำช่วยประเภท Modal Verbs อย่าง should หรือ shouldn't ต้องเป็นกริยาฐานไม่เปลี่ยนรูป (Infinitive without to) เสมอ ดังนั้นจึงต้องตอบ drink รูปธรรมดา",
+        tip: "หลัง should / shouldn't ห้ามเติม s, ห้ามเติม ing, ห้ามผันเป็นช่อง 2 เด็ดขาดเด็ดขาด!",
+        cat: "Health & Advising"
+    },
+    {
+        q: "If you have a high fever, you shouldn't __________ outside in the cold rain.",
+        clue: "การห้ามกระทำเมื่อมีไข้สูงเพื่อป้องกันปอดบวม",
+        options: ["go", "goes", "going", "went"],
+        correct: 0,
+        explain: "ประธานมีไข้สูง (high fever) คำแนะนำคือไม่ควรออกไปข้างนอก และตามหลัง shouldn't ต้องเป็นกริยา Infinitive รูปเดิมแท้ จึงตอบ go",
+        tip: "ตรวจเช็กคำกริยาฐานให้ดี ห้ามหลงทางไปกับพจน์ของประธานข้างหน้า",
+        cat: "Health & Advising"
+    },
+    {
+        q: "Mary has a terrible stomach ache. She __________ see a doctor immediately.",
+        clue: "การให้คำแนะนำเชิงบวกเพื่อรักษาอาการปวดท้อง",
+        options: ["should", "shouldn't", "not should", "should to"],
+        correct: 0,
+        explain: "Mary ปวดท้องอย่างรุนแรง การไปพบแพทย์ (see a doctor) เป็นสิ่งที่สมควรทำอย่างยิ่ง คำกริยาช่วยที่แปลว่า 'ควรจะ' คือ should และตามด้วยกริยาช่อง 1 ได้เลยโดยไม่มี to",
+        tip: "โครงสร้างคือ S + should + V.inf (ไม่มีคำว่า to มาคั่นกลาง)",
+        cat: "Health & Advising"
+    },
+    {
+        q: "You look incredibly exhausted. Why don't you __________ some sleep?",
+        clue: "สำนวนการแนะนำด้วยโครงสร้าง Why don't you...?",
+        options: ["get", "gets", "getting", "got"],
+        correct: 0,
+        explain: "โครงสร้าง 'Why don't you + V.inf?' เป็นประโยคสำนวนที่ใช้ในการให้คำแนะนำหรือเสนอแนะสิ่งดีๆ กริยาที่ใช้ต้องเป็นร่างเดิมไม่ผัน ไม่เติม จึงเลือก get",
+        tip: "Why don't you...? มีค่าเท่ากับคำว่า Should ใช้ในการแนะนำกริยาช่อง 1",
+        cat: "Health & Advising"
+    },
+    {
+        q: "Chayanon hurt his ankle during the soccer match. He __________ run fast now.",
+        clue: "ขีดความสามารถทางกายภาพหลังการบาดเจ็บข้อเท้า",
+        options: ["should", "shouldn't", "can", "is"],
+        correct: 1,
+        explain: "เขามีอาการบาดเจ็บที่ข้อเท้า (hurt his ankle) จากการแข่งฟุตบอล ดังนั้นในปัจจุบันเขา 'ไม่ควรจะ' หรือ 'ไม่สามารถ' วิ่งเร็วๆ ได้ บริบทข้อนี้แสดงคำแนะนำเชิงห้ามคือ shouldn't",
+        tip: "การฝืนวิ่งขณะข้อเท้าบาดเจ็บเป็นสิ่งไม่ควรทำ ตอบ shouldn't สอดคล้องที่สุด",
+        cat: "Health & Advising"
+    },
+    {
+        q: "To prevent coronavirus and flu, we should __________ our hands frequently.",
+        clue: "สุขอนามัยพื้นฐานและรูปแบบคำกริยาที่สะอาด",
+        options: ["wash", "washes", "washing", "washed"],
+        correct: 0,
+        explain: "เพื่อป้องกันโรคระบาด การล้างมือ (wash hands) บ่อยๆ เป็นสิ่งที่ควรทำ หลังคำว่า should ต้องเลือกกริยา Infinitive นั่นคือ wash",
+        tip: "คำว่า frequently แปลว่าบ่อยๆ ขยายกริยาฐาน wash หลัง should",
+        cat: "Health & Advising"
+    },
+    {
+        q: "My sister has a bad cough and a sore throat. She should avoid __________ ice water.",
+        clue: "คำกริยาเฉพาะที่ตามหลังคำว่า avoid (หลีกเลี่ยง)",
+        options: ["drink", "drinking", "to drink", "drinks"],
+        correct: 1,
+        explain: "นี่คือโจทย์ดักระดับยาก! ข้างหน้ามี shouldก็จริง แต่คำกริยาแท้ที่ติดกันคือ 'avoid' (หลีกเลี่ยง) ซึ่งตามกฎไวยากรณ์ คำกริยาที่ตามหลัง avoid ต้องอยู่ในรูป Gerund (V.ing) เสมอ จึงตอบ drinking",
+        tip: "Avoid + V.ing เสมอ แปลว่า หลีกเลี่ยงการทำสิ่งนั้น ข้อสอบคัดเลือกชอบออกจุดนี้มาก!",
+        cat: "Health & Advising"
+    },
+    {
+        q: "If your eyes are red and watery, you __________ stare at computer screens for too long.",
+        clue: "คำแนะนำถนอมสายตาเมื่อมีอาการตาแดง",
+        options: ["should", "shouldn't", "ought to", "must to"],
+        correct: 1,
+        explain: "มีอาการตาแดงและน้ำตาไหล คำแนะนำเกี่ยวกับการจ้องหน้าจอคอมพิวเตอร์นานเกินไปคือ 'ไม่ควรทำ' จึงเลือก shouldn't เพื่อลดการระคายเคือง",
+        tip: "ถนอมร่างกายด้วยคำแนะนำเชิงปฏิเสธเมื่ออวัยวะแสดงอาการอ่อนล้า",
+        cat: "Health & Advising"
+    },
+    {
+        q: "Anfield: I feel very cold and I cannot stop shivering. <br>Tutor: You should put on a thick coat and __________ some warm herbal tea.",
+        clue: "โครงสร้างกริยาคู่ขนานเชื่อมด้วยคำว่า and หลัง should",
+        options: ["sip", "sips", "sipping", "sipped"],
+        correct: 0,
+        explain: "โครงสร้างประโยคนี้ใช้ 'and' เป็นตัวเชื่อมกริยาคู่ขนาน (Parallel Structure) โดยกริยาตัวแรกคือ 'put on' อยู่หลัง should (เป็น V.inf) ดังนั้นกริยาหลัง and ก็ต้องเป็น V.inf ด้วยเช่นกัน จึงตอบ sip (จิบ)",
+        tip: "กริยาหน้า and และ หลัง and ต้องมีสถานะและหน้าตาไวยากรณ์ที่สมดุลกันเสมอ",
+        cat: "Health & Advising"
+    }
+];
+
+// Dynamically generate the quiz HTML
+const wrapper = document.getElementById('questions-wrapper');
+quizData.forEach((item, index) => {
+    const qDiv = document.createElement('div');
+    qDiv.className = 'question-container';
+    qDiv.id = `q-box-${index}`;
+    
+    let optionsHtml = '';
+    item.options.forEach((opt, optIdx) => {
+        // Replace special symbols if any
+        optionsHtml += `
+            <label class="option-label" id="label-${index}-${optIdx}">
+                <input type="radio" name="question-${index}" value="${optIdx}" onclick="selectAnswer(${index}, ${optIdx})">
+                <span class="checkmark"></span>
+                <strong>${String.fromCharCode(65 + optIdx)}.</strong> ${opt}
+            </label>
+        `;
+    });
+
+    qDiv.innerHTML = `
+        <div class="question-title">
+            ${index + 1}. ${item.q}
+            <span class="clue">(Clue: ${item.clue})</span>
+        </div>
+        <div class="options-container">
+            ${optionsHtml}
+        </div>
+        <div class="explanation-box" id="explain-${index}">
+            <div style="font-weight: bold; color: #2c5282;">📝 เฉลยและคำอธิบาย:</div>
+            <p>${item.explain}</p>
+            <div class="tutor-tip">💡 Tutor's Secret Tip: ${item.tip}</div>
+        </div>
+    `;
+    wrapper.appendChild(qDiv);
+});
+
+// Track user answers
+let userAnswers = new Array(quizData.length).fill(null);
+
+function selectAnswer(qIdx, optIdx) {
+    // If already answered, we can allow changing or just process immediately
+    // According to rule: "ระบบตรวจสอบและเปลี่ยนสีทันทีโดยไม่ต้องกดปุ่มส่ง"
+    userAnswers[qIdx] = optIdx;
+    
+    const correctIdx = quizData[qIdx].correct;
+    const qBox = document.getElementById(`q-box-${qIdx}`);
+    const explainBox = document.getElementById(`explain-${qIdx}`);
+    
+    // Reset all labels for this question
+    for(let i=0; i<4; i++) {
+        document.getElementById(`label-${qIdx}-${i}`).classList.remove('correct-choice', 'wrong-choice');
+    }
+    
+    // Disable inputs for this question to lock answer if desired, or keep it interactive. 
+    // Let's lock it for firm immediate feedback like an interactive kiosk
+    const inputs = qBox.querySelectorAll('input[type="radio"]');
+    inputs.forEach(input => input.disabled = true);
+
+    if (optIdx === correctIdx) {
+        qBox.classList.add('correct-answered');
+        document.getElementById(`label-${qIdx}-${optIdx}`).classList.add('correct-choice');
+    } else {
+        qBox.classList.add('wrong-answered');
+        document.getElementById(`label-${qIdx}-${optIdx}`).classList.add('wrong-choice');
+        document.getElementById(`label-${qIdx}-${correctIdx}`).classList.add('correct-choice');
+    }
+    
+    // Show explanation box instantly
+    explainBox.style.display = 'block';
+}
+
+function checkAllQuestions() {
+    let score = 0;
+    let categoryScores = {
+        "Tenses": { correct: 0, total: 0 },
+        "Quantifiers": { correct: 0, total: 0 },
+        "Comparison": { correct: 0, total: 0 },
+        "Health & Advising": { correct: 0, total: 0 }
+    };
+
+    quizData.forEach((item, index) => {
+        categoryScores[item.cat].total++;
+        if (userAnswers[index] === item.correct) {
+            score++;
+            categoryScores[item.cat].correct++;
+        }
+    });
+
+    // Display total score
+    document.getElementById('score').innerText = score;
+    
+    // Generate evaluation text
+    let evalText = "";
+    if (score >= 45) {
+        evalText = "🎯 ยอดเยี่ยมที่สุดสมราคานักเรียนดรุณศึกษา! หนูมีความเข้าใจโครงสร้างไวยากรณ์ระดับสูงและความคิดเชิงระบบที่คมชัดมาก พร้อมลุยทุกสนามสอบแข่งขันครับ!";
+    } else if (score >= 35) {
+        evalText = "👍 เก่งมากครับ! ถือว่าทำคะแนนได้ดีในเกณฑ์มาตรฐานระดับยาก แต่ยังมีจุดเล็กๆ น้อยๆ ที่โดนลวงในเรื่องข้อยกเว้น ทบทวนอีกนิดคะแนนเต็มไม่ไกลเกินเอื้อม!";
+    } else if (score >= 25) {
+        evalText = "⚖️ ผ่านเกณฑ์ขั้นต่ำแบบฉิวเฉียดครับ มีความรู้พื้นฐานแต่พอเจอโจทย์ประยุกต์และ Clue ลวงยังสับสนอยู่ แนะนำให้ท่อง Memory Tricks ของพี่ติวเตอร์บ่อยๆ นะครับ";
+    } else {
+        evalText = "⚠️ ต้องเร่งฟิตซ้อมเป็นการด่วนครับ! คะแนนยังไม่ผ่านเกณฑ์กลางภาคเรียน แนะนำให้กลับไปอ่านกล่องสรุปเนื้อหาด้านบนอย่างละเอียดและทำซ้ำอีกรอบครับ";
+    }
+    document.getElementById('evaluation-text').innerText = evalText;
+
+    // Generate breakdown analysis
+    let analysisHtml = "<h3>🔍 วิเคราะห์จุดแข็ง-จุดอ่อนรายบทเรียน:</h3><ul>";
+    for (const [cat, data] of Object.entries(categoryScores)) {
+        let pct = Math.round((data.correct / data.total) * 100);
+        let status = "";
+        let advice = "";
+        
+        if (pct >= 80) {
+            status = "<span style='color: #48bb78; font-weight:bold;'>[จุดแข็งแกร่ง]</span>";
+            advice = "รักษามาตรฐานนี้ไว้ หนูแม่นยำในหลักการแล้ว!";
+        } else if (pct >= 50) {
+            status = "<span style='color: #ecc94b; font-weight:bold;'>[ควรเสริมความมั่นใจ]</span>";
+            if (cat === "Tenses") advice = "ระวังเรื่องการผัน s/es ตามประธานเดี่ยวและการมองคำบอกเวลาด่วนอย่าง Look/Listen";
+            if (cat === "Quantifiers") advice = "อย่าลืมแยกแยะนามนับได้พหูพจน์กับนามนับไม่ได้ (เช่น Advice, Money เป็นนามนับไม่ได้)";
+            if (cat === "Comparison") advice = "ระวังคำผันรูปพิเศษ เช่น bad -> worse และการลืมใส่ Article 'the' นำหน้าขั้นสุด";
+            if (cat === "Health & Advising") advice = "จำไว้เสมอว่าหลัง should/shouldn't ต้องตามด้วยกริยาฐานร่างเดิมร้อยเปอร์เซ็นต์";
+        } else {
+            status = "<span style='color: #f56565; font-weight:bold;'>[จุดอ่อนวิกฤต - ต้องทบทวนด่วน]</span>";
+            advice = "อ่านทบทวนสรุปเนื้อหาและเทคนิค Thought Process ในกล่องแจ้งเตือนด้านบนอย่างละเอียดอีกครั้ง";
+        }
+        
+        analysisHtml += `<li><strong>${cat}:</strong> ได้คะแนน ${data.correct}/${data.total} (${pct}%) -> ${status} <br><small style='color: #cbd5e0;'>💡 คำแนะนำ: ${advice}</small></li><br>`;
+    }
+    analysisHtml += "</ul>";
+    
+    document.getElementById('analysis-details').innerHTML = analysisHtml;
+    
+    // Scroll to results smoothly
+    document.getElementById('result-section').style.display = 'block';
+    document.getElementById('result-section').scrollIntoView({ behavior: 'smooth' });
+}
+</script>
+
+</body>
+</html>
+"""
+
+# Encode to base64 to avoid characters or styling escaping errors
+encoded_bytes = base64.b64encode(html_content.encode('utf-8'))
+encoded_str = encoded_bytes.decode('utf-8')
+
+with open("english_p5_exam.html", "w", encoding="utf-8") as f:
+    f.write(html_content)
+
+print("File successfully created as english_p5_exam.html")
