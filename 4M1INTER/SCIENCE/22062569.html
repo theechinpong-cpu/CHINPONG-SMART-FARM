@@ -8,17 +8,12 @@
         .controls { text-align: center; margin-bottom: 20px; }
         .question { margin-top: 30px; font-weight: bold; background: #fff; padding: 15px; border-radius: 8px; }
         .options { margin-left: 20px; cursor: pointer; }
-        .answer-box { margin-top: 10px; padding: 10px; background: #e8f8f5; border-left: 5px solid #27ae60; display: none; }
+        .options li { margin-bottom: 5px; color: #3498db; }
+        .answer-box { margin-top: 10px; padding: 15px; background: #e8f8f5; border-left: 5px solid #27ae60; display: none; }
         .btn { padding: 10px 20px; cursor: pointer; background: #3498db; color: white; border: none; border-radius: 5px; }
-
-        /* การตั้งค่าสลับภาษาแบบเด็ดขาด */
-        body.lang-en .lang-th { display: none !important; }
-        body.lang-en .lang-en { display: inline !important; }
-        body.lang-th .lang-en { display: none !important; }
-        body.lang-th .lang-th { display: inline !important; }
     </style>
 </head>
-<body class="lang-en">
+<body>
 
     <h1>แบบทดสอบวิทยาศาสตร์ ม.1</h1>
     <div class="controls">
@@ -28,54 +23,63 @@
     <div id="quizContainer"></div>
 
     <script>
+        let currentLang = 'en'; 
         const questions = [
-            { q: "What is the first step in the scientific method?", a: ["Hypothesis", "Observation/Question", "Experiment", "Conclusion"], en: "Observation comes first.", th: "การสังเกตคือขั้นตอนแรก" },
-            { q: "Which tool measures liquid volume accurately?", a: ["Beaker", "Graduated cylinder", "Test tube", "Petri dish"], en: "Graduated cylinder is for precision.", th: "กระบอกตวงมีความแม่นยำสูง" },
-            { q: "What is a 'Hypothesis'?", a: ["Fact", "Scientific law", "Tentative prediction", "Final result"], en: "It's an educated guess.", th: "คือการคาดคะเนที่มีเหตุผล" },
-            { q: "Which is a qualitative observation?", a: ["10 cm tall", "100°C boiling point", "Bright blue color", "50 grams"], en: "Color is qualitative.", th: "สีเป็นเชิงคุณภาพ" },
-            { q: "Why control variables?", a: ["To be fast", "To test one variable only", "To save money", "To skip steps"], en: "Fair test requires constant variables.", th: "เพื่อให้การทดลองยุติธรรม" },
-            { q: "What is a Pure Substance?", a: ["Mixture", "Constant properties", "Easily separated", "Any solution"], en: "It has fixed properties.", th: "มีสมบัติคงที่" },
-            { q: "Which is an element?", a: ["Water", "CO2", "Oxygen", "Salt water"], en: "Oxygen (O2) is an element.", th: "ออกซิเจนเป็นธาตุ" },
-            { q: "Formula for density?", a: ["Mass x Volume", "Mass / Volume", "Volume / Mass", "Force / Area"], en: "Density = Mass divided by Volume.", th: "ความหนาแน่น = มวลหารปริมาตร" },
-            { q: "How to separate solid from liquid?", a: ["Distillation", "Chromatography", "Filtration", "Sublimation"], en: "Filtration catches the solid.", th: "การกรองแยกของแข็งออกจากของเหลว" },
-            { q: "What is a Compound?", a: ["Chemically bonded elements", "Physical mix", "Single atom", "Metal alloy"], en: "Elements bond chemically.", th: "ธาตุรวมตัวกันทางเคมี" },
-            { q: "Density of 20g in 4cm³?", a: ["5 g/cm³", "80 g/cm³", "0.2 g/cm³", "16 g/cm³"], en: "20 / 4 = 5.", th: "20 หาร 4 ได้ 5" },
-            { q: "Separation by boiling point?", a: ["Filtration", "Distillation", "Magnet", "Decantation"], en: "Distillation uses boiling points.", th: "การกลั่นใช้จุดเดือดที่ต่างกัน" },
-            { q: "Powerhouse of the cell?", a: ["Nucleus", "Mitochondria", "Ribosome", "Cell wall"], en: "Mitochondria produces energy.", th: "ไมโทคอนเดรียสร้างพลังงาน" },
-            { q: "Unique to plant cells?", a: ["Nucleus", "Cell wall/Chloroplasts", "Vacuoles", "Membrane"], en: "Plants have rigid walls.", th: "เซลล์พืชมีผนังเซลล์" },
-            { q: "Water movement across membrane?", a: ["Diffusion", "Osmosis", "Active transport", "Photosynthesis"], en: "Osmosis is water movement.", th: "ออสโมซิสคือการแพร่ของน้ำ" },
-            { q: "Function of chloroplast?", a: ["Protein", "Respiration", "Photosynthesis", "Storage"], en: "Chloroplast makes food.", th: "คลอโรพลาสต์สังเคราะห์แสง" },
-            { q: "Transports water in plants?", a: ["Phloem", "Xylem", "Root hairs", "Stomata"], en: "Xylem carries water.", th: "ไซเล็มลำเลียงน้ำ" },
-            { q: "What plants need for photosynthesis?", a: ["Oxygen/Glucose", "CO2/Water/Sun", "Nitrogen/Soil", "Sugar/Protein"], en: "Light + CO2 + Water.", th: "แสง+คาร์บอนไดออกไซด์+น้ำ" },
-            { q: "Function of cell membrane?", a: ["Controls entry", "Energy", "Sun protection", "Storage"], en: "It regulates traffic.", th: "ควบคุมสารเข้าออกเซลล์" },
-            { q: "Average kinetic energy?", a: ["Heat", "Temperature", "Density", "Mass"], en: "Temperature = kinetic energy.", th: "อุณหภูมิคือพลังงานจลน์เฉลี่ย" },
-            { q: "Heat transfer in fluids?", a: ["Conduction", "Convection", "Radiation", "Expansion"], en: "Convection is in fluids.", th: "การพาความร้อนเกิดในของไหล" },
-            { q: "Heat transfer in vacuum?", a: ["Conduction", "Convection", "Radiation", "Insulation"], en: "Radiation travels through space.", th: "การแผ่รังสีไม่ต้องใช้ตัวกลาง" },
-            { q: "Particles when heated?", a: ["Slower", "Faster", "Stop", "Condense"], en: "Heat increases speed.", th: "ความร้อนทำให้เร็วขึ้น" },
-            { q: "Thermal Equilibrium?", a: ["Same temp", "No heat move", "Melting", "Boiling"], en: "Temps become equal.", th: "อุณหภูมิเท่ากัน" },
-            { q: "Good heat insulator?", a: ["Copper", "Aluminum", "Plastic/Wood", "Iron"], en: "Non-metals are poor conductors.", th: "พลาสติก/ไม้เป็นฉนวน" }
+            { q: "What is the first step in the scientific method?", a: ["Hypothesis", "Observation/Question", "Experiment", "Conclusion"], correct: 1, en: "Observation comes first.", th: "การสังเกตคือขั้นตอนแรก" },
+            { q: "Which tool measures liquid volume accurately?", a: ["Beaker", "Graduated cylinder", "Test tube", "Petri dish"], correct: 1, en: "Graduated cylinder is for precision.", th: "กระบอกตวงมีความแม่นยำสูง" },
+            { q: "What is a 'Hypothesis'?", a: ["Fact", "Scientific law", "Tentative prediction", "Final result"], correct: 2, en: "It's an educated guess.", th: "คือการคาดคะเนที่มีเหตุผล" },
+            { q: "Which is a qualitative observation?", a: ["10 cm tall", "100°C boiling point", "Bright blue color", "50 grams"], correct: 2, en: "Color is qualitative.", th: "สีเป็นเชิงคุณภาพ" },
+            { q: "Why control variables?", a: ["To be fast", "To test one variable only", "To save money", "To skip steps"], correct: 1, en: "Fair test requires constant variables.", th: "เพื่อให้การทดลองยุติธรรม" },
+            { q: "What is a Pure Substance?", a: ["Mixture", "Constant properties", "Easily separated", "Any solution"], correct: 1, en: "It has fixed properties.", th: "มีสมบัติคงที่" },
+            { q: "Which is an element?", a: ["Water", "CO2", "Oxygen", "Salt water"], correct: 2, en: "Oxygen (O2) is an element.", th: "ออกซิเจนเป็นธาตุ" },
+            { q: "Formula for density?", a: ["Mass x Volume", "Mass / Volume", "Volume / Mass", "Force / Area"], correct: 1, en: "Density = Mass divided by Volume.", th: "ความหนาแน่น = มวลหารปริมาตร" },
+            { q: "How to separate solid from liquid?", a: ["Distillation", "Chromatography", "Filtration", "Sublimation"], correct: 2, en: "Filtration catches the solid.", th: "การกรองแยกของแข็งออกจากของเหลว" },
+            { q: "What is a Compound?", a: ["Chemically bonded elements", "Physical mix", "Single atom", "Metal alloy"], correct: 0, en: "Elements bond chemically.", th: "ธาตุรวมตัวกันทางเคมี" },
+            { q: "Density of 20g in 4cm³?", a: ["5 g/cm³", "80 g/cm³", "0.2 g/cm³", "16 g/cm³"], correct: 0, en: "20 / 4 = 5.", th: "20 หาร 4 ได้ 5" },
+            { q: "Separation by boiling point?", a: ["Filtration", "Distillation", "Magnet", "Decantation"], correct: 1, en: "Distillation uses boiling points.", th: "การกลั่นใช้จุดเดือดที่ต่างกัน" },
+            { q: "Powerhouse of the cell?", a: ["Nucleus", "Mitochondria", "Ribosome", "Cell wall"], correct: 1, en: "Mitochondria produces energy.", th: "ไมโทคอนเดรียสร้างพลังงาน" },
+            { q: "Unique to plant cells?", a: ["Nucleus", "Cell wall/Chloroplasts", "Vacuoles", "Membrane"], correct: 1, en: "Plants have rigid walls.", th: "เซลล์พืชมีผนังเซลล์" },
+            { q: "Water movement across membrane?", a: ["Diffusion", "Osmosis", "Active transport", "Photosynthesis"], correct: 1, en: "Osmosis is water movement.", th: "ออสโมซิสคือการแพร่ของน้ำ" },
+            { q: "Function of chloroplast?", a: ["Protein", "Respiration", "Photosynthesis", "Storage"], correct: 2, en: "Chloroplast makes food.", th: "คลอโรพลาสต์สังเคราะห์แสง" },
+            { q: "Transports water in plants?", a: ["Phloem", "Xylem", "Root hairs", "Stomata"], correct: 1, en: "Xylem carries water.", th: "ไซเล็มลำเลียงน้ำ" },
+            { q: "What plants need for photosynthesis?", a: ["Oxygen/Glucose", "CO2/Water/Sun", "Nitrogen/Soil", "Sugar/Protein"], correct: 1, en: "Light + CO2 + Water.", th: "แสง+คาร์บอนไดออกไซด์+น้ำ" },
+            { q: "Function of cell membrane?", a: ["Controls entry", "Energy", "Sun protection", "Storage"], correct: 0, en: "It regulates traffic.", th: "ควบคุมสารเข้าออกเซลล์" },
+            { q: "Average kinetic energy?", a: ["Heat", "Temperature", "Density", "Mass"], correct: 1, en: "Temperature = kinetic energy.", th: "อุณหภูมิคือพลังงานจลน์เฉลี่ย" },
+            { q: "Heat transfer in fluids?", a: ["Conduction", "Convection", "Radiation", "Expansion"], correct: 1, en: "Convection is in fluids.", th: "การพาความร้อนเกิดในของไหล" },
+            { q: "Heat transfer in vacuum?", a: ["Conduction", "Convection", "Radiation", "Insulation"], correct: 2, en: "Radiation travels through space.", th: "การแผ่รังสีไม่ต้องใช้ตัวกลาง" },
+            { q: "Particles when heated?", a: ["Slower", "Faster", "Stop", "Condense"], correct: 1, en: "Heat increases speed.", th: "ความร้อนทำให้เร็วขึ้น" },
+            { q: "Thermal Equilibrium?", a: ["Same temp", "No heat move", "Melting", "Boiling"], correct: 0, en: "Temps become equal.", th: "อุณหภูมิเท่ากัน" },
+            { q: "Good heat insulator?", a: ["Copper", "Aluminum", "Plastic/Wood", "Iron"], correct: 2, en: "Non-metals are poor conductors.", th: "พลาสติก/ไม้เป็นฉนวน" }
         ];
 
+        // สร้างโครงสร้างครั้งเดียว
         const container = document.getElementById('quizContainer');
         questions.forEach((item, index) => {
-            let qNum = index + 1;
             container.innerHTML += `
-                <div class="question">Q${qNum}. ${item.q}</div>
+                <div class="question" id="qBox${index}">Q${index + 1}. ${item.q}</div>
                 <ol class="options">
-                    ${item.a.map(opt => `<li onclick="this.parentElement.nextElementSibling.style.display='block'">${opt}</li>`).join('')}
+                    ${item.a.map((opt, i) => `<li onclick="check(${index}, ${i})">${opt}</li>`).join('')}
                 </ol>
-                <div id="a${qNum}" class="answer-box">
-                    <strong>Tip/Explanation:</strong> 
-                    <span class="lang-en">${item.en}</span>
-                    <span class="lang-th">${item.th}</span>
+                <div id="ans${index}" class="answer-box">
+                    <span id="res${index}"></span><br>
+                    <strong>Tip/Clue:</strong> <span class="clue" id="clue${index}">${currentLang === 'en' ? item.en : item.th}</span>
                 </div>
             `;
         });
 
+        function check(qIdx, cIdx) {
+            document.getElementById('ans'+qIdx).style.display = 'block';
+            document.getElementById('res'+qIdx).innerHTML = (cIdx === questions[qIdx].correct) 
+                ? (currentLang === 'en' ? "✅ Correct!" : "✅ ถูกต้อง!") 
+                : (currentLang === 'en' ? "❌ Try again!" : "❌ ลองใหม่อีกครั้ง!");
+        }
+
         function toggleLanguage() {
-            const body = document.body;
-            body.classList.toggle('lang-en');
-            body.classList.toggle('lang-th');
+            currentLang = (currentLang === 'en') ? 'th' : 'en';
+            // อัปเดตแค่ข้อความ Clue โดยไม่ทำลาย DOM
+            questions.forEach((item, index) => {
+                document.getElementById('clue' + index).innerText = (currentLang === 'en' ? item.en : item.th);
+            });
         }
     </script>
 </body>
