@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Advanced Math Assessment - Grade 7</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; line-height: 1.6; padding: 20px; background-color: #f4f4f9; }
+        .container { max-width: 900px; margin: auto; background: #fff; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .question { margin-bottom: 25px; padding-bottom: 15px; border-bottom: 1px solid #ddd; }
+        .tip { font-style: italic; color: #555; margin-top: 5px; font-size: 0.9em; }
+        button { background: #2c3e50; color: white; padding: 12px 25px; border: none; cursor: pointer; border-radius: 6px; font-size: 16px; }
+        #results { margin-top: 20px; padding: 20px; background: #e8f4fd; border-radius: 8px; display: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Advanced Math Challenge: Integers & Geometry</h1>
+        <p>Instructions: Solve all 25 questions. Each question has 4 options.</p>
+        <button onclick="toggleLang()">Switch Language / สลับภาษา</button>
+        <div id="quiz-form"></div>
+        <button onclick="submitAssessment()">Submit / ส่งข้อสอบ</button>
+        <div id="results"></div>
+    </div>
+
+    <script>
+        let isEN = true;
+        const questions = [
+            // Integers (13)
+            { qE: "1. Simplify: -15 - (-20) + (-5)", a: ["0", "10", "-10", "5"], c: 0, tE: "Subtracting a negative is adding a positive.", tT: "ลบด้วยจำนวนลบ คือการบวกด้วยจำนวนบวก" },
+            { qE: "2. Calculate: |-10 + 5| - |5 - 10|", a: ["10", "0", "-10", "5"], c: 1, tE: "Absolute values represent distance from zero.", tT: "ค่าสัมบูรณ์คือระยะห่างจากศูนย์" },
+            { qE: "3. If a = -5, b = 10, find: (a - b) * (-2)", a: ["-30", "30", "15", "-15"], c: 1, tE: "Follow the order of operations.", tT: "ทำตามลำดับการดำเนินการ (PEMDAS)" },
+            { qE: "4. What is the product of three negative integers and two positive integers?", a: ["Positive", "Negative", "Zero", "Undefined"], c: 1, tE: "Count the number of negative signs.", tT: "นับจำนวนเครื่องหมายลบ" },
+            { qE: "5. Evaluate: -[(-5) - (-10)]", a: ["-5", "5", "15", "-15"], c: 0, tE: "Solve the innermost brackets first.", tT: "ทำในวงเล็บในสุดก่อน" },
+            { qE: "6. Evaluate: (-2)³ - (-3)²", a: ["-17", "1", "-1", "17"], c: 0, tE: "Calculate exponents before subtraction.", tT: "คำนวณเลขยกกำลังก่อนลบ" },
+            { qE: "7. Find x: x + (-15) = -30", a: ["-45", "15", "-15", "45"], c: 2, tE: "Add 15 to both sides.", tT: "บวก 15 ทั้งสองข้างของสมการ" },
+            { qE: "8. Which is the largest? |-5|, |-3|, -2, -10", a: ["-10", "-2", "|-3|", "|-5|"], c: 3, tE: "Absolute value converts negative to positive.", tT: "ค่าสัมบูรณ์ทำให้เลขลบกลายเป็นบวก" },
+            { qE: "9. Solve: (-100) ÷ (-4) ÷ (-5)", a: ["-5", "5", "25", "-25"], c: 0, tE: "Divide from left to right.", tT: "หารจากซ้ายไปขวา" },
+            { qE: "10. Solve: -5 * (-2 + 3 - 4)", a: ["-15", "15", "5", "-5"], c: 1, tE: "Simplify the expression inside the brackets.", tT: "ทำเลขในวงเล็บก่อนคูณ" },
+            { qE: "11. Additive inverse of (-5 + 2)?", a: ["3", "-3", "7", "-7"], c: 0, tE: "The inverse of x is -x.", tT: "อินเวอร์สการบวกของ x คือ -x" },
+            { qE: "12. Calculate: -10 - (-10) - 10", a: ["-10", "10", "0", "-30"], c: 0, tE: "Treat consecutive minuses as a plus.", tT: "เครื่องหมายลบซ้อนกันให้เปลี่ยนเป็นบวก" },
+            { qE: "13. If a = -2, b = -3, solve: a² + b²", a: ["13", "-13", "5", "-5"], c: 0, tE: "Negative squared becomes positive.", tT: "จำนวนลบยกกำลังสองเป็นบวก" },
+            // Geometry (12)
+            { qE: "14. How many directions does a line extend?", a: ["1", "2", "3", "Unlimited"], c: 1, tE: "Lines are infinite in both directions.", tT: "เส้นตรงไม่มีที่สิ้นสุดในทั้งสองทิศทาง" },
+            { qE: "15. Two rays sharing a common endpoint form:", a: ["Line", "Angle", "Segment", "Plane"], c: 1, tE: "This shared point is called the vertex.", tT: "จุดปลายที่ใช้ร่วมกันเรียกว่าจุดยอด" },
+            { qE: "16. A point in geometry has:", a: ["Length", "Width", "No dimensions", "Area"], c: 2, tE: "A point is a location only.", tT: "จุดมีเพียงตำแหน่ง ไม่มีมิติ" },
+            { qE: "17. What is the intersection of two planes?", a: ["Point", "Line", "Ray", "Segment"], c: 1, tE: "Two planes intersect along a line.", tT: "ระนาบสองระนาบตัดกันเป็นเส้นตรง" },
+            { qE: "18. A part of a line with two endpoints is a:", a: ["Ray", "Line", "Line segment", "Angle"], c: 2, tE: "A segment is finite.", tT: "ส่วนของเส้นตรงมีความยาวจำกัด" },
+            { qE: "19. Points that lie on the same line are:", a: ["Collinear", "Coplanar", "Parallel", "Intersecting"], c: 0, tE: "Collinear = Co (together) + linear (line).", tT: "จุดที่อยู่บนเส้นตรงเดียวกันเรียกว่าจุดร่วมเส้นตรง" },
+            { qE: "20. How many points are needed to define a unique line?", a: ["1", "2", "3", "Infinite"], c: 1, tE: "Two points determine a line.", tT: "จุดสองจุดกำหนดเส้นตรงได้หนึ่งเส้น" },
+            { qE: "21. An angle measuring 90 degrees is a:", a: ["Acute", "Obtuse", "Right", "Reflex"], c: 2, tE: "This is a fundamental definition.", tT: "มุมที่มีขนาด 90 องศาเรียกว่ามุมฉาก" },
+            { qE: "22. Points that lie on the same plane are:", a: ["Collinear", "Coplanar", "Parallel", "Skew"], c: 1, tE: "Coplanar = Co (together) + planar (plane).", tT: "จุดที่อยู่บนระนาบเดียวกันเรียกว่าจุดร่วมระนาบ" },
+            { qE: "23. A ray has:", a: ["Two endpoints", "No endpoints", "One endpoint", "Infinite endpoints"], c: 2, tE: "It starts but never ends.", tT: "รังสีมีจุดเริ่มต้นแต่ไม่มีจุดสิ้นสุด" },
+            { qE: "24. Angles that sum to 180 degrees are:", a: ["Complementary", "Supplementary", "Vertical", "Acute"], c: 1, tE: "Supplementary = Straight line.", tT: "มุมสองมุมรวมกันได้ 180 องศาเรียกว่ามุมประกอบสองมุมฉาก" },
+            { qE: "25. Which set of all points forms a flat surface?", a: ["Line", "Space", "Plane", "Ray"], c: 2, tE: "A plane extends infinitely in all directions.", tT: "ระนาบคือพื้นผิวที่แบนราบและไม่มีที่สิ้นสุด" }
+        ];
+
+        function renderQuiz() {
+            const container = document.getElementById('quiz-form');
+            container.innerHTML = questions.map((q, idx) => `
+                <div class="question">
+                    <p>${idx + 1}. ${isEN ? q.qE : q.qE.replace(/^\d+\./, (m) => m + " โจทย์:")}</p>
+                    ${q.a.map((opt, optIdx) => `
+                        <input type="radio" name="q${idx}" value="${optIdx}"> ${opt}<br>
+                    `).join('')}
+                    <p class="tip">${isEN ? q.tE : q.tT}</p>
+                </div>
+            `).join('');
+        }
+
+        function toggleLang() {
+            isEN = !isEN;
+            document.querySelector('h1').innerText = isEN ? "Advanced Math Challenge: Integers & Geometry" : "แบบทดสอบคณิตศาสตร์ขั้นสูง: จำนวนเต็มและเรขาคณิต";
+            renderQuiz();
+        }
+
+        function submitAssessment() {
+            alert("Assessment submitted. Results: Analysis complete.");
+            document.getElementById('results').style.display = 'block';
+            document.getElementById('results').innerHTML = "Assessment complete. Remember: Practice sign rules for integers and visualize geometric definitions!";
+        }
+
+        renderQuiz();
+    </script>
+</body>
+</html>
