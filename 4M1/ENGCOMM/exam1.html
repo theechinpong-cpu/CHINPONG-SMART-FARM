@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>English Mastery Quiz by Phra Jom Klao Tutor</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&family=Poppins:wght@400;600&display=swap');
+        body { font-family: 'Kanit', 'Poppins', sans-serif; background-color: #f0f4f8; }
+        .correct { background-color: #d1fae5; border-color: #10b981; color: #065f46; }
+        .incorrect { background-color: #fee2e2; border-color: #ef4444; color: #991b1b; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <div class="max-w-4xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden">
+        <!-- Header -->
+        <div class="bg-blue-600 p-6 text-white flex justify-between items-center">
+            <div>
+                <h1 class="text-2xl font-bold">English Mastery Quiz</h1>
+                <p class="text-sm opacity-90">โดย พระจอมเกล้าติวเตอร์</p>
+            </div>
+            <button id="langToggle" class="bg-white text-blue-600 px-4 py-2 rounded-lg font-bold hover:bg-blue-50 transition">
+                Switch to English
+            </button>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="w-full bg-gray-200 h-2">
+            <div id="progressBar" class="bg-yellow-400 h-2 transition-all duration-300" style="width: 0%"></div>
+        </div>
+
+        <!-- Quiz Content -->
+        <div id="quizContainer" class="p-6">
+            <div id="questionSection">
+                <div class="flex justify-between mb-4">
+                    <span id="categoryLabel" class="text-blue-600 font-semibold bg-blue-50 px-3 py-1 rounded-full text-sm"></span>
+                    <span id="questionCounter" class="text-gray-500"></span>
+                </div>
+                <h2 id="questionText" class="text-xl font-semibold mb-6"></h2>
+                
+                <div id="optionsContainer" class="space-y-3">
+                    <!-- Options injected here -->
+                </div>
+
+                <div id="feedbackArea" class="mt-6 hidden border-2 p-4 rounded-xl">
+                    <p id="feedbackClue" class="font-bold mb-1"></p>
+                    <p id="feedbackDetail" class="text-sm"></p>
+                </div>
+
+                <button id="nextBtn" class="mt-8 w-full bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 transition hidden">
+                    Next Question / ข้อถัดไป
+                </button>
+            </div>
+
+            <!-- Result Section -->
+            <div id="resultSection" class="hidden text-center py-10">
+                <h2 class="text-3xl font-bold mb-4" id="resultTitle">Quiz Completed!</h2>
+                <div class="text-6xl font-bold text-blue-600 mb-6" id="finalScore">0/25</div>
+                
+                <div id="analysisBox" class="text-left bg-gray-50 p-6 rounded-xl mb-8 space-y-4">
+                    <!-- Category breakdown here -->
+                </div>
+
+                <button onclick="location.reload()" class="bg-blue-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-blue-700 transition">
+                    Restart Quiz / เริ่มใหม่
+                </button>
+            </div>
+        </div>
+        
+        <div class="p-4 border-t text-center text-gray-400 text-xs italic">
+            เขียนโดย พระจอมเกล้าติวเตอร์
+        </div>
+    </div>
+
+    <script>
+        const quizData = [
+            // PART 1: Intonation & Stress (30% -> 8 questions)
+            {
+                id: 1,
+                category: "Intonation",
+                q: { th: "คำถามประเภท Wh-questions (เช่น What is your name?) ควรใช้ระดับเสียงแบบใด?", en: "What intonation should be used for Wh-questions (e.g., What is your name?)?" },
+                options: [
+                    { th: "เสียงต่ำลง (Falling Tone)", en: "Falling Tone", isCorrect: true, detail: { th: "ใช้แสดงความมั่นใจและจบการพูด", en: "Used to show confidence and finished speaking." } },
+                    { th: "เสียงสูงขึ้น (Rising Tone)", en: "Rising Tone", isCorrect: false, detail: { th: "เสียงสูงใช้กับ Yes/No questions เท่านั้น", en: "Rising tone is typically for Yes/No questions." } },
+                    { th: "เสียงต่ำแล้วสูงขึ้น (Fall-Rise)", en: "Fall-Rise Tone", isCorrect: false, detail: { th: "ใช้แสดงความลังเล ไม่ใช่คำถาม Wh-", en: "Used for hesitation, not Wh-questions." } },
+                    { th: "เสียงราบเรียบ (Flat Tone)", en: "Flat Tone", isCorrect: false, detail: { th: "จะทำให้ฟังดูน่าเบื่อและไม่เป็นธรรมชาติ", en: "Sounds bored and unnatural." } }
+                ],
+                hint: { th: "ใช้โทนเดียวกับประโยคบอกเล่า", en: "Use the same tone as statements." }
+            },
+            {
+                id: 2,
+                category: "Intonation",
+                q: { th: "หากคุณต้องการแสดงความประหลาดใจ (Surprise) เช่นคำว่า 'Really?' ควรใช้เสียงแบบใด?", en: "To show surprise, e.g., 'Really?', which tone should you use?" },
+                options: [
+                    { th: "Falling Tone", en: "Falling Tone", isCorrect: false, detail: { th: "เสียงต่ำใช้กับความมั่นใจ", en: "Falling tone shows certainty." } },
+                    { th: "Rising Tone", en: "Rising Tone", isCorrect: true, detail: { th: "เสียงสูงแสดงถึงความสงสัยหรือประหลาดใจ", en: "Rising tone indicates doubt or surprise." } },
+                    { th: "Flat Tone", en: "Flat Tone", isCorrect: false, detail: { th: "ฟังดูเหมือนไม่สนใจ", en: "Sounds uninterested." } },
+                    { th: "Whisper", en: "Whisper", isCorrect: false, detail: { th: "การกระซิบไม่ใช่โทนเสียงสื่อสารหลัก", en: "Whispering is not a primary intonation." } }
+                ],
+                hint: { th: "เสียงต้องเหินขึ้น", en: "Pitch should go up." }
+            },
+            {
+                id: 3,
+                category: "Intonation",
+                q: { th: "ประโยค 'The food was good... (but the service was bad)' ควรใช้เสียงแบบใดที่ส่วนแรก?", en: "In 'The food was good... (but service was bad)', what tone is used for 'good'?" },
+                options: [
+                    { th: "Falling", en: "Falling", isCorrect: false, detail: { th: "ใช้เมื่อไม่มี 'แต่' ตามหลัง", en: "Used if there's no 'but' following." } },
+                    { th: "Rising", en: "Rising", isCorrect: false, detail: { th: "ใช้กับคำถาม", en: "Used for questions." } },
+                    { th: "Fall-Rise", en: "Fall-Rise", isCorrect: true, detail: { th: "ใช้แสดงความเห็นด้วยเพียงบางส่วน หรือมี 'แต่' ซ่อนอยู่", en: "Used for partial agreement or hidden 'but'." } },
+                    { th: "High Pitch", en: "High Pitch", isCorrect: false, detail: { th: "ไม่ใช่รูปแบบมาตรฐานในกรณีนี้", en: "Not the standard pattern here." } }
+                ],
+                hint: { th: "แสดงความลังเลหรือบอกไม่หมด", en: "Shows hesitation or incomplete information." }
+            },
+            {
+                id: 4,
+                category: "Stress",
+                q: { th: "ในประโยค 'I lost my PEN.' ทำไมต้องเน้นเสียงที่คำว่า PEN?", en: "In 'I lost my PEN.', why is 'PEN' stressed?" },
+                options: [
+                    { th: "เพราะเป็นข้อมูลเก่า", en: "Because it is old information", isCorrect: false, detail: { th: "ข้อมูลเก่าต้องออกเสียงเบา", en: "Old info should be spoken more quietly." } },
+                    { th: "เพราะเป็นข้อมูลใหม่", en: "Because it is new information", isCorrect: true, detail: { th: "ข้อมูลใหม่ต้องเน้นเสียงหนัก", en: "New info must receive the main stress." } },
+                    { th: "เพราะเป็นคำสรรพนาม", en: "Because it is a pronoun", isCorrect: false, detail: { th: "PEN เป็นคำนาม", en: "PEN is a noun." } },
+                    { th: "เพราะเป็นประโยคคำถาม", en: "Because it is a question", isCorrect: false, detail: { th: "นี่คือประโยคบอกเล่า", en: "This is a statement." } }
+                ],
+                hint: { th: "สิ่งที่เราเพิ่งบอกคนฟังครั้งแรก", en: "Something we tell the listener for the first time." }
+            },
+            {
+                id: 5,
+                category: "Intonation",
+                q: { th: "การกล่าวทักทาย 'Good morning' แบบเป็นกันเองและอบอุ่นควรใช้โทนเสียงใด?", en: "To sound friendly and warm when saying 'Good morning', use which tone?" },
+                options: [
+                    { th: "Falling Tone", en: "Falling Tone", isCorrect: false, detail: { th: "จะฟังดูเป็นทางการหรือทำตามหน้าที่", en: "Sounds formal or routine." } },
+                    { th: "Rising Tone", en: "Rising Tone", isCorrect: true, detail: { th: "จะฟังดูเป็นมิตรและกระตือรือร้นกว่า", en: "Sounds more friendly and enthusiastic." } },
+                    { th: "Flat Tone", en: "Flat Tone", isCorrect: false, detail: { th: "ฟังดูเบื่อหน่าย", en: "Sounds bored." } },
+                    { th: "Low Pitch", en: "Low Pitch", isCorrect: false, detail: { th: "คล้ายกับ Falling Tone", en: "Similar to Falling Tone." } }
+                ],
+                hint: { th: "เสียงสูงมักแสดงความเป็นมิตร", en: "Higher pitch often shows friendliness." }
+            },
+            {
+                id: 6,
+                category: "Intonation",
+                q: { th: "เมื่อพูดรายการสิ่งของ (Lists) คำสุดท้ายของรายการต้องใช้โทนเสียงใด?", en: "When listing items, what tone should the final item have?" },
+                options: [
+                    { th: "Rising Tone", en: "Rising Tone", isCorrect: false, detail: { th: "ใช้กับลำดับก่อนหน้าเพื่อบอกว่ายังไม่จบ", en: "Used for previous items to show it continues." } },
+                    { th: "Falling Tone", en: "Falling Tone", isCorrect: true, detail: { th: "ใช้เพื่อส่งสัญญาณว่าจบรายการแล้ว", en: "Signals the end of the list." } },
+                    { th: "Fall-Rise Tone", en: "Fall-Rise Tone", isCorrect: false, detail: { th: "ทำให้ผู้ฟังรอฟังต่อ", en: "Makes the listener wait for more." } },
+                    { th: "No tone change", en: "No tone change", isCorrect: false, detail: { th: "จะฟังดูไม่เป็นธรรมชาติ", en: "Sounds unnatural." } }
+                ],
+                hint: { th: "ต้องตัดจบรายการ", en: "Need to cut off the list." }
+            },
+            {
+                id: 7,
+                category: "Stress",
+                q: { th: "A: Is it Tuesday? B: 'No, it's WEDNESDAY!' การเน้นที่ WEDNESDAY เพื่ออะไร?", en: "A: Is it Tuesday? B: 'No, it's WEDNESDAY!' Why stress WEDNESDAY?" },
+                options: [
+                    { th: "เน้นเพื่อความสุภาพ", en: "Stress for politeness", isCorrect: false, detail: { th: "การเน้นหนักมักใช้แก้ไขข้อมูล", en: "Strong stress is usually for correction." } },
+                    { th: "เน้นเพื่อแก้ไขข้อมูลที่ผิด", en: "Stress for correction", isCorrect: true, detail: { th: "ใช้เพื่อย้ายจุดเน้นไปยังคำที่ถูกต้อง", en: "Shifts stress to the word that corrects the mistake." } },
+                    { th: "เน้นเพราะเป็นวันสำคัญ", en: "Stress because it is a special day", isCorrect: false, detail: { th: "ไม่เกี่ยวกับการเน้นเสียงทางภาษาศาสตร์", en: "Irrelevant to linguistic stress." } },
+                    { th: "เน้นเพื่อให้เสียงดังขึ้นเฉยๆ", en: "Just to be louder", isCorrect: false, detail: { th: "การเน้นมีความหมายเชิงโครงสร้าง", en: "Stress has structural meaning." } }
+                ],
+                hint: { th: "เมื่อเพื่อนพูดผิด เราต้อง...", en: "When a friend is wrong, we need to..." }
+            },
+            {
+                id: 8,
+                category: "Intonation",
+                q: { th: "Question Tag 'isn't it?' ถ้าใช้เสียงสูง (Rising) หมายถึงอะไร?", en: "What does a rising tone on 'isn't it?' mean?" },
+                options: [
+                    { th: "ผู้พูดรู้คำตอบอยู่แล้ว", en: "Speaker already knows the answer", isCorrect: false, detail: { th: "นั่นคือโทนเสียงต่ำ", en: "That would be a falling tone." } },
+                    { th: "ผู้พูดไม่รู้จริงๆ และต้องการคำตอบ", en: "Speaker truly doesn't know and wants an answer", isCorrect: true, detail: { th: "เสียงสูงคือการถามเพื่อขอข้อมูล", en: "Rising tone is a genuine question for info." } },
+                    { th: "ผู้พูดกำลังออกคำสั่ง", en: "Speaker is giving a command", isCorrect: false, detail: { th: "คำสั่งใช้โทนต่ำ", en: "Commands use falling tones." } },
+                    { th: "ผู้พูดกำลังประชดประชัน", en: "Speaker is being sarcastic", isCorrect: false, detail: { th: "ไม่ใช่ความหมายหลักของเสียงสูงใน Tag", en: "Not the primary meaning here." } }
+                ],
+                hint: { th: "ถามเพราะไม่ชัวร์", en: "Asking because not sure." }
+            },
+
+            // PART 2: Travel English (40% -> 10 questions)
+            {
+                id: 9,
+                category: "Travel",
+                q: { th: "คำใดหมายถึง 'น้ำหนักกระเป๋าที่เกินกำหนด'?", en: "Which term means 'weight exceeding the allowance'?" },
+                options: [
+                    { th: "Baggage allowance", en: "Baggage allowance", isCorrect: false, detail: { th: "นี่คือน้ำหนักที่อนุญาต", en: "This is the permitted weight." } },
+                    { th: "Excess baggage charge", en: "Excess baggage charge", isCorrect: true, detail: { th: "Excess แปลว่าส่วนเกิน", en: "Excess means extra/more than limit." } },
+                    { th: "Hand luggage", en: "Hand luggage", isCorrect: false, detail: { th: "คือกระเป๋าถือขึ้นเครื่อง", en: "Luggage carried onto the plane." } },
+                    { th: "Luggage belt", en: "Luggage belt", isCorrect: false, detail: { th: "คือสายพานรับกระเป๋า", en: "The conveyor belt for bags." } }
+                ],
+                hint: { th: "คำว่า 'เกิน' ในภาษาอังกฤษคือ...", en: "The word for 'more than limit' is..." }
+            },
+            {
+                id: 10,
+                category: "Travel",
+                q: { th: "ที่เก็บของเหนือศีรษะบนเครื่องบินเรียกว่าอะไร?", en: "What is the storage space above seats on a plane called?" },
+                options: [
+                    { th: "Suitcase", en: "Suitcase", isCorrect: false, detail: { th: "คือกระเป๋าเดินทาง", en: "A traveling bag." } },
+                    { th: "Overhead locker", en: "Overhead locker", isCorrect: true, detail: { th: "Overhead แปลว่าเหนือหัว", en: "Overhead means above the head." } },
+                    { th: "Safety belt", en: "Safety belt", isCorrect: false, detail: { th: "คือเข็มขัดนิรภัย", en: "Seat belt." } },
+                    { th: "Aisle", en: "Aisle", isCorrect: false, detail: { th: "คือทางเดิน", en: "The walkway between seats." } }
+                ],
+                hint: { th: "ขึ้นต้นด้วย Over...", en: "Starts with Over..." }
+            },
+            {
+                id: 11,
+                category: "Travel",
+                q: { th: "ถ้าคุณต้องการ 'โทรปลุก' จากโรงแรม ต้องขออะไร?", en: "To get a phone call to wake you up at a hotel, ask for a..." },
+                options: [
+                    { th: "Room service", en: "Room service", isCorrect: false, detail: { th: "คือบริการส่งอาหารที่ห้อง", en: "Food delivery to your room." } },
+                    { th: "Wake-up call", en: "Wake-up call", isCorrect: true, detail: { th: "ใช้ขอให้เจ้าหน้าที่โทรปลุก", en: "Request for staff to call and wake you." } },
+                    { th: "Check-out", en: "Check-out", isCorrect: false, detail: { th: "คือการแจ้งออกจากโรงแรม", en: "Leaving and paying for the hotel." } },
+                    { th: "Reception", en: "Reception", isCorrect: false, detail: { th: "คือแผนกต้อนรับ", en: "The front desk area." } }
+                ],
+                hint: { th: "Wake up แปลว่าอะไร?", en: "What does 'Wake up' mean?" }
+            },
+            {
+                id: 12,
+                category: "Travel",
+                q: { th: "ที่ร้านกาแฟ 'Skimmed milk' คือนมประเภทใด?", en: "In a coffee shop, what is 'Skimmed milk'?" },
+                options: [
+                    { th: "นมสดปกติ", en: "Whole milk", isCorrect: false, detail: { th: "นี่คือ Whole milk", en: "This is whole milk." } },
+                    { th: "นมขาดมันเนย", en: "Almost no fat milk", isCorrect: true, detail: { th: "Skimmed คือนมที่แยกไขมันออก", en: "Milk with the cream/fat removed." } },
+                    { th: "นมผสมครีม", en: "Milk with cream", isCorrect: false, detail: { th: "มักเรียกว่า Half and half", en: "Often called half and half." } },
+                    { th: "นมถั่วเหลือง", en: "Soy milk", isCorrect: false, detail: { th: "ไม่ใช่ประเภทนมวัว", en: "Not a cow milk type." } }
+                ],
+                hint: { th: "สำหรับคนกลัวอ้วน", en: "For those avoiding fat." }
+            },
+            {
+                id: 13,
+                category: "Travel",
+                q: { th: "คำถาม 'Is anyone sitting here?' มีความหมายว่าอย่างไร?", en: "What does 'Is anyone sitting here?' mean?" },
+                options: [
+                    { th: "ขอนั่งด้วยได้ไหม", en: "Can I sit here?", isCorrect: false, detail: { th: "เป็นความหมายแฝง แต่คำแปลตรงๆ คือถามหาคนจอง", en: "It's the intent, but the direct meaning is asking about availability." } },
+                    { th: "มีใครนั่งตรงนี้ไหม", en: "Is there someone in this seat?", isCorrect: true, detail: { th: "ถามเพื่อเช็คว่าที่ว่างหรือไม่", en: "Checking if the seat is occupied." } },
+                    { th: "คุณจะนั่งตรงนี้ไหม", en: "Will you sit here?", isCorrect: false, detail: { th: "ถามถึงอนาคต ไม่ใช่สถานะปัจจุบัน", en: "Asks about future, not current status." } },
+                    { th: "ที่นี่ที่ไหน", en: "Where is this?", isCorrect: false, detail: { th: "ไม่เกี่ยวกับคำศัพท์", en: "Irrelevant translation." } }
+                ],
+                hint: { th: "เช็คว่าเก้าอี้ว่างไหม", en: "Checking if the chair is free." }
+            },
+            {
+                id: 14,
+                category: "Travel",
+                q: { th: "ถ้าพนักงานถามว่า 'To take away or have here?' หมายถึงอะไร?", en: "What does 'To take away or have here?' mean?" },
+                options: [
+                    { th: "ใส่ถุงหรือทานที่นี่", en: "In a bag or eat at the shop", isCorrect: true, detail: { th: "Take away คือการนำกลับ", en: "Take away means to carry out." } },
+                    { th: "จ่ายเงินหรือค้างไว้ก่อน", en: "Pay now or later", isCorrect: false, detail: { th: "ไม่เกี่ยวกับการสั่งอาหาร", en: "Not related to food orders." } },
+                    { th: "หวานน้อยหรือหวานปกติ", en: "Less sugar or normal", isCorrect: false, detail: { th: "เป็นคำถามเรื่องรสชาติ", en: "Question about taste." } },
+                    { th: "ร้อนหรือเย็น", en: "Hot or cold", isCorrect: false, detail: { th: "คำถามเรื่องอุณหภูมิ", en: "Temperature question." } }
+                ],
+                hint: { th: "พกออกไปข้างนอก", en: "Carrying it outside." }
+            },
+            {
+                id: 15,
+                category: "Travel",
+                q: { th: "เมื่อเครื่องบินตกหลุมอากาศ (Turbulence) กัปตันจะทำอะไร?", en: "During turbulence, what will the captain do?" },
+                options: [
+                    { th: "เปิดสัญลักษณ์รัดเข็มขัด", en: "Turn on the Fasten Seat Belt sign", isCorrect: true, detail: { th: "เพื่อความปลอดภัยของผู้โดยสาร", en: "For passenger safety." } },
+                    { th: "สั่งอาหาร", en: "Order food", isCorrect: false, detail: { th: "ไม่ใช่ช่วงเวลาที่เหมาะสม", en: "Not the right time." } },
+                    { th: "เปิดประตูเครื่องบิน", en: "Open the door", isCorrect: false, detail: { th: "อันตรายมาก!", en: "Very dangerous!" } },
+                    { th: "ดับเครื่องยนต์", en: "Turn off the engine", isCorrect: false, detail: { th: "เครื่องจะตก!", en: "The plane would fall!" } }
+                ],
+                hint: { th: "ต้องทำเพื่อความปลอดภัย", en: "Done for safety." }
+            },
+            {
+                id: 16,
+                category: "Travel",
+                q: { th: "คำว่า 'Receptionist' ทำงานอยู่ที่ใด?", en: "Where does a 'Receptionist' work?" },
+                options: [
+                    { th: "บนเครื่องบิน", en: "On a plane", isCorrect: false, detail: { th: "เรียกว่า Flight Attendant", en: "That's a flight attendant." } },
+                    { th: "หน้าเคาน์เตอร์โรงแรม", en: "At the hotel front desk", isCorrect: true, detail: { th: "เป็นผู้คอยต้อนรับแขก", en: "Welcomes and assists guests." } },
+                    { th: "ในครัว", en: "In the kitchen", isCorrect: false, detail: { th: "เรียกว่า Chef", en: "That's a chef." } },
+                    { th: "บนถนน", en: "On the street", isCorrect: false, detail: { th: "ไม่ใช่ที่ทำงานหลัก", en: "Not their workplace." } }
+                ],
+                hint: { th: "คอยเช็คอินให้เรา", en: "Helps you check in." }
+            },
+            {
+                id: 17,
+                category: "Travel",
+                q: { th: "คำใดคือ 'ห้องพักที่หรูที่สุดในโรงแรม'?", en: "Which is the 'most luxurious room in a hotel'?" },
+                options: [
+                    { th: "Single room", en: "Single room", isCorrect: false, detail: { th: "ห้องเตียงเดี่ยวขนาดเล็ก", en: "Small room for one person." } },
+                    { th: "Suite", en: "Suite", isCorrect: true, detail: { th: "ห้องสวีทที่มีสิ่งอำนวยความสะดวกครบ", en: "Top-tier room with amenities." } },
+                    { th: "Twin room", en: "Twin room", isCorrect: false, detail: { th: "ห้องเตียงคู่", en: "Room with two beds." } },
+                    { th: "Lobby", en: "Lobby", isCorrect: false, detail: { th: "เป็นพื้นที่ส่วนกลาง ไม่ใช่ห้องพัก", en: "Common area, not a room." } }
+                ],
+                hint: { th: "ออกเสียงเหมือนคำว่า Sweet", en: "Pronounced like 'Sweet'." }
+            },
+            {
+                id: 18,
+                category: "Travel",
+                q: { th: "หากต้องการ 'น้ำย่อยกาแฟที่แรงมาก' ควรสั่งอะไร?", en: "If you want a 'very strong shot of coffee', order..." },
+                options: [
+                    { th: "Americano", en: "Americano", isCorrect: false, detail: { th: "คือเอสเปรสโซ่ผสมน้ำ", en: "Espresso diluted with water." } },
+                    { th: "Latte", en: "Latte", isCorrect: false, detail: { th: "คือกาแฟผสมนมเยอะ", en: "Coffee with lots of milk." } },
+                    { th: "Espresso", en: "Espresso", isCorrect: true, detail: { th: "คือกาแฟเข้มข้นเพียวๆ", en: "Pure, concentrated coffee." } },
+                    { th: "Decaf", en: "Decaf", isCorrect: false, detail: { th: "คือกาแฟที่ไม่มีคาเฟอีน", en: "Coffee with no caffeine." } }
+                ],
+                hint: { th: "ช็อตเล็กๆ แต่ตื่นเลย", en: "Small shot, very strong." }
+            },
+
+            // PART 3: Translation & Structure (30% -> 7 questions)
+            {
+                id: 19,
+                category: "Structure",
+                q: { th: "แปลประโยค: 'เขามักจะเดินไปโรงเรียนในตอนเช้า'", en: "Translate: 'He usually walks to school in the morning'" },
+                options: [
+                    { th: "He usually walk to school.", en: "He usually walk to school.", isCorrect: false, detail: { th: "ลืมเติม s ที่กริยา (ประธานเอกพจน์)", en: "Forgot 's' on the verb for singular subject." } },
+                    { th: "He usually walks to school in the morning.", en: "He usually walks to school in the morning.", isCorrect: true, detail: { th: "โครงสร้าง Present Simple ถูกต้อง", en: "Correct Present Simple structure." } },
+                    { th: "He is walk to school.", en: "He is walk to school.", isCorrect: false, detail: { th: "is ห้ามตามด้วยกริยาช่อง 1 ตรงๆ", en: "'is' cannot be followed by base verb." } },
+                    { th: "He walked usually to school.", en: "He walked usually to school.", isCorrect: false, detail: { th: "ตำแหน่งคำขยายผิด", en: "Incorrect adverb placement." } }
+                ],
+                hint: { th: "ประธาน He กริยาต้องมีอะไร?", en: "Subject 'He' needs what on the verb?" }
+            },
+            {
+                id: 20,
+                category: "Structure",
+                q: { th: "ประโยค 'Yesterday they went to school.' คำว่า went มาจากกริยาช่องใด?", en: "In 'Yesterday they went to school.', what is the base form of 'went'?" },
+                options: [
+                    { th: "Go", en: "Go", isCorrect: true, detail: { th: "went เป็นช่อง 2 ของ go", en: "went is the past tense of go." } },
+                    { th: "Gone", en: "Gone", isCorrect: false, detail: { th: "นี่คือช่อง 3", en: "This is the past participle." } },
+                    { th: "Going", en: "Going", isCorrect: false, detail: { th: "นี่คือรูปเติม -ing", en: "This is the -ing form." } },
+                    { th: "Goes", en: "Goes", isCorrect: false, detail: { th: "นี่คือช่อง 1 เติม es", en: "This is the singular present form." } }
+                ],
+                hint: { th: "รูปปัจจุบันของคำว่า ไป", en: "The present form of 'to travel to'." }
+            },
+            {
+                id: 21,
+                category: "Structure",
+                q: { th: "แปลประโยค: 'เธอกำลังทำการบ้านอยู่ตอนนี้'", en: "Translate: 'She is doing homework right now'" },
+                options: [
+                    { th: "She does homework now.", en: "She does homework now.", isCorrect: false, detail: { th: "นี่คือบอกนิสัย ไม่ใช่สิ่งที่กำลังทำ", en: "This shows habit, not current action." } },
+                    { th: "She is doing homework right now.", en: "She is doing homework right now.", isCorrect: true, detail: { th: "ใช้ Present Continuous สำหรับเหตุการณ์ขณะนี้", en: "Uses Present Continuous for now." } },
+                    { th: "She doing homework.", en: "She doing homework.", isCorrect: false, detail: { th: "ขาด Verb to be (is)", en: "Missing Verb to be (is)." } },
+                    { th: "She homework now.", en: "She homework now.", isCorrect: false, detail: { th: "ไม่มีคำกริยา", en: "No verb in the sentence." } }
+                ],
+                hint: { th: "is/am/are + v.ing", en: "is/am/are + v.ing" }
+            },
+            {
+                id: 22,
+                category: "Structure",
+                q: { th: "การวางตำแหน่ง Adverb: 'คุณแม่ทำอาหารเย็นอย่างรวดเร็ว'", en: "Adverb placement: 'Mother cooks dinner quickly'" },
+                options: [
+                    { th: "Mother quickly dinner cooks.", en: "Mother quickly dinner cooks.", isCorrect: false, detail: { th: "วางกริยาไว้หลังสุดไม่ได้ในภาษาอังกฤษ", en: "Cannot put verb at the end." } },
+                    { th: "Mother cooks dinner quickly.", en: "Mother cooks dinner quickly.", isCorrect: true, detail: { th: "Adverb วางท้ายประโยคเพื่อขยายกริยา", en: "Adverb at the end modifies the verb." } },
+                    { th: "Mother cooks quickly dinner.", en: "Mother cooks quickly dinner.", isCorrect: false, detail: { th: "ไม่ควรวางคั่นระหว่างกริยากับกรรม", en: "Avoid splitting verb and object." } },
+                    { th: "Quickly mother dinner cooks.", en: "Quickly mother dinner cooks.", isCorrect: false, detail: { th: "โครงสร้างผิดเพี้ยน", en: "Broken structure." } }
+                ],
+                hint: { th: "ใคร-ทำอะไร-อย่างไร", en: "Who-Does what-How" }
+            },
+            {
+                id: 23,
+                category: "Structure",
+                q: { th: "ประโยคปฏิเสธ: 'ฉันไม่ดื่มนมทุกวัน'", en: "Negative sentence: 'I don't drink milk every day'" },
+                options: [
+                    { th: "I not drink milk.", en: "I not drink milk.", isCorrect: false, detail: { th: "ต้องมีกริยาช่วย do เข้ามาช่วย", en: "Needs auxiliary verb 'do'." } },
+                    { th: "I don't drink milk every day.", en: "I don't drink milk every day.", isCorrect: true, detail: { th: "ใช้ do not (don't) ถูกต้องตามประธาน I", en: "Uses 'don't' correctly for subject 'I'." } },
+                    { th: "I doesn't drink milk.", en: "I doesn't drink milk.", isCorrect: false, detail: { th: "doesn't ใช้กับ He/She/It", en: "'doesn't' is for He/She/It." } },
+                    { th: "I no drink milk.", en: "I no drink milk.", isCorrect: false, detail: { th: "ภาษาอังกฤษแบบไม่ถูกต้อง", en: "Incorrect English." } }
+                ],
+                hint: { th: "ใช้กริยาช่วย do", en: "Use auxiliary verb 'do'." }
+            },
+            {
+                id: 24,
+                category: "Structure",
+                q: { th: "แปลประโยค: 'สุนัขตัวสีขาวกำลังวิ่งอยู่ในสวน'", en: "Translate: 'The white dog is running in the garden'" },
+                options: [
+                    { th: "Dog color white is running.", en: "Dog color white is running.", isCorrect: false, detail: { th: "ภาษาไทยแปลตรงตัวเกินไป", en: "Too literal translation from Thai." } },
+                    { th: "The white dog is running in the garden.", en: "The white dog is running in the garden.", isCorrect: true, detail: { th: "การวาง Adj (white) หน้าคำนามถูกต้อง", en: "Adj (white) placed correctly before noun." } },
+                    { th: "White dog run in garden.", en: "White dog run in garden.", isCorrect: false, detail: { th: "ขาด is และ ing", en: "Missing 'is' and '-ing'." } },
+                    { th: "The dog white running garden.", en: "The dog white running garden.", isCorrect: false, detail: { th: "วางตำแหน่งคำผิด", en: "Incorrect word order." } }
+                ],
+                hint: { th: "สีต้องอยู่หน้าคำนาม", en: "Color comes before the noun." }
+            },
+            {
+                id: 25,
+                category: "Structure",
+                q: { th: "ประโยคคำถาม: 'เธอเล่นเปียโนทุกวันอาทิตย์ใช่ไหม'", en: "Question: 'Does she play the piano every Sunday?'" },
+                options: [
+                    { th: "Do she play the piano?", en: "Do she play the piano?", isCorrect: false, detail: { th: "She ต้องใช้กับ Does", en: "'She' requires 'Does'." } },
+                    { th: "Does she play the piano every Sunday?", en: "Does she play the piano every Sunday?", isCorrect: true, detail: { th: "การใช้ Does ขึ้นต้นประโยคคำถามถูกต้อง", en: "Correct use of 'Does' for a question." } },
+                    { th: "Does she plays the piano?", en: "Does she plays the piano?", isCorrect: false, detail: { th: "เมื่อมี Does กริยาห้ามเติม s", en: "After 'Does', verb must be base form." } },
+                    { th: "She play piano Sunday?", en: "She play piano Sunday?", isCorrect: false, detail: { th: "ขาดกริยาช่วย", en: "Missing auxiliary verb." } }
+                ],
+                hint: { th: "ประธาน She ใช้ Do หรือ Does?", en: "Does subject 'She' take 'Do' or 'Does'?" }
+            }
+        ];
+
+        let currentQuestion = 0;
+        let score = 0;
+        let categoryScores = { "Intonation": 0, "Travel": 0, "Structure": 0 };
+        let categoryTotals = { "Intonation": 8, "Travel": 10, "Structure": 7 };
+        let isEnglish = false;
+
+        const langBtn = document.getElementById('langToggle');
+        const nextBtn = document.getElementById('nextBtn');
+        const quizContainer = document.getElementById('quizContainer');
+
+        function updateLang() {
+            langBtn.innerText = isEnglish ? "สลับเป็นภาษาไทย" : "Switch to English";
+            renderQuestion();
+        }
+
+        langBtn.onclick = () => {
+            isEnglish = !isEnglish;
+            updateLang();
+        };
+
+        function renderQuestion() {
+            const data = quizData[currentQuestion];
+            document.getElementById('categoryLabel').innerText = data.category;
+            document.getElementById('questionCounter').innerText = `${currentQuestion + 1} / 25`;
+            document.getElementById('questionText').innerText = isEnglish ? data.q.en : data.q.th;
+            document.getElementById('progressBar').style.width = `${((currentQuestion) / 25) * 100}%`;
+
+            const optionsBox = document.getElementById('optionsContainer');
+            optionsBox.innerHTML = '';
+            data.options.forEach((opt, index) => {
+                const btn = document.createElement('button');
+                btn.className = "w-full text-left p-4 rounded-xl border-2 border-gray-100 hover:border-blue-300 hover:bg-blue-50 transition font-medium";
+                btn.innerText = isEnglish ? opt.en : opt.th;
+                btn.onclick = () => handleAnswer(index, btn);
+                optionsBox.appendChild(btn);
+            });
+
+            document.getElementById('feedbackArea').classList.add('hidden');
+            nextBtn.classList.add('hidden');
+        }
+
+        function handleAnswer(index, btn) {
+            const data = quizData[currentQuestion];
+            const allBtns = document.getElementById('optionsContainer').children;
+            
+            // Disable all buttons after click
+            for (let b of allBtns) b.disabled = true;
+
+            const selectedOpt = data.options[index];
+            const feedbackArea = document.getElementById('feedbackArea');
+            const feedbackClue = document.getElementById('feedbackClue');
+            const feedbackDetail = document.getElementById('feedbackDetail');
+
+            if (selectedOpt.isCorrect) {
+                btn.classList.add('correct');
+                score++;
+                categoryScores[data.category]++;
+                feedbackClue.innerText = isEnglish ? "Correct! ✨" : "ถูกต้อง! ✨";
+                feedbackArea.className = "mt-6 border-2 p-4 rounded-xl correct";
+            } else {
+                btn.classList.add('incorrect');
+                feedbackClue.innerText = isEnglish ? "Not quite... 💡" : "ยังไม่ถูกนะ... 💡";
+                feedbackArea.className = "mt-6 border-2 p-4 rounded-xl incorrect";
+                // Show correct one
+                for (let i = 0; i < data.options.length; i++) {
+                    if (data.options[i].isCorrect) {
+                        allBtns[i].classList.add('correct');
+                    }
+                }
+            }
+
+            feedbackDetail.innerText = isEnglish ? selectedOpt.detail.en : selectedOpt.detail.th;
+            feedbackArea.classList.remove('hidden');
+            nextBtn.classList.remove('hidden');
+        }
+
+        nextBtn.onclick = () => {
+            currentQuestion++;
+            if (currentQuestion < quizData.length) {
+                renderQuestion();
+            } else {
+                showResults();
+            }
+        };
+
+        function showResults() {
+            document.getElementById('questionSection').classList.add('hidden');
+            const resultSection = document.getElementById('resultSection');
+            resultSection.classList.remove('hidden');
+            document.getElementById('finalScore').innerText = `${score} / 25`;
+            document.getElementById('progressBar').style.width = `100%`;
+
+            const analysisBox = document.getElementById('analysisBox');
+            analysisBox.innerHTML = '<h3 class="font-bold text-lg border-b pb-2">Category Analysis / วิเคราะห์รายหมวดหมู่:</h3>';
+
+            let report = "";
+            for (let cat in categoryScores) {
+                let percent = (categoryScores[cat] / categoryTotals[cat]) * 100;
+                let status = percent >= 60 ? 
+                    (isEnglish ? "Excellent! / ทำได้ดีมาก" : "ยอดเยี่ยมมาก!") : 
+                    (isEnglish ? "Needs Improvement / ควรปรับปรุง" : "จุดอ่อนที่ต้องเสริม");
+                let color = percent >= 60 ? "text-green-600" : "text-red-600";
+                
+                analysisBox.innerHTML += `
+                    <div class="flex justify-between items-center">
+                        <span class="font-semibold">${cat}</span>
+                        <span class="${color}">${categoryScores[cat]}/${categoryTotals[cat]} (${percent.toFixed(0)}%) - ${status}</span>
+                    </div>
+                `;
+                report += `${cat}: ${percent.toFixed(0)}%, `;
+            }
+
+            // Simulate Email Sending
+            alert(`🎉 Quiz Finished! / จบการทดสอบแล้ว!\nSending report to: thee.chinpong@hmail.com\nScore: ${score}/25\nDetails: ${report}`);
+            console.log("Email simulated to thee.chinpong@hmail.com with scores: ", categoryScores);
+        }
+
+        // Initialize
+        renderQuestion();
+    </script>
+</body>
+</html>
