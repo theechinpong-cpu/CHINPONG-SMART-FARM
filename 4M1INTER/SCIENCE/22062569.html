@@ -11,8 +11,6 @@
         .options { margin-left: 20px; list-style-type: lower-alpha; cursor: pointer; }
         .answer-box { margin-top: 10px; padding: 10px; background: #e8f8f5; border-left: 5px solid #27ae60; display: none; }
         .btn { padding: 10px 20px; cursor: pointer; background: #3498db; color: white; border: none; border-radius: 5px; }
-        
-        /* ตั้งค่าเริ่มต้นให้ภาษาอังกฤษแสดง ภาษาไทยซ่อน */
         .lang-th { display: none; }
     </style>
 </head>
@@ -23,42 +21,59 @@
         <button class="btn" onclick="toggleLanguage()">Switch Language (EN/TH)</button>
     </div>
 
-    <form id="quizForm">
-        <script>
-            // สถานะปัจจุบัน (false = อังกฤษ, true = ไทย)
-            let isThai = false;
+    <div id="quizContainer"></div>
 
-            const questions = [
-                { q: "What is the first step in the scientific method?", a: ["Hypothesis", "Observation/Question", "Experiment", "Conclusion"], en_tip: "Observation comes first.", th_tip: "การสังเกตคือขั้นตอนแรก" },
-                { q: "Which tool measures liquid volume accurately?", a: ["Beaker", "Graduated cylinder", "Test tube", "Petri dish"], en_tip: "Graduated cylinder is for precision.", th_tip: "กระบอกตวงมีความแม่นยำสูง" },
-                // ... (ใส่ข้อมูลให้ครบ 25 ข้อ)
-                { q: "Good heat insulator?", a: ["Copper", "Aluminum", "Plastic/Wood", "Iron"], en_tip: "Non-metals are poor conductors.", th_tip: "พลาสติก/ไม้เป็นฉนวน" }
-            ];
+    <script>
+        let isThai = false;
+        const questions = [
+            { q: "What is the first step in the scientific method?", a: ["Hypothesis", "Observation/Question", "Experiment", "Conclusion"], en: "Observation comes first.", th: "การสังเกตคือขั้นตอนแรก" },
+            { q: "Which tool measures liquid volume accurately?", a: ["Beaker", "Graduated cylinder", "Test tube", "Petri dish"], en: "Graduated cylinder is for precision.", th: "กระบอกตวงมีความแม่นยำสูง" },
+            { q: "What is a 'Hypothesis'?", a: ["Fact", "Scientific law", "Tentative prediction", "Final result"], en: "It's an educated guess.", th: "คือการคาดคะเนที่มีเหตุผล" },
+            { q: "Which is a qualitative observation?", a: ["10 cm tall", "100°C boiling point", "Bright blue color", "50 grams"], en: "Color is qualitative.", th: "สีเป็นเชิงคุณภาพ" },
+            { q: "Why control variables?", a: ["To be fast", "To test one variable only", "To save money", "To skip steps"], en: "Fair test requires constant variables.", th: "เพื่อให้การทดลองยุติธรรม" },
+            { q: "What is a Pure Substance?", a: ["Mixture", "Constant properties", "Easily separated", "Any solution"], en: "It has fixed properties.", th: "มีสมบัติคงที่" },
+            { q: "Which is an element?", a: ["Water", "CO2", "Oxygen", "Salt water"], en: "Oxygen (O2) is an element.", th: "ออกซิเจนเป็นธาตุ" },
+            { q: "Formula for density?", a: ["Mass x Volume", "Mass / Volume", "Volume / Mass", "Force / Area"], en: "Density = Mass divided by Volume.", th: "ความหนาแน่น = มวลหารปริมาตร" },
+            { q: "How to separate solid from liquid?", a: ["Distillation", "Chromatography", "Filtration", "Sublimation"], en: "Filtration catches the solid.", th: "การกรองแยกของแข็งออกจากของเหลว" },
+            { q: "What is a Compound?", a: ["Chemically bonded elements", "Physical mix", "Single atom", "Metal alloy"], en: "Elements bond chemically.", th: "ธาตุรวมตัวกันทางเคมี" },
+            { q: "Density of 20g in 4cm³?", a: ["5 g/cm³", "80 g/cm³", "0.2 g/cm³", "16 g/cm³"], en: "20 / 4 = 5.", th: "20 หาร 4 ได้ 5" },
+            { q: "Separation by boiling point?", a: ["Filtration", "Distillation", "Magnet", "Decantation"], en: "Distillation uses boiling points.", th: "การกลั่นใช้จุดเดือดที่ต่างกัน" },
+            { q: "Powerhouse of the cell?", a: ["Nucleus", "Mitochondria", "Ribosome", "Cell wall"], en: "Mitochondria produces energy.", th: "ไมโทคอนเดรียสร้างพลังงาน" },
+            { q: "Unique to plant cells?", a: ["Nucleus", "Cell wall/Chloroplasts", "Vacuoles", "Membrane"], en: "Plants have rigid walls.", th: "เซลล์พืชมีผนังเซลล์" },
+            { q: "Water movement across membrane?", a: ["Diffusion", "Osmosis", "Active transport", "Photosynthesis"], en: "Osmosis is water movement.", th: "ออสโมซิสคือการแพร่ของน้ำ" },
+            { q: "Function of chloroplast?", a: ["Protein", "Respiration", "Photosynthesis", "Storage"], en: "Chloroplast makes food.", th: "คลอโรพลาสต์สังเคราะห์แสง" },
+            { q: "Transports water in plants?", a: ["Phloem", "Xylem", "Root hairs", "Stomata"], en: "Xylem carries water.", th: "ไซเล็มลำเลียงน้ำ" },
+            { q: "What plants need for photosynthesis?", a: ["Oxygen/Glucose", "CO2/Water/Sun", "Nitrogen/Soil", "Sugar/Protein"], en: "Light + CO2 + Water.", th: "แสง+คาร์บอนไดออกไซด์+น้ำ" },
+            { q: "Function of cell membrane?", a: ["Controls entry", "Energy", "Sun protection", "Storage"], en: "It regulates traffic.", th: "ควบคุมสารเข้าออกเซลล์" },
+            { q: "Average kinetic energy?", a: ["Heat", "Temperature", "Density", "Mass"], en: "Temperature = kinetic energy.", th: "อุณหภูมิคือพลังงานจลน์เฉลี่ย" },
+            { q: "Heat transfer in fluids?", a: ["Conduction", "Convection", "Radiation", "Expansion"], en: "Convection is in fluids.", th: "การพาความร้อนเกิดในของไหล" },
+            { q: "Heat transfer in vacuum?", a: ["Conduction", "Convection", "Radiation", "Insulation"], en: "Radiation travels through space.", th: "การแผ่รังสีไม่ต้องใช้ตัวกลาง" },
+            { q: "Particles when heated?", a: ["Slower", "Faster", "Stop", "Condense"], en: "Heat increases speed.", th: "ความร้อนทำให้เร็วขึ้น" },
+            { q: "Thermal Equilibrium?", a: ["Same temp", "No heat move", "Melting", "Boiling"], en: "Temps become equal.", th: "อุณหภูมิเท่ากัน" },
+            { q: "Good heat insulator?", a: ["Copper", "Aluminum", "Plastic/Wood", "Iron"], en: "Non-metals are poor conductors.", th: "พลาสติก/ไม้เป็นฉนวน" }
+        ];
 
-            questions.forEach((item, index) => {
-                let qNum = index + 1;
-                document.write(`
-                    <div class="question">Q${qNum}. ${item.q}</div>
-                    <ol class="options">
-                        ${item.a.map((opt) => `<li>${opt}</li>`).join('')}
-                    </ol>
-                    <div id="a${qNum}" class="answer-box">
-                        <strong>Tip:</strong> 
-                        <span class="lang-en">${item.en_tip}</span>
-                        <span class="lang-th">${item.th_tip}</span>
-                    </div>
-                `);
-            });
+        const container = document.getElementById('quizContainer');
+        questions.forEach((item, index) => {
+            let qNum = index + 1;
+            container.innerHTML += `
+                <div class="question">Q${qNum}. ${item.q}</div>
+                <ol class="options">
+                    ${item.a.map(opt => `<li onclick="document.getElementById('a${qNum}').style.display='block'">${opt}</li>`).join('')}
+                </ol>
+                <div id="a${qNum}" class="answer-box">
+                    <strong>Tip:</strong> 
+                    <span class="lang-en" style="${isThai ? 'display:none' : 'display:inline'}">${item.en}</span>
+                    <span class="lang-th" style="${isThai ? 'display:inline' : 'display:none'}">${item.th}</span>
+                </div>
+            `;
+        });
 
-            function toggleLanguage() {
-                isThai = !isThai;
-                const enElements = document.querySelectorAll('.lang-en');
-                const thElements = document.querySelectorAll('.lang-th');
-                
-                enElements.forEach(el => el.style.display = isThai ? 'none' : 'inline');
-                thElements.forEach(el => el.style.display = isThai ? 'inline' : 'none');
-            }
-        </script>
-    </form>
+        function toggleLanguage() {
+            isThai = !isThai;
+            document.querySelectorAll('.lang-en').forEach(el => el.style.display = isThai ? 'none' : 'inline');
+            document.querySelectorAll('.lang-th').forEach(el => el.style.display = isThai ? 'inline' : 'none');
+        }
+    </script>
 </body>
 </html>
