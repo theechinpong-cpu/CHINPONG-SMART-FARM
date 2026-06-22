@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Math Challenge: Integers & Geometry (25 Qs)</title>
+    <style>
+        body { font-family: 'Arial', sans-serif; line-height: 1.6; padding: 20px; background-color: #f4f4f9; }
+        .container { max-width: 800px; margin: auto; background: #fff; padding: 30px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        h1 { text-align: center; color: #2c3e50; }
+        .question { margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 15px; }
+        .tip { font-size: 0.85em; color: #555; font-style: italic; }
+        button { background: #3498db; color: white; padding: 10px 20px; border: none; cursor: pointer; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <button onclick="switchLang()">Switch Language / สลับภาษา</button>
+        <h1 id="title">Math Challenge (25 Questions)</h1>
+        <div id="quizArea"></div>
+        <button onclick="checkAnswers()">Submit / ส่งคำตอบ</button>
+        <div id="result"></div>
+    </div>
+
+    <script>
+        let isEN = true;
+        const quizData = [
+            // Integers (13)
+            {qE: "1. -15 - (-20) + (-5)", a: ["0", "10", "-10", "5"], c: 0, tE: "Change minus negative to plus.", tT: "ลบของลบเป็นบวก"},
+            {qE: "2. |-10 + 5| - |5 - 10|", a: ["10", "0", "-10", "5"], c: 1, tE: "Absolute value is always positive.", tT: "ค่าสัมบูรณ์เป็นบวกเสมอ"},
+            {qE: "3. ( -5 - 10 ) * ( -2 )", a: ["-30", "30", "15", "-15"], c: 1, tE: "Follow PEMDAS.", tT: "ทำในวงเล็บก่อน"},
+            {qE: "4. Product: 3 negative * 2 positive integers?", a: ["Positive", "Negative", "Zero", "Undefined"], c: 1, tE: "Odd negative signs = Negative.", tT: "จำนวนลบเป็นเลขคี่ ผลคูณติดลบ"},
+            {qE: "5. -[(-5) - (-10)]", a: ["-5", "5", "15", "-15"], c: 0, tE: "Inner brackets first.", tT: "ทำวงเล็บในสุดก่อน"},
+            {qE: "6. (-2)³ - (-3)²", a: ["-17", "1", "-1", "17"], c: 0, tE: "Exponents first.", tT: "เลขยกกำลังก่อน"},
+            {qE: "7. Solve for x: x + (-15) = -30", a: ["-45", "15", "-15", "45"], c: 2, tE: "Isolate x.", tT: "แก้สมการหา x"},
+            {qE: "8. Largest? |-5|, |-3|, -2, -10", a: ["-10", "-2", "|-3|", "|-5|"], c: 3, tE: "Absolute values represent magnitude.", tT: "ค่าสัมบูรณ์คือระยะห่างจาก 0"},
+            {qE: "9. (-100) ÷ (-4) ÷ (-5)", a: ["-5", "5", "25", "-25"], c: 0, tE: "Left to right.", tT: "ทำจากซ้ายไปขวา"},
+            {qE: "10. -5 * ( -2 + 3 - 4 )", a: ["-15", "15", "5", "-5"], c: 1, tE: "Simplify inside brackets.", tT: "รวมตัวเลขในวงเล็บก่อน"},
+            {qE: "11. Additive inverse of (-5 + 2)?", a: ["3", "-3", "7", "-7"], c: 0, tE: "Inverse of x is -x.", tT: "อินเวอร์สการบวกคือจำนวนตรงข้าม"},
+            {qE: "12. -10 - (-10) - 10", a: ["-10", "10", "0", "-30"], c: 0, tE: "Subtract carefully.", tT: "ลบเลขด้วยความระมัดระวัง"},
+            {qE: "13. If a=-2, b=-3, solve a²+b²", a: ["13", "-13", "5", "-5"], c: 0, tE: "Squared negatives become positive.", tT: "จำนวนลบยกกำลังสองเป็นบวก"},
+            // Geometry (12)
+            {qE: "14. A line extends in how many directions?", a: ["1", "2", "3", "0"], c: 1, tE: "Infinite.", tT: "ไม่มีที่สิ้นสุด"},
+            {qE: "15. Two rays sharing a vertex form:", a: ["Line", "Angle", "Segment", "Plane"], c: 1, tE: "Vertex is the endpoint.", tT: "รังสีสองเส้นตัดกันเป็นมุม"},
+            {qE: "16. A point has:", a: ["Length", "Width", "No dimension", "Area"], c: 2, tE: "Location only.", tT: "บอกตำแหน่งเท่านั้น"},
+            {qE: "17. Intersection of two planes?", a: ["Point", "Line", "Ray", "Segment"], c: 1, tE: "Planes intersect at a line.", tT: "ระนาบตัดกันเป็นเส้นตรง"},
+            {qE: "18. Finite part of a line?", a: ["Ray", "Line", "Line segment", "Angle"], c: 2, tE: "Two endpoints.", tT: "มีจุดปลายทั้งสองด้าน"},
+            {qE: "19. Collinear points lie on:", a: ["Different lines", "Same line", "Same plane", "Space"], c: 1, tE: "Co- means together.", tT: "จุดบนเส้นเดียวกัน"},
+            {qE: "20. How many points to define a line?", a: ["1", "2", "3", "Infinite"], c: 1, tE: "Shortest path.", tT: "จุดสองจุดลากเส้นตรงได้หนึ่งเส้น"},
+            {qE: "21. 90 degree angle?", a: ["Acute", "Obtuse", "Right", "Reflex"], c: 2, tE: "Standard corner.", tT: "มุมฉาก"},
+            {qE: "22. Coplanar points lie on:", a: ["Line", "Same plane", "Different planes", "Space"], c: 1, tE: "Planar = Plane.", tT: "อยู่ในระนาบเดียวกัน"},
+            {qE: "23. A ray has:", a: ["Two ends", "No ends", "One end", "Infinite"], c: 2, tE: "Start but no end.", tT: "มีจุดเริ่มต้นแต่ไม่มีจุดสิ้นสุด"},
+            {qE: "24. Sum to 180 degrees?", a: ["Complementary", "Supplementary", "Vertical", "Acute"], c: 1, tE: "S for Straight.", tT: "มุมประกอบสองมุมฉาก"},
+            {qE: "25. Set of all points in a plane?", a: ["Line", "Space", "Plane", "Ray"], c: 2, tE: "Flat surface.", tT: "พื้นผิวแบนราบ"}
+        ];
+
+        function render() {
+            const area = document.getElementById('quizArea');
+            area.innerHTML = quizData.map((d, i) => `
+                <div class="question">
+                    <p>${isEN ? d.qE : d.qE.replace(/^\d+/, (m) => m + ". โจทย์")}</p>
+                    ${d.a.map((opt, j) => `<input type="radio" name="q${i}" value="${j}"> ${opt}<br>`).join('')}
+                    <p class="tip">${isEN ? d.tE : d.tT}</p>
+                </div>
+            `).join('');
+        }
+        function switchLang() { isEN = !isEN; render(); }
+        function checkAnswers() { alert("Assessment submitted!"); }
+        render();
+    </script>
+</body>
+</html>
