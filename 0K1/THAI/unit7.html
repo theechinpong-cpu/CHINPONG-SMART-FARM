@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <title>เกมทายคำภาษาไทย - พระจอมเกล้าติวเตอร์</title>
+    <style>
+        body { font-family: 'Tahoma', sans-serif; text-align: center; background-color: #f0f8ff; padding: 20px; }
+        .game-container { max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        button { padding: 15px 25px; margin: 10px; font-size: 18px; cursor: pointer; border-radius: 10px; border: none; background-color: #4CAF50; color: white; transition: 0.3s; }
+        button:hover { background-color: #45a049; }
+        .option-btn { background-color: #2196F3; width: 100%; display: block; }
+        #speaker-btn { font-size: 40px; background-color: #ff9800; border-radius: 50%; padding: 20px; }
+        .score { font-size: 20px; font-weight: bold; color: #333; }
+    </style>
+</head>
+<body>
+
+<div class="game-container">
+    <h1>พระจอมเกล้าติวเตอร์</h1>
+    <p>เกมทายคำภาษาไทย บทที่ ๗</p>
+    <p class="score" id="score-text">คะแนน: 0/20</p>
+    
+    <button id="speaker-btn" onclick="playQuestion()">🔊</button>
+    <div id="options-container"></div>
+    <p id="result-text"></p>
+</div>
+
+<script>
+    const vocabulary = [
+        { word: "มานี", spell: "ม อะ มา น อี นี มานี" },
+        { word: "ชูใจ", spell: "ช อู ชู จ ไอ ใจ ชูใจ" },
+        { word: "มือ", spell: "ม อือ มือ" },
+        { word: "แบ", spell: "บ แอ แบ" },
+        { word: "มะละกอ", spell: "ม อะ มะ ล อะ ละ ก ออ กอ มะละกอ" },
+        { word: "ปีจอ", spell: "ป อี ปี จ ออ จอ ปีจอ" },
+        { word: "ถือแห", spell: "ถ อือ ถือ ห แอ แห ถือแห" },
+        { word: "ขอดู", spell: "ข ออ ขอ ด อู ดู ขอดู" },
+        { word: "ชูมือ", spell: "ช อู ชู ม อือ มือ ชูมือ" },
+        { word: "ถือดี", spell: "ถ อือ ถือ ด อี ดี ถือดี" },
+        { word: "รีรอ", spell: "ร อี รี ร ออ รอ รีรอ" },
+        { word: "งอมือ", spell: "ง ออ งอ ม อือ มือ งอมือ" },
+        { word: "พอดี", spell: "พ ออ พอ ด อี ดี พอดี" },
+        { word: "ตำตอ", spell: "ต อัม ตำ ต ออ ตอ ตำตอ" },
+        { word: "จอแจ", spell: "จ ออ จอ จ แอ แจ จอแจ" },
+        { word: "แลดู", spell: "ล แอ แล ด อู ดู แลดู" },
+        { word: "ถือกะทะ", spell: "ถ อือ ถือ ก อะ กะ ท อะ ทะ ถือกะทะ" },
+        { word: "สีมอมอ", spell: "ส อี สี ม ออ มอ ม ออ มอ สีมอมอ" },
+        { word: "มารออา", spell: "ม อะ มา ร ออ รอ ออ อา อา มารออา" },
+        { word: "ปอกะเจา", spell: "ป ออ ปอ ก อะ กะ จ เอา เจา ปอกะเจา" }
+    ];
+
+    let currentWord = {};
+    let score = 0;
+    let questionsAsked = 0;
+
+    function playQuestion() {
+        const synth = window.speechSynthesis;
+        const utter = new SpeechSynthesisUtterance(currentWord.spell);
+        utter.lang = 'th-TH';
+        utter.rate = 1.0; 
+        synth.speak(utter);
+    }
+
+    function generateGame() {
+        if (questionsAsked >= 20) {
+            alert("จบเกมแล้ว! คะแนนของคุณคือ " + score + "/20");
+            location.reload();
+            return;
+        }
+
+        currentWord = vocabulary[Math.floor(Math.random() * vocabulary.length)];
+        let options = [currentWord.word];
+        
+        while(options.length < 3) {
+            let rand = vocabulary[Math.floor(Math.random() * vocabulary.length)].word;
+            if(!options.includes(rand)) options.push(rand);
+        }
+        options.sort(() => Math.random() - 0.5);
+
+        const container = document.getElementById('options-container');
+        container.innerHTML = '';
+        options.forEach(opt => {
+            const btn = document.createElement('button');
+            btn.className = 'option-btn';
+            btn.innerText = opt;
+            btn.onclick = () => checkAnswer(opt);
+            container.appendChild(btn);
+        });
+    }
+
+    function checkAnswer(answer) {
+        const result = document.getElementById('result-text');
+        if(answer === currentWord.word) {
+            score++;
+            result.innerText = "ถูกต้องแล้ว! เก่งมาก!";
+            document.getElementById('score-text').innerText = "คะแนน: " + (++questionsAsked) + "/20";
+            setTimeout(generateGame, 1500);
+        } else {
+            result.innerText = "ยังไม่ถูกนะ ลองฟังใหม่อีกครั้ง";
+        }
+    }
+
+    generateGame();
+</script>
+</body>
+</html>
