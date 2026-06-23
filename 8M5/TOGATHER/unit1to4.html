@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <title>Interactive English Quiz by พระจอมเกล้าติวเตอร์</title>
+    <style>
+        body { font-family: 'Sarabun', sans-serif; line-height: 1.6; padding: 20px; background: #f4f7f6; }
+        .container { max-width: 800px; margin: auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .question-container { margin-bottom: 25px; padding: 20px; border: 1px solid #ddd; border-radius: 10px; }
+        .option { display: block; width: 100%; padding: 10px; margin: 5px 0; border: 1px solid #ccc; cursor: pointer; border-radius: 5px; }
+        .correct { background-color: #2ecc71 !important; color: white; }
+        .wrong { background-color: #e74c3c !important; color: white; }
+        .explanation { margin-top: 10px; padding: 10px; background: #f9f9f9; display: none; }
+        .tip { color: #e74c3c; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>แบบทดสอบภาษาอังกฤษ: NEW Weaving It Together 2</h1>
+        <button onclick="switchLang()">Switch Language (TH/EN)</button>
+        <div id="quiz-area"></div>
+        <div id="results" style="display:none; margin-top:30px;"></div>
+    </div>
+
+    <script>
+        const questions = [
+  { q_th: "โครงสร้างส่วนประกอบใดของ Paragraph ที่ทำหน้าที่ให้ข้อมูลสนับสนุน?", q_en: "Which part of a paragraph provides supporting information?", a_th: ["Topic Sentence", "Supporting Sentences", "Concluding Sentence", "Title"], a_en: ["Topic Sentence", "Supporting Sentences", "Concluding Sentence", "Title"], correct: 1, th: "จำไว้ว่าไส้แฮมเบอร์เกอร์คือเนื้อหา", en: "Remember the hamburger model.", detail: "Supporting Sentences ทำหน้าที่ขยายความและให้ข้อมูลรายละเอียดเกี่ยวกับประเด็นหลัก"},
+  { q_th: "ในการเขียน Compound Sentence คำเชื่อมใดที่ใช้แสดงความขัดแย้ง?", q_en: "Which conjunction is used to show contrast in a compound sentence?", a_th: ["and", "but", "or", "so"], a_en: ["and", "but", "or", "so"], correct: 1, th: "จำไว้ว่า But คือการเลี้ยวหักศอก", en: "Remember that 'But' is a sharp turn.", detail: "คำว่า 'but' ใช้เชื่อมประโยคสองประโยคที่มีความหมายขัดแย้งกัน"},
+  { q_th: "ข้อใดคือหลักการที่ถูกต้องของ Capitalization?", q_en: "Which is a correct rule for capitalization?", a_th: ["ขึ้นต้นประโยคด้วยตัวพิมพ์เล็ก", "ชื่อเฉพาะไม่ต้องขึ้นต้นด้วยตัวพิมพ์ใหญ่", "คำสรรพนาม I ต้องเป็นตัวพิมพ์ใหญ่เสมอ", "คำนามทั่วไปต้องเป็นตัวพิมพ์ใหญ่"], a_en: ["Start sentence with lowercase", "Proper nouns do not need caps", "The pronoun 'I' is always capitalized", "Common nouns must be capitalized"], correct: 2, th: "จำไว้ว่า I คือตัวเราต้องยิ่งใหญ่", en: "Remember 'I' stands for yourself, so keep it big.", detail: "ในภาษาอังกฤษ สรรพนาม 'I' ต้องเป็นตัวพิมพ์ใหญ่ทุกครั้งที่ปรากฏในประโยค"},
+  { q_th: "ข้อใดกล่าวถึง 'Unity' ในการเขียนได้ถูกต้องที่สุด?", q_en: "Which statement best describes 'Unity' in writing?", a_th: ["มีเนื้อหาครอบคลุมหลายเรื่องในหนึ่งย่อหน้า", "ทุกประโยคต้องสนับสนุนประเด็นหลักเพียงเรื่องเดียว", "ใช้ประโยคซ้อนมากเกินไป", "ไม่ต้องมีประโยคสรุป"], a_en: ["Covering many topics in one paragraph", "Every sentence must support one main idea", "Using too many complex sentences", "No need for a concluding sentence"], correct: 1, th: "จำไว้ว่า Unity คือความเป็นหนึ่งเดียว", en: "Remember Unity means staying on one track.", detail: "Unity คือการที่ทุกประโยคในย่อหน้าต้องมุ่งเน้นไปที่การสนับสนุน Topic Sentence เพียงเรื่องเดียว"},
+  { q_th: "เมื่อต้องการเขียนรายการสิ่งของในประโยค ต้องใช้เครื่องหมายใด?", q_en: "Which punctuation mark is used when listing items in a sentence?", a_th: ["Period (.)", "Comma (,)", "Question mark (?)", "Exclamation mark (!)"], a_en: ["Period (.)", "Comma (,)", "Question mark (?)", "Exclamation mark (!)"], correct: 1, th: "จำไว้ว่า Comma ใช้คั่นสิ่งของ", en: "Remember commas separate the items.", detail: "Comma (,) ใช้สำหรับแยกรายการสิ่งของหรือข้อมูลในประโยคเพื่อให้ชัดเจน"},
+  { q_th: "ประโยคใดแสดงถึง Dependent Clause?", q_en: "Which sentence shows a dependent clause?", a_th: ["I ate lunch.", "Because it was raining.", "She ran fast.", "They are happy."], a_en: ["I ate lunch.", "Because it was raining.", "She ran fast.", "They are happy."], correct: 1, th: "จำไว้ว่า Dependent อยู่คนเดียวไม่ได้", en: "Remember a dependent clause cannot stand alone.", detail: "Dependent clause มักขึ้นต้นด้วยคำเชื่อมอย่าง because, although, since จึงไม่สามารถเป็นประโยคที่สมบูรณ์ได้"},
+  { q_th: "หน้าที่ของ Concluding Sentence คืออะไร?", q_en: "What is the purpose of a concluding sentence?", a_th: ["ขึ้นเรื่องใหม่", "สรุปใจความสำคัญของย่อหน้า", "บอกรายละเอียดสนับสนุน", "ตั้งชื่อเรื่อง"], a_en: ["Start a new topic", "Summarize the main idea of the paragraph", "Give supporting details", "Provide the title"], correct: 1, th: "จำไว้ว่า Concluding คือการปิดจบ", en: "Remember concluding means wrapping up.", detail: "Concluding sentence มีหน้าที่สรุปประเด็นหลักและทิ้งท้ายเนื้อหาให้สมบูรณ์"},
+  { q_th: "ข้อใดคือการคัดกรอง Irrelevant Sentences?", q_en: "What is the process of filtering irrelevant sentences?", a_th: ["ตัดประโยคที่ไม่อยู่ในหัวข้อหลักออก", "เพิ่มข้อมูลที่ไม่เกี่ยวข้องเข้าไป", "เขียนซ้ำประโยคเดิม", "เปลี่ยนชื่อเรื่อง"], a_en: ["Removing sentences off-topic", "Adding unrelated info", "Repeating the same sentence", "Changing the title"], correct: 0, th: "จำไว้ว่าตัดส่วนเกินเพื่อให้ใจความกระชับ", en: "Remember to trim the fat to keep it concise.", detail: "การลบประโยคที่ไม่เกี่ยวข้องทิ้ง ช่วยให้งานเขียนมีเอกภาพ (Unity) ที่แข็งแกร่ง"},
+  { q_th: "การเขียนบรรยายกระบวนการ (Describing a process) ควรเน้นสิ่งใด?", q_en: "What should be emphasized when describing a process?", a_th: ["ลำดับขั้นตอนที่ชัดเจน", "การใช้ตัวพิมพ์เล็กทั้งหมด", "การเขียนเรื่องแต่ง", "การตัดประโยคสนับสนุน"], a_en: ["Clear sequence of steps", "Using all lowercase", "Writing fiction", "Removing supporting sentences"], correct: 0, th: "จำไว้ว่าขั้นตอนต้องเรียงลำดับ", en: "Remember process means step-by-step.", detail: "การบรรยายกระบวนการต้องมีลำดับเหตุการณ์ที่ต่อเนื่องและชัดเจนเพื่อให้ผู้อ่านเข้าใจง่าย"},
+  { q_th: "ประโยคความรวม (Compound Sentence) ที่ถูกต้องคือข้อใด?", q_en: "Which is a correct compound sentence?", a_th: ["I like cats and dogs.", "I like cats, and I like dogs.", "I like cats, I like dogs.", "I like cats because I like dogs."], a_en: ["I like cats and dogs.", "I like cats, and I like dogs.", "I like cats, I like dogs.", "I like cats because I like dogs."], correct: 1, th: "จำไว้ว่าคอมม่าต้องมาก่อน and", en: "Remember the comma before 'and'.", detail: "Compound sentence คือประโยคอิสระสองประโยคเชื่อมด้วย comma และ conjunction"},
+  { q_th: "ถ้าพูดถึงสมองซีกขวา มักจะเกี่ยวข้องกับเรื่องใด?", q_en: "Which is typically associated with the right brain?", a_th: ["การคำนวณ", "ความคิดสร้างสรรค์", "ตรรกะ", "การวิเคราะห์"], a_en: ["Calculations", "Creativity", "Logic", "Analysis"], correct: 1, th: "จำไว้ว่าขวาคือศิลปิน", en: "Remember the right brain is the artist.", detail: "บทที่ 1 ระบุว่าสมองซีกขวามักเกี่ยวข้องกับความคิดสร้างสรรค์และศิลปะ"},
+  { q_th: "ข้อใดไม่ใช่ส่วนประกอบของอาหารที่กล่าวถึงในบทที่ 2?", q_en: "Which is not a food item mentioned in Chapter 2?", a_th: ["มันฝรั่ง", "แมลง", "หนู", "ดาวอังคาร"], a_en: ["Potatoes", "Insects", "Rats", "Mars"], correct: 3, th: "จำไว้ว่าเนื้อหาเน้นของกินที่แปลกใหม่", en: "Remember the chapter focuses on unusual food.", detail: "บทที่ 2 พูดถึงอาหารตั้งแต่แบบปกติจนถึงอาหารแปลกๆ เช่น แมลงและหนู แต่ไม่มีดาวอังคาร"},
+  { q_th: "เทศกาล Tihar ที่กล่าวถึงในบทที่ 3 คืออะไร?", q_en: "What is Tihar as mentioned in Chapter 3?", a_th: ["วันคริสต์มาส", "เทศกาลแห่งแสงไฟ", "วันเกิด", "วันหยุดฤดูร้อน"], a_en: ["Christmas", "Festival of Lights", "Birthday", "Summer holiday"], correct: 1, th: "จำไว้ว่า Tihar คือแสงสว่าง", en: "Remember Tihar is about light.", detail: "Tihar คือเทศกาลแห่งแสงไฟที่มีเรื่องราวทางวัฒนธรรมที่น่าสนใจ"},
+  { q_th: "Barrington Irving ในบทที่ 4 มีชื่อเสียงด้านใด?", q_en: "What is Barrington Irving famous for in Chapter 4?", a_th: ["การทำอาหาร", "การบิน", "การแต่งเพลง", "การทำฟาร์ม"], a_en: ["Cooking", "Flying", "Composing", "Farming"], correct: 1, th: "จำไว้ว่าเขามีความฝันที่จะบิน", en: "Remember he has a dream to fly.", detail: "Barrington Irving เป็นตัวอย่างของบุคคลที่น่าทึ่งในเรื่องความฝันและความกล้าหาญในการบิน"},
+  { q_th: "ในการตั้งชื่อเรื่อง (The Title) หลักการสำคัญคืออะไร?", q_en: "What is the key principle for writing a title?", a_th: ["ต้องยาวกว่า 3 บรรทัด", "ต้องขึ้นต้นด้วยคำกริยาเสมอ", "ต้องน่าสนใจและสรุปเนื้อหาได้", "ไม่ต้องใช้ตัวพิมพ์ใหญ่"], a_en: ["Must be over 3 lines", "Must start with a verb", "Must be catchy and summarize the content", "No capitalization needed"], correct: 2, th: "จำไว้ว่าชื่อเรื่องต้องสะกดใจ", en: "Remember a title should catch the eye.", detail: "ชื่อเรื่องที่ดีต้องดึงดูดใจและสื่อถึงใจความสำคัญของย่อหน้าได้ดี"},
+  { q_th: "ประโยค 'She is smart, but she is lazy' เป็นประโยคชนิดใด?", q_en: "What type of sentence is 'She is smart, but she is lazy'?", a_th: ["Simple Sentence", "Compound Sentence", "Complex Sentence", "Fragment"], a_en: ["Simple Sentence", "Compound Sentence", "Complex Sentence", "Fragment"], correct: 1, th: "จำไว้ว่าใช้ but เชื่อมคือ Compound", en: "Remember 'but' creates a compound sentence.", detail: "มีประโยคหลักสองประโยคเชื่อมด้วย 'but' จึงเป็น compound sentence"},
+  { q_th: "การใช้ตัวอย่าง (Examples) มีประโยชน์อย่างไรในบทที่ 4?", q_en: "What is the benefit of using examples in Chapter 4?", a_th: ["ทำให้ประโยคยาวขึ้น", "ช่วยอธิบายคุณสมบัติให้เห็นภาพชัดเจน", "เพื่อให้งานเขียนดูยากขึ้น", "ไม่จำเป็นต้องใช้"], a_en: ["Making sentences longer", "Helping explain qualities clearly", "Making the writing harder", "Not necessary"], correct: 1, th: "จำไว้ว่าตัวอย่างคือเครื่องพิสูจน์", en: "Remember examples are the proof.", detail: "ตัวอย่างช่วยให้คำอธิบายเกี่ยวกับบุคคลหรือคุณสมบัติมีความน่าเชื่อถือและเข้าใจง่ายขึ้น"},
+  { q_th: "ข้อใดจัดเป็นประโยคใจความสำคัญ (Topic Sentence)?", q_en: "Which is a topic sentence?", a_th: ["I love pizza.", "Potatoes are a versatile and popular food worldwide.", "It is very hot.", "He is tall."], a_en: ["I love pizza.", "Potatoes are a versatile and popular food worldwide.", "It is very hot.", "He is tall."], correct: 1, th: "จำไว้ว่า Topic Sentence ต้องครอบคลุมทั้งย่อหน้า", en: "Remember the topic sentence covers the whole paragraph.", detail: "Topic Sentence ควรเป็นประโยคที่กว้างพอที่จะครอบคลุมประเด็นทั้งหมดในย่อหน้า"},
+  { q_th: "ถ้าต้องการเขียนถึงวันเกิดอายุ 15 ปี บทที่ 3 แนะนำให้เน้นอะไร?", q_en: "What does Chapter 3 suggest focusing on for a 15th birthday?", a_th: ["บรรยายความรู้สึกและขั้นตอนการฉลอง", "การระบุรายการอาหารเท่านั้น", "การบอกสูตรอาหาร", "การไม่ใส่คอมม่า"], a_en: ["Describing feelings and celebration steps", "Only listing food", "Giving recipes", "Not using commas"], correct: 0, th: "จำไว้ว่าการเฉลิมฉลองคือเรื่องของประสบการณ์", en: "Remember celebrations are about experiences.", detail: "การฉลองวันเกิดมักเกี่ยวข้องกับการลำดับเหตุการณ์และความรู้สึกที่เกิดขึ้นในวันพิเศษ"},
+  { q_th: "ถ้าประโยคเขียนว่า 'I like apples oranges and bananas' ควรแก้ให้ถูกอย่างไร?", q_en: "If a sentence says 'I like apples oranges and bananas', how to fix it?", a_th: ["ใส่คอมม่าคั่นรายการ: apples, oranges, and bananas", "เอาคำว่า and ออก", "เขียนใหม่ให้สั้นลง", "เพิ่มคำขยาย"], a_en: ["Add commas: apples, oranges, and bananas", "Remove 'and'", "Rewrite to be shorter", "Add more modifiers"], correct: 0, th: "จำไว้ว่าคอมม่าคั่นรายการต้องครบ", en: "Remember to use commas for lists.", detail: "การเขียนรายการสิ่งของที่เรียงลำดับกันต้องใช้ comma คั่นเสมอ"},
+  { q_th: "ข้อใดต่อไปนี้คือ Irrelevant Sentence หากหัวข้อคือ 'My favorite pet'?", q_en: "Which is an irrelevant sentence for the topic 'My favorite pet'?", a_th: ["He is very soft.", "He likes to play ball.", "I like to eat noodles.", "He sleeps on my bed."], a_en: ["He is very soft.", "He likes to play ball.", "I like to eat noodles.", "He sleeps on my bed."], correct: 2, th: "จำไว้ว่าอย่าออกนอกเรื่อง", en: "Remember, stay on topic.", detail: "ประโยคที่ว่าชอบกินก๋วยเตี๋ยวไม่เกี่ยวข้องกับประเด็นหลักเรื่องสัตว์เลี้ยง"},
+  { q_th: "คำว่า 'Main Clause' ในบทที่ 3 หมายถึงอะไร?", q_en: "What does 'Main Clause' mean in Chapter 3?", a_th: ["ประโยคที่อยู่อย่างอิสระได้", "ประโยคที่ต้องการคำอธิบายเพิ่ม", "คำขยาย", "คำเชื่อม"], a_en: ["A sentence that can stand alone", "A sentence needing more explanation", "A modifier", "A conjunction"], correct: 0, th: "จำไว้ว่า Main คือหัวใจหลัก", en: "Remember Main is the heart.", detail: "Main clause เป็นประโยคที่สมบูรณ์ในตัวเองและมีใจความหลัก"},
+  { q_th: "การเขียนเกี่ยวกับคนในบทที่ 4 ควรประกอบด้วยอะไรบ้าง?", q_en: "What should writing about people in Chapter 4 include?", a_th: ["เพียงแค่ชื่อคน", "คุณสมบัติและตัวอย่างที่สนับสนุน", "แค่ประโยคเดี่ยว", "ไม่มีข้อใดถูก"], a_en: ["Just the person's name", "Qualities and supporting examples", "Only a single sentence", "None of the above"], correct: 1, th: "จำไว้ว่าให้ตัวอย่างช่วยยืนยัน", en: "Remember examples confirm qualities.", detail: "การอธิบายบุคคลต้องระบุคุณสมบัติควบคู่ไปกับตัวอย่างเหตุการณ์จริง"},
+  { q_th: "คำว่า 'or' ใน compound sentence ใช้เพื่ออะไร?", q_en: "What is 'or' used for in a compound sentence?", a_th: ["เลือกอย่างใดอย่างหนึ่ง", "เพิ่มเติมข้อมูล", "แสดงความขัดแย้ง", "สรุปผล"], a_en: ["To choose between options", "To add information", "To show contrast", "To conclude"], correct: 0, th: "จำไว้ว่า or คือการเลือก", en: "Remember 'or' means choice.", detail: "'or' ใช้ในประโยคเพื่อแสดงทางเลือกที่เป็นไปได้"},
+  { q_th: "ความสำคัญของ Capitalization ที่ต้นประโยคคืออะไร?", q_en: "What is the importance of capitalization at the beginning of a sentence?", a_th: ["เพื่อให้สวยงาม", "เพื่อบอกให้รู้ว่าประโยคเริ่มตรงไหน", "เป็นการบังคับเฉยๆ", "ไม่มีความสำคัญ"], a_en: ["To look pretty", "To signal where the sentence starts", "Just a rule", "Not important"], correct: 1, th: "จำไว้ว่าตัวพิมพ์ใหญ่คือเครื่องหมายหยุด", en: "Remember big letters act as a stop sign.", detail: "การใช้ตัวพิมพ์ใหญ่เป็นตัวบ่งบอกว่าประโยคใหม่ได้เริ่มต้นขึ้นแล้วสำหรับผู้อ่าน"}
+        ];
+
+        function renderQuiz() {
+            const area = document.getElementById('quiz-area');
+            questions.forEach((q, i) => {
+                area.innerHTML += `
+                    <div class="question-container" id="q${i}">
+                        <p class="q-text">${q.q_th}</p>
+                        ${q.a_th.map((opt, j) => `<button class="option" onclick="checkAnswer(${i}, ${j})">${opt}</button>`).join('')}
+                        <div class="explanation" id="expl${i}">
+                            <p class="tip">Clue: ${q.th}</p>
+                            <p>${q.detail}</p>
+                        </div>
+                    </div>`;
+            });
+        }
+
+        function checkAnswer(qIdx, aIdx) {
+            // Logic to check answer and lock inputs...
+        }
+
+        renderQuiz();
+    </script>
+</body>
+</html>
