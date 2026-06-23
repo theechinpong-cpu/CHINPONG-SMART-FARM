@@ -10,6 +10,7 @@
         button:hover { background-color: #45a049; }
         .option-btn { background-color: #2196F3; width: 100%; display: block; }
         #speaker-btn { font-size: 40px; background-color: #ff9800; border-radius: 50%; padding: 20px; }
+        #back-btn { background-color: #f44336; }
         .score { font-size: 20px; font-weight: bold; color: #333; }
     </style>
 </head>
@@ -20,6 +21,7 @@
     <p>เกมทายคำภาษาไทย บทที่ ๗</p>
     <p class="score" id="score-text">คะแนน: 0/20</p>
     
+    <button id="back-btn" onclick="goBack()">⬅️ ย้อนกลับ</button>
     <button id="speaker-btn" onclick="playQuestion()">🔊</button>
     <div id="options-container"></div>
     <p id="result-text"></p>
@@ -27,6 +29,16 @@
 
 <script>
     const vocabulary = [
+        { word: "มานี", spell: "ม อะ มา น อี นี มานี" }, { word: "ชูใจ", spell: "ช อู ชู จ ไอ ใจ ชูใจ" },
+        { word: "มือ", spell: "ม อือ มือ" }, { word: "แบ", spell: "บ แอ แบ" },
+        { word: "มะละกอ", spell: "ม อะ มะ ล อะ ละ ก ออ กอ มะละกอ" }, { word: "ปีจอ", spell: "ป อี ปี จ ออ จอ ปีจอ" },
+        { word: "ถือแห", spell: "ถ อือ ถือ ห แอ แห ถือแห" }, { word: "ขอดู", spell: "ข ออ ขอ ด อู ดู ขอดู" },
+        { word: "ชูมือ", spell: "ช อู ชู ม อือ มือ ชูมือ" }, { word: "ถือดี", spell: "ถ อือ ถือ ด อี ดี ถือดี" },
+        { word: "รีรอ", spell: "ร อี รี ร ออ รอ รีรอ" }, { word: "งอมือ", spell: "ง ออ งอ ม อือ มือ งอมือ" },
+        { word: "พอดี", spell: "พ ออ พอ ด อี ดี พอดี" }, { word: "ตำตอ", spell: "ต อัม ตำ ต ออ ตอ ตำตอ" },
+        { word: "จอแจ", spell: "จ ออ จอ จ แอ แจ จอแจ" }, { word: "แลดู", spell: "ล แอ แล ด อู ดู แลดู" },
+        { word: "ถือกะทะ", spell: "ถ อือ ถือ ก อะ กะ ท อะ ทะ ถือกะทะ" }, { word: "สีมอมอ", spell: "ส อี สี ม ออ มอ ม ออ มอ สีมอมอ" },
+        { word: "มารออา", spell: "ม อะ มา ร ออ รอ ออ อา อา มารออา" }, { word: "ปอกะเจา", spell: "ป ออ ปอ ก อะ กะ จ เอา เจา ปอกะเจา" }
         { word: "มานี", spell: "ม อะ มา น อี นี มานี" },
         { word: "ชูใจ", spell: "ช อู ชู จ ไอ ใจ ชูใจ" },
         { word: "มือ", spell: "ม อือ มือ" },
@@ -51,33 +63,42 @@
 
     let currentWord = {};
     let score = 0;
-    let questionsAsked = 0;
+    let history = [];
+    let historyIndex = -1;
 
     function playQuestion() {
         const synth = window.speechSynthesis;
         const utter = new SpeechSynthesisUtterance(currentWord.spell);
+        
+        // ค้นหาเสียงภาษาไทยที่เป็นธรรมชาติที่สุด
+        const voices = synth.getVoices();
+        const thaiVoice = voices.find(voice => voice.lang === 'th-TH') || voices.find(voice => voice.lang.includes('th'));
+        if (thaiVoice) utter.voice = thaiVoice;
+
         utter.lang = 'th-TH';
-        utter.rate = 1.0; 
+        utter.rate = 0.9; // ลดความเร็วลงเล็กน้อยเพื่อให้ดูเป็นธรรมชาติ
+        utter.pitch = 1.1; // ปรับโทนเสียงให้มีความนุ่มนวล
         synth.speak(utter);
     }
 
-    function generateGame() {
-        if (questionsAsked >= 20) {
-            alert("จบเกมแล้ว! คะแนนของคุณคือ " + score + "/20");
-            location.reload();
-            return;
+    function generateGame(isBack = false) {
+        const container = document.getElementById('options-container');
+        
+        if (!isBack) {
+            currentWord = vocabulary[Math.floor(Math.random() * vocabulary.length)];
+            history.push(currentWord);
+            historyIndex = history.length - 1;
+        } else {
+            currentWord = history[historyIndex];
         }
 
-        currentWord = vocabulary[Math.floor(Math.random() * vocabulary.length)];
         let options = [currentWord.word];
-        
         while(options.length < 3) {
             let rand = vocabulary[Math.floor(Math.random() * vocabulary.length)].word;
             if(!options.includes(rand)) options.push(rand);
         }
         options.sort(() => Math.random() - 0.5);
 
-        const container = document.getElementById('options-container');
         container.innerHTML = '';
         options.forEach(opt => {
             const btn = document.createElement('button');
@@ -88,18 +109,32 @@
         });
     }
 
+    function goBack() {
+        if (historyIndex > 0) {
+            historyIndex--;
+            generateGame(true);
+        } else {
+            alert("นี่คือคำถามแรกสุดแล้วครับ");
+        }
+    }
+
     function checkAnswer(answer) {
         const result = document.getElementById('result-text');
         if(answer === currentWord.word) {
             score++;
             result.innerText = "ถูกต้องแล้ว! เก่งมาก!";
-            document.getElementById('score-text').innerText = "คะแนน: " + (++questionsAsked) + "/20";
-            setTimeout(generateGame, 1500);
+            document.getElementById('score-text').innerText = "คะแนน: " + (history.length) + "/20";
+            setTimeout(() => {
+                result.innerText = "";
+                generateGame();
+            }, 1500);
         } else {
             result.innerText = "ยังไม่ถูกนะ ลองฟังใหม่อีกครั้ง";
         }
     }
 
+    // เริ่มต้นเกม
+    window.speechSynthesis.onvoiceschanged = () => { playQuestion(); };
     generateGame();
 </script>
 </body>
