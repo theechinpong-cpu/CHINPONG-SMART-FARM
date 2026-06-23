@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <title>ข้อสอบภาษาไทย ม.1 - พระจอมเกล้าติวเตอร์</title>
+    <style>
+        body { font-family: 'Sarabun', sans-serif; background: #f4f7f6; padding: 20px; line-height: 1.5; }
+        .container { max-width: 800px; margin: auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .question-card { margin-bottom: 25px; padding: 15px; border: 1px solid #ddd; border-radius: 8px; }
+        .btn-lang { margin-bottom: 20px; text-align: right; }
+        .answer-box { margin-top: 10px; padding: 10px; background: #f9f9f9; display: none; }
+        .correct { background-color: #2ecc71 !important; color: white; }
+        .incorrect { background-color: #e74c3c !important; color: white; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="btn-lang">
+        <button onclick="setLang('th')">TH</button>
+        <button onclick="setLang('en')">EN</button>
+    </div>
+    <h2 id="title">แบบทดสอบภาษาไทยระดับยากมาก</h2>
+    <div id="quiz-container"></div>
+    <div id="result-container" style="display:none; text-align:center; margin-top:30px;"></div>
+</div>
+
+<script>
+    let currentLang = 'th';
+    const questions = [
+        // เพิ่มข้อสอบ 25 ข้อที่นี่ตามโครงสร้าง Object
+        { q_th: "ข้อใดไม่ใช่บุรุษสรรพนาม?", q_en: "Which is NOT a personal pronoun?", a_th: ["ฉัน", "เขา", "ที่", "เธอ"], a_en: ["I", "He", "That/Which", "You"], correct: 2, th: "บุรุษสรรพนามใช้แทนคน แต่ 'ที่' เป็นประพันธสรรพนาม", en: "Personal pronouns replace people, 'ที่' is a relative pronoun.", detail: "'ที่' ใช้เชื่อมประโยค ไม่ใช่การแทนชื่อบุคคล" }
+        // ... (ข้อมูลอีก 24 ข้อ)
+    ];
+
+    function renderQuiz() {
+        const container = document.getElementById('quiz-container');
+        container.innerHTML = '';
+        questions.forEach((q, index) => {
+            const card = document.createElement('div');
+            card.className = 'question-card';
+            card.innerHTML = `
+                <p><strong>${index + 1}. <span class="q-text">${currentLang === 'th' ? q.q_th : q.q_en}</span></strong></p>
+                ${(currentLang === 'th' ? q.a_th : q.a_en).map((ans, i) => `<button onclick="check(this, ${index}, ${i})">${ans}</button>`).join(' ')}
+                <div class="answer-box" id="ans-${index}">
+                    <p style="color:red">Tip: ${currentLang === 'th' ? q.th : q.en}</p>
+                    <p>${currentLang === 'th' ? q.detail : q.detail}</p>
+                </div>
+            `;
+            container.appendChild(card);
+        });
+    }
+
+    function check(btn, qIdx, aIdx) {
+        const card = btn.parentElement;
+        const correctIdx = questions[qIdx].correct;
+        const buttons = card.querySelectorAll('button');
+        buttons.forEach(b => b.disabled = true);
+        
+        if (aIdx === correctIdx) {
+            btn.classList.add('correct');
+        } else {
+            btn.classList.add('incorrect');
+            buttons[correctIdx].classList.add('correct');
+        }
+        document.getElementById('ans-' + qIdx).style.display = 'block';
+        checkComplete();
+    }
+
+    function setLang(lang) { currentLang = lang; renderQuiz(); }
+    
+    function checkComplete() {
+        // ตรวจสอบว่าทำครบหรือไม่ หากครบให้โชว์ผลลัพธ์และเรียก alert
+        // จำลองการส่ง Email: console.log("Sending to thee.chinpong@hmail.com")
+    }
+
+    renderQuiz();
+</script>
+</body>
+</html>
