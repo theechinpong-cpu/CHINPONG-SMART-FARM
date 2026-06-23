@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <title>Hangman - พระจอมเกล้าติวเตอร์</title>
+    <style>
+        body { font-family: 'Tahoma', sans-serif; text-align: center; background-color: #f0f8ff; padding: 20px; }
+        .game-container { max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        #word-display { font-size: 30px; letter-spacing: 10px; margin: 20px; font-weight: bold; }
+        .btn-letter { padding: 10px 15px; margin: 5px; cursor: pointer; border-radius: 5px; border: 1px solid #ccc; }
+        #hangman-draw { font-size: 50px; margin: 20px; color: #d32f2f; }
+    </style>
+</head>
+<body>
+
+<div class="game-container">
+    <h1>พระจอมเกล้าติวเตอร์</h1>
+    <p>เกม Hangman ทายคำจากบทเรียน (บทที่ ๗)</p>
+    <div id="hangman-draw"></div>
+    <div id="word-display">_ _ _ _</div>
+    <div id="alphabet-container"></div>
+    <p id="status"></p>
+    <button onclick="resetGame()">เริ่มเกมใหม่</button>
+</div>
+
+<script>
+    const words = ["มานี", "ชูใจ", "มือ", "แบ", "มะละกอ", "ปีจอ", "ถือแห", "ขอดู", "ชูมือ", "ถือดี", "รีรอ", "งอมือ", "พอดี", "ตำตอ", "จอแจ", "แลดู", "ถือกะทะ", "สีมอมอ", "มารออา", "ปอกะเจา"];
+    let selectedWord = "";
+    let guessedLetters = [];
+    let mistakes = 0;
+    const maxMistakes = 6;
+
+    function resetGame() {
+        selectedWord = words[Math.floor(Math.random() * words.length)];
+        guessedLetters = [];
+        mistakes = 0;
+        document.getElementById('status').innerText = "";
+        document.getElementById('hangman-draw').innerText = "";
+        render();
+    }
+
+    function render() {
+        let display = selectedWord.split('').map(l => guessedLetters.includes(l) ? l : "_").join(" ");
+        document.getElementById('word-display').innerText = display;
+        
+        const container = document.getElementById('alphabet-container');
+        container.innerHTML = 'กขคงจฉชซฌญฎฏฐฑฒณดตถทธนบปผฝพฟภมยรลวศษสหฬอฮ'.split('').map(l => 
+            `<button class="btn-letter" onclick="guess('${l}')" ${guessedLetters.includes(l) ? 'disabled' : ''}>${l}</button>`
+        ).join('');
+    }
+
+    function guess(letter) {
+        if(mistakes >= maxMistakes) return;
+        guessedLetters.push(letter);
+        if(!selectedWord.includes(letter)) mistakes++;
+        
+        document.getElementById('hangman-draw').innerText = "❌".repeat(mistakes);
+        render();
+
+        if(!document.getElementById('word-display').innerText.includes('_')) {
+            document.getElementById('status').innerText = "คุณชนะแล้ว!";
+        } else if(mistakes >= maxMistakes) {
+            document.getElementById('status').innerText = "แพ้แล้ว! คำตอบคือ: " + selectedWord;
+        }
+    }
+
+    resetGame();
+</script>
+</body>
+</html>
