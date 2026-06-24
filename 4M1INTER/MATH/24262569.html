@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <title>พระจอมเกล้าติวเตอร์ - ข้อสอบคณิตศาสตร์ ม.1</title>
+    <style>
+        body { font-family: 'Sarabun', sans-serif; background: #f4f7f6; padding: 20px; }
+        .container { max-width: 800px; margin: auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .question-container { margin-bottom: 25px; padding: 15px; border: 1px solid #ddd; border-radius: 8px; }
+        .option { display: block; padding: 10px; margin: 5px 0; border: 1px solid #ccc; cursor: pointer; border-radius: 5px; transition: 0.3s; }
+        .correct { background-color: #2ecc71 !important; color: white; border-color: #27ae60; }
+        .wrong { background-color: #e74c3c !important; color: white; border-color: #c0392b; }
+        .answer-box { margin-top: 10px; padding: 10px; background: #f9f9f9; display: none; border-left: 5px solid #e74c3c; }
+        .tip { color: #e74c3c; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <button onclick="toggleLang()">Switch Language (TH/EN)</button>
+        <h1 id="title">แนวข้อสอบคณิตศาสตร์ ม.1: จำนวนเต็ม</h1>
+        <div id="quiz-area"></div>
+    </div>
+
+    <script>
+        let lang = 'th';
+        const questions = [
+            { q_th: "(-5) + 3 มีค่าเท่ากับเท่าใด?", q_en: "What is the value of (-5) + 3?", a_th: ["2", "-2", "8", "-8"], a_en: ["2", "-2", "8", "-8"], correct: 1, th: "ติดลบมากกว่าค่าบวก", en: "Negative value is greater than the positive.", detail: "เมื่อจำนวนเต็มต่างชนิดกันบวกกัน ให้เอาค่าสัมบูรณ์มาลบกันแล้วใส่เครื่องหมายตามตัวที่มากกว่า" },
+            { q_th: "ผลคูณของ (-4) × (-6) คือเท่าใด?", q_en: "What is the product of (-4) × (-6)?", a_th: ["-24", "24", "-10", "10"], a_en: ["-24", "24", "-10", "10"], correct: 1, th: "ลบคูณลบได้บวก", en: "Negative times negative is positive.", detail: "เครื่องหมายเหมือนกันคูณกันได้บวกเสมอ" },
+            { q_th: "(-15) ÷ 3 มีค่าเท่ากับเท่าใด?", q_en: "What is the value of (-15) ÷ 3?", a_th: ["5", "-5", "12", "-12"], a_en: ["5", "-5", "12", "-12"], correct: 1, th: "ลบหารบวกได้ลบ", en: "Negative divided by positive is negative.", detail: "เครื่องหมายต่างกันหารกันได้ลบ" },
+            { q_th: "ข้อใดมีค่ามากที่สุด?", q_en: "Which has the greatest value?", a_th: ["-10", "-1", "0", "-5"], a_en: ["-10", "-1", "0", "-5"], correct: 2, th: "อยู่ทางขวาบนเส้นจำนวนที่สุด", en: "The one furthest to the right on the number line.", detail: "บนเส้นจำนวน ค่าที่อยู่ขวากว่าจะมีค่ามากกว่าเสมอ" },
+            { q_th: "ค่าสัมบูรณ์ของ -12 เขียนแทนด้วยสัญลักษณ์อย่างไร?", q_en: "How is the absolute value of -12 written?", a_th: ["-12", "|-12|", "12", "±12"], a_en: ["-12", "|-12|", "12", "±12"], correct: 1, th: "ใช้ขีดแนวตั้งครอบ", en: "Use vertical bars.", detail: "ค่าสัมบูรณ์คือระยะห่างจาก 0 มีค่าเป็นบวกเสมอ" },
+            { q_th: "8 - (-5) มีค่าเท่ากับเท่าใด?", q_en: "What is the value of 8 - (-5)?", a_th: ["3", "-3", "13", "-13"], a_en: ["3", "-3", "13", "-13"], correct: 2, th: "ลบของลบคือบวก", en: "Subtracting a negative is adding.", detail: "การลบด้วยจำนวนลบ คือการบวกด้วยจำนวนตรงข้าม" },
+            { q_th: "จำนวนเต็มบวกที่น้อยที่สุดคือเลขใด?", q_en: "What is the smallest positive integer?", a_th: ["0", "1", "-1", "ไม่มีคำตอบ"], a_en: ["0", "1", "-1", "None"], correct: 1, th: "เริ่มนับจาก 1", en: "Counting starts from 1.", detail: "จำนวนเต็มบวกเริ่มที่ 1, 2, 3... ส่วน 0 ไม่เป็นจำนวนเต็มบวก" },
+            { q_th: "(-2) × (-2) × (-2) มีค่าเท่ากับเท่าใด?", q_en: "What is the value of (-2) × (-2) × (-2)?", a_th: ["8", "-8", "6", "-6"], a_en: ["8", "-8", "6", "-6"], correct: 1, th: "ลบคูณกันจำนวนคี่ครั้ง", en: "Negative multiplied an odd number of times.", detail: "จำนวนลบยกกำลังคี่จะได้ค่าติดลบ" },
+            { q_th: "(-100) ÷ (-10) มีค่าเท่าใด?", q_en: "What is the value of (-100) ÷ (-10)?", a_th: ["10", "-10", "100", "-100"], a_en: ["10", "-10", "100", "-100"], correct: 0, th: "ลบหารลบได้บวก", en: "Negative divided by negative is positive.", detail: "เครื่องหมายเหมือนกันหารกันได้บวก" },
+            { q_th: "(-7) + (-7) มีค่าเท่าใด?", q_en: "What is the value of (-7) + (-7)?", a_th: ["0", "14", "-14", "49"], a_en: ["0", "14", "-14", "49"], correct: 2, th: "ติดลบเพิ่มขึ้น", en: "Negative value increases.", detail: "การบวกจำนวนลบกับจำนวนลบ ให้นำค่าสัมบูรณ์มาบวกกันแล้วใส่เครื่องหมายลบ" },
+            { q_th: "5 × (-3) + 2 มีค่าเท่าใด?", q_en: "What is the value of 5 × (-3) + 2?", a_th: ["-13", "-17", "13", "17"], a_en: ["-13", "-17", "13", "17"], correct: 0, th: "คูณก่อนบวกเสมอ", en: "Multiply before adding.", detail: "ตามลำดับการคำนวณ ต้องทำคูณหารก่อน แล้วค่อยทำบวก" },
+            { q_th: "จำนวนตรงข้ามของ 25 คืออะไร?", q_en: "What is the opposite of 25?", a_th: ["1/25", "-25", "25", "0"], a_en: ["1/25", "-25", "25", "0"], correct: 1, th: "เปลี่ยนเครื่องหมายหน้าตัวเลข", en: "Change the sign.", detail: "จำนวนตรงข้ามของ a คือ -a" },
+            { q_th: "(-20) - 5 มีค่าเท่าใด?", q_en: "What is the value of (-20) - 5?", a_th: ["-15", "15", "-25", "25"], a_en: ["-15", "15", "-25", "25"], correct: 2, th: "หนี้เพิ่มขึ้น", en: "Debt increases.", detail: "ติดลบอยู่แล้ว ลบออกไปอีก ค่าจะติดลบมากขึ้น" },
+            { q_th: "0 ÷ (-5) มีค่าเท่าใด?", q_en: "What is the value of 0 ÷ (-5)?", a_th: ["-5", "5", "0", "ไม่มีนิยาม"], a_en: ["-5", "5", "0", "Undefined"], correct: 2, th: "ศูนย์หารด้วยอะไรก็ได้ศูนย์", en: "Zero divided by anything is zero.", detail: "0 หารด้วยจำนวนใดๆ (ที่ไม่ใช่ 0) ได้ 0" },
+            { q_th: "ถ้า a = -3, b = 2 แล้ว a × b เท่ากับเท่าใด?", q_en: "If a = -3, b = 2, what is a × b?", a_th: ["-6", "6", "1", "-1"], a_en: ["-6", "6", "1", "-1"], correct: 0, th: "แทนค่าแล้วคูณ", en: "Substitute and multiply.", detail: "(-3) × 2 = -6" },
+            { q_th: "(-1) ยกกำลัง 100 มีค่าเท่าใด?", q_en: "What is (-1) to the power of 100?", a_th: ["-1", "1", "100", "-100"], a_en: ["-1", "1", "100", "-100"], correct: 1, th: "เลขชี้กำลังเป็นเลขคู่", en: "Exponent is an even number.", detail: "(-1) ยกกำลังเลขคู่ จะได้ 1" },
+            { q_th: "ข้อใดถูกต้อง?", q_en: "Which is correct?", a_th: ["-5 > 0", "-5 < -10", "-5 < 0", "-5 = 5"], a_en: ["-5 > 0", "-5 < -10", "-5 < 0", "-5 = 5"], correct: 2, th: "เลขลบมีค่าน้อยกว่าศูนย์", en: "Negative is less than zero.", detail: "จำนวนลบทุกจำนวนน้อยกว่า 0" },
+            { q_th: "(-4) × 0 × (-7) มีค่าเท่าใด?", q_en: "What is the value of (-4) × 0 × (-7)?", a_th: ["28", "-28", "0", "7"], a_en: ["28", "-28", "0", "7"], correct: 2, th: "คูณด้วยศูนย์ได้ศูนย์", en: "Anything times zero is zero.", detail: "ศูนย์คูณอะไรก็ได้ศูนย์" },
+            { q_th: "12 - 15 มีค่าเท่าใด?", q_en: "What is the value of 12 - 15?", a_th: ["3", "-3", "27", "-27"], a_en: ["3", "-3", "27", "-27"], correct: 1, th: "ผลต่างคือ 3 เครื่องหมายตามตัวมาก", en: "Difference is 3, sign follows the larger number.", detail: "12 - 15 = 12 + (-15) = -3" },
+            { q_th: "(-2)³ มีค่าเท่าใด?", q_en: "What is the value of (-2)³?", a_th: ["-8", "8", "-6", "6"], a_en: ["-8", "8", "-6", "6"], correct: 0, th: "(-2) x (-2) x (-2)", en: "(-2) x (-2) x (-2)", detail: "จำนวนลบยกกำลังคี่ ได้ค่าติดลบ" },
+            { q_th: "จำนวนเต็มคืออะไร?", q_en: "What is an integer?", a_th: ["เศษส่วน", "ทศนิยม", "..., -1, 0, 1, ...", "รูท"], a_en: ["Fraction", "Decimal", "..., -1, 0, 1, ...", "Root"], correct: 2, th: "จำนวนเต็มลบ ศูนย์ และเต็มบวก", en: "Negative, zero, and positive numbers.", detail: "จำนวนเต็มประกอบด้วยจำนวนเต็มบวก ศูนย์ และจำนวนเต็มลบ" },
+            { q_th: "(-8) ÷ (-8) มีค่าเท่าใด?", q_en: "What is the value of (-8) ÷ (-8)?", a_th: ["-1", "1", "0", "8"], a_en: ["-1", "1", "0", "8"], correct: 1, th: "เหมือนกันหารกันได้ 1", en: "Identical values divided is 1.", detail: "จำนวนที่เหมือนกันหารกันได้ 1" },
+            { q_th: "(-10) + (-5) + 10 มีค่าเท่าใด?", q_en: "What is the value of (-10) + (-5) + 10?", a_th: ["-5", "5", "-25", "25"], a_en: ["-5", "5", "-25", "25"], correct: 0, th: "รวมกลุ่มลบก่อน", en: "Group negatives first.", detail: "-10 - 5 + 10 = -15 + 10 = -5" },
+            { q_th: "a + (-a) เท่ากับเท่าใด?", q_en: "What is a + (-a)?", a_th: ["2a", "-2a", "0", "1"], a_en: ["2a", "-2a", "0", "1"], correct: 2, th: "จำนวนตรงข้ามรวมกันได้ศูนย์", en: "Opposites added equal zero.", detail: "จำนวนใดรวมกับจำนวนตรงข้ามได้ 0 เสมอ" },
+            { q_th: "(-5) - (-5) มีค่าเท่าใด?", q_en: "What is the value of (-5) - (-5)?", a_th: ["-10", "10", "0", "25"], a_en: ["-10", "10", "0", "25"], correct: 2, th: "จำนวนเดียวกันลบกัน", en: "Same number subtracted.", detail: "-5 + 5 = 0" }
+        ];
+
+        function renderQuiz() {
+            const area = document.getElementById('quiz-area');
+            area.innerHTML = '';
+            questions.forEach((q, i) => {
+                area.innerHTML += `
+                    <div class="question-container" id="q${i}">
+                        <p><strong>${i+1}. ${lang === 'th' ? q.q_th : q.q_en}</strong></p>
+                        ${(lang === 'th' ? q.a_th : q.a_en).map((opt, j) => `
+                            <div class="option" onclick="checkAnswer(${i}, ${j})">${opt}</div>
+                        `).join('')}
+                        <div class="answer-box" id="ans${i}">
+                            <p class="tip">${lang === 'th' ? 'คำใบ้: ' : 'Tip: '}${lang === 'th' ? q.th : q.en}</p>
+                            <p>${q.detail}</p>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function checkAnswer(qIdx, optIdx) {
+            const q = questions[qIdx];
+            const container = document.getElementById(`q${qIdx}`);
+            const options = container.getElementsByClassName('option');
+            document.getElementById(`ans${qIdx}`).style.display = 'block';
+            for(let i=0; i<4; i++) options[i].style.pointerEvents = 'none';
+            if(optIdx === q.correct) {
+                options[optIdx].classList.add('correct');
+            } else {
+                options[optIdx].classList.add('wrong');
+                options[q.correct].classList.add('correct');
+            }
+        }
+
+        function toggleLang() {
+            lang = lang === 'th' ? 'en' : 'th';
+            renderQuiz();
+        }
+        renderQuiz();
+    </script>
+</body>
+</html>
