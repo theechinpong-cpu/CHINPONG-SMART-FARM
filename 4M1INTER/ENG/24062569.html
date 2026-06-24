@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <title>Advanced English Midterm Exam - Phra Chom Klao Tutor</title>
+    <style>
+        body { font-family: 'Sarabun', sans-serif; line-height: 1.6; padding: 20px; max-width: 800px; margin: auto; background-color: #f4f4f9; }
+        .question-container { border: 1px solid #ccc; padding: 15px; margin-bottom: 20px; border-radius: 8px; background-color: white; }
+        .correct { background-color: #d4edda !important; }
+        .incorrect { background-color: #f8d7da !important; }
+        .btn-lang { margin-bottom: 20px; text-align: right; }
+        .tip { font-style: italic; color: #333; margin-top: 10px; display: none; padding: 10px; border-left: 4px solid #007bff; background: #e9ecef; }
+        h1 { text-align: center; color: #2c3e50; }
+    </style>
+</head>
+<body>
+    <div class="btn-lang"><button onclick="toggleLang()">Switch Language / สลับภาษา</button></div>
+    <h1 id="title">Advanced Midterm English Exam (Level: Hard)</h1>
+    <div id="quiz"></div>
+    <button onclick="submitExam()">Submit Exam / ส่งข้อสอบ</button>
+
+    <script>
+        let lang = 'th';
+        const data = [
+            { q_en: "Neither the teacher nor the students ___ at the assembly.", q_th: "ทั้งครูและนักเรียนไม่ได้อยู่ที่การประชุม", a_en: ["was", "were", "is", "be"], a_th: ["was", "were", "is", "be"], correct: 1, th: "ประธานใกล้กริยาคือ students", en: "Subject nearest to the verb (students) is plural.", detail: "ในโครงสร้าง Neither...nor ให้ผันกริยาตามประธานตัวหลัง (students) จึงใช้ were" },
+            { q_en: "Hardly ___ the door when the phone rang.", q_th: "ฉันแทบจะยังไม่ทันปิดประตูโทรศัพท์ก็ดังขึ้น", a_en: ["I had closed", "had I closed", "did I closed", "I closed"], a_th: ["I had closed", "had I closed", "did I closed", "I closed"], correct: 1, th: "ประโยคที่ขึ้นต้นด้วยคำกึ่งปฏิเสธต้องสลับกริยาช่วย (Inversion)", en: "Inversion is required after negative adverbs like Hardly.", detail: "Hardly เมื่อขึ้นต้นประโยค ต้องสลับประธานและกริยาช่วย (had I closed)" },
+            { q_en: "Each of the participants ___ a certificate.", q_th: "ผู้เข้าร่วมทุกคนได้รับประกาศนียบัตร", a_en: ["receive", "receives", "are receiving", "have received"], a_th: ["receive", "receives", "are receiving", "have received"], correct: 1, th: "Each เป็นเอกพจน์เสมอ", en: "Each is always singular.", detail: "Each of... ถือเป็นเอกพจน์ กริยาต้องเติม s" },
+            { q_en: "It is essential that he ___ on time.", q_th: "เป็นสิ่งจำเป็นที่เขาต้องมาให้ตรงเวลา", a_en: ["arrive", "arrives", "arrived", "to arrive"], a_th: ["arrive", "arrives", "arrived", "to arrive"], correct: 0, th: "Subjunctive mood: กริยาไม่ผัน", en: "Subjunctive mood requires the base form of the verb.", detail: "หลังโครงสร้าง It is essential that... กริยาต้องเป็นรูป base form (arrive)" },
+            { q_en: "Not only the teacher but also the principal ___ present.", q_th: "ไม่เพียงแค่ครู แต่ผอ.ก็มาด้วย", a_en: ["was", "were", "are", "have been"], a_th: ["was", "were", "are", "have been"], correct: 0, th: "Not only... but also ผันตามประธานตัวหลัง", en: "The verb agrees with the second subject (principal).", detail: "Principal เป็นเอกพจน์ ใช้ was" },
+            { q_en: "I suggest that she ___ a doctor.", q_th: "ฉันแนะนำให้เธอไปหาหมอ", a_en: ["see", "sees", "saw", "is seeing"], a_th: ["see", "sees", "saw", "is seeing"], correct: 0, th: "Subjunctive mood หลังคำแนะนำ", en: "Suggest requires the base form.", detail: "หลังคำว่า suggest ที่ตามด้วย that กริยาต้องเป็น base form" },
+            { q_en: "There ___ a lot of news today.", q_th: "วันนี้มีข่าวเยอะมาก", a_en: ["is", "are", "were", "have"], a_th: ["is", "are", "were", "have"], correct: 0, th: "News เป็นนามนับไม่ได้ (เอกพจน์)", en: "News is uncountable (singular).", detail: "News แม้ลงท้ายด้วย s แต่ถือเป็นเอกพจน์" },
+            { q_en: "Mathematics ___ my favorite subject.", q_th: "คณิตศาสตร์เป็นวิชาโปรดของฉัน", a_en: ["are", "is", "were", "have been"], a_th: ["are", "is", "were", "have been"], correct: 1, th: "ชื่อวิชาเป็นเอกพจน์", en: "Subject names are singular.", detail: "ชื่อวิชาลงท้ายด้วย s เสมอแต่ถือเป็นเอกพจน์" },
+            { q_en: "One of the boys ___ playing soccer.", q_th: "หนึ่งในเด็กผู้ชายกำลังเล่นฟุตบอล", a_en: ["is", "are", "were", "be"], a_th: ["is", "are", "were", "be"], correct: 0, th: "One of... ผันตาม One", en: "One is the subject.", detail: "One of the boys ประธานคือ One (เอกพจน์)" },
+            { q_en: "The number of students ___ increasing.", q_th: "จำนวนนักเรียนกำลังเพิ่มขึ้น", a_en: ["is", "are", "were", "have been"], a_th: ["is", "are", "were", "have been"], correct: 0, th: "The number of = เอกพจน์", en: "The number of... is singular.", detail: "The number of... ใช้ is แต่ถ้า A number of... ใช้ are" },
+            { q_en: "Neither she nor they ___ aware of the plan.", q_th: "ทั้งเธอและพวกเขาไม่รู้แผนงาน", a_en: ["is", "are", "was", "has been"], a_th: ["is", "are", "was", "has been"], correct: 1, th: "They เป็นประธานหลัก", en: "They is the subject.", detail: "ผันตามประธานตัวหลัง คือ they (พหูพจน์)" },
+            { q_en: "Either the manager or the staff ___ responsible.", q_th: "ไม่ผู้จัดการก็พนักงานที่ต้องรับผิดชอบ", a_en: ["is", "are", "was", "be"], a_th: ["is", "are", "was", "be"], correct: 1, th: "Staff เป็นประธานตัวหลัง", en: "Staff is plural.", detail: "Staff (พนักงาน) เป็นพหูพจน์" },
+            { q_en: "Physics ___ a difficult subject.", q_th: "ฟิสิกส์เป็นวิชาที่ยาก", a_en: ["is", "are", "were", "have"], a_th: ["is", "are", "were", "have"], correct: 0, th: "ฟิสิกส์ลงท้ายด้วย s แต่เป็นเอกพจน์", en: "Physics is singular.", detail: "Physics เป็นวิชา ใช้ is" },
+            { q_en: "The committee ___ decided to postpone.", q_th: "คณะกรรมการตัดสินใจเลื่อน", a_en: ["have", "has", "are", "were"], a_th: ["have", "has", "are", "were"], correct: 1, th: "Committee เป็นเอกพจน์ในบริบทกลุ่ม", en: "Committee is singular.", detail: "คณะกรรมการรวมเป็นหนึ่งหน่วย ใช้ has" },
+            { q_en: "Five dollars ___ too much for this.", q_th: "5 ดอลลาร์มันแพงเกินไปสำหรับสิ่งนี้", a_en: ["is", "are", "were", "be"], a_th: ["is", "are", "were", "be"], correct: 0, th: "จำนวนเงินถือเป็นหน่วยเดียว", en: "Money as a sum is singular.", detail: "จำนวนเงินที่ระบุเป็นก้อนเดียวถือเป็นเอกพจน์" },
+            { q_en: "Ten kilometers ___ a long way to walk.", q_th: "10 กิโลเมตรเป็นระยะทางที่ไกลสำหรับการเดิน", a_en: ["are", "is", "were", "have"], a_th: ["are", "is", "were", "have"], correct: 1, th: "ระยะทางถือเป็นหน่วยเดียว", en: "Distance as a unit is singular.", detail: "ระยะทางรวมถือเป็นหน่วยเดียว" },
+            { q_en: "Either John or his friends ___ going.", q_th: "ไม่จอห์นก็เพื่อนของเขาที่จะไป", a_en: ["is", "are", "am", "was"], a_th: ["is", "are", "am", "was"], correct: 1, th: "Friends เป็นพหูพจน์", en: "Friends is plural.", detail: "เพื่อนหลายคนใช้ are" },
+            { q_en: "The dog, along with its puppies, ___ in the garden.", q_th: "สุนัขพร้อมลูกๆ ของมันอยู่ในสวน", a_en: ["is", "are", "were", "be"], a_th: ["is", "are", "were", "be"], correct: 0, th: "Along with ไม่นับเป็นประธาน", en: "Along with is not the subject.", detail: "ประธานหลักคือ The dog (เอกพจน์)" },
+            { q_en: "Neither the boys nor their father ___ the secret.", q_th: "ทั้งเด็กชายและพ่อของเขาไม่รู้ความลับ", a_en: ["know", "knows", "knowing", "known"], a_th: ["know", "knows", "knowing", "known"], correct: 1, th: "Father เป็นเอกพจน์", en: "Father is singular.", detail: "Father ผันกับ knows" },
+            { q_en: "None of the cake ___ eaten.", q_th: "เค้กไม่ได้ถูกกินเลยสักนิด", a_en: ["was", "were", "are", "have"], a_th: ["was", "were", "are", "have"], correct: 0, th: "เค้กนับไม่ได้", en: "Cake is uncountable.", detail: "None of + นามนับไม่ได้ ใช้กริยาเอกพจน์" },
+            { q_en: "Everything ___ ready for the party.", q_th: "ทุกอย่างพร้อมสำหรับปาร์ตี้แล้ว", a_en: ["is", "are", "were", "have"], a_th: ["is", "are", "were", "have"], correct: 0, th: "Everything เป็นเอกพจน์", en: "Everything is singular.", detail: "Everything, Everybody, Someone เป็นเอกพจน์" },
+            { q_en: "A number of students ___ late.", q_th: "นักเรียนจำนวนหนึ่งมาสาย", a_en: ["is", "are", "was", "has"], a_th: ["is", "are", "was", "has"], correct: 1, th: "A number of + พหูพจน์", en: "A number of is plural.", detail: "A number of แปลว่าจำนวนหนึ่ง ใช้ are" },
+            { q_en: "The news ___ shocking.", q_th: "ข่าวนั้นน่าตกใจ", a_en: ["is", "are", "were", "be"], a_th: ["is", "are", "were", "be"], correct: 0, th: "News เป็นเอกพจน์", en: "News is singular.", detail: "ข่าวเป็นเอกพจน์เสมอ" },
+            { q_en: "Each person ___ to pay.", q_th: "แต่ละคนต้องจ่าย", a_en: ["have", "has", "are", "were"], a_th: ["have", "has", "are", "were"], correct: 1, th: "Each เป็นเอกพจน์", en: "Each is singular.", detail: "Each ผันตามเอกพจน์" },
+            { q_en: "Neither choice ___ acceptable.", q_th: "ไม่มีทางเลือกไหนที่ยอมรับได้", a_en: ["is", "are", "were", "have"], a_th: ["is", "are", "were", "have"], correct: 0, th: "Neither เป็นเอกพจน์", en: "Neither is singular.", detail: "Neither ของสองสิ่ง ถือเป็นเอกพจน์" }
+        ];
+
+        let score = 0, completed = 0;
+        function toggleLang() { lang = lang === 'th' ? 'en' : 'th'; renderQuiz(); }
+
+        function renderQuiz() {
+            const quizDiv = document.getElementById('quiz'); quizDiv.innerHTML = '';
+            data.forEach((item, i) => {
+                quizDiv.innerHTML += `<div class="question-container" id="q${i}">
+                    <p>${i+1}. ${lang === 'th' ? item.q_th : item.q_en}</p>
+                    ${(lang === 'th' ? item.a_th : item.a_en).map((opt, j) => `<input type="radio" name="q${i}" value="${j}" onclick="checkAnswer(${i}, ${j})"> ${opt}<br>`).join('')}
+                    <div class="tip" id="tip${i}"></div>
+                </div>`;
+            });
+        }
+
+        function checkAnswer(qIdx, choice) {
+            const container = document.getElementById(`q${qIdx}`), tip = document.getElementById(`tip${qIdx}`);
+            if(tip.style.display !== 'block') {
+                completed++;
+                if(choice === data[qIdx].correct) {
+                    score++; container.classList.add('correct');
+                    tip.innerHTML = `<strong>ถูกต้อง!</strong> ${data[qIdx].detail}<br><em>Tutor's Tip: ${lang === 'th' ? data[qIdx].th : data[qIdx].en}</em>`;
+                } else {
+                    container.classList.add('incorrect');
+                    tip.innerHTML = `<strong>ผิดพลาด!</strong> ${data[qIdx].detail}<br><em>Tutor's Tip: ${lang === 'th' ? data[qIdx].th : data[qIdx].en}</em>`;
+                }
+                tip.style.display = "block";
+            }
+        }
+
+        function submitExam() {
+            if(completed < 25) { alert("กรุณาตอบให้ครบทุกข้อก่อนส่งครับ"); return; }
+            let analysis = score >= 20 ? "🌟 ทำได้ดีมาก! คุณมีพื้นฐานทางตรรกะที่แข็งแกร่งมาก" : "⚠️ จุดอ่อนที่ต้องทบทวนเพิ่ม: การผันกริยา (Subject-Verb Agreement) ในประโยคซับซ้อน";
+            alert(`ส่งผลการเรียนไปยังติวเตอร์เรียบร้อยแล้ว (thee.chinpong@hmail.com)\nคะแนนรวม: ${score}/25\n\nวิเคราะห์ผล: ${analysis}`);
+        }
+        renderQuiz();
+    </script>
+</body>
+</html>
