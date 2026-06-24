@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>พระจอมเกล้าติวเตอร์ - ระบบข้อสอบจำลองกลางภาค ม.5 (เทอม 1)</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600;700&display=swap');
+        
+        :root {
+            --primary: #1e3a8a;
+            --secondary: #f59e0b;
+            --success: #10b981;
+            --danger: #ef4444;
+            --gray: #6b7280;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Prompt', sans-serif;
+            background: linear-gradient(135deg, #f8fafc 0%, #e0f2fe 100%);
+            color: #1e2937;
+            line-height: 1.6;
+        }
+        
+        header {
+            background: linear-gradient(135deg, var(--primary), #3b82f6);
+            color: white;
+            padding: 2rem 1rem;
+            text-align: center;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header-content h1 {
+            font-size: 2.2rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .header-content p {
+            font-size: 1.1rem;
+            opacity: 0.95;
+        }
+        
+        .container {
+            max-width: 1100px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+        
+        .subject-section {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            margin-bottom: 2.5rem;
+            overflow: hidden;
+        }
+        
+        .subject-header {
+            padding: 1.5rem 2rem;
+            background: linear-gradient(to right, var(--primary), #2563eb);
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .subject-header h2 {
+            font-size: 1.6rem;
+        }
+        
+        .subject-summary {
+            padding: 2rem;
+            background: #f8fafc;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 1.02rem;
+        }
+        
+        .summary-title {
+            color: var(--primary);
+            margin-bottom: 1rem;
+            font-size: 1.3rem;
+        }
+        
+        .questions-container {
+            padding: 2rem;
+        }
+        
+        .question {
+            margin-bottom: 2.2rem;
+            padding: 1.8rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            background: white;
+        }
+        
+        .question:hover {
+            border-color: #93c5fd;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+        }
+        
+        .question-number {
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 0.8rem;
+            font-size: 1.1rem;
+        }
+        
+        .question-text {
+            font-size: 1.1rem;
+            margin-bottom: 1.2rem;
+            font-weight: 500;
+        }
+        
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+        
+        .option {
+            padding: 1rem 1.2rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.05rem;
+        }
+        
+        .option:hover {
+            background: #f0f9ff;
+            border-color: #60a5fa;
+        }
+        
+        .option.selected {
+            border-color: var(--primary);
+            background: #eff6ff;
+            font-weight: 500;
+        }
+        
+        .feedback {
+            margin-top: 1rem;
+            padding: 1rem;
+            border-radius: 10px;
+            display: none;
+            font-size: 1rem;
+        }
+        
+        .feedback.correct {
+            background: #ecfdf5;
+            border: 1px solid #10b981;
+            color: #065f46;
+            display: block;
+        }
+        
+        .feedback.incorrect {
+            background: #fef2f2;
+            border: 1px solid #ef4444;
+            color: #991b1b;
+            display: block;
+        }
+        
+        .answer-label {
+            font-weight: 600;
+        }
+        
+        .dashboard {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            margin-top: 2rem;
+            text-align: center;
+        }
+        
+        .score-container {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            flex-wrap: wrap;
+            margin: 1.5rem 0;
+        }
+        
+        .score-card {
+            background: #f8fafc;
+            padding: 1.2rem 2rem;
+            border-radius: 12px;
+            min-width: 180px;
+            border: 3px solid var(--primary);
+        }
+        
+        .score-number {
+            font-size: 2.8rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        
+        button {
+            background: linear-gradient(135deg, var(--primary), #2563eb);
+            color: white;
+            border: none;
+            padding: 14px 32px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 10px;
+        }
+        
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.3);
+        }
+        
+        .weakness-analysis {
+            margin-top: 2rem;
+            text-align: left;
+        }
+        
+        .weakness-item {
+            background: #fefce8;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-radius: 10px;
+            border-left: 5px solid #eab308;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 2rem;
+            color: #64748b;
+            font-size: 0.95rem;
+        }
+        
+        @media (max-width: 768px) {
+            .header-content h1 {
+                font-size: 1.8rem;
+            }
+            .question {
+                padding: 1.4rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <h1>พระจอมเกล้าติวเตอร์</h1>
+            <p>ระบบข้อสอบจำลองกลางภาคเรียนที่ 1 ระดับชั้น มัธยมศึกษาปีที่ 5</p>
+        </div>
+    </header>
+
+    <div class="container">
+
+        <!-- สุขศึกษาและพลศึกษา -->
+        <div class="subject-section" id="subject1">
+            <div class="subject-header">
+                <h2>1. สุขศึกษาและพลศึกษา (พ32101)</h2>
+            </div>
+            <div class="subject-summary">
+                <div class="summary-title">📚 สรุปเนื้อหาสำคัญ</div>
+                <p>วิชาสุขศึกษาและพลศึกษามุ่งพัฒนาความรู้ความเข้าใจเกี่ยวกับสุขภาพกายและใจ การดำรงชีวิตอย่างมีคุณภาพ และการออกกำลังกายอย่างถูกวิธี เนื้อหาที่มักออกสอบบ่อย ได้แก่ ระบบต่อมไร้ท่อ ซึ่งควบคุมการหลั่งฮอร์โมนที่สำคัญต่อการเจริญเติบโตและการสืบพันธุ์ ระบบสืบพันธุ์ทั้งชายและหญิง รวมถึงการป้องกันโรคติดต่อทางเพศสัมพันธ์ ค่านิยมเรื่องเพศ ความขัดแย้งในครอบครัว โรคไม่ติดต่อเรื้อรัง (NCDs) เช่น เบาหวาน ความดันโลหิตสูง ไขมันในเลือดสูง และทักษะกติกาการเล่นกีฬา พร้อมการประเมินสมรรถภาพทางกาย</p>
+                <p><strong>เทคนิคการจำ:</strong> ระบบต่อมไร้ท่อจำด้วย "พี่หญิงอายุน้อย" (พิธิ์-ฮอร์โมน-ไทรอยด์-ฮอร์โมนเพศ) โรค NCDs จำด้วย "เบา ดัน ไขมัน หัวใจ" (เบาหวาน-ความดัน-ไขมัน-โรคหัวใจ)</p>
+                <p><strong>กระบวนการคิด:</strong> เมื่อเจอข้อสอบระบบสืบพันธุ์ ให้คิดถึง "หน้าที่หลัก" ก่อน แล้วจึงพิจารณาผลกระทบหากผิดปกติ สำหรับกติกากีฬา ให้จดจำกฎพื้นฐานและผู้เล่นแต่ละตำแหน่ง</p>
+                <p>นักเรียนควรฝึกวิเคราะห์สถานการณ์จริง เช่น การจัดการความเครียดในวัยรุ่น หรือการป้องกันโรค NCDs ผ่านการปรับพฤติกรรมการกินและออกกำลังกาย</p>
+            </div>
+            <div class="questions-container" id="questions1"></div>
+        </div>
+
+        <!-- ศิลปะ -->
+        <div class="subject-section" id="subject2">
+            <div class="subject-header">
+                <h2>2. ศิลปะ - ทัศนศิลป์ (ศ32101)</h2>
+            </div>
+            <div class="subject-summary">
+                <div class="summary-title">📚 สรุปเนื้อหาสำคัญ</div>
+                <p>วิชาทัศนศิลป์ศึกษาทัศนธาตุ (เส้น รูป ทรง สี พื้นผิว) หลักการออกแบบ (สมดุล จังหวะ เอกภาพ ความกลมกลืน) การวิจารณ์งานศิลปะด้วยหลักสุนทรียศาสตร์ และประวัติศาสตร์ศิลปะไทย-สากล ศิลปะไทยสำคัญ ได้แก่ ศิลปะสมัยสุโขทัย อยุธยา รัตนโกสินทร์ ศิลปะสากล เช่น Renaissance, Impressionism, Modern Art</p>
+                <p><strong>เทคนิคการจำ:</strong> หลักการออกแบบจำด้วย "สมดุลจังหวะเอกภาพกลมกลืน" (สม จ เอก ก) ทัศนธาตุจำด้วย "เส้นรูปทรงสีพื้นผิว"</p>
+                <p><strong>กระบวนการคิด:</strong> การวิจารณ์งานศิลปะใช้หลัก 3 ขั้นตอน: อธิบาย → วิเคราะห์ → ตีความ เมื่อเจอภาพ ให้สังเกตองค์ประกอบก่อน แล้วจึงวิเคราะห์อารมณ์และบริบททางประวัติศาสตร์</p>
+            </div>
+            <div class="questions-container" id="questions2"></div>
+        </div>
+
+        <!-- การงานอาชีพ -->
+        <div class="subject-section" id="subject3">
+            <div class="subject-header">
+                <h2>3. การงานอาชีพ (ง32101)</h2>
+            </div>
+            <div class="subject-summary">
+                <div class="summary-title">📚 สรุปเนื้อหาสำคัญ</div>
+                <p>วิชานี้เน้นทักษะการจัดการทรัพยากร การอนุรักษ์สิ่งแวดล้อม การทำงานเป็นทีม งานช่างพื้นฐาน งานเกษตร งานประดิษฐ์ และการจำลองการประกอบธุรกิจเบื้องต้น รวมถึงการวางแผนอาชีพและการตลาดพื้นฐาน</p>
+                <p><strong>เทคนิคการจำ:</strong> 4M+1E (Man, Machine, Material, Money + Environment) สำหรับการจัดการทรัพยากร</p>
+                <p><strong>กระบวนการคิด:</strong> เมื่อเจอปัญหาการผลิต ให้คิดตามลำดับ: วางแผน → หาทรัพยากร → ดำเนินการ → ควบคุมคุณภาพ → ประเมินผล</p>
+            </div>
+            <div class="questions-container" id="questions3"></div>
+        </div>
+
+        <!-- การศึกษาค้นคว้าอิสระ -->
+        <div class="subject-section" id="subject4">
+            <div class="subject-header">
+                <h2>4. การศึกษาค้นคว้าอิสระ IS1 (I30201)</h2>
+            </div>
+            <div class="subject-summary">
+                <div class="summary-title">📚 สรุปเนื้อหาสำคัญ</div>
+                <p>วิชานี้สอนวิธีการตั้งประเด็นปัญหาและสมมติฐาน การสืบค้นข้อมูล การอ้างอิงบรรณานุกรม การออกแบบเครื่องมือวิจัย (แบบสอบถาม สัมภาษณ์) และโครงสร้างรายงานการวิจัยบทที่ 1-3 (บทนำ ทบทวนวรรณกรรม วิธีดำเนินการวิจัย)</p>
+                <p><strong>เทคนิคการจำ:</strong> โครงสร้างรายงานจำด้วย "นำ ทบทวน วิธี" (บทนำ - ทบทวนวรรณกรรม - วิธีการวิจัย)</p>
+                <p><strong>กระบวนการคิด:</strong> การตั้งสมมติฐานต้องสมมติได้และทดสอบได้ (Testable) การอ้างอิงใช้รูปแบบ APA หรือ Vancouver</p>
+            </div>
+            <div class="questions-container" id="questions4"></div>
+        </div>
+
+        <div class="dashboard">
+            <h2>📊 ส่งข้อสอบและประเมินผล</h2>
+            <button onclick="submitExam()">ส่งข้อสอบและดูผลคะแนน</button>
+            
+            <div id="result" style="display: none; margin-top: 2rem;">
+                <div class="score-container">
+                    <div class="score-card">
+                        <div>สุขศึกษา</div>
+                        <div class="score-number" id="score1">0</div>
+                        <div>/ 20</div>
+                    </div>
+                    <div class="score-card">
+                        <div>ทัศนศิลป์</div>
+                        <div class="score-number" id="score2">0</div>
+                        <div>/ 20</div>
+                    </div>
+                    <div class="score-card">
+                        <div>การงานอาชีพ</div>
+                        <div class="score-number" id="score3">0</div>
+                        <div>/ 20</div>
+                    </div>
+                    <div class="score-card">
+                        <div>IS1</div>
+                        <div class="score-number" id="score4">0</div>
+                        <div>/ 20</div>
+                    </div>
+                </div>
+                
+                <div style="font-size: 2rem; font-weight: 700; margin: 1.5rem 0; color: var(--primary);" id="totalScore">คะแนนรวม: 0 / 80</div>
+                
+                <div class="weakness-analysis" id="weakness"></div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>© 2026 พระจอมเกล้าติวเตอร์ • ระบบฝึกฝนสำหรับนักเรียนมัธยมศึกษาปีที่ 5</p>
+    </footer>
+
+    <script>
+        // ข้อมูลข้อสอบทั้งหมด
+        const examData = {
+            subject1: [
+                {
+                    q: "1. ฮอร์โมนใดที่ผลิตจากต่อมไทรอยด์และช่วยควบคุมอัตราการเผาผลาญพลังงานในร่างกาย?",
+                    options: ["A. อินซูลิน", "B. ไทรอกซิน", "C. อะดรีนาลีน", "D. เอสโตรเจน"],
+                    correct: "B",
+                    explain: "ไทรอกซิน (Thyroxine) จากต่อมไทรอยด์ ควบคุมเมแทบอลิซึม หากขาดจะทำให้อ้วนและเหนื่อยง่าย"
+                },
+                {
+                    q: "2. โรคเบาหวานประเภทที่ 2 มักเกี่ยวข้องกับอะไรเป็นหลัก?",
+                    options: ["A. การขาดอินซูลินโดยสิ้นเชิง", "B. การดื้อต่ออินซูลินและการกินมากเกิน", "C. การติดเชื้อไวรัส", "D. พันธุกรรมเพียงอย่างเดียว"],
+                    correct: "B",
+                    explain: "เบาหวานชนิดที่ 2 เกิดจากร่างกายดื้อต่ออินซูลิน มักพบในผู้ใหญ่และเกี่ยวข้องกับพฤติกรรมการกินและขาดการออกกำลังกาย"
+                },
+                {
+                    q: "3. ระบบสืบพันธุ์เพศหญิงมีโครงสร้างหลักใดที่ผลิตไข่?",
+                    options: ["A. มดลูก", "B. รังไข่", "C. ท่อนำไข่", "D. ช่องคลอด"],
+                    correct: "B",
+                    explain: "รังไข่ (Ovaries) ผลิตไข่และฮอร์โมนเพศหญิง"
+                },
+                {
+                    q: "4. โรคไม่ติดต่อเรื้อรัง (NCDs) ที่พบบ่อยที่สุดในประเทศไทยคือโรคอะไร?",
+                    options: ["A. มะเร็ง", "B. เบาหวานและความดันโลหิตสูง", "C. ไข้หวัด", "D. วัณโรค"],
+                    correct: "B",
+                    explain: "เบาหวานและความดันโลหิตสูงเป็น NCDs อันดับต้นๆ ในไทย"
+                },
+                {
+                    q: "5. กติกาการเล่นบาสเกตบอล กฎพื้นฐานคือผู้เล่นแต่ละทีมมีผู้เล่นกี่คน?",
+                    options: ["A. 5 คน", "B. 6 คน", "C. 7 คน", "D. 11 คน"],
+                    correct: "A",
+                    explain: "บาสเกตบอลแข่งขัน 5 คนต่อข้าง"
+                },
+                // เพิ่มอีก 15 ข้อ (เพื่อความสมบูรณ์ ใช้ข้อสมมติฐานที่เหมาะสม)
+                {q: "6. ฮอร์โมนเพศชายหลักคืออะไร?", options: ["A. เอสโตรเจน", "B. เทสโทสเตอโรน", "C. โปรเจสเตอโรน", "D. อินซูลิน"], correct: "B", explain: "เทสโทสเตอโรนผลิตจากอัณฑะ"},
+                {q: "7. การป้องกันโรค NCDs ที่ดีที่สุดคือ?", options: ["A. กินยา", "B. ออกกำลังกายสม่ำเสมอและควบคุมอาหาร", "C. นอนมากๆ", "D. กินหวาน"], correct: "B", explain: "ปรับพฤติกรรมเป็นหัวใจสำคัญ"},
+                {q: "8. ต่อมใต้สมองทำหน้าที่อะไร?", options: ["A. ควบคุมต่อมอื่นๆ", "B. ผลิตน้ำดี", "C. กรองเลือด", "D. ผลิตน้ำลาย"], correct: "A", explain: "Master gland"},
+                {q: "9. กติกาวอลเลย์บอล ทีมละกี่คน?", options: ["A. 6 คน", "B. 5 คน", "C. 7 คน", "D. 4 คน"], correct: "A", explain: "วอลเลย์บอล 6 คนต่อทีม"},
+                {q: "10. โรคความดันโลหิตสูงเสี่ยงต่อโรคอะไร?", options: ["A. โรคหัวใจและหลอดเลือดสมอง", "B. ไข้หวัดใหญ่", "C. ไอกรน", "D. มาลาเรีย"], correct: "A", explain: "เป็นปัจจัยเสี่ยงโรคหลอดเลือด"},
+                {q: "11. ระบบสืบพันธุ์ชายมีอวัยวะหลักคืออะไร?", options: ["A. มดลูก", "B. อัณฑะ", "C. รังไข่", "D. ท่อนำไข่"], correct: "B", explain: "อัณฑะผลิตอสุจิ"},
+                {q: "12. การจัดการความเครียดที่ดีควรทำอย่างไร?", options: ["A. ออกกำลังกายและพูดคุย", "B. กินของหวาน", "C. นอนทั้งวัน", "D. เล่นเกมตลอด"], correct: "A", explain: "วิธีสุขภาพดี"},
+                {q: "13. สมรรถภาพทางกายวัดจากอะไร?", options: ["A. ความยืดหยุ่น ความแข็งแรง ความทนทาน", "B. ความสูง", "C. น้ำหนัก", "D. สีผิว"], correct: "A", explain: "Fitness components"},
+                {q: "14. อาหารที่ช่วยลดความเสี่ยง NCDs?", options: ["A. ผักผลไม้ธัญพืช", "B. ของทอด", "C. น้ำอัดลม", "D. ขนมหวาน"], correct: "A", explain: "ไฟเบอร์สูง"},
+                {q: "15. ต่อมหมวกไตผลิตฮอร์โมนอะไร?", options: ["A. อะดรีนาลีน", "B. อินซูลิน", "C. ไทรอกซิน", "D. เมลาโทนิน"], correct: "A", explain: "Fight or flight"},
+                {q: "16. กติกาฟุตบอล ผู้รักษาประตูทำอะไรได้พิเศษ?", options: ["A. จับลูกมือได้ในเขตโทษ", "B. ยิงไกลที่สุด", "C. วิ่งเร็วที่สุด", "D. เปลี่ยนชุด"], correct: "A", explain: "เฉพาะผู้รักษาประตู"},
+                {q: "17. ความขัดแย้งในครอบครัวควรแก้ด้วย?", options: ["A. การสื่อสารและเข้าใจกัน", "B. การทะเลาะ", "C. การหนีบ้าน", "D. การเงียบ"], correct: "A", explain: "Communication is key"},
+                {q: "18. ฮอร์โมนที่เกี่ยวข้องกับการนอนหลับ?", options: ["A. เมลาโทนิน", "B. เอสโตรเจน", "C. เทสโทสเตอโรน", "D. อินซูลิน"], correct: "A", explain: "จากต่อมไพเนียล"},
+                {q: "19. การวอร์มอัพก่อนเล่นกีฬามีประโยชน์อย่างไร?", options: ["A. ป้องกันการบาดเจ็บ", "B. ทำให้เหนื่อยเร็ว", "C. ลดความยืดหยุ่น", "D. ไม่มีประโยชน์"], correct: "A", explain: "เพิ่มอุณหภูมิกล้ามเนื้อ"},
+                {q: "20. โรคอ้วนลงพุงเสี่ยงต่อโรคอะไร?", options: ["A. เบาหวานและโรคหัวใจ", "B. หวัด", "C. ฟันผุ", "D. ตาแดง"], correct: "A", explain: "Metabolic syndrome"}
+            ],
+            subject2: [
+                {q: "1. ทัศนธาตุที่หมายถึง 'แสงสะท้อน' คืออะไร?", options: ["A. สี", "B. พื้นผิว", "C. รูปทรง", "D. เส้น"], correct: "A", explain: "สีเกิดจากแสงที่สะท้อน"},
+                {q: "2. หลักการออกแบบที่ทำให้งานดูมั่นคงคือ?", options: ["A. สมดุล", "B. จังหวะ", "C. เอกภาพ", "D. ความกลมกลืน"], correct: "A", explain: "Balance"},
+                {q: "3. ศิลปินสมัยเรเนซองส์ที่มีชื่อเสียงที่สุดคือใคร?", options: ["A. เลโอนาร์โด ดา วินชี", "B. ปิกัสโซ", "C. วานโก๊ะ", "D. โมเนต์"], correct: "A", explain: "Mona Lisa"},
+                {q: "4. งานศิลปะไทยสมัยสุโขทัยเด่นเรื่อง?", options: ["A. พระพุทธรูปแบบหุ่น", "B. ภาพเขียน", "C. ปฏิมากรรม", "D. สถาปัตยกรรม"], correct: "A", explain: "พระพุทธรูปสุโขทัย"},
+                {q: "5. หลักสุนทรียศาสตร์เน้นอะไร?", options: ["A. ความงามและอารมณ์", "B. ราคา", "C. ขนาด", "D. น้ำหนัก"], correct: "A", explain: "Aesthetics"},
+                // เพิ่มอีก 15 ข้อ
+                {q: "6. Impressionism เน้นอะไร?", options: ["A. แสงและสี", "B. รูปทรงเรขาคณิต", "C. ความมืด", "D. สัญลักษณ์"], correct: "A", explain: "แสงธรรมชาติ"},
+                {q: "7. หลักการออกแบบ 'เอกภาพ' คือ?", options: ["A. ความเป็นหนึ่งเดียว", "B. การเคลื่อนไหว", "C. ความสมดุล", "D. การซ้ำ"], correct: "A", explain: "Unity"},
+                {q: "8. ศิลปะรัตนโกสินทร์เด่นเรื่อง?", options: ["A. วัดและพระราชวัง", "B. ภาพเขียนนามธรรม", "C. ปั้นดิน", "D. ภาพพิมพ์"], correct: "A", explain: "สถาปัตยกรรมและประติมากรรม"},
+                {q: "9. เส้นประเภทไหนสื่อถึงความสงบ?", options: ["A. เส้นแนวนอน", "B. เส้นแนวตั้ง", "C. เส้นเฉียง", "D. เส้นโค้ง"], correct: "A", explain: "Horizontal lines"},
+                {q: "10. ปิกัสโซเป็นตัวแทนยุคใด?", options: ["A. Cubism", "B. Renaissance", "C. Baroque", "D. Pop Art"], correct: "A", explain: "ศิลปินสเปน"},
+                {q: "11. การวิจารณ์งานศิลปะขั้นแรกควรทำอะไร?", options: ["A. อธิบายสิ่งที่เห็น", "B. ตัดสินราคา", "C. เปรียบเทียบกับเพื่อน", "D. วัดขนาด"], correct: "A", explain: "Description"},
+                {q: "12. พื้นผิวในทัศนศิลป์หมายถึง?", options: ["A. ความรู้สึกสัมผัส", "B. สี", "C. รูปทรง", "D. เส้น"], correct: "A", explain: "Texture"},
+                {q: "13. งานประติมากรรมไทยโบราณมักทำจาก?", options: ["A. หินและโลหะ", "B. ผ้าไหม", "C. กระดาษ", "D. พลาสติก"], correct: "A", explain: "ประติมากรรม"},
+                {q: "14. หลักการ 'จังหวะ' เกิดจากการ?", options: ["A. การซ้ำและการเปลี่ยนแปลง", "B. การวางตรงกลาง", "C. การใช้สีเดียว", "D. การใช้เส้นตรง"], correct: "A", explain: "Rhythm"},
+                {q: "15. ศิลปะ Modern Art เริ่มประมาณยุคใด?", options: ["A. ปลายศตวรรษที่ 19", "B. ยุคกลาง", "C. ก่อนคริสต์กาล", "D. ปี 2000"], correct: "A", explain: "Late 19th century"},
+                {q: "16. สีที่ให้ความรู้สึกอบอุ่น?", options: ["A. สีแดง ส้ม", "B. สีน้ำเงิน", "C. สีเขียวอ่อน", "D. สีม่วง"], correct: "A", explain: "Warm colors"},
+                {q: "17. วัดพระแก้วเป็นตัวอย่างของสถาปัตยกรรมสมัย?", options: ["A. รัตนโกสินทร์", "B. สุโขทัย", "C. อยุธยา", "D. ล้านนา"], correct: "A", explain: "กรุงเทพฯ"},
+                {q: "18. การใช้สีตรงข้ามกันในวงล้อสีเรียกว่า?", options: ["A. Complementary", "B. Analogous", "C. Monochromatic", "D. Triadic"], correct: "A", explain: "สีเสริมกัน"},
+                {q: "19. ทัศนธาตุ 'ทรง' หมายถึง?", options: ["A. รูปสามมิติ", "B. เส้น", "C. สี", "D. แสง"], correct: "A", explain: "Form / Shape"},
+                {q: "20. ศิลปินไทยผู้มีชื่อเสียงด้านภาพเขียนร่วมสมัยคือ?", options: ["A. ธงชัย รุ่งเรือง", "B. เลโอนาร์โด", "C. โมเนต์", "D. ปิกัสโซ"], correct: "A", explain: "ตัวอย่างศิลปินไทย"}
+            ],
+            subject3: [
+                {q: "1. ทรัพยากร 4M หมายถึงอะไร?", options: ["A. Man, Machine, Material, Money", "B. Music, Movie, Money, Market", "C. Milk, Meat, Mango, Mango", "D. Map, Moon, Mars, Mercury"], correct: "A", explain: "ปัจจัยการผลิตหลัก"},
+                {q: "2. การทำงานร่วมกันที่สำคัญที่สุดคือ?", options: ["A. การสื่อสาร", "B. การแข่งขัน", "C. การนินทา", "D. การแอบทำ"], correct: "A", explain: "Communication"},
+                {q: "3. งานประดิษฐ์เชิงบูรณาการควรคำนึงถึงอะไร?", options: ["A. ความยั่งยืนและสิ่งแวดล้อม", "B. ราคาถูกที่สุด", "C. ความสวยงามอย่างเดียว", "D. ความเร็ว"], correct: "A", explain: "Sustainability"},
+                {q: "4. ผู้ประกอบการต้องมีคุณสมบัติอะไร?", options: ["A. ความคิดสร้างสรรค์และความเสี่ยง", "B. ความขี้เกียจ", "C. การรอคอย", "D. การโกหก"], correct: "A", explain: "Entrepreneurship"},
+                // เพิ่มอีก
+                {q: "5. การจัดการขยะที่ดีที่สุดคือ?", options: ["A. ลด  reuse  recycle", "B. เทลงแม่น้ำ", "C. เผา", "D. ฝัง"], correct: "A", explain: "3R"},
+                {q: "6. งานเกษตรแบบผสมผสานคืออะไร?", options: ["A. ปลูกพืชและเลี้ยงสัตว์ร่วมกัน", "B. ปลูกอย่างเดียว", "C. เลี้ยงสัตว์อย่างเดียว", "D. ใช้เครื่องจักรหนัก"], correct: "A", explain: "Integrated farming"},
+                {q: "7. SWOT Analysis ใช้ในการ?", options: ["A. วิเคราะห์ธุรกิจ", "B. ทำอาหาร", "C. ซ่อมรถ", "D. เล่นกีฬา"], correct: "A", explain: "Strength Weakness Opportunity Threat"},
+                {q: "8. การอนุรักษ์สิ่งแวดล้อมในโรงงานควรทำอย่างไร?", options: ["A. บำบัดน้ำเสียก่อนทิ้ง", "B. ทิ้งลงแม่น้ำ", "C. ไม่สนใจ", "D. เพิ่มการปล่อยควัน"], correct: "A", explain: "Environmental responsibility"},
+                {q: "9. งานช่างไม้พื้นฐานต้องคำนึงถึง?", options: ["A. ความปลอดภัย", "B. ความเร็วอย่างเดียว", "C. ราคาวัสดุ", "D. สี"], correct: "A", explain: "Safety first"},
+                {q: "10. การตลาดเบื้องต้นเริ่มจากอะไร?", options: ["A. การเข้าใจลูกค้า", "B. การโกหกลูกค้า", "C. การลดราคา", "D. การโฆษณาแพง"], correct: "A", explain: "Customer centric"},
+                {q: "11. ทรัพยากรหมุนเวียนคือ?", options: ["A. พลังงานแสงอาทิตย์", "B. น้ำมัน", "C. ถ่านหิน", "D. ก๊าซธรรมชาติ"], correct: "A", explain: "Renewable"},
+                {q: "12. การทำงานเป็นทีมช่วยให้?", options: ["A. งานเสร็จเร็วและมีคุณภาพ", "B. ช้า", "C. ขัดแย้งตลอด", "D. ไม่ต้องทำอะไร"], correct: "A", explain: "Synergy"},
+                {q: "13. ธุรกิจขนาดเล็กควรเริ่มจาก?", options: ["A. การวางแผนธุรกิจ", "B. ยืมเงินมหาศาล", "C. ไม่มีแผน", "D. คัดลอกคนอื่น"], correct: "A", explain: "Business plan"},
+                {q: "14. การประดิษฐ์จากวัสดุเหลือใช้เรียกว่า?", options: ["A. Upcycling", "B. Downcycling", "C. Recycling", "D. Throwing"], correct: "A", explain: "สร้างมูลค่าเพิ่ม"},
+                {q: "15. ปัจจัยแวดล้อมภายนอกที่สำคัญต่อธุรกิจ?", options: ["A. PEST Analysis", "B. สีเสื้อ", "C. อาหารเช้า", "D. เพลงโปรด"], correct: "A", explain: "Political Economic Social Technological"},
+                {q: "16. งานฝีมือไทยที่ขึ้นชื่อคือ?", options: ["A. ผ้าไหม  เครื่องปั้นดินเผา", "B. รถยนต์", "C. คอมพิวเตอร์", "D. โทรศัพท์"], correct: "A", explain: "Handicraft"},
+                {q: "17. การจัดการเวลาในโครงการควรใช้?", options: ["A. Gantt Chart", "B. ภาพวาด", "C. เพลง", "D. หนังสือการ์ตูน"], correct: "A", explain: "เครื่องมือวางแผน"},
+                {q: "18. ความยั่งยืนทางธุรกิจหมายถึง?", options: ["A. ทำกำไรโดยไม่ทำลายสิ่งแวดล้อม", "B. ทำกำไรอย่างเดียว", "C. ปิดกิจการเร็ว", "D. ขายแล้วหนี"], correct: "A", explain: "Sustainable development"},
+                {q: "19. ทักษะที่จำเป็นสำหรับผู้ประกอบการ?", options: ["A. การแก้ปัญหา", "B. การนอน", "C. การเล่นเกม", "D. การซื้อของ"], correct: "A", explain: "Problem solving"},
+                {q: "20. การเกษตรอินทรีย์ไม่ใช้?", options: ["A. สารเคมีสังเคราะห์", "B. ปุ๋ยหมัก", "C. แมลงธรรมชาติ", "D. เมล็ดพันธุ์พื้นเมือง"], correct: "A", explain: "No chemical"}
+            ],
+            subject4: [
+                {q: "1. ขั้นตอนแรกของการวิจัยคือ?", options: ["A. การตั้งประเด็นปัญหา", "B. การสรุปผล", "C. การอ้างอิง", "D. การพิมพ์รายงาน"], correct: "A", explain: "Research question"},
+                {q: "2. สมมติฐานต้องมีลักษณะอย่างไร?", options: ["A. ทดสอบได้", "B. ยาวที่สุด", "C. สวยที่สุด", "D. แพงที่สุด"], correct: "A", explain: "Testable hypothesis"},
+                {q: "3. การอ้างอิงบรรณานุกรมใช้อะไร?", options: ["A. APA style", "B. ภาพวาด", "C. เพลง", "D. วิดีโอ"], correct: "A", explain: "Standard citation"},
+                {q: "4. บทที่ 2 ของรายงานวิจัยคือ?", options: ["A. ทบทวนวรรณกรรม", "B. วิธีการวิจัย", "C. ผลการวิจัย", "D. บทนำ"], correct: "A", explain: "Literature review"},
+                // เพิ่มอีก
+                {q: "5. เครื่องมือวิจัยที่นิยมใช้สัมภาษณ์คือ?", options: ["A. แบบสอบถาม", "B. กล้องถ่ายรูป", "C. คอมพิวเตอร์", "D. โทรศัพท์"], correct: "A", explain: "Questionnaire"},
+                {q: "6. ประชากรและกลุ่มตัวอย่างต่างกันอย่างไร?", options: ["A. ประชากรคือทั้งหมด กลุ่มตัวอย่างคือส่วนหนึ่ง", "B. เหมือนกัน", "C. กลุ่มตัวอย่างใหญ่กว่า", "D. ไม่เกี่ยวข้อง"], correct: "A", explain: "Population vs Sample"},
+                {q: "7. การค้นข้อมูลที่น่าเชื่อถือควรใช้?", options: ["A. ฐานข้อมูลวิชาการ", "B. โซเชียลมีเดีย", "C. เว็บสุ่ม", "D. เพื่อนพูด"], correct: "A", explain: "Scholarly sources"},
+                {q: "8. โครงสร้างรายงานบทที่ 3 คือ?", options: ["A. วิธีดำเนินการวิจัย", "B. บทนำ", "C. ผลการวิจัย", "D. สรุป"], correct: "A", explain: "Methodology"},
+                {q: "9. ตัวแปรตาม (Dependent Variable) คืออะไร?", options: ["A. ผลลัพธ์ที่วัดได้", "B. สาเหตุ", "C. ชื่อเรื่อง", "D. วันที่"], correct: "A", explain: "Outcome variable"},
+                {q: "10. การวิจัยเชิงคุณภาพเน้นอะไร?", options: ["A. ความลึกซึ้งของข้อมูล", "B. จำนวนมาก", "C. สถิติ", "D. ตัวเลข"], correct: "A", explain: "Qualitative research"},
+                {q: "11. การตั้งชื่อเรื่องวิจัยควร?", options: ["A. ชัดเจนและกระชับ", "B. ยาวมาก", "C. มีอารมณ์", "D. เป็นภาษาอังกฤษอย่างเดียว"], correct: "A", explain: "Clear title"},
+                {q: "12. บรรณานุกรมคือ?", options: ["A. รายการเอกสารอ้างอิง", "B. รูปภาพ", "C. ตารางผล", "D. สรุป"], correct: "A", explain: "References"},
+                {q: "13. การสุ่มตัวอย่างแบบง่ายเรียกว่า?", options: ["A. Simple random sampling", "B. Quota", "C. Snowball", "D. Purposive"], correct: "A", explain: "Basic sampling"},
+                {q: "14. วัตถุประสงค์ของการวิจัยอยู่ในบทใด?", options: ["A. บทนำ", "B. วิธีการ", "C. ผล", "D. สรุป"], correct: "A", explain: "Chapter 1"},
+                {q: "15. ข้อมูลปฐมภูมิได้จาก?", options: ["A. การเก็บข้อมูลใหม่", "B. หนังสือเก่า", "C. อินเทอร์เน็ต", "D. วิกิพีเดีย"], correct: "A", explain: "Primary data"},
+                {q: "16. การวิจัยเชิงปริมาณใช้เครื่องมืออะไร?", options: ["A. สถิติ", "B. บทสัมภาษณ์ลึก", "C. การสังเกต", "D. ภาพถ่าย"], correct: "A", explain: "Quantitative"},
+                {q: "17. ขอบเขตของการวิจัยหมายถึง?", options: ["A. ขอบเขตที่ทำ", "B. ราคา", "C. สี", "D. ความยาวกระดาษ"], correct: "A", explain: "Scope and limitation"},
+                {q: "18. การอ้างอิงในเนื้อหาใช้เครื่องหมายอะไร?", options: ["A. (Author, Year)", "B. *", "C. #", "D. @"], correct: "A", explain: "In-text citation"},
+                {q: "19. สรุปผลการวิจัยอยู่ในบทใด?", options: ["A. บทที่ 5", "B. บทที่ 1", "C. บทที่ 2", "D. บทที่ 3"], correct: "A", explain: "Conclusion"},
+                {q: "20. การวิจัยที่ดีต้องมี?", options: ["A. ความซื่อสัตย์ทางวิชาการ", "B. การคัดลอก", "C. การแต่งข้อมูล", "D. การโกหก"], correct: "A", explain: "Academic integrity"}
+            ]
+        };
+
+        // สร้างคำถาม
+        function createQuestions(subjectId, questions, containerId) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            
+            questions.forEach((item, index) => {
+                const qDiv = document.createElement('div');
+                qDiv.className = 'question';
+                qDiv.innerHTML = `
+                    <div class="question-number">${item.q.split('.')[0]}</div>
+                    <div class="question-text">${item.q.substring(item.q.indexOf('.') + 1).trim()}</div>
+                    <div class="options" id="options-${subjectId}-${index}"></div>
+                    <div class="feedback" id="feedback-${subjectId}-${index}"></div>
+                `;
+                container.appendChild(qDiv);
+                
+                const optionsContainer = document.getElementById(`options-${subjectId}-${index}`);
+                
+                item.options.forEach(opt => {
+                    const optDiv = document.createElement('div');
+                    optDiv.className = 'option';
+                    optDiv.textContent = opt;
+                    optDiv.onclick = () => selectAnswer(subjectId, index, opt, item.correct, item.explain, optDiv);
+                    optionsContainer.appendChild(optDiv);
+                });
+            });
+        }
+
+        let userAnswers = {
+            subject1: new Array(20).fill(null),
+            subject2: new Array(20).fill(null),
+            subject3: new Array(20).fill(null),
+            subject4: new Array(20).fill(null)
+        };
+
+        function selectAnswer(subjectId, qIndex, selected, correct, explain, element) {
+            // ล้างการเลือกก่อนหน้า
+            const options = element.parentElement.children;
+            for (let opt of options) {
+                opt.classList.remove('selected');
+            }
+            element.classList.add('selected');
+            
+            userAnswers[subjectId][qIndex] = selected;
+            
+            // แสดง feedback ทันที
+            const feedbackDiv = document.getElementById(`feedback-${subjectId}-${qIndex}`);
+            const isCorrect = selected.charAt(0) === correct;
+            
+            feedbackDiv.innerHTML = `
+                <strong class="answer-label">${isCorrect ? '✅ ถูกต้อง!' : '❌ ผิด'}</strong><br>
+                <strong>คำตอบที่ถูกต้องคือ ${correct}</strong><br>
+                <p>${explain}</p>
+            `;
+            feedbackDiv.className = `feedback ${isCorrect ? 'correct' : 'incorrect'}`;
+        }
+
+        // ส่งข้อสอบ
+        function submitExam() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.style.display = 'block';
+            
+            let total = 0;
+            
+            // คำนวณแต่ละวิชา
+            Object.keys(examData).forEach((sub, idx) => {
+                let score = 0;
+                const answers = userAnswers[`subject${idx+1}`];
+                const questions = examData[sub];
+                
+                answers.forEach((ans, i) => {
+                    if (ans && ans.charAt(0) === questions[i].correct) score++;
+                });
+                
+                document.getElementById(`score${idx+1}`).textContent = score;
+                total += score;
+            });
+            
+            document.getElementById('totalScore').innerHTML = `คะแนนรวม: <strong>${total} / 80</strong>`;
+            
+            // วิเคราะห์จุดอ่อน (ตัวอย่าง)
+            let weaknessHTML = `<h3>📍 วิเคราะห์จุดอ่อน</h3>`;
+            
+            if (total < 60) {
+                weaknessHTML += `<div class="weakness-item">คุณควรทบทวนเนื้อหาทั้ง 4 วิชา โดยเฉพาะส่วนทฤษฎีพื้นฐานและการนำไปใช้จริง</div>`;
+            } else if (total < 70) {
+                weaknessHTML += `<div class="weakness-item">เก่งมาก! แต่ควรฝึกการวิเคราะห์สถานการณ์ให้มากขึ้น</div>`;
+            } else {
+                weaknessHTML += `<div class="weakness-item">เยี่ยมมาก! คุณเข้าใจเนื้อหาดีเยี่ยม</div>`;
+            }
+            
+            document.getElementById('weakness').innerHTML = weaknessHTML;
+        }
+
+        // โหลดคำถามทั้งหมด
+        window.onload = function() {
+            createQuestions('subject1', examData.subject1, 'questions1');
+            createQuestions('subject2', examData.subject2, 'questions2');
+            createQuestions('subject3', examData.subject3, 'questions3');
+            createQuestions('subject4', examData.subject4, 'questions4');
+        };
+    </script>
+</body>
+</html>
