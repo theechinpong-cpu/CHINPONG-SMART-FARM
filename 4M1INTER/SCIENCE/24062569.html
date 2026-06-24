@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <title>พระจอมเกล้าติวเตอร์ - ข้อสอบวิทยาศาสตร์ ม.1</title>
+    <style>
+        body { font-family: 'Sarabun', sans-serif; background: #f4f7f6; padding: 20px; }
+        .container { max-width: 800px; margin: auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .question-container { margin-bottom: 25px; padding: 15px; border: 1px solid #ddd; border-radius: 8px; }
+        .option { display: block; padding: 10px; margin: 5px 0; border: 1px solid #ccc; cursor: pointer; border-radius: 5px; transition: 0.3s; }
+        .correct { background-color: #2ecc71 !important; color: white; border-color: #27ae60; }
+        .wrong { background-color: #e74c3c !important; color: white; border-color: #c0392b; }
+        .answer-box { margin-top: 10px; padding: 10px; background: #f9f9f9; display: none; border-left: 5px solid #e74c3c; }
+        .tip { color: #e74c3c; font-weight: bold; }
+        #summary { margin-top: 20px; padding: 20px; border-top: 2px solid #333; display: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <button onclick="toggleLang()">Switch Language (TH/EN)</button>
+        <h1 id="title">แนวข้อสอบวิทยาศาสตร์ ม.1</h1>
+        <div id="quiz-area"></div>
+        <div id="summary"></div>
+    </div>
+
+    <script>
+        let lang = 'th';
+        let scores = 0;
+        const questions = [
+    { q_th: "หากนำเซลล์พืชไปแช่ในสารละลายน้ำตาลที่มีความเข้มข้นสูงมาก สิ่งใดจะเกิดขึ้นเป็นอันดับแรก?", q_en: "What happens first when a plant cell is placed in a highly concentrated sugar solution?", a_th: ["เซลล์ขยายตัว", "น้ำออสโมซิสออกจากเซลล์", "น้ำออสโมซิสเข้าสู่เซลล์", "ผนังเซลล์สลายตัว"], a_en: ["Cell expands", "Water leaves the cell via osmosis", "Water enters the cell via osmosis", "Cell wall decomposes"], correct: 1, th: "น้ำจะเคลื่อนที่จากที่ที่มีความเข้มข้นต่ำไปสูง", en: "Water moves from low to high concentration.", detail: "ภาวะสารละลายเข้มข้นสูง (Hypertonic) จะดึงน้ำออกจากเซลล์ผ่านเยื่อหุ้มเซลล์" },
+    { q_th: "ในการแยกของผสมที่มีจุดเดือดใกล้กันมาก วิธีการใดให้ความบริสุทธิ์สูงที่สุด?", q_en: "Which method yields the highest purity for separating mixtures with very close boiling points?", a_th: ["การกลั่นธรรมดา", "การกลั่นลำดับส่วน", "การระเหยแห้ง", "การตกผลึก"], a_en: ["Simple distillation", "Fractional distillation", "Evaporation", "Crystallization"], correct: 1, th: "ใช้หอกลั่นช่วยแยกหลายรอบ", en: "Uses a fractionating column to separate repeatedly.", detail: "การกลั่นลำดับส่วนมีหอกลั่นที่ช่วยให้เกิดการกลั่นซ้ำหลายครั้ง ทำให้แยกสารได้แม่นยำกว่า" },
+    { q_th: "เหตุใดในอวกาศเราจึงไม่สามารถได้ยินเสียงระเบิด?", q_en: "Why can't we hear explosions in space?", a_th: ["เสียงเคลื่อนที่ช้าเกินไป", "ไม่มีตัวกลางในการส่งผ่านเสียง", "เสียงสะท้อนกลับหมด", "อวกาศมีความดันต่ำมาก"], a_en: ["Sound is too slow", "No medium to transmit sound", "Sound reflects completely", "Space has very low pressure"], correct: 1, th: "เสียงเป็นคลื่นกลที่ต้องอาศัยตัวกลาง", en: "Sound is a mechanical wave requiring a medium.", detail: "เสียงต้องอาศัยอนุภาคของตัวกลางในการสั่นเพื่อส่งผ่านพลังงาน ในอวกาศเป็นสุญญากาศจึงไม่มีตัวกลาง" },
+    { q_th: "ออร์แกเนลล์ใดทำหน้าที่เป็นโรงไฟฟ้าของเซลล์ (ผลิต ATP)?", q_en: "Which organelle acts as the powerhouse of the cell?", a_th: ["คลอโรพลาสต์", "นิวเคลียส", "ไมโทคอนเดรีย", "ไรโบโซม"], a_en: ["Chloroplast", "Nucleus", "Mitochondria", "Ribosome"], correct: 2, th: "เกี่ยวข้องกับการหายใจระดับเซลล์", en: "Involved in cellular respiration.", detail: "ไมโทคอนเดรียทำหน้าที่สลายสารอาหารเพื่อเปลี่ยนเป็นพลังงานในรูป ATP" },
+    { q_th: "ข้อใดคือลำดับขั้นของการสังเคราะห์ด้วยแสงที่ถูกต้อง?", q_en: "What is the correct sequence of photosynthesis?", a_th: ["แสง -> คลอโรฟิลล์ -> น้ำตาล", "น้ำตาล -> แสง -> คลอโรฟิลล์", "คลอโรฟิลล์ -> แสง -> ออกซิเจน", "แสง -> น้ำตาล -> คลอโรฟิลล์"], a_en: ["Light -> Chlorophyll -> Sugar", "Sugar -> Light -> Chlorophyll", "Chlorophyll -> Light -> Oxygen", "Light -> Sugar -> Chlorophyll"], correct: 0, th: "พลังงานแสงเปลี่ยนเป็นพลังงานเคมี", en: "Light energy converted to chemical energy.", detail: "คลอโรฟิลล์จับพลังงานแสงเพื่อเปลี่ยนน้ำและคาร์บอนไดออกไซด์เป็นน้ำตาลกลูโคส" },
+    { q_th: "หากวัตถุชิ้นหนึ่งหนัก 100 กรัม มีปริมาตร 20 ลูกบาศก์เซนติเมตร ความหนาแน่นคือเท่าใด?", q_en: "If an object weighs 100g and has a volume of 20cm³, what is its density?", a_th: ["2 g/cm³", "5 g/cm³", "20 g/cm³", "50 g/cm³"], a_en: ["2 g/cm³", "5 g/cm³", "20 g/cm³", "50 g/cm³"], correct: 1, th: "d = m/v", en: "d = m/v", detail: "d = 100/20 = 5 g/cm³" },
+    { q_th: "ข้อใดไม่ใช่สารบริสุทธิ์?", q_en: "Which is not a pure substance?", a_th: ["น้ำกลั่น", "ทองคำแท้", "อากาศ", "เพชร"], a_en: ["Distilled water", "Pure gold", "Air", "Diamond"], correct: 2, th: "อากาศเป็นสารผสม", en: "Air is a mixture.", detail: "อากาศเป็นสารผสมของก๊าซหลายชนิด (ไนโตรเจน, ออกซิเจน, อาร์กอน) ไม่ใช่สารบริสุทธิ์" },
+    { q_th: "การแพร่ (Diffusion) เกิดขึ้นเร็วที่สุดในสถานะใด?", q_en: "Diffusion occurs fastest in which state?", a_th: ["ของแข็ง", "ของเหลว", "แก๊ส", "พลาสม่า"], a_en: ["Solid", "Liquid", "Gas", "Plasma"], correct: 2, th: "อนุภาคเคลื่อนที่ได้อิสระและเร็ว", en: "Particles move freely and fast.", detail: "ในสถานะแก๊ส อนุภาคอยู่ห่างกันและเคลื่อนที่ด้วยความเร็วสูง ทำให้การแพร่เกิดได้เร็วที่สุด" },
+    { q_th: "กล้องจุลทรรศน์ที่ใช้แสง หากเลนส์ใกล้ตาขยาย 10 เท่า และเลนส์ใกล้วัตถุขยาย 40 เท่า ภาพจะมีกำลังขยายเท่าใด?", q_en: "If the eyepiece is 10x and the objective lens is 40x, what is the total magnification?", a_th: ["50 เท่า", "100 เท่า", "400 เท่า", "4000 เท่า"], a_en: ["50x", "100x", "400x", "4000x"], correct: 2, th: "กำลังขยายรวม = เลนส์ใกล้ตา x เลนส์ใกล้วัตถุ", en: "Total Mag = Eyepiece x Objective.", detail: "10 x 40 = 400 เท่า" },
+    { q_th: "สารละลายอิ่มตัวคืออะไร?", q_en: "What is a saturated solution?", a_th: ["สารที่ละลายได้อีกไม่จำกัด", "สารที่ละลายเพิ่มไม่ได้แล้วที่อุณหภูมิหนึ่ง", "สารที่มีรสหวานจัด", "สารที่อุณหภูมิสูงมาก"], a_en: ["Substance that dissolves infinitely", "Substance that cannot dissolve more at a given temperature", "Very sweet substance", "Very high temperature substance"], correct: 1, th: "ตัวทำละลายรับตัวละลายได้เต็มที่แล้ว", en: "The solvent has accepted the maximum solute.", detail: "ณ อุณหภูมิหนึ่ง ตัวทำละลายไม่สามารถละลายตัวละลายเพิ่มได้อีก" },
+    { q_th: "การถ่ายโอนความร้อนจากดวงอาทิตย์มายังโลกคืออะไร?", q_en: "How does heat transfer from the sun to Earth?", a_th: ["การนำความร้อน", "การพาความร้อน", "การแผ่รังสี", "การเปลี่ยนสถานะ"], a_en: ["Conduction", "Convection", "Radiation", "Phase change"], correct: 2, th: "เดินทางผ่านอวกาศได้", en: "Travels through space.", detail: "รังสีความร้อนเป็นคลื่นแม่เหล็กไฟฟ้า จึงผ่านสุญญากาศมายังโลกได้" },
+    { q_th: "ออร์แกเนลล์ใดพบเฉพาะในเซลล์พืช?", q_en: "Which organelle is found only in plant cells?", a_th: ["นิวเคลียส", "คลอโรพลาสต์", "ไมโทคอนเดรีย", "ไรโบโซม"], a_en: ["Nucleus", "Chloroplast", "Mitochondria", "Ribosome"], correct: 1, th: "ใช้สังเคราะห์แสง", en: "Used for photosynthesis.", detail: "คลอโรพลาสต์ใช้สร้างอาหาร พบในพืชแต่ไม่พบในเซลล์สัตว์" },
+    { q_th: "ข้อใดจัดเป็นสารประกอบ?", q_en: "Which is a compound?", a_th: ["ออกซิเจน", "ทองแดง", "น้ำตาลทราย", "เหล็ก"], a_en: ["Oxygen", "Copper", "Sugar", "Iron"], correct: 2, th: "ประกอบด้วยธาตุต่างชนิดรวมกันทางเคมี", en: "Composed of different elements combined chemically.", detail: "น้ำตาลทรายคือ C12H22O11 เกิดจากธาตุคาร์บอน ไฮโดรเจน และออกซิเจน" },
+    { q_th: "ความดันอากาศจะมีค่าต่ำที่สุดในตำแหน่งใด?", q_en: "Where is air pressure lowest?", a_th: ["ยอดเขาสูง", "ระดับน้ำทะเล", "ก้นหุบเขา", "ใต้ดิน"], a_en: ["Mountain peak", "Sea level", "Valley bottom", "Underground"], correct: 0, th: "ยิ่งสูง อากาศยิ่งบาง", en: "The higher, the thinner the air.", detail: "บนยอดเขาสูงมีมวลอากาศกดทับน้อยกว่า ทำให้ความดันอากาศต่ำ" },
+    { q_th: "หากต้องการตรวจสอบว่าก๊าซที่เกิดขึ้นจากการต้มน้ำคืออะไร ควรทำอย่างไร?", q_en: "How to check what gas is produced when boiling water?", a_th: ["ใช้ไฟลน", "ใช้น้ำปูนใส", "ผ่านกระดาษลิตมัส", "ระเหยทิ้งไป"], a_en: ["Use flame", "Use limewater", "Use litmus paper", "Evaporate"], correct: 3, th: "การต้มน้ำได้ไอน้ำ", en: "Boiling water produces water vapor.", detail: "ไอน้ำคือสถานะหนึ่งของน้ำ ไม่ใช่ก๊าซใหม่" },
+    { q_th: "หน่วยวัดค่าความร้อน SI คืออะไร?", q_en: "What is the SI unit for heat?", a_th: ["แคลอรี", "จูล (Joule)", "วัตต์", "องศาเซลเซียส"], a_en: ["Calorie", "Joule", "Watt", "Celsius"], correct: 1, th: "จูลตามมาตรฐานสากล", en: "Joule is the international standard.", detail: "พลังงานความร้อนในระบบ SI มีหน่วยเป็นจูล" },
+    { q_th: "ผนังเซลล์ของพืชประกอบด้วยสารใด?", q_en: "What substance is the plant cell wall made of?", a_th: ["โปรตีน", "ไขมัน", "เซลลูโลส", "ไคติน"], a_en: ["Protein", "Lipid", "Cellulose", "Chitin"], correct: 2, th: "ให้ความแข็งแรง", en: "Provides strength.", detail: "เซลลูโลสเป็นคาร์โบไฮเดรตเชิงซ้อนที่ให้ความแข็งแรงแก่พืช" },
+    { q_th: "การแยกเกลือออกจากน้ำทะเลใช้วิธีใดดีที่สุด?", q_en: "What is the best way to separate salt from seawater?", a_th: ["การกรอง", "การตกผลึก", "การกลั่น", "การหยิบออก"], a_en: ["Filtration", "Crystallization", "Distillation", "Hand picking"], correct: 1, th: "ระเหยตัวทำละลายออก", en: "Evaporate the solvent.", detail: "การตกผลึกใช้แยกของแข็งที่ละลายในของเหลวได้ดี" },
+    { q_th: "เหตุใดน้ำแข็งจึงลอยน้ำ?", q_en: "Why does ice float on water?", a_th: ["มีความหนาแน่นมากกว่าน้ำ", "ความหนาแน่นน้อยกว่าน้ำ", "มีฟองอากาศข้างใน", "แรงดันอากาศผลักขึ้น"], a_en: ["Higher density than water", "Lower density than water", "Contains air bubbles", "Air pressure pushes it up"], correct: 1, th: "โครงสร้างน้ำแข็งมีความหนาแน่นต่ำ", en: "Ice structure has lower density.", detail: "เมื่อน้ำแข็งตัว โมเลกุลเรียงตัวเป็นโครงสร้างโปร่ง ทำให้ความหนาแน่นต่ำกว่าน้ำเหลว" },
+    { q_th: "อะไรคือหัวใจของการออกแบบการทดลอง?", q_en: "What is the heart of experiment design?", a_th: ["ทำหลายๆ ครั้ง", "ควบคุมตัวแปรให้ดี", "จดบันทึกให้เร็ว", "คาดเดาผลลัพธ์"], a_en: ["Do it many times", "Good variable control", "Record quickly", "Guess the result"], correct: 1, th: "คุมตัวแปร", en: "Control variables.", detail: "เพื่อให้ได้ผลทดลองที่เที่ยงตรง ต้องควบคุมตัวแปรอื่นไม่ให้มีผลต่อการทดลอง" },
+    { q_th: "ธาตุใดที่พบมากที่สุดในบรรยากาศโลก?", q_en: "Which element is most abundant in Earth's atmosphere?", a_th: ["ออกซิเจน", "ไนโตรเจน", "อาร์กอน", "คาร์บอนไดออกไซด์"], a_en: ["Oxygen", "Nitrogen", "Argon", "Carbon dioxide"], correct: 1, th: "ประมาณ 78%", en: "About 78%.", detail: "ไนโตรเจนเป็นองค์ประกอบหลักของบรรยากาศโลก" },
+    { q_th: "กระบวนการที่สารละลายผ่านเยื่อเลือกผ่านเรียกว่าอะไร?", q_en: "What is the process of solution passing through a semi-permeable membrane?", a_th: ["การแพร่", "การออสโมซิส", "การไหล", "การแทรกตัว"], a_en: ["Diffusion", "Osmosis", "Flow", "Infiltration"], correct: 1, th: "เน้นการผ่านเยื่อ", en: "Focuses on passing through a membrane.", detail: "ออสโมซิสคือการแพร่ของน้ำผ่านเยื่อเลือกผ่าน" },
+    { q_th: "สารในข้อใดมีจุดเดือดไม่คงที่?", q_en: "Which substance does not have a constant boiling point?", a_th: ["น้ำกลั่น", "สารละลายน้ำตาล", "ทองคำ", "ปรอท"], a_en: ["Distilled water", "Sugar solution", "Gold", "Mercury"], correct: 1, th: "สารละลายมีจุดเดือดสูงขึ้นและไม่คงที่", en: "Solutions have higher and non-constant boiling points.", detail: "สารละลายเป็นสารผสม ทำให้จุดเดือดเปลี่ยนไปตามความเข้มข้น" },
+    { q_th: "ไมโทคอนเดรียพบในเซลล์ชนิดใดบ้าง?", q_en: "In which cells are mitochondria found?", a_th: ["พืชเท่านั้น", "สัตว์เท่านั้น", "ทั้งพืชและสัตว์", "ไม่มีข้อถูก"], a_en: ["Only plants", "Only animals", "Both plants and animals", "None"], correct: 2, th: "เซลล์ยูคาริโอตต้องมี", en: "Eukaryotic cells must have it.", detail: "ทั้งเซลล์พืชและเซลล์สัตว์เป็นเซลล์ยูคาริโอต จึงต้องมีไมโทคอนเดรียเพื่อผลิตพลังงาน" },
+    { q_th: "หากนำเซลล์สัตว์แช่ในน้ำกลั่น จะเกิดอะไรขึ้น?", q_en: "What happens if an animal cell is placed in distilled water?", a_th: ["เซลล์เหี่ยว", "เซลล์เต่ง", "เซลล์แตก", "ไม่เปลี่ยน"], a_en: ["Shrivels", "Turgid", "Burst", "No change"], correct: 2, th: "น้ำเข้าเซลล์มากจนรับไม่ไหว", en: "Too much water enters the cell.", detail: "เซลล์สัตว์ไม่มีผนังเซลล์ เมื่อน้ำออสโมซิสเข้ามากเกินไปจะทำให้เซลล์เต่งจนแตก" }        
+        ];
+
+        function renderQuiz() {
+            const area = document.getElementById('quiz-area');
+            area.innerHTML = '';
+            questions.forEach((q, i) => {
+                area.innerHTML += `
+                    <div class="question-container" id="q${i}">
+                        <p><strong>${i+1}. ${lang === 'th' ? q.q_th : q.q_en}</strong></p>
+                        ${(lang === 'th' ? q.a_th : q.a_en).map((opt, j) => `
+                            <div class="option" onclick="checkAnswer(${i}, ${j})">${opt}</div>
+                        `).join('')}
+                        <div class="answer-box" id="ans${i}">
+                            <p class="tip">${lang === 'th' ? 'คำใบ้: ' : 'Tip: '}${lang === 'th' ? q.th : q.en}</p>
+                            <p>${q.detail}</p>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function checkAnswer(qIdx, optIdx) {
+            const q = questions[qIdx];
+            const container = document.getElementById(`q${qIdx}`);
+            const options = container.getElementsByClassName('option');
+            document.getElementById(`ans${qIdx}`).style.display = 'block';
+            
+            for(let i=0; i<4; i++) options[i].style.pointerEvents = 'none';
+            
+            if(optIdx === q.correct) {
+                options[optIdx].classList.add('correct');
+                scores++;
+            } else {
+                options[optIdx].classList.add('wrong');
+                options[q.correct].classList.add('correct');
+            }
+            
+            if(document.querySelectorAll('.correct').length === questions.length) sendEmail();
+        }
+
+        function toggleLang() {
+            lang = lang === 'th' ? 'en' : 'th';
+            renderQuiz();
+        }
+
+        function sendEmail() {
+            alert("ส่งผลการเรียนไปยังติวเตอร์เรียบร้อยแล้ว");
+            console.log("Simulating email to: thee.chinpong@hmail.com");
+        }
+
+        renderQuiz();
+    </script>
+</body>
+</html>
