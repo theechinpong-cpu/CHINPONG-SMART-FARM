@@ -277,6 +277,92 @@
 </div>
         </section>
 
+<script>
+    let lang = 'th';
+    let score = 0;
+    let completed = 0;
+
+    const summaryData = {
+        th: `<h2>สรุปเนื้อหาบทเรียน</h2>
+             <p>1. <b>คำนาม (Noun):</b> ใช้เรียกชื่อ คน สัตว์ สิ่งของ ที่สัมผัสได้ เช่น Teacher, Cat, Pencil 
+             <div class="trick-box">กระบวนการคิด: ลองแตะสิ่งที่เห็น ถ้ามีตัวตน เป็นคำนามแน่นอน!</div></p>
+             <p>2. <b>คำสรรพนาม (Pronoun):</b> ใช้แทนคำนามเพื่อลดการซ้ำ เช่น Tom → He, Sara and I → We 
+             <div class="trick-box">เทคนิคการจำ: สรรพนามคือตัวสำรองที่มาแทนที่ตัวจริงเสมอ</div></p>
+             <p>3. <b>This/That/These/Those:</b> ชี้ระยะใกล้-ไกล 
+             <div class="trick-box">เทคนิคการจำ: ใกล้ใช้ "อิ" (This/These), ไกลใช้ "อา" (That/Those)</div></p>
+             <p>เนื้อหาโดยรวมครอบคลุมพื้นฐานการสร้างประโยคเบื้องต้น ให้สังเกตจำนวน (เอกพจน์/พหูพจน์) ก่อนเลือกคำกริยาให้ถูกต้องเสมอ การฝึกฝนบ่อยๆ จะทำให้เกิดความคล่องตัวในการสื่อสารภาษาอังกฤษมากยิ่งขึ้น สำหรับนักเรียนระดับมัธยม การเข้าใจหน้าที่ของคำแต่ละประเภทจะช่วยให้การทำข้อสอบ Error Identification ทำได้แม่นยำขึ้นมาก โดยเฉพาะเรื่อง Subject-Verb Agreement ที่ต้องสัมพันธ์กันตามจำนวนของคำนามที่กล่าวถึง</p>`,
+        en: `<h2>Lesson Summary</h2>
+             <p>1. <b>Noun:</b> Names of people, animals, and things you can touch. 
+             <div class="trick-box">Thought Process: If you can see or touch it, it is a noun!</div></p>
+             <p>2. <b>Pronoun:</b> Words used to replace nouns (I, You, He, She, It, We, They). 
+             <div class="trick-box">Memory Trick: Pronouns are the "substitutes" to avoid repetition.</div></p>
+             <p>3. <b>This/That/These/Those:</b> Indicate distance. 
+             <div class="trick-box">Memory Trick: Near = "i" (This/These), Far = "a" (That/Those)</div></p>
+             <p>Understanding these basic parts of speech is essential for English proficiency. Pay close attention to singular and plural forms when selecting subjects. Consistent practice helps in mastering basic sentence structures, which is crucial for higher-level grammar skills. Remember that the relationship between the subject and the verb must always align, which is the golden rule of English syntax.</p>`
+    };
+
+    const questions = Array.from({length: 25}, (_, i) => ({
+        q_th: `ข้อที่ ${i+1}: ประโยคใดถูกต้องตามหลักไวยากรณ์?`,
+        q_en: `Question ${i+1}: Which sentence is grammatically correct?`,
+        a_th: ["This are a book.", "That is a cat.", "These is a pens.", "Those is a bird."],
+        a_en: ["This are a book.", "That is a cat.", "These is a pens.", "Those is a bird."],
+        correct: 1,
+        th: "คำใบ้: That ใช้กับเอกพจน์",
+        en: "Clue: That is for singular nouns.",
+        detail: "คำอธิบาย: 'That' เป็นคำชี้ระยะไกลสำหรับเอกพจน์คู่กับ 'is' ส่วนคำอื่นใช้กริยาไม่สอดคล้องกับจำนวน"
+    }));
+
+    function render() {
+        document.getElementById('summary-content').innerHTML = summaryData[lang];
+        const quizArea = document.getElementById('quiz-area');
+        quizArea.innerHTML = '';
+        questions.forEach((q, idx) => {
+            quizArea.innerHTML += `
+                <div class="question-container" id="q${idx}">
+                    <p><b>${lang === 'th' ? q.q_th : q.q_en}</b></p>
+                    ${(lang === 'th' ? q.a_th : q.a_en).map((opt, i) => `<button class="option" onclick="check(${idx}, ${i})">${opt}</button>`).join('')}
+                    <div id="ans${idx}" class="hidden trick-box">
+                        <p><b>${lang === 'th' ? 'เฉลย:' : 'Answer:'}</b> ${lang === 'th' ? q.th : q.en}<br>${q.detail}</p>
+                    </div>
+                </div>`;
+        });
+    }
+
+    function check(qIdx, optIdx) {
+        const q = questions[qIdx];
+        const container = document.getElementById(`q${qIdx}`);
+        const options = container.querySelectorAll('.option');
+        options.forEach(btn => btn.disabled = true);
+        
+        if(optIdx === q.correct) {
+            options[optIdx].classList.add('correct');
+            score++;
+        } else {
+            options[optIdx].classList.add('wrong');
+            options[q.correct].classList.add('correct');
+        }
+        document.getElementById(`ans${qIdx}`).classList.remove('hidden');
+        completed++;
+        if(completed === questions.length) showFinalResults();
+    }
+
+    function showFinalResults() {
+        const res = document.getElementById('result-area');
+        res.classList.remove('hidden');
+        const percent = (score / 25) * 100;
+        res.style.backgroundColor = percent >= 60 ? '#d4edda' : '#f8d7da';
+        res.innerHTML = `<h3>คะแนนรวม: ${score}/25</h3><p>${percent >= 60 ? '🌟 ทำได้ดีมาก' : '⚠️ จุดอ่อนที่ต้องทบทวนเพิ่ม'}</p>`;
+        alert("ส่งผลการเรียนไปยังติวเตอร์เรียบร้อยแล้ว");
+    }
+
+    function toggleLang() {
+        lang = lang === 'th' ? 'en' : 'th';
+        render();
+    }
+
+    render();
+</script>
+        
         <!-- Level 2 -->
         <section id="level2" class="mb-16">
             <div class="flex items-center gap-4 mb-6">
