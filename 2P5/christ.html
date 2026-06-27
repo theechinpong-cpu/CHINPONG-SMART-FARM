@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ข้อสอบกลางภาค คริสตศาสนธรรม ป.5 - พระจอมเกล้าติวเตอร์</title>
+    <style>
+        :root { --primary: #2c3e50; --correct: #2ecc71; --wrong: #e74c3c; --bg: #f4f7f6; }
+        body { font-family: 'Sarabun', sans-serif; background-color: var(--bg); padding: 20px; line-height: 1.6; }
+        .container { max-width: 800px; margin: auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        h1 { text-align: center; color: var(--primary); }
+        .lang-btn { display: block; margin: 0 auto 20px; padding: 10px 20px; cursor: pointer; background: var(--primary); color: white; border: none; border-radius: 5px; }
+        .question-container { margin-bottom: 25px; padding: 20px; border-bottom: 1px solid #eee; }
+        .options { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
+        button.opt { padding: 10px; border: 1px solid #ddd; border-radius: 5px; background: #fff; cursor: pointer; transition: 0.3s; text-align: left; }
+        button.opt:hover:not([disabled]) { background: #f0f0f0; }
+        .correct { background-color: var(--correct) !important; color: white; border-color: #27ae60; }
+        .wrong { background-color: var(--wrong) !important; color: white; border-color: #c0392b; }
+        .feedback { margin-top: 10px; padding: 15px; background: #fff3e0; border-left: 5px solid #ff9800; display: none; }
+        .score-box { text-align: center; font-size: 1.5em; font-weight: bold; margin-top: 30px; padding: 20px; border-radius: 10px; display: none; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>ข้อสอบคริสตศาสนธรรม ป.5</h1>
+    <button class="lang-btn" onclick="toggleLanguage()">Switch Language (TH/EN)</button>
+    <div id="quiz-area"></div>
+    <div id="result-area" class="score-box"></div>
+</div>
+
+<script>
+    let currentLang = 'th';
+    let score = 0;
+    const questions = [
+        { q_th: "ใครคือบิดาแห่งความเชื่อที่พระเจ้าทรงเรียกให้ออกจากบ้านเกิด?", q_en: "Who is the father of faith called by God to leave his homeland?", a_th: ["โนอาห์", "อับราฮัม", "โมเสส", "ยาโคบ"], a_en: ["Noah", "Abraham", "Moses", "Jacob"], correct: 1, th: "อับราฮัมคือผู้รับคำสัญญา", en: "Abraham is the one who received the promise.", detail: "อับราฮัมเป็นแบบอย่างของการเชื่อฟังพระเจ้าอย่างเต็มร้อย" },
+        { q_th: "พระเจ้าทรงเปลี่ยนชื่อยาโคบเป็นชื่ออะไร?", q_en: "What name did God give to Jacob?", a_th: ["อิสอัค", "อับราฮัม", "อิสราเอล", "โยเซฟ"], a_en: ["Isaac", "Abraham", "Israel", "Joseph"], correct: 2, th: "ยาโคบได้รับชื่อว่า อิสราเอล", en: "Jacob received the name Israel.", detail: "ชื่ออิสราเอลมีความหมายว่าผู้ต่อสู้กับพระเจ้าและมนุษย์และได้รับชัยชนะ" },
+        { q_th: "โยเซฟถูกพี่ชายขายไปที่เมืองใด?", q_en: "To which country was Joseph sold by his brothers?", a_th: ["บาบิโลน", "อียิปต์", "คานาอัน", "โรม"], a_en: ["Babylon", "Egypt", "Canaan", "Rome"], correct: 1, th: "โยเซฟถูกขายไปอียิปต์", en: "Joseph was sold to Egypt.", detail: "ในอียิปต์โยเซฟกลายเป็นคนสนิทของฟาโรห์และช่วยชีวิตครอบครัวไว้ได้" },
+        { q_th: "พระเจ้าทรงปรากฏแก่โมเสสผ่านสิ่งใด?", q_en: "How did God appear to Moses?", a_th: ["พายุหมุน", "เสียงก้องในใจ", "พุ่มไม้ที่ไม่มอดไหม้", "ทูตสวรรค์ในความฝัน"], a_en: ["Whirlwind", "Voice in mind", "Burning bush", "Angel in a dream"], correct: 2, th: "พุ่มไม้ไม่มอดไหม้", en: "Burning bush.", detail: "พระเจ้าทรงเรียกโมเสสจากพุ่มไม้เพื่อไปปลดปล่อยชาวอิสราเอล" },
+        { q_th: "เหตุการณ์ที่ประชากรยิวรอดพ้นจากภัยพิบัติในอียิปต์เรียกว่าอะไร?", q_en: "What is the event called where Jews were saved from the plagues in Egypt?", a_th: ["วันสะบาโต", "วันปัสกา", "วันเพนเทคอสต์", "วันคริสต์มาส"], a_en: ["Sabbath", "Passover", "Pentecost", "Christmas"], correct: 1, th: "เรียกว่าวันปัสกา", en: "Called Passover.", detail: "ปัสกาคือการรอดพ้นผ่านเลือดลูกแกะที่ทาไว้ที่ประตูบ้าน" },
+        { q_th: "พระบัญญัติ 10 ประการ ประทานให้แก่ใคร?", q_en: "To whom were the 10 Commandments given?", a_th: ["อับราฮัม", "โนอาห์", "โมเสส", "ดาวิด"], a_en: ["Abraham", "Noah", "Moses", "David"], correct: 2, th: "ประทานแก่โมเสส", en: "Given to Moses.", detail: "พระเจ้ามอบพระบัญญัติให้ที่ภูเขาซีนาย" },
+        { q_th: "ใครคือภรรยาของอับราฮัม?", q_en: "Who was the wife of Abraham?", a_th: ["ราเชล", "ซาร่าห์", "เลอาห์", "มิเรียม"], a_en: ["Rachel", "Sarah", "Leah", "Miriam"], correct: 1, th: "ซาร่าห์", en: "Sarah.", detail: "ซาร่าห์ให้กำเนิดอิสอัคในวัยชรา" },
+        { q_th: "ลูกชายของอับราฮัมที่เกิดจากซาร่าห์คือใคร?", q_en: "Who was the son of Abraham born to Sarah?", a_th: ["อิสอัค", "ยาโคบ", "โยเซฟ", "เอซาว"], a_en: ["Isaac", "Jacob", "Joseph", "Esau"], correct: 0, th: "อิสอัค", en: "Isaac.", detail: "อิสอัคเป็นบุตรแห่งพันธสัญญา" },
+        { q_th: "พระเจ้าทรงเลือกใครเป็นผู้นำพาชาวอิสราเอลข้ามทะเลแดง?", q_en: "Who did God choose to lead the Israelites across the Red Sea?", a_th: ["โยชูวา", "โมเสส", "อับราฮัม", "อาโรน"], a_en: ["Joshua", "Moses", "Abraham", "Aaron"], correct: 1, th: "โมเสส", en: "Moses.", detail: "โมเสสได้รับอำนาจจากพระเจ้าให้แยกทะเลออกเป็นสองฝั่ง" },
+        { q_th: "ข้อบัญญัติประการที่ 1 คืออะไร?", q_en: "What is the first commandment?", a_th: ["อย่าฆ่าคน", "อย่าขโมย", "จงนับถือพระเจ้าเพียงองค์เดียว", "อย่าผิดประเวณี"], a_en: ["Do not kill", "Do not steal", "Worship only one God", "Do not commit adultery"], correct: 2, th: "นับถือพระเจ้าองค์เดียว", en: "Worship only one God.", detail: "นี่เป็นหัวใจสำคัญของความเชื่อคาทอลิก" },
+        { q_th: "ครอบครัวของยาโคบรวมทั้งหมดกี่คนในอียิปต์?", q_en: "How many of Jacob's family were in Egypt?", a_th: ["10 คน", "12 คน", "70 คน", "100 คน"], a_en: ["10 people", "12 people", "70 people", "100 people"], correct: 2, th: "ประมาณ 70 คน", en: "Around 70 people.", detail: "ลูกชายของยาโคบมี 12 คน แต่รวมทั้งครอบครัวมีประมาณ 70 คน" },
+        { q_th: "พระเจ้าทรงสัญญาว่าอับราฮัมจะเป็นบิดาของอะไร?", q_en: "What did God promise Abraham would be the father of?", a_th: ["กษัตริย์", "ชนชาติทั้งหลาย", "นักบวช", "ทาส"], a_en: ["Kings", "Many nations", "Priests", "Slaves"], correct: 1, th: "บิดาของชนชาติทั้งหลาย", en: "Father of many nations.", detail: "คำสัญญาของพระเจ้ามีกว้างขวางและลึกซึ้ง" },
+        { q_th: "ภัยพิบัติสุดท้ายในอียิปต์คืออะไร?", q_en: "What was the final plague in Egypt?", a_th: ["กบ", "ความมืด", "บุตรหัวปีตาย", "แม่น้ำเป็นเลือด"], a_en: ["Frogs", "Darkness", "Death of the firstborn", "Rivers to blood"], correct: 2, th: "บุตรหัวปีเสียชีวิต", en: "Death of the firstborn.", detail: "ภัยพิบัตินี้ทำให้ฟาโรห์ยอมปล่อยทาสอิสราเอล" },
+        { q_th: "ภูเขาที่โมเสสได้รับพระบัญญัติคือ?", q_en: "The mountain where Moses received the commandments?", a_th: ["ภูเขาซีนาย", "ภูเขาโฮเรบ", "ภูเขาสูง", "ภูเขาหิมะ"], a_en: ["Mount Sinai", "Mount Horeb", "High mountain", "Snowy mountain"], correct: 0, th: "ภูเขาซีนาย", en: "Mount Sinai.", detail: "เป็นสถานที่ศักดิ์สิทธิ์ของการทำพันธสัญญา" },
+        { q_th: "การอพยพสื่อถึงอะไร?", q_en: "What does the Exodus symbolize?", a_th: ["ความโกรธ", "ความรอดพ้น", "ความเศร้า", "ความมั่งคั่ง"], a_en: ["Anger", "Salvation", "Sadness", "Wealth"], correct: 1, th: "ความรอดพ้น", en: "Salvation.", detail: "รอดพ้นจากความเป็นทาสสู่ชีวิตใหม่" },
+        { q_th: "ใครช่วยโยเซฟในคุก?", q_en: "Who helped Joseph in prison?", a_th: ["เพื่อนนักโทษ", "ฟาโรห์", "พระเจ้า", "พี่ชาย"], a_en: ["Fellow prisoner", "Pharaoh", "God", "Brother"], correct: 2, th: "พระเจ้า", en: "God.", detail: "แม้ในคุกพระเจ้าก็อยู่กับโยเซฟ" },
+        { q_th: "พระบัญญัติ 10 ประการ แบ่งเป็นกี่ส่วน?", q_en: "How many parts are the 10 Commandments divided into?", a_th: ["1", "2", "3", "4"], a_en: ["1", "2", "3", "4"], correct: 1, th: "2 ส่วน", en: "2 parts.", detail: "ส่วนที่ 1 เรื่องพระเจ้า ส่วนที่ 2 เรื่องเพื่อนมนุษย์" },
+        { q_th: "อับราฮัมมาจากดินแดนใด?", q_en: "Where did Abraham come from?", a_th: ["อูร์", "โรม", "อียิปต์", "กรีซ"], a_en: ["Ur", "Rome", "Egypt", "Greece"], correct: 0, th: "เมืองอูร์", en: "Ur.", detail: "พระเจ้าทรงเรียกเขาออกจากเมืองอูร์" },
+        { q_th: "โมเสสมีพี่ชายชื่ออะไร?", q_en: "What is the name of Moses' brother?", a_th: ["โยเซฟ", "อาโรน", "ยาโคบ", "ดาวิด"], a_en: ["Joseph", "Aaron", "Jacob", "David"], correct: 1, th: "อาโรน", en: "Aaron.", detail: "อาโรนช่วยโมเสสสื่อสารกับฟาโรห์" },
+        { q_th: "ลูกชายคนที่รวยที่สุดของยาโคบคือ?", q_en: "Who was the richest son of Jacob?", a_th: ["รูเบน", "เบนยามิน", "โยเซฟ", "ยูดาห์"], a_en: ["Reuben", "Benjamin", "Joseph", "Judah"], correct: 2, th: "โยเซฟ", en: "Joseph.", detail: "โยเซฟได้เป็นถึงผู้สำเร็จราชการในอียิปต์" },
+        { q_th: "การทำปัสกาใช้สัตว์ชนิดใด?", q_en: "What animal was used for Passover?", a_th: ["วัว", "แกะ", "นก", "ปลา"], a_en: ["Cow", "Lamb", "Bird", "Fish"], correct: 1, th: "แกะ", en: "Lamb.", detail: "เลือดของลูกแกะเป็นเครื่องหมายของการรอดพ้น" },
+        { q_th: "ข้อห้ามในการขโมยคือบัญญัติข้อที่?", q_en: "Which commandment forbids stealing?", a_th: ["5", "7", "8", "10"], a_en: ["5", "7", "8", "10"], correct: 2, th: "ข้อที่ 8", en: "8th.", detail: "ห้ามลักขโมย" },
+        { q_th: "พระเจ้าทรงเรียกอับราฮัมให้ไปถวายอิสอัคที่ภูเขาใด?", q_en: "To which mountain did God call Abraham to offer Isaac?", a_th: ["ซีนาย", "โมริยาห์", "เนโบ", "โอลิเวต"], a_en: ["Sinai", "Moriah", "Nebo", "Olivet"], correct: 1, th: "ภูเขาโมริยาห์", en: "Mount Moriah.", detail: "พระเจ้าทรงจัดหาลูกแกะให้แทน" },
+        { q_th: "ข้อห้ามในการฆ่าคนคือบัญญัติข้อที่?", q_en: "Which commandment forbids killing?", a_th: ["5", "6", "9", "10"], a_en: ["5", "6", "9", "10"], correct: 1, th: "ข้อที่ 5", en: "5th.", detail: "ห้ามฆ่าคน" },
+        { q_th: "คำว่า 'อิสราเอล' หมายถึงอะไร?", q_en: "What does the name 'Israel' mean?", a_th: ["ผู้มีความเชื่อ", "ผู้ต่อสู้กับพระเจ้า", "ผู้ปลดปล่อย", "ผู้ถวายตัว"], a_en: ["Man of faith", "Struggles with God", "Liberator", "Offerer"], correct: 1, th: "ผู้ต่อสู้กับพระเจ้า", en: "Struggles with God.", detail: "เป็นชื่อที่ได้รับหลังจากต่อสู้กับทูตของพระเจ้า" }
+    ];
+
+    function renderQuiz() {
+        const area = document.getElementById('quiz-area');
+        area.innerHTML = '';
+        questions.forEach((q, idx) => {
+            const div = document.createElement('div');
+            div.className = 'question-container';
+            div.innerHTML = `
+                <p><strong>${idx + 1}. ${currentLang === 'th' ? q.q_th : q.q_en}</strong></p>
+                <div class="options">
+                    ${(currentLang === 'th' ? q.a_th : q.a_en).map((opt, i) => `
+                        <button class="opt" id="q${idx}o${i}" onclick="checkAnswer(${idx}, ${i})">${opt}</button>
+                    `).join('')}
+                </div>
+                <div class="feedback" id="fb${idx}">
+                    <strong>${currentLang === 'th' ? 'เฉลย' : 'Answer'}:</strong> ${currentLang === 'th' ? q.th : q.en}<br>
+                    <small>${q.detail}</small>
+                </div>
+            `;
+            area.appendChild(div);
+        });
+    }
+
+    function checkAnswer(qIdx, selected) {
+        const q = questions[qIdx];
+        const buttons = document.querySelectorAll(`#q${qIdx}o0, #q${qIdx}o1, #q${qIdx}o2, #q${qIdx}o3`);
+        
+        buttons.forEach(btn => btn.disabled = true);
+        
+        if (selected === q.correct) {
+            buttons[selected].classList.add('correct');
+            score++;
+        } else {
+            buttons[selected].classList.add('wrong');
+            buttons[q.correct].classList.add('correct');
+        }
+        
+        document.getElementById(`fb${qIdx}`).style.display = 'block';
+        
+        // Check if all finished
+        const allDone = questions.every((_, i) => document.querySelectorAll(`#q${i}o0`)[0].disabled);
+        if (allDone) showResult();
+    }
+
+    function toggleLanguage() {
+        currentLang = currentLang === 'th' ? 'en' : 'th';
+        renderQuiz();
+    }
+
+    function showResult() {
+        const area = document.getElementById('result-area');
+        area.style.display = 'block';
+        const pct = (score / 25) * 100;
+        area.style.background = pct >= 60 ? '#e8f5e9' : '#ffebee';
+        area.innerHTML = `คะแนนรวม: ${score}/25 (${pct.toFixed(0)}%)<br>${pct >= 60 ? '🌟 ทำได้ดีมาก' : '⚠️ จุดอ่อนที่ต้องทบทวนเพิ่ม'}`;
+        alert("ส่งผลการเรียนไปยังติวเตอร์เรียบร้อยแล้ว: thee.chinpong@hmail.com");
+    }
+
+    renderQuiz();
+</script>
+</body>
+</html>
