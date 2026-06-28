@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <title>ข้อสอบหลักภาษา ม.1 - พระจอมเกล้าติวเตอร์</title>
+    <style>
+        body { font-family: 'Sarabun', sans-serif; background: #f4f7f6; padding: 20px; }
+        .container { max-width: 800px; margin: auto; }
+        .card { background: white; padding: 20px; margin-bottom: 20px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .btn-toggle { background: #3498db; color: white; border: none; padding: 5px 10px; cursor: pointer; border-radius: 5px; margin-bottom: 10px; }
+        .options button { display: block; width: 100%; margin: 5px 0; padding: 10px; text-align: left; border: 1px solid #ddd; border-radius: 5px; cursor: pointer; }
+        .correct { background-color: #2ecc71 !important; color: white; }
+        .wrong { background-color: #e74c3c !important; color: white; }
+        .feedback { margin-top: 10px; padding: 10px; border-left: 5px solid #e74c3c; background: #fff0f0; display: none; }
+        .tip { color: #e74c3c; font-weight: bold; }
+        #result-area { text-align: center; font-size: 1.5em; font-weight: bold; margin-top: 20px; padding: 20px; background: white; border-radius: 10px; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>แบบทดสอบเรื่องหลักภาษาและการใช้ภาษาไทย</h1>
+    <div id="quiz-body"></div>
+    <div id="result-area"></div>
+</div>
+
+<script>
+const questions = [
+    { q_th: "พยัญชนะไทยมีกี่เสียง?", q_en: "How many consonant sounds are there in Thai?", a_th: ["21 เสียง", "44 เสียง", "32 เสียง", "20 เสียง"], a_en: ["21 sounds", "44 sounds", "32 sounds", "20 sounds"], correct: 0, th: "จำไว้ว่ารูปมี 44 แต่เสียงมี 21", en: "Remember 44 forms but 21 sounds.", detail: "ภาษาไทยมีพยัญชนะรูป 44 ตัว แต่มีเสียงเพียง 21 เสียง" },
+    { q_th: "ข้อใดคือสระประสมทั้งหมด?", q_en: "Which are all compound vowels?", a_th: ["เ-ีย, เ-ือ, -ัว", "ะ, า, ิ", "เ-ะ, แ-ะ, โ-ะ", "เ-อ, เ-ือ, -ำ"], a_en: ["ia, uea, ua", "a, aa, i", "e, ae, o", "oe, uea, am"], correct: 0, th: "จำสูตร เมีย-เบื่อ-วัว", en: "Remember ia-uea-ua.", detail: "สระประสมมี 3 เสียงคือ เอีย, เอือ, อัว" },
+    { q_th: "อักษรสูงมีกี่ตัว?", q_en: "How many high-class consonants?", a_th: ["7 ตัว", "9 ตัว", "11 ตัว", "44 ตัว"], a_en: ["7", "9", "11", "44"], correct: 2, th: "ผี ฝาก ถุง ข้าว สาร ให้ ฉัน", en: "Remember the mnemonic for high consonants.", detail: "อักษรสูงมี 11 ตัว คือ ผ ฝ ถ ฐ ข ฃ ส ศ ษ ห ฉ" },
+    { q_th: "คำในข้อใดเป็นคำประสม?", q_en: "Which word is a compound word?", a_th: ["กินกิน", "แม่น้ำ", "ไปมา", "เท็จจริง"], a_en: ["Reduplication", "River (Mother+Water)", "Back and forth", "True/False"], correct: 1, th: "คำที่เกิดจากคำมูลสองคำมารวมกัน", en: "Words formed by two roots.", detail: "แม่ + น้ำ เป็นคำประสมที่มีความหมายใหม่" },
+    { q_th: "ข้อใดเป็นคำซ้อนเพื่อความหมาย?", q_en: "Which is a semantic repetitive word?", a_th: ["บ้านเรือน", "งูเงี้ยว", "พี่น้อง", "ใหญ่โต"], a_en: ["House", "Snake", "Sibling", "Big"], correct: 0, th: "คำที่ความหมายคล้ายกันมารวมกัน", en: "Words with similar meanings.", detail: "บ้านกับเรือนมีความหมายใกล้เคียงกัน" },
+    { q_th: "การใช้ไม้ยมกคือการสร้างคำแบบใด?", q_en: "What type of word creation is the use of the repetition mark?", a_th: ["คำประสม", "คำซ้ำ", "คำซ้อน", "คำสมาส"], a_en: ["Compound", "Reduplication", "Repetitive", "Samaas"], correct: 1, th: "ไม้ยมกใช้อ่านซ้ำคำเดิม", en: "Repetition mark means repeating the word.", detail: "คำซ้ำใช้ไม้ยมกเพื่อเน้นความหมาย" },
+    { q_th: "คำสรรพนามชนิดใดใช้เชื่อมประโยค?", q_en: "Which pronoun connects sentences?", a_th: ["บุรุษสรรพนาม", "ประพันธสรรพนาม", "นิยมสรรพนาม", "ปฤจฉาสรรพนาม"], a_en: ["Personal", "Relative", "Demonstrative", "Interrogative"], correct: 1, th: "ผู้ ที่ ซึ่ง อัน คือกุญแจ", en: "Keywords: Who, That, Which.", detail: "ประพันธสรรพนามเชื่อมประโยคย่อยเข้ากับประโยคหลัก" },
+    { q_th: "คำว่า 'นี่' เป็นสรรพนามชนิดใด?", q_en: "What type of pronoun is 'This'?", a_th: ["นิยมสรรพนาม", "อนิยมสรรพนาม", "ปฤจฉาสรรพนาม", "บุรุษสรรพนาม"], a_en: ["Demonstrative", "Indefinite", "Interrogative", "Personal"], correct: 0, th: "นิยม = ชี้เฉพาะ", en: "Niyom means specific/demonstrative.", detail: "นิยมสรรพนามใช้ชี้เฉพาะเจาะจง" },
+    { q_th: "ข้อใดเป็นคำพ้องเสียง?", q_en: "Which is a homophone?", a_th: ["กา, กา", "การ, กาล", "เพลา, เพลา", "ขัน, ขัน"], a_en: ["Crow/Tea", "Work/Time", "Axle/Quiet", "Laugh/Bowl"], correct: 1, th: "เสียงเหมือนแต่สะกดต่างกัน", en: "Sound the same, spell differently.", detail: "การ และ กาล อ่านออกเสียงเหมือนกัน" },
+    { q_th: "ข้อใดเป็นคำพ้องรูป?", q_en: "Which is a homograph?", a_th: ["กาล, การ", "เพลา, เพลา", "ขัน, ขัน", "สระ, สระ"], a_en: ["Time/Work", "Axle/Quiet", "Laugh/Bowl", "Vowel/Pool"], correct: 1, th: "สะกดเหมือน แต่อ่านต่าง", en: "Spell same, read differently.", detail: "เพลา (อ่านเพลา) และ เพลา (อ่านเพ-ลา)" },
+    { q_th: "คำว่า 'ใคร' ในประโยคคำถามคือสรรพนามใด?", q_en: "What type of pronoun is 'Who' in a question?", a_th: ["ปฤจฉาสรรพนาม", "อนิยมสรรพนาม", "บุรุษสรรพนาม", "นิยมสรรพนาม"], a_en: ["Interrogative", "Indefinite", "Personal", "Demonstrative"], correct: 0, th: "ปฤจฉา = ถาม", en: "Pricha means ask/question.", detail: "ปฤจฉาสรรพนามใช้ถาม" },
+    { q_th: "ข้อใดไม่ใช่คำประสม?", q_en: "Which is not a compound word?", a_th: ["ตู้เย็น", "น้ำตก", "กินข้าว", "มดแดง"], a_en: ["Refrigerator", "Waterfall", "Eat rice", "Red ant"], correct: 2, th: "คำกริยา+กรรม ไม่ใช่คำประสม", en: "Verb+Object is not a compound.", detail: "กินข้าว เป็นกลุ่มคำ/ประโยค" },
+    { q_th: "คำซ้อนในข้อใดเป็นคำซ้อนเพื่อเสียง?", q_en: "Which is a phonetic repetitive word?", a_th: ["บ้านเรือน", "งูเงี้ยว", "พี่น้อง", "ใหญ่โต"], a_en: ["House", "Snake", "Sibling", "Big"], correct: 1, th: "เสียงคล้ายกันแต่ไม่มีความหมายทั้งคู่", en: "Phonetic similarity, no meaning.", detail: "งูเงี้ยว เน้นสัมผัสเสียง" },
+    { q_th: "อักษรกลางผันได้กี่เสียง?", q_en: "How many tones for middle consonants?", a_th: ["3 เสียง", "4 เสียง", "5 เสียง", "2 เสียง"], a_en: ["3", "4", "5", "2"], correct: 2, th: "กลางผันได้ครบ 5 เสียง", en: "Middle consonants have 5 tones.", detail: "อักษรกลางผันได้ครบทุกเสียง" },
+    { q_th: "คำสมาสข้อใดถูกต้องตามหลัก?", q_en: "Which is a correct compound word (Samaas)?", a_th: ["ราชการ", "พลเรือน", "แม่น้ำ", "ลูกน้อง"], a_en: ["Government", "Civilian", "River", "Subordinate"], correct: 0, th: "บาลี+บาลี", en: "Pali+Pali roots.", detail: "ราช + การ เป็นคำสมาสแบบดั้งเดิม" },
+    { q_th: "คำใดเป็นวิภาคสรรพนาม?", q_en: "Which is a distributive pronoun?", a_th: ["ต่าง", "ที่", "ใคร", "นี่"], a_en: ["Different/Each", "That/Which", "Who", "This"], correct: 0, th: "วิภาค = แบ่งแยก", en: "Viphak means divide/distribute.", detail: "ต่าง, บ้าง, กัน ใช้แบ่งพวก" },
+    { q_th: "เสียงสระในภาษาไทยมีกี่เสียง?", q_en: "How many vowel sounds in Thai?", a_th: ["21 เสียง", "32 เสียง", "44 เสียง", "12 เสียง"], a_en: ["21", "32", "44", "12"], correct: 0, th: "รูป 32 เสียง 21", en: "32 forms, 21 sounds.", detail: "สระมี 21 เสียงหลัก" },
+    { q_th: "พยัญชนะไทยตัวใดไม่มีเสียง?", q_en: "Which Thai consonant has no sound?", a_th: ["ฃ, ฅ", "ก, ข", "ส, ห", "อ, ฮ"], a_en: ["Kho-khuat, Kho-khon", "Ko, Kho", "So, Ho", "O, Ho"], correct: 0, th: "ฃ ฅ เลิกใช้ไปแล้ว", en: "Obsolete characters.", detail: "ฃ และ ฅ เลิกใช้ไปนานแล้ว" },
+    { q_th: "คำใดเป็นคำประพันธสรรพนาม?", q_en: "Which is a relative pronoun?", a_th: ["ที่", "นี่", "ใคร", "ต่าง"], a_en: ["That/Which", "This", "Who", "Different"], correct: 0, th: "ทำหน้าที่เชื่อมประโยค", en: "Connects sentences.", detail: "ที่ ใช้เชื่อมประโยค" },
+    { q_th: "อักษรต่ำผันเสียงเอกได้รูปอะไร?", q_en: "What is the tone mark for low class consonant in 'ek' tone?", a_th: ["รูปเอก", "รูปโท", "ไม่ปรากฏรูป", "รูปตรี"], a_en: ["Ek", "Tho", "No mark", "Tri"], correct: 1, th: "ต่ำ-เอก-โท", en: "Low class follows tone shift.", detail: "เสียงเอกใช้รูปโท" },
+    { q_th: "คำว่า 'ห้า' มีวรรณยุกต์รูปอะไร?", q_en: "What is the tone mark of 'Ha' (five)?", a_th: ["เอก", "โท", "ไม่ปรากฏ", "ตรี"], a_en: ["Ek", "Tho", "None", "Tri"], correct: 1, th: "ดูที่ตัวสะกด", en: "Check the mark.", detail: "รูปโท" },
+    { q_th: "ข้อใดเป็นคำซ้อนเพื่อความหมาย?", q_en: "Which is a semantic repetitive word?", a_th: ["ทรัพย์สิน", "งูเงี้ยว", "ไปๆ มาๆ", "พ่อแม่"], a_en: ["Assets", "Snake", "Back and forth", "Parents"], correct: 0, th: "ทั้งสองคำมีความหมาย", en: "Both words have meaning.", detail: "ทรัพย์และสินมีความหมายทั้งคู่" },
+    { q_th: "เสียงพยัญชนะไทยกี่เสียงที่เป็นพยัญชนะเดี่ยว?", q_en: "How many single consonant sounds?", a_th: ["21 เสียง", "32 เสียง", "44 เสียง", "15 เสียง"], a_en: ["21", "32", "44", "15"], correct: 0, th: "พยัญชนะไทยทั้งหมด 21 เสียง", en: "All 21 are single sounds.", detail: "พยัญชนะไทย 21 เสียงล้วนเป็นเสียงเดี่ยว" },
+    { q_th: "คำว่า 'พระจอมเกล้า' เป็นการสร้างคำแบบใด?", q_en: "What type of word is 'Phra Chom Klao'?", a_th: ["คำประสม", "คำสมาส", "คำซ้ำ", "คำซ้อน"], a_en: ["Compound", "Samaas", "Reduplication", "Repetitive"], correct: 1, th: "สันสกฤต+สันสกฤต", en: "Sanskrit + Sanskrit.", detail: "เป็นคำสมาส" },
+    { q_th: "ข้อใดคือคำปฤจฉาสรรพนาม?", q_en: "Which is an interrogative pronoun?", a_th: ["ใด", "ที่", "ซึ่ง", "ผู้"], a_en: ["Which/Any", "That/Which", "Which", "Who"], correct: 0, th: "ใด ใช้ถาม", en: "Dai is used for asking.", detail: "ใช้ในประโยคคำถาม" }
+];
+
+const categories = [{ id: 0, name: "รวม", questions: [...Array(25).keys()] }];
+
+function renderQuiz() {
+    const body = document.getElementById('quiz-body');
+    questions.forEach((q, i) => {
+        const div = document.createElement('div');
+        div.className = 'card';
+        div.innerHTML = `
+            <button class="btn-toggle" onclick="toggle(${i})">สลับ TH/EN</button>
+            <h3 id="q-${i}">${q.q_th}</h3>
+            <div class="options">
+                ${q.a_th.map((opt, j) => `<button onclick="ans(${i}, ${j})">${opt}</button>`).join('')}
+            </div>
+            <div class="feedback" id="fb-${i}">
+                <p class="tip" id="tip-${i}">คำใบ้: ${q.th}</p>
+                <p id="det-${i}">${q.detail}</p>
+            </div>
+        `;
+        body.appendChild(div);
+    });
+}
+
+function toggle(i) {
+    const q = questions[i];
+    document.getElementById(`q-${i}`).innerText = document.getElementById(`q-${i}`).innerText === q.q_th ? q.q_en : q.q_th;
+    const btns = document.querySelectorAll(`.card:nth-child(${i+1}) .options button`);
+    btns.forEach((b, j) => b.innerText = b.innerText === q.a_th[j] ? q.a_en[j] : q.a_th[j]);
+    document.getElementById(`tip-${i}`).innerText = document.getElementById(`tip-${i}`).innerText.includes("คำใบ้") ? "Tip: " + q.en : "คำใบ้: " + q.th;
+}
+
+function ans(i, j) {
+    const fb = document.getElementById(`fb-${i}`);
+    const btns = fb.parentElement.querySelectorAll('.options button');
+    btns.forEach(b => b.disabled = true);
+    if(j === questions[i].correct) {
+        btns[j].classList.add('correct');
+    } else {
+        btns[j].classList.add('wrong');
+        btns[questions[i].correct].classList.add('correct');
+    }
+    fb.style.display = 'block';
+    if(document.querySelectorAll('.correct, .wrong').length === questions.length) {
+        document.getElementById('result-area').innerText = "คะแนน: " + document.querySelectorAll('.correct').length + "/25 🌟 ทำได้ดีมาก";
+        alert("ส่งผลการเรียนไปยังติวเตอร์เรียบร้อยแล้ว");
+    }
+}
+
+renderQuiz();
+</script>
+</body>
+</html>
