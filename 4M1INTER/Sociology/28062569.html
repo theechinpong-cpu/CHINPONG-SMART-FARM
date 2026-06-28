@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <title>Sociology Assessment: This is Me</title>
+    <style>
+        body { font-family: 'Sarabun', sans-serif; background: #f4f7f6; padding: 20px; line-height: 1.6; }
+        .container { max-width: 800px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .question-container { margin-bottom: 20px; padding: 15px; border: 1px solid #ddd; border-radius: 8px; }
+        .option { display: block; padding: 10px; margin: 5px 0; border: 1px solid #ccc; cursor: pointer; border-radius: 5px; transition: 0.3s; }
+        .correct { background-color: #2ecc71 !important; color: white; }
+        .wrong { background-color: #e74c3c !important; color: white; }
+        .clue { color: #e74c3c; font-weight: bold; margin-top: 10px; }
+        .explanation { margin-top: 10px; padding: 10px; background: #ecf0f1; border-left: 4px solid #3498db; }
+        .btn-toggle { cursor: pointer; background: #34495e; color: white; border: none; padding: 5px 10px; border-radius: 4px; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+<div class="container" id="exam-app">
+    <h1>Sociology Assessment: This is Me</h1>
+    <div id="questions-root"></div>
+    <div id="results-area" style="display:none; margin-top: 30px; padding: 20px; background: #fff; border: 2px solid #333;"></div>
+</div>
+
+<script>
+    const questions = [
+        { q_th: "ข้อใดอธิบายแนวคิด 'Looking-glass Self' ของ Cooley ได้ถูกต้องที่สุด?", q_en: "Which best describes Cooley's 'Looking-glass Self'?", a_th: ["เราเป็นคนกำหนดชีวิตตนเอง", "ตัวตนสร้างขึ้นจากการตีความการมองของผู้อื่น", "การใช้กระจกสะท้อนพฤติกรรมสัตว์", "สังคมไม่มีอิทธิพลต่อตัวตน"], a_en: ["We determine our own lives", "Self is created by interpreting how others see us", "Using mirrors to reflect animal behavior", "Society has no influence on self"], correct: 1, th: "เราเป็นสิ่งที่คนอื่นคิดว่าเราเป็น", en: "We are what others think we are.", detail: "Cooley อธิบายว่าตัวตนเกิดจากภาพลักษณ์ที่เราจินตนาการว่าผู้อื่นมองเห็นเรา" },
+        { q_th: "การแสดงออกใน 'Front Stage' ตามทฤษฎีของ Goffman มีจุดประสงค์หลักเพื่ออะไร?", q_en: "What is the primary purpose of 'Front Stage' performance according to Goffman?", a_th: ["เพื่อผ่อนคลาย", "เพื่อรักษาภาพลักษณ์ต่อหน้าผู้ชม", "เพื่อการวิพากษ์วิจารณ์สังคม", "เพื่อแสดงความเป็นตัวตนที่แท้จริง"], a_en: ["To relax", "To maintain impression management", "To critique society", "To show true self"], correct: 1, th: "การจัดการความประทับใจ (Impression Management)", en: "Impression Management", detail: "Front Stage คือพื้นที่ที่เราต้องเล่นบทบาทตามความคาดหวังของสังคม" },
+        { q_th: "แนวคิด 'Habitus' ของ Bourdieu มุ่งเน้นเรื่องใด?", q_en: "What does Bourdieu's 'Habitus' focus on?", a_th: ["กฎหมายบ้านเมือง", "รสนิยมที่ถูกหล่อหลอมจากชนชั้น", "พันธุกรรม", "ศาสนา"], a_en: ["Laws", "Tastes shaped by social class", "Genetics", "Religion"], correct: 1, th: "รสนิยมที่ฝังรากลึก", en: "Deeply embedded tastes.", detail: "Habitus คือนิสัยหรือรสนิยมที่สังคมฝังไว้ในตัวเราโดยไม่รู้ตัว" },
+        { q_th: "Sociological Imagination ช่วยให้เราเข้าใจสิ่งใดได้ดีที่สุด?", q_en: "What does Sociological Imagination help us understand best?", a_th: ["วิธีทำเงิน", "ความเชื่อมโยงระหว่างปัญหาตัวบุคคลกับปัญหาสังคม", "การอ่านใจคน", "อนาคตของมนุษย์"], a_en: ["How to make money", "Connection between personal and public issues", "Reading minds", "Human future"], correct: 1, th: "มองภาพใหญ่ของปัญหา", en: "See the big picture.", detail: "C. Wright Mills สอนให้เรามองปัญหาตัวบุคคลว่าเป็นผลจากโครงสร้างสังคม" },
+        { q_th: "ตัวตนส่วน 'Me' ในทฤษฎีของ Mead หมายถึงอะไร?", q_en: "What does the 'Me' represent in Mead's theory?", a_th: ["สัญชาตญาณดิบ", "ตัวตนที่ถูกขัดเกลาด้วยบรรทัดฐานสังคม", "ความฝัน", "ความเห็นแก่ตัว"], a_en: ["Raw instinct", "Self socialized by norms", "Dreams", "Selfishness"], correct: 1, th: "คือสังคมที่อยู่ในตัวเรา", en: "Society within us.", detail: "Me คือการมองตนเองผ่านสายตาของสังคมหรือ Generalized Other" },
+        { q_th: "หากเราทำตัวเป็นกันเองที่บ้าน แต่สุภาพมากที่ทำงาน นี่คือแนวคิดใด?", q_en: "Acting informal at home but polite at work represents?", a_th: ["Looking-glass self", "Dramaturgical Analysis", "Conflict Theory", "Functionalism"], a_en: ["Looking-glass self", "Dramaturgical Analysis", "Conflict Theory", "Functionalism"], correct: 1, th: "การสลับเวทีละคร (Front/Back Stage)", en: "Switching performance stages.", detail: "นี่คือการเลือกใช้เวทีการแสดงให้เหมาะสมกับสถานการณ์" },
+        { q_th: "ข้อใดคือ 'Generalized Other' ของ Mead?", q_en: "What is Mead's 'Generalized Other'?", a_th: ["เพื่อนสนิทคนเดียว", "ความคาดหวังของสังคมโดยรวม", "ครอบครัว", "ตัวเองคนเดียว"], a_en: ["One best friend", "Expectations of society as a whole", "Family", "Oneself"], correct: 1, th: "มาตรฐานส่วนรวม", en: "Collective standards.", detail: "เราเรียนรู้ที่จะมองตัวเองผ่านมุมมองของสังคมโดยรวม" },
+        { q_th: "การที่ชนชั้นกลางมักชอบฟังเพลงคลาสสิก อธิบายได้ด้วยแนวคิดใด?", q_en: "Which concept explains why middle class may like classical music?", a_th: ["Habitus", "Front Stage", "I vs Me", "Looking-glass self"], a_en: ["Habitus", "Front Stage", "I vs Me", "Looking-glass self"], correct: 0, th: "วิถีชีวิตที่ถูกกำหนดโดยตำแหน่งทางสังคม", en: "Lifestyle shaped by social position.", detail: "Habitus คือตัวกำหนดรสนิยมผ่านสถานะทางสังคม" },
+        { q_th: "ปัญหาการตกงานในมุมมอง Sociological Imagination คืออะไร?", q_en: "Unemployment in Sociological Imagination perspective?", a_th: ["เป็นความผิดของคนๆ นั้น", "เป็นปัญหาระดับโครงสร้างสังคม", "เป็นเรื่องโชคชะตา", "เป็นเรื่องตลก"], a_en: ["Individual's fault", "Structural issue", "Fate", "A joke"], correct: 1, th: "ไม่ใช่แค่เรื่องส่วนตัว แต่เป็นเรื่องโครงสร้าง", en: "Not personal, but structural.", detail: "สังคมวิทยามองว่าปัญหาใหญ่ในระบบเศรษฐกิจกระทบปัจเจกบุคคล" },
+        { q_th: "ตัวตนส่วน 'I' ในทฤษฎีของ Mead ทำหน้าที่อะไร?", q_en: "What is the function of the 'I' in Mead's theory?", a_th: ["ควบคุมอารมณ์", "การแสดงออกอย่างอิสระและสร้างสรรค์", "ทำตามกฎสังคม", "เก็บความลับ"], a_en: ["Control emotions", "Free and creative expression", "Follow norms", "Keep secrets"], correct: 1, th: "ตัวตนที่พุ่งออกไป", en: "The impulsive self.", detail: "I คือส่วนที่เป็นเอกลักษณ์และแสดงออกตามใจตนเอง" },
+        { q_th: "พื้นที่ 'Back Stage' ในชีวิตประจำวันคืออะไร?", q_en: "What is 'Back Stage' in daily life?", a_th: ["ที่ทำงาน", "หน้าห้องเรียน", "พื้นที่ส่วนตัวที่เราผ่อนคลาย", "ตลาด"], a_en: ["Workplace", "Classroom", "Private space for relaxation", "Market"], correct: 2, th: "พื้นที่อิสระ", en: "Free space.", detail: "เราไม่ต้องรักษาภาพลักษณ์ในพื้นที่ส่วนตัว" },
+        { q_th: "Socialization คือกระบวนการใด?", q_en: "What is Socialization?", a_th: ["การกินข้าวกับเพื่อน", "การเรียนรู้บรรทัดฐานสังคม", "การเลิกเรียน", "การออกกำลังกาย"], a_en: ["Eating with friends", "Learning social norms", "Leaving school", "Exercising"], correct: 1, th: "การเรียนรู้กติกาคน", en: "Learning rules of society.", detail: "Socialization คือการเรียนรู้เพื่ออยู่ร่วมกับผู้อื่น" },
+        { q_th: "บทบาท (Role) กับ สถานภาพ (Status) ต่างกันอย่างไร?", q_en: "Difference between Role and Status?", a_th: ["ไม่ต่างกัน", "สถานภาพคือสิ่งที่ถือครอง บทบาทคือสิ่งที่แสดง", "บทบาทคือสิ่งที่ถือครอง", "สถานภาพคือละคร"], a_en: ["No difference", "Status is held, Role is performed", "Role is held", "Status is a play"], correct: 1, th: "ตำแหน่ง vs การแสดง", en: "Position vs Performance.", detail: "สถานภาพเป็นตำแหน่ง เช่น ครู, บทบาทคือหน้าที่ เช่น สอน" },
+        { q_th: "การที่นักเรียนแต่งตัวเรียบร้อยต่อหน้าครู คือการจัดการแบบใด?", q_en: "Students dressing neatly before teacher is?", a_th: ["Back Stage", "Front Stage", "Habitus", "I"], a_en: ["Back Stage", "Front Stage", "Habitus", "I"], correct: 1, th: "การแสดงบนเวทีหน้า", en: "Front stage performance.", detail: "เป็นการรักษาภาพลักษณ์ให้ตรงกับความคาดหวัง" },
+        { q_th: "แนวคิดใดที่บอกว่าเราเป็นผลิตภัณฑ์ของสังคม?", q_en: "Concept stating we are social products?", a_th: ["Social Construction of Reality", "Biological Determinism", "Individualism", "Free Market"], a_en: ["Social Construction of Reality", "Biological Determinism", "Individualism", "Free Market"], correct: 0, th: "โลกคือสิ่งที่เราสร้างร่วมกัน", en: "Reality is constructed together.", detail: "สังคมเป็นผู้สร้างนิยามให้ตัวเรา" },
+        { q_th: "ทำไม Mills จึงเชื่อว่าเราต้องมี Sociological Imagination?", q_en: "Why does Mills believe in Sociological Imagination?", a_th: ["เพื่อความสนุก", "เพื่อเข้าใจชีวิตในภาพใหญ่", "เพื่อสอบตก", "เพื่อเล่นเกม"], a_en: ["For fun", "To understand life in big picture", "To fail", "To play games"], correct: 1, th: "เห็นความเชื่อมโยง", en: "See connections.", detail: "เพื่อไม่ให้เราจมอยู่กับปัญหาโดยไร้ทางออก" },
+        { q_th: "การขัดเกลาทางสังคมทางอ้อมเกิดขึ้นที่ไหนมากที่สุด?", q_en: "Where does indirect socialization occur most?", a_th: ["ในโรงเรียน", "ในสื่อและสิ่งแวดล้อม", "ในห้องทดลอง", "ในศาล"], a_en: ["In school", "In media and environment", "In lab", "In court"], correct: 1, th: "ผ่านสื่อ", en: "Through media.", detail: "เราเรียนรู้จากสิ่งที่เห็นในชีวิตประจำวัน" },
+        { q_th: "ใครคือผู้เปรียบชีวิตเป็นละคร?", q_en: "Who compared life to a play?", a_th: ["Mead", "Goffman", "Cooley", "Bourdieu"], a_en: ["Mead", "Goffman", "Cooley", "Bourdieu"], correct: 1, th: "ผู้กำกับชีวิตคือตัวเราบนเวที", en: "We direct our lives on stage.", detail: "Erving Goffman เป็นบิดาแห่งละครชีวิต" },
+        { q_th: "ความต่างของ I และ Me ตาม Mead คืออะไร?", q_en: "Difference between I and Me?", a_th: ["ไม่ต่าง", "I คือผู้กระทำ Me คือผู้ถูกประเมินจากสังคม", "Me คือผู้กระทำ", "เป็นเรื่องของศาสนา"], a_en: ["Not different", "I is actor, Me is evaluated by society", "Me is actor", "Religious"], correct: 1, th: "I ปรุง Me ปรับ", en: "I acts, Me adjusts.", detail: "I คือสัญชาตญาณ Me คือสิ่งที่สังคมสอน" },
+        { q_th: "Bourdieu อธิบายว่า Habitus เปลี่ยนได้ยากเพราะอะไร?", q_en: "Why is Habitus hard to change?", a_th: ["เพราะมันฝังลึกตั้งแต่เด็ก", "เพราะกฎหมายห้าม", "เพราะคนไม่มีความจำ", "เพราะมันสนุก"], a_en: ["Deeply embedded since childhood", "Law forbids it", "People have no memory", "It's fun"], correct: 0, th: "มันกลายเป็นนิสัยที่เผลอทำ", en: "It becomes automatic.", detail: "Habitus คือโครงสร้างที่ซึมลึกในตัวตน" },
+        { q_th: "เราเรียกการรับรู้ว่าผู้อื่นมองเราอย่างไรว่า?", q_en: "Perception of how others see us?", a_th: ["Looking-glass self", "Front stage", "Role", "Habitus"], a_en: ["Looking-glass self", "Front stage", "Role", "Habitus"], correct: 0, th: "กระจกเงาสังคม", en: "Social mirror.", detail: "หัวใจของ Cooley คือการมองผ่านตาคนอื่น" },
+        { q_th: "การมีหลายสถานภาพในเวลาเดียวกันคือ?", q_en: "Having many statuses at once?", a_th: ["Status Set", "Role Conflict", "Front Stage", "I"], a_en: ["Status Set", "Role Conflict", "Front Stage", "I"], correct: 0, th: "ชุดของตำแหน่ง", en: "Collection of positions.", detail: "คนเรามีสถานภาพหลายอย่างพร้อมกัน เช่น ลูก, นักเรียน" },
+        { q_th: "Sociological Imagination เชื่อมโยงอะไรบ้าง?", q_en: "What does Sociological Imagination connect?", a_th: ["อดีตกับอนาคต", "ปัญหาตัวบุคคลกับโครงสร้างสังคม", "คนกับสัตว์", "เงินกับเวลา"], a_en: ["Past and future", "Personal problems with social structure", "Human and animal", "Money and time"], correct: 1, th: "โยงเล็กเข้าหาใหญ่", en: "Connect small to big.", detail: "เปลี่ยนเรื่องส่วนตัวเป็นประเด็นสาธารณะ" },
+        { q_th: "การควบคุมเวทีการแสดงเรียกว่า?", q_en: "Controlling the performance stage is?", a_th: ["Impression Management", "Socialization", "Habitus", "Imagination"], a_en: ["Impression Management", "Socialization", "Habitus", "Imagination"], correct: 0, th: "จัดฉาก", en: "Staging.", detail: "Goffman เน้นเรื่องการคุมภาพลักษณ์" },
+        { q_th: "เป้าหมายสูงสุดของสังคมวิทยาคือ?", q_en: "Sociology's ultimate goal?", a_th: ["ทำนายหวย", "เข้าใจมนุษย์ในบริบทสังคม", "ควบคุมคน", "เป็นนายกฯ"], a_en: ["Predict lottery", "Understand humans in society", "Control people", "Be PM"], correct: 1, th: "เข้าใจความเป็นไป", en: "Understand social reality.", detail: "เพื่อมองเห็นและเข้าใจกระบวนการขัดเกลาสังคม" }
+    ];
+
+    const categories = [{ id: 0, name: "พื้นฐานสังคมวิทยา", questions: [...Array(25).keys()] }];
+    let lang = 'th';
+
+    function render() {
+        const root = document.getElementById('questions-root');
+        root.innerHTML = '';
+        questions.forEach((q, idx) => {
+            const div = document.createElement('div');
+            div.className = 'question-container';
+            div.id = `q-${idx}`;
+            div.innerHTML = `
+                <button class="btn-toggle" onclick="toggleLang(${idx})">${lang === 'th' ? 'EN' : 'TH'}</button>
+                <p><strong>${lang === 'th' ? q.q_th : q.q_en}</strong></p>
+                ${q.a_th.map((opt, i) => `<div class="option" onclick="check(${idx}, ${i})">${lang === 'th' ? q.a_th[i] : q.a_en[i]}</div>`).join('')}
+                <div class="clue" id="clue-${idx}" style="display:none">${lang === 'th' ? '(Clue: ' + q.th + ')' : '(Clue: ' + q.en + ')'}</div>
+                <div class="explanation" id="exp-${idx}" style="display:none">${q.detail}</div>
+            `;
+            root.appendChild(div);
+        });
+    }
+
+    function check(qIdx, aIdx) {
+        const q = questions[qIdx];
+        const container = document.getElementById(`q-${qIdx}`);
+        const options = container.querySelectorAll('.option');
+        options.forEach((el, i) => {
+            el.style.pointerEvents = 'none';
+            if (i === q.correct) el.classList.add('correct');
+            else if (i === aIdx) el.classList.add('wrong');
+        });
+        document.getElementById(`clue-${qIdx}`).style.display = 'block';
+        document.getElementById(`exp-${qIdx}`).style.display = 'block';
+        checkComplete();
+    }
+
+    function toggleLang(idx) {
+        lang = lang === 'th' ? 'en' : 'th';
+        render();
+    }
+
+    function checkComplete() {
+        if (document.querySelectorAll('.option.correct').length === 25) {
+            alert("ส่งผลการเรียนไปยังติวเตอร์เรียบร้อยแล้ว");
+            const res = document.getElementById('results-area');
+            res.innerHTML = "🌟 ทำได้ดีมาก - พร้อมสำหรับการวิเคราะห์ระดับสูง!";
+            res.style.display = 'block';
+        }
+    }
+    render();
+</script>
+</body>
+</html>
