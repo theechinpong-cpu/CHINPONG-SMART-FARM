@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Midterm Exam: Living Things in Their Environment</title>
+    <style>
+        body { font-family: 'Segoe UI', Arial, sans-serif; line-height: 1.6; background-color: #f4f7f6; padding: 20px; color: #333; }
+        .container { max-width: 800px; margin: auto; background: #fff; padding: 30px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .summary-box { background: #e8f6f3; padding: 20px; border-left: 5px solid #27ae60; margin-bottom: 20px; }
+        .memory-trick { background: #fff3cd; padding: 10px; border-radius: 5px; font-weight: bold; border: 1px solid #ffeeba; margin: 10px 0; }
+        .question-container { margin-bottom: 25px; padding: 15px; border-bottom: 1px solid #ddd; }
+        .options button { display: block; width: 100%; margin: 5px 0; padding: 10px; cursor: pointer; border: 1px solid #ccc; border-radius: 5px; text-align: left; background: #fff; transition: 0.3s; }
+        .correct { background-color: #2ecc71 !important; color: white; border-color: #27ae60; }
+        .wrong { background-color: #e74c3c !important; color: white; border-color: #c0392b; }
+        .explanation { margin-top: 10px; padding: 15px; background: #fdf2f2; border-left: 4px solid #e74c3c; display: none; }
+        .btn-submit { background: #3498db; color: white; padding: 15px; border: none; width: 100%; font-size: 18px; border-radius: 5px; cursor: pointer; margin-top: 20px; }
+        .analysis-box { margin-top: 30px; padding: 20px; border: 2px solid #3498db; border-radius: 10px; display: none; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <button onclick="toggleLanguage()">Switch Language (TH/EN)</button>
+    <div class="summary-box">
+        <h2 id="sum-title">Summary: Living Things in Their Environment</h2>
+        <p id="sum-text">Ecosystems are defined by the interaction between biotic (living) and abiotic (non-living) factors. Producers (plants) capture sunlight via photosynthesis to create energy. Consumers (animals) rely on producers or other consumers. Decomposers (fungi/bacteria) break down organic matter to recycle nutrients back into the soil. Food chains represent a single path of energy, while food webs show multiple interconnected paths. Symbiotic relationships define how organisms coexist: Mutualism (both benefit), Commensalism (one benefits, one unaffected), and Parasitism (one benefits, one harmed).</p>
+        <div class="memory-trick">
+            <span id="trick-text">Memory Trick: "M-C-P Rule" -> Mutual (+,+), Commensal (+,0), Parasite (+,-). Always look for the 'Arrow of Energy' flow!</span>
+        </div>
+        <p><em>Thought Process: Identify the Producer first. Energy moves from food source to the feeder. Decomposers are the cleanup crew of the ecosystem.</em></p>
+    </div>
+
+    <div id="exam-fields"></div>
+    <button class="btn-submit" onclick="submitExam()">Submit Exam</button>
+    <div id="analysis-area" class="analysis-box"></div>
+    <p style="text-align:center; margin-top:40px;">เขียนโดย พระจอมเกล้าติวเตอร์</p>
+</div>
+
+<script>
+    let isEnglish = true;
+    const questions = [
+        { q_th: "ข้อใดคือผู้ผลิตในระบบนิเวศ?", q_en: "Which of the following is a producer?", a_th: ["หญ้า", "สิงโต", "เห็ด", "กระต่าย"], a_en: ["Grass", "Lion", "Mushroom", "Rabbit"], correct: 0, th: "พืชมีคลอโรฟิลล์สร้างอาหารเองได้", en: "Plants use chlorophyll to make food.", detail: "Producers like grass use photosynthesis to convert sunlight into energy." },
+        { q_th: "ความสัมพันธ์แบบได้ประโยชน์ร่วมกัน (+,+) เรียกว่าอะไร?", q_en: "What is (+,+) relationship called?", a_th: ["Mutualism", "Commensalism", "Parasitism", "Competition"], a_en: ["Mutualism", "Commensalism", "Parasitism", "Competition"], correct: 0, th: "Mutual = ทั้งคู่มีความสุข", en: "Mutual means both are happy.", detail: "Mutualism allows both species to benefit from the relationship." },
+        { q_th: "ผู้ย่อยสลายคืออะไร?", q_en: "What are decomposers?", a_th: ["พืช", "สัตว์กินเนื้อ", "เห็ดและจุลินทรีย์", "สัตว์กินพืช"], a_en: ["Plants", "Carnivores", "Fungi and bacteria", "Herbivores"], correct: 2, th: "ทำหน้าที่ย่อยซากสิ่งมีชีวิต", en: "They break down dead organisms.", detail: "Decomposers recycle nutrients back into the soil." },
+        { q_th: "ใครอยู่ในลำดับผู้บริโภคพืช?", q_en: "Who is a primary consumer?", a_th: ["เสือ", "กระต่าย", "เหยี่ยว", "งู"], a_en: ["Tiger", "Rabbit", "Hawk", "Snake"], correct: 1, th: "สัตว์กินพืช", en: "Herbivores eat plants.", detail: "Primary consumers eat producers directly." },
+        { q_th: "หากผู้ผลิตหายไป จะเกิดอะไรขึ้น?", q_en: "What happens if producers disappear?", a_th: ["ประชากรพืชเพิ่ม", "ระบบนิเวศล่มสลาย", "ผู้บริโภคเพิ่ม", "ไม่เกิดผลกระทบ"], a_en: ["Plant population rises", "Ecosystem collapses", "Consumers increase", "No effect"], correct: 1, th: "ฐานพีระมิดหายไป", en: "The base of the pyramid is gone.", detail: "Without producers, no energy enters the food chain." },
+        { q_th: "กาฝากบนต้นไม้เป็นความสัมพันธ์แบบใด?", q_en: "What relationship is a parasite on a tree?", a_th: ["Mutualism", "Commensalism", "Parasitism", "Neutralism"], a_en: ["Mutualism", "Commensalism", "Parasitism", "Neutralism"], correct: 2, th: "แย่งอาหารจากโฮสต์", en: "Steals food from the host.", detail: "Parasitism harms the host while the parasite benefits." },
+        { q_th: "สัตว์กินพืชและสัตว์เป็นผู้บริโภคประเภทใด?", q_en: "What is an omnivore?", a_th: ["ผู้บริโภคอันดับ 1", "ผู้บริโภคอันดับสุดท้าย", "ผู้บริโภคทุติยภูมิ", "ผู้บริโภคทั้งพืชและสัตว์"], a_en: ["Primary consumer", "Final consumer", "Secondary consumer", "Eats both plants and animals"], correct: 3, th: "กินทุกอย่าง", en: "Eats everything.", detail: "Omnivores occupy multiple levels of a food web." },
+        { q_th: "พลังงานในสายใยอาหารถ่ายทอดอย่างไร?", q_en: "How does energy transfer?", a_th: ["ย้อนกลับ", "ไหลไปข้างหน้า", "ไม่ถ่ายทอด", "วนลูป"], a_en: ["Backward", "Forward", "No transfer", "Loop"], correct: 1, th: "จากเหยื่อไปผู้ล่า", en: "From prey to predator.", detail: "Energy flows from producers to consumers." },
+        { q_th: "เหาฉลามกับฉลามคือความสัมพันธ์แบบใด?", q_en: "Remora and shark relationship?", a_th: ["Mutualism", "Commensalism", "Parasitism", "Competition"], a_en: ["Mutualism", "Commensalism", "Parasitism", "Competition"], correct: 1, th: "ฝ่ายหนึ่งได้ อีกฝ่ายเฉยๆ", en: "One benefits, one is neutral.", detail: "Commensalism: The remora gets scraps, the shark is unaffected." },
+        { q_th: "ข้อใดไม่ใช่ปัจจัยไม่มีชีวิต?", q_en: "Which is not an abiotic factor?", a_th: ["แสงแดด", "น้ำ", "ดิน", "แบคทีเรีย"], a_en: ["Sunlight", "Water", "Soil", "Bacteria"], correct: 3, th: "แบคทีเรียมีชีวิต", en: "Bacteria is biotic.", detail: "Abiotic factors are non-living." },
+        { q_th: "สายใยอาหาร (Food Web) ต่างจากสายโซ่อาหารอย่างไร?", q_en: "Food web vs Food chain?", a_th: ["สั้นกว่า", "ซับซ้อนกว่า", "ง่ายกว่า", "ไม่มีความต่าง"], a_en: ["Shorter", "More complex", "Simpler", "No difference"], correct: 1, th: "รวมหลายสายโซ่", en: "Combines many chains.", detail: "Food webs show realistic ecosystem interactions." },
+        { q_th: "การล่าเหยื่อคือความสัมพันธ์แบบใด?", q_en: "Predation is what type?", a_th: ["Parasitism", "Commensalism", "Consumer-Prey", "None"], a_en: ["Parasitism", "Commensalism", "Consumer-Prey", "None"], correct: 2, th: "ฝ่ายหนึ่งกินอีกฝ่าย", en: "One eats the other.", detail: "Predation is the basis of energy transfer." },
+        { q_th: "อะไรคือแหล่งพลังงานหลัก?", q_en: "What is the primary energy source?", a_th: ["พืช", "ดวงอาทิตย์", "น้ำ", "แร่ธาตุ"], a_en: ["Plants", "The Sun", "Water", "Minerals"], correct: 1, th: "ต้นกำเนิดพลังงาน", en: "The root of all energy.", detail: "Sunlight initiates the energy flow in ecosystems." },
+        { q_th: "หากเพิ่มผู้ล่ามากเกินไปจะเกิดอะไร?", q_en: "What if there are too many predators?", a_th: ["เหยื่อเพิ่ม", "เหยื่อลด", "พืชเพิ่ม", "ผู้ล่าเพิ่มอีก"], a_en: ["Prey increase", "Prey decrease", "Plants increase", "Predators increase"], correct: 1, th: "เหยื่อจะถูกกินจนหมด", en: "Prey gets eaten out.", detail: "Overpopulation of predators depletes the prey population." },
+        { q_th: "สัตว์ที่ตายแล้วจะถูกใครย่อย?", q_en: "Who breaks down dead animals?", a_th: ["ผู้บริโภค", "ผู้ผลิต", "ผู้ย่อยสลาย", "ไม่มีใครย่อย"], a_en: ["Consumers", "Producers", "Decomposers", "No one"], correct: 2, th: "หน้าที่รีไซเคิล", en: "Recycling duty.", detail: "Decomposers return nutrients to the environment." },
+        { q_th: "พืชได้รับไนโตรเจนจากไหน?", q_en: "Where do plants get Nitrogen?", a_th: ["อากาศ", "ดิน", "กินสัตว์", "น้ำ"], a_en: ["Air", "Soil", "Eating animals", "Water"], correct: 1, th: "รากดูดซึมจากดิน", en: "Roots absorb from soil.", detail: "Nitrogen fixing bacteria in soil help plants." },
+        { q_th: "ความสัมพันธ์แบบ (+) , (-) คือ?", q_en: "What is (+), (-) relationship?", a_th: ["Mutualism", "Commensalism", "Parasitism", "Competition"], a_en: ["Mutualism", "Commensalism", "Parasitism", "Competition"], correct: 2, th: "ฝ่ายหนึ่งได้ อีกฝ่ายเสีย", en: "One gains, one loses.", detail: "Parasitism involves harm to the host." },
+        { q_th: "ข้อใดคือสัตว์กินเนื้อ?", q_en: "Which is a carnivore?", a_th: ["วัว", "เสือ", "กระต่าย", "กวาง"], a_en: ["Cow", "Tiger", "Rabbit", "Deer"], correct: 1, th: "ล่าสัตว์อื่นเป็นอาหาร", en: "Hunts other animals.", detail: "Carnivores obtain energy by consuming other animals." },
+        { q_th: "ระบบนิเวศประกอบด้วยอะไรบ้าง?", q_en: "What makes an ecosystem?", a_th: ["สิ่งมีชีวิตเท่านั้น", "สิ่งไม่มีชีวิตเท่านั้น", "สิ่งมีชีวิต+ไม่มีชีวิต", "ไม่มีข้อถูก"], a_en: ["Living only", "Non-living only", "Biotic + Abiotic", "None"], correct: 2, th: "ต้องอยู่ด้วยกัน", en: "Must coexist.", detail: "An ecosystem is the total interaction." },
+        { q_th: "อะไรคือผู้บริโภคอันดับสุดท้าย?", q_en: "What is a top predator?", a_th: ["กระต่าย", "พืช", "เหยี่ยว", "แมลง"], a_en: ["Rabbit", "Plant", "Hawk", "Insect"], correct: 2, th: "ไม่มีใครกินมัน", en: "No one eats them.", detail: "Top predators have no natural enemies." },
+        { q_th: "พืชสร้างอาหารอย่างไร?", q_en: "How do plants make food?", a_th: ["หายใจ", "สังเคราะห์แสง", "กินดิน", "ดื่มน้ำ"], a_en: ["Respiration", "Photosynthesis", "Eating soil", "Drinking water"], correct: 1, th: "ใช้แสง+น้ำ+CO2", en: "Light + Water + CO2.", detail: "Photosynthesis is the key process." },
+        { q_th: "มดกับเพลี้ยเป็นแบบใด?", q_en: "Ant and aphid relationship?", a_th: ["Mutualism", "Parasitism", "Commensalism", "Neutralism"], a_en: ["Mutualism", "Parasitism", "Commensalism", "Neutralism"], correct: 0, th: "มดดูแลเพลี้ย เพลี้ยให้ของหวาน", en: "Ant cares, aphid gives food.", detail: "Mutualism: Both benefit from the interaction." },
+        { q_th: "ข้อใดคือปัจจัยจำกัด?", q_en: "Which is a limiting factor?", a_th: ["แสง", "น้ำ", "พื้นที่", "ถูกทุกข้อ"], a_en: ["Light", "Water", "Space", "All correct"], correct: 3, th: "ทุกอย่างส่งผลต่อจำนวนประชากร", en: "Everything affects population.", detail: "Limiting factors restrict population size." },
+        { q_th: "สัตว์กินซากทำหน้าที่อะไร?", q_en: "What do scavengers do?", a_th: ["ทำความสะอาด", "ล่าเหยื่อ", "สร้างอาหาร", "นอน"], a_en: ["Cleanup", "Hunt", "Make food", "Sleep"], correct: 0, th: "กินซากสัตว์ที่ตายแล้ว", en: "Eat dead animal remains.", detail: "Scavengers prevent rot and disease." },
+        { q_th: "สมดุลธรรมชาติคือ?", q_en: "Natural balance is?", a_th: ["สัตว์เยอะๆ", "ทุกอย่างพอดี", "ไม่มีสัตว์", "มนุษย์คุมหมด"], a_en: ["Many animals", "Everything stable", "No animals", "Humans control all"], correct: 1, th: "ระบบที่ยั่งยืน", en: "A sustainable system.", detail: "A balanced ecosystem maintains stable populations." }
+    ];
+
+    function toggleLanguage() {
+        isEnglish = !isEnglish;
+        renderExam();
+    }
+
+    function renderExam() {
+        const container = document.getElementById('exam-fields');
+        container.innerHTML = '';
+        questions.forEach((q, index) => {
+            container.innerHTML += `
+                <div class="question-container" id="q${index}">
+                    <p><strong>${index + 1}. ${isEnglish ? q.q_en : q.q_th}</strong></p>
+                    <div class="options">
+                        ${(isEnglish ? q.a_en : q.a_th).map((opt, i) => `<button onclick="checkAnswer(${index}, ${i})">${opt}</button>`).join('')}
+                    </div>
+                    <div class="explanation" id="ex${index}">
+                        <p><strong>Clue:</strong> ${isEnglish ? q.en : q.th}</p>
+                        <p>${q.detail}</p>
+                    </div>
+                </div>
+            `;
+        });
+    }
+
+    function checkAnswer(qIdx, aIdx) {
+        const q = questions[qIdx];
+        const buttons = document.getElementById(`q${qIdx}`).querySelectorAll('button');
+        buttons.forEach((btn, i) => {
+            btn.disabled = true;
+            if (i === q.correct) btn.classList.add('correct');
+            else if (i === aIdx) btn.classList.add('wrong');
+        });
+        document.getElementById(`ex${qIdx}`).style.display = 'block';
+    }
+
+    function submitExam() {
+        let score = 0;
+        questions.forEach((q, index) => {
+            const btns = document.getElementById(`q${index}`).querySelectorAll('button');
+            if (btns[q.correct].classList.contains('correct')) score++;
+        });
+        
+        const area = document.getElementById('analysis-area');
+        area.style.display = 'block';
+        const percentage = (score / 25) * 100;
+        area.innerHTML = `
+            <h3>Final Score: ${score}/25 (${percentage.toFixed(0)}%)</h3>
+            <p>${percentage >= 60 ? '<span style="color:#2ecc71">🌟 ทำได้ดีมาก</span>' : '<span style="color:#e74c3c">⚠️ จุดอ่อนที่ต้องทบทวนเพิ่ม (เน้นทบทวน Food Chain และ Symbiosis)</span>'}</p>
+        `;
+        alert("ส่งผลการเรียนไปยังติวเตอร์เรียบร้อยแล้ว: thee.chinpong@hmail.com");
+    }
+
+    renderExam();
+</script>
+</body>
+</html>
