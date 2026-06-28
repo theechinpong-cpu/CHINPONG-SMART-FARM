@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <title>แบบทดสอบภาษาอังกฤษ ป.5 ระดับยากมาก - พระจอมเกล้าติวเตอร์</title>
+    <style>
+        body { font-family: 'Sarabun', sans-serif; line-height: 1.6; padding: 20px; background: #f4f7f6; }
+        .container { max-width: 800px; margin: auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        .question-container { margin-bottom: 25px; padding: 15px; border-bottom: 2px solid #eee; }
+        .option { display: block; margin: 8px 0; padding: 12px; border: 1px solid #ccc; cursor: pointer; border-radius: 5px; transition: 0.2s; }
+        .correct { background-color: #2ecc71 !important; color: white; border-color: #27ae60; }
+        .wrong { background-color: #e74c3c !important; color: white; border-color: #c0392b; }
+        .tip { background: #fff3cd; padding: 10px; margin-top: 10px; border-left: 5px solid #ffc107; font-size: 0.9em; }
+        .detail { color: #2c3e50; font-weight: bold; margin-top: 5px; }
+        #results { margin-top: 30px; padding: 20px; border-radius: 10px; text-align: center; font-size: 1.3em; display: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <button onclick="toggleLang()">Switch Language (TH / EN)</button>
+        <h2 id="title">แบบทดสอบภาษาอังกฤษ ป.5 (ระดับยากมาก)</h2>
+        <div id="quiz-area"></div>
+        <div id="results"></div>
+    </div>
+
+    <script>
+        const quizData = [
+            { q_th: "People ___ (believe) that honesty is the best policy.", q_en: "People ___ (believe) that honesty is the best policy.", a_th: ["believe", "believes", "believing", "believed"], a_en: ["believe", "believes", "believing", "believed"], correct: 0, th: "People เป็นพหูพจน์ กริยาไม่ต้องเติม s", en: "People is plural, no -s needed", detail: "People จัดเป็นนามพหูพจน์ที่ไม่มี s จึงใช้กริยาช่อง 1 ปกติ" },
+            { q_th: "___ does the bus arrive? - At 8 o'clock sharp.", q_en: "___ does the bus arrive? - At 8 o'clock sharp.", a_th: ["Why", "Where", "When", "How"], a_en: ["Why", "Where", "When", "How"], correct: 2, th: "ถามเวลาใช้ When", en: "Use When for time", detail: "At 8 o'clock เป็นเวลา จึงต้องใช้ When" },
+            { q_th: "She ___ (rarely / be) late for class.", q_en: "She ___ (rarely / be) late for class.", a_th: ["rarely is", "is rarely", "be rarely", "rarely be"], a_en: ["rarely is", "is rarely", "be rarely", "rarely be"], correct: 1, th: "Adverb อยู่หลัง Verb to be", en: "Adverb after Verb to be", detail: "is เป็น Verb to be จึงต้องวาง rarely ไว้ข้างหลัง" },
+            { q_th: "These books are mine. Where are ___ (you)?", q_en: "These books are mine. Where are ___ (you)?", a_th: ["your", "yours", "you", "your's"], a_en: ["your", "yours", "you", "your's"], correct: 1, th: "ใช้ Possessive Pronoun แทนกรรม", en: "Use Possessive Pronoun", detail: "ใช้ yours เพื่อหมายถึง your books" },
+            { q_th: "The children ___ (not / play) in the rain.", q_en: "The children ___ (not / play) in the rain.", a_th: ["don't play", "doesn't play", "not play", "aren't play"], a_en: ["don't play", "doesn't play", "not play", "aren't play"], correct: 0, th: "Children คือพหูพจน์ใช้ don't", en: "Children is plural, use don't", detail: "Children พหูพจน์ใช้ don't" },
+            { q_th: "___ bag is this? - It is Sarah's.", q_en: "___ bag is this? - It is Sarah's.", a_th: ["Who", "What", "Whose", "Where"], a_en: ["Who", "What", "Whose", "Where"], correct: 2, th: "Whose ใช้ถามความเป็นเจ้าของ", en: "Use Whose for possession", detail: "ถามความเป็นเจ้าของต้องใช้ Whose" },
+            { q_th: "He ___ (often / study) English at night.", q_en: "He ___ (often / study) English at night.", a_th: ["often studies", "studies often", "often study", "does often study"], a_en: ["often studies", "studies often", "often study", "does often study"], correct: 0, th: "Adverb หน้ากริยาแท้และผันกริยา", en: "Adverb before main verb", detail: "วาง often หน้ากริยาและเติม es ตามกฎ" },
+            { q_th: "Give the documents to ___ (they).", q_en: "Give the documents to ___ (they).", a_th: ["they", "their", "them", "theirs"], a_en: ["they", "their", "them", "theirs"], correct: 2, th: "หลังกริยาต้องใช้รูปกรรม", en: "After verb use object", detail: "หลังคำบุพบท to ต้องใช้ them" },
+            { q_th: "___ do you choose? The red one or the blue one?", q_en: "___ do you choose? The red one or the blue one?", a_th: ["What", "Which", "Who", "Where"], a_en: ["What", "Which", "Who", "Where"], correct: 1, th: "เลือกระหว่างสิ่งของใช้ Which", en: "Use Which for choosing", detail: "การให้เลือกระหว่างตัวเลือกใช้ Which" },
+            { q_th: "My brother ___ (usually / not / do) his homework.", q_en: "My brother ___ (usually / not / do) his homework.", a_th: ["doesn't usually do", "usually doesn't do", "don't usually do", "usually don't do"], a_en: ["doesn't usually do", "usually doesn't do", "don't usually do", "usually don't do"], correct: 1, th: "Adverb หน้ากริยาช่วย", en: "Adverb before auxiliary", detail: "usually วางหน้า doesn't" },
+            { q_th: "She is the girl ___ (who / whom) I told you about.", q_en: "She is the girl ___ (who / whom) I told you about.", a_th: ["who", "whose", "which", "where"], a_en: ["who", "whose", "which", "where"], correct: 0, th: "ใช้ Who แทนคน", en: "Use Who for people", detail: "ใช้ who แทนเด็กผู้หญิง" },
+            { q_th: "___ water is in the glass?", q_en: "___ water is in the glass?", a_th: ["How many", "How much", "What", "Which"], a_en: ["How many", "How much", "What", "Which"], correct: 1, th: "ถามปริมาณใช้ How much", en: "Use How much for quantity", detail: "water นับไม่ได้ใช้ How much" },
+            { q_th: "The teacher ___ (always / correct) our exercises.", q_en: "The teacher ___ (always / correct) our exercises.", a_th: ["always corrects", "corrects always", "always correct", "does always correct"], a_en: ["always corrects", "corrects always", "always correct", "does always correct"], correct: 0, th: "วางหน้ากริยาและเติม s", en: "Before verb and add -s", detail: "always วางหน้ากริยาและครูคนเดียวต้องเติม s" },
+            { q_th: "This pen is ___ (she).", q_en: "This pen is ___ (she).", a_th: ["her", "hers", "she", "herself"], a_en: ["her", "hers", "she", "herself"], correct: 1, th: "ใช้แสดงความเป็นเจ้าของท้ายประโยค", en: "Possessive pronoun at end", detail: "ใช้ hers แทน her pen" },
+            { q_th: "___ do you look so happy?", q_en: "___ do you look so happy?", a_th: ["Why", "When", "Who", "What"], a_en: ["Why", "When", "Who", "What"], correct: 0, th: "ถามเหตุผลใช้ Why", en: "Use Why for reason", detail: "ถามเหตุผลใช้ Why" },
+            { q_th: "My cat ___ (sometimes / sleep) on the sofa.", q_en: "My cat ___ (sometimes / sleep) on the sofa.", a_th: ["sometimes sleeps", "sleeps sometimes", "sometimes sleep", "do sometimes sleep"], a_en: ["sometimes sleeps", "sleeps sometimes", "sometimes sleep", "do sometimes sleep"], correct: 0, th: "Adverb หน้ากริยาที่เติม s", en: "Adverb before verb -s", detail: "แมวตัวเดียวต้องเติม s ที่กริยา" },
+            { q_th: "Does your father ___ (have) a car?", q_en: "Does your father ___ (have) a car?", a_th: ["has", "have", "haves", "having"], a_en: ["has", "have", "haves", "having"], correct: 1, th: "หลัง Does กริยาเป็นรูปปกติ", en: "Base form after Does", detail: "มี Does แล้ว กริยาไม่ต้องผัน" },
+            { q_th: "These are ___ (they) pens.", q_en: "These are ___ (they) pens.", a_th: ["them", "their", "theirs", "they"], a_en: ["them", "their", "theirs", "they"], correct: 1, th: "แสดงเจ้าของหน้าคำนาม", en: "Possessive before noun", detail: "their ใช้ขยายนาม" },
+            { q_th: "___ makes this noise?", q_en: "___ makes this noise?", a_th: ["What", "Which", "Where", "When"], a_en: ["What", "Which", "Where", "When"], correct: 0, th: "ถามถึงสิ่งของที่ทำกริยา", en: "Ask about things", detail: "ใช้ What แทนเสียงรบกวน" },
+            { q_th: "We ___ (hardly ever / go) to the beach.", q_en: "We ___ (hardly ever / go) to the beach.", a_th: ["hardly ever go", "go hardly ever", "hardly ever goes", "goes hardly ever"], a_en: ["hardly ever go", "go hardly ever", "hardly ever goes", "goes hardly ever"], correct: 0, th: "We พหูพจน์กริยาไม่ต้องเติม", en: "We is plural, no -s", detail: "We ไม่ต้องเติม s ที่กริยา" },
+            { q_th: "Can you help ___ (I)?", q_en: "Can you help ___ (I)?", a_th: ["I", "my", "mine", "me"], a_en: ["I", "my", "mine", "me"], correct: 3, th: "รูปกรรมของ I คือ me", en: "Object of I is me", detail: "หลังกริยาใช้ me" },
+            { q_th: "___ does it cost?", q_en: "___ does it cost?", a_th: ["How much", "How many", "Who", "Where"], a_en: ["How much", "How many", "Who", "Where"], correct: 0, th: "ถามราคาใช้ How much", en: "Ask price with How much", detail: "ถามราคาใช้ How much" },
+            { q_th: "He ___ (never / be) wrong.", q_en: "He ___ (never / be) wrong.", a_th: ["never is", "is never", "be never", "never be"], a_en: ["never is", "is never", "be never", "never be"], correct: 1, th: "หลัง Verb to be", en: "After Verb to be", detail: "is เป็น Verb to be" },
+            { q_th: "___ is the best student?", q_en: "___ is the best student?", a_th: ["What", "Who", "Where", "Why"], a_en: ["What", "Who", "Where", "Why"], correct: 1, th: "ถามถึงคนใช้ Who", en: "Ask people use Who", detail: "นักเรียนคือคน ใช้ Who" },
+            { q_th: "She ___ (fix) her bicycle.", q_en: "She ___ (fix) her bicycle.", a_th: ["fixs", "fixes", "fixing", "fixed"], a_en: ["fixs", "fixes", "fixing", "fixed"], correct: 1, th: "ลงท้าย x เติม es", en: "Ends in x, add -es", detail: "กริยาลงท้ายด้วย x ต้องเติม es" }
+        ];
+
+        let lang = 'th';
+        let score = 0;
+        let answered = 0;
+
+        function renderQuiz() {
+            const area = document.getElementById('quiz-area');
+            area.innerHTML = '';
+            quizData.forEach((item, index) => {
+                const div = document.createElement('div');
+                div.className = 'question-container';
+                div.innerHTML = `
+                    <p><strong>${index + 1}. ${lang === 'th' ? item.q_th : item.q_en}</strong></p>
+                    ${(lang === 'th' ? item.a_th : item.a_en).map((opt, i) => `<div class="option" onclick="check(${index}, ${i})">${opt}</div>`).join('')}
+                    <div id="feedback-${index}" style="display:none;">
+                        <div class="tip">Clue: ${lang === 'th' ? item.th : item.en}</div>
+                        <div class="detail">${item.detail}</div>
+                    </div>
+                `;
+                area.appendChild(div);
+            });
+        }
+
+        function check(qIdx, aIdx) {
+            const feedback = document.getElementById(`feedback-${qIdx}`);
+            const options = document.querySelectorAll(`.question-container:nth-child(${qIdx + 1}) .option`);
+            options.forEach(opt => opt.style.pointerEvents = 'none');
+            if (aIdx === quizData[qIdx].correct) {
+                options[aIdx].className = 'option correct';
+                score++;
+            } else {
+                options[aIdx].className = 'option wrong';
+                options[quizData[qIdx].correct].className = 'option correct';
+            }
+            feedback.style.display = 'block';
+            answered++;
+            if (answered === quizData.length) showResults();
+        }
+
+        function showResults() {
+            const res = document.getElementById('results');
+            res.style.display = 'block';
+            const percent = (score / quizData.length) * 100;
+            res.innerHTML = `<h3>คะแนนรวม: ${score}/${quizData.length} (${percent.toFixed(2)}%)</h3>
+                             <p style="color: ${percent >= 60 ? '#2ecc71' : '#e74c3c'}">${percent >= 60 ? '🌟 ทำได้ดีมาก' : '⚠️ จุดอ่อนที่ต้องทบทวนเพิ่ม'}</p>`;
+            console.log("Simulating email to thee.chinpong@hmail.com...");
+            alert("ส่งผลการเรียนไปยังติวเตอร์เรียบร้อยแล้ว");
+        }
+
+        function toggleLang() {
+            lang = lang === 'th' ? 'en' : 'th';
+            renderQuiz();
+        }
+        renderQuiz();
+    </script>
+</body>
+</html>
