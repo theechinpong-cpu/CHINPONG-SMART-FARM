@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Midterm Mastery: English A1+ by Phra Jom Klao Tutor</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/lucide-react"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', 'Kanit', sans-serif; background-color: #f8fafc; }
+        .gradient-bg { background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%); }
+        .glass-card { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+        const { CheckCircle2, AlertCircle, RefreshCw, Languages, BookOpen, GraduationCap, ChevronRight, BarChart3 } = lucide;
+
+        const EXAM_DATA = [
+            // 1. Possessive Adjectives vs. Possessive Pronouns (6 items)
+            { id: 1, type: "possessive", q_en: "That blue backpack under the desk isn't _____; I left mine in the locker.", q_th: "กระเป๋าเป้สีน้ำเงินใต้โต๊ะตัวนั้นไม่ใช่ _____ ฉันลืมของฉันไว้ในล็อกเกอร์", options: ["your", "yours", "you", "yours's"], correct: 1, explanation: "ใช้ Possessive Pronoun (yours) แทน 'your backpack' เพราะไม่ต้องมีนามตามหลัง" },
+            { id: 2, type: "possessive", q_en: "The students believe the victory is _____, thanks to their hard work.", q_th: "เหล่านักเรียนเชื่อว่าชัยชนะครั้งนี้เป็นของ _____ ต้องขอบคุณความพยายามของพวกเขา", options: ["their", "them", "theirs", "theirs'"], correct: 2, explanation: "Theirs เป็นสรรพนามแสดงความเป็นเจ้าของที่ทำหน้าที่เป็นส่วนเติมเต็มของกริยา" },
+            { id: 3, type: "possessive", q_en: "Wait! That's my notebook, and this one belongs to Sarah. So, this is _____.", q_th: "เดี๋ยว! นั่นสมุดของฉัน และเล่มนี้เป็นของซาร่า ดังนั้นเล่มนี้คือของ _____", options: ["her", "hers", "she", "herself"], correct: 1, explanation: "ใช้ hers เพื่อแทน 'Sarah's notebook'" },
+            { id: 4, type: "possessive", q_en: "The cat licked _____ paw after finishing the bowl of milk.", q_th: "แมวเลียอุ้งเท้าของ _____ หลังจากกินนมเสร็จ", options: ["it's", "its", "its'", "it"], correct: 1, explanation: "Its คือ possessive adjective (ของมัน) ส่วน It's ย่อมาจาก It is/has" },
+            { id: 5, type: "possessive", q_en: "Our school is bigger than _____, but their facilities are more modern.", q_th: "โรงเรียนของเราใหญ่กว่า _____ แต่สิ่งอำนวยความสะดวกของพวกเขาทันสมัยกว่า", options: ["they", "their", "theirs", "them"], correct: 2, explanation: "Theirs ในที่นี้แทน 'their school' เพื่อหลีกเลี่ยงการใช้คำซ้ำ" },
+            { id: 6, type: "possessive", q_en: "Is this pen _____? I found it near the teacher's room.", q_th: "ปากกาด้ามนี้คือของ _____ ใช่ไหม? ฉันเจอมันแถวห้องพักครู", options: ["yours", "your", "you", "your's"], correct: 0, explanation: "Yours ใช้ถามถึงความเป็นเจ้าของโดยไม่ต้องมีคำนามต่อท้าย" },
+
+            // 2. There is / There are & Quantifiers (6 items)
+            { id: 7, type: "quantifier", q_en: "Is there _____ information about the new school timetable on the website?", q_th: "มีข้อมูล _____ เกี่ยวกับตารางสอนใหม่บนเว็บไซต์บ้างไหม?", options: ["many", "some", "any", "a few"], correct: 2, explanation: "ใช้ any ในประโยคคำถามกับนามนับไม่ได้ (information)" },
+            { id: 8, type: "quantifier", q_en: "There _____ some expensive furniture in the living room.", q_th: "มีเฟอร์นิเจอร์ราคาแพง _____ ในห้องนั่งเล่น", options: ["is", "are", "isn't", "aren't"], correct: 0, explanation: "Furniture เป็นนามนับไม่ได้เสมอ (Uncountable) ต้องใช้กริยาเอกพจน์ (is)" },
+            { id: 9, type: "quantifier", q_en: "I don't have _____ homework today, so I can go to the cinema.", q_th: "วันนี้ฉันไม่มีการบ้าน _____ เลย ฉันเลยไปดูหนังได้", options: ["much", "many", "a lot", "some"], correct: 0, explanation: "Homework เป็นนามนับไม่ได้ ในประโยคปฏิเสธนิยมใช้ much" },
+            { id: 10, type: "quantifier", q_en: "_____ there any students who want to join the coding club?", q_th: "_____ นักเรียนคนไหนที่อยากเข้าชมรมเขียนโปรแกรมบ้างไหม?", options: ["Is", "Are", "Do", "Does"], correct: 1, explanation: "Students เป็นนามพหูพจน์ จึงใช้ Are there" },
+            { id: 11, type: "quantifier", q_en: "There _____ a lot of traffic on the road this morning.", q_th: "มีรถติด _____ บนท้องถนนเมื่อเช้านี้", options: ["is", "are", "has", "have"], correct: 0, explanation: "Traffic เป็นนามนับไม่ได้ ใช้คู่กับ There is" },
+            { id: 12, type: "quantifier", q_en: "Are there _____ interesting places to visit near your house?", q_th: "มีสถานที่น่าสนใจ _____ ให้ไปเที่ยวแถวบ้านคุณไหม?", options: ["any", "some", "much", "an"], correct: 0, explanation: "ใช้ any ในคำถามกับนามพหูพจน์ (places)" },
+
+            // 3. Present Simple Tense & S-V Agreement (7 items)
+            { id: 13, type: "present_simple", q_en: "One of my best friends _____ in London for the summer exchange program.", q_th: "หนึ่งในเพื่อนสนิทของฉัน _____ ในลอนดอนเพื่อโครงการแลกเปลี่ยนช่วงฤดูร้อน", options: ["study", "studies", "studying", "is study"], correct: 1, explanation: "ประธานคือ One (เอกพจน์) กริยาต้องเติม -es (studies)" },
+            { id: 14, type: "present_simple", q_en: "My family _____ having dinner together every Sunday evening.", q_th: "ครอบครัวของฉัน _____ การทานมื้อเย็นด้วยกันทุกเย็นวันอาทิตย์", options: ["enjoy", "enjoys", "enjoying", "is enjoy"], correct: 1, explanation: "Family ในที่นี้ถือเป็น Collective Noun (หน่วยเดียว) จึงใช้กริยาเอกพจน์" },
+            { id: 15, type: "present_simple", q_en: "Physics _____ my favorite subject because it explains how the world works.", q_th: "วิชาฟิสิกส์ _____ วิชาโปรดของฉัน เพราะมันอธิบายการทำงานของโลก", options: ["is", "are", "be", "being"], correct: 0, explanation: "ชื่อวิชาที่ลงท้ายด้วย -s (Physics, Maths) ถือเป็นเอกพจน์" },
+            { id: 16, type: "present_simple", q_en: "Neither the teacher nor the students _____ the answer to this complex puzzle.", q_th: "ทั้งคุณครูและนักเรียนต่างก็ _____ คำตอบของปริศนาที่ซับซ้อนนี้", options: ["know", "knows", "knowing", "is know"], correct: 0, explanation: "โครงสร้าง Neither...nor... กริยาผันตามประธานตัวหลัง (students - พหูพจน์)" },
+            { id: 17, type: "present_simple", q_en: "Does your sister _____ to play the piano or the violin?", q_th: "น้องสาวของคุณ _____ เล่นเปียโนหรือไวโอลิน?", options: ["want", "wants", "wanted", "wanting"], correct: 0, explanation: "ในประโยคคำถามที่มี Does แล้ว กริยาหลักต้องเป็นรูปธรรมดา (Infinitive without to)" },
+            { id: 18, type: "present_simple", q_en: "The news about the school trip _____ very exciting!", q_th: "ข่าวเกี่ยวกับทัศนศึกษาของโรงเรียน _____ น่าตื่นเต้นมาก!", options: ["is", "are", "be", "am"], correct: 0, explanation: "News เป็นนามนับไม่ได้ (Uncountable) ใช้กริยาเอกพจน์เสมอ" },
+            { id: 19, type: "present_simple", q_en: "Water _____ at 100 degrees Celsius at sea level.", q_th: "น้ำ _____ ที่ 100 องศาเซลเซียสที่ระดับน้ำทะเล", options: ["boil", "boils", "boiling", "is boil"], correct: 1, explanation: "ใช้ Present Simple กับความจริงทางวิทยาศาสตร์ (Water เป็นเอกพจน์นับไม่ได้)" },
+
+            // 4. Adverbs of Frequency (3 items)
+            { id: 20, type: "adverb", q_en: "My father is very busy. He _____ has time to watch TV on weekdays.", q_th: "พ่อของฉันยุ่งมาก เขา _____ มีเวลาดูทีวีในวันธรรมดา", options: ["rarely", "usually", "always", "often"], correct: 0, explanation: "Rarely (แทบจะไม่) สอดคล้องกับบริบทที่ว่ายุ่งมาก" },
+            { id: 21, type: "adverb", q_en: "Select the correct sentence order:", q_th: "เลือกประโยคที่มีลำดับคำถูกต้อง:", options: ["She often is late for class.", "She is often late for class.", "Often she is late for class.", "She is late often for class."], correct: 1, explanation: "Adverb of Frequency วางไว้หลัง Verb to be" },
+            { id: 22, type: "adverb", q_en: "Do you _____ go to the gym after school?", q_th: "คุณ _____ ไปยิมหลังเลิกเรียนไหม?", options: ["ever", "never", "always", "seldom"], correct: 0, explanation: "ในประโยคคำถามใช้ ever เพื่อถามความบ่อย (เคย...บ้างไหม)" },
+
+            // 5. Wh-Questions (3 items)
+            { id: 23, type: "wh_question", q_en: "_____ often do you clean your bedroom? - Twice a month.", q_th: "คุณทำความสะอาดห้องนอน _____ แค่ไหน? - เดือนละสองครั้ง", options: ["How", "What", "When", "Which"], correct: 0, explanation: "How often ใช้ถามความถี่" },
+            { id: 24, type: "wh_question", q_en: "_____ of these two laptops is yours?", q_th: "แล็ปท็อปเครื่อง _____ ในสองเครื่องนี้เป็นของคุณ?", options: ["What", "Which", "Whose", "Who"], correct: 1, explanation: "Which ใช้เมื่อมีการเลือกจากกลุ่มสิ่งของที่ระบุไว้ชัดเจน" },
+            { id: 25, type: "wh_question", q_en: "_____ textbook are you borrowing? - It's Mark's.", q_th: "คุณกำลังยืมหนังสือเรียนของ _____? - ของมาร์คน่ะ", options: ["Who", "Whose", "Whom", "What"], correct: 1, explanation: "Whose ใช้ถามหาเจ้าของ" }
+        ];
+
+        function App() {
+            const [view, setView] = useState('summary'); // summary, quiz, result
+            const [lang, setLang] = useState('en');
+            const [answers, setAnswers] = useState(Array(EXAM_DATA.length).fill(null));
+            const [submitted, setSubmitted] = useState(false);
+            const [score, setScore] = useState(0);
+
+            const toggleLang = () => setLang(prev => prev === 'en' ? 'th' : 'en');
+
+            const handleAnswer = (qIdx, optIdx) => {
+                if (submitted) return;
+                const newAnswers = [...answers];
+                newAnswers[qIdx] = optIdx;
+                setAnswers(newAnswers);
+            };
+
+            const calculateScore = () => {
+                let s = 0;
+                answers.forEach((ans, idx) => {
+                    if (ans === EXAM_DATA[idx].correct) s++;
+                });
+                setScore(s);
+                setSubmitted(true);
+                setView('result');
+            };
+
+            const resetQuiz = () => {
+                setAnswers(Array(EXAM_DATA.length).fill(null));
+                setSubmitted(false);
+                setScore(0);
+                setView('quiz');
+            };
+
+            const getWeakness = () => {
+                const stats = { possessive: 0, quantifier: 0, present_simple: 0, adverb: 0, wh_question: 0 };
+                const totals = { possessive: 6, quantifier: 6, present_simple: 7, adverb: 3, wh_question: 3 };
+                
+                answers.forEach((ans, idx) => {
+                    if (ans !== EXAM_DATA[idx].correct) {
+                        stats[EXAM_DATA[idx].type]++;
+                    }
+                });
+
+                return Object.entries(stats)
+                    .map(([key, val]) => ({ key, val, percent: (val / totals[key]) * 100 }))
+                    .sort((a, b) => b.percent - a.percent)[0];
+            };
+
+            return (
+                <div className="min-h-screen pb-12">
+                    {/* Header */}
+                    <header className="gradient-bg text-white py-8 px-4 shadow-lg mb-8">
+                        <div className="max-w-4xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+                            <div>
+                                <h1 className="text-3xl font-bold flex items-center gap-2">
+                                    <GraduationCap size={32} />
+                                    Midterm Mastery: English A1+
+                                </h1>
+                                <p className="opacity-90 mt-1">Designed by Phra Jom Klao Tutor for EP/MEP/Gifted Students</p>
+                            </div>
+                            <div className="flex gap-2">
+                                <button onClick={toggleLang} className="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-full flex items-center gap-2 transition">
+                                    <Languages size={18} /> {lang.toUpperCase()}
+                                </button>
+                            </div>
+                        </div>
+                    </header>
+
+                    <main className="max-w-4xl mx-auto px-4">
+                        {/* Navigation Tabs */}
+                        <div className="flex bg-white rounded-xl shadow-sm mb-6 p-1">
+                            <button 
+                                onClick={() => setView('summary')}
+                                className={`flex-1 py-3 rounded-lg flex items-center justify-center gap-2 transition ${view === 'summary' ? 'bg-blue-600 text-white shadow-md' : 'hover:bg-gray-100 text-gray-600'}`}
+                            >
+                                <BookOpen size={20} /> {lang === 'en' ? 'Study Summary' : 'สรุปบทเรียน'}
+                            </button>
+                            <button 
+                                onClick={() => setView('quiz')}
+                                className={`flex-1 py-3 rounded-lg flex items-center justify-center gap-2 transition ${view === 'quiz' ? 'bg-blue-600 text-white shadow-md' : 'hover:bg-gray-100 text-gray-600'}`}
+                            >
+                                <AlertCircle size={20} /> {lang === 'en' ? 'Take Exam' : 'ทำข้อสอบ'}
+                            </button>
+                        </div>
+
+                        {/* Content Area */}
+                        {view === 'summary' && (
+                            <div className="glass-card rounded-2xl shadow-xl p-8 animate-fadeIn border border-blue-100">
+                                <h2 className="text-2xl font-bold text-blue-800 mb-6 flex items-center gap-2">
+                                    <BookOpen className="text-blue-600" />
+                                    Ultimate Grammar Recap (Units 1-2)
+                                </h2>
+                                
+                                <div className="space-y-8 text-gray-700 leading-relaxed">
+                                    <section>
+                                        <h3 className="text-xl font-semibold text-blue-700 mb-3">1. Possessive Masters (ความเป็นเจ้าของ)</h3>
+                                        <p>จุดหลอกสำคัญคือการแยก **Adjective (my, your)** และ **Pronoun (mine, yours)** เทคนิคง่ายๆ: *Adjective ต้องมีนามตาม (My cat) แต่ Pronoun ยืนคนเดียวได้ (It's mine!)* ระวังการใช้ 's กับพหูพจน์ที่ลงท้ายด้วย s เช่น *The students' books* (ขีดแค่ ')</p>
+                                        <div className="bg-blue-50 p-4 rounded-lg mt-2 border-l-4 border-blue-500 italic">
+                                            "Shortcut: No Noun? Use Pronoun! (yours, hers, theirs)"
+                                        </div>
+                                    </section>
+
+                                    <section>
+                                        <h3 className="text-xl font-semibold text-blue-700 mb-3">2. There is/are & Uncountable Traps</h3>
+                                        <p>ข้อสอบระดับยากจะใช้คำนามนับไม่ได้มาหลอก เช่น **Furniture, Homework, Information, News, Traffic, Money, Advice** คำเหล่านี้ "ห้ามเติม s" และ "ต้องใช้ is" เสมอ! ส่วน Quantifiers: **Any** ใช้ในคำถาม/ปฏิเสธ, **Some** ใช้ในบอกเล่า/ขอร้อง</p>
+                                    </section>
+
+                                    <section>
+                                        <h3 className="text-xl font-semibold text-blue-700 mb-3">3. Present Simple: The 'S' Battle</h3>
+                                        <p>หัวใจคือ Subject-Verb Agreement. ระวัง **Collective Nouns** (Family, Team, Class) มักทำหน้าที่เป็นเอกพจน์ และ **Indefinite Pronouns** (Everyone, Someone, Nobody) ถือเป็นเอกพจน์เสมอ! กริยาต้องเติม -s หรือ -es</p>
+                                        <div className="bg-yellow-50 p-4 rounded-lg mt-2 border-l-4 border-yellow-500 italic">
+                                            "Shortcut: Either A or B / Neither A nor B -> กริยาผันตามประธาน B เสมอ"
+                                        </div>
+                                    </section>
+
+                                    <section>
+                                        <h3 className="text-xl font-semibold text-blue-700 mb-3">4. Adverbs & Wh-Questions</h3>
+                                        <p>ตำแหน่ง Adverb: **"Before Main Verb, After Verb to Be"** (I *always* study. / I am *always* happy.) สำหรับ Wh-Questions: **Whose** (ของใคร), **Which** (อันไหน - เลือกจากกลุ่ม), **How often** (บ่อยแค่ไหน)</p>
+                                    </section>
+                                </div>
+                                
+                                <button 
+                                    onClick={() => setView('quiz')}
+                                    className="mt-8 w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl transition shadow-lg flex items-center justify-center gap-2"
+                                >
+                                    Ready to Challenge? Go to Exam <ChevronRight />
+                                </button>
+                            </div>
+                        )}
+
+                        {view === 'quiz' && (
+                            <div className="space-y-6">
+                                {EXAM_DATA.map((q, idx) => (
+                                    <div key={q.id} className="bg-white rounded-xl shadow-md p-6 border-l-4 border-blue-500">
+                                        <div className="flex justify-between items-start mb-4">
+                                            <span className="bg-blue-100 text-blue-800 text-xs font-bold px-2.5 py-0.5 rounded uppercase tracking-wider">
+                                                Question {idx + 1}
+                                            </span>
+                                            <span className="text-gray-400 text-xs">{q.type.replace('_', ' ')}</span>
+                                        </div>
+                                        <h3 className="text-lg font-semibold text-gray-800 mb-4">
+                                            {lang === 'en' ? q.q_en : q.q_th}
+                                        </h3>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                            {q.options.map((opt, oIdx) => (
+                                                <button
+                                                    key={oIdx}
+                                                    onClick={() => handleAnswer(idx, oIdx)}
+                                                    className={`p-3 text-left rounded-lg border transition-all ${
+                                                        answers[idx] === oIdx 
+                                                        ? 'bg-blue-50 border-blue-500 text-blue-700 ring-2 ring-blue-200' 
+                                                        : 'border-gray-200 hover:border-blue-300 hover:bg-gray-50'
+                                                    }`}
+                                                >
+                                                    <span className="inline-block w-6 h-6 mr-2 rounded-full bg-gray-100 text-center text-sm font-bold text-gray-500">
+                                                        {String.fromCharCode(65 + oIdx)}
+                                                    </span>
+                                                    {opt}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                ))}
+                                <button 
+                                    onClick={calculateScore}
+                                    disabled={answers.includes(null)}
+                                    className={`w-full py-4 rounded-xl font-bold text-lg shadow-xl transition mb-12 ${
+                                        answers.includes(null) 
+                                        ? 'bg-gray-300 cursor-not-allowed text-gray-500' 
+                                        : 'bg-green-600 hover:bg-green-700 text-white'
+                                    }`}
+                                >
+                                    {answers.includes(null) ? `Please answer all questions (${answers.filter(a => a !== null).length}/25)` : 'Submit and Check Answers'}
+                                </button>
+                            </div>
+                        )}
+
+                        {view === 'result' && (
+                            <div className="animate-fadeIn">
+                                <div className="glass-card rounded-2xl shadow-xl p-10 text-center mb-8 border-t-8 border-blue-600">
+                                    <h2 className="text-3xl font-bold text-gray-800 mb-2">Exam Result</h2>
+                                    <div className="relative inline-block my-6">
+                                        <svg className="w-32 h-32">
+                                            <circle cx="64" cy="64" r="58" stroke="#e2e8f0" strokeWidth="12" fill="none" />
+                                            <circle cx="64" cy="64" r="58" stroke="#2563eb" strokeWidth="12" fill="none" 
+                                                strokeDasharray="364.4" 
+                                                strokeDashoffset={364.4 - (364.4 * (score / 25))} 
+                                                strokeLinecap="round"
+                                                className="transition-all duration-1000 ease-out"
+                                            />
+                                        </svg>
+                                        <div className="absolute inset-0 flex flex-col items-center justify-center">
+                                            <span className="text-4xl font-bold text-blue-600">{score}</span>
+                                            <span className="text-gray-400 text-sm">/ 25</span>
+                                        </div>
+                                    </div>
+                                    <p className="text-xl text-gray-600 mb-6">
+                                        {score >= 20 ? "Excellent! You are ready for the TOP schools!" : 
+                                         score >= 15 ? "Good job! A bit more practice and you'll be great." : 
+                                         "Keep studying! Review the summary notes again."}
+                                    </p>
+                                    
+                                    {/* Weakness Analysis */}
+                                    <div className="bg-red-50 p-6 rounded-xl border border-red-100 text-left mb-8">
+                                        <h3 className="text-red-700 font-bold flex items-center gap-2 mb-2">
+                                            <BarChart3 size={20} /> Weakness Analysis (การวิเคราะห์จุดอ่อน)
+                                        </h3>
+                                        <p className="text-red-600">
+                                            You should focus more on: <span className="font-bold underline uppercase">{getWeakness().key.replace('_', ' ')}</span>
+                                        </p>
+                                        <p className="text-sm text-gray-600 mt-2">You missed {getWeakness().val} questions in this category.</p>
+                                    </div>
+
+                                    <button onClick={resetQuiz} className="flex items-center gap-2 mx-auto text-blue-600 font-semibold hover:underline">
+                                        <RefreshCw size={18} /> Retake Exam
+                                    </button>
+                                </div>
+
+                                {/* Review List */}
+                                <div className="space-y-4">
+                                    <h3 className="text-xl font-bold text-gray-800">Review Answers</h3>
+                                    {EXAM_DATA.map((q, idx) => (
+                                        <div key={q.id} className={`p-4 rounded-xl border ${answers[idx] === q.correct ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}`}>
+                                            <div className="flex items-start gap-3">
+                                                {answers[idx] === q.correct ? <CheckCircle2 className="text-green-600 mt-1" /> : <AlertCircle className="text-red-600 mt-1" />}
+                                                <div>
+                                                    <p className="font-semibold text-gray-800">{q.q_en}</p>
+                                                    <p className="text-sm text-gray-600 mt-1">Correct Answer: <span className="text-green-700 font-bold">{q.options[q.correct]}</span></p>
+                                                    <p className="text-xs text-blue-700 mt-2 bg-white/50 p-2 rounded italic">Tip: {q.explanation}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                    </main>
+
+                    <footer className="mt-12 text-center text-gray-500 text-sm">
+                        <p>© 2024 Phra Jom Klao Tutor. Practice makes permanent.</p>
+                    </footer>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
+```eof
+
+ชุดข้อสอบนี้ได้รับการออกแบบให้มีความซับซ้อนกว่าข้อสอบทั่วไป โดยเน้นจุดที่นักเรียนมักทำผิด (Common Mistakes) เช่น การแยกสรรพนามแสดงความเป็นเจ้าของที่ไม่มีคำนามตามหลัง, การใช้คำนามนับไม่ได้ในรูปเอกพจน์เสมอ และลำดับของ Adverb of Frequency ในประโยคที่มี Verb to be
+
+**สรุปเทคนิคเด่นจากพระจอมเกล้าติวเตอร์:**
+1. **S-V Agreement:** ให้มองหา "ประธานที่แท้จริง" อย่าโดนวลีส่วนขยายหลอก
+2. **Possessives:** ท่องไว้ "มีนามใช้ adj (my), ไม่มีนามใช้ pronoun (mine)"
+3. **Quantifiers:** Any ใช้กับปฏิเสธและคำถามเสมอ ยกเว้นการขอร้อง/เสนอ (Offers)
+
+ขอให้น้อง ๆ โชคดีกับการสอบ Midterm นะครับ! พี่เชื่อว่าถ้าทำชุดนี้ได้ คะแนนที่โรงเรียนจะกลายเป็นเรื่องง่ายแน่นอนครับ!
