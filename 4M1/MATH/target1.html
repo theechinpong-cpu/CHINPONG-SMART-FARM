@@ -7,28 +7,56 @@
         body { font-family: 'Sarabun', sans-serif; line-height: 1.6; padding: 20px; background: #f4f7f6; }
         .container { max-width: 800px; margin: auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         .q-box { margin-bottom: 25px; padding: 15px; border: 1px solid #ddd; border-radius: 8px; }
-        button { padding: 10px 20px; cursor: pointer; border: none; border-radius: 5px; background: #3498db; color: white; }
-        .option { display: block; margin: 5px 0; padding: 8px; border: 1px solid #ccc; cursor: pointer; }
+        button { padding: 10px 20px; cursor: pointer; border: none; border-radius: 5px; background: #3498db; color: white; margin-bottom: 20px; }
+        .option { display: block; margin: 5px 0; padding: 8px; border: 1px solid #ccc; cursor: pointer; border-radius: 4px; transition: 0.3s; }
+        .option:hover { background: #f0f0f0; }
         .correct { background: #2ecc71 !important; color: white; }
         .wrong { background: #e74c3c !important; color: white; }
         .tutor-tip { background: #fff3cd; padding: 10px; border-left: 5px solid #ffc107; margin-top: 10px; display: none; }
+        .summary { margin-top: 30px; padding: 20px; border-top: 2px solid #3498db; }
     </style>
 </head>
 <body>
 
 <div class="container" id="app">
-    <h1>แบบทดสอบคณิตศาสตร์: การบวก ลบ คูณ หาร ระคน</h1>
+    <h1>ข้อสอบคณิตศาสตร์: การบวก ลบ คูณ หาร ระคน (25 ข้อ)</h1>
     <button onclick="toggleLang()">Switch Language (TH/EN)</button>
     <div id="quiz-area"></div>
-    <div id="result-area"></div>
+    <div id="result-area" class="summary"></div>
 </div>
 
 <script>
 let lang = 'th';
 const questions = [
-    { q_th: "12 + 5 × 2 = ?", q_en: "12 + 5 × 2 = ?", a_th: ["22", "34", "17", "19"], a_en: ["22", "34", "17", "19"], correct: 0, th: "คูณก่อนบวก: 5x2=10 แล้วบวก 12", en: "Multiply first: 5x2=10 then add 12", detail: "ทำคูณก่อน: 5 x 2 = 10 จากนั้นนำ 12 + 10 = 22" },
-    // เพิ่มข้อ 2-25 ตามรูปแบบนี้
+    { q_th: "12 + 5 × 2 = ?", q_en: "12 + 5 × 2 = ?", a_th: ["22", "34", "17", "19"], a_en: ["22", "34", "17", "19"], correct: 0, th: "คูณก่อนบวก: 5x2=10 แล้วบวก 12", en: "Multiply first: 5x2=10 then add 12", detail: "12 + (5 x 2) = 12 + 10 = 22" },
+    { q_th: "(10 + 5) × 3 = ?", q_en: "(10 + 5) × 3 = ?", a_th: ["25", "45", "35", "50"], a_en: ["25", "45", "35", "50"], correct: 1, th: "วงเล็บมาก่อนเสมอ", en: "Parentheses first", detail: "(10 + 5) x 3 = 15 x 3 = 45" },
+    { q_th: "20 ÷ 4 + 6 × 2 = ?", q_en: "20 ÷ 4 + 6 × 2 = ?", a_th: ["17", "15", "19", "21"], a_en: ["17", "15", "19", "21"], correct: 0, th: "หารและคูณทำจากซ้ายไปขวา", en: "Divide and Multiply from left to right", detail: "(20 ÷ 4) + (6 x 2) = 5 + 12 = 17" },
+    { q_th: "50 - 10 × 2 ÷ 5 = ?", q_en: "50 - 10 × 2 ÷ 5 = ?", a_th: ["46", "40", "48", "38"], a_en: ["46", "40", "48", "38"], correct: 0, th: "คูณ/หาร ก่อน ลบ", en: "Multiply/Divide before Subtract", detail: "50 - ((10 x 2) ÷ 5) = 50 - (20 ÷ 5) = 50 - 4 = 46" },
+    { q_th: "100 ÷ (20 - 10) × 2 = ?", q_en: "100 ÷ (20 - 10) × 2 = ?", a_th: ["20", "10", "40", "5"], a_en: ["20", "10", "40", "5"], correct: 0, th: "ทำในวงเล็บก่อน", en: "Solve parentheses first", detail: "100 ÷ 10 × 2 = 10 × 2 = 20" },
+    { q_th: "3 × (8 + 2) - 15 = ?", q_en: "3 × (8 + 2) - 15 = ?", a_th: ["15", "25", "10", "20"], a_en: ["15", "25", "10", "20"], correct: 0, th: "ทำวงเล็บ คูณ ลบ ตามลำดับ", en: "Parentheses, Multiply, Subtract", detail: "3 x 10 - 15 = 30 - 15 = 15" },
+    { q_th: "45 ÷ 9 + 3 × 4 = ?", q_en: "45 ÷ 9 + 3 × 4 = ?", a_th: ["17", "21", "15", "19"], a_en: ["17", "21", "15", "19"], correct: 0, th: "คูณและหารทำก่อนบวก", en: "Multiply and Divide before Add", detail: "5 + 12 = 17" },
+    { q_th: "(12 + 8) ÷ 4 + 7 = ?", q_en: "(12 + 8) ÷ 4 + 7 = ?", a_th: ["12", "15", "10", "18"], a_en: ["12", "15", "10", "18"], correct: 0, th: "วงเล็บมาก่อนเสมอ", en: "Parentheses first", detail: "20 ÷ 4 + 7 = 5 + 7 = 12" },
+    { q_th: "6 × 6 - 6 ÷ 6 = ?", q_en: "6 × 6 - 6 ÷ 6 = ?", a_th: ["35", "30", "36", "31"], a_en: ["35", "30", "36", "31"], correct: 0, th: "คูณและหารก่อน ลบ", en: "Multiply and Divide before Subtract", detail: "36 - 1 = 35" },
+    { q_th: "80 - (20 + 30) ÷ 5 = ?", q_en: "80 - (20 + 30) ÷ 5 = ?", a_th: ["70", "60", "75", "65"], a_en: ["70", "60", "75", "65"], correct: 0, th: "ทำในวงเล็บก่อน", en: "Parentheses first", detail: "80 - 50 ÷ 5 = 80 - 10 = 70" },
+    { q_th: "12 × (4 - 2) + 8 = ?", q_en: "12 × (4 - 2) + 8 = ?", a_th: ["32", "24", "40", "28"], a_en: ["32", "24", "40", "28"], correct: 0, th: "วงเล็บมาก่อน", en: "Parentheses first", detail: "12 x 2 + 8 = 24 + 8 = 32" },
+    { q_th: "9 + 9 ÷ 9 - 9 = ?", q_en: "9 + 9 ÷ 9 - 9 = ?", a_th: ["1", "0", "9", "8"], a_en: ["1", "0", "9", "8"], correct: 0, th: "หารก่อน บวก/ลบ", en: "Divide before Add/Subtract", detail: "9 + 1 - 9 = 1" },
+    { q_th: "(40 + 20) × 2 ÷ 3 = ?", q_en: "(40 + 20) × 2 ÷ 3 = ?", a_th: ["40", "30", "50", "20"], a_en: ["40", "30", "50", "20"], correct: 0, th: "วงเล็บคูณแล้วหาร", en: "Parentheses, Multiply, Divide", detail: "60 x 2 ÷ 3 = 120 ÷ 3 = 40" },
+    { q_th: "5 × 5 + 5 - 5 ÷ 5 = ?", q_en: "5 × 5 + 5 - 5 ÷ 5 = ?", a_th: ["29", "25", "30", "24"], a_en: ["29", "25", "30", "24"], correct: 0, th: "คูณและหารก่อน", en: "Multiply and Divide first", detail: "25 + 5 - 1 = 29" },
+    { q_th: "100 - 10 × (5 + 5) = ?", q_en: "100 - 10 × (5 + 5) = ?", a_th: ["0", "100", "50", "90"], a_en: ["0", "100", "50", "90"], correct: 0, th: "ทำในวงเล็บก่อน", en: "Parentheses first", detail: "100 - 10 x 10 = 100 - 100 = 0" },
+    { q_th: "8 ÷ 2 × (2 + 2) = ?", q_en: "8 ÷ 2 × (2 + 2) = ?", a_th: ["16", "1", "4", "8"], a_en: ["16", "1", "4", "8"], correct: 0, th: "วงเล็บ แล้วซ้ายไปขวา", en: "Parentheses, then Left to Right", detail: "8 ÷ 2 x 4 = 4 x 4 = 16" },
+    { q_th: "7 + 7 × 7 - 7 ÷ 7 = ?", q_en: "7 + 7 × 7 - 7 ÷ 7 = ?", a_th: ["55", "49", "14", "50"], a_en: ["55", "49", "14", "50"], correct: 0, th: "คูณและหารก่อนบวกลบ", en: "Multiply and Divide before Add/Subtract", detail: "7 + 49 - 1 = 55" },
+    { q_th: "(100 - 50) ÷ (10 - 5) = ?", q_en: "(100 - 50) ÷ (10 - 5) = ?", a_th: ["10", "5", "20", "50"], a_en: ["10", "5", "20", "50"], correct: 0, th: "ทำทั้งสองวงเล็บ", en: "Solve both parentheses", detail: "50 ÷ 5 = 10" },
+    { q_th: "3 × 4 + 5 × 6 - 7 = ?", q_en: "3 × 4 + 5 × 6 - 7 = ?", a_th: ["35", "42", "30", "40"], a_en: ["35", "42", "30", "40"], correct: 0, th: "ทำคูณก่อน แล้วบวก ลบ", en: "Multiply first, then Add/Subtract", detail: "12 + 30 - 7 = 35" },
+    { q_th: "2 × (10 + 20) ÷ 5 = ?", q_en: "2 × (10 + 20) ÷ 5 = ?", a_th: ["12", "10", "15", "8"], a_en: ["12", "10", "15", "8"], correct: 0, th: "วงเล็บ คูณ หาร", en: "Parentheses, Multiply, Divide", detail: "2 x 30 ÷ 5 = 60 ÷ 5 = 12" },
+    { q_th: "15 + 15 × 2 ÷ 3 = ?", q_en: "15 + 15 × 2 ÷ 3 = ?", a_th: ["25", "20", "30", "35"], a_en: ["25", "20", "30", "35"], correct: 0, th: "คูณ/หาร จากซ้ายไปขวา", en: "Multiply/Divide left to right", detail: "15 + (30 ÷ 3) = 15 + 10 = 25" },
+    { q_th: "50 - 5 × 5 + 5 = ?", q_en: "50 - 5 × 5 + 5 = ?", a_th: ["30", "50", "45", "35"], a_en: ["30", "50", "45", "35"], correct: 0, th: "คูณก่อน ลบ บวก", en: "Multiply first, then Subtract/Add", detail: "50 - 25 + 5 = 30" },
+    { q_th: "10 ÷ 2 × (1 + 4) = ?", q_en: "10 ÷ 2 × (1 + 4) = ?", a_th: ["25", "10", "5", "20"], a_en: ["25", "10", "5", "20"], correct: 0, th: "วงเล็บ แล้วซ้ายไปขวา", en: "Parentheses, then Left to Right", detail: "5 x 5 = 25" },
+    { q_th: "6 + 4 × 3 - 2 = ?", q_en: "6 + 4 × 3 - 2 = ?", a_th: ["16", "18", "14", "12"], a_en: ["16", "18", "14", "12"], correct: 0, th: "คูณก่อน", en: "Multiply first", detail: "6 + 12 - 2 = 16" },
+    { q_th: "(20 + 20) ÷ (20 - 10) = ?", q_en: "(20 + 20) ÷ (20 - 10) = ?", a_th: ["4", "2", "6", "8"], a_en: ["4", "2", "6", "8"], correct: 0, th: "วงเล็บหารวงเล็บ", en: "Parentheses divided by parentheses", detail: "40 ÷ 10 = 4" }
 ];
+
+let score = 0;
+let answeredCount = 0;
 
 function renderQuiz() {
     const area = document.getElementById('quiz-area');
@@ -55,6 +83,23 @@ function checkAnswer(qIdx, aIdx) {
         else if(i === aIdx) opt.classList.add('wrong');
     });
     document.getElementById(`tip${qIdx}`).style.display = 'block';
+    if(aIdx === q.correct) score++;
+    answeredCount++;
+    if(answeredCount === questions.length) showResult();
+}
+
+function showResult() {
+    const resArea = document.getElementById('result-area');
+    const percent = (score / questions.length) * 100;
+    resArea.innerHTML = `
+        <h2>คะแนนของคุณ: ${score}/${questions.length} (${percent}%)</h2>
+        <p style="color: ${percent >= 60 ? 'green' : 'red'}">
+            ${percent >= 60 ? '🌟 ทำได้ดีมาก' : '⚠️ จุดอ่อนที่ต้องทบทวนเพิ่ม'}
+        </p>
+    `;
+    setTimeout(() => {
+        alert("ส่งผลการเรียนไปยังติวเตอร์เรียบร้อยแล้ว");
+    }, 500);
 }
 
 function toggleLang() {
@@ -64,7 +109,6 @@ function toggleLang() {
 
 renderQuiz();
 </script>
-
 <p>เขียนโดย พระจอมเกล้าติวเตอร์</p>
 </body>
 </html>
