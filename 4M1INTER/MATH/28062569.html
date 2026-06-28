@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <title>Math Midterm Assessment - Phra Chom Klao Tutor</title>
+    <style>
+        body { font-family: 'Sarabun', sans-serif; background: #f4f7f6; padding: 20px; color: #333; }
+        .container { max-width: 800px; margin: auto; background: #fff; padding: 30px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        h1 { text-align: center; color: #2c3e50; }
+        .question-container { border: 1px solid #ddd; padding: 20px; margin-bottom: 20px; border-radius: 10px; background: #fafafa; }
+        .options { margin: 10px 0; }
+        .option-btn { display: block; width: 100%; padding: 10px; margin: 5px 0; border: 1px solid #ccc; border-radius: 5px; cursor: pointer; text-align: left; background: white; transition: 0.3s; }
+        .correct { background-color: #2ecc71 !important; color: white; }
+        .wrong { background-color: #e74c3c !important; color: white; }
+        .answer-box { margin-top: 10px; padding: 10px; border-left: 5px solid #3498db; display: none; background: #eef7fe; }
+        .tip { color: #c0392b; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Math Midterm Assessment (25 Questions)</h1>
+        <div id="quiz-root"></div>
+        <div id="report-area"></div>
+    </div>
+
+    <script>
+        const questions = [
+            {q_th: "1. (-15) - (-20) + (-5) มีค่าเท่าใด", q_en: "1. What is the value of (-15) - (-20) + (-5)?", a_th: ["0", "10", "-10", "5"], a_en: ["0", "10", "-10", "5"], correct: 0, th: "ลบเจอลบเป็นบวก", en: "Minus negative equals positive", detail: "(-15) + 20 - 5 = 0"},
+            {q_th: "2. |-10 + 5| - |5 - 10|", q_en: "2. Calculate: |-10 + 5| - |5 - 10|", a_th: ["10", "0", "-10", "5"], a_en: ["10", "0", "-10", "5"], correct: 1, th: "ค่าสัมบูรณ์เป็นบวกเสมอ", en: "Absolute value is always positive", detail: "|-5| - |-5| = 5 - 5 = 0"},
+            {q_th: "3. ถ้า a = -5, b = 10 แล้ว (a - b) * (-2) คือ", q_en: "3. If a = -5, b = 10, find: (a - b) * (-2)", a_th: ["-30", "30", "15", "-15"], a_en: ["-30", "30", "15", "-15"], correct: 1, th: "ทำในวงเล็บก่อน", en: "Solve inside bracket first", detail: "(-5 - 10) * (-2) = -15 * -2 = 30"},
+            {q_th: "4. จำนวนลบ 3 ตัว คูณกับ จำนวนบวก 2 ตัว ได้ผลลัพธ์เป็น", q_en: "4. Product of 3 negative and 2 positive integers?", a_th: ["บวก", "ลบ", "ศูนย์", "หาค่าไม่ได้"], a_en: ["Positive", "Negative", "Zero", "Undefined"], correct: 1, th: "ลบเป็นเลขคี่ ผลเป็นลบ", en: "Odd negatives = Negative", detail: "ลบ x ลบ x ลบ = ลบ"},
+            {q_th: "5. -[(-5) - (-10)] มีค่าเท่าใด", q_en: "5. Solve: -[(-5) - (-10)]", a_th: ["-5", "5", "15", "-15"], a_en: ["-5", "5", "15", "-15"], correct: 0, th: "ทำในวงเล็บในสุดก่อน", en: "Solve inner bracket first", detail: "-[5] = -5"},
+            {q_th: "6. (-2)^3 - (-3)^2", q_en: "6. Evaluate: (-2)^3 - (-3)^2", a_th: ["-17", "1", "-1", "17"], a_en: ["-17", "1", "-1", "17"], correct: 0, th: "เลขยกกำลังก่อนเสมอ", en: "Exponents first", detail: "-8 - 9 = -17"},
+            {q_th: "7. ถ้า x + (-15) = -30 แล้ว x คือ", q_en: "7. Find x: x + (-15) = -30", a_th: ["-45", "15", "-15", "45"], a_en: ["-45", "15", "-15", "45"], correct: 2, th: "ย้ายข้างเปลี่ยนเครื่องหมาย", en: "Move to other side", detail: "x = -30 + 15 = -15"},
+            {q_th: "8. ค่าใดมากที่สุด |-5|, |-3|, -2, -10", q_en: "8. Largest? |-5|, |-3|, -2, -10", a_th: ["-10", "-2", "|-3|", "|-5|"], a_en: ["-10", "-2", "|-3|", "|-5|"], correct: 3, th: "เทียบค่าสัมบูรณ์", en: "Compare absolute values", detail: "|-5| = 5"},
+            {q_th: "9. (-100) ÷ (-4) ÷ (-5)", q_en: "9. Divide: (-100) ÷ (-4) ÷ (-5)", a_th: ["-5", "5", "25", "-25"], a_en: ["-5", "5", "25", "-25"], correct: 0, th: "ทำจากซ้ายไปขวา", en: "Left to right", detail: "25 ÷ -5 = -5"},
+            {q_th: "10. -5 * ( -2 + 3 - 4 )", q_en: "10. Solve: -5 * ( -2 + 3 - 4 )", a_th: ["-15", "15", "5", "-5"], a_en: ["-15", "15", "5", "-5"], correct: 1, th: "รวมตัวเลขในวงเล็บ", en: "Sum inside bracket", detail: "-5 * -3 = 15"},
+            {q_th: "11. อินเวอร์สการบวกของ (-5 + 2) คือ", q_en: "11. Additive inverse of (-5 + 2)?", a_th: ["3", "-3", "7", "-7"], a_en: ["3", "-3", "7", "-7"], correct: 0, th: "จำนวนตรงข้าม", en: "Opposite number", detail: "(-3) -> 3"},
+            {q_th: "12. -10 - (-10) - 10", q_en: "12. Calculate: -10 - (-10) - 10", a_th: ["-10", "10", "0", "-30"], a_en: ["-10", "10", "0", "-30"], correct: 0, th: "ระวังเครื่องหมาย", en: "Watch the signs", detail: "-10 + 10 - 10 = -10"},
+            {q_th: "13. ถ้า a = -2, b = -3 แล้ว a^2 + b^2", q_en: "13. If a=-2, b=-3, solve a^2 + b^2", a_th: ["13", "-13", "5", "-5"], a_en: ["13", "-13", "5", "-5"], correct: 0, th: "ลบยกกำลังสองเป็นบวก", en: "Negative squared = positive", detail: "4 + 9 = 13"},
+            {q_th: "14. เส้นตรงขยายไปได้กี่ทิศทาง", q_en: "14. A line extends in how many directions?", a_th: ["1", "2", "3", "0"], a_en: ["1", "2", "3", "0"], correct: 1, th: "สองทางเสมอ", en: "Always two", detail: "เส้นตรงไม่สิ้นสุดสองทาง"},
+            {q_th: "15. รังสีสองเส้นที่จุดปลายร่วมกันเกิดเป็น", q_en: "15. Two rays sharing an endpoint form a:", a_th: ["เส้นตรง", "มุม", "ส่วนของเส้นตรง", "ระนาบ"], a_en: ["Line", "Angle", "Segment", "Plane"], correct: 1, th: "จุดยอดมุม", en: "Vertex", detail: "มุมประกอบด้วยรังสีสองเส้น"},
+            {q_th: "16. จุดมีคุณสมบัติอย่างไร", q_en: "16. A point has:", a_th: ["ความยาว", "ความกว้าง", "ไม่มีมิติ", "พื้นที่"], a_en: ["Length", "Width", "No dimensions", "Area"], correct: 2, th: "แค่บอกตำแหน่ง", en: "Just a location", detail: "จุดไม่มีขนาด"},
+            {q_th: "17. ระนาบสองระนาบตัดกันเกิดเป็น", q_en: "17. Intersection of two planes?", a_th: ["จุด", "เส้นตรง", "รังสี", "ส่วนของเส้นตรง"], a_en: ["Point", "Line", "Ray", "Segment"], correct: 1, th: "เส้นตรง", en: "A line", detail: "ระนาบตัดกันได้เส้นตรง"},
+            {q_th: "18. ส่วนของเส้นตรงมีลักษณะเด่นอย่างไร", q_en: "18. What defines a line segment?", a_th: ["ไม่มีจุดปลาย", "ปลายด้านเดียว", "มีจุดปลายสองด้าน", "โค้ง"], a_en: ["No ends", "One end", "Two endpoints", "Curved"], correct: 2, th: "จำกัดระยะ", en: "Finite", detail: "มีจุดปลายสองข้าง"},
+            {q_th: "19. จุดที่อยู่บนเส้นตรงเดียวกันเรียก", q_en: "19. Collinear points lie on:", a_th: ["ต่างเส้น", "เส้นเดียวกัน", "ระนาบเดียวกัน", "คนละระนาบ"], a_en: ["Different lines", "Same line", "Same plane", "Different planes"], correct: 1, th: "เส้นเดียวกัน", en: "Same line", detail: "Co-linear = บนเส้นเดียวกัน"},
+            {q_th: "20. จุดกี่จุดที่ทำให้เกิดเส้นตรงหนึ่งเส้น", q_en: "20. How many points to define a line?", a_th: ["1", "2", "3", "นับไม่ถ้วน"], a_en: ["1", "2", "3", "Infinite"], correct: 1, th: "จุดสองจุด", en: "Two points", detail: "ลากเส้นผ่านจุด 2 จุด"},
+            {q_th: "21. มุม 90 องศา คือมุมอะไร", q_en: "21. Angle measuring 90 degrees?", a_th: ["แหลม", "ป้าน", "ฉาก", "กลับ"], a_en: ["Acute", "Obtuse", "Right", "Reflex"], correct: 2, th: "มุมฉาก", en: "Right angle", detail: "ตั้งฉาก 90 องศา"},
+            {q_th: "22. จุดที่อยู่ในระนาบเดียวกันเรียก", q_en: "22. Coplanar points lie on:", a_th: ["เส้นเดียวกัน", "ระนาบเดียวกัน", "คนละระนาบ", "อวกาศ"], a_en: ["Line", "Same plane", "Different planes", "Space"], correct: 1, th: "ระนาบเดียวกัน", en: "Same plane", detail: "Co-planar = ระนาบเดียวกัน"},
+            {q_th: "23. รังสีมีจุดปลายกี่จุด", q_en: "23. A ray has how many endpoints?", a_th: ["2", "0", "1", "นับไม่ถ้วน"], a_en: ["2", "0", "1", "Infinite"], correct: 2, th: "จุดเดียว", en: "One point", detail: "เริ่มต้นที่จุดเดียว"},
+            {q_th: "24. มุมสองมุมรวมกันได้ 180 องศา เรียกว่า", q_en: "24. Angles summing to 180 are:", a_th: ["มุมประกอบหนึ่งมุมฉาก", "มุมประกอบสองมุมฉาก", "มุมฉาก", "มุมแหลม"], a_en: ["Complementary", "Supplementary", "Vertical", "Acute"], correct: 1, th: "รวมได้ 180", en: "Sum to 180", detail: "มุมประกอบสองมุมฉาก"},
+            {q_th: "25. เซตของจุดทั้งหมดในระนาบคือ", q_en: "25. Set of all points in a plane is a:", a_th: ["เส้นตรง", "อวกาศ", "ระนาบ", "รังสี"], a_en: ["Line", "Space", "Plane", "Ray"], correct: 2, th: "แผ่นระนาบ", en: "A plane", detail: "ระนาบ = จุดมากมายแบนราบ"}
+        ];
+
+        function renderQuiz() {
+            const root = document.getElementById('quiz-root');
+            questions.forEach((q, i) => {
+                const div = document.createElement('div');
+                div.className = 'question-container';
+                div.innerHTML = `
+                    <button onclick="toggleLang(${i})" style="cursor:pointer;">สลับภาษา (TH/EN)</button>
+                    <p class="q-text" id="qtext${i}">${q.q_th}</p>
+                    <div class="options">
+                        ${q.a_th.map((opt, idx) => `<button class="option-btn" onclick="check(${i}, ${idx})">${opt}</button>`).join('')}
+                    </div>
+                    <div class="answer-box" id="ans${i}">
+                        <p class="tip" id="tip${i}">คำใบ้: ${q.th}</p>
+                        <p id="det${i}">เฉลย: ${q.detail}</p>
+                    </div>
+                `;
+                root.appendChild(div);
+            });
+        }
+
+        function toggleLang(i) {
+            const q = questions[i];
+            const isTH = document.getElementById('qtext'+i).innerText.startsWith(q.q_th[0]);
+            document.getElementById('qtext'+i).innerText = isTH ? q.q_en : q.q_th;
+            document.getElementById('tip'+i).innerText = (isTH ? "Tip: " : "คำใบ้: ") + (isTH ? q.en : q.th);
+            const btns = document.querySelectorAll(`#quiz-root > div:nth-child(${i+1}) .option-btn`);
+            btns.forEach((b, idx) => b.innerText = isTH ? q.a_en[idx] : q.a_th[idx]);
+        }
+
+        function check(qIdx, optIdx) {
+            const btns = document.querySelectorAll(`#quiz-root > div:nth-child(${qIdx+1}) .option-btn`);
+            btns.forEach(b => b.disabled = true);
+            if(optIdx === questions[qIdx].correct) {
+                btns[optIdx].className = 'option-btn correct';
+            } else {
+                btns[optIdx].className = 'option-btn wrong';
+                btns[questions[qIdx].correct].className = 'option-btn correct';
+            }
+            document.getElementById('ans'+qIdx).style.display = 'block';
+            checkComplete();
+        }
+
+        function checkComplete() {
+            const answered = document.querySelectorAll('.option-btn:disabled').length / 4;
+            if(answered === 25) {
+                document.getElementById('report-area').innerHTML = "<h3>สรุปผลการประเมิน: 🌟 ทำได้ดีมาก! ส่งข้อมูลไปยังติวเตอร์เรียบร้อยแล้ว</h3>";
+                alert("ส่งผลการเรียนไปยังติวเตอร์เรียบร้อยแล้ว (thee.chinpong@hmail.com)");
+            }
+        }
+
+        renderQuiz();
+    </script>
+</body>
+</html>
