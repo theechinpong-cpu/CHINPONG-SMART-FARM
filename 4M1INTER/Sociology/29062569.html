@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <title>Sociology Assessment: This is Me</title>
+    <style>
+        body { font-family: 'Sarabun', sans-serif; background: #f4f7f6; padding: 20px; line-height: 1.6; }
+        .container { max-width: 800px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .question-container { margin-bottom: 25px; padding: 20px; border: 1px solid #ddd; border-radius: 8px; background: #fafafa; }
+        .option { display: block; padding: 12px; margin: 8px 0; border: 1px solid #ccc; cursor: pointer; border-radius: 5px; transition: 0.3s; }
+        .option:hover { background: #eee; }
+        .correct { background-color: #2ecc71 !important; color: white; }
+        .wrong { background-color: #e74c3c !important; color: white; }
+        .clue { color: #e74c3c; font-weight: bold; margin-top: 15px; display: block; }
+        .explanation { margin-top: 10px; padding: 15px; background: #e8f6f3; border-left: 4px solid #27ae60; }
+        .btn-toggle { cursor: pointer; background: #34495e; color: white; border: none; padding: 5px 12px; border-radius: 4px; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+<div class="container" id="exam-app">
+    <h1>Sociology Assessment: This is Me</h1>
+    <div id="questions-root"></div>
+    <div id="results-area" style="display:none; margin-top: 30px; padding: 20px; background: #fff; border: 2px solid #333; text-align: center;"></div>
+</div>
+
+<script>
+    const questions = [
+        { q_th: "การมองสังคมด้วยการเชื่อมโยงวิถีชีวิตส่วนตัวกับประวัติศาสตร์สังคมคือแนวคิดใด?", q_en: "Connecting personal life to social history is which concept?", a_th: ["Sociological Imagination", "Habitus", "Front Stage", "Symbolic Interactionism"], a_en: ["Sociological Imagination", "Habitus", "Front Stage", "Symbolic Interactionism"], correct: 0, th: "คิดแบบ Mills", en: "Think like Mills", detail: "Sociological Imagination คือการมองภาพใหญ่ที่ส่งผลต่อชีวิตเล็กๆ" },
+        { q_th: "หากคุณรู้สึกอายเพราะคิดว่าคนอื่นมองคุณแปลกๆ นี่ตรงกับแนวคิดของใคร?", q_en: "Feeling shy because you think others see you as weird matches whose theory?", a_th: ["Mead", "Cooley", "Bourdieu", "Goffman"], a_en: ["Mead", "Cooley", "Bourdieu", "Goffman"], correct: 1, th: "กระจกเงาสังคม (Looking-glass Self)", en: "Social Mirror (Looking-glass Self)", detail: "Cooley เชื่อว่าตัวตนคือการที่เราสะท้อนตัวเองผ่านสายตาคนอื่น" },
+        { q_th: "รสนิยมการเลือกบริโภคอาหารที่ได้รับอิทธิพลจากชนชั้นทางสังคม เรียกว่าอะไร?", q_en: "Tastes in consumption influenced by social class is called?", a_th: ["Socialization", "Habitus", "Impression Management", "Status Set"], a_en: ["Socialization", "Habitus", "Impression Management", "Status Set"], correct: 1, th: "นิสัยที่สังคมฝังไว้", en: "Habits embedded by society", detail: "Habitus คือตัวกำหนดทัศนคติและรสนิยมที่ซึมซับมานาน" },
+        { q_th: "การมีหลายสถานภาพในคนคนเดียว เช่น พ่อ, ครู, ลูก คือข้อใด?", q_en: "Having multiple statuses such as father, teacher, son is?", a_th: ["Role Conflict", "Status Set", "Socialization", "Front Stage"], a_en: ["Role Conflict", "Status Set", "Socialization", "Front Stage"], correct: 1, th: "ชุดของสถานภาพ", en: "Status Set", detail: "คนเรามีสถานภาพหลายอย่างรวมกันในชีวิต" },
+        { q_th: "กระบวนการที่เราเรียนรู้บรรทัดฐานสังคมตั้งแต่เกิดเรียกว่าอะไร?", q_en: "Process of learning social norms from birth is?", a_th: ["Resocialization", "Socialization", "Dramaturgy", "Habitus"], a_en: ["Resocialization", "Socialization", "Dramaturgy", "Habitus"], correct: 1, th: "การขัดเกลาทางสังคม", en: "Socialization", detail: "Socialization คือการเรียนรู้เพื่ออยู่รอดในสังคม" },
+        { q_th: "สถานการณ์ที่บทบาทของ 'นักเรียน' กับ 'ลูก' ขัดแย้งกัน เรียกว่าอะไร?", q_en: "When roles of 'student' and 'child' conflict, it is?", a_th: ["Role Strain", "Role Conflict", "Status Set", "Impression Management"], a_en: ["Role Strain", "Role Conflict", "Status Set", "Impression Management"], correct: 1, th: "ความขัดแย้งของบทบาท", en: "Role Conflict", detail: "Role Conflict คือความขัดแย้งระหว่างสองสถานภาพ" },
+        { q_th: "ใครคือผู้ที่ใช้แนวคิด 'ละครชีวิต' มาอธิบายพฤติกรรมมนุษย์?", q_en: "Who used the 'dramaturgical' concept to explain human behavior?", a_th: ["Mead", "Cooley", "Goffman", "Mills"], a_en: ["Mead", "Cooley", "Goffman", "Mills"], correct: 2, th: "ชีวิตคือละคร", en: "Life is a stage", detail: "Goffman เชื่อว่าเราทุกคนคือนักแสดง" },
+        { q_th: "ในทฤษฎีของ Mead ตัวตน 'I' ทำหน้าที่อะไร?", q_en: "In Mead's theory, the 'I' self acts to?", a_th: ["ตัดสินใจตามอารมณ์/ความต้องการ", "ตามคำสั่งสังคม", "จำลองความคิดคนอื่น", "ลดความวิตกกังวล"], a_en: ["Act on impulse/desire", "Follow social commands", "Simulate others' thoughts", "Reduce anxiety"], correct: 0, th: "ผู้แสดงออกอย่างอิสระ", en: "The independent actor", detail: "I คือพลังสร้างสรรค์และความต้องการส่วนตัว" },
+        { q_th: "ข้อใดไม่ใช่ส่วนหนึ่งของ 'Impression Management'?", q_en: "Which is NOT part of 'Impression Management'?", a_th: ["แต่งตัวดี", "การเลือกใช้คำพูดสุภาพ", "การเผยความลับที่ไม่ดีในที่สาธารณะ", "การแสดงออกที่เหมาะสม"], a_en: ["Dressing well", "Using polite language", "Revealing bad secrets in public", "Appropriate expression"], correct: 2, th: "ไม่มีใครโชว์ด้านแย่บนเวทีหน้า", en: "Nobody shows bad side on stage", detail: "การจัดการภาพลักษณ์ต้องเลี่ยงสิ่งที่ทำให้เสียหน้า" },
+        { q_th: "การที่คนไทยชอบรับประทานข้าวเป็นหลัก จัดเป็นส่วนหนึ่งของแนวคิดใด?", q_en: "Thais eating rice as a staple is part of which concept?", a_th: ["Looking-glass Self", "Habitus", "Generalized Other", "Social Imagination"], a_en: ["Looking-glass Self", "Habitus", "Generalized Other", "Social Imagination"], correct: 1, th: "วัฒนธรรมที่ฝังลึก", en: "Embedded culture", detail: "Habitus ครอบคลุมถึงพฤติกรรมการกินด้วย" },
+        { q_th: "ในทฤษฎีของ Mead 'Me' คืออะไร?", q_en: "In Mead's theory, 'Me' is?", a_th: ["สัญชาตญาณ", "ตัวตนที่มองผ่านสายตาคนอื่น", "ความปรารถนาส่วนตัว", "ความกล้าหาญ"], a_en: ["Instinct", "Self seen through others' eyes", "Personal desire", "Courage"], correct: 1, th: "ภาพที่เรามองตนเองแบบสังคมคาดหวัง", en: "Self as society expects", detail: "Me คือการปรับตัวตามกติกาของสังคม" },
+        { q_th: "พื้นที่ใดที่เราสามารถหยุดการ 'Impression Management' ได้?", q_en: "Where can we stop 'Impression Management'?", a_th: ["Front Stage", "Back Stage", "Society", "School"], a_en: ["Front Stage", "Back Stage", "Society", "School"], correct: 1, th: "ห้องส่วนตัวหรือพื้นที่ปลอดภัย", en: "Private room or safe space", detail: "Back Stage คือพื้นที่ที่คุณเป็นตัวเองได้เต็มที่" },
+        { q_th: "Sociological Imagination ช่วยป้องกันสิ่งใด?", q_en: "What does Sociological Imagination prevent?", a_th: ["การโทษตัวเองมากเกินไปในปัญหาเชิงโครงสร้าง", "การอ่านหนังสือ", "การเข้าสังคม", "ความร่ำรวย"], a_en: ["Over-blaming oneself in structural problems", "Reading books", "Socializing", "Wealth"], correct: 0, th: "มองหาต้นเหตุเชิงโครงสร้าง", en: "Look for structural causes", detail: "เพื่อไม่ให้ปัจเจกชนแบกภาระทางสังคมไว้คนเดียว" },
+        { q_th: "ตัวอย่างของ 'Generalized Other' คืออะไร?", q_en: "What is an example of 'Generalized Other'?", a_th: ["เพื่อนที่สนิทที่สุด", "บรรทัดฐานของสังคมโดยรวม", "ครูประจำชั้น", "พ่อแม่"], a_en: ["Best friend", "General social norms", "Homeroom teacher", "Parents"], correct: 1, th: "มาตรฐานส่วนรวมที่ทุกคนยึดถือ", en: "Collective standards held by everyone", detail: "คือระดับที่เราเข้าใจกติกาสังคมทั้งหมด" },
+        { q_th: "ถ้าคุณไปงานสัมภาษณ์งาน คุณกำลังแสดงในพื้นที่ใด?", q_en: "If you go for a job interview, which space are you in?", a_th: ["Back Stage", "Front Stage", "Habitus", "Looking-glass Self"], a_en: ["Back Stage", "Front Stage", "Habitus", "Looking-glass Self"], correct: 1, th: "เวทีหน้าคือเวทีแห่งการแสดง", en: "Front stage is the performance stage", detail: "คุณกำลังแสดงบทบาทที่ผู้ว่าจ้างคาดหวัง" },
+        { q_th: "Habitus ถูกถ่ายทอดผ่านอะไรมากที่สุด?", q_en: "How is Habitus mostly transmitted?", a_th: ["การเรียนในห้องเรียน", "การซึมซับจากครอบครัวและสิ่งแวดล้อม", "การซื้อหนังสือ", "การเล่นอินเทอร์เน็ต"], a_en: ["Classroom learning", "Absorption from family/environment", "Buying books", "Internet"], correct: 1, th: "วิถีชีวิตที่ลอกเลียนแบบ", en: "Lifestyle mimicry", detail: "Habitus คือสิ่งที่เรียนรู้ได้โดยไม่ต้องสอนตรงๆ" },
+        { q_th: "แนวคิด 'Social Construction of Reality' บอกว่าอะไร?", q_en: "What does 'Social Construction of Reality' say?", a_th: ["โลกนี้มีความจริงสัมบูรณ์", "ความจริงถูกสร้างขึ้นโดยมนุษย์ร่วมกัน", "คนไม่มีส่วนเกี่ยวข้องกับโลก", "เงินสร้างโลก"], a_en: ["Absolute truth", "Reality is constructed by humans", "Humans don't affect world", "Money builds world"], correct: 1, th: "ความจริงคือการสมมติ", en: "Reality is a construct", detail: "สิ่งต่างๆ ในสังคมเกิดจากข้อตกลงร่วมกัน" },
+        { q_th: "ใครคือผู้พัฒนาแนวคิด Sociological Imagination?", q_en: "Who developed Sociological Imagination?", a_th: ["C. Wright Mills", "Erving Goffman", "Pierre Bourdieu", "G.H. Mead"], a_en: ["C. Wright Mills", "Erving Goffman", "Pierre Bourdieu", "G.H. Mead"], correct: 0, th: "จินตนาการทางสังคม", en: "Social imagination", detail: "Mills เป็นผู้เขียนหนังสือ The Sociological Imagination" },
+        { q_th: "ถ้าเราแต่งตัวตามเพื่อนเพราะอยากได้รับการยอมรับ นี่คืออิทธิพลของแนวคิดใด?", q_en: "Dressing like friends for acceptance is influenced by?", a_th: ["Looking-glass Self", "Habitus", "Front Stage", "Generalized Other"], a_en: ["Looking-glass Self", "Habitus", "Front Stage", "Generalized Other"], correct: 0, th: "การมองตนเองผ่านสายตาคนอื่น", en: "Self through others' eyes", detail: "เราแคร์ภาพลักษณ์ที่เพื่อนสะท้อนกลับมา" },
+        { q_th: "อะไรคือความแตกต่างหลักของนักสังคมวิทยา กับคนทั่วไป?", q_en: "Main difference between sociologist and normal person?", a_th: ["นักสังคมวิทยามีสมองดีกว่า", "นักสังคมวิทยาตั้งคำถามถึงโครงสร้างเบื้องหลัง", "คนทั่วไปฉลาดกว่า", "นักสังคมวิทยาทำนายอนาคตได้"], a_en: ["Sociologists have better brains", "Sociologists question structures", "Normal people are smarter", "Sociologists predict future"], correct: 1, th: "เห็นโครงสร้างที่มองไม่เห็น", en: "See the hidden structures", detail: "สังคมวิทยาฝึกให้เรามองข้ามสิ่งที่เห็นชินตา" },
+        { q_th: "การจัดระเบียบสังคม (Social Order) เกิดจากอะไร?", q_en: "Social Order arises from?", a_th: ["ความบังเอิญ", "บรรทัดฐานและกติกาที่ยอมรับร่วมกัน", "การบังคับอย่างเดียว", "ไม่มีกฎ"], a_en: ["Coincidence", "Norms and shared rules", "Force only", "No rules"], correct: 1, th: "กติกาที่ตกลงกัน", en: "Agreed rules", detail: "สังคมคงอยู่ได้เพราะเรายอมรับกติกาเดียวกัน" },
+        { q_th: "ทฤษฎี Interactionism สนใจเรื่องใด?", q_en: "Interactionism focuses on?", a_th: ["การเมืองโลก", "ความหมายของสัญลักษณ์ในชีวิตประจำวัน", "เศรษฐกิจมหภาค", "ดาราศาสตร์"], a_en: ["Global politics", "Meaning of symbols in daily life", "Macroeconomics", "Astronomy"], correct: 1, th: "ความหมายของการสื่อสาร", en: "Meaning of communication", detail: "เราปฏิสัมพันธ์ผ่านสัญลักษณ์และภาษา" },
+        { q_th: "การขัดเกลาทางสังคมแบ่งเป็นกี่ช่วงหลัก?", q_en: "Socialization has how many main stages?", a_th: ["1 ช่วง", "2 ช่วง (ปฐมภูมิ/ทุติยภูมิ)", "4 ช่วง", "ไม่แบ่ง"], a_en: ["1 stage", "2 stages (Primary/Secondary)", "4 stages", "Not divided"], correct: 1, th: "ช่วงต้นและช่วงหลัง", en: "Early and late phases", detail: "ปฐมภูมิคือครอบครัว ทุติยภูมิคือโรงเรียน/สังคม" },
+        { q_th: "เมื่อคนพูดถึง 'ความปกติ' ในสังคม นี่คือแนวคิดของอะไร?", q_en: "When people speak of 'normalcy', this is?", a_th: ["อคติ", "บรรทัดฐานทางสังคม", "กฎฟิสิกส์", "โชคชะตา"], a_en: ["Prejudice", "Social norm", "Physics law", "Fate"], correct: 1, th: "กติกาที่ตกลงว่าเป็นเรื่องธรรมดา", en: "Agreed-upon common rules", detail: "บรรทัดฐานคือกรอบที่สังคมสร้างขึ้น" },
+        { q_th: "ทำไมสังคมวิทยาจึงมีความสำคัญในศตวรรษที่ 21?", q_en: "Why is sociology important in 21st century?", a_th: ["เพื่อทำนายหุ้น", "เพื่อเข้าใจความหลากหลายและการเปลี่ยนแปลง", "เพื่อสอบให้ผ่าน", "เพื่อความสนุก"], a_en: ["To predict stocks", "To understand diversity/change", "To pass exam", "For fun"], correct: 1, th: "โลกเปลี่ยนเร็วต้องเข้าใจ", en: "World changes fast", detail: "เพื่ออยู่ร่วมกับความหลากหลายได้อย่างสันติ" }
+    ];
+
+    const categories = [{ id: 0, name: "พื้นฐานสังคมวิทยา", questions: [...Array(25).keys()] }];
+    let lang = 'th';
+
+    function render() {
+        const root = document.getElementById('questions-root');
+        root.innerHTML = '';
+        questions.forEach((q, idx) => {
+            const div = document.createElement('div');
+            div.className = 'question-container';
+            div.id = `q-${idx}`;
+            div.innerHTML = `
+                <button class="btn-toggle" onclick="toggleLang(${idx})">${lang === 'th' ? 'EN' : 'TH'}</button>
+                <p><strong>${lang === 'th' ? q.q_th : q.q_en}</strong></p>
+                ${q.a_th.map((opt, i) => `<div class="option" onclick="check(${idx}, ${i})">${lang === 'th' ? q.a_th[i] : q.a_en[i]}</div>`).join('')}
+                <div class="clue" id="clue-${idx}" style="display:none">${lang === 'th' ? '(Clue: ' + q.th + ')' : '(Clue: ' + q.en + ')'}</div>
+                <div class="explanation" id="exp-${idx}" style="display:none">${q.detail}</div>
+            `;
+            root.appendChild(div);
+        });
+    }
+
+    function check(qIdx, aIdx) {
+        const q = questions[qIdx];
+        const container = document.getElementById(`q-${qIdx}`);
+        const options = container.querySelectorAll('.option');
+        options.forEach((el, i) => {
+            el.style.pointerEvents = 'none';
+            if (i === q.correct) el.classList.add('correct');
+            else if (i === aIdx) el.classList.add('wrong');
+        });
+        document.getElementById(`clue-${qIdx}`).style.display = 'block';
+        document.getElementById(`exp-${qIdx}`).style.display = 'block';
+        checkComplete();
+    }
+
+    function toggleLang(idx) {
+        lang = lang === 'th' ? 'en' : 'th';
+        render();
+    }
+
+    function checkComplete() {
+        if (document.querySelectorAll('.option.correct').length === 25) {
+            alert("ส่งผลการเรียนไปยังติวเตอร์เรียบร้อยแล้ว");
+            const res = document.getElementById('results-area');
+            res.innerHTML = "🌟 ทำได้ดีมาก - พร้อมสำหรับการวิเคราะห์ระดับสูง!<br>ระบบกำลังส่งอีเมลสรุปผลไปยัง thee.chinpong@hmail.com";
+            res.style.display = 'block';
+        }
+    }
+    render();
+</script>
+</body>
+</html>
