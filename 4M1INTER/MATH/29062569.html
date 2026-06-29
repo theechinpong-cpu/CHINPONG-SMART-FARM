@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <title>Math Midterm Assessment - Phra Chom Klao Tutor</title>
+    <style>
+        body { font-family: 'Sarabun', sans-serif; background: #f4f7f6; padding: 20px; color: #333; }
+        .container { max-width: 800px; margin: auto; background: #fff; padding: 30px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        h1 { text-align: center; color: #2c3e50; }
+        .question-container { border: 1px solid #ddd; padding: 20px; margin-bottom: 20px; border-radius: 10px; background: #fafafa; }
+        .options { margin: 10px 0; }
+        .option-btn { display: block; width: 100%; padding: 10px; margin: 5px 0; border: 1px solid #ccc; border-radius: 5px; cursor: pointer; text-align: left; background: white; transition: 0.3s; }
+        .correct { background-color: #2ecc71 !important; color: white; }
+        .wrong { background-color: #e74c3c !important; color: white; }
+        .answer-box { margin-top: 10px; padding: 10px; border-left: 5px solid #3498db; display: none; background: #eef7fe; }
+        .tip { color: #c0392b; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Math Midterm Assessment (25 Questions)</h1>
+        <div id="quiz-root"></div>
+        <div id="report-area"></div>
+    </div>
+
+    <script>
+        const questions = [
+            {q_th: "1. (-8) + (-12) - (-20) มีค่าเท่าใด", q_en: "1. What is (-8) + (-12) − (-20)?", a_th: ["0", "40", "-40", "-20"], a_en: ["0", "40", "-40", "-20"], correct: 0, th: "รวมลบก่อนแล้วค่อยจัดการลบซ้อนลบ", en: "Sum negatives then handle double minus", detail: "-20 + 20 = 0"},
+            {q_th: "2. จำนวนเต็มลบที่มากที่สุดคือจำนวนใด", q_en: "2. What is the largest negative integer?", a_th: ["-∞", "-1", "0", "1"], a_en: ["-∞", "-1", "0", "1"], correct: 1, th: "ยิ่งเข้าใกล้ 0 ค่าจะยิ่งมาก", en: "Closer to 0 is larger", detail: "-1 คือจำนวนเต็มลบที่ใกล้ 0 มากที่สุด"},
+            {q_th: "3. |(-5) × 3| มีค่าเท่าใด", q_en: "3. What is |(-5) × 3|?", a_th: ["-15", "15", "8", "-8"], a_en: ["-15", "15", "8", "-8"], correct: 1, th: "ค่าสัมบูรณ์ทำให้ผลลัพธ์เป็นบวกเสมอ", en: "Absolute value is always positive", detail: "|-15| = 15"},
+            {q_th: "4. (-2)⁴ มีค่าเท่าใด", q_en: "4. What is (-2)⁴?", a_th: ["-16", "8", "16", "-8"], a_en: ["-16", "8", "16", "-8"], correct: 2, th: "เลขชี้กำลังเป็นเลขคู่ ค่าลบกลายเป็นบวก", en: "Even power of negative is positive", detail: "-2 × -2 × -2 × -2 = 16"},
+            {q_th: "5. (-100) ÷ 5 + (-5) มีค่าเท่าใด", q_en: "5. (-100) ÷ 5 + (-5) equals?", a_th: ["-25", "15", "25", "-15"], a_en: ["-25", "15", "25", "-15"], correct: 0, th: "หารก่อนบวก", en: "Divide before add", detail: "-20 + (-5) = -25"},
+            {q_th: "6. ถ้า x - (-5) = 10 แล้ว x คือ", q_en: "6. If x − (-5) = 10, then x is:", a_th: ["5", "-5", "15", "-15"], a_en: ["5", "-5", "15", "-15"], correct: 0, th: "x + 5 = 10", en: "x + 5 = 10", detail: "x = 10 - 5 = 5"},
+            {q_th: "7. ข้อใดมีค่าเท่ากับ -10", q_en: "7. Which equals -10?", a_th: ["-5 + (-5)", "-5 - 5", "(-2) × 5", "ทุกข้อที่กล่าวมา"], a_en: ["-5 + (-5)", "-5 - 5", "(-2) × 5", "All of the above"], correct: 3, th: "ทุกตัวเลือกได้ -10", en: "All options result in -10", detail: "ทุกตัวเลือกคำนวณได้ -10"},
+            {q_th: "8. (-2) × (-2) × (-2) มีค่าเท่าใด", q_en: "8. What is (-2) × (-2) × (-2)?", a_th: ["8", "-8", "4", "-4"], a_en: ["8", "-8", "4", "-4"], correct: 1, th: "ลบสามตัวคูณกันได้ลบ", en: "Three negatives multiply to negative", detail: "4 × -2 = -8"},
+            {q_th: "9. 0 ÷ (-5) มีค่าเท่าใด", q_en: "9. 0 ÷ (-5) is?", a_th: ["0", "-5", "หาค่าไม่ได้", "1"], a_en: ["0", "-5", "Undefined", "1"], correct: 0, th: "ศูนย์หารด้วยจำนวนใดๆ ได้ 0", en: "Zero divided by anything is zero", detail: "0 หารอะไรก็ได้ 0"},
+            {q_th: "10. ข้อใดคือสมบัติการแจกแจง", q_en: "10. Which is the distributive property?", a_th: ["a+b = b+a", "a(b+c) = ab+ac", "a+0 = a", "a×1 = a"], a_en: ["a+b = b+a", "a(b+c) = ab+ac", "a+0 = a", "a×1 = a"], correct: 1, th: "การกระจายคูณเข้าในวงเล็บ", en: "Multiplying into the bracket", detail: "a(b+c) = ab+ac"},
+            {q_th: "11. ถ้า a เป็นจำนวนลบ a² จะเป็น", q_en: "11. If a is negative, a² is:", a_th: ["บวก", "ลบ", "ศูนย์", "ไม่แน่นอน"], a_en: ["Positive", "Negative", "Zero", "Uncertain"], correct: 0, th: "ลบกำลังสองเป็นบวก", en: "Negative squared is positive", detail: "เช่น (-2)² = 4"},
+            {q_th: "12. |-5 + (-3)| มีค่าเท่าใด", q_en: "12. |(-5) + (-3)| is?", a_th: ["2", "-2", "8", "-8"], a_en: ["2", "-2", "8", "-8"], correct: 2, th: |-8|", en: "|-8|", detail: |-8| = 8"},
+            {q_th: "13. ข้อใดคือความหมายของจุด", q_en: "13. What defines a point?", a_th: ["เส้นโค้ง", "บอกตำแหน่ง", "มีความยาว", "มีพื้นที่"], a_en: ["Curve", "Indicates location", "Has length", "Has area"], correct: 1, th: "จุดใช้ระบุตำแหน่ง", en: "Points mark positions", detail: "จุดเป็นสิ่งที่ไม่มีมิติ"},
+            {q_th: "14. รังสีหนึ่งเส้นประกอบด้วยจุดกี่จุด", q_en: "14. A ray consists of how many points?", a_th: ["1", "2", "นับไม่ถ้วน", "0"], a_en: ["1", "2", "Infinite", "0"], correct: 2, th: "จุดนับไม่ถ้วนบนเส้น", en: "Infinite points on a line", detail: "รังสีประกอบด้วยจุดมากมาย"},
+            {q_th: "15. เส้นตรงขนานกันมีสมบัติอย่างไร", q_en: "15. Parallel lines have what property?", a_th: ["ตัดกัน", "ระยะห่างเท่ากันเสมอ", "เป็นรังสี", "ตั้งฉากกัน"], a_en: ["Intersect", "Equal distance always", "Are rays", "Perpendicular"], correct: 1, th: "ไม่มีวันบรรจบ", en: "Never meet", detail: "ระยะห่างเท่ากันเสมอ"},
+            {q_th: "16. มุมฉากมีกี่องศา", q_en: "16. A right angle is how many degrees?", a_th: ["45", "90", "180", "360"], a_en: ["45", "90", "180", "360"], correct: 1, th: "90 องศา", en: "90 degrees", detail: "มุมฉาก = 90 องศา"},
+            {q_th: "17. มุมกลับมีขนาดเท่าใด", q_en: "17. A reflex angle is:", a_th: ["< 90", "> 180", "90", "180"], a_en: ["< 90", "> 180", "90", "180"], correct: 1, th: "มากกว่า 180 แต่ไม่เกิน 360", en: "> 180 and < 360", detail: "มุมกลับมีขนาดมากกว่า 180 องศา"},
+            {q_th: "18. ส่วนของเส้นตรงยาว 5 ซม. คืออะไร", q_en: "18. A 5cm line segment is:", a_th: ["รังสี", "เส้นตรง", "ระยะจำกัด", "มุม"], a_en: ["Ray", "Line", "Finite length", "Angle"], correct: 2, th: "มีจุดเริ่มต้นและจบ", en: "Has start and end", detail: "มีจุดปลายสองข้างชัดเจน"},
+            {q_th: "19. จุดบนระนาบเดียวกันคืออะไร", q_en: "19. Points on the same plane?", a_th: ["Coplanar", "Collinear", "Intersecting", "Parallel"], a_en: ["Coplanar", "Collinear", "Intersecting", "Parallel"], correct: 0, th: "Co-planar", en: "Coplanar", detail: "Coplanar = อยู่ระนาบเดียวกัน"},
+            {q_th: "20. เส้นตรงตัดกันเกิดมุมอะไรขึ้น", q_en: "20. Intersecting lines form:", a_th: ["มุม", "ระนาบ", "จุด", "ไม่มีข้อถูก"], a_en: ["Angles", "Planes", "Points", "None"], correct: 0, th: "จุดตัดเกิดมุม", en: "Angles at intersection", detail: "เกิดมุมตรงข้ามเสมอ"},
+            {q_th: "21. มุมแหลมมีขนาดเท่าใด", q_en: "21. An acute angle is:", a_th: ["< 90", "> 90", "= 90", "= 180"], a_en: ["< 90", "> 90", "= 90", "= 180"], correct: 0, th: "น้อยกว่า 90", en: "Less than 90", detail: "มุมแหลม < 90 องศา"},
+            {q_th: "22. มุมที่รวมกันได้ 90 องศาคือ", q_en: "22. Angles that sum to 90 are:", a_th: ["Complementary", "Supplementary", "Vertical", "Reflex"], a_en: ["Complementary", "Supplementary", "Vertical", "Reflex"], correct: 0, th: "มุมประกอบหนึ่งมุมฉาก", en: "Complementary", detail: "รวมได้ 90 = Complementary"},
+            {q_th: "23. สัญลักษณ์ของเส้นตรงคือ", q_en: "23. Symbol for a line?", a_th: ["หัวลูกศรสองข้าง", "จุดสองข้าง", "ไม่มีหัว", "โค้ง"], a_en: ["Double arrows", "Two points", "No arrows", "Curved"], correct: 0, th: "หัวลูกศรหมายถึงไม่สิ้นสุด", en: "Arrows mean infinite", detail: "มีหัวลูกศรสองข้าง"},
+            {q_th: "24. ระนาบเปรียบเสมือนสิ่งใด", q_en: "24. A plane is like a:", a_th: ["เส้น", "จุด", "แผ่นกระดาษ", "ก้อนหิน"], a_en: ["Line", "Point", "Sheet of paper", "Stone"], correct: 2, th: "ผิวแบนเรียบ", en: "Flat surface", detail: "เปรียบเหมือนพื้นผิวแบนราบ"},
+            {q_th: "25. มุมตรงมีกี่องศา", q_en: "25. A straight angle is:", a_th: ["90", "180", "270", "360"], a_en: ["90", "180", "270", "360"], correct: 1, th: "เท่ากับเส้นตรง", en: "Equals a straight line", detail: "มุมตรง = 180 องศา"}
+        ];
+
+        const state = questions.map(() => ({ isTH: true }));
+
+        function renderQuiz() {
+            const root = document.getElementById('quiz-root');
+            questions.forEach((q, i) => {
+                const div = document.createElement('div');
+                div.className = 'question-container';
+                div.innerHTML = `
+                    <button onclick="toggleLang(${i})" style="cursor:pointer; margin-bottom:10px;">สลับภาษา (TH/EN)</button>
+                    <p class="q-text" id="qtext${i}">${q.q_th}</p>
+                    <div class="options" id="opts${i}">
+                        ${q.a_th.map((opt, idx) => `<button class="option-btn" onclick="check(${i}, ${idx})">${opt}</button>`).join('')}
+                    </div>
+                    <div class="answer-box" id="ans${i}">
+                        <p class="tip" id="tip${i}">คำใบ้: ${q.th}</p>
+                        <p id="det${i}">เฉลย: ${q.detail}</p>
+                    </div>
+                `;
+                root.appendChild(div);
+            });
+        }
+
+        function toggleLang(i) {
+            state[i].isTH = !state[i].isTH;
+            const q = questions[i];
+            document.getElementById('qtext'+i).innerText = state[i].isTH ? q.q_th : q.q_en;
+            document.getElementById('tip'+i).innerText = (state[i].isTH ? "คำใบ้: " : "Tip: ") + (state[i].isTH ? q.th : q.en);
+            const btns = document.querySelectorAll(`#opts${i} .option-btn`);
+            btns.forEach((b, idx) => b.innerText = state[i].isTH ? q.a_th[idx] : q.a_en[idx]);
+        }
+
+        function check(qIdx, optIdx) {
+            const btns = document.querySelectorAll(`#opts${qIdx} .option-btn`);
+            btns.forEach(b => b.disabled = true);
+            if(optIdx === questions[qIdx].correct) {
+                btns[optIdx].className = 'option-btn correct';
+            } else {
+                btns[optIdx].className = 'option-btn wrong';
+                btns[questions[qIdx].correct].className = 'option-btn correct';
+            }
+            document.getElementById('ans'+qIdx).style.display = 'block';
+            checkComplete();
+        }
+
+        function checkComplete() {
+            const answered = document.querySelectorAll('.option-btn:disabled').length / 4;
+            if(answered === 25) {
+                document.getElementById('report-area').innerHTML = "<h3>สรุปผลการประเมิน: 🌟 ทำได้ดีมาก! ส่งข้อมูลไปยังติวเตอร์เรียบร้อยแล้ว</h3>";
+                alert("ส่งผลการเรียนไปยังติวเตอร์เรียบร้อยแล้ว (thee.chinpong@hmail.com)");
+            }
+        }
+
+        renderQuiz();
+    </script>
+</body>
+</html>
