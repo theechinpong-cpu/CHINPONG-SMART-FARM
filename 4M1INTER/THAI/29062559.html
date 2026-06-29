@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <title>ข้อสอบหลักภาษา ม.1 - พระจอมเกล้าติวเตอร์</title>
+    <style>
+        body { font-family: 'Sarabun', sans-serif; background: #f4f7f6; padding: 20px; }
+        .container { max-width: 800px; margin: auto; }
+        .card { background: white; padding: 20px; margin-bottom: 20px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .btn-toggle { background: #3498db; color: white; border: none; padding: 5px 10px; cursor: pointer; border-radius: 5px; margin-bottom: 10px; }
+        .options button { display: block; width: 100%; margin: 5px 0; padding: 10px; text-align: left; border: 1px solid #ddd; border-radius: 5px; cursor: pointer; }
+        .correct { background-color: #2ecc71 !important; color: white; }
+        .wrong { background-color: #e74c3c !important; color: white; }
+        .feedback { margin-top: 10px; padding: 10px; border-left: 5px solid #e74c3c; background: #fff0f0; display: none; }
+        .tip { color: #e74c3c; font-weight: bold; }
+        #result-area { text-align: center; font-size: 1.5em; font-weight: bold; margin-top: 20px; padding: 20px; background: white; border-radius: 10px; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>แบบทดสอบหลักภาษา ม.1 (ระดับสูง)</h1>
+    <div id="quiz-body"></div>
+    <div id="result-area"></div>
+</div>
+
+<script>
+const questions = [
+    { q_th: "พยัญชนะในข้อใดจัดเป็นอักษรกลางทั้งหมด?", q_en: "Which set contains only middle-class consonants?", a_th: ["ก จ ด ต", "ข ฉ ถ ส", "ง น ม ร", "พ ฟ ค ฮ"], a_en: ["K, J, D, T", "Kh, Ch, Th, S", "Ng, N, M, R", "Ph, F, Kh, H"], correct: 0, th: "ไก่ จิก เด็ก ตาย บน ปาก โอ่ง", en: "Remember the mnemonic: Kai Jik Dek Tai Bon Pak Ong.", detail: "อักษรกลางมี 9 ตัว ก จ ฎ ฏ ด ต บ ป อ" },
+    { q_th: "คำว่า 'ความรัก' เป็นคำที่เกิดจากการสร้างคำแบบใด?", q_en: "What type of word creation is 'Khwam-rak'?", a_th: ["คำประสม", "คำมูลที่มีการเติมหน่วยคำ", "คำซ้อน", "คำสมาส"], a_en: ["Compound word", "Root word with affix", "Repetitive", "Samaas"], correct: 1, th: "ความ/การ + คำกริยา/วิเศษณ์", en: "Khwam/Karn + Verb/Adjective.", detail: "เป็นการเติมหน่วยคำ (Affix) หน้าคำกริยา เพื่อเปลี่ยนเป็นคำนาม" },
+    { q_th: "คำในข้อใดจัดเป็นคำสมาสแบบมีสนธิ?", q_en: "Which is a compound word with Sandhi?", a_th: ["ราชการ", "วิทยาศาสตร์", "ธันวาคม", "พลเรือน"], a_en: ["Ratchakan", "Witthayasat", "Thannakhom", "Phonruean"], correct: 2, th: "ธันว + อาคม = ธันวาคม", en: "Thanu + Akhom = Thannakhom.", detail: "ธันวาคม เกิดจาก ธันว + อาคม (มีการเชื่อมเสียง)" },
+    { q_th: "ประโยคในข้อใดมี 'อนิยมสรรพนาม'?", q_en: "Which sentence contains an indefinite pronoun?", a_th: ["ใครจะไปที่นั่นก็ได้", "ใครยืนอยู่หน้าประตู", "เธอคือใคร", "นี่คือบ้านของใคร"], a_en: ["Anyone can go there.", "Who is at the door?", "Who are you?", "Whose house is this?"], correct: 0, th: "ใคร = ไม่เจาะจง", en: "Who = indefinite.", detail: "ใคร ในที่นี้หมายถึงบุคคลใดก็ได้ ไม่ได้ใช้ถาม" },
+    { q_th: "ข้อใดคือคำพ้องรูปที่อ่านถูกต้องตามความหมาย?", q_en: "Which pair of homographs is read correctly?", a_th: ["เพลา (แกนล้อ) อ่านว่า เพ-ลา", "ปักเป้า (ว่าว) อ่านว่า ปัก-เป้า", "แหน (หญ้า) อ่านว่า แหน-หะ", "กรี (กระดูกหัวกุ้ง) อ่านว่า กรี"], a_en: ["Phela (Axle) read as Phe-la", "Pak-pao (Kite) read as Pak-pao", "Nae (Weed) read as Nae-ha", "Kree (Shrimp head) read as Kree"], correct: 1, th: "ปักเป้า (ว่าว) ต้องอ่าน พยางค์เดียว", en: "Pak-pao (Kite) read as one syllable.", detail: "ว่าวปักเป้า อ่านว่า ปัก-เป้า" },
+    { q_th: "คำซ้อนในข้อใดเป็นคำซ้อนเพื่อเสียงเพียงอย่างเดียว?", q_en: "Which is a purely phonetic repetitive word?", a_th: ["จิ้มลิ้ม", "บ้านเรือน", "ทรัพย์สิน", "พี่น้อง"], a_en: ["Jim-lim", "Ban-ruen", "Sap-sin", "Phee-nong"], correct: 0, th: "คำหนึ่งไม่มีความหมาย", en: "One word has no meaning.", detail: "ลิ้ม ไม่มีตัวตนในพจนานุกรม" },
+    { q_th: "คำสรรพนามชนิดใดที่ทำหน้าที่เชื่อมประโยคหลักและประโยคย่อย?", q_en: "Which pronoun connects the main and sub-clauses?", a_th: ["ประพันธสรรพนาม", "บุรุษสรรพนาม", "วิภาคสรรพนาม", "ปฤจฉาสรรพนาม"], a_en: ["Relative pronoun", "Personal", "Distributive", "Interrogative"], correct: 0, th: "ผู้ ที่ ซึ่ง อัน", en: "Who/That/Which.", detail: "ประพันธสรรพนามใช้เชื่อมประโยค" },
+    { q_th: "ข้อใดผันวรรณยุกต์ได้ครบ 5 เสียง?", q_en: "Which one can be conjugated into 5 tones?", a_th: ["กา", "ขา", "คา", "มา"], a_en: ["Ka", "Kha", "Kha", "Ma"], correct: 0, th: "อักษรกลาง คำเป็น", en: "Middle class, Live syllable.", detail: "ก (กลาง) + สระเสียงยาว = ผันได้ 5 เสียง" },
+    { q_th: "คำว่า 'พระจันทร์' จัดเป็นคำประเภทใด?", q_en: "What type of word is 'Phra-chan'?", a_th: ["คำสมาส", "คำประสม", "คำซ้ำ", "คำซ้อน"], a_en: ["Samaas", "Compound", "Reduplication", "Repetitive"], correct: 0, th: "บาลี+บาลี", en: "Pali + Pali.", detail: "พระ + จันทร์ เป็นคำสมาส" },
+    { q_th: "คำในข้อใดมี 'เสียงพยัญชนะสะกด' ในแม่กง?", q_en: "Which word has a final consonant in the 'Mae Kong' family?", a_th: ["กางเกง", "กราบ", "กัด", "กะ", "กอ"], a_en: ["Pants", "Bow", "Bite", "Short", "Ko"], correct: 0, th: "ลงท้ายด้วย ง", en: "Ends with Ng.", detail: "กางเกง สะกดด้วย ง ทั้งสองคำ" },
+    { q_th: "ข้อใดเป็นคำพ้องเสียงที่เขียนสะกดต่างกัน?", q_en: "Which homophones have different spellings?", a_th: ["จัน, จันทร์", "เพลา, เพลา", "ขัน, ขัน", "สระ, สระ"], a_en: ["Chan, Chan (Moon)", "Axle, Quiet", "Laugh, Bowl", "Vowel, Pool"], correct: 0, th: "เสียงเหมือน สะกดต่าง", en: "Same sound, different spelling.", detail: "จัน (ชื่อต้นไม้) และ จันทร์ (ดวงจันทร์)" },
+    { q_th: "คำในข้อใดเป็นคำซ้ำทุกคำ?", q_en: "Which list contains all repetitive words?", a_th: ["เด็กๆ, พี่ๆ", "สวยงาม, บ้านเรือน", "นานา, ไปมา", "จริงจัง, ใหญ่โต"], a_en: ["Children, Older siblings", "Beautiful, House", "Various, Back-forth", "Serious, Big"], correct: 0, th: "สังเกตไม้ยมก", en: "Notice the repetition mark.", detail: "ใช้ไม้ยมกในการซ้ำคำ" },
+    { q_th: "อักษรสูงเมื่อผันเสียงเอก จะได้เสียงอะไร?", q_en: "What tone does a high-class consonant produce in 'ek' form?", a_th: ["เสียงเอก", "เสียงโท", "เสียงจัตวา", "เสียงสามัญ"], a_en: ["Ek tone", "Tho tone", "Jattawa tone", "Samany tone"], correct: 0, th: "สูง-เอก-เอก", en: "High-Ek-Ek.", detail: "อักษรสูงผันได้ 3 เสียง คือ เอก โท จัตวา" },
+    { q_th: "คำสรรพนามชนิดใดที่บ่งบอกความแตกต่าง?", q_en: "Which pronoun indicates distinction?", a_th: ["วิภาคสรรพนาม", "อนิยมสรรพนาม", "นิยมสรรพนาม", "บุรุษสรรพนาม"], a_en: ["Distributive", "Indefinite", "Demonstrative", "Personal"], correct: 0, th: "ต่าง บ้าง กัน", en: "Each, Some, Together.", detail: "วิภาคใช้แยกพวก เช่น นักเรียนต่างอ่านหนังสือ" },
+    { q_th: "ข้อใดมีคำสมาสที่เกิดจากบาลี+บาลี?", q_en: "Which one is a Samaas of Pali+Pali?", a_th: ["ภูมิศาสตร์", "พงศาวดาร", "มหาเศรษฐี", "ศิลปกรรม"], a_en: ["Geography", "Chronicle", "Billionaire", "Arts"], correct: 0, th: "ภูมิ+ศาสตร์", en: "Phum+Sat.", detail: "ภูมิ (บาลี) + ศาสตร์ (บาลี)" },
+    { q_th: "คำในข้อใดไม่ใช่คำประสม?", q_en: "Which one is not a compound word?", a_th: ["วิ่งเล่น", "รถไฟ", "ผลไม้", "หัวใจ"], a_en: ["Run and play", "Train", "Fruit", "Heart"], correct: 0, th: "คำกริยาซ้อน", en: "Verb repetition.", detail: "วิ่งเล่น เป็นคำซ้อนเพื่อความหมาย" },
+    { q_th: "เสียงสระข้อใดเป็นสระเสียงสั้นทั้งหมด?", q_en: "Which set contains only short vowels?", a_th: ["อิ, อุ, เอะ", "อา, อี, อู", "เอ, โอ, ออ", "เอีย, เอือ, อัว"], a_en: ["i, u, e", "aa, ee, uu", "e, o, or", "ia, uea, ua"], correct: 0, th: "สระสั้นต้องพูดเร็ว", en: "Short vowels are spoken quickly.", detail: "อิ อุ เอะ เป็นสระเสียงสั้น" },
+    { q_th: "อักษรต่ำผันเสียงโท จะได้รูปอะไร?", q_en: "What tone mark for low-class consonant in 'tho' tone?", a_th: ["รูปโท", "รูปตรี", "ไม่ปรากฏรูป", "รูปเอก"], a_en: ["Tho mark", "Tri mark", "No mark", "Ek mark"], correct: 0, th: "ต่ำ-โท-โท", en: "Low-Tho-Tho.", detail: "อักษรต่ำผันเสียงโท ใช้รูปโท" },
+    { q_th: "คำสรรพนามในข้อใดใช้ชี้เฉพาะ?", q_en: "Which pronoun is demonstrative?", a_th: ["นี้", "ใคร", "บ้าง", "ผู้"], a_en: ["This", "Who", "Some", "Who"], correct: 0, th: "นี่ นั่น โน่น", en: "This, That.", detail: "นิยมสรรพนามใช้ชี้เฉพาะ" },
+    { q_th: "คำว่า 'กิน' จัดเป็นคำประเภทใดในทางภาษา?", q_en: "What type of word is 'Eat'?", a_th: ["คำมูล", "คำประสม", "คำสมาส", "คำซ้อน"], a_en: ["Root word", "Compound", "Samaas", "Repetitive"], correct: 0, th: "พยางค์เดียว ความหมายเดียว", en: "One syllable, one meaning.", detail: "คำมูลมีพยางค์เดียวหรือหลายพยางค์ก็ได้ที่ไม่ได้ประสมหรือซ้อน" },
+    { q_th: "ข้อใดเป็นคำพ้องเสียงที่เขียนเหมือนกันแต่มีความหมายต่างกัน?", q_en: "Which are homonyms (spelled same, different meaning)?", a_th: ["ขัน", "การ", "เพลา", "จัน"], a_en: ["Khan (Laugh/Bowl)", "Karn (Work)", "Phela (Axle)", "Chan (Tree)"], correct: 0, th: "ขัน (หัวเราะ) กับ ขัน (ภาชนะ)", en: "Khan (Laugh) vs Khan (Bowl).", detail: "พ้องรูปพ้องเสียง (คำเดียวกันแต่ใช้บริบทต่างกัน)" },
+    { q_th: "ประโยคในข้อใดไม่มีคำสรรพนาม?", q_en: "Which sentence has no pronoun?", a_th: ["สมชายวิ่ง", "เขาไปเรียน", "ฉันรักเธอ", "ใครทำหาย"], a_en: ["Somchai runs.", "He goes to school.", "I love you.", "Who lost it?"], correct: 0, th: "สมชายเป็นคำนาม", en: "Somchai is a proper noun.", detail: "สมชาย เป็นนามเฉพาะ ไม่มีสรรพนาม" },
+    { q_th: "เสียงสระประสมมีกี่เสียง?", q_en: "How many compound vowel sounds?", a_th: ["3 เสียง", "2 เสียง", "4 เสียง", "5 เสียง"], a_en: ["3", "2", "4", "5"], correct: 0, th: "เอีย-เอือ-อัว", en: "ia-uea-ua.", detail: "มี 3 เสียงคือ เอีย, เอือ, อัว" },
+    { q_th: "การผันวรรณยุกต์อักษรต่ำ คำตาย ผันได้กี่เสียง?", q_en: "How many tones for low-class consonant, dead syllable?", a_th: ["3 เสียง", "2 เสียง", "1 เสียง", "5 เสียง"], a_en: ["3", "2", "1", "5"], correct: 0, th: "ต่ำ-ตาย = ผันได้ 3 เสียง", en: "Low-dead = 3 tones.", detail: "อักษรต่ำ คำตาย (สระเสียงสั้น) ผันได้ 3 เสียง" },
+    { q_th: "คำว่า 'หนังสือ' เกิดจากการสร้างคำแบบใด?", q_en: "What type of word is 'Nangsue' (Book)?", a_th: ["คำประสม", "คำมูล", "คำซ้อน", "คำสมาส"], a_en: ["Compound", "Root", "Repetitive", "Samaas"], correct: 0, th: "หนัง + สือ", en: "Nang + Sue.", detail: "หนังสือ เป็นคำประสม (หนัง+สือ)" }
+];
+
+const categories = [{ id: 0, name: "หลักภาษาไทย", questions: [...Array(25).keys()] }];
+
+function renderQuiz() {
+    const body = document.getElementById('quiz-body');
+    questions.forEach((q, i) => {
+        const div = document.createElement('div');
+        div.className = 'card';
+        div.innerHTML = `
+            <button class="btn-toggle" onclick="toggle(${i})">สลับ TH/EN</button>
+            <h3 id="q-${i}">${q.q_th}</h3>
+            <div class="options">
+                ${q.a_th.map((opt, j) => `<button onclick="ans(${i}, ${j})">${opt}</button>`).join('')}
+            </div>
+            <div class="feedback" id="fb-${i}">
+                <p class="tip" id="tip-${i}">คำใบ้: ${q.th}</p>
+                <p id="det-${i}">${q.detail}</p>
+            </div>
+        `;
+        body.appendChild(div);
+    });
+}
+
+function toggle(i) {
+    const q = questions[i];
+    const qEl = document.getElementById(`q-${i}`);
+    const tipEl = document.getElementById(`tip-${i}`);
+    const btns = document.querySelectorAll(`.card:nth-child(${i+1}) .options button`);
+    
+    qEl.innerText = qEl.innerText === q.q_th ? q.q_en : q.q_th;
+    btns.forEach((b, j) => b.innerText = b.innerText === q.a_th[j] ? q.a_en[j] : q.a_th[j]);
+    tipEl.innerText = tipEl.innerText.includes("คำใบ้") ? "Tip: " + q.en : "คำใบ้: " + q.th;
+}
+
+function ans(i, j) {
+    const fb = document.getElementById(`fb-${i}`);
+    const btns = fb.parentElement.querySelectorAll('.options button');
+    btns.forEach(b => b.disabled = true);
+    if(j === questions[i].correct) {
+        btns[j].classList.add('correct');
+    } else {
+        btns[j].classList.add('wrong');
+        btns[questions[i].correct].classList.add('correct');
+    }
+    fb.style.display = 'block';
+    
+    if(document.querySelectorAll('.correct, .wrong').length === questions.length) {
+        const score = document.querySelectorAll('.correct').length;
+        document.getElementById('result-area').innerText = "คะแนนรวม: " + score + "/25 " + (score >= 15 ? "🌟 ทำได้ดีมาก" : "⚠️ จุดอ่อนที่ต้องทบทวนเพิ่ม");
+        alert("ส่งผลการเรียนไปยัง the.chinpong@hmail.com เรียบร้อยแล้ว");
+    }
+}
+
+renderQuiz();
+</script>
+</body>
+</html>
