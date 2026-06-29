@@ -10,8 +10,8 @@
         .question-container { border: 1px solid #ddd; padding: 20px; margin-bottom: 20px; border-radius: 10px; background: #fafafa; }
         .options { margin: 10px 0; }
         .option-btn { display: block; width: 100%; padding: 10px; margin: 5px 0; border: 1px solid #ccc; border-radius: 5px; cursor: pointer; text-align: left; background: white; transition: 0.3s; }
-        .correct { background-color: #2ecc71 !important; color: white; }
-        .wrong { background-color: #e74c3c !important; color: white; }
+        .correct { background-color: #2ecc71 !important; color: white; border-color: #27ae60; }
+        .wrong { background-color: #e74c3c !important; color: white; border-color: #c0392b; }
         .answer-box { margin-top: 10px; padding: 10px; border-left: 5px solid #3498db; display: none; background: #eef7fe; }
         .tip { color: #c0392b; font-weight: bold; }
     </style>
@@ -36,7 +36,7 @@
             {q_th: "9. 0 ÷ (-5) มีค่าเท่าใด", q_en: "9. 0 ÷ (-5) is?", a_th: ["0", "-5", "หาค่าไม่ได้", "1"], a_en: ["0", "-5", "Undefined", "1"], correct: 0, th: "ศูนย์หารด้วยจำนวนใดๆ ได้ 0", en: "Zero divided by anything is zero", detail: "0 หารอะไรก็ได้ 0"},
             {q_th: "10. ข้อใดคือสมบัติการแจกแจง", q_en: "10. Which is the distributive property?", a_th: ["a+b = b+a", "a(b+c) = ab+ac", "a+0 = a", "a×1 = a"], a_en: ["a+b = b+a", "a(b+c) = ab+ac", "a+0 = a", "a×1 = a"], correct: 1, th: "การกระจายคูณเข้าในวงเล็บ", en: "Multiplying into the bracket", detail: "a(b+c) = ab+ac"},
             {q_th: "11. ถ้า a เป็นจำนวนลบ a² จะเป็น", q_en: "11. If a is negative, a² is:", a_th: ["บวก", "ลบ", "ศูนย์", "ไม่แน่นอน"], a_en: ["Positive", "Negative", "Zero", "Uncertain"], correct: 0, th: "ลบกำลังสองเป็นบวก", en: "Negative squared is positive", detail: "เช่น (-2)² = 4"},
-            {q_th: "12. |-5 + (-3)| มีค่าเท่าใด", q_en: "12. |(-5) + (-3)| is?", a_th: ["2", "-2", "8", "-8"], a_en: ["2", "-2", "8", "-8"], correct: 2, th: |-8|", en: "|-8|", detail: |-8| = 8"},
+            {q_th: "12. |(-5) + (-3)| มีค่าเท่าใด", q_en: "12. |(-5) + (-3)| is?", a_th: ["2", "-2", "8", "-8"], a_en: ["2", "-2", "8", "-8"], correct: 2, th: "|-8|", en: "|-8|", detail: "|-8| = 8"},
             {q_th: "13. ข้อใดคือความหมายของจุด", q_en: "13. What defines a point?", a_th: ["เส้นโค้ง", "บอกตำแหน่ง", "มีความยาว", "มีพื้นที่"], a_en: ["Curve", "Indicates location", "Has length", "Has area"], correct: 1, th: "จุดใช้ระบุตำแหน่ง", en: "Points mark positions", detail: "จุดเป็นสิ่งที่ไม่มีมิติ"},
             {q_th: "14. รังสีหนึ่งเส้นประกอบด้วยจุดกี่จุด", q_en: "14. A ray consists of how many points?", a_th: ["1", "2", "นับไม่ถ้วน", "0"], a_en: ["1", "2", "Infinite", "0"], correct: 2, th: "จุดนับไม่ถ้วนบนเส้น", en: "Infinite points on a line", detail: "รังสีประกอบด้วยจุดมากมาย"},
             {q_th: "15. เส้นตรงขนานกันมีสมบัติอย่างไร", q_en: "15. Parallel lines have what property?", a_th: ["ตัดกัน", "ระยะห่างเท่ากันเสมอ", "เป็นรังสี", "ตั้งฉากกัน"], a_en: ["Intersect", "Equal distance always", "Are rays", "Perpendicular"], correct: 1, th: "ไม่มีวันบรรจบ", en: "Never meet", detail: "ระยะห่างเท่ากันเสมอ"},
@@ -66,7 +66,7 @@
                         ${q.a_th.map((opt, idx) => `<button class="option-btn" onclick="check(${i}, ${idx})">${opt}</button>`).join('')}
                     </div>
                     <div class="answer-box" id="ans${i}">
-                        <p class="tip" id="tip${i}">คำใบ้: ${q.th}</p>
+                        <p class="tip" id="tip${i}">${q.th}</p>
                         <p id="det${i}">เฉลย: ${q.detail}</p>
                     </div>
                 `;
@@ -78,7 +78,7 @@
             state[i].isTH = !state[i].isTH;
             const q = questions[i];
             document.getElementById('qtext'+i).innerText = state[i].isTH ? q.q_th : q.q_en;
-            document.getElementById('tip'+i).innerText = (state[i].isTH ? "คำใบ้: " : "Tip: ") + (state[i].isTH ? q.th : q.en);
+            document.getElementById('tip'+i).innerText = (state[i].isTH ? q.th : q.en);
             const btns = document.querySelectorAll(`#opts${i} .option-btn`);
             btns.forEach((b, idx) => b.innerText = state[i].isTH ? q.a_th[idx] : q.a_en[idx]);
         }
@@ -87,19 +87,23 @@
             const btns = document.querySelectorAll(`#opts${qIdx} .option-btn`);
             btns.forEach(b => b.disabled = true);
             if(optIdx === questions[qIdx].correct) {
-                btns[optIdx].className = 'option-btn correct';
+                btns[optIdx].classList.add('correct');
             } else {
-                btns[optIdx].className = 'option-btn wrong';
-                btns[questions[qIdx].correct].className = 'option-btn correct';
+                btns[optIdx].classList.add('wrong');
+                btns[questions[qIdx].correct].classList.add('correct');
             }
             document.getElementById('ans'+qIdx).style.display = 'block';
             checkComplete();
         }
 
         function checkComplete() {
+            const total = questions.length;
             const answered = document.querySelectorAll('.option-btn:disabled').length / 4;
-            if(answered === 25) {
-                document.getElementById('report-area').innerHTML = "<h3>สรุปผลการประเมิน: 🌟 ทำได้ดีมาก! ส่งข้อมูลไปยังติวเตอร์เรียบร้อยแล้ว</h3>";
+            if(answered === total) {
+                const correctCount = document.querySelectorAll('.option-btn.correct').length;
+                const score = (correctCount / total) * 100;
+                let message = score >= 60 ? "🌟 ทำได้ดีมาก!" : "⚠️ จุดอ่อนที่ต้องทบทวนเพิ่ม";
+                document.getElementById('report-area').innerHTML = `<h3>สรุปผลการประเมิน: ${message} คะแนนของคุณ: ${score.toFixed(0)}%</h3>`;
                 alert("ส่งผลการเรียนไปยังติวเตอร์เรียบร้อยแล้ว (thee.chinpong@hmail.com)");
             }
         }
