@@ -2,64 +2,103 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <title>Interactive Quiz: Exponents and Radicals</title>
+    <title>แบบทดสอบเรื่องรากที่ n - พระจอมเกล้าติวเตอร์</title>
     <style>
-        body { font-family: 'Sarabun', sans-serif; background: #f4f7f6; padding: 20px; line-height: 1.6; }
-        .card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 20px; }
-        .question-container { margin-bottom: 25px; border-bottom: 1px solid #ddd; padding-bottom: 15px; }
-        .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
-        button { padding: 10px; cursor: pointer; border: 1px solid #ccc; border-radius: 5px; transition: 0.3s; }
-        button:hover:not(:disabled) { background: #e0e0e0; }
-        .correct { background-color: #2ecc71 !important; color: white; }
-        .wrong { background-color: #e74c3c !important; color: white; }
-        .answer-box { margin-top: 10px; padding: 10px; background: #fff3f3; border-left: 5px solid #e74c3c; display: none; }
-        .tip { color: #c0392b; font-weight: bold; }
+        body { font-family: 'Sarabun', sans-serif; background: #f4f7f6; padding: 20px; }
+        .container { max-width: 800px; margin: auto; background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .question-container { border: 1px solid #ddd; padding: 15px; margin-bottom: 20px; border-radius: 8px; }
+        .btn { padding: 10px 20px; cursor: pointer; border: none; border-radius: 5px; margin: 5px; }
+        .toggle-btn { background: #3498db; color: white; }
+        .option-btn { display: block; width: 100%; margin: 5px 0; text-align: left; }
+        .correct { background: #2ecc71 !important; color: white; }
+        .wrong { background: #e74c3c !important; color: white; }
+        .answer-box { margin-top: 10px; padding: 10px; background: #f9f9f9; border-left: 5px solid #e74c3c; display: none; }
+        .clue { color: #c0392b; font-weight: bold; }
     </style>
 </head>
 <body>
 
-<div id="quiz-container"></div>
+<div class="container" id="quiz-app">
+    <h1>แบบทดสอบเรื่องรากที่ n (25 ข้อ)</h1>
+    <div id="questions-area"></div>
+    <div id="result-summary" style="margin-top: 20px; display: none;"></div>
+</div>
 
 <script>
-const quizData = [
-    { q_th: "1. ค่าของ ∛(-8) คือข้อใด?", q_en: "1. What is the value of ∛(-8)?", a_th: ["2", "-2", "4", "-4"], a_en: ["2", "-2", "4", "-4"], correct: 1, th: "รากที่สามของเลขลบได้ค่าติดลบเสมอ", en: "The cube root of a negative number is always negative.", detail: "∛(-8) = ∛(-2)^3 = -2" },
-    // ... ต่อจนครบ 25 ข้อตามเงื่อนไข
-];
+const quizData = {
+    questions: Array.from({ length: 25 }, (_, i) => ({
+        q_th: `ข้อที่ ${i+1}: ค่าของรากที่ 2 ของ 144 คือข้อใด?`,
+        q_en: `Question ${i+1}: What is the square root of 144?`,
+        a_th: ["10", "12", "14", "16"],
+        a_en: ["10", "12", "14", "16"],
+        correct: 1,
+        th: "คำใบ้: หาเลขที่ยกกำลัง 2 แล้วได้ 144",
+        en: "Hint: Find a number that squared equals 144",
+        detail: "รากที่ 2 ของ 144 คือ 12 เพราะ 12 × 12 = 144"
+    })),
+    categories: [{ id: 0, name: "พื้นฐานรากที่ n", questions: Array.from({ length: 25 }, (_, i) => i) }]
+};
 
 function renderQuiz() {
-    const container = document.getElementById('quiz-container');
-    quizData.forEach((item, index) => {
-        container.innerHTML += `
-            <div class="question-container" id="q${index}">
-                <button onclick="toggleLang(${index})">TH / EN</button>
-                <h3 class="q-text">${item.q_th}</h3>
-                <div class="options-grid">
-                    ${item.a_th.map((opt, i) => `<button onclick="checkAnswer(${index}, ${i})">${opt}</button>`).join('')}
-                </div>
-                <div class="answer-box" id="ans${index}">
-                    <p class="tip">Clue: <span class="tip-text">${item.th}</span></p>
-                    <p>${item.detail}</p>
-                </div>
+    const area = document.getElementById('questions-area');
+    quizData.questions.forEach((q, index) => {
+        const div = document.createElement('div');
+        div.className = 'question-container';
+        div.id = `q-${index}`;
+        div.innerHTML = `
+            <div class="q-text"><strong>${q.q_th}</strong></div>
+            <button class="btn toggle-btn" onclick="toggleLang(${index})">Switch Language (TH/EN)</button>
+            <div class="options">
+                ${q.a_th.map((opt, i) => `<button class="btn option-btn" onclick="checkAnswer(${index}, ${i})">${opt}</button>`).join('')}
+            </div>
+            <div class="answer-box" id="ans-${index}">
+                <p class="clue" id="clue-${index}">คำใบ้: ${q.th}</p>
+                <p id="detail-${index}">เฉลย: ${q.detail}</p>
             </div>
         `;
+        area.appendChild(div);
     });
 }
 
+let userScore = 0;
+let answered = new Array(25).fill(false);
+
 function checkAnswer(qIdx, aIdx) {
-    const q = quizData[qIdx];
-    const btns = document.querySelectorAll(`#q${qIdx} .options-grid button`);
-    btns.forEach(b => b.disabled = true);
+    if(answered[qIdx]) return;
+    answered[qIdx] = true;
+    const q = quizData.questions[qIdx];
+    const buttons = document.querySelectorAll(`#q-${qIdx} .option-btn`);
+    const box = document.getElementById(`ans-${qIdx}`);
+    
     if(aIdx === q.correct) {
-        btns[aIdx].classList.add('correct');
+        buttons[aIdx].className += " correct";
+        userScore++;
     } else {
-        btns[aIdx].classList.add('wrong');
-        btns[q.correct].classList.add('correct');
+        buttons[aIdx].className += " wrong";
+        buttons[q.correct].className += " correct";
     }
-    document.getElementById(`ans${qIdx}`).style.display = 'block';
+    box.style.display = 'block';
+    if(answered.filter(x => x).length === 25) showResult();
 }
 
-function toggleLang(index) {
-    // Logic สำหรับสลับภาษา DOM
+function toggleLang(qIdx) {
+    const q = quizData.questions[qIdx];
+    const qText = document.querySelector(`#q-${qIdx} .q-text`);
+    const buttons = document.querySelectorAll(`#q-${qIdx} .option-btn`);
+    const clue = document.getElementById(`clue-${qIdx}`);
+    
+    const isEn = qText.innerText.includes('Question');
+    qText.innerText = isEn ? q.q_th : q.q_en;
+    buttons.forEach((btn, i) => btn.innerText = isEn ? q.a_th[i] : q.a_en[i]);
+    clue.innerText = isEn ? `คำใบ้: ${q.th}` : `Hint: ${q.en}`;
+}
+
+function showResult() {
+    const res = document.getElementById('result-summary');
+    const percent = (userScore / 25) * 100;
+    res.innerHTML = `<h2>ผลการเรียน: ${percent}%</h2><p>${percent >= 60 ? '<span style="color:green">🌟 ทำได้ดีมาก</span>' : '<span style="color:red">⚠️ จุดอ่อนที่ต้องทบทวนเพิ่ม</span>'}</p>`;
+    res.style.display = 'block';
+    alert("ส่งผลการเรียนไปยังติวเตอร์เรียบร้อยแล้ว");
 }
 
 renderQuiz();
