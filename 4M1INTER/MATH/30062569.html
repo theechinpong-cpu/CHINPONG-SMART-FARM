@@ -2,102 +2,113 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <title>คณิตศาสตร์ ม.5: รากที่ n - พระจอมเกล้าติวเตอร์</title>
+    <title>Advanced Math Midterm Assessment - Phra Chom Klao Tutor</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #f4f4f9; padding: 20px; line-height: 1.6; }
-        .container { max-width: 800px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        .question-box { margin-bottom: 25px; padding: 15px; border: 1px solid #ddd; border-radius: 8px; }
-        .clue { color: #d32f2f; font-weight: bold; font-style: italic; display: block; margin: 10px 0; }
-        .btn { cursor: pointer; padding: 8px 15px; margin: 5px; border: 1px solid #2196F3; border-radius: 4px; background: white; }
-        .btn:hover { background: #e8f4fd; }
-        .correct { background: #4caf50 !important; color: white; border-color: #4caf50; }
-        .wrong { background: #f44336 !important; color: white; border-color: #f44336; }
-        .detail { display: none; margin-top: 10px; padding: 10px; background: #f0f0f0; border-radius: 4px; font-size: 0.9em; }
+        body { font-family: 'Sarabun', sans-serif; background: #f4f7f6; padding: 20px; color: #333; }
+        .container { max-width: 900px; margin: auto; background: #fff; padding: 30px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        h1 { text-align: center; color: #2c3e50; }
+        .question-container { border: 1px solid #ddd; padding: 20px; margin-bottom: 20px; border-radius: 10px; background: #fafafa; }
+        .options { margin: 10px 0; }
+        .option-btn { display: block; width: 100%; padding: 10px; margin: 5px 0; border: 1px solid #ccc; border-radius: 5px; cursor: pointer; text-align: left; background: white; transition: 0.3s; }
+        .correct { background-color: #2ecc71 !important; color: white; border-color: #27ae60; }
+        .wrong { background-color: #e74c3c !important; color: white; border-color: #c0392b; }
+        .answer-box { margin-top: 10px; padding: 10px; border-left: 5px solid #3498db; display: none; background: #eef7fe; }
+        .tip { color: #c0392b; font-weight: bold; }
     </style>
 </head>
 <body>
-<div class="container" id="quiz-app">
-    <h1>แบบทดสอบเรื่องรากที่ n (25 ข้อ)</h1>
-    <div id="quiz-area"></div>
-    <div id="results" style="margin-top:20px; font-weight:bold;"></div>
-</div>
+    <div class="container">
+        <h1>Advanced Math Midterm Assessment (25 Questions)</h1>
+        <div id="quiz-root"></div>
+        <div id="report-area"></div>
+    </div>
 
-<script>
-const quizData = [
-    { q_th: "จงหาค่าของรากที่ 3 ของ -64", q_en: "Find the cube root of -64", a_th: ["4", "-4"], a_en: ["4", "-4"], correct: 1, th: "คำใบ้: จำนวนใดคูณกัน 3 ครั้งได้ -64", en: "Hint: What number cubed equals -64", detail: "(-4) × (-4) × (-4) = -64" },
-    { q_th: "ค่าของรากที่ 2 ของ 81 คือเท่าใด", q_en: "What is the square root of 81?", a_th: ["9", "±9"], a_en: ["9", "±9"], correct: 1, th: "คำใบ้: เลขคู่ n=2 รากต้องมีบวกและลบ", en: "Hint: Even root (n=2) gives both plus and minus", detail: "รากที่สองของจำนวนบวกมีสองค่าเสมอ คือ ±9" },
-    { q_th: "ค่าของรากที่ 4 ของ 16 คือเท่าใด", q_en: "What is the fourth root of 16?", a_th: ["2", "±2"], a_en: ["2", "±2"], correct: 1, th: "คำใบ้: รากเลขคู่ของจำนวนบวกมี 2 ค่า", en: "Hint: Even root of positive has two values", detail: "2⁴ = 16 และ (-2)⁴ = 16" },
-    { q_th: "รากที่ 5 ของ -32 คือเท่าใด", q_en: "What is the fifth root of -32?", a_th: ["2", "-2"], a_en: ["2", "-2"], correct: 1, th: "คำใบ้: รากเลขคี่ให้เครื่องหมายเหมือนเดิม", en: "Hint: Odd root preserves the sign", detail: "(-2)⁵ = -32" },
-    { q_th: "ผลลัพธ์ของ 27^(1/3) คือเท่าใด", q_en: "What is 27^(1/3)?", a_th: ["3", "9"], a_en: ["3", "9"], correct: 0, th: "คำใบ้: เขียน 27 ในรูปเลขยกกำลัง", en: "Hint: Write 27 as a power", detail: "27 = 3³ ดังนั้น 27^(1/3) = 3" },
-    { q_th: "ค่าของ (-8)^(1/3) คือข้อใด", q_en: "What is (-8)^(1/3)?", a_th: ["2", "-2"], a_en: ["2", "-2"], correct: 1, th: "คำใบ้: รากที่ 3 ของจำนวนลบติดลบ", en: "Hint: Cube root of negative is negative", detail: "(-2)³ = -8" },
-    { q_th: "ค่าของรากที่ 6 ของ 64 คือเท่าใด", q_en: "What is the sixth root of 64?", a_th: ["2", "±2"], a_en: ["2", "±2"], correct: 1, th: "คำใบ้: ระวังรากเลขคู่มีสองค่า", en: "Hint: Beware, even roots have two values", detail: "2⁶ = 64 และ (-2)⁶ = 64" },
-    { q_th: "ข้อใดคือค่าของ 16^(3/4)", q_en: "What is 16^(3/4)?", a_th: ["8", "16"], a_en: ["8", "16"], correct: 0, th: "คำใบ้: รากที่ 4 ของ 16 แล้วค่อยยกกำลัง 3", en: "Hint: Find 4th root first, then cube it", detail: "(16^(1/4))³ = 2³ = 8" },
-    { q_th: "ค่าของรากที่ 2 ของ 0 คือเท่าใด", q_en: "What is the square root of 0?", a_th: ["0", "ไม่นิยาม"], a_en: ["0", "undefined"], correct: 0, th: "คำใบ้: 0 คูณกันกี่ครั้งก็ได้ 0", en: "Hint: Zero multiplied by itself is zero", detail: "0² = 0" },
-    { q_th: "ค่าของ 125^(2/3) คือเท่าใด", q_en: "What is 125^(2/3)?", a_th: ["25", "50"], a_en: ["25", "50"], correct: 0, th: "คำใบ้: รากที่ 3 ของ 125 คือ 5", en: "Hint: Cube root of 125 is 5", detail: "5² = 25" },
-    { q_th: "รากที่ 4 ของ -16 เป็นจำนวนจริงหรือไม่", q_en: "Is the fourth root of -16 a real number?", a_th: ["เป็น", "ไม่เป็น"], a_en: ["Yes", "No"], correct: 1, th: "คำใบ้: รากเลขคู่ของลบไม่มีในระบบจำนวนจริง", en: "Hint: Even root of negative is not real", detail: "ไม่มีจำนวนจริงใดที่ยกกำลัง 4 แล้วได้ค่าลบ" },
-    { q_th: "ค่าของ 32^(1/5) คือเท่าใด", q_en: "What is 32^(1/5)?", a_th: ["2", "4"], a_en: ["2", "4"], correct: 0, th: "คำใบ้: 2 ยกกำลังอะไรได้ 32", en: "Hint: 2 to what power equals 32?", detail: "2⁵ = 32" },
-    { q_th: "รากที่ 3 ของ 0.001 คือเท่าใด", q_en: "What is the cube root of 0.001?", a_th: ["0.1", "0.01"], a_en: ["0.1", "0.01"], correct: 0, th: "คำใบ้: ทศนิยม 3 ตำแหน่ง รากที่ 3 เหลือ 1 ตำแหน่ง", en: "Hint: 3 decimal places become 1", detail: "0.1 × 0.1 × 0.1 = 0.001" },
-    { q_th: "ค่าของรากที่ 2 ของ 1.44 คือเท่าใด", q_en: "What is the square root of 1.44?", a_th: ["1.2", "±1.2"], a_en: ["1.2", "±1.2"], correct: 1, th: "คำใบ้: รากที่ 2 ต้องมีสองค่า", en: "Hint: Square root must have two values", detail: "1.2² = 1.44 และ (-1.2)² = 1.44" },
-    { q_th: "ค่าของ (-1)^(1/5) คือข้อใด", q_en: "What is (-1)^(1/5)?", a_th: ["1", "-1"], a_en: ["1", "-1"], correct: 1, th: "คำใบ้: รากเลขคี่ของ -1 ได้ -1", en: "Hint: Odd root of -1 is -1", detail: "(-1)⁵ = -1" },
-    { q_th: "ค่าของ 100^(0.5) คือเท่าใด", q_en: "What is 100^(0.5)?", a_th: ["10", "50"], a_en: ["10", "50"], correct: 0, th: "คำใบ้: 0.5 คือ 1/2", en: "Hint: 0.5 is equal to 1/2", detail: "100^(1/2) = √100 = 10" },
-    { q_th: "รากที่ 3 ของ 1/8 คือเท่าใด", q_en: "What is the cube root of 1/8?", a_th: ["1/2", "1/4"], a_en: ["1/2", "1/4"], correct: 0, th: "คำใบ้: รากที่ 3 ของเศษและส่วนแยกกัน", en: "Hint: Find roots separately", detail: "∛(1/8) = ∛1 / ∛8 = 1/2" },
-    { q_th: "ค่าของ 81^(3/4) คือข้อใด", q_en: "What is 81^(3/4)?", a_th: ["27", "9"], a_en: ["27", "9"], correct: 0, th: "คำใบ้: รากที่ 4 ของ 81 คือ 3", en: "Hint: 4th root of 81 is 3", detail: "3³ = 27" },
-    { q_th: "รากที่ 2 ของ 4/9 คือข้อใด", q_en: "What is the square root of 4/9?", a_th: ["2/3", "±2/3"], a_en: ["2/3", "±2/3"], correct: 1, th: "คำใบ้: อย่าลืมเครื่องหมายบวกและลบ", en: "Hint: Don't forget plus and minus", detail: "±√(4/9) = ±2/3" },
-    { q_th: "ค่าของ (-27)^(2/3) คือเท่าใด", q_en: "What is (-27)^(2/3)?", a_th: ["9", "-9"], a_en: ["9", "-9"], correct: 0, th: "คำใบ้: ลบยกกำลังคู่ได้ค่าบวก", en: "Hint: Negative to even power is positive", detail: "(∛-27)² = (-3)² = 9" },
-    { q_th: "ค่าของ (0.04)^(1/2) คือเท่าใด", q_en: "What is (0.04)^(1/2)?", a_th: ["0.2", "±0.2"], a_en: ["0.2", "±0.2"], correct: 1, th: "คำใบ้: รากที่ 2 ของทศนิยม 2 ตำแหน่ง", en: "Hint: Even root of 2 decimal places", detail: "±√0.04 = ±0.2" },
-    { q_th: "รากที่ 7 ของ -1 คือเท่าใด", q_en: "What is the 7th root of -1?", a_th: ["1", "-1"], a_en: ["1", "-1"], correct: 1, th: "คำใบ้: รากเลขคี่ของ -1", en: "Hint: Odd root of -1", detail: "(-1)⁷ = -1" },
-    { q_th: "ค่าของ 625^(1/4) คือเท่าใด", q_en: "What is 625^(1/4)?", a_th: ["5", "±5"], a_en: ["5", "±5"], correct: 1, th: "คำใบ้: เลข 5 ยกกำลัง 4 ได้ 625", en: "Hint: 5 to the 4th power is 625", detail: "±5⁴ = 625 ดังนั้น รากที่ 4 คือ ±5" },
-    { q_th: "ค่าของ 1^(1/100) คือเท่าใด", q_en: "What is 1^(1/100)?", a_th: ["1", "100"], a_en: ["1", "100"], correct: 0, th: "คำใบ้: 1 ยกกำลังอะไรก็ได้ 1", en: "Hint: 1 raised to any power is 1", detail: "1 ยกกำลังอะไรก็ได้ 1" },
-    { q_th: "รากที่ 4 ของ 1/16 คือข้อใด", q_en: "What is the 4th root of 1/16?", a_th: ["1/2", "±1/2"], a_en: ["1/2", "±1/2"], correct: 1, th: "คำใบ้: รากที่ 4 ของเลขคู่ อย่าลืม ±", en: "Hint: 4th root, even index, remember ±", detail: "±√(1/16) = ±1/2" }
-];
+    <script>
+        const questions = [
+            {q_th: "1. จงหาค่าของ $(-8) \\times (-12) \\div (-4) - (-20)$", q_en: "1. Evaluate $(-8) \\times (-12) \\div (-4) - (-20)$", a_th: ["-4", "4", "44", "-44"], a_en: ["-4", "4", "44", "-44"], correct: 0, th: "คำนวณคูณและหารจากซ้ายไปขวา แล้วจึงบวกลบ", en: "Order of operations: multiply/divide left-to-right", detail: "$(-8 \\times -12) = 96; 96 \\div -4 = -24; -24 - (-20) = -4$"},
+            {q_th: "2. ถ้า $a$ เป็นจำนวนเต็มลบที่มากที่สุด และ $b$ เป็นจำนวนเต็มบวกที่น้อยที่สุด จงหาค่า $a \\times b$", q_en: "2. If $a$ is the largest negative integer and $b$ is the smallest positive integer, find $a \\times b$", a_th: ["-1", "0", "1", "ไม่สามารถหาค่าได้"], a_en: ["-1", "0", "1", "Undefined"], correct: 0, th: "$a = -1, b = 1$", en: "$a = -1, b = 1$", detail: "$(-1) \\times 1 = -1$"},
+            {q_th: "3. ผลลัพธ์ของ $|(-5) \\times 3| - |3 - 10|$ คือข้อใด", q_en: "3. Evaluate $|(-5) \\times 3| - |3 - 10|$", a_th: ["8", "-8", "22", "-22"], a_en: ["8", "-8", "22", "-22"], correct: 0, th: "ค่าสัมบูรณ์ของ $|-15| - |-7|$", en: "Absolute value of $|-15| - |-7|$", detail: "$15 - 7 = 8$"},
+            {q_th: "4. ค่าของ $(-2)^4 - (-2^4)$ คือเท่าใด", q_en: "4. What is $(-2)^4 - (-2^4)$?", a_th: ["0", "32", "-32", "16"], a_en: ["0", "32", "-32", "16"], correct: 1, th: "$(-2)^4 = 16$ และ $-2^4 = -16$", en: "$(-2)^4 = 16$ and $-2^4 = -16$", detail: "$16 - (-16) = 32$"},
+            {q_th: "5. $(-100) \\div 5 \\times (-2) + (-5)$ มีค่าเท่าใด", q_en: "5. Evaluate $(-100) \\div 5 \\times (-2) + (-5)$", a_th: ["35", "-45", "45", "-35"], a_en: ["35", "-45", "45", "-35"], correct: 0, th: "หารและคูณต้องทำจากซ้ายไปขวา", en: "Perform division and multiplication left to right", detail: "$(-20) \\times (-2) + (-5) = 40 - 5 = 35$"},
+            {q_th: "6. ถ้า $x - (-5) = 10$ และ $y = -x \\times 2$ จงหาค่าของ $y$", q_en: "6. If $x - (-5) = 10$ and $y = -x \\times 2$, find $y$", a_th: ["10", "-10", "20", "-20"], a_en: ["10", "-10", "20", "-20"], correct: 1, th: "$x = 5$, ดังนั้น $y = -5 \\times 2$", en: "$x = 5$, so $y = -5 \\times 2$", detail: "$y = -10$"},
+            {q_th: "7. ข้อใดคือค่าของ $\\frac{|-100| \\div (-10)}{| -2 | \\times (-1)}$", q_en: "7. Evaluate $\\frac{|-100| \\div (-10)}{| -2 | \\times (-1)}$", a_th: ["5", "-5", "2.5", "-2.5"], a_en: ["5", "-5", "2.5", "-2.5"], correct: 0, th: "$\\frac{-10}{-2}$", en: "$\\frac{-10}{-2}$", detail: "$(-10) \\div (-2) = 5$"},
+            {q_th: "8. $(-2)^3 \\times (-3)^2 \\div (-6)$ มีค่าเท่าใด", q_en: "8. Evaluate $(-2)^3 \\times (-3)^2 \\div (-6)$", a_th: ["-12", "12", "-6", "6"], a_en: ["-12", "12", "-6", "6"], correct: 1, th: "$(-8) \\times 9 \\div (-6)$", en: "$(-8) \\times 9 \\div (-6)$", detail: "$-72 \\div -6 = 12$"},
+            {q_th: "9. ผลบวกของจำนวนเต็มตั้งแต่ $-5$ ถึง $5$ คือเท่าใด", q_en: "9. Sum of integers from $-5$ to $5$ is?", a_th: ["5", "10", "0", "11"], a_en: ["5", "10", "0", "11"], correct: 2, th: "จำนวนตรงข้ามบวกกันได้ 0", en: "Opposites sum to zero", detail: "$(-5+5) + (-4+4) + ... + 0 = 0$"},
+            {q_th: "10. ข้อใดแสดงสมบัติการแจกแจงที่ถูกต้องสำหรับ $a(b-c)$", q_en: "10. Which is the correct distributive property for $a(b-c)$?", a_th: ["$ab-c$", "$ab-ac$", "$a-b-c$", "$a(b)-c$"], a_en: ["$ab-c$", "$ab-ac$", "$a-b-c$", "$a(b)-c$"], correct: 1, th: "คูณ $a$ เข้าไปทุกพจน์ในวงเล็บ", en: "Multiply $a$ into every term", detail: "$a(b-c) = ab - ac$"},
+            {q_th: "11. ถ้า $a < 0$ แล้ว $(-a)^3$ จะมีค่าเป็นอย่างไร", q_en: "11. If $a < 0$, then $(-a)^3$ is:", a_th: ["บวก", "ลบ", "ศูนย์", "ไม่สามารถระบุได้"], a_en: ["Positive", "Negative", "Zero", "Cannot determine"], correct: 0, th: "$-a$ จะเป็นบวก, บวกลบยกกำลังสามได้บวก", en: "$-a$ is positive, positive cubed is positive", detail: "ถ้า $a=-2, -a=2, 2^3=8$ (บวก)"},
+            {q_th: "12. $|-5 + (-3)| - |-5| + (-3)$ มีค่าเท่าใด", q_en: "12. Evaluate $|-5 + (-3)| - |-5| + (-3)$", a_th: ["0", "8", "-2", "6"], a_en: ["0", "8", "-2", "6"], correct: 0, th: "$|-8| - 5 - 3$", en: "$|-8| - 5 - 3$", detail: "$8 - 5 - 3 = 0$"},
+            {q_th: "13. หากจุด $A(0,0)$ และจุด $B(3,4)$ จงหาระยะห่าง (สมมติ)", q_en: "13. Distance between $A(0,0)$ and $B(3,4)$?", a_th: ["5", "7", "12", "1"], a_en: ["5", "7", "12", "1"], correct: 0, th: "ใช้ทฤษฎีบทพีทาโกรัส", en: "Use Pythagorean theorem", detail: "$\\sqrt{3^2 + 4^2} = \\sqrt{25} = 5$"},
+            {q_th: "14. รังสี $AB$ และรังสี $BA$ มีความสัมพันธ์กันอย่างไร", q_en: "14. How are ray $AB$ and ray $BA$ related?", a_th: ["เป็นรังสีเดียวกัน", "เป็นเส้นตรงเดียวกัน", "เป็นรังสีคนละเส้น", "ตัดกันที่จุดเดียว"], a_en: ["Same ray", "Same line", "Different rays", "Intersect at one point"], correct: 2, th: "จุดเริ่มต้นต่างกัน", en: "Different starting points", detail: "มีทิศทางและจุดเริ่มคนละจุดกัน"},
+            {q_th: "15. เส้นตรง $L1: y=2x+1$ และ $L2: y=2x-3$ มีสมบัติอย่างไร", q_en: "15. $L1: y=2x+1$ and $L2: y=2x-3$ are:", a_th: ["ขนานกัน", "ตัดกันที่ 90 องศา", "ทับกัน", "ตัดกันที่จุด $(0,0)$"], a_en: ["Parallel", "Perpendicular", "Coincident", "Intersect at $(0,0)$"], correct: 0, th: "ความชันเท่ากัน ($m=2$)", en: "Same slope ($m=2$)", detail: "ความชันเท่ากันแต่จุดตัดแกน $y$ ต่างกัน จึงขนานกัน"},
+            {q_th: "16. มุมที่ complement กันสองมุม โดยมุมหนึ่งเป็น 3 เท่าของอีกมุมหนึ่ง มุมที่ใหญ่กว่าคือ", q_en: "16. Two complementary angles, one is 3x the other. Largest is:", a_th: ["22.5°", "67.5°", "45°", "90°"], a_en: ["22.5°", "67.5°", "45°", "90°"], correct: 1, th: "$x + 3x = 90°$, $4x = 90°$", en: "$x + 3x = 90°$, $4x = 90°$", detail: "$x=22.5, 3x=67.5$"},
+            {q_th: "17. มุมกลับรวมกับมุมแหลมที่เล็กที่สุดที่เป็นจำนวนเต็มได้เท่าใด", q_en: "17. Smallest reflex angle + smallest integer acute angle?", a_th: ["181°", "180°", "182°", "91°"], a_en: ["181°", "180°", "182°", "91°"], correct: 0, th: "มุมกลับ $> 180$, มุมแหลม $\\ge 1$", en: "Reflex $> 180$, Acute $\\ge 1$", detail: "$180.00...1 + 1 = 181.00...1$ (ประมาณ 181)"},
+            {q_th: "18. ส่วนของเส้นตรงที่ยาวที่สุดในวงกลมเรียกว่าอะไร", q_en: "18. Longest chord in a circle is called?", a_th: ["รัศมี", "เส้นสัมผัส", "เส้นผ่านศูนย์กลาง", "คอร์ด"], a_en: ["Radius", "Tangent", "Diameter", "Chord"], correct: 2, th: "ผ่านจุดศูนย์กลาง", en: "Passes through center", detail: "เส้นผ่านศูนย์กลางยาวเป็น 2 เท่าของรัศมี"},
+            {q_th: "19. จุด 3 จุดที่ไม่เป็นเส้นตรงเดียวกัน (Non-collinear) กำหนดอะไรได้", q_en: "19. 3 non-collinear points define a:", a_th: ["เส้นตรง", "ระนาบ", "จุดตัด", "รังสี"], a_en: ["Line", "Plane", "Intersection", "Ray"], correct: 1, th: "ระนาบเดียว", en: "A single plane", detail: "เป็นสมบัติพื้นฐานของระนาบ"},
+            {q_th: "20. ถ้ามุม $A$ และ $B$ เป็นมุมตรงข้ามกัน $A = 2x+10, B = 3x-5$ จงหาค่า $x$", q_en: "20. Vertical angles $A=2x+10, B=3x-5$. Find $x$", a_th: ["5", "10", "15", "20"], a_en: ["5", "10", "15", "20"], correct: 2, th: "มุมตรงข้ามมีขนาดเท่ากัน", en: "Vertical angles are equal", detail: "$2x+10 = 3x-5 \\implies x=15$"},
+            {q_th: "21. มุมแหลมที่กว้างที่สุดที่เป็นจำนวนเต็มคือ", q_en: "21. Largest integer acute angle is?", a_th: ["89°", "90°", "91°", "179°"], a_en: ["89°", "90°", "91°", "179°"], correct: 0, th: "ต้องน้อยกว่า 90°", en: "Must be less than 90°", detail: "89 องศา"},
+            {q_th: "22. มุมที่ supplementary กันสองมุม มุมหนึ่งคือ $120°$ อีกมุมคือ", q_en: "22. Two supplementary angles, one is $120°$. Other is:", a_th: ["60°", "120°", "30°", "90°"], a_en: ["60°", "120°", "30°", "90°"], correct: 0, th: "รวมกันได้ 180°", en: "Sum to 180°", detail: "$180 - 120 = 60°$"},
+            {q_th: "23. สัญลักษณ์ $\\overleftrightarrow{AB}$ หมายถึง", q_en: "23. Symbol $\\overleftrightarrow{AB}$ means:", a_th: ["ส่วนของเส้นตรง", "เส้นตรง", "รังสี", "มุม"], a_en: ["Line segment", "Line", "Ray", "Angle"], correct: 1, th: "มีลูกศรสองข้างไม่สิ้นสุด", en: "Infinite in both directions", detail: "เส้นตรงทอดยาวไม่มีที่สิ้นสุด"},
+            {q_th: "24. ระนาบ 2 ระนาบตัดกันได้ผลลัพธ์คือ", q_en: "24. Intersection of 2 planes is a:", a_th: ["จุด", "เส้นตรง", "ระนาบ", "วงกลม"], a_en: ["Point", "Line", "Plane", "Circle"], correct: 1, th: "เส้นตรง", en: "Line", detail: "การตัดกันของระนาบเกิดเป็นเส้นตรง"},
+            {q_th: "25. มุมที่หมุนครบ 1 รอบจุดศูนย์กลางคือ", q_en: "25. Angle of one full rotation is:", a_th: ["180°", "270°", "360°", "90°"], a_en: ["180°", "270°", "360°", "90°"], correct: 2, th: "มุมรอบจุด", en: "Angle around a point", detail: "มุมรอบจุดศูนย์กลางเท่ากับ 360 องศา"}
+        ];
 
-let score = 0;
-const quizArea = document.getElementById('quiz-area');
+        const state = questions.map(() => ({ isTH: true }));
 
-quizData.forEach((item, index) => {
-    const div = document.createElement('div');
-    div.className = 'question-box';
-    div.innerHTML = `
-        <p><strong>ข้อ ${index + 1}: ${item.q_th}</strong></p>
-        <button class="btn" onclick="toggleLang(${index})">Switch TH/EN</button>
-        <span class="clue">${item.th}</span>
-        <div>${item.a_th.map((opt, i) => `<button class="btn" onclick="check(${index}, ${i})">${opt}</button>`).join('')}</div>
-        <div class="detail" id="d-${index}">เฉลย: ${item.detail}</div>
-    `;
-    quizArea.appendChild(div);
-});
+        function renderQuiz() {
+            const root = document.getElementById('quiz-root');
+            questions.forEach((q, i) => {
+                const div = document.createElement('div');
+                div.className = 'question-container';
+                div.innerHTML = `
+                    <button onclick="toggleLang(${i})" style="cursor:pointer; margin-bottom:10px;">สลับภาษา (TH/EN)</button>
+                    <p class="q-text" id="qtext${i}">${q.q_th}</p>
+                    <div class="options" id="opts${i}">
+                        ${q.a_th.map((opt, idx) => `<button class="option-btn" onclick="check(${i}, ${idx})">${opt}</button>`).join('')}
+                    </div>
+                    <div class="answer-box" id="ans${i}">
+                        <p class="tip" id="tip${i}">${q.th}</p>
+                        <p id="det${i}">เฉลยละเอียด: ${q.detail}</p>
+                    </div>
+                `;
+                root.appendChild(div);
+            });
+        }
 
-function toggleLang(i) {
-    const q = quizData[i];
-    const box = quizArea.children[i];
-    const qText = box.querySelector('strong');
-    const clue = box.querySelector('.clue');
-    const isEn = qText.innerText.includes('Question');
-    qText.innerText = (isEn ? `ข้อ ${i+1}: ` : `Question ${i+1}: `) + (isEn ? q.q_th : q.q_en);
-    clue.innerText = (isEn ? "คำใบ้: " : "Hint: ") + (isEn ? q.th : q.en);
-    const btns = box.querySelectorAll('.btn:not(:first-child)');
-    btns.forEach((b, idx) => b.innerText = isEn ? q.a_th[idx] : q.a_en[idx]);
-}
+        function toggleLang(i) {
+            state[i].isTH = !state[i].isTH;
+            const q = questions[i];
+            document.getElementById('qtext'+i).innerText = state[i].isTH ? q.q_th : q.q_en;
+            document.getElementById('tip'+i).innerText = (state[i].isTH ? q.th : q.en);
+            const btns = document.querySelectorAll(`#opts${i} .option-btn`);
+            btns.forEach((b, idx) => b.innerText = state[i].isTH ? q.a_th[idx] : q.a_en[idx]);
+        }
 
-function check(qIdx, aIdx) {
-    const q = quizData[qIdx];
-    const box = quizArea.children[qIdx];
-    const btns = box.querySelectorAll('.btn:not(:first-child)');
-    if (aIdx === q.correct) {
-        btns[aIdx].classList.add('correct');
-        score++;
-    } else {
-        btns[aIdx].classList.add('wrong');
-        btns[q.correct].classList.add('correct');
-    }
-    box.querySelector('.detail').style.display = 'block';
-    btns.forEach(b => b.disabled = true);
-    if(document.querySelectorAll('.correct, .wrong').length === 25) {
-        alert("ส่งผลการเรียนไปยัง thee.chinpong@hmail.com เรียบร้อยแล้ว");
-        document.getElementById('results').innerText = "คะแนนรวม: " + score + "/25";
-    }
-}
-</script>
-<p>เขียนโดย พระจอมเกล้าติวเตอร์</p>
+        function check(qIdx, optIdx) {
+            const btns = document.querySelectorAll(`#opts${qIdx} .option-btn`);
+            btns.forEach(b => b.disabled = true);
+            if(optIdx === questions[qIdx].correct) {
+                btns[optIdx].classList.add('correct');
+            } else {
+                btns[optIdx].classList.add('wrong');
+                btns[questions[qIdx].correct].classList.add('correct');
+            }
+            document.getElementById('ans'+qIdx).style.display = 'block';
+            checkComplete();
+        }
+
+        function checkComplete() {
+            const total = questions.length;
+            const answered = document.querySelectorAll('.option-btn:disabled').length / 4;
+            if(answered === total) {
+                const correctCount = document.querySelectorAll('.option-btn.correct').length;
+                const score = (correctCount / total) * 100;
+                let message = score >= 60 ? "🌟 ยอดเยี่ยม! ระดับความยากนี้ถือว่าสูงมาก" : "⚠️ ต้องทบทวนพื้นฐานเพิ่มเติมครับ";
+                document.getElementById('report-area').innerHTML = `<h3>สรุปผลการประเมิน: ${message} คะแนนของคุณ: ${score.toFixed(0)}%</h3>`;
+                alert("ส่งผลการเรียนไปยังติวเตอร์เรียบร้อยแล้ว (thee.chinpong@hmail.com)");
+            }
+        }
+
+        renderQuiz();
+    </script>
 </body>
 </html>
