@@ -60,9 +60,11 @@ function renderExams() {
         const div = document.createElement('div');
         div.className = 'card question-container';
         div.innerHTML = `
-            <button class="toggle-btn" onclick="toggleLang(${index})">TH / EN</button>
+            <button class="toggle-btn" id="btn-${index}" data-lang="th" onclick="toggleLang(${index})">TH / EN</button>
             <h3 class="q-text" id="q-${index}">${q.q_th}</h3>
-            ${q.a_th.map((opt, i) => `<div class="option" onclick="checkAnswer(${index}, ${i})">${opt}</div>`).join('')}
+            <div class="options-container">
+                ${q.a_th.map((opt, i) => `<div class="option" onclick="checkAnswer(${index}, ${i})">${opt}</div>`).join('')}
+            </div>
             <div class="answer-box" id="ans-${index}">
                 <p class="clue" id="clue-${index}">คำใบ้: ${q.th}</p>
                 <p>เฉลย: ${q.detail}</p>
@@ -74,14 +76,24 @@ function renderExams() {
 
 function toggleLang(index) {
     const q = questions[index];
+    const btn = document.getElementById(`btn-${index}`);
     const elQ = document.getElementById(`q-${index}`);
-    const isEn = elQ.innerText === q.q_en;
-    elQ.innerText = isEn ? q.q_th : q.q_en;
     const options = document.querySelectorAll(`.question-container:nth-child(${index + 2}) .option`);
-    options.forEach((opt, i) => {
-        opt.innerText = isEn ? q.a_th[i] : q.a_en[i];
-    });
-    document.getElementById(`clue-${index}`).innerText = (isEn ? "คำใบ้: " : "Clue: ") + (isEn ? q.th : q.en);
+    const clue = document.getElementById(`clue-${index}`);
+    
+    const isThai = btn.getAttribute('data-lang') === 'th';
+    
+    if (isThai) {
+        elQ.innerText = q.q_en;
+        options.forEach((opt, i) => opt.innerText = q.a_en[i]);
+        clue.innerText = "Clue: " + q.en;
+        btn.setAttribute('data-lang', 'en');
+    } else {
+        elQ.innerText = q.q_th;
+        options.forEach((opt, i) => opt.innerText = q.a_th[i]);
+        clue.innerText = "คำใบ้: " + q.th;
+        btn.setAttribute('data-lang', 'th');
+    }
 }
 
 let score = 0;
