@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <title>แบบทดสอบภาษาไทย ม.1 ชุดที่ 4 - พระจอมเกล้าติวเตอร์</title>
+    <style>
+        body { font-family: 'Sarabun', sans-serif; background: #f0f2f5; padding: 20px; }
+        .container { max-width: 800px; margin: auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        .question-card { margin-bottom: 25px; padding: 20px; border: 1px solid #e1e4e8; border-radius: 10px; }
+        .clue { background: #fff3cd; padding: 8px; border-left: 4px solid #ffc107; margin: 10px 0; font-size: 0.9em; }
+        button { cursor: pointer; padding: 8px 15px; margin: 5px; border-radius: 5px; border: 1px solid #ddd; background: #fff; }
+        .correct { background: #28a745 !important; color: white; }
+        .incorrect { background: #dc3545 !important; color: white; }
+        .detail { display: none; margin-top: 10px; padding: 10px; background: #f8f9fa; border-radius: 5px; font-size: 0.9em; color: #555; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2 style="text-align:center">แบบทดสอบภาษาไทย ม.1 (ชุดที่ 4 - ระดับยากมาก)</h2>
+    <div id="quiz-area"></div>
+    <div id="result-display" style="display:none; text-align:center; padding:20px; font-size:1.2em; font-weight:bold;"></div>
+</div>
+
+<script>
+const questions = [
+    { q_th: "คำว่า 'พระภิกษุ' เป็นคำที่มาจากภาษาใด", q_en: "What language is 'พระภิกษุ' from?", a_th: ["บาลี-สันสกฤต", "เขมร", "จีน", "อังกฤษ"], a_en: ["Pali-Sanskrit", "Khmer", "Chinese", "English"], correct: 0, th: "คำที่มี พร- มักเป็นสันสกฤต", en: "Words starting with 'Phra-' are often Sanskrit.", detail: "คำที่มี ภ และ ร มักมาจากภาษาบาลี-สันสกฤต" },
+    { q_th: "ข้อใดผันเสียงวรรณยุกต์ได้ครบ 5 เสียง", q_en: "Which word can be inflected into all 5 tones?", a_th: ["ขา (อักษรสูง/คำเป็น)", "กา (อักษรกลาง/คำเป็น)", "คา (อักษรต่ำ/คำเป็น)", "เข (อักษรสูง/คำเป็น)"], a_en: ["Kha (High/Live)", "Ka (Mid/Live)", "Kha (Low/Live)", "Khe (High/Live)"], correct: 1, th: "อักษรกลางคำเป็นผันได้ 5 เสียง", en: "Mid-class consonant live-word has 5 tones.", detail: "อักษรกลาง คำเป็น ผันได้ครบ 5 เสียง คือ สามัญ เอก โท ตรี จัตวา" },
+    { q_th: "'เขาไปเที่ยวทะเล' คำว่า เขา เป็นสรรพนามบุรุษที่เท่าใด", q_en: "In 'He went to the beach', what person is 'He'?", a_th: ["บุรุษที่ 3", "บุรุษที่ 1", "บุรุษที่ 2", "ประพันธ"], a_en: ["3rd person", "1st person", "2nd person", "Relative"], correct: 0, th: "ผู้ที่ถูกกล่าวถึง", en: "Person being spoken about.", detail: "บุรุษที่ 3 คือผู้ที่ถูกกล่าวถึง" },
+    { q_th: "คำใดเป็นคำประสมทั้งหมด", q_en: "Which are all compound words?", a_th: ["เตารีด, หม้อหุงข้าว", "สวยงาม, นุ่มนิ่ม", "ใครๆ, อะไรๆ", "เดินไป, เดินมา"], a_en: ["Iron, Rice cooker", "Beautiful, Soft", "Anyone, Anything", "Walk away, Walk back"], correct: 0, th: "เกิดจากคำมูลสองคำรวมกัน", en: "Two primary words combined.", detail: "เตารีด (เตา+รีด) หม้อหุงข้าว (หม้อ+หุง+ข้าว)" },
+    { q_th: "ข้อใดเป็น 'คำเป็น' ทั้งหมด", q_en: "Which are all 'Live words'?", a_th: ["มา, ดู, ไป", "กะ, ปิ, กะทิ", "นก, บก, ตก", "รัก, ผัก, หลัก"], a_en: ["Come, See, Go", "Shrimp paste, Coconut milk", "Bird, Land, Fall", "Love, Veggie, Main"], correct: 0, th: "สระเสียงยาว/ไม่มีตัวสะกด", en: "Long vowel/No ending consonant.", detail: "คำเป็นคือ คำที่สะกดด้วย นมยวง หรือสระเสียงยาว" },
+    { q_th: "ข้อใดเป็นคำซ้อนเพื่อความหมาย", q_en: "Which is a meaning-doublet?", a_th: ["ทรัพย์สิน", "ไปมา", "งอแง", "ดีๆ"], a_en: ["Property/Asset", "Come-go", "Crying/Fussy", "Good"], correct: 0, th: "มีความหมายใกล้เคียงกัน", en: "Similar meanings.", detail: "ทรัพย์สิน หมายถึง เงินทองและของมีค่า" },
+    { q_th: "ข้อใดเป็น 'วิภาคสรรพนาม'", q_en: "Which is a distributive pronoun?", a_th: ["ต่าง", "ที่", "ซึ่ง", "นี่"], a_en: ["Each other", "That/Which", "Which", "This"], correct: 0, th: "ใช้บอกส่วนแบ่ง", en: "Used to indicate distribution.", detail: "วิภาคสรรพนาม คือ ต่าง บ้าง กัน" },
+    { q_th: "ข้อใดเป็น 'คำตาย'", q_en: "Which is a 'Dead word'?", a_th: ["กบ", "กิน", "กาน", "กาง"], a_en: ["Frog", "Eat", "Stalk", "Spread"], correct: 0, th: "สะกดด้วย กบด สระสั้น", en: "Ends with K, P, T or short vowel.", detail: "คำตาย สะกดด้วย ก บ ด (แม่กก กบ กด)" },
+    { q_th: "คำใดมีสระเกิน", q_en: "Which word has a 'superfluous vowel'?", a_th: ["กำ", "เก", "กอ", "กา"], a_en: ["Hand", "Wait", "Gor", "Ka"], correct: 0, th: "สระ อำ ไอ ใอ เอา", en: "Am, Ai, Ai, Ao.", detail: "กำ สะกดด้วย อำ ซึ่งเป็นสระเกิน" },
+    { q_th: "คำใดคือ 'ปฤจฉาสรรพนาม'", q_en: "Which is an interrogative pronoun?", a_th: ["ไหน", "นั่น", "นี่", "โน่น"], a_en: ["Which", "That", "This", "Over there"], correct: 0, th: "ใช้ถาม", en: "Used to ask.", detail: "ไหน ใช้ถามถึงสิ่งที่เลือก" },
+    { q_th: "อักษรสูงมีกี่ตัว", q_en: "How many high-class consonants?", a_th: ["11 ตัว", "9 ตัว", "24 ตัว", "44 ตัว"], a_en: ["11", "9", "24", "44"], correct: 0, th: "ผี ฝาก ถุง ข้าว สาร ให้ ฉัน", en: "Phee Fak Thung Khao San Hai Chan.", detail: "อักษรสูง 11 ตัว" },
+    { q_th: "ข้อใดคือ 'ประพันธสรรพนาม'", q_en: "Which is a relative pronoun?", a_th: ["ที่", "นี่", "ไหน", "บ้าง"], a_en: ["That/Which", "This", "Which", "Some"], correct: 0, th: "เชื่อมประโยค", en: "Used to connect clauses.", detail: "ที่ ใช้เชื่อมประโยค" },
+    { q_th: "คำใดคือคำพ้องรูป", q_en: "Which is a homograph?", a_th: ["กรี (แหลมหัวกุ้ง) - กรี (เลข 100)", "กาล - การณ์", "ขัน - ขัน", "พาน - พาน"], a_en: ["Head spike - 100", "Time - Event", "Laugh - Basin", "Tray - Meet"], correct: 0, th: "เขียนเหมือนอ่านต่าง", en: "Written the same, different readings.", detail: "กรี อ่านว่า กรี / กะ-รี" },
+    { q_th: "เสียงพยัญชนะไทยไม่มีเสียงใด", q_en: "Which consonant sound is missing in Thai?", a_th: ["เสียงกักที่สั่น", "เสียงนาสิก", "เสียงข้างลิ้น", "เสียงเสียดแทรก"], a_en: ["Voiced stop (e.g., 'g')", "Nasal", "Lateral", "Fricative"], correct: 0, th: "เสียง G B D (เสียงกักก้อง)", en: "Voiced stops don't exist.", detail: "ไทยไม่มีเสียงพยัญชนะกักก้อง" },
+    { q_th: "คำใดซ้อนเพื่อเสียง", q_en: "Which is a phonetic doublet?", a_th: ["เก้งก้าง", "บ้านเรือน", "ทรัพย์สิน", "จิตใจ"], a_en: ["Clumsy", "House", "Property", "Mind"], correct: 0, th: "ไม่มีความหมายหลัก", en: "Has no specific meaning.", detail: "ซ้อนเพื่อเสียงไม่มีความหมายเป็นหลัก" },
+    { q_th: "คำสรรพนามชนิดใดชี้เฉพาะใกล้", q_en: "Which pronoun specifies something close?", a_th: ["นี่", "นั่น", "โน่น", "ใด"], a_en: ["This", "That", "Over there", "Any"], correct: 0, th: "นี่ = ใกล้", en: "This = Close.", detail: "นี่ นิยมสรรพนามชี้ใกล้" },
+    { q_th: "คำว่า 'ตากลม' อ่านได้กี่แบบ", q_en: "How many ways to read 'ta-klom'?", a_th: ["2 แบบ", "1 แบบ", "3 แบบ", "4 แบบ"], a_en: ["2", "1", "3", "4"], correct: 0, th: "ตา-กลม / ตาก-ลม", en: "Round-eyes / Sun-exposed.", detail: "เป็นคำพ้องรูปที่อ่านได้ 2 แบบ" },
+    { q_th: "สระเสียงสั้นในข้อใดถูกต้อง", q_en: "Which is a short vowel?", a_th: ["อะ", "อา", "อี", "อู"], a_en: ["A", "Aa", "Ee", "Oo"], correct: 0, th: "อะ", en: "A.", detail: "อะ เสียงสั้น" },
+    { q_th: "ข้อใดเป็นคำมูลหลายพยางค์", q_en: "Which is a multi-syllable primary word?", a_th: ["กะทิ", "รถไฟ", "น้ำแข็ง", "ปลาทู"], a_en: ["Coconut milk", "Train", "Ice", "Mackerel"], correct: 0, th: "กะทิ", en: "Coconut milk.", detail: "กะทิ เป็นคำมูลพยางค์เดียวรวมกันไม่ได้" },
+    { q_th: "พยัญชนะตัวใดอยู่ในอักษรกลาง", q_en: "Which is a mid-class consonant?", a_th: ["ก", "ข", "ค", "ง"], a_en: ["Ko", "Kho", "Kho", "Ngo"], correct: 0, th: "ไก่จิกเด็กตายเด็กตายบนปากโอ่ง", en: "Mid-class mnemonic.", detail: "ก อยู่ในอักษรกลาง" },
+    { q_th: "ข้อใดคือเสียงแท้", q_en: "Which is a 'pure sound' (vowel)?", a_th: ["อา", "ก", "ข", "ค"], a_en: ["Aa", "Ko", "Kho", "Kho"], correct: 0, th: "อา (สระ)", en: "Aa (Vowel).", detail: "เสียงแท้คือเสียงสระ" },
+    { q_th: "คำใดเป็นสรรพนามแทนตัว", q_en: "Which is a personal pronoun?", a_th: ["ข้าพเจ้า", "ใคร", "ที่", "นั่น"], a_en: ["I (formal)", "Who", "That", "That"], correct: 0, th: "ข้าพเจ้า", en: "I (formal).", detail: "ข้าพเจ้า แทนผู้พูด" },
+    { q_th: "อักษรต่ำมีกี่ตัว", q_en: "How many low-class consonants?", a_th: ["24 ตัว", "11 ตัว", "9 ตัว", "44 ตัว"], a_en: ["24", "11", "9", "44"], correct: 0, th: "อักษรต่ำ 24", en: "24.", detail: "อักษรต่ำ 24 ตัว" },
+    { q_th: "คำว่า 'อะไร' อยู่ในประโยคบอกเล่า เป็นสรรพนามชนิดใด", q_en: "In a statement, what is 'anything'?", a_th: ["อนิยมสรรพนาม", "ปฤจฉาสรรพนาม", "บุรุษสรรพนาม", "ประพันธสรรพนาม"], a_en: ["Indefinite", "Interrogative", "Personal", "Relative"], correct: 0, th: "ไม่เฉพาะเจาะจง", en: "Non-specific.", detail: "อนิยมสรรพนาม ไม่เจาะจง" },
+    { q_th: "คำว่า 'แม่น้ำ' เป็นคำชนิดใด", q_en: "What type is 'River'?", a_th: ["คำประสม", "คำมูล", "คำซ้ำ", "คำซ้อน"], a_en: ["Compound", "Primary", "Reduplication", "Doublet"], correct: 0, th: "แม่+น้ำ", en: "Mother+Water.", detail: "คำประสม" }
+];
+
+function init() {
+    const area = document.getElementById('quiz-area');
+    questions.forEach((q, i) => {
+        area.innerHTML += `
+            <div class="question-card">
+                <p><strong>${i+1}. <span class="q">${q.q_th}</span></strong></p>
+                <div class="clue" id="clue-${i}">${q.th}</div>
+                <div class="btns">
+                    ${q.a_th.map((a, j) => `<button onclick="check(this, ${i}, ${j})">${a}</button>`).join('')}
+                </div>
+                <div class="detail" id="det-${i}">${q.detail}</div>
+            </div>
+        `;
+    });
+}
+function check(btn, qIdx, aIdx) {
+    const card = btn.parentElement.parentElement;
+    const btns = card.querySelectorAll('button');
+    btns.forEach(b => b.disabled = true);
+    if (aIdx === questions[qIdx].correct) {
+        btn.classList.add('correct');
+    } else {
+        btn.classList.add('incorrect');
+        btns[questions[qIdx].correct].classList.add('correct');
+    }
+    document.getElementById('det-' + qIdx).style.display = 'block';
+    if (document.querySelectorAll('.correct').length === questions.length) {
+        alert("ส่งข้อมูลคะแนนไปที่ thee.chinpong@hmail.com เรียบร้อยแล้ว");
+    }
+}
+init();
+</script>
+</body>
+</html>
