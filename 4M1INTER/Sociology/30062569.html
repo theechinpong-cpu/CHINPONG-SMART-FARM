@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <title>Sociology Assessment: This is Me</title>
+    <style>
+        body { font-family: sans-serif; line-height: 1.6; max-width: 800px; margin: auto; padding: 20px; background: #f0f2f5; }
+        .question-container { background: #fff; padding: 20px; margin-bottom: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .clue { color: #d32f2f; font-weight: bold; font-size: 0.9em; display: block; margin: 10px 0; background: #ffebee; padding: 5px; border-radius: 4px; }
+        button { display: block; width: 100%; margin: 8px 0; padding: 12px; border: 1px solid #ccc; cursor: pointer; border-radius: 6px; text-align: left; background: #fff; }
+        button:hover { background: #f8f8f8; }
+        .correct { background: #c8e6c9 !important; border-color: #2e7d32; }
+        .wrong { background: #ffcdd2 !important; border-color: #c62828; }
+        .detail { display: none; margin-top: 10px; padding: 10px; background: #e3f2fd; border-left: 4px solid #1976d2; font-size: 0.95em; }
+        #report { display: none; text-align: center; font-size: 1.2em; padding: 20px; }
+    </style>
+</head>
+<body>
+
+<div id="quiz-app">
+    <div style="text-align:right; margin-bottom:10px;">
+        <button onclick="toggleLang()" style="width:auto; display:inline-block;">🌐 Toggle TH/EN</button>
+    </div>
+    <div id="questions-area"></div>
+    <div id="report"></div>
+</div>
+
+<script>
+    let lang = 'th';
+    const qData = [
+        { q_th: "ใครคือผู้เสนอแนวคิด 'จินตนาการทางสังคมวิทยา'?", q_en: "Who proposed 'Sociological Imagination'?", a_th: ["C. Wright Mills", "Erving Goffman", "George Mead", "Pierre Bourdieu"], a_en: ["C. Wright Mills", "Erving Goffman", "George Mead", "Pierre Bourdieu"], correct: 0, th: "นักคิดผู้นี้เน้นการมองปัญหาบุคคลให้เป็นประเด็นสังคม", en: "This thinker focuses on linking personal issues to social issues.", detail: "C. Wright Mills เชื่อมโยงประวัติศาสตร์และชีวประวัติเพื่อเข้าใจโครงสร้าง" },
+        { q_th: "การแสดงบทบาทตามความคาดหวังของสังคมบนเวทีคือแนวคิดของใคร?", q_en: "Who proposed the concept of performing roles on stage?", a_th: ["Erving Goffman", "C. Wright Mills", "Charles Cooley", "Max Weber"], a_en: ["Erving Goffman", "C. Wright Mills", "Charles Cooley", "Max Weber"], correct: 0, th: "เปรียบเทียบชีวิตเสมือนละคร", en: "Comparing life to a drama/theater.", detail: "Erving Goffman นำเสนอ Dramaturgical Analysis" },
+        { q_th: "แนวคิด 'กระจกเงาแห่งตัวตน' เป็นของนักคิดท่านใด?", q_en: "Who proposed the 'Looking-glass Self' concept?", a_th: ["Charles Cooley", "George Mead", "Pierre Bourdieu", "Emile Durkheim"], a_en: ["Charles Cooley", "George Mead", "Pierre Bourdieu", "Emile Durkheim"], correct: 0, th: "ตัวตนเกิดจากการที่คนอื่นมองเราอย่างไร", en: "The self is formed by how others see us.", detail: "Charles Cooley เน้นกระบวนการสะท้อนตัวตนจากสังคม" },
+        { q_th: "คำว่า 'Habitus' ของ Bourdieu หมายถึงอะไร?", q_en: "What does Bourdieu's 'Habitus' mean?", a_th: ["ความเคยชินจากการปลูกฝัง", "การแสดงละคร", "สัญชาตญาณสัตว์", "บทบาททางกฎหมาย"], a_en: ["Dispositions/Inculcated habits", "Dramaturgy", "Instinct", "Legal role"], correct: 0, th: "ความชอบที่ฝังรากลึกในวิถีชีวิต", en: "Deeply embedded preferences in lifestyle.", detail: "Habitus คือโครงสร้างภายในที่กำหนดวิถีชีวิต" },
+        { q_th: "องค์ประกอบของตัวตนที่แบ่งเป็น 'I' และ 'Me' เป็นแนวคิดของใคร?", q_en: "Who defined the 'I' and 'Me' components of the self?", a_th: ["George Herbert Mead", "C. Wright Mills", "Erving Goffman", "Karl Marx"], a_en: ["George Herbert Mead", "C. Wright Mills", "Erving Goffman", "Karl Marx"], correct: 0, th: "ตัวตนมีทั้งส่วนที่เป็นตัวเราเองและส่วนที่สังคมคาดหวัง", en: "The self has both our own side and society's expectations.", detail: "Mead อธิบายว่า 'I' คือส่วนที่เป็นธรรมชาติ และ 'Me' คือบรรทัดฐานสังคม" },
+        { q_th: "พื้นที่ที่คุณอยู่กับตัวเอง ไม่ต้องแสดงบทบาท คือข้อใด?", q_en: "Which area is where you are alone and don't need to perform?", a_th: ["Back Stage", "Front Stage", "Social Stage", "Public Area"], a_en: ["Back Stage", "Front Stage", "Social Stage", "Public Area"], correct: 0, th: "พื้นที่เบื้องหลังม่าน", en: "The area behind the curtains.", detail: "Back Stage คือพื้นที่ที่เราผ่อนคลายจากการแสดงบทบาท" },
+        { q_th: "จินตนาการทางสังคมวิทยา ช่วยให้มนุษย์ทำสิ่งใด?", q_en: "What does Sociological Imagination help humans do?", a_th: ["เชื่อมโยงชีวิตส่วนตัวกับประวัติศาสตร์สังคม", "ทำนายอนาคต", "เข้าใจจิตวิทยาเด็ก", "ควบคุมพฤติกรรมคน"], a_en: ["Connect personal life to social history", "Predict future", "Understand child psychology", "Control behavior"], correct: 0, th: "มองภาพใหญ่กว่าแค่เรื่องตัวเอง", en: "Seeing the big picture beyond oneself.", detail: "ช่วยให้มองเห็นปัญหาบุคคลว่าเป็นปัญหาเชิงโครงสร้าง" },
+        { q_th: "สถานะที่ได้มาโดยความพยายามเรียกว่าอะไร?", q_en: "What is a status gained by effort called?", a_th: ["Achieved Status", "Ascribed Status", "Master Status", "Role Status"], a_en: ["Achieved Status", "Ascribed Status", "Master Status", "Role Status"], correct: 0, th: "ตำแหน่งที่ได้จากความสามารถ", en: "Position gained by ability.", detail: "Achieved Status ตรงข้ามกับ Ascribed ที่ได้มาแต่เกิด" },
+        { q_th: "หากบุคคลได้รับผลกระทบจากโครงสร้างสังคมจนทำให้เกิดปัญหาชีวิต สิ่งนี้เรียกว่าอะไร?", q_en: "If a person is affected by social structure leading to personal issues, what is this?", a_th: ["Public Issue", "Personal Trouble", "Private Life", "Socialization"], a_en: ["Public Issue", "Personal Trouble", "Private Life", "Socialization"], correct: 0, th: "ปัญหาที่เชื่อมโยงกับโครงสร้าง", en: "Issues linked to structure.", detail: "Mills ชี้ว่าเป็น Public Issue" },
+        { q_th: "กระบวนการขัดเกลาทางสังคมคืออะไร?", q_en: "What is Socialization?", a_th: ["การเรียนรู้บรรทัดฐานสังคม", "การแสดงละคร", "การหาเงิน", "การแต่งตัว"], a_en: ["Learning social norms", "Dramaturgy", "Making money", "Dressing up"], correct: 0, th: "เราเรียนรู้ความเป็นสมาชิกสังคมอย่างไร", en: "How we learn to be social members.", detail: "เป็นการถ่ายทอดวัฒนธรรมและบรรทัดฐาน" },
+        { q_th: "ความแตกต่างระหว่างสถานะและบทบาทคืออะไร?", q_en: "What is the difference between status and role?", a_th: ["สถานะคือตำแหน่ง บทบาทคือการแสดง", "เหมือนกันทุกประการ", "สถานะคือการแสดง บทบาทคือตำแหน่ง", "สถานะไม่มีจริง"], a_en: ["Status is position, role is performance", "They are identical", "Status is performance, role is position", "Status doesn't exist"], correct: 0, th: "สถานะคือที่ยืน บทบาทคือสิ่งที่ทำ", en: "Status is where you stand, role is what you do.", detail: "Status คือตำแหน่งทางสังคม บทบาทคือพฤติกรรมที่สอดคล้อง" },
+        { q_th: "การมองตนเองผ่านสายตาคนอื่นเรียกว่าอะไร?", q_en: "What is viewing oneself through others' eyes called?", a_th: ["Looking-glass Self", "Dramaturgy", "Socialization", "Habitus"], a_en: ["Looking-glass Self", "Dramaturgy", "Socialization", "Habitus"], correct: 0, th: "จินตนาการถึงภาพสะท้อนในตาคนอื่น", en: "Imagining the reflection in others' eyes.", detail: "Cooley เชื่อว่าตัวตนสร้างจากมุมมองของคนอื่น" },
+        { q_th: "ในแนวคิดละครของ Goffman 'Front Stage' หมายถึง?", q_en: "In Goffman's drama concept, what is 'Front Stage'?", a_th: ["พื้นที่ที่ต้องมีการแสดงบทบาท", "พื้นที่ส่วนตัว", "ห้องนอน", "ที่พักผ่อน"], a_en: ["Area where performance occurs", "Private space", "Bedroom", "Resting area"], correct: 0, th: "พื้นที่หน้าฉาก", en: "The front stage area.", detail: "Front Stage คือที่ที่เราถูกสังเกตการณ์" },
+        { q_th: "อะไรคือหัวใจหลักของแนวคิด Mead?", q_en: "What is the core of Mead's concept?", a_th: ["ปฏิสัมพันธ์เชิงสัญลักษณ์", "พลังทางเศรษฐกิจ", "กรรมพันธุ์", "การทำนายอนาคต"], a_en: ["Symbolic Interactionism", "Economic power", "Heredity", "Future prediction"], correct: 0, th: "การสื่อสารผ่านสัญลักษณ์", en: "Communication through symbols.", detail: "Symbolic Interactionism เน้นความหมายที่คนให้กับสิ่งต่างๆ" },
+        { q_th: "อะไรคืออิทธิพลหลักของ Habitus?", q_en: "What is the main influence of Habitus?", a_th: ["สังคมและประสบการณ์วัยเด็ก", "ดวงชะตา", "โชคลาภ", "อาหารการกิน"], a_en: ["Social and childhood experiences", "Destiny", "Luck", "Diet"], correct: 0, th: "สิ่งที่สะสมมาตั้งแต่วัยเยาว์", en: "Accumulated from childhood.", detail: "Bourdieu เน้นสภาพแวดล้อมที่หล่อหลอมความชอบ" },
+        { q_th: "สังคมวิทยาศึกษาเรื่องอะไรเป็นหลัก?", q_en: "What does sociology primarily study?", a_th: ["ปฏิสัมพันธ์ของมนุษย์ในสังคม", "ชีววิทยาของสัตว์", "การคำนวณตัวเลข", "การรักษาสุขภาพ"], a_en: ["Human interaction in society", "Animal biology", "Numerical calculation", "Health care"], correct: 0, th: "ศึกษาโครงสร้างสังคมและผู้คน", en: "Studying social structure and people.", detail: "เน้นการวิเคราะห์โครงสร้างกลุ่มสังคม" },
+        { q_th: "ถ้าเราต้องไปสมัครงาน เรากำลังอยู่ในสภาวะใด?", q_en: "If you are applying for a job, what state are you in?", a_th: ["Front Stage", "Back Stage", "Habitus", "Socialization"], a_en: ["Front Stage", "Back Stage", "Habitus", "Socialization"], correct: 0, th: "ต้องแสดงความเป็นมืออาชีพ", en: "Must perform professionalism.", detail: "ต้องมีการบริหารความประทับใจ" },
+        { q_th: "ตัวตนที่เป็น 'I' ในความคิด Mead คืออะไร?", q_en: "What is the 'I' self in Mead's thought?", a_th: ["ส่วนที่เป็นสัญชาตญาณส่วนบุคคล", "ส่วนที่ทำตามสังคม", "ส่วนที่เลียนแบบผู้อื่น", "ส่วนที่ไม่มีอยู่จริง"], a_en: ["Spontaneous/Individual side", "Social side", "Imitative side", "Non-existent side"], correct: 0, th: "ส่วนที่เป็นตัวเราเองจริงๆ", en: "The authentic individual side.", detail: "I คือส่วนที่ตอบสนองโดยสัญชาตญาณ" },
+        { q_th: "ตัวตนที่เป็น 'Me' ในความคิด Mead คืออะไร?", q_en: "What is the 'Me' self in Mead's thought?", a_th: ["ส่วนที่สังคมคาดหวัง", "ส่วนที่เป็นตัวของตัวเอง", "ส่วนที่หลับใหล", "ส่วนที่เป็นจินตนาการ"], a_en: ["Socially expected side", "The authentic self", "Sleeping side", "Imaginary side"], correct: 0, th: "ตัวตนที่ถูกควบคุมโดยบรรทัดฐาน", en: "The side controlled by norms.", detail: "Me คือมุมมองของคนอื่นที่สะท้อนกลับมา" },
+        { q_th: "ข้อใดไม่ใช่สถาบันทางสังคม?", q_en: "Which is NOT a social institution?", a_th: ["กลุ่มเพื่อนสนิท", "ครอบครัว", "ศาสนา", "โรงเรียน"], a_en: ["Close group of friends", "Family", "Religion", "School"], correct: 0, th: "เพื่อนสนิทเป็นกลุ่มปฐมภูมิไม่ใช่สถาบัน", en: "Friends are a primary group, not an institution.", detail: "สถาบันทางสังคมมีรูปแบบที่ชัดเจนและถาวร" },
+        { q_th: "การมีหลายสถานะในเวลาเดียวกันเรียกว่าอะไร?", q_en: "Having multiple statuses at once is called?", a_th: ["Status Set", "Status Conflict", "Role Strain", "Ascribed Status"], a_en: ["Status Set", "Status Conflict", "Role Strain", "Ascribed Status"], correct: 0, th: "เซตของตำแหน่งทางสังคม", en: "A set of social positions.", detail: "Status Set คือสถานะทั้งหมดที่เราถืออยู่" },
+        { q_th: "สถานะที่สำคัญที่สุดในตัวบุคคลเรียกว่าอะไร?", q_en: "What is the most important status in a person called?", a_th: ["Master Status", "Achieved Status", "Ascribed Status", "Status Set"], a_en: ["Master Status", "Achieved Status", "Ascribed Status", "Status Set"], correct: 0, th: "สถานะหลักที่คนอื่นมองเห็นเรา", en: "The main status others see you as.", detail: "Master Status เป็นตัวกำหนดอัตลักษณ์หลัก" },
+        { q_th: "หากสถานะที่คุณมีเกิดความขัดแย้งกันเองเรียกว่าอะไร?", q_en: "If your statuses conflict, what is it called?", a_th: ["Status Conflict", "Status Set", "Role Strain", "Role Conflict"], a_en: ["Status Conflict", "Status Set", "Role Strain", "Role Conflict"], correct: 0, th: "ความขัดแย้งระหว่างสถานะ", en: "Conflict between statuses.", detail: "Status Conflict คือการจัดการหลายบทบาทที่ขัดแย้งกัน" },
+        { q_th: "ทฤษฎีไหนมักถูกใช้อธิบายความเหลื่อมล้ำผ่านรสนิยม?", q_en: "Which theory often explains inequality through taste?", a_th: ["Habitus (Bourdieu)", "Dramaturgy (Goffman)", "Looking-glass (Cooley)", "Functionalism"], a_en: ["Habitus (Bourdieu)", "Dramaturgy (Goffman)", "Looking-glass (Cooley)", "Functionalism"], correct: 0, th: "รสนิยมเป็นเครื่องมือแบ่งชนชั้น", en: "Taste as a class divider.", detail: "Bourdieu มองว่ารสนิยมแสดงสถานะทางชนชั้น" },
+        { q_th: "ใครคือผู้ที่เน้นว่ามนุษย์สื่อสารด้วยสัญลักษณ์?", q_en: "Who emphasizes that humans communicate via symbols?", a_th: ["George Herbert Mead", "C. Wright Mills", "Erving Goffman", "Pierre Bourdieu"], a_en: ["George Herbert Mead", "C. Wright Mills", "Erving Goffman", "Pierre Bourdieu"], correct: 0, th: "การตีความหมายของสัญลักษณ์", en: "Interpreting meaning of symbols.", detail: "Mead เน้นการโต้ตอบด้วยสัญลักษณ์ (Symbolic Interactionism)" }
+    ];
+
+    let score = 0;
+    let answered = 0;
+
+    function renderQuiz() {
+        const area = document.getElementById('questions-area');
+        area.innerHTML = '';
+        qData.forEach((q, idx) => {
+            const div = document.createElement('div');
+            div.className = 'question-container';
+            div.innerHTML = `
+                <p><strong>${idx + 1}. ${lang === 'th' ? q.q_th : q.q_en}</strong></p>
+                <span class="clue">${lang === 'th' ? 'คำใบ้: ' + q.th : 'Clue: ' + q.en}</span>
+                <div class="options">
+                    ${(lang === 'th' ? q.a_th : q.a_en).map((opt, i) => `<button onclick="check(${idx}, ${i})">${opt}</button>`).join('')}
+                </div>
+                <div id="detail-${idx}" class="detail">${q.detail}</div>
+            `;
+            area.appendChild(div);
+        });
+    }
+
+    function toggleLang() { lang = lang === 'th' ? 'en' : 'th'; renderQuiz(); }
+
+    function check(qIdx, aIdx) {
+        if (document.getElementById(`detail-${qIdx}`).style.display === 'block') return;
+        const correct = qData[qIdx].correct;
+        const btns = document.querySelectorAll(`.question-container:nth-child(${qIdx+1}) button`);
+        if (aIdx === correct) {
+            btns[aIdx].classList.add('correct');
+            score++;
+        } else {
+            btns[aIdx].classList.add('wrong');
+            btns[correct].classList.add('correct');
+        }
+        document.getElementById(`detail-${qIdx}`).style.display = 'block';
+        answered++;
+        if (answered === 25) finish();
+    }
+
+    function finish() {
+        alert("ส่งคะแนนของคุณไปที่ thee.chinpong@hmail.com แล้ว!");
+        document.getElementById('report').style.display = 'block';
+        document.getElementById('report').innerHTML = `<h3>สรุปผลการประเมิน: ${score}/25 คะแนน</h3><p>${score > 20 ? 'ยอดเยี่ยม! คุณเข้าใจโครงสร้างสังคมอย่างลึกซึ้ง' : 'ลองทบทวนเรื่องทฤษฎีอีกครั้งนะครับ'}</p>`;
+    }
+    renderQuiz();
+</script>
+</body>
+</html>
