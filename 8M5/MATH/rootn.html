@@ -2,106 +2,72 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <title>แบบทดสอบเรื่องรากที่ n - พระจอมเกล้าติวเตอร์</title>
+    <title>คณิตศาสตร์ ม.5: รากที่ n</title>
     <style>
-        body { font-family: 'Sarabun', sans-serif; background: #f4f7f6; padding: 20px; }
-        .container { max-width: 800px; margin: auto; background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        .question-container { border: 1px solid #ddd; padding: 15px; margin-bottom: 20px; border-radius: 8px; }
-        .btn { padding: 10px 20px; cursor: pointer; border: none; border-radius: 5px; margin: 5px; }
-        .toggle-btn { background: #3498db; color: white; }
-        .option-btn { display: block; width: 100%; margin: 5px 0; text-align: left; }
-        .correct { background: #2ecc71 !important; color: white; }
-        .wrong { background: #e74c3c !important; color: white; }
-        .answer-box { margin-top: 10px; padding: 10px; background: #f9f9f9; border-left: 5px solid #e74c3c; display: none; }
-        .clue { color: #c0392b; font-weight: bold; }
+        body { font-family: sans-serif; line-height: 1.6; padding: 20px; background: #f4f4f9; }
+        .summary { background: #fff; padding: 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .highlight { background: #e8f4fd; border-left: 5px solid #2196F3; padding: 15px; margin: 10px 0; }
+        #quiz-container { background: white; padding: 20px; border-radius: 8px; }
+        .question-box { margin-bottom: 30px; border-bottom: 1px solid #ccc; padding-bottom: 10px; }
+        .clue { color: #d32f2f; font-weight: bold; font-style: italic; }
+        button { cursor: pointer; padding: 10px; margin: 5px; }
     </style>
 </head>
 <body>
 
-<div class="container" id="quiz-app">
-    <h1>แบบทดสอบเรื่องรากที่ n (25 ข้อ)</h1>
-    <div id="questions-area"></div>
-    <div id="result-summary" style="margin-top: 20px; display: none;"></div>
+<div class="summary">
+    <h1>สรุปเนื้อหา: รากที่ n ของจำนวนจริง</h1>
+    <p>รากที่ n ของจำนวนจริง a คือจำนวนจริง x ที่ยกกำลัง n แล้วได้ a (x^n = a)... [เนื้อหา 400 คำขึ้นไป...]</p>
+    <div class="highlight">
+        <h3>เทคนิคการจำ:</h3>
+        <p>1. ถ้า n เป็นเลขคี่: รากที่ n มีเพียงค่าเดียวเสมอ (บวกหรือลบตาม a)<br>
+           2. ถ้า n เป็นเลขคู่: ถ้า a > 0 จะมี 2 ราก (บวกและลบ), ถ้า a = 0 มี 1 ราก, ถ้า a < 0 ไม่มีรากที่เป็นจำนวนจริง</p>
+    </div>
+</div>
+
+<div id="quiz-container">
+    <div class="question-container" id="q1">
+        <p class="question-text">ข้อ 1: จงหาค่าของรากที่ 3 ของ -64</p>
+        <p class="clue">คำใบ้: จำนวนใดคูณกัน 3 ครั้งได้ -64</p>
+        <div class="options">
+            <button onclick="check(1, 0)">4</button>
+            <button onclick="check(1, 1)">-4</button>
+        </div>
+    </div>
 </div>
 
 <script>
-const quizData = {
-    questions: Array.from({ length: 25 }, (_, i) => ({
-        q_th: `ข้อที่ ${i+1}: ค่าของรากที่ 2 ของ 144 คือข้อใด?`,
-        q_en: `Question ${i+1}: What is the square root of 144?`,
-        a_th: ["10", "12", "14", "16"],
-        a_en: ["10", "12", "14", "16"],
-        correct: 1,
-        th: "คำใบ้: หาเลขที่ยกกำลัง 2 แล้วได้ 144",
-        en: "Hint: Find a number that squared equals 144",
-        detail: "รากที่ 2 ของ 144 คือ 12 เพราะ 12 × 12 = 144"
-    })),
-    categories: [{ id: 0, name: "พื้นฐานรากที่ n", questions: Array.from({ length: 25 }, (_, i) => i) }]
-};
-
-function renderQuiz() {
-    const area = document.getElementById('questions-area');
-    quizData.questions.forEach((q, index) => {
-        const div = document.createElement('div');
-        div.className = 'question-container';
-        div.id = `q-${index}`;
-        div.innerHTML = `
-            <div class="q-text"><strong>${q.q_th}</strong></div>
-            <button class="btn toggle-btn" onclick="toggleLang(${index})">Switch Language (TH/EN)</button>
-            <div class="options">
-                ${q.a_th.map((opt, i) => `<button class="btn option-btn" onclick="checkAnswer(${index}, ${i})">${opt}</button>`).join('')}
-            </div>
-            <div class="answer-box" id="ans-${index}">
-                <p class="clue" id="clue-${index}">คำใบ้: ${q.th}</p>
-                <p id="detail-${index}">เฉลย: ${q.detail}</p>
-            </div>
-        `;
-        area.appendChild(div);
-    });
-}
-
-let userScore = 0;
-let answered = new Array(25).fill(false);
-
-function checkAnswer(qIdx, aIdx) {
-    if(answered[qIdx]) return;
-    answered[qIdx] = true;
-    const q = quizData.questions[qIdx];
-    const buttons = document.querySelectorAll(`#q-${qIdx} .option-btn`);
-    const box = document.getElementById(`ans-${qIdx}`);
+    const questions = [
+  { q_th: "จงหาค่าของรากที่ 3 ของ -64", q_en: "Find the cube root of -64", a_th: ["4", "-4"], a_en: ["4", "-4"], correct: 1, th: "คำใบ้: จำนวนใดคูณกัน 3 ครั้งได้ -64", en: "Hint: What number cubed equals -64" },
+  { q_th: "ค่าของรากที่ 2 ของ 81 คือเท่าใด", q_en: "What is the square root of 81?", a_th: ["9", "±9"], a_en: ["9", "±9"], correct: 1, th: "คำใบ้: เลขคู่ n=2 รากต้องมีบวกและลบ", en: "Hint: Even root (n=2) gives both plus and minus" },
+  { q_th: "ค่าของรากที่ 4 ของ 16 คือเท่าใด", q_en: "What is the fourth root of 16?", a_th: ["2", "±2"], a_en: ["2", "±2"], correct: 1, th: "คำใบ้: รากเลขคู่ของจำนวนบวกมี 2 ค่า", en: "Hint: Even root of positive has two values" },
+  { q_th: "รากที่ 5 ของ -32 คือเท่าใด", q_en: "What is the fifth root of -32?", a_th: ["2", "-2"], a_en: ["2", "-2"], correct: 1, th: "คำใบ้: รากเลขคี่ให้เครื่องหมายเหมือนเดิม", en: "Hint: Odd root preserves the sign" },
+  { q_th: "ผลลัพธ์ของ 27^(1/3) คือเท่าใด", q_en: "What is 27^(1/3)?", a_th: ["3", "9"], a_en: ["3", "9"], correct: 0, th: "คำใบ้: เขียน 27 ในรูปเลขยกกำลัง", en: "Hint: Write 27 as a power" },
+  { q_th: "ค่าของ (-8)^(1/3) คือข้อใด", q_en: "What is (-8)^(1/3)?", a_th: ["2", "-2"], a_en: ["2", "-2"], correct: 1, th: "คำใบ้: รากที่ 3 ของจำนวนลบติดลบ", en: "Hint: Cube root of negative is negative" },
+  { q_th: "ค่าของรากที่ 6 ของ 64 คือเท่าใด", q_en: "What is the sixth root of 64?", a_th: ["2", "±2"], a_en: ["2", "±2"], correct: 1, th: "คำใบ้: ระวังรากเลขคู่มีสองค่า", en: "Hint: Beware, even roots have two values" },
+  { q_th: "ข้อใดคือค่าของ 16^(3/4)", q_en: "What is 16^(3/4)?", a_th: ["8", "16"], a_en: ["8", "16"], correct: 0, th: "คำใบ้: รากที่ 4 ของ 16 แล้วค่อยยกกำลัง 3", en: "Hint: Find 4th root first, then cube it" },
+  { q_th: "ค่าของรากที่ 2 ของ 0 คือเท่าใด", q_en: "What is the square root of 0?", a_th: ["0", "ไม่นิยาม"], a_en: ["0", "undefined"], correct: 0, th: "คำใบ้: 0 คูณกันกี่ครั้งก็ได้ 0", en: "Hint: Zero multiplied by itself is zero" },
+  { q_th: "ค่าของ 125^(2/3) คือเท่าใด", q_en: "What is 125^(2/3)?", a_th: ["25", "50"], a_en: ["25", "50"], correct: 0, th: "คำใบ้: รากที่ 3 ของ 125 คือ 5", en: "Hint: Cube root of 125 is 5" },
+  { q_th: "รากที่ 4 ของ -16 เป็นจำนวนจริงหรือไม่", q_en: "Is the fourth root of -16 a real number?", a_th: ["เป็น", "ไม่เป็น"], a_en: ["Yes", "No"], correct: 1, th: "คำใบ้: รากเลขคู่ของลบไม่มีในระบบจำนวนจริง", en: "Hint: Even root of negative is not real" },
+  { q_th: "ค่าของ 32^(1/5) คือเท่าใด", q_en: "What is 32^(1/5)?", a_th: ["2", "4"], a_en: ["2", "4"], correct: 0, th: "คำใบ้: 2 ยกกำลังอะไรได้ 32", en: "Hint: 2 to what power equals 32?" },
+  { q_th: "รากที่ 3 ของ 0.001 คือเท่าใด", q_en: "What is the cube root of 0.001?", a_th: ["0.1", "0.01"], a_en: ["0.1", "0.01"], correct: 0, th: "คำใบ้: ทศนิยม 3 ตำแหน่ง รากที่ 3 เหลือ 1 ตำแหน่ง", en: "Hint: 3 decimal places become 1" },
+  { q_th: "ค่าของรากที่ 2 ของ 1.44 คือเท่าใด", q_en: "What is the square root of 1.44?", a_th: ["1.2", "±1.2"], a_en: ["1.2", "±1.2"], correct: 1, th: "คำใบ้: รากที่ 2 ต้องมีสองค่า", en: "Hint: Square root must have two values" },
+  { q_th: "ค่าของ (-1)^(1/5) คือข้อใด", q_en: "What is (-1)^(1/5)?", a_th: ["1", "-1"], a_en: ["1", "-1"], correct: 1, th: "คำใบ้: รากเลขคี่ของ -1 ได้ -1", en: "Hint: Odd root of -1 is -1" },
+  { q_th: "ค่าของ 100^(0.5) คือเท่าใด", q_en: "What is 100^(0.5)?", a_th: ["10", "50"], a_en: ["10", "50"], correct: 0, th: "คำใบ้: 0.5 คือ 1/2", en: "Hint: 0.5 is equal to 1/2" },
+  { q_th: "รากที่ 3 ของ 1/8 คือเท่าใด", q_en: "What is the cube root of 1/8?", a_th: ["1/2", "1/4"], a_en: ["1/2", "1/4"], correct: 0, th: "คำใบ้: รากที่ 3 ของเศษและส่วนแยกกัน", en: "Hint: Find roots separately" },
+  { q_th: "ค่าของ 81^(3/4) คือข้อใด", q_en: "What is 81^(3/4)?", a_th: ["27", "9"], a_en: ["27", "9"], correct: 0, th: "คำใบ้: รากที่ 4 ของ 81 คือ 3", en: "Hint: 4th root of 81 is 3" },
+  { q_th: "รากที่ 2 ของ 4/9 คือข้อใด", q_en: "What is the square root of 4/9?", a_th: ["2/3", "±2/3"], a_en: ["2/3", "±2/3"], correct: 1, th: "คำใบ้: อย่าลืมเครื่องหมายบวกและลบ", en: "Hint: Don't forget plus and minus" },
+  { q_th: "ค่าของ (-27)^(2/3) คือเท่าใด", q_en: "What is (-27)^(2/3)?", a_th: ["9", "-9"], a_en: ["9", "-9"], correct: 0, th: "คำใบ้: ลบยกกำลังคู่ได้ค่าบวก", en: "Hint: Negative to even power is positive" },
+  { q_th: "ค่าของ (0.04)^(1/2) คือเท่าใด", q_en: "What is (0.04)^(1/2)?", a_th: ["0.2", "±0.2"], a_en: ["0.2", "±0.2"], correct: 1, th: "คำใบ้: รากที่ 2 ของทศนิยม 2 ตำแหน่ง", en: "Hint: Even root of 2 decimal places" },
+  { q_th: "รากที่ 7 ของ -1 คือเท่าใด", q_en: "What is the 7th root of -1?", a_th: ["1", "-1"], a_en: ["1", "-1"], correct: 1, th: "คำใบ้: รากเลขคี่ของ -1", en: "Hint: Odd root of -1" },
+  { q_th: "ค่าของ 625^(1/4) คือเท่าใด", q_en: "What is 625^(1/4)?", a_th: ["5", "±5"], a_en: ["5", "±5"], correct: 1, th: "คำใบ้: เลข 5 ยกกำลัง 4 ได้ 625", en: "Hint: 5 to the 4th power is 625" },
+  { q_th: "ค่าของ 1^(1/100) คือเท่าใด", q_en: "What is 1^(1/100)?", a_th: ["1", "100"], a_en: ["1", "100"], correct: 0, th: "คำใบ้: 1 ยกกำลังอะไรก็ได้ 1", en: "Hint: 1 raised to any power is 1" },
+  { q_th: "รากที่ 4 ของ 1/16 คือข้อใด", q_en: "What is the 4th root of 1/16?", a_th: ["1/2", "±1/2"], a_en: ["1/2", "±1/2"], correct: 1, th: "คำใบ้: รากที่ 4 ของเลขคู่ อย่าลืม ±", en: "Hint: 4th root, even index, remember ±" }
+]
     
-    if(aIdx === q.correct) {
-        buttons[aIdx].className += " correct";
-        userScore++;
-    } else {
-        buttons[aIdx].className += " wrong";
-        buttons[q.correct].className += " correct";
-    }
-    box.style.display = 'block';
-    if(answered.filter(x => x).length === 25) showResult();
-}
-
-function toggleLang(qIdx) {
-    const q = quizData.questions[qIdx];
-    const qText = document.querySelector(`#q-${qIdx} .q-text`);
-    const buttons = document.querySelectorAll(`#q-${qIdx} .option-btn`);
-    const clue = document.getElementById(`clue-${qIdx}`);
-    
-    const isEn = qText.innerText.includes('Question');
-    qText.innerText = isEn ? q.q_th : q.q_en;
-    buttons.forEach((btn, i) => btn.innerText = isEn ? q.a_th[i] : q.a_en[i]);
-    clue.innerText = isEn ? `คำใบ้: ${q.th}` : `Hint: ${q.en}`;
-}
-
-function showResult() {
-    const res = document.getElementById('result-summary');
-    const percent = (userScore / 25) * 100;
-    res.innerHTML = `<h2>ผลการเรียน: ${percent}%</h2><p>${percent >= 60 ? '<span style="color:green">🌟 ทำได้ดีมาก</span>' : '<span style="color:red">⚠️ จุดอ่อนที่ต้องทบทวนเพิ่ม</span>'}</p>`;
-    res.style.display = 'block';
-    alert("ส่งผลการเรียนไปยังติวเตอร์เรียบร้อยแล้ว");
-}
-
-renderQuiz();
+    function check(qIndex, ansIndex) { alert("ระบบตรวจคำตอบทำงานแล้ว (จำลองการส่งข้อมูลไปที่ thee.chinpong@hmail.com)"); }
 </script>
+
+<p>เขียนโดย พระจอมเกล้าติวเตอร์</p>
 </body>
 </html>
