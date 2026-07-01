@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <title>ข้อสอบชุดที่ 2: การออกแบบและเทคโนโลยี - พระจอมเกล้าติวเตอร์</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; padding: 20px; line-height: 1.6; }
+        .container { max-width: 800px; margin: auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .question-card { border: 1px solid #ddd; padding: 20px; margin-bottom: 20px; border-radius: 8px; transition: 0.3s; }
+        .clue { background: #fff9c4; padding: 10px; border-left: 5px solid #fbc02d; margin: 10px 0; font-size: 0.9em; font-style: italic; color: #555; }
+        .options { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
+        button { cursor: pointer; padding: 10px; border: 1px solid #ccc; border-radius: 5px; background: #fff; transition: 0.2s; }
+        button:hover { background: #f9f9f9; }
+        .correct { background-color: #c8e6c9 !important; border-color: #4caf50 !important; }
+        .wrong { background-color: #ffcdd2 !important; border-color: #f44336 !important; }
+        .explanation { margin-top: 10px; padding: 10px; background: #e8f5e9; display: none; border-radius: 5px; font-size: 0.9em; }
+        #controls { margin-bottom: 20px; text-align: right; }
+        .summary-box { padding: 20px; background: #2c3e50; color: white; border-radius: 8px; margin-top: 20px; text-align: center; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div id="controls">
+        <button onclick="toggleLang('th')">TH</button>
+        <button onclick="toggleLang('en')">EN</button>
+    </div>
+    <div id="quiz-container"></div>
+    <button id="submit-btn" style="width: 100%; padding: 15px; background: #2c3e50; color: white; font-size: 1.2em; border: none; border-radius: 5px;" onclick="submitQuiz()">ตรวจข้อสอบ / Check Exam</button>
+    <div id="result-area"></div>
+    <p style="text-align: center; margin-top: 20px;">เขียนโดย พระจอมเกล้าติวเตอร์</p>
+</div>
+
+<script>
+    const questions = [
+        { q_th: "หากต้องการสร้างระบบรดน้ำอัตโนมัติ 'เซนเซอร์วัดความชื้นดิน' ทำหน้าที่อะไรในระบบ?", q_en: "In an automated irrigation system, what is the role of the 'Soil Moisture Sensor'?", a_th: ["ตัวป้อน", "กระบวนการ", "ผลผลิต", "ข้อมูลย้อนกลับ"], a_en: ["Input", "Process", "Output", "Feedback"], correct: 0, th: "คำใบ้: เป็นข้อมูลที่ใส่เข้าไปให้ระบบรู้", en: "Clue: Data fed into the system", detail: "เซนเซอร์คือ Input ที่บอกสถานะของดินให้ระบบรับรู้" },
+        { q_th: "ข้อใดคือการ 'วิเคราะห์ข้อจำกัด' ที่สำคัญที่สุดก่อนเริ่มสร้างชิ้นงาน?", q_en: "Which is the most critical analysis of constraints before building a prototype?", a_th: ["ดูว่าชิ้นงานสวยไหม", "งบประมาณ เวลา และวัสดุที่มี", "จำนวนเพื่อนในกลุ่ม", "ความชอบส่วนตัว"], a_en: ["Is the work beautiful?", "Budget, time, and materials available", "Number of group members", "Personal preference"], correct: 1, th: "คำใบ้: สิ่งที่บีบให้เราต้องวางแผน", en: "Clue: Factors that force planning", detail: "ข้อจำกัด (Constraints) คือกรอบการทำงานจริง" },
+        { q_th: "การทำ 'ต้นแบบ' (Prototype) มีวัตถุประสงค์หลักเพื่ออะไร?", q_en: "What is the main purpose of a 'Prototype'?", a_th: ["เพื่อส่งงานให้ครูตรวจ", "เพื่อทดสอบและหาข้อผิดพลาดก่อนสร้างจริง", "เพื่อความสวยงาม", "เพื่ออวดเพื่อน"], a_en: ["To submit to the teacher", "To test and find errors before final creation", "For beauty", "To show off to friends"], correct: 1, th: "คำใบ้: ลองผิดลองถูกในระดับเล็ก", en: "Clue: Trial and error on a small scale", detail: "ต้นแบบช่วยประหยัดทรัพยากรหากเกิดความผิดพลาด" },
+        { q_th: "เทคโนโลยีในข้อใดที่เปลี่ยนกระบวนการสื่อสารของมนุษย์ได้รุนแรงที่สุดในอดีต?", q_en: "Which technology historically changed human communication most drastically?", a_th: ["การประดิษฐ์แท่นพิมพ์", "การใช้หินลับมีด", "การทำฟาร์ม", "การทอผ้า"], a_en: ["The printing press", "Knife sharpening stones", "Farming", "Weaving"], correct: 0, th: "คำใบ้: เกี่ยวข้องกับการส่งต่อความรู้", en: "Clue: Related to sharing knowledge", detail: "การพิมพ์ทำให้ความรู้กระจายตัวได้อย่างรวดเร็ว" },
+        { q_th: "หากระบบทำงานผิดพลาด แล้วเราต้องแก้ไข 'กระบวนการ' (Process) ขั้นตอนใดที่ควรทำก่อน?", q_en: "If a system fails, which step should you take before changing the Process?", a_th: ["หยุดทำงานทันที", "สำรวจและระบุปัญหา (Problem Identification)", "เปลี่ยนคนทำงาน", "ลบงานทิ้ง"], a_en: ["Stop immediately", "Analyze and identify the problem", "Change the worker", "Delete the work"], correct: 1, th: "คำใบ้: ไม่รู้ปัญหา ก็แก้ไม่ถูก", en: "Clue: Can't fix without knowing the root cause", detail: "การวิเคราะห์ปัญหาเป็นหัวใจสำคัญของการแก้ทุกระบบ" },
+        { q_th: "สถานการณ์ใดที่ต้องใช้การ 'วนซ้ำ' (Iteration) มากที่สุด?", q_en: "Which situation requires the most 'Iteration'?", a_th: ["การทำตามคู่มือประกอบของเล่น", "การออกแบบจรวดให้บินได้ไกลที่สุด", "การทำรายงานสรุป", "การคัดลอกภาพวาด"], a_en: ["Following a toy assembly manual", "Designing a rocket to fly the furthest", "Writing a summary report", "Copying a drawing"], correct: 1, th: "คำใบ้: เป้าหมายที่ต้องเพิ่มประสิทธิภาพ", en: "Clue: Goals needing optimization", detail: "การออกแบบที่ต้องเพิ่มประสิทธิภาพต้องผ่านการทดสอบซ้ำๆ" },
+        { q_th: "ในการทำ Smart Farm 'พืชที่โตขึ้น' จัดเป็นส่วนใดในระบบเทคโนโลยี?", q_en: "In a Smart Farm, the 'grown plants' are part of which technological system?", a_th: ["Input", "Process", "Output", "Feedback"], a_en: ["Input", "Process", "Output", "Feedback"], correct: 2, th: "คำใบ้: คือผลลัพธ์ของระบบ", en: "Clue: The system's result", detail: "ผลผลิตคือสิ่งที่เราต้องการได้จากการทำฟาร์ม" },
+        { q_th: "การตัดสินใจเลือกวัสดุโดยคำนึงถึงความคงทนและราคา จัดเป็นการใช้ทักษะใด?", q_en: "Choosing materials based on durability and price is using which skill?", a_th: ["การทำตามใจ", "การคิดวิเคราะห์เชิงวิศวกรรม", "การเดาสุ่ม", "การเลียนแบบคนอื่น"], a_en: ["Following personal preference", "Engineering analytical thinking", "Guessing", "Copying others"], correct: 1, th: "คำใบ้: การชั่งน้ำหนักข้อดีข้อเสีย", en: "Clue: Weighing pros and cons", detail: "การตัดสินใจเชิงวิศวกรรมต้องคำนึงถึงความคุ้มค่า" },
+        { q_th: "ข้อใดคือการนำข้อมูลย้อนกลับ (Feedback) มาใช้ได้ถูกต้องที่สุด?", q_en: "Which is the best example of using Feedback?", a_th: ["พัดลมร้อนแล้วเราปิดมันทิ้ง", "อุณหภูมิห้องสูงเกิน ระบบจึงสั่งแอร์ให้ทำงานหนักขึ้น", "พัดลมเสียเราซื้อใหม่", "ไม่ได้สังเกตอะไรเลย"], a_en: ["Turning off the fan when hot", "Room temp too high, system adjusts AC to run harder", "Fan broken, buy new", "Not observing anything"], correct: 1, th: "คำใบ้: ระบบอัตโนมัติปรับเปลี่ยนตัวเอง", en: "Clue: The system self-adjusts", detail: "Feedback คือกลไกที่ทำให้ระบบปรับตัวเองได้โดยอัตโนมัติ" },
+        { q_th: "ในการรวบรวมข้อมูลเพื่อแก้ปัญหา แหล่งข้อมูลที่ดีที่สุดคืออะไร?", q_en: "What is the best source of info for solving a problem?", a_th: ["ความคิดเห็นส่วนตัว", "ข้อมูลจากแหล่งที่เชื่อถือได้และการทดลอง", "สิ่งที่เพื่อนบอกต่อกันมา", "เดาเอา"], a_en: ["Personal opinion", "Reliable sources and experiments", "Friends' hearsay", "Guessing"], correct: 1, th: "คำใบ้: ข้อมูลที่มีหลักฐาน", en: "Clue: Data with evidence", detail: "วิศวกรรมเน้นข้อมูลที่มีหลักฐานเชิงประจักษ์" },
+        { q_th: "การปรับปรุงงานหลังจากทดสอบเสร็จเรียกว่าอะไร?", q_en: "Improving work after testing is called what?", a_th: ["การทดสอบ", "การนำเสนอ", "การปรับปรุงและพัฒนา", "การรวบรวมข้อมูล"], a_en: ["Testing", "Presentation", "Improvement and Development", "Gathering data"], correct: 2, th: "คำใบ้: ทำให้ดีกว่าเดิม", en: "Clue: Making it better than before", detail: "Improvement คือขั้นตอนที่สำคัญที่สุดในการพัฒนาผลงาน" },
+        { q_th: "เทคโนโลยีช่วยแก้ปัญหาการจราจรอย่างไรได้บ้าง?", q_en: "How does technology solve traffic problems?", a_th: ["สร้างรถให้มากขึ้น", "ใช้ระบบไฟจราจรอัจฉริยะวิเคราะห์ปริมาณรถ", "สั่งให้คนเลิกใช้รถ", "ไม่มีผล"], a_en: ["Build more cars", "Use smart traffic light systems to analyze traffic volume", "Tell people to stop using cars", "No effect"], correct: 1, th: "คำใบ้: การจัดการอย่างเป็นระบบ", en: "Clue: Systematic management", detail: "การวิเคราะห์ปริมาณรถเป็น Process ที่สำคัญ" },
+        { q_th: "หากมีเวลาจำกัดในการทำงาน นี่คืออะไรในกระบวนการออกแบบ?", q_en: "If you have limited time to work, what is this in the design process?", a_th: ["Output", "Constraint", "Feedback", "Input"], a_en: ["Output", "Constraint", "Feedback", "Input"], correct: 1, th: "คำใบ้: ข้อจำกัด", en: "Clue: Limitation", detail: "เวลาคือหนึ่งในข้อจำกัด (Constraints) ของวิศวกร" },
+        { q_th: "คนรุ่นก่อนใช้เกวียนเป็นพาหนะ ปัจจุบันใช้รถยนต์ ข้อนี้สะท้อนเรื่องใด?", q_en: "Past used carts, present use cars. What does this reflect?", a_th: ["มนุษย์ขี้เกียจขึ้น", "ความก้าวหน้าของเทคโนโลยี", "เทคโนโลยีไม่มีความจำเป็น", "รถยนต์สวยกว่า"], a_en: ["Humans got lazier", "Technological progress", "Technology is unnecessary", "Cars are prettier"], correct: 1, th: "คำใบ้: พัฒนาการ", en: "Clue: Evolution", detail: "เทคโนโลยีพัฒนาเพื่อแก้ปัญหาความสะดวกสบายที่ดีขึ้น" },
+        { q_th: "ความล้มเหลวในการทดสอบชิ้นงานมีค่าอย่างไร?", q_en: "What is the value of failure in testing a prototype?", a_th: ["บอกว่าเราไม่เก่ง", "บอกข้อมูลว่าจุดไหนต้องแก้ไข", "ไม่มีค่า", "ทำให้เสียเวลา"], a_en: ["Tells us we are not good", "Gives data on what needs fixing", "No value", "Waste of time"], correct: 1, th: "คำใบ้: ข้อมูลที่มีค่า", en: "Clue: Valuable data", detail: "ความล้มเหลวคือ 'ข้อมูล' ที่บอกเราว่าจุดไหนใช้ไม่ได้" },
+        { q_th: "ขั้นตอนการ 'ระบุปัญหา' ควรชัดเจนแค่ไหน?", q_en: "How clear should the 'Problem Identification' be?", a_th: ["กว้างๆ", "เจาะจงและมีขอบเขตที่ชัดเจน", "ไม่ต้องระบุ", "ระบุให้เป็นความลับ"], a_en: ["Broad", "Specific with clear boundaries", "No need", "Secret"], correct: 1, th: "คำใบ้: ยิ่งชัดเจน ยิ่งแก้ถูกจุด", en: "Clue: The clearer, the better", detail: "ความชัดเจนของปัญหาคือกุญแจสู่การแก้ที่ตรงจุด" },
+        { q_th: "ข้อใดไม่ใช่ผลกระทบทางบวกของเทคโนโลยี?", q_en: "Which is NOT a positive impact of technology?", a_th: ["ติดต่อสื่อสารได้เร็ว", "การเกิดขยะอิเล็กทรอนิกส์จำนวนมาก", "การเรียนรู้ผ่านระบบออนไลน์", "การรักษาพยาบาลแม่นยำขึ้น"], a_en: ["Fast communication", "Huge amount of e-waste", "Online learning", "More accurate medical treatment"], correct: 1, th: "คำใบ้: ขยะ", en: "Clue: Waste", detail: "ขยะอิเล็กทรอนิกส์คือผลกระทบด้านลบ" },
+        { q_th: "การทำงานเป็นทีมในโปรเจกต์วิศวกรรมมีส่วนช่วยในเรื่องใดที่สุด?", q_en: "What is the biggest benefit of teamwork in engineering projects?", a_th: ["แบ่งกันเล่น", "ระดมความเห็นและทักษะที่หลากหลาย", "ลดความรับผิดชอบ", "เสร็จงานไวขึ้นโดยไม่วางแผน"], a_en: ["Play together", "Brainstorming and diverse skills", "Reduce responsibility", "Finish faster without planning"], correct: 1, th: "คำใบ้: หลายสมองดีกว่าสมองเดียว", en: "Clue: More brains than one", detail: "ความหลากหลายช่วยให้เห็นปัญหาและทางแก้ที่กว้างขึ้น" },
+        { q_th: "ข้อใดจัดเป็น Input ในระบบเครื่องซักผ้า?", q_en: "Which is an Input in a washing machine system?", a_th: ["ผ้าสกปรกและผงซักฟอก", "การซัก", "ผ้าสะอาด", "เซนเซอร์วัดน้ำ"], a_en: ["Dirty clothes and detergent", "Washing", "Clean clothes", "Water sensor"], correct: 0, th: "คำใบ้: ของที่เราต้องใส่เข้าไป", en: "Clue: Things we must put in", detail: "สิ่งที่ใส่เข้าไปให้ระบบทำงานคือ Input" },
+        { q_th: "อะไรคือหัวใจของการออกแบบเชิงวิศวกรรม?", q_en: "What is the heart of engineering design?", a_th: ["ศิลปะ", "การแก้ปัญหาอย่างเป็นระบบ", "ความเร็ว", "การเงิน"], a_en: ["Art", "Systematic problem solving", "Speed", "Money"], correct: 1, th: "คำใบ้: ขั้นตอน", en: "Clue: The process", detail: "การแก้ปัญหาอย่างเป็นระบบ (Systematic) คือหัวใจสำคัญ" },
+        { q_th: "ถ้าเราต้องสร้างสะพาน สิ่งใดคือ 'เกณฑ์ความสำเร็จ' (Criteria)?", q_en: "If building a bridge, what is the 'Criteria' for success?", a_th: ["สะพานต้องแข็งแรงและรับน้ำหนักได้", "สีของสะพาน", "ราคาของสีทาสะพาน", "ความสวยงามเป็นหลัก"], a_en: ["Bridge must be strong and support weight", "Color of the bridge", "Price of paint", "Beauty primarily"], correct: 0, th: "คำใบ้: ประโยชน์การใช้งาน", en: "Clue: Utility", detail: "การรับน้ำหนักได้คือเกณฑ์วัดว่าสะพานใช้ได้จริง" },
+        { q_th: "การรวบรวมข้อมูลจากประสบการณ์ตรงของผู้อื่น จัดอยู่ในขั้นตอนใด?", q_en: "Collecting data from others' experiences falls under which step?", a_th: ["ระบุปัญหา", "รวบรวมข้อมูลและแนวคิด", "สร้างต้นแบบ", "นำเสนอ"], a_en: ["Identifying", "Gathering data and concepts", "Prototyping", "Presenting"], correct: 1, th: "คำใบ้: เรียนรู้จากคนอื่น", en: "Clue: Learning from others", detail: "การหาข้อมูลประกอบด้วยการค้นคว้าและสอบถาม" },
+        { q_th: "ทำไมต้องมีการนำเสนอ (Presentation) ผลงาน?", q_en: "Why present the work?", a_th: ["เพื่อให้ได้คะแนน", "เพื่อสื่อสารวิธีการแก้ปัญหาและรับข้อเสนอแนะ", "เพื่อโชว์ออฟ", "เพื่อจบโปรเจกต์"], a_en: ["To get grades", "To communicate solutions and get feedback", "To show off", "To finish the project"], correct: 1, th: "คำใบ้: แบ่งปันและปรับปรุง", en: "Clue: Share and improve", detail: "การนำเสนอช่วยให้เราได้รับความคิดเห็นจากผู้อื่น" },
+        { q_th: "กระบวนการคิดของวิศวกรคือ?", q_en: "What is an engineer's thought process?", a_th: ["คิดว่าจะได้เงินเท่าไหร่", "คิดว่าทำอย่างไรให้แก้ปัญหาได้ดีที่สุด", "คิดว่าจะทำให้เสร็จเร็วที่สุดโดยไม่ต้องทดสอบ", "คิดว่าใครจะทำแทนได้"], a_en: ["Thinking about money", "Thinking about how to solve the problem best", "Thinking about finishing fastest without testing", "Thinking about who can do it instead"], correct: 1, th: "คำใบ้: คุณภาพ", en: "Clue: Quality", detail: "เป้าหมายสูงสุดคือผลลัพธ์ที่มีคุณภาพ" },
+        { q_th: "เมื่อนำวัสดุมาประกอบเป็นชิ้นงาน คือขั้นตอนใด?", q_en: "Assembling materials into a project is which step?", a_th: ["การรวบรวมข้อมูล", "การสร้างต้นแบบ/ดำเนินการแก้ปัญหา", "การประเมินผล", "การระบุปัญหา"], a_en: ["Gathering data", "Prototyping/Implementation", "Evaluation", "Identifying"], correct: 1, th: "คำใบ้: ลงมือสร้าง", en: "Clue: Construction", detail: "ขั้นตอนการสร้างคือการลงมือทำให้เป็นรูปธรรม" }
+    ];
+
+    let currentLang = 'th';
+
+    function renderQuiz() {
+        const container = document.getElementById('quiz-container');
+        container.innerHTML = '';
+        questions.forEach((q, index) => {
+            const card = document.createElement('div');
+            card.className = 'question-card';
+            card.id = `q-${index}`;
+            card.innerHTML = `
+                <p><strong>${index + 1}. <span class="q-text">${currentLang === 'th' ? q.q_th : q.q_en}</span></strong></p>
+                <div class="clue">${currentLang === 'th' ? q.th : q.en}</div>
+                <div class="options">
+                    ${(currentLang === 'th' ? q.a_th : q.a_en).map((opt, i) => `
+                        <button onclick="checkAnswer(${index}, ${i})">${opt}</button>
+                    `).join('')}
+                </div>
+                <div class="explanation" id="exp-${index}">
+                    <strong>${currentLang === 'th' ? 'เฉลย:' : 'Explanation:'}</strong> ${q.detail}
+                </div>
+            `;
+            container.appendChild(card);
+        });
+    }
+
+    function checkAnswer(qIndex, aIndex) {
+        const q = questions[qIndex];
+        const card = document.getElementById(`q-${qIndex}`);
+        const buttons = card.querySelectorAll('button');
+        const exp = document.getElementById(`exp-${qIndex}`);
+        buttons.forEach(btn => btn.disabled = true);
+        if (aIndex === q.correct) {
+            buttons[aIndex].classList.add('correct');
+        } else {
+            buttons[aIndex].classList.add('wrong');
+            buttons[q.correct].classList.add('correct');
+        }
+        exp.style.display = 'block';
+        card.dataset.userAnswer = aIndex;
+    }
+
+    function toggleLang(lang) {
+        currentLang = lang;
+        const qTexts = document.querySelectorAll('.q-text');
+        const clues = document.querySelectorAll('.clue');
+        const buttons = document.querySelectorAll('.options');
+        questions.forEach((q, i) => {
+            qTexts[i].innerText = currentLang === 'th' ? q.q_th : q.q_en;
+            clues[i].innerText = currentLang === 'th' ? q.th : q.en;
+            const btns = buttons[i].querySelectorAll('button');
+            const options = currentLang === 'th' ? q.a_th : q.a_en;
+            btns.forEach((btn, j) => {
+                btn.innerText = options[j];
+            });
+        });
+    }
+
+    function submitQuiz() {
+        let score = 0;
+        let attempted = 0;
+        questions.forEach((q, i) => {
+            const card = document.getElementById(`q-${i}`);
+            if (card.dataset.userAnswer !== undefined && parseInt(card.dataset.userAnswer) === q.correct) {
+                score++;
+            }
+        });
+        alert("ระบบจำลองการส่งข้อมูลคะแนนไปที่ thee.chinpong@hmail.com เรียบร้อยแล้ว");
+        document.getElementById('result-area').innerHTML = `<div class="summary-box"><h2>คะแนนรวม: ${score} / 25</h2><p>ทบทวนบทเรียนและทำความเข้าใจให้ถ่องแท้เพื่อความสำเร็จ!</p></div>`;
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+    renderQuiz();
+</script>
+</body>
+</html>
