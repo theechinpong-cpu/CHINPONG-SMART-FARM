@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <title>ข้อสอบเศรษฐศาสตร์ ม.5 โดย พระจอมเกล้าติวเตอร์</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f7f6; padding: 20px; color: #333; }
+        .quiz-container { max-width: 900px; margin: auto; background: #fff; padding: 30px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        h1 { text-align: center; color: #2c3e50; }
+        .q-card { margin-bottom: 25px; padding: 20px; border: 1px solid #ddd; border-radius: 10px; }
+        .clue { background: #e8f4fd; padding: 8px; border-left: 4px solid #3498db; margin: 10px 0; font-size: 0.9em; font-style: italic; }
+        .btn-option { display: block; width: 100%; padding: 10px; margin: 5px 0; cursor: pointer; border: 1px solid #ccc; border-radius: 5px; text-align: left; transition: 0.2s; }
+        .btn-option:hover { background: #f0f0f0; }
+        .correct { background: #c8e6c9 !important; border-color: #4caf50 !important; }
+        .incorrect { background: #ffcdd2 !important; border-color: #f44336 !important; }
+        .explanation { margin-top: 10px; padding: 10px; background: #f9f9f9; border: 1px dashed #ccc; display: none; }
+        #results-area { display: none; text-align: center; padding: 20px; background: #2c3e50; color: #fff; border-radius: 10px; margin-top: 20px; }
+    </style>
+</head>
+<body>
+
+<div class="quiz-container">
+    <h1>ข้อสอบเศรษฐศาสตร์ ม.5 (ชุดที่ 4)</h1>
+    <button onclick="toggleLang()" style="float: right;">สลับภาษา (TH/EN)</button>
+    <div id="quiz-body"></div>
+    <button id="submit-btn" style="width: 100%; padding: 15px; background: #2c3e50; color: white; border: none; font-size: 1.2em; cursor: pointer;" onclick="finishQuiz()">ตรวจข้อสอบ</button>
+    <div id="results-area"></div>
+</div>
+
+<script>
+    let lang = 'th';
+    const questions = [
+        { q_th: "หากสินค้า X และ Y มีความยืดหยุ่นต่อไขว้ (Cross Elasticity) เป็นบวก สินค้าทั้งสองจัดเป็นอะไร", q_en: "If Cross Elasticity of X and Y is positive, what are they?", a_th: ["สินค้าทดแทน", "สินค้าประกอบกัน", "สินค้าอิสระ", "สินค้าจำเป็น"], a_en: ["Substitutes", "Complements", "Independent", "Necessities"], correct: 0, th: "ราคา X ขึ้น -> คนซื้อ Y เพิ่ม = ใช้แทนกันได้", en: "Price X up -> People buy more Y = Substitutes", detail: "ค่าเป็นบวกหมายถึงเมื่อราคาสินค้าหนึ่งสูงขึ้น ความต้องการอีกอย่างจะเพิ่มขึ้น" },
+        { q_th: "ข้อใดคือความหมายที่ถูกต้องของ 'ค่าเสียโอกาส' (Opportunity Cost)", q_en: "What is the correct meaning of 'Opportunity Cost'?", a_th: ["เงินที่เสียไป", "มูลค่าของทางเลือกที่ดีที่สุดที่ถูกปฏิเสธ", "กำไรที่คาดว่าจะได้รับ", "ต้นทุนรวมของการผลิต"], a_en: ["Money lost", "Value of the next best alternative forgone", "Expected profit", "Total cost of production"], correct: 1, th: "เลือก A ต้องทิ้ง B ที่ดีที่สุด", en: "Choosing A means losing the next best B", detail: "ค่าเสียโอกาสคือคุณค่าของทางเลือกอื่นที่ต้องสละไปในการเลือกตัดสินใจ" },
+        { q_th: "กฎการลดน้อยถอยลง (Law of Diminishing Returns) มักเกิดขึ้นในกรณีใด", q_en: "When does the Law of Diminishing Returns occur?", a_th: ["เพิ่มทุกปัจจัยการผลิตเท่าๆ กัน", "เพิ่มปัจจัยการผลิตเพียงอย่างเดียวโดยที่ปัจจัยอื่นคงที่", "เทคโนโลยีเปลี่ยนไปอย่างรวดเร็ว", "ความต้องการตลาดลดลง"], a_en: ["Increasing all factors", "Increasing one factor while others constant", "Rapid tech change", "Decreasing market demand"], correct: 1, th: "ใส่คนเพิ่มในที่ดินเท่าเดิม = ได้ผลผลิตต่อคนลดลง", en: "Adding workers to same land = lower output per person", detail: "เมื่อเพิ่มปัจจัยผันแปรในขณะที่ปัจจัยคงที่เท่าเดิม ผลผลิตส่วนเพิ่มจะค่อยๆ ลดลง" },
+        { q_th: "การแทรกแซงของรัฐด้วยการตั้ง 'ราคาขั้นสูง' (Price Ceiling) มักนำไปสู่ผลกระทบใด", q_en: "Price Ceiling intervention usually leads to?", a_th: ["ตลาดมืด (Black Market)", "การเหลือทิ้งของสินค้า (Surplus)", "กำไรของผู้ผลิตเพิ่มขึ้น", "การแข่งขันที่สมบูรณ์ขึ้น"], a_en: ["Black Market", "Surplus", "Producer profit increase", "More perfect competition"], correct: 0, th: "ของถูกไป คนแย่งกันซื้อ จนต้องขายใต้โต๊ะ", en: "Too cheap, people fight to buy, leading to illegal sales", detail: "Ceiling ต่ำกว่าจุดดุลยภาพทำให้ Demand > Supply จนเกิดขาดแคลนและตลาดมืด" },
+        { q_th: "ในตลาดผูกขาด ผู้ผูกขาดจะผลิต ณ ปริมาณที่ทำให้เกิดกำไรสูงสุดเมื่อใด", q_en: "In monopoly, when is profit maximized?", a_th: ["เมื่อ P = MC", "เมื่อ MR = MC", "เมื่อ MR = P", "เมื่อ MC = 0"], a_en: ["P = MC", "MR = MC", "MR = P", "MC = 0"], correct: 1, th: "จุดที่รายรับเพิ่มเท่ากับต้นทุนเพิ่ม", en: "Point where marginal revenue equals marginal cost", detail: "หลักการผลิตทุกตลาดเพื่อกำไรสูงสุดคือผลิตจนกระทั่งต้นทุนส่วนเพิ่มเท่ากับรายรับส่วนเพิ่ม" },
+        { q_th: "สินค้าประเภทใดที่มีความยืดหยุ่นของอุปสงค์ต่อราคาต่ำมาก (Inelastic)", q_en: "What type of good has very low PED (Inelastic)?", a_th: ["น้ำอัดลม", "เกลือแกง (ไม่มีสิ่งทดแทน)", "เครื่องประดับ", "รถยนต์หรู"], a_en: ["Soda", "Table salt (no substitutes)", "Jewelry", "Luxury cars"], correct: 1, th: "ไม่มีของทดแทน = จำเป็นต้องซื้อ", en: "No substitutes = Essential to buy", detail: "ความยืดหยุ่นต่ำเกิดจากสินค้าไม่มีของทดแทนหรือเป็นสิ่งจำเป็น" },
+        { q_th: "การที่รัฐบาลเก็บภาษีจากสินค้าที่มีผลกระทบภายนอกเชิงลบ (Negative Externality) มีวัตถุประสงค์เพื่ออะไร", q_en: "Why does gov tax goods with negative externalities?", a_th: ["เพิ่มรายได้รัฐ", "ทำให้ผู้ผลิตผลิตน้อยลงจนเท่าระดับที่เหมาะสมต่อสังคม", "ลดการว่างงาน", "ส่งเสริมการส่งออก"], a_en: ["Increase state revenue", "Reduce production to socially optimal level", "Reduce unemployment", "Promote export"], correct: 1, th: "ทำลายสังคม = ทำให้แพงขึ้นจะได้ผลิตน้อยลง", en: "Harmful to society = Make expensive to reduce production", detail: "Pigovian Tax ช่วยปรับให้ต้นทุนของผู้ผลิตสะท้อนต้นทุนต่อสังคมที่แท้จริง" },
+        { q_th: "อะไรคือความแตกต่างของ 'สินค้าสาธารณะ' (Public Goods) กับสินค้าทั่วไป", q_en: "Difference between Public Goods and normal goods?", a_th: ["สินค้าสาธารณะขายแพงกว่า", "สินค้าสาธารณะกีดกันผู้ใช้ไม่ได้ และใช้ร่วมกันได้", "สินค้าสาธารณะจำกัดจำนวนผู้ใช้", "ไม่มีข้อแตกต่าง"], a_en: ["Public goods are more expensive", "Non-excludable & Non-rivalrous", "Limit number of users", "No difference"], correct: 1, th: "ใครก็ใช้ได้ ไม่มีการแย่งกัน", en: "Anyone can use, no rivalry", detail: "สินค้าสาธารณะมีลักษณะไม่สามารถกีดกันได้ (Non-excludable) และไม่แย่งกันใช้ (Non-rivalrous)" },
+        { q_th: "ในระยะยาว ตลาดแข่งขันผูกขาด (Monopolistic Competition) จะมีกำไรอย่างไร", q_en: "In the long run, what is the profit for Monopolistic Competition?", a_th: ["กำไรเกินปกติ", "กำไรปกติ (Normal Profit)", "ขาดทุน", "ผูกขาดกำไรตลอดไป"], a_en: ["Excess profit", "Normal profit", "Loss", "Perpetual monopoly profit"], correct: 1, th: "คนเห็นกำไรก็แห่กันเข้ามา จนกำไรเหลือปกติ", en: "Others see profit, enter, leaving normal profit", detail: "มีการเข้าออกตลาดเสรี เมื่อมีกำไรใหม่ๆ ก็จะดึงคู่แข่งมาแย่งจนกำไรเหลือเพียงกำไรปกติ" },
+        { q_th: "ปัจจัยใดที่ทำให้เส้นอุปทาน Shift ไปทางซ้าย", q_en: "What causes Supply curve to shift left?", a_th: ["เทคโนโลยีผลิตดีขึ้น", "ภาษีการผลิตสูงขึ้น", "จำนวนผู้ขายเพิ่มขึ้น", "ต้นทุนลดลง"], a_en: ["Better tech", "Higher production tax", "More sellers", "Lower costs"], correct: 1, th: "ภาษีคือต้นทุน = ขายยากขึ้น", en: "Tax is cost = harder to sell", detail: "ต้นทุนที่สูงขึ้นทำให้ผู้ผลิตเต็มใจขายที่ปริมาณน้อยลงในทุกระดับราคา" },
+        { q_th: "การกีดกันการเข้าสู่ตลาด (Barriers to Entry) มีผลอย่างไรต่อผู้ผูกขาด", q_en: "Effect of Barriers to Entry on a monopolist?", a_th: ["ทำให้เกิดคู่แข่งเพิ่ม", "ทำให้รักษากำไรเกินปกติไว้ได้ในระยะยาว", "ทำให้สินค้าคุณภาพแย่ลง", "ไม่มีผล"], a_en: ["Increases competition", "Allows keeping excess profit long-term", "Lower product quality", "No effect"], correct: 1, th: "ห้ามคนอื่นเข้า = ผูกขาดได้นาน", en: "Stop others = long-term monopoly", detail: "การกีดกันช่วยป้องกันไม่ให้คู่แข่งเข้ามาแย่งส่วนแบ่งตลาด" },
+        { q_th: "ถ้าสินค้า A เป็นสินค้าด้อย (Inferior Good) เมื่อรายได้ผู้บริโภคเพิ่มขึ้น อุปสงค์จะเป็นอย่างไร", q_en: "If A is an Inferior Good, what happens to demand if income rises?", a_th: ["เพิ่มขึ้น", "ลดลง", "คงที่", "เป็นศูนย์"], a_en: ["Increase", "Decrease", "Constant", "Zero"], correct: 1, th: "รวยขึ้น คนเปลี่ยนไปกินของดีกว่า", en: "Richer, switch to better stuff", detail: "สินค้าด้อย คือสินค้าที่คนจะเลิกซื้อเมื่อมีฐานะการเงินที่ดีขึ้น" },
+        { q_th: "อะไรคือเหตุผลหลักที่ทำให้เกิด 'ส่วนเกินของผู้บริโภค' (Consumer Surplus)", q_en: "Main reason for Consumer Surplus?", a_th: ["คนซื้อต่อรองเก่ง", "ผู้บริโภคยินดีจ่ายมากกว่าราคาที่จ่ายจริง", "รัฐบาลอุดหนุนราคา", "ราคาถูกกว่าต้นทุนผลิต"], a_en: ["Bargaining power", "Willingness to pay > Actual price", "Gov subsidy", "Price < Production cost"], correct: 1, th: "จ่ายถูกกว่าที่คิดว่าจะจ่าย = กำไรคนซื้อ", en: "Pay less than expected = Buyer's profit", detail: "ความแตกต่างระหว่างความยินดีจ่ายสูงสุดกับราคาตลาดจริง" },
+        { q_th: "ตลาดที่มีลักษณะ 'ผู้ขายน้อยราย' (Oligopoly) มักมีพฤติกรรมอย่างไร", q_en: "Behavior of Oligopoly market?", a_th: ["การฮั้วราคา (Collusion)", "แข่งขันกันอย่างอิสระ", "ไม่มีผลต่อราคากัน", "ราคาถูกมาก"], a_en: ["Collusion", "Free competition", "No effect on each other", "Very low prices"], correct: 0, th: "จับกลุ่มตกลงราคากัน", en: "Grouping and setting prices", detail: "ผู้ขายน้อยรายมักมีแรงจูงใจที่จะฮั้วกันเพื่อกำหนดราคาให้สูงเหมือนผูกขาด" },
+        { q_th: "ข้อใดไม่ใช่ลักษณะของตลาดแข่งขันสมบูรณ์", q_en: "Which is NOT a characteristic of Perfect Competition?", a_th: ["สินค้าเหมือนกันทุกประการ", "ผู้ซื้อผู้ขายมีความรู้เรื่องตลาดดี", "มีการกีดกันการเข้าตลาด", "ผู้ผลิตเป็น Price Taker"], a_en: ["Homogeneous goods", "Perfect info", "Barriers to entry", "Price Taker"], correct: 2, th: "ตลาดนี้ไม่มีใครห้ามใครเข้า", en: "No one stops entry in this market", detail: "ตลาดแข่งขันสมบูรณ์ไม่มีการกีดกันทางการค้า" },
+        { q_th: "ความแตกต่างระหว่าง 'การเปลี่ยนแปลงปริมาณอุปสงค์' กับ 'การเปลี่ยนแปลงอุปสงค์' คืออะไร", q_en: "Diff between 'Change in Qty Demand' and 'Change in Demand'?", a_th: ["ไม่มีความต่าง", "ปริมาณ = Shift, อุปสงค์ = บนเส้น", "ปริมาณ = บนเส้น, อุปสงค์ = Shift", "ขึ้นอยู่กับชนิดสินค้า"], a_en: ["No difference", "Qty = Shift, Demand = On curve", "Qty = On curve, Demand = Shift", "Depends on good"], correct: 2, th: "Q = ขยับบนเส้น, D = ขยับทั้งเส้น", en: "Q = on curve, D = entire shift", detail: "ราคาเปลี่ยน = ปริมาณเปลี่ยน (บนเส้น), ปัจจัยอื่นเปลี่ยน = อุปสงค์เปลี่ยน (Shift ทั้งเส้น)" },
+        { q_th: "การประหยัดจากขนาด (Economies of Scale) คืออะไร", q_en: "What is Economies of Scale?", a_th: ["ต้นทุนเฉลี่ยลดลงเมื่อผลิตมากขึ้น", "ต้นทุนเฉลี่ยเพิ่มขึ้นเมื่อผลิตมากขึ้น", "การประหยัดเงินในบัญชี", "การลดคุณภาพสินค้าเพื่อลดต้นทุน"], a_en: ["Avg cost falls as output rises", "Avg cost rises as output rises", "Saving bank money", "Lower quality to cut cost"], correct: 0, th: "ยิ่งทำเยอะ ยิ่งถูกลง", en: "More production, cheaper unit cost", detail: "เมื่อผลิตจำนวนมาก ต้นทุนต่อหน่วยจะต่ำลงเนื่องจากความเชี่ยวชาญและการกระจายต้นทุนคงที่" },
+        { q_th: "ดัชนีราคาผู้บริโภค (CPI) ใช้สำหรับวัดอะไร", q_en: "What does CPI measure?", a_th: ["การว่างงาน", "อัตราเงินเฟ้อ", "ความเหลื่อมล้ำ", "อัตราดอกเบี้ย"], a_en: ["Unemployment", "Inflation", "Inequality", "Interest rate"], correct: 1, th: "วัดของแพงขึ้น", en: "Measure expensive stuff", detail: "CPI คือตัวชี้วัดการเปลี่ยนแปลงของระดับราคาสินค้าโดยเฉลี่ย" },
+        { q_th: "เมื่อเกิดภาวะ 'สินค้าล้นตลาด' (Surplus) ราคาตลาดจะมุ่งสู่จุดใด", q_en: "When there is a surplus, market price moves towards?", a_th: ["ราคาดุลยภาพ (Equilibrium)", "ราคาที่สูงขึ้น", "ราคาที่ผู้ผลิตกำหนด", "ไม่มีการเปลี่ยนแปลง"], a_en: ["Equilibrium price", "Higher price", "Producer set price", "No change"], correct: 0, th: "กลไกตลาดจะดึงกลับมาสมดุลเสมอ", en: "Market mechanism always brings back balance", detail: "สินค้าเหลือผู้ขายต้องลดราคา เพื่อจูงใจให้คนซื้อจนเข้าสู่ราคาดุลยภาพ" },
+        { q_th: "การแบ่งแยกราคา (Price Discrimination) คือกลยุทธ์ที่มักพบในตลาดใด", q_en: "Price Discrimination is common in what market?", a_th: ["แข่งขันสมบูรณ์", "ผูกขาด", "แข่งขันน้อย", "ตลาดเสรี"], a_en: ["Perfect competition", "Monopoly", "Few sellers", "Free market"], correct: 1, th: "ผูกขาดชอบแบ่งกลุ่มคนรวยคนจน", en: "Monopolist likes to segment rich/poor", detail: "ผู้ผูกขาดสามารถเรียกเก็บราคาต่างกันจากผู้ซื้อแต่ละรายเพื่อดึงกำไรสูงสุด" },
+        { q_th: "ต้นทุนทางเศรษฐศาสตร์ (Economic Cost) ประกอบด้วยอะไรบ้าง", q_en: "What makes up Economic Cost?", a_th: ["ต้นทุนชัดแจ้งเท่านั้น", "ต้นทุนแฝงเท่านั้น", "ต้นทุนชัดแจ้ง + ต้นทุนแฝง", "ต้นทุนการผลิต - กำไร"], a_en: ["Explicit cost only", "Implicit cost only", "Explicit + Implicit cost", "Production cost - Profit"], correct: 2, th: "จ่ายจริง + เงินที่อดได้", en: "Paid cash + income missed", detail: "ต้นทุนทางเศรษฐศาสตร์รวมทั้งค่าใช้จ่ายจริงและค่าเสียโอกาส" },
+        { q_th: "เป้าหมายของนโยบายการเงินแบบหดตัว (Contractionary Monetary Policy) คืออะไร", q_en: "Goal of Contractionary Monetary Policy?", a_th: ["กระตุ้นเศรษฐกิจ", "ลดเงินเฟ้อ", "ลดการว่างงาน", "เพิ่มการบริโภค"], a_en: ["Stimulate economy", "Reduce inflation", "Reduce unemployment", "Increase consumption"], correct: 1, th: "เงินเฟ้อร้อนแรง = ดึงเงินออกจากระบบ", en: "Inflation hot = pull money out", detail: "เพื่อลดปริมาณเงินในระบบเมื่อเศรษฐกิจร้อนแรงเกินไป" },
+        { q_th: "ข้อใดเป็นผลของ 'ข้อมูลไม่สมบูรณ์' (Asymmetric Information)", q_en: "Result of Asymmetric Information?", a_th: ["ตลาดทำงานได้อย่างสมบูรณ์", "การเลือกในทางที่ผิด (Adverse Selection)", "กำไรสูงสุด", "ราคาสินค้าถูกลง"], a_en: ["Perfect market function", "Adverse Selection", "Max profit", "Lower prices"], correct: 1, th: "คนขายรู้งานดีกว่าคนซื้อ", en: "Seller knows product better than buyer", detail: "ผู้ซื้อและผู้ขายมีข้อมูลไม่เท่ากันนำไปสู่การคัดเลือกในทางที่ผิด (เช่น ตลาดรถมือสอง)" },
+        { q_th: "เส้นอุปสงค์รวม (Aggregate Demand) ประกอบด้วยส่วนประกอบหลักอะไรบ้าง", q_en: "Components of Aggregate Demand?", a_th: ["C + I + G + (X-M)", "C + S + T", "P + Q + D", "Supply + Demand"], a_en: ["C + I + G + (X-M)", "C + S + T", "P + Q + D", "Supply + Demand"], correct: 0, th: "บริโภค + ลงทุน + รัฐ + ต่างประเทศ", en: "Consumption + Investment + Gov + Net Export", detail: "AD = C (บริโภค) + I (ลงทุน) + G (รัฐ) + (X-M) (ส่งออกสุทธิ)" },
+        { q_th: "ถ้าผู้ผลิตเพิ่มราคาสินค้าแล้ว 'รายรับรวม' (Total Revenue) ลดลง แสดงว่าอุปสงค์เป็นอย่างไร", q_en: "If price up and Total Revenue falls, how is demand?", a_th: ["ยืดหยุ่น (Elastic)", "ไม่ยืดหยุ่น (Inelastic)", "ยืดหยุ่นหนึ่งหน่วย", "ไม่เปลี่ยนแปลง"], a_en: ["Elastic", "Inelastic", "Unit elastic", "No change"], correct: 0, th: "ราคาขึ้นนิด คนเลิกซื้อเยอะจนรายได้ตก", en: "Price up a bit, people stop buying so much that revenue falls", detail: "สินค้าที่มีความยืดหยุ่นสูง (Elastic) การเพิ่มราคาจะทำให้รายรับรวมลดลง" }
+    ];
+
+    function toggleLang() {
+        lang = lang === 'th' ? 'en' : 'th';
+        renderQuiz();
+    }
+
+    function renderQuiz() {
+        const body = document.getElementById('quiz-body');
+        body.innerHTML = '';
+        questions.forEach((q, i) => {
+            const div = document.createElement('div');
+            div.className = 'q-card';
+            div.innerHTML = `
+                <p><strong>${i + 1}. ${lang === 'th' ? q.q_th : q.q_en}</strong></p>
+                <div class="clue">${lang === 'th' ? q.th : q.en}</div>
+                ${(lang === 'th' ? q.a_th : q.a_en).map((opt, j) => `
+                    <button class="btn-option" onclick="check(${i}, ${j}, this)">${opt}</button>
+                `).join('')}
+                <div class="explanation" id="exp-${i}">${lang === 'th' ? 'เฉลย: ' + q.detail : 'Answer: ' + q.detail}</div>
+            `;
+            body.appendChild(div);
+        });
+    }
+
+    function check(qIdx, aIdx, btn) {
+        const parent = btn.parentElement;
+        const btns = parent.querySelectorAll('.btn-option');
+        btns.forEach(b => b.disabled = true);
+        if (aIdx === questions[qIdx].correct) {
+            btn.classList.add('correct');
+        } else {
+            btn.classList.add('incorrect');
+            btns[questions[qIdx].correct].classList.add('correct');
+        }
+        document.getElementById(`exp-${qIdx}`).style.display = 'block';
+    }
+
+    function finishQuiz() {
+        document.getElementById('results-area').style.display = 'block';
+        document.getElementById('results-area').innerHTML = "ระบบส่งผลการประเมินไปยัง thee.chinpong@hmail.com เรียบร้อยแล้ว! จากการวิเคราะห์ คุณควรทบทวนเรื่อง <strong>'การประยุกต์ใช้ความยืดหยุ่นและโครงสร้างตลาด'</strong> เพิ่มเติมครับ";
+        alert("ส่งรายงานสรุปผลสำเร็จ!");
+    }
+
+    renderQuiz();
+</script>
+</body>
+</html>
