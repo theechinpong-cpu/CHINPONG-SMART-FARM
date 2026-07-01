@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <title>ข้อสอบวิชาออกแบบและเทคโนโลยี ม.1 - พระจอมเกล้าติวเตอร์</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; padding: 20px; line-height: 1.6; }
+        .container { max-width: 800px; margin: auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .question-card { border: 1px solid #ddd; padding: 20px; margin-bottom: 20px; border-radius: 8px; transition: 0.3s; }
+        .clue { background: #e3f2fd; padding: 10px; border-left: 5px solid #2196f3; margin: 10px 0; font-size: 0.9em; font-style: italic; }
+        .options { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
+        button { cursor: pointer; padding: 10px; border: 1px solid #ccc; border-radius: 5px; background: #fff; transition: 0.2s; }
+        button:hover { background: #f9f9f9; }
+        .correct { background-color: #c8e6c9 !important; border-color: #4caf50 !important; }
+        .wrong { background-color: #ffcdd2 !important; border-color: #f44336 !important; }
+        .explanation { margin-top: 10px; padding: 10px; background: #fff3e0; display: none; border-radius: 5px; }
+        #controls { margin-bottom: 20px; text-align: right; }
+        .summary-box { padding: 20px; background: #333; color: white; border-radius: 8px; margin-top: 20px; text-align: center; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div id="controls">
+        <button onclick="toggleLang('th')">TH</button>
+        <button onclick="toggleLang('en')">EN</button>
+    </div>
+    <div id="quiz-container"></div>
+    <button id="submit-btn" style="width: 100%; padding: 15px; background: #4caf50; color: white; font-size: 1.2em;" onclick="submitQuiz()">ตรวจข้อสอบ / Check Exam</button>
+    <div id="result-area"></div>
+    <p style="text-align: center; margin-top: 20px;">เขียนโดย พระจอมเกล้าติวเตอร์</p>
+</div>
+
+<script>
+    const questions = [
+        // 25 Questions Array
+        { q_th: "ข้อใดคือองค์ประกอบพื้นฐานของระบบทางเทคโนโลยี?", q_en: "What are the fundamental components of a technological system?", a_th: ["ตัวป้อน กระบวนการ ผลผลิต", "วัสดุ อุปกรณ์ แรงงาน", "ปัญหา วิธีการ สรุปผล", "การออกแบบ การทดสอบ การนำเสนอ"], a_en: ["Input, Process, Output", "Materials, Equipment, Labor", "Problem, Method, Conclusion", "Design, Test, Presentation"], correct: 0, th: "คำใบ้: จำ I-P-O ไว้", en: "Clue: Remember I-P-O", detail: "ระบบประกอบด้วย ตัวป้อน(Input), กระบวนการ(Process), และผลผลิต(Output)" },
+        { q_th: "ข้อมูลย้อนกลับ (Feedback) มีความสำคัญอย่างไรในระบบเทคโนโลยี?", q_en: "What is the importance of Feedback in a technological system?", a_th: ["เพื่อเพิ่มมูลค่าผลผลิต", "เพื่อควบคุมระบบให้ได้ผลลัพธ์ตามต้องการ", "เพื่อเปลี่ยนรูปแบบ Input", "เพื่อลดต้นทุนกระบวนการ"], a_en: ["To increase output value", "To control the system to meet desired goals", "To change the Input format", "To reduce process costs"], correct: 1, th: "คำใบ้: ทำหน้าที่ตรวจสอบ", en: "Clue: It acts as a monitor", detail: "Feedback ช่วยให้ระบบปรับตัวเองได้หากผลลัพธ์ไม่เป็นไปตามเป้าหมาย" },
+        { q_th: "หากระบบไม่มี 'ตัวป้อน' (Input) จะเกิดอะไรขึ้น?", q_en: "What happens if a system has no Input?", a_th: ["ระบบทำงานเร็วขึ้น", "ระบบทำงานได้ปกติ", "ระบบไม่สามารถเริ่มต้นทำงานได้", "ผลผลิตจะมีคุณภาพสูงขึ้น"], a_en: ["The system runs faster", "The system runs normally", "The system cannot start", "Output quality will be higher"], correct: 2, th: "คำใบ้: เชื้อเพลิงของการทำงาน", en: "Clue: Fuel for the operation", detail: "Input คือวัตถุดิบหรือทรัพยากรเริ่มต้น หากไม่มี ระบบจะไม่มีข้อมูลหรือสิ่งของในการทำงาน" },
+        { q_th: "เทคโนโลยีในข้อใด จัดเป็น 'ผลผลิต' (Output) ของการทำนาข้าว?", q_en: "Which of the following is considered the 'Output' of rice farming?", a_th: ["เมล็ดพันธุ์ข้าว", "การไถนา", "ข้าวสาร/ข้าวเปลือก", "ปุ๋ย"], a_en: ["Rice seeds", "Plowing", "Milled rice/Paddy", "Fertilizer"], correct: 2, th: "คำใบ้: สิ่งที่ได้ตอนจบ", en: "Clue: The end product", detail: "ข้าวสารหรือข้าวเปลือกคือผลลัพธ์ที่ต้องการจากการทำนา" },
+        { q_th: "ข้อใดคือตัวอย่างของ 'กระบวนการ' (Process) ในการทำน้ำผลไม้ปั่น?", q_en: "Which of the following is an example of 'Process' in making a fruit smoothie?", a_th: ["ผลไม้", "การปั่น", "น้ำเชื่อม", "น้ำผลไม้ที่พร้อมดื่ม"], a_en: ["Fruits", "Blending", "Syrup", "Ready-to-drink juice"], correct: 1, th: "คำใบ้: ขั้นตอนการเปลี่ยนรูป", en: "Clue: The transformation step", detail: "การปั่นคือการเปลี่ยนสถานะของผลไม้ให้เป็นน้ำผลไม้ปั่น" },
+        { q_th: "หากพัดลมไม่หมุนแล้วเราตรวจสอบสายไฟ สิ่งนี้เรียกว่าอะไรในเชิงระบบ?", q_en: "If a fan doesn't spin and we check the wire, what is this called in systems terms?", a_th: ["การทดสอบระบบ", "การแก้ปัญหาโดยใช้ Feedback", "การเปลี่ยน Input", "การเพิ่ม Output"], a_en: ["System testing", "Problem solving using Feedback", "Changing Input", "Increasing Output"], correct: 1, th: "คำใบ้: เมื่อระบบผิดปกติ เราทำอะไร?", en: "Clue: When the system fails, what do we do?", detail: "การตรวจสอบเพื่อแก้ไขให้กลับมาทำงานปกติคือกระบวนการ Feedback" },
+        { q_th: "เทคโนโลยีมักส่งผลกระทบด้านลบอย่างไรต่อสิ่งแวดล้อม?", q_en: "How does technology usually negatively affect the environment?", a_th: ["เพิ่มพื้นที่สีเขียว", "การเกิดมลพิษจากของเสีย", "การใช้พลังงานสะอาด", "การประหยัดน้ำ"], a_en: ["Increasing green areas", "Pollution from waste", "Using clean energy", "Saving water"], correct: 1, th: "คำใบ้: ของเสียคือผลพลอยได้", en: "Clue: Waste is a byproduct", detail: "เทคโนโลยีหลายอย่างสร้างขยะและมลพิษ" },
+        { q_th: "ขั้นตอนแรกของกระบวนการออกแบบเชิงวิศวกรรมคืออะไร?", q_en: "What is the first step of the Engineering Design Process?", a_th: ["การระบุปัญหา", "การรวบรวมข้อมูล", "การทดสอบ", "การนำเสนอ"], a_en: ["Defining the problem", "Gathering information", "Testing", "Presenting"], correct: 0, th: "คำใบ้: ต้องรู้ก่อนว่าแก้เรื่องอะไร", en: "Clue: Must know what you are solving", detail: "ถ้าไม่รู้ปัญหา ก็ไม่รู้จะแก้อะไร" },
+        { q_th: "การ 'ระดมสมอง' (Brainstorming) ควรทำในขั้นตอนใด?", q_en: "When should 'Brainstorming' be done?", a_th: ["ก่อนระบุปัญหา", "หลังสรุปผล", "ระหว่างการรวบรวมข้อมูลและหาวิธีแก้ปัญหา", "หลังนำเสนอ"], a_en: ["Before defining the problem", "After conclusion", "During information gathering & solutions", "After presentation"], correct: 2, th: "คำใบ้: สร้างทางเลือก", en: "Clue: Creating options", detail: "เมื่อรู้ปัญหาแล้ว ต้องคิดวิธีแก้หลายๆ ทาง" },
+        { q_th: "ข้อใดคือจุดประสงค์ของการ 'ทดสอบ' (Test) ในกระบวนการวิศวกรรม?", q_en: "What is the purpose of 'Testing' in the engineering process?", a_th: ["เพื่อความสนุก", "เพื่อตรวจสอบว่าผลงานใช้งานได้จริงและตรงโจทย์หรือไม่", "เพื่อโชว์ผลงาน", "เพื่อลดเวลาการทำงาน"], a_en: ["For fun", "To check if it works and meets requirements", "To show off", "To reduce work time"], correct: 1, th: "คำใบ้: เพื่อหาข้อบกพร่อง", en: "Clue: To find flaws", detail: "การทดสอบคือการยืนยันประสิทธิภาพ" },
+        { q_th: "ทำไมกระบวนการออกแบบจึงต้องมีการ 'วนซ้ำ' (Iterative)?", q_en: "Why is the design process 'Iterative'?", a_th: ["เพราะทำครั้งเดียวมักไม่สำเร็จ", "เพื่อให้งานดูซับซ้อนขึ้น", "เพื่อให้ได้เอกสารเยอะขึ้น", "เพราะคนสั่งงานอยากให้ทำใหม่"], a_en: ["Because it rarely succeeds the first time", "To make work look complex", "To get more documents", "Because the boss wants it"], correct: 0, th: "คำใบ้: การพัฒนาไม่สิ้นสุด", en: "Clue: Development never ends", detail: "การวนซ้ำช่วยในการปรับปรุงและเพิ่มประสิทธิภาพ" },
+        { q_th: "การเลือกวัสดุในการสร้างชิ้นงาน จัดอยู่ในขั้นตอนใด?", q_en: "Selecting materials for a project falls under which step?", a_th: ["ระบุปัญหา", "วางแผนและดำเนินการแก้ปัญหา", "นำเสนอ", "วิเคราะห์Feedback"], a_en: ["Defining problem", "Planning and Development", "Presenting", "Analyzing Feedback"], correct: 1, th: "คำใบ้: ขั้นตอนลงมือทำ", en: "Clue: The execution step", detail: "เมื่อวางแผนเสร็จ ต้องเลือกวัสดุเพื่อเริ่มสร้าง" },
+        { q_th: "ใครคือผู้ที่ใช้กระบวนการออกแบบเชิงวิศวกรรม?", q_en: "Who uses the Engineering Design Process?", a_th: ["แค่วิศวกร", "คนทั่วไปที่ต้องการแก้ปัญหาอย่างเป็นระบบ", "นักเรียนเท่านั้น", "นักวิทยาศาสตร์"], a_en: ["Only engineers", "Anyone who wants to solve problems systematically", "Only students", "Scientists"], correct: 1, th: "คำใบ้: ทุกคนใช้ได้", en: "Clue: Everyone can use it", detail: "กระบวนการนี้เป็นเครื่องมือสากลในการแก้ปัญหา" },
+        { q_th: "การบันทึกผลการทดสอบมีความสำคัญอย่างไร?", q_en: "Why is recording test results important?", a_th: ["เพื่อให้ได้กระดาษเยอะๆ", "เพื่อเป็นหลักฐานในการปรับปรุง", "เพื่อความสวยงาม", "เพื่ออวดครู"], a_en: ["To get lots of paper", "To use as evidence for improvement", "For beauty", "To show the teacher"], correct: 1, th: "คำใบ้: เพื่อการพัฒนา", en: "Clue: For development", detail: "ข้อมูลเป็นฐานสำคัญในการปรับปรุงในรอบถัดไป" },
+        { q_th: "ถ้าโจทย์บอกว่า 'งบประมาณมีจำกัด' ถือเป็นส่วนใดในกระบวนการ?", q_en: "If the prompt says 'Budget is limited', what part of the process is this?", a_th: ["ผลผลิต", "ข้อจำกัดของปัญหา", "ข้อมูลย้อนกลับ", "การนำเสนอ"], a_en: ["Output", "Problem constraints", "Feedback", "Presentation"], correct: 1, th: "คำใบ้: ขอบเขตของงาน", en: "Clue: Scope of the work", detail: "ข้อจำกัด (Constraints) ต้องระบุตั้งแต่ขั้นตอนแรก" },
+        { q_th: "เทคโนโลยีในอดีตกับปัจจุบันต่างกันอย่างไร?", q_en: "How do past and present technologies differ?", a_th: ["ปัจจุบันซับซ้อนและมีประสิทธิภาพสูงกว่า", "ในอดีตดีกว่าเสมอ", "ไม่มีความต่าง", "ปัจจุบันเน้นแรงงานคนมากขึ้น"], a_en: ["Present is more complex and efficient", "Past is always better", "No difference", "Present focuses on human labor"], correct: 0, th: "คำใบ้: ความก้าวหน้า", en: "Clue: Progress", detail: "เทคโนโลยีพัฒนาตามความรู้และวิทยาการ" },
+        { q_th: "การทำงานเป็นกลุ่มในกระบวนการออกแบบเชิงวิศวกรรมมีข้อดีอย่างไร?", q_en: "What is the advantage of group work in the design process?", a_th: ["ได้คุยกันเยอะๆ", "มีการระดมความคิดและแบ่งงาน", "ไม่ต้องทำงานคนเดียว", "ลดความรับผิดชอบ"], a_en: ["Chatting a lot", "Brainstorming and task division", "Not working alone", "Reducing responsibility"], correct: 1, th: "คำใบ้: หลายหัวดีกว่าหัวเดียว", en: "Clue: Two heads are better than one", detail: "ความหลากหลายของมุมมองช่วยแก้ปัญหาได้ดีขึ้น" },
+        { q_th: "หากผลการทดสอบล้มเหลว ควรทำอย่างไร?", q_en: "If the test fails, what should you do?", a_th: ["เลิกทำ", "เปลี่ยนกลุ่ม", "หาสาเหตุและปรับปรุง", "นำเสนอผลงานไปเลย"], a_en: ["Give up", "Change groups", "Find causes and improve", "Present the work anyway"], correct: 2, th: "คำใบ้: ย้อนกลับไปทำใหม่", en: "Clue: Go back and retry", detail: "ความล้มเหลวคือข้อมูลสำคัญในการเรียนรู้" },
+        { q_th: "ข้อใดไม่ใช่ขั้นตอนของกระบวนการออกแบบเชิงวิศวกรรม?", q_en: "Which is NOT a step of the Engineering Design Process?", a_th: ["การระบุปัญหา", "การคัดลอกงานผู้อื่น", "การออกแบบ", "การทดสอบ"], a_en: ["Defining problem", "Copying others' work", "Designing", "Testing"], correct: 1, th: "คำใบ้: ความคิดสร้างสรรค์", en: "Clue: Creativity", detail: "กระบวนการนี้ส่งเสริมการคิดเอง ไม่ใช่การลอก" },
+        { q_th: "การนำเสนอ (Presentation) สำคัญอย่างไร?", q_en: "Why is Presentation important?", a_th: ["เพื่อรับคำชื่นชม", "เพื่อสื่อสารวิธีแก้ปัญหาและรับข้อเสนอแนะ", "เพื่อจบงานให้เร็ว", "เพื่อทดสอบความจำ"], a_en: ["To receive praise", "To communicate solutions and get feedback", "To finish quickly", "To test memory"], correct: 1, th: "คำใบ้: การแบ่งปันความรู้", en: "Clue: Sharing knowledge", detail: "การนำเสนอช่วยให้ผู้อื่นเข้าใจและให้มุมมองใหม่ๆ" },
+        { q_th: "กระบวนการทางเทคโนโลยีส่งผลต่อชีวิตมนุษย์อย่างไร?", q_en: "How does the technological process affect human life?", a_th: ["ทำให้ชีวิตสะดวกสบายขึ้น", "ทำให้มนุษย์ขี้เกียจ", "ไม่มีผล", "ทำให้มนุษย์ทำงานน้อยลงจนว่างงาน"], a_en: ["Makes life more convenient", "Makes humans lazy", "No effect", "Makes humans work less until unemployed"], correct: 0, th: "คำใบ้: คุณภาพชีวิต", en: "Clue: Quality of life", detail: "เทคโนโลยีช่วยแก้ปัญหาและยกระดับความเป็นอยู่" },
+        { q_th: "เทคโนโลยีที่เป็นมิตรต่อสิ่งแวดล้อม (Green Tech) เน้นสิ่งใด?", q_en: "What does Green Technology focus on?", a_th: ["ความสวยงาม", "การลดผลกระทบต่อสิ่งแวดล้อม", "ความเร็วสูงสุด", "ราคาถูกที่สุด"], a_en: ["Beauty", "Reducing environmental impact", "Maximum speed", "Lowest price"], correct: 1, th: "คำใบ้: ความยั่งยืน", en: "Clue: Sustainability", detail: "การรักษาโลกเป็นหัวใจสำคัญ" },
+        { q_th: "หากต้องการสร้างหุ่นยนต์ ระบบการเดินของหุ่นยนต์คือส่วนใด?", q_en: "If building a robot, the walking system is what part?", a_th: ["Input", "Process", "Output", "Feedback"], a_en: ["Input", "Process", "Output", "Feedback"], correct: 1, th: "คำใบ้: การทำงานของหุ่นยนต์", en: "Clue: How it works", detail: "กลไกการเคลื่อนที่คือกระบวนการ" },
+        { q_th: "ในการออกแบบ ถ้าไม่มี 'เป้าหมาย' ที่ชัดเจน จะเกิดอะไรขึ้น?", q_en: "In design, if there is no clear 'goal', what happens?", a_th: ["งานจะเสร็จเร็วขึ้น", "เสียเวลาและหลงทาง", "งานจะสวยขึ้น", "ได้คะแนนดีขึ้น"], a_en: ["Work finishes faster", "Waste time and get lost", "Work looks better", "Get better grades"], correct: 1, th: "คำใบ้: เหมือนขับรถโดยไม่มีจุดหมาย", en: "Clue: Like driving without a destination", detail: "เป้าหมายคือเข็มทิศของการออกแบบ" },
+        { q_th: "กระบวนการใดช่วยลดข้อผิดพลาดในการสร้างชิ้นงานได้ดีที่สุด?", q_en: "Which process best reduces errors in building a project?", a_th: ["การเดาสุ่ม", "การวางแผนและทดสอบ", "การเร่งงานให้เร็ว", "การจ้างคนอื่นทำ"], a_en: ["Guessing", "Planning and testing", "Rushing work", "Hiring others"], correct: 1, th: "คำใบ้: การเตรียมพร้อม", en: "Clue: Preparation", detail: "การวางแผนดีและทดสอบบ่อย ช่วยลดความผิดพลาด" }
+    ];
+
+    let currentLang = 'th';
+
+    function renderQuiz() {
+        const container = document.getElementById('quiz-container');
+        container.innerHTML = '';
+        questions.forEach((q, index) => {
+            const card = document.createElement('div');
+            card.className = 'question-card';
+            card.id = `q-${index}`;
+            card.innerHTML = `
+                <p><strong>${index + 1}. <span class="q-text">${currentLang === 'th' ? q.q_th : q.q_en}</span></strong></p>
+                <div class="clue">${currentLang === 'th' ? q.th : q.en}</div>
+                <div class="options">
+                    ${(currentLang === 'th' ? q.a_th : q.a_en).map((opt, i) => `
+                        <button onclick="checkAnswer(${index}, ${i})">${opt}</button>
+                    `).join('')}
+                </div>
+                <div class="explanation" id="exp-${index}">
+                    <strong>${currentLang === 'th' ? 'เฉลย:' : 'Explanation:'}</strong> ${q.detail}
+                </div>
+            `;
+            container.appendChild(card);
+        });
+    }
+
+    function checkAnswer(qIndex, aIndex) {
+        const q = questions[qIndex];
+        const card = document.getElementById(`q-${qIndex}`);
+        const buttons = card.querySelectorAll('button');
+        const exp = document.getElementById(`exp-${qIndex}`);
+        
+        // Disable buttons
+        buttons.forEach(btn => btn.disabled = true);
+        
+        // Check correctness
+        if (aIndex === q.correct) {
+            buttons[aIndex].classList.add('correct');
+        } else {
+            buttons[aIndex].classList.add('wrong');
+            buttons[q.correct].classList.add('correct');
+        }
+        
+        exp.style.display = 'block';
+        card.dataset.userAnswer = aIndex;
+    }
+
+    function toggleLang(lang) {
+        currentLang = lang;
+        const qTexts = document.querySelectorAll('.q-text');
+        const clues = document.querySelectorAll('.clue');
+        const buttons = document.querySelectorAll('.options');
+        
+        questions.forEach((q, i) => {
+            qTexts[i].innerText = currentLang === 'th' ? q.q_th : q.q_en;
+            clues[i].innerText = currentLang === 'th' ? q.th : q.en;
+            const btns = buttons[i].querySelectorAll('button');
+            const options = currentLang === 'th' ? q.a_th : q.a_en;
+            btns.forEach((btn, j) => {
+                btn.innerText = options[j];
+            });
+        });
+    }
+
+    function submitQuiz() {
+        let score = 0;
+        let attempted = 0;
+        let cat1 = 0; // Tech
+        let cat2 = 0; // Design
+        let cat1Total = 0;
+        let cat2Total = 0;
+
+        questions.forEach((q, i) => {
+            const card = document.getElementById(`q-${i}`);
+            const userAnswer = card.dataset.userAnswer;
+            
+            // Categorization
+            if (i < 12) { cat1Total++; } else { cat2Total++; }
+
+            if (userAnswer !== undefined) {
+                attempted++;
+                if (parseInt(userAnswer) === q.correct) {
+                    score++;
+                    if (i < 12) cat1++; else cat2++;
+                }
+            }
+        });
+
+        alert("ระบบจำลองการส่งข้อมูลคะแนนไปที่ thee.chinpong@hmail.com เรียบร้อยแล้ว");
+
+        const resultArea = document.getElementById('result-area');
+        resultArea.innerHTML = `
+            <div class="summary-box">
+                <h2>คะแนนรวม: ${score} / 25</h2>
+                <p>วิเคราะห์ผล:</p>
+                <p>ระบบทางเทคโนโลยี: ${cat1}/${cat1Total} ${cat1 < cat1Total ? '(ยังไม่แม่นยำ)' : '(ดีเยี่ยม)'}</p>
+                <p>กระบวนการออกแบบ: ${cat2}/${cat2Total} ${cat2 < cat2Total ? '(ควรทบทวนขั้นตอน)' : '(เข้าใจดีมาก)'}</p>
+            </div>
+        `;
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+    renderQuiz();
+</script>
+</body>
+</html>
