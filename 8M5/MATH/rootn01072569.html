@@ -14,7 +14,7 @@
     .question-container { margin-bottom: 25px; padding: 20px; border-bottom: 2px solid #eee; background: #fff; border-radius: 8px; }
     .clue { color: #d35400; font-style: italic; font-size: 0.9em; margin: 10px 0; padding: 5px 10px; background: #fff3e0; border-left: 4px solid #d35400; }
     .btn { padding: 10px 20px; background: #2980b9; color: white; border: none; cursor: pointer; border-radius: 5px; margin: 5px; }
-    .result { margin-top: 10px; font-weight: bold; }
+    .result { margin-top: 10px; font-weight: bold; font-size: 1.1em; }
     .correct { color: #27ae60; } .incorrect { color: #c0392b; }
 </style>
 </head>
@@ -25,7 +25,7 @@
         <button class="btn" onclick="toggleLang()">สลับภาษา (TH/EN)</button>
     </div>
     <div id="quiz-area"></div>
-    <button class="btn" onclick="submitExam()" style="width:100%; margin-top:20px; background:#27ae60; font-size:1.2em;">ส่งข้อสอบ / Submit</button>
+    <button class="btn" onclick="submitExam()" style="width:100%; margin-top:20px; background:#27ae60; font-size:1.2em;">สรุปผลคะแนนรวม / Final Submit</button>
 </div>
 <script>
 function renderRadical(n, val) {
@@ -59,8 +59,33 @@ const questions = [
     {q_th:`${renderRadical(3, 27)} + ${renderRadical(3, 8)} = ?`, q_en:`${renderRadical(3, 27)} + ${renderRadical(3, 8)} = ?`, a_th:["5", "6", "1", "35"], a_en:["5", "6", "1", "35"], correct: 0, th:"ใบ้: 3 + 2", en:"Tip: 3 + 2.", detail:"3 + 2 = 5"},
     {q_th:`รากที่ 2 ของ 100 มีกี่ค่าที่เป็นจำนวนจริง`, q_en:`How many real square roots of 100?`, a_th:["1", "2", "0", "ไม่จำกัด"], a_en:["1", "2", "0", "Infinite"], correct: 1, th:"ใบ้: 10 และ -10", en:"Tip: 10 and -10.", detail:"รากที่สองของบวกมี 2 ค่า"}
 ];
+
 let lang = 'th';
+let userAnswers = new Array(questions.length).fill(null);
+
 function toggleLang() { lang = lang === 'th' ? 'en' : 'th'; render(); }
+
+function checkAnswer(qIdx, selectedIdx) {
+    if (userAnswers[qIdx] !== null) return; // Prevent double click
+    userAnswers[qIdx] = selectedIdx;
+    
+    const res = document.getElementById('res' + qIdx);
+    const detail = document.getElementById('detail' + qIdx);
+    const correct = questions[qIdx].correct;
+    
+    detail.style.display = 'block';
+    
+    if (selectedIdx === correct) {
+        res.innerHTML = '<span class="correct">✔ ถูกต้อง!</span>';
+    } else {
+        res.innerHTML = `<span class="incorrect">✘ ผิด เฉลยคือข้อที่ ${correct + 1}</span>`;
+    }
+
+    // Disable all radio buttons for this question
+    const radios = document.getElementsByName('q' + qIdx);
+    radios.forEach(r => r.disabled = true);
+}
+
 function render() {
     const area = document.getElementById('quiz-area'); area.innerHTML = '';
     questions.forEach((q, idx) => {
@@ -68,24 +93,27 @@ function render() {
         div.className = 'question-container';
         div.innerHTML = `<h3>${idx+1}. ${lang === 'th' ? q.q_th : q.q_en}</h3>
             <div class="clue">${lang === 'th' ? q.th : q.en}</div>
-            ${(lang === 'th' ? q.a_th : q.a_en).map((opt, i) => `<label><input type="radio" name="q${idx}" value="${i}"> ${opt}</label><br>`).join('')}
+            ${(lang === 'th' ? q.a_th : q.a_en).map((opt, i) => 
+                `<label><input type="radio" name="q${idx}" value="${i}" onclick="checkAnswer(${idx}, ${i})" ${userAnswers[idx] !== null ? 'disabled' : ''}> ${opt}</label><br>`
+            ).join('')}
             <div id="res${idx}" class="result"></div>
-            <div id="detail${idx}" style="display:none; margin-top:10px; color:#555;"><strong>คำอธิบาย:</strong> ${q.detail}</div>`;
+            <div id="detail${idx}" style="display:${userAnswers[idx] !== null ? 'block' : 'none'}; margin-top:10px; color:#555; background:#f9f9f9; padding:10px; border-radius:5px;">
+                <strong>${lang === 'th' ? 'คำอธิบาย:' : 'Explanation:'}</strong> ${q.detail}
+            </div>`;
         area.appendChild(div);
     });
 }
+
 function submitExam() {
     let score = 0;
-    questions.forEach((q, idx) => {
-        const radios = document.getElementsByName('q'+idx);
-        let selected = -1; radios.forEach((r, i) => { if(r.checked) selected = i; });
-        const res = document.getElementById('res' + idx);
-        const detail = document.getElementById('detail' + idx);
-        detail.style.display = 'block';
-        if(selected === q.correct) { score++; res.innerHTML = '<span class="correct">ถูกต้อง!</span>'; }
-        else { res.innerHTML = `<span class="incorrect">ผิด เฉลยคือข้อ ${q.correct + 1}</span>`; }
+    let attempted = 0;
+    userAnswers.forEach((ans, idx) => {
+        if (ans !== null) {
+            attempted++;
+            if (ans === questions[idx].correct) score++;
+        }
     });
-    alert(`ผลการสอบ: ${score} / 25 คะแนน\nระบบได้ส่งข้อมูลไปยัง thee.chinpong@hmail.com แล้ว`);
+    alert(`สรุปผลการสอบ\nคะแนนที่ได้: ${score} / ${questions.length} คะแนน\nระบบได้จำลองการส่งข้อมูลคะแนนไปยัง thee.chinpong@hmail.com แล้ว`);
 }
 render();
 </script>
