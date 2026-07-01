@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <title>ข้อสอบวิชาออกแบบและเทคโนโลยี ชุดที่ 3 - พระจอมเกล้าติวเตอร์</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #eef2f3; padding: 20px; line-height: 1.6; color: #333; }
+        .container { max-width: 850px; margin: auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+        h1 { text-align: center; color: #2c3e50; }
+        .summary-box { background: #34495e; color: #ecf0f1; padding: 20px; border-radius: 10px; margin-bottom: 25px; border-left: 10px solid #3498db; }
+        .highlight { color: #f1c40f; font-weight: bold; }
+        .question-card { border: 1px solid #ddd; padding: 20px; margin-bottom: 20px; border-radius: 10px; background: #fafafa; }
+        .clue { background: #d1ecf1; padding: 10px; border-radius: 5px; margin: 10px 0; font-size: 0.9em; font-style: italic; color: #0c5460; border-left: 5px solid #17a2b8; }
+        .options { display: flex; flex-direction: column; gap: 10px; margin-top: 15px; }
+        button { cursor: pointer; padding: 12px; border: 1px solid #bdc3c7; border-radius: 5px; background: #fff; transition: 0.3s; font-size: 1em; text-align: left; }
+        button:hover { background: #ecf0f1; }
+        .correct { background-color: #27ae60 !important; color: white !important; border-color: #27ae60 !important; }
+        .wrong { background-color: #c0392b !important; color: white !important; border-color: #c0392b !important; }
+        .explanation { margin-top: 15px; padding: 15px; background: #fff3cd; display: none; border-radius: 5px; color: #856404; font-size: 0.95em; }
+        #controls { margin-bottom: 20px; text-align: right; }
+        .submit-btn { width: 100%; padding: 20px; background: #2980b9; color: white; font-size: 1.2em; border: none; border-radius: 8px; font-weight: bold; }
+        .submit-btn:hover { background: #3498db; }
+        .summary-result { margin-top: 20px; padding: 20px; border-radius: 10px; background: #ecf0f1; text-align: center; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div id="controls">
+        <button onclick="toggleLang('th')">TH</button>
+        <button onclick="toggleLang('en')">EN</button>
+    </div>
+
+    <h1>ข้อสอบวิชาออกแบบและเทคโนโลยี ชุดที่ 3</h1>
+    <div id="quiz-container"></div>
+    <button class="submit-btn" onclick="submitQuiz()">ตรวจข้อสอบ / Check Exam</button>
+    <div id="result-area"></div>
+    <p style="text-align: center; margin-top: 30px; font-size: 0.8em; color: #7f8c8d;">เขียนโดย พระจอมเกล้าติวเตอร์</p>
+</div>
+
+<script>
+    const questions = [
+        { q_th: "ในเชิงระบบ 'ทรัพยากร' ที่ต้องใช้ในการทำเทคโนโลยี เรียกว่าอะไร?", q_en: "In systems terms, the 'resources' needed for technology are called what?", a_th: ["Input", "Output", "Feedback", "Constraint"], a_en: ["Input", "Output", "Feedback", "Constraint"], correct: 0, th: "คำใบ้: คือสิ่งที่ใส่เข้าไป", en: "Clue: Things put into the system", detail: "ทรัพยากรทั้งหมดคือตัวป้อน (Input)" },
+        { q_th: "ข้อใดคือความหมายของ 'เทคโนโลยี' ที่ถูกต้องที่สุด?", q_en: "Which is the most accurate definition of 'Technology'?", a_th: ["เครื่องใช้ไฟฟ้าทุกชนิด", "สิ่งที่มนุษย์สร้างขึ้นเพื่อแก้ปัญหาและสนองความต้องการ", "วิทยาศาสตร์ที่ยากๆ", "คอมพิวเตอร์และอินเทอร์เน็ต"], a_en: ["All electrical appliances", "Things created by humans to solve problems", "Difficult science", "Computers and the internet"], correct: 1, th: "คำใบ้: ประโยชน์คือหัวใจ", en: "Clue: Utility is the key", detail: "เทคโนโลยีคือสิ่งที่มนุษย์พัฒนาขึ้นเพื่อเพิ่มประสิทธิภาพหรือแก้ปัญหา" },
+        { q_th: "ระบบแบบ 'เปิด' (Open System) แตกต่างจาก 'ปิด' อย่างไร?", q_en: "How does an 'Open System' differ from a 'Closed' one?", a_th: ["เปิดไม่มีผลผลิต", "เปิดไม่มีข้อมูลย้อนกลับ", "ปิดไม่มีผลผลิต", "ปิดไม่มีตัวป้อน"], a_en: ["Open has no output", "Open lacks feedback", "Closed has no output", "Closed lacks input"], correct: 1, th: "คำใบ้: ระบบที่มี Feedback คือระบบปิด", en: "Clue: Feedback-based systems are closed", detail: "ระบบเปิดไม่มีการควบคุมด้วย Feedback" },
+        { q_th: "ปัจจัยใดเป็น 'ข้อจำกัด' (Constraint) ที่สำคัญที่สุดในการออกแบบ?", q_en: "What is a crucial 'Constraint' in design?", a_th: ["งบประมาณ เวลา และทรัพยากร", "ความสวยงามอย่างเดียว", "ความคิดสร้างสรรค์", "ความเร็วในการทำงาน"], a_en: ["Budget, time, and resources", "Beauty only", "Creativity", "Working speed"], correct: 0, th: "คำใบ้: อุปสรรคที่ต้องเจอ", en: "Clue: Hurdles you must face", detail: "ข้อจำกัดคือกรอบที่ทำให้การแก้ปัญหาต้องคิดรอบคอบ" },
+        { q_th: "การวิเคราะห์ 'ผลกระทบ' ของเทคโนโลยีมีไว้เพื่ออะไร?", q_en: "What is the purpose of analyzing the 'impact' of technology?", a_th: ["เพื่อหยุดใช้เทคโนโลยี", "เพื่อประเมินผลดีและผลเสียต่อมนุษย์และสิ่งแวดล้อม", "เพื่อลดราคาสินค้า", "เพื่อเพิ่มความสวยงาม"], a_en: ["To stop using technology", "To evaluate pros and cons", "To lower product prices", "To improve aesthetics"], correct: 1, th: "คำใบ้: การมองให้รอบด้าน", en: "Clue: Looking at the big picture", detail: "ผลกระทบอาจมีทั้งทางบวกและลบ จึงต้องวิเคราะห์ให้รอบคอบ" },
+        { q_th: "ข้อใดไม่ใช่กระบวนการ EDP?", q_en: "Which is NOT an EDP step?", a_th: ["ระบุปัญหา", "รวบรวมข้อมูล", "การทำนายอนาคต", "การทดสอบ"], a_en: ["Define problem", "Gather data", "Predicting the future", "Testing"], correct: 2, th: "คำใบ้: EDP เน้นปัจจุบันและแนวทาง", en: "Clue: EDP focuses on present solutions", detail: "การทำนายอนาคตไม่ใช่ขั้นตอนหลักของ EDP" },
+        { q_th: "การ 'รวบรวมข้อมูล' ในขั้นตอน EDP ช่วยเรื่องใดมากที่สุด?", q_en: "What does 'Gathering data' help with the most in EDP?", a_th: ["ช่วยให้ได้ทางเลือกที่หลากหลายและรอบคอบ", "ช่วยให้งานเสร็จเร็วขึ้น", "ช่วยให้ได้คะแนนดี", "ช่วยลดต้นทุนให้เป็นศูนย์"], a_en: ["Helps provide diverse and careful options", "Helps finish work faster", "Helps get good grades", "Helps reduce cost to zero"], correct: 0, th: "คำใบ้: ข้อมูลคือคลังอาวุธ", en: "Clue: Data is your arsenal", detail: "ข้อมูลที่มากพอทำให้เห็นทางเลือกที่ดีที่สุด" },
+        { q_th: "หากเทคโนโลยีทำงานผิดพลาด ควรทำอย่างไรในเชิง EDP?", q_en: "If technology fails, what should be done in EDP terms?", a_th: ["ทิ้งแล้วซื้อใหม่", "วนกลับไปหาสาเหตุและปรับปรุง", "โทษผู้อื่น", "นำเสนอผลงานต่อไป"], a_en: ["Discard and buy new", "Go back to find root cause and improve", "Blame others", "Continue presenting"], correct: 1, th: "คำใบ้: Iterative process", en: "Clue: Iterative process", detail: "EDP คือการทำซ้ำ (Iterate) จนกว่าจะดีขึ้น" },
+        { q_th: "อะไรคือความแตกต่างหลักระหว่าง 'วิทยาศาสตร์' กับ 'เทคโนโลยี'?", q_en: "What is the main difference between 'Science' and 'Technology'?", a_th: ["วิทยาศาสตร์คือความรู้ เทคโนโลยีคือการนำความรู้ไปใช้", "เหมือนกันทุกอย่าง", "วิทยาศาสตร์ไม่มีประโยชน์", "เทคโนโลยีคือธรรมชาติ"], a_en: ["Science is knowledge, Technology is applied knowledge", "They are the same", "Science is useless", "Technology is nature"], correct: 0, th: "คำใบ้: รู้ไว้ใช้", en: "Clue: Know it to use it", detail: "วิทยาศาสตร์คือความเข้าใจธรรมชาติ เทคโนโลยีคือเครื่องมือ" },
+        { q_th: "เมื่อต้องสร้างชิ้นงาน สิ่งแรกที่ต้องคำนึงถึงคืออะไร?", q_en: "When creating a prototype, what is the first priority?", a_th: ["ฟังก์ชันการใช้งานและการตอบโจทย์", "สีสัน", "ราคาขาย", "ยี่ห้อ"], a_en: ["Functionality and meeting requirements", "Color", "Selling price", "Brand"], correct: 0, th: "คำใบ้: ทำได้จริงหรือไม่", en: "Clue: Can it actually work?", detail: "งานต้องแก้ปัญหาได้ตามเป้าหมายก่อนเรื่องอื่น" },
+        { q_th: "การทำงานเป็นทีมในงานเทคโนโลยีมีข้อเสียอย่างไรหากไม่มีการจัดการ?", q_en: "What is the downside of teamwork in technology if unmanaged?", a_th: ["งานจะเสร็จช้า", "ไม่มีความเห็นที่ตรงกันหรือความขัดแย้ง", "งานจะสวยน้อยลง", "ต้นทุนจะสูงขึ้น"], a_en: ["Work finishes slow", "Conflict or lack of consensus", "Work will be less pretty", "Costs will rise"], correct: 1, th: "คำใบ้: ความเห็นต่าง", en: "Clue: Differing opinions", detail: "ทีมที่ดีต้องมีการตกลงกันให้ดี" },
+        { q_th: "ข้อใดคือตัวอย่างของ Feedback ในเครื่องปรับอากาศ?", q_en: "What is an example of Feedback in an air conditioner?", a_th: ["ปุ่มกด", "ตัววัดอุณหภูมิห้อง", "สายไฟ", "คอมเพรสเซอร์"], a_en: ["Buttons", "Room thermometer/sensor", "Wire", "Compressor"], correct: 1, th: "คำใบ้: สิ่งที่คอยวัดค่า", en: "Clue: The device that measures values", detail: "เซนเซอร์วัดอุณหภูมิคือสิ่งที่ส่ง Feedback ไปคุมการทำงาน" },
+        { q_th: "ทำไมเราจึงต้องทำ 'ต้นแบบ' (Prototype)?", q_en: "Why do we make a 'Prototype'?", a_th: ["เพื่อให้ได้ของเล่น", "เพื่อทดสอบการทำงานก่อนผลิตจริง", "เพื่อประหยัดวัสดุ", "เพื่อโชว์เพื่อน"], a_en: ["To have toys", "To test functionality before production", "To save materials", "To show friends"], correct: 1, th: "คำใบ้: ลดความเสี่ยง", en: "Clue: Reduce risk", detail: "ต้นแบบช่วยลดความผิดพลาดก่อนทำจริง" },
+        { q_th: "ความยั่งยืน (Sustainability) ในเทคโนโลยีหมายถึงอะไร?", q_en: "What does 'Sustainability' in technology mean?", a_th: ["การใช้แล้วทิ้งเร็วๆ", "การใช้อย่างคุ้มค่าและไม่ทำลายสิ่งแวดล้อม", "การผลิตจำนวนมาก", "การขายให้ได้กำไรสูงสุด"], a_en: ["Use and discard quickly", "Using efficiently without harming environment", "Mass production", "Maximizing profit"], correct: 1, th: "คำใบ้: เพื่ออนาคต", en: "Clue: For the future", detail: "การรักษาสมดุลคือหัวใจของความยั่งยืน" },
+        { q_th: "ถ้าโจทย์คือ 'แก้ปัญหาขยะในโรงเรียน' การระบุปัญหาที่ดีควรเป็นอย่างไร?", q_en: "If the task is 'Solve school waste', how should the problem be defined?", a_th: ["ต้องระบุชัดเจนว่าขยะประเภทไหน และใครคือผู้ได้รับผลกระทบ", "บอกว่าขยะเยอะไป", "สั่งให้ทุกคนเลิกทิ้งขยะ", "ทำถังขยะใหม่"], a_en: ["Clearly define waste type and impact", "Say there's too much trash", "Order everyone to stop", "Make new trash bins"], correct: 0, th: "คำใบ้: ยิ่งเฉพาะเจาะจงยิ่งแก้ได้ดี", en: "Clue: The more specific, the better the solution", detail: "การระบุปัญหาต้องแคบและชัดเจน" },
+        { q_th: "ในการออกแบบเชิงวิศวกรรม การ 'วนซ้ำ' ต่างจากการ 'ทำใหม่' อย่างไร?", q_en: "How is 'Iteration' different from 'Redoing' in engineering?", a_th: ["การวนซ้ำคือการปรับปรุงจากของเดิม", "ทำใหม่คือการรื้อทั้งหมด", "วนซ้ำใช้เงินเยอะกว่า", "ทำใหม่ใช้เวลาน้อยกว่า"], a_en: ["Iteration is improving the original", "Redoing is destroying all", "Iteration costs more", "Redoing is faster"], correct: 0, th: "คำใบ้: ปรับปรุง ไม่ใช่รื้อทิ้ง", en: "Clue: Improve, don't just destroy", detail: "การวนซ้ำเป็นการพัฒนาต่อยอด" },
+        { q_th: "ความคิดสร้างสรรค์ในเทคโนโลยีคืออะไร?", q_en: "What is creativity in technology?", a_th: ["การจินตนาการถึงสิ่งใหม่ที่แก้ปัญหาได้", "การลอกงานคนอื่น", "การวาดรูปสวยๆ", "การพูดเก่งๆ"], a_en: ["Imagining new things to solve problems", "Copying others", "Drawing nicely", "Talking well"], correct: 0, th: "คำใบ้: สร้างเพื่อแก้", en: "Clue: Create to solve", detail: "ความสร้างสรรค์ต้องมีประโยชน์" },
+        { q_th: "เทคโนโลยีในข้อใด จัดเป็น 'เทคโนโลยีแบบดั้งเดิม'?", q_en: "Which is a 'Traditional Technology'?", a_th: ["สมาร์ทโฟน", "มีดหินหรือคันไถ", "ดาวเทียม", "AI"], a_en: ["Smartphone", "Stone tools or plow", "Satellite", "AI"], correct: 1, th: "คำใบ้: ยุคโบราณ", en: "Clue: Ancient era", detail: "เป็นเทคโนโลยีพื้นฐานของมนุษย์ยุคแรก" },
+        { q_th: "กระบวนการตัดสินใจที่ดีในทีมควรเป็นอย่างไร?", q_en: "What should good team decision-making be like?", a_th: ["ฟังเสียงข้างมากอย่างเดียว", "ให้หัวหน้าตัดสินคนเดียว", "ใช้เหตุผลและข้อมูลเป็นหลัก", "เดาสุ่ม", "ตามใจคนรวย"], a_en: ["Listen only to majority", "Boss decides alone", "Based on reason and data", "Guessing", "Follow the rich"], correct: 2, th: "คำใบ้: หลักฐานสำคัญ", en: "Clue: Evidence is key", detail: "ข้อมูลเชิงประจักษ์ทำให้การตัดสินใจแม่นยำ" },
+        { q_th: "การนำเสนอผลงาน (Presentation) เป้าหมายหลักคืออะไร?", q_en: "What is the main goal of Presentation?", a_th: ["เพื่อความบันเทิง", "เพื่อให้คนอื่นเข้าใจวิธีการแก้ปัญหาของเรา", "เพื่อยืดเวลาเรียน", "เพื่อโชว์ของ"], a_en: ["For entertainment", "To make others understand our solution", "To extend class time", "To show off"], correct: 1, th: "คำใบ้: การสื่อสาร", en: "Clue: Communication", detail: "การสื่อสารให้คนอื่นเข้าใจคือจุดประสงค์สำคัญ" },
+        { q_th: "ถ้าเราพบว่าวัสดุแพงเกินไป เราควรทำอย่างไรในขั้นตอนการวางแผน?", q_en: "If material is too expensive, what should be done during planning?", a_th: ["ยกเลิกโครงการ", "หาวัสดุทดแทนที่ถูกลงแต่ยังได้คุณภาพ", "ขอเงินเพิ่ม", "ใช้ของที่เหลือใช้โดยไม่สนใจคุณภาพ"], a_en: ["Cancel project", "Find cheaper substitutes with quality", "Ask for more money", "Use junk without regard for quality"], correct: 1, th: "คำใบ้: ทางเลือกทดแทน", en: "Clue: Alternative options", detail: "การเลือกวัสดุต้องคำนึงถึงงบและประสิทธิภาพ" },
+        { q_th: "ระบบทางเทคโนโลยีส่งผลดีต่อเศรษฐกิจอย่างไร?", q_en: "How does a technological system benefit the economy?", a_th: ["ช่วยลดเวลาและเพิ่มประสิทธิภาพในการผลิต", "ทำให้คนตกงาน", "ทำลายธรรมชาติ", "ทำให้ราคาของแพงขึ้น"], a_en: ["Helps reduce time and increase production efficiency", "Causes unemployment", "Destroys nature", "Makes goods expensive"], correct: 0, th: "คำใบ้: ผลิตได้มากขึ้น ในเวลาที่น้อยลง", en: "Clue: Produce more in less time", detail: "ประสิทธิภาพคือหัวใจของเศรษฐกิจ" },
+        { q_th: "ใครคือผู้ที่ควรมี 'ทักษะทางเทคโนโลยี' ในยุคปัจจุบัน?", q_en: "Who needs 'Technology Skills' in the modern era?", a_th: ["เฉพาะวิศวกร", "ทุกคน", "เฉพาะเด็ก", "เฉพาะผู้ใหญ่"], a_en: ["Only engineers", "Everyone", "Only kids", "Only adults"], correct: 1, th: "คำใบ้: ทุกคนใช้เทคโนโลยี", en: "Clue: Everyone uses technology", detail: "เทคโนโลยีเป็นเครื่องมือสากล" },
+        { q_th: "การวิเคราะห์ 'ผลดีผลเสีย' (Trade-off) คืออะไร?", q_en: "What is a 'Trade-off' analysis?", a_th: ["การเลือกทางที่ได้ผลดีที่สุดแม้จะมีข้อเสียบ้าง", "การเลือกทางที่ไม่มีข้อเสียเลย", "การไม่เลือกอะไรเลย", "การเดาสุ่ม"], a_en: ["Choosing the best path despite some drawbacks", "Choosing a path with no drawbacks", "Choosing nothing", "Guessing"], correct: 0, th: "คำใบ้: ไม่มีอะไรสมบูรณ์แบบ", en: "Clue: Nothing is perfect", detail: "ทุกทางเลือกมีข้อดีข้อเสีย ต้องเลือกว่าอะไรสำคัญกว่า" },
+        { q_th: "หัวใจของพระจอมเกล้าติวเตอร์ในการเรียนรู้คืออะไร?", q_en: "What is the heart of Phra Chom Klao Tutor's learning?", a_th: ["ท่องจำไปสอบ", "เข้าใจกระบวนการและคิดอย่างเป็นระบบ", "ลอกคำตอบเพื่อน", "เรียนไปงั้นๆ"], a_en: ["Memorize for exam", "Understand the process and think systematically", "Copy friends", "Just study"], correct: 1, th: "คำใบ้: พัฒนาสมอง", en: "Clue: Develop the brain", detail: "กระบวนการคิดสำคัญกว่าตัวคำตอบ" }
+    ];
+
+    let currentLang = 'th';
+
+    function renderQuiz() {
+        const container = document.getElementById('quiz-container');
+        container.innerHTML = '';
+        questions.forEach((q, index) => {
+            const card = document.createElement('div');
+            card.className = 'question-card';
+            card.id = `q-${index}`;
+            card.innerHTML = `
+                <p><strong>${index + 1}. <span class="q-text">${currentLang === 'th' ? q.q_th : q.q_en}</span></strong></p>
+                <div class="clue">${currentLang === 'th' ? q.th : q.en}</div>
+                <div class="options">
+                    ${(currentLang === 'th' ? q.a_th : q.a_en).map((opt, i) => `
+                        <button onclick="checkAnswer(${index}, ${i})">${opt}</button>
+                    `).join('')}
+                </div>
+                <div class="explanation" id="exp-${index}">
+                    <strong>${currentLang === 'th' ? 'เฉลย:' : 'Explanation:'}</strong> ${q.detail}
+                </div>
+            `;
+            container.appendChild(card);
+        });
+    }
+
+    function checkAnswer(qIndex, aIndex) {
+        const q = questions[qIndex];
+        const card = document.getElementById(`q-${qIndex}`);
+        const buttons = card.querySelectorAll('button');
+        const exp = document.getElementById(`exp-${qIndex}`);
+        
+        buttons.forEach(btn => btn.disabled = true);
+        
+        if (aIndex === q.correct) {
+            buttons[aIndex].classList.add('correct');
+        } else {
+            buttons[aIndex].classList.add('wrong');
+            buttons[q.correct].classList.add('correct');
+        }
+        
+        exp.style.display = 'block';
+        card.dataset.userAnswer = aIndex;
+    }
+
+    function toggleLang(lang) {
+        currentLang = lang;
+        const qTexts = document.querySelectorAll('.q-text');
+        const clues = document.querySelectorAll('.clue');
+        const optionsDivs = document.querySelectorAll('.options');
+        
+        questions.forEach((q, i) => {
+            qTexts[i].innerText = currentLang === 'th' ? q.q_th : q.q_en;
+            clues[i].innerText = currentLang === 'th' ? q.th : q.en;
+            const btns = optionsDivs[i].querySelectorAll('button');
+            const options = currentLang === 'th' ? q.a_th : q.a_en;
+            btns.forEach((btn, j) => {
+                btn.innerText = options[j];
+            });
+        });
+    }
+
+    function submitQuiz() {
+        let score = 0;
+        let attempted = 0;
+        let answeredCount = 0;
+
+        questions.forEach((q, i) => {
+            const card = document.getElementById(`q-${i}`);
+            if (card.dataset.userAnswer !== undefined) {
+                answeredCount++;
+                if (parseInt(card.dataset.userAnswer) === q.correct) {
+                    score++;
+                }
+            }
+        });
+
+        if (answeredCount < 25) {
+            alert("กรุณาทำข้อสอบให้ครบทุกข้อก่อนส่งครับ");
+            return;
+        }
+
+        alert("ระบบจำลองการส่งข้อมูลคะแนนไปที่ thee.chinpong@hmail.com เรียบร้อยแล้ว");
+
+        const resultArea = document.getElementById('result-area');
+        resultArea.innerHTML = `
+            <div class="summary-result">
+                <h2>ผลการทดสอบ: ${score} / 25</h2>
+                <p>${score >= 20 ? 'สุดยอด! คุณมีความเข้าใจในระบบเทคโนโลยีดีมาก' : (score >= 15 ? 'ทำได้ดีครับ ทบทวนเรื่องระบบและ EDP อีกนิดจะเยี่ยมมาก' : 'ลองทบทวนบทเรียนอีกครั้งนะครับ อย่าเพิ่งท้อ!')}</p>
+            </div>
+        `;
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+    renderQuiz();
+</script>
+</body>
+</html>
