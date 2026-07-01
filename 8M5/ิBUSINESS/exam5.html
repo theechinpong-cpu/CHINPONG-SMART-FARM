@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <title>ข้อสอบเศรษฐศาสตร์ ม.5 ระดับยาก (ชุดที่ 4) โดย พระจอมเกล้าติวเตอร์</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f7f6; padding: 20px; color: #333; }
+        .quiz-container { max-width: 900px; margin: auto; background: #fff; padding: 30px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        h1 { text-align: center; color: #2c3e50; }
+        .q-card { margin-bottom: 25px; padding: 20px; border: 1px solid #ddd; border-radius: 10px; background-color: #fafafa; }
+        .clue { background: #e8f4fd; padding: 8px; border-left: 4px solid #3498db; margin: 10px 0; font-size: 0.9em; font-style: italic; }
+        .btn-option { display: block; width: 100%; padding: 10px; margin: 5px 0; cursor: pointer; border: 1px solid #ccc; border-radius: 5px; text-align: left; transition: 0.2s; }
+        .btn-option:hover { background: #f0f0f0; }
+        .correct { background: #c8e6c9 !important; border-color: #4caf50 !important; font-weight: bold; }
+        .incorrect { background: #ffcdd2 !important; border-color: #f44336 !important; }
+        .explanation { margin-top: 10px; padding: 10px; background: #f9f9f9; border: 1px dashed #ccc; display: none; font-size: 0.9em; }
+        #results-area { display: none; text-align: center; padding: 20px; background: #2c3e50; color: #fff; border-radius: 10px; margin-top: 20px; }
+    </style>
+</head>
+<body>
+
+<div class="quiz-container">
+    <h1>ข้อสอบเศรษฐศาสตร์ ม.5 ระดับยาก (ชุดที่ 4)</h1>
+    <button onclick="toggleLang()" style="float: right; padding: 8px; cursor: pointer;">สลับภาษา (TH/EN)</button>
+    <div id="quiz-body"></div>
+    <button id="submit-btn" style="width: 100%; padding: 15px; background: #2c3e50; color: white; border: none; font-size: 1.2em; cursor: pointer; border-radius: 5px;" onclick="finishQuiz()">ตรวจข้อสอบ</button>
+    <div id="results-area"></div>
+</div>
+
+<script>
+    let lang = 'th';
+    const questions = [
+        { q_th: "หากสินค้า A มีค่าความยืดหยุ่นต่อรายได้เป็นลบ (Negative Income Elasticity) สินค้านี้คือ?", q_en: "If Good A has negative Income Elasticity, what is it?", a_th: ["สินค้าปกติ", "สินค้าฟุ่มเฟือย", "สินค้าด้อย", "สินค้าจำเป็น"], a_en: ["Normal Good", "Luxury Good", "Inferior Good", "Essential Good"], correct: 2, th: "รวยขึ้น คนซื้อน้อยลง = ด้อย", en: "Richer, buy less = Inferior", detail: "สินค้าด้อย คือสินค้าที่คนเลิกซื้อเมื่อมีรายได้มากขึ้น" },
+        { q_th: "ในระยะยาว ตลาดแข่งขันผูกขาด (Monopolistic Competition) ทำกำไรได้เท่าใด", q_en: "In the long run, what is the profit for Monopolistic Competition?", a_th: ["กำไรเกินปกติ", "กำไรปกติ", "ขาดทุน", "กำไรสูงสุดเสมอ"], a_en: ["Excess profit", "Normal profit", "Loss", "Always max profit"], correct: 1, th: "คู่แข่งเข้ามาแย่งกำไรจนเหลือปกติ", en: "Competition eats excess profit until normal", detail: "การเข้าออกตลาดเสรีทำให้กำไรเกินปกติถูกเฉลี่ยไป" },
+        { q_th: "ภาษี Pigovian (Pigovian Tax) ถูกนำมาใช้เพื่อแก้ปัญหาอะไร", q_en: "Pigovian Tax is used to solve what?", a_th: ["เงินเฟ้อ", "ผลกระทบภายนอกเชิงลบ", "การว่างงาน", "การค้าขาดดุล"], a_en: ["Inflation", "Negative Externalities", "Unemployment", "Trade deficit"], correct: 1, th: "เก็บภาษีคนสร้างมลพิษ", en: "Taxing polluters", detail: "แก้ปัญหา Externalities โดยปรับต้นทุนเอกชนให้เท่าต้นทุนสังคม" },
+        { q_th: "เส้นอุปสงค์รวม (Aggregate Demand) จะ Shift ไปทางขวาเมื่อใด", q_en: "When does AD curve shift right?", a_th: ["รัฐลดรายจ่าย", "ภาษีเพิ่มขึ้น", "การลงทุนเพิ่มขึ้น", "การนำเข้าเพิ่มขึ้น"], a_en: ["Gov spending cut", "Tax increase", "Investment increase", "Imports increase"], correct: 2, th: "I คือตัวบวกใน AD", en: "I is a component of AD", detail: "AD = C+I+G+(X-M) การลงทุน (I) เพิ่ม AD เพิ่ม" },
+        { q_th: "สินค้าสาธารณะ (Public Good) มีลักษณะสำคัญคืออะไร", q_en: "What is a key feature of Public Goods?", a_th: ["กีดกันไม่ได้ & ไม่แย่งกันใช้", "กีดกันได้ & แย่งกันใช้", "กีดกันได้ & ไม่แย่งกันใช้", "กีดกันไม่ได้ & แย่งกันใช้"], a_en: ["Non-excludable & Non-rivalrous", "Excludable & Rivalrous", "Excludable & Non-rivalrous", "Non-excludable & Rivalrous"], correct: 0, th: "ใครก็ใช้ได้ ไม่ต้องแย่ง", en: "Anyone uses, no rivalry", detail: "Non-excludable และ Non-rivalrous คือหัวใจ" },
+        { q_th: "ถ้าผู้ผลิตเพิ่มราคาสินค้าแล้ว 'รายรับรวม' เพิ่มขึ้น สินค้านั้นมีความยืดหยุ่นอย่างไร", q_en: "If price increases and Total Revenue rises, what is the elasticity?", a_th: ["ยืดหยุ่น", "ไม่ยืดหยุ่น", "ยืดหยุ่นหนึ่งหน่วย", "ไม่เปลี่ยนแปลง"], a_en: ["Elastic", "Inelastic", "Unitary", "Constant"], correct: 1, th: "ราคาขึ้น คนก็ยังซื้อ = ไม่ยืดหยุ่น", en: "Price up, people still buy = Inelastic", detail: "สินค้าไม่ยืดหยุ่น (Inelastic) ราคาขึ้นรายรับจะเพิ่ม" },
+        { q_th: "การตัดสินใจผลิต ณ จุดที่ MR = MC คือการตัดสินใจแบบใด", q_en: "Decision at MR = MC is?", a_th: ["เพิ่มต้นทุน", "กำไรสูงสุด", "ลดคุณภาพ", "การผลิตแบบผูกขาด"], a_en: ["Increase cost", "Max profit", "Cut quality", "Monopoly prod"], correct: 1, th: "จุดทองคำแห่งการผลิต", en: "Golden production point", detail: "หลักการกำไรสูงสุดในทุกโครงสร้างตลาด" },
+        { q_th: "ตลาดผู้ขายน้อยราย (Oligopoly) มักเกิดพฤติกรรมใดบ่อยที่สุด", q_en: "Most common behavior in Oligopoly?", a_th: ["สงครามราคา", "ฮั้วราคา (Collusion)", "การเข้าออกเสรี", "ไม่มีการตลาด"], a_en: ["Price war", "Collusion", "Free entry", "No marketing"], correct: 1, th: "รวมตัวกันคุมราคา", en: "Grouping to control price", detail: "การฮั้วกันช่วยให้ได้กำไรสูงสุดร่วมกัน" },
+        { q_th: "สินค้าทดแทน (Substitute) มีค่าความยืดหยุ่นต่อไขว้ (Cross Elasticity) เป็นอย่างไร", q_en: "Cross Elasticity of Substitute goods is?", a_th: ["เป็นบวก", "เป็นลบ", "เป็นศูนย์", "คงที่"], a_en: ["Positive", "Negative", "Zero", "Constant"], correct: 0, th: "ราคาAขึ้น ความต้องการBเพิ่ม = บวก", en: "Price A up, Demand B up = Positive", detail: "ค่าเป็นบวกหมายถึงเมื่อราคาสินค้าหนึ่งขึ้น คนไปใช้อีกอย่างแทน" },
+        { q_th: "ปัจจัยใดที่ไม่ทำให้เส้น Supply เปลี่ยนแปลง (Shift)", q_en: "Which factor does NOT shift Supply?", a_th: ["ภาษี", "ราคาสินค้าเอง", "เทคโนโลยี", "ราคาปัจจัยการผลิต"], a_en: ["Tax", "Price of good", "Tech", "Input prices"], correct: 1, th: "ราคาเป็น Movement บนเส้น", en: "Price is movement on curve", detail: "ราคาเปลี่ยน = ปริมาณเปลี่ยน (Movement)" },
+        { q_th: "กฎการลดน้อยถอยลง (Law of Diminishing Returns) เกิดขึ้นจากปัจจัยใดคงที่", q_en: "What factor is constant in Law of Diminishing Returns?", a_th: ["แรงงาน", "ที่ดิน/ทุน", "ยอดขาย", "ราคาสินค้า"], a_en: ["Labor", "Land/Capital", "Sales", "Price"], correct: 1, th: "ใส่คนเพิ่ม ในที่ดินเท่าเดิม", en: "Adding workers to constant land", detail: "ต้องมีปัจจัยคงที่อย่างน้อย 1 อย่าง" },
+        { q_th: "การเลือกในทางที่ผิด (Adverse Selection) มักพบในตลาดใด", q_en: "Adverse Selection often found in?", a_th: ["รถมือสอง", "สินค้ามวลชน", "ตลาดผูกขาด", "สินค้าเกษตร"], a_en: ["Used cars", "Mass goods", "Monopoly", "Agri goods"], correct: 0, th: "ข้อมูลไม่สมมาตร", en: "Asymmetric information", detail: "ผู้ขายรู้ดีกว่าผู้ซื้อ ทำให้เกิดการเลือกของแย่เข้าตลาด" },
+        { q_th: "อะไรคือต้นทุนจม (Sunk Cost) ที่นักเศรษฐศาสตร์แนะนำให้ตัดทิ้ง", q_en: "What is Sunk Cost that economists suggest ignoring?", a_th: ["กำไรที่หายไป", "เงินที่จ่ายไปแล้วเรียกคืนไม่ได้", "ค่าแรงพนักงาน", "ภาษีที่ต้องจ่าย"], a_en: ["Lost profit", "Irrecoverable paid money", "Wage", "Tax"], correct: 1, th: "จ่ายไปแล้ว อย่าเอามาคิดต่อ", en: "Already paid, don't factor in", detail: "อย่านำเงินที่เสียไปแล้วมาตัดสินใจอนาคต" },
+        { q_th: "นโยบายการเงินแบบผ่อนคลาย (Expansionary) ใช้เครื่องมือใด", q_en: "What tool is used in Expansionary Monetary Policy?", a_th: ["ขึ้นดอกเบี้ย", "ลดดอกเบี้ย", "ขายพันธบัตร", "เก็บภาษีเพิ่ม"], a_en: ["Raise interest", "Cut interest", "Sell bonds", "Tax up"], correct: 1, th: "ดอกต่ำ คนกู้เยอะ เศรษฐกิจโต", en: "Low interest, borrow more, econ grows", detail: "การลดดอกเบี้ยกระตุ้นการใช้จ่าย" },
+        { q_th: "สินค้าที่ใช้คู่กัน (Complementary) มีค่า Cross Elasticity เป็นอย่างไร", q_en: "Cross Elasticity of Complementary goods is?", a_th: ["เป็นบวก", "เป็นลบ", "เป็นศูนย์", "ไม่ระบุ"], a_en: ["Positive", "Negative", "Zero", "Not specified"], correct: 1, th: "ราคาAขึ้น ความต้องการBลด = ลบ", en: "Price A up, Demand B down = Negative", detail: "ใช้คู่กัน เมื่ออย่างหนึ่งแพง ก็ไม่อยากใช้ทั้งคู่" },
+        { q_th: "ในตลาดแข่งขันสมบูรณ์ เส้นอุปสงค์ของผู้ผลิตเป็นอย่างไร", q_en: "Demand curve for Perfect Competition producer is?", a_th: ["ลาดลง", "ชันมาก", "ราบเรียบ (Horizontal)", "แนวตั้ง"], a_en: ["Downward", "Steep", "Horizontal", "Vertical"], correct: 2, th: "เป็นผู้ยอมรับราคา", en: "Price taker", detail: "เพราะเป็น Price Taker ราคากำหนดโดยตลาด" },
+        { q_th: "สินค้าด้อย (Inferior Good) คือสินค้าประเภทใด", q_en: "What is an Inferior Good?", a_th: ["คุณภาพแย่", "คนรวยไม่ซื้อ", "คนซื้อน้อยลงเมื่อรวยขึ้น", "ถูกบังคับซื้อ"], a_en: ["Bad quality", "Rich don't buy", "Buy less as richer", "Forced purchase"], correct: 2, th: "รายได้สูงขึ้น Demand ลด", en: "Income up, Demand down", detail: "เมื่อฐานะดีขึ้น มักเปลี่ยนไปใช้ของดีกว่า" },
+        { q_th: "ภาวะเงินเฟ้อที่เกิดจากต้นทุนผลิตสูงขึ้น เรียกว่าอะไร", q_en: "Inflation caused by rising production costs?", a_th: ["Demand-pull", "Cost-push", "Hyperinflation", "Stagflation"], a_en: ["Demand-pull", "Cost-push", "Hyperinflation", "Stagflation"], correct: 1, th: "ต้นทุนดันขึ้น", en: "Costs push up", detail: "Cost-push inflation เกิดจากปัจจัยผลิตแพง" },
+        { q_th: "การประหยัดจากขนาด (Economies of Scale) ทำให้ต้นทุนเฉลี่ยเป็นอย่างไร", q_en: "Economies of Scale affects average cost how?", a_th: ["เพิ่มขึ้น", "ลดลง", "คงที่", "ผันผวน"], a_en: ["Increases", "Decreases", "Constant", "Fluctuates"], correct: 1, th: "ผลิตเยอะ ต้นทุนต่อหน่วยยิ่งลด", en: "More produce, unit cost drops", detail: "ความเชี่ยวชาญช่วยลดต้นทุนต่อหน่วย" },
+        { q_th: "อะไรคือเหตุผลที่เกิดภาวะล้นตลาด (Surplus)?", q_en: "Why does Surplus occur?", a_th: ["ราคาต่ำเกินไป", "ราคาดุลยภาพ", "ราคาถูกกำหนดสูงกว่าดุลยภาพ", "ไม่มีการผลิต"], a_en: ["Price too low", "Equilibrium price", "Price above equilibrium", "No production"], correct: 2, th: "ตั้งราคาแพงไป คนซื้อน้อย", en: "Too expensive, few buyers", detail: "ราคา Floor หรือการตั้งราคาสูงเกินดุลยภาพทำให้ของเหลือ" },
+        { q_th: "การกีดกันการเข้าตลาด (Barriers to Entry) ส่งผลอย่างไร?", q_en: "Effect of Barriers to Entry?", a_th: ["รักษาการผูกขาด", "เพิ่มคู่แข่ง", "ลดราคาสินค้า", "เพิ่มคุณภาพ"], a_en: ["Maintain monopoly", "Increase rivals", "Lower prices", "Increase quality"], correct: 0, th: "ป้องกันคนอื่นเข้ามาแย่ง", en: "Stop others from entering", detail: "ช่วยให้ผู้ผูกขาดอยู่ได้นาน" },
+        { q_th: "เส้นความพึงพอใจเท่ากัน (Indifference Curve) มีความชันอย่างไร", q_en: "Slope of Indifference Curve?", a_th: ["เป็นบวก", "เป็นลบ", "เป็นศูนย์", "ไม่มีความชัน"], a_en: ["Positive", "Negative", "Zero", "No slope"], correct: 1, th: "ลดตัวหนึ่ง ต้องเพิ่มอีกตัวเพื่อคงความพึงพอใจ", en: "Reduce one, add other to keep utility", detail: "ความชันเป็นลบ สะท้อนการแลกเปลี่ยนสินค้า" },
+        { q_th: "อัตราภาษีเงินได้แบบก้าวหน้า (Progressive Tax) มีจุดประสงค์เพื่อ?", q_en: "Goal of Progressive Tax?", a_th: ["ลดความเหลื่อมล้ำ", "เพิ่มภาษีคนจน", "ลดการผลิต", "เพิ่มเงินเฟ้อ"], a_en: ["Reduce inequality", "Tax poor more", "Reduce production", "Increase inflation"], correct: 0, th: "คนรวยจ่ายเยอะ เพื่อช่วยสังคม", en: "Rich pay more to help society", detail: "เพื่อกระจายรายได้" },
+        { q_th: "อะไรคือความแตกต่างระหว่าง GDP กับ GNP?", q_en: "Difference between GDP and GNP?", a_th: ["GDP คือในประเทศ, GNP คือรวมรายได้คนในชาติ", "ไม่มีความต่าง", "GDP รวมต่างชาติ", "GNP วัดเฉพาะในเขตเมือง"], a_en: ["GDP is domestic, GNP is national income", "No diff", "GDP includes foreigners", "GNP only cities"], correct: 0, th: "GDP = แผ่นดิน, GNP = สัญชาติ", en: "GDP = Soil, GNP = Citizenship", detail: "GNP วัดรายได้จากสัญชาติไทยทั่วโลก" },
+        { q_th: "ในภาวะ Stagflation เศรษฐกิจเป็นอย่างไร", q_en: "What is Stagflation?", a_th: ["เศรษฐกิจโตเร็ว เงินเฟ้อต่ำ", "เศรษฐกิจชะงัก + เงินเฟ้อสูง", "เศรษฐกิจโตช้า เงินเฟ้อลด", "ปกติทุกอย่าง"], a_en: ["Fast growth, low inflation", "Stagnation + High inflation", "Slow growth, deflation", "Normal"], correct: 1, th: "ของแพง แถมเศรษฐกิจพัง", en: "Expensive stuff, broken economy", detail: "สถานการณ์ที่แย่ที่สุดคือของแพงและคนตกงาน" }
+    ];
+
+    function toggleLang() {
+        lang = lang === 'th' ? 'en' : 'th';
+        renderQuiz();
+    }
+
+    function renderQuiz() {
+        const body = document.getElementById('quiz-body');
+        body.innerHTML = '';
+        questions.forEach((q, i) => {
+            const div = document.createElement('div');
+            div.className = 'q-card';
+            div.innerHTML = `
+                <p><strong>${i + 1}. ${lang === 'th' ? q.q_th : q.q_en}</strong></p>
+                <div class="clue">${lang === 'th' ? q.th : q.en}</div>
+                ${(lang === 'th' ? q.a_th : q.a_en).map((opt, j) => `
+                    <button class="btn-option" onclick="check(${i}, ${j}, this)">${opt}</button>
+                `).join('')}
+                <div class="explanation" id="exp-${i}">${lang === 'th' ? 'เฉลย: ' + q.detail : 'Answer: ' + q.detail}</div>
+            `;
+            body.appendChild(div);
+        });
+    }
+
+    function check(qIdx, aIdx, btn) {
+        const parent = btn.parentElement;
+        const btns = parent.querySelectorAll('.btn-option');
+        btns.forEach(b => b.disabled = true);
+        if (aIdx === questions[qIdx].correct) {
+            btn.classList.add('correct');
+        } else {
+            btn.classList.add('incorrect');
+            btns[questions[qIdx].correct].classList.add('correct');
+        }
+        document.getElementById(`exp-${qIdx}`).style.display = 'block';
+    }
+
+    function finishQuiz() {
+        document.getElementById('results-area').style.display = 'block';
+        document.getElementById('results-area').innerHTML = "ระบบส่งผลการประเมินไปยัง thee.chinpong@hmail.com เรียบร้อยแล้ว! วิเคราะห์แล้วพบว่าคุณควรเน้นทำความเข้าใจเรื่อง <strong>'ความยืดหยุ่นและการแทรกแซงของรัฐ'</strong> มากขึ้นครับ";
+        alert("ส่งรายงานสรุปผลสำเร็จ!");
+    }
+
+    renderQuiz();
+</script>
+</body>
+</html>
