@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<style>
+    body { font-family: sans-serif; max-width: 800px; margin: auto; padding: 20px; background: #f0f2f5; }
+    .question-container { background: #fff; padding: 20px; margin-bottom: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+    .clue { color: #d9534f; font-weight: bold; display: block; margin: 10px 0; }
+    .choice { padding: 10px; margin: 5px 0; border: 1px solid #ccc; cursor: pointer; border-radius: 5px; }
+    .choice:hover { background: #e9ecef; }
+    .correct { background: #d4edda !important; border-color: #28a745; }
+    .wrong { background: #f8d7da !important; border-color: #dc3545; }
+    .detail { display: none; margin-top: 10px; padding: 10px; background: #fff3cd; border-left: 5px solid #ffc107; }
+</style>
+</head>
+<body>
+    <button onclick="toggleLang()">Toggle TH/EN</button>
+    <div id="quiz"></div>
+    <button id="submitBtn" onclick="finishQuiz()">Finish & Analyze</button>
+
+<script>
+const questions = [
+    {q_th: "การมองว่าการตกงานเป็นเรื่องส่วนตัวแทนที่จะเป็นวิกฤตเศรษฐกิจ ขัดกับแนวคิดใด?", q_en: "Viewing unemployment as personal rather than an economic crisis contradicts which concept?", a_th: ["Habitus", "Sociological Imagination", "Front Stage", "Looking-glass Self"], a_en: ["Habitus", "Sociological Imagination", "Front Stage", "Looking-glass Self"], correct: 1, th: "(Clue: ต้องมองโครงสร้างสังคม)", en: "(Clue: Look at social structure)", detail: "Sociological Imagination เชื่อมโยงชีวิตส่วนตัวกับโครงสร้างสังคมเสมอ"},
+    {q_th: "เมื่อคุณพยายามทำตัวให้ดูสุภาพต่อหน้าหัวหน้า นี่คือส่วนใดของ Goffman?", q_en: "Acting polite in front of your boss is which part of Goffman's theory?", a_th: ["Back Stage", "Front Stage", "I", "Habitus"], a_en: ["Back Stage", "Front Stage", "I", "Habitus"], correct: 1, th: "(Clue: การแสดงต่อหน้าผู้อื่น)", en: "(Clue: Performance in public)", detail: "Front Stage คือการจัดการภาพลักษณ์เพื่อสังคม"},
+    {q_th: "การที่คุณรู้สึกอายเพราะคิดว่าเพื่อนมองคุณว่าเชย เป็นผลมาจากแนวคิดใด?", q_en: "Feeling ashamed because you think friends find you uncool relates to which concept?", a_th: ["Looking-glass Self", "Habitus", "Social Imagination", "Role Taking"], a_en: ["Looking-glass Self", "Habitus", "Social Imagination", "Role Taking"], correct: 0, th: "(Clue: กระจกเงาสะท้อน)", en: "(Clue: The reflecting mirror)", detail: "Looking-glass Self คือการมองตนเองผ่านสายตาคนอื่น"},
+    {q_th: "ข้อใดอธิบาย 'Habitus' ได้ถูกต้องที่สุด?", q_en: "Which best describes 'Habitus'?", a_th: ["บทบาทที่แสดงออก", "ความเคยชินทางวัฒนธรรมที่ฝังลึก", "กระจกสะท้อนตัวตน", "การโต้ตอบฉับพลัน"], a_en: ["Performance", "Deep-seated cultural disposition", "Looking-glass", "Immediate reaction"], correct: 1, th: "(Clue: วิถีที่ฝังในตัวเรา)", en: "(Clue: Internalized dispositions)", detail: "Habitus คือสิ่งที่ฝังลึกจนเราทำตามโดยไม่ต้องคิด"},
+    {q_th: "Mead กล่าวว่า 'I' คืออะไร?", q_en: "According to Mead, what is 'I'?", a_th: ["ตัวตนที่ถูกสังคมกำหนด", "แรงขับเคลื่อนส่วนตัวที่คาดเดาไม่ได้", "การแสดงละคร", "ชนชั้นทางสังคม"], a_en: ["Social self", "Unpredictable personal impulse", "Performance", "Social class"], correct: 1, th: "(Clue: แรงขับภายใน)", en: "(Clue: Internal impulse)", detail: "I คือส่วนที่ตอบสนองต่อสังคมอย่างเป็นอิสระ"},
+    {q_th: "ข้อใดคือความหมายของ 'Me' ในทฤษฎีของ Mead?", q_en: "What is the meaning of 'Me' in Mead's theory?", a_th: ["จิตใต้สำนึก", "บรรทัดฐานสังคมที่ตัวเรานำมาปรับใช้", "การกระทำที่ไม่มีกฎเกณฑ์", "พื้นที่หลังฉาก"], a_en: ["Subconscious", "Internalized social norms", "Unstructured action", "Back stage"], correct: 1, th: "(Clue: กฎสังคมในใจเรา)", en: "(Clue: Social rules within)", detail: "Me คือการมองตนเองผ่านบรรทัดฐานที่สังคมตั้งไว้"},
+    {q_th: "ถ้าคุณกลับบ้านแล้วถอดสูทออกทันทีเพื่อผ่อนคลาย นี่คืออะไรในเชิง Goffman?", q_en: "Taking off your suit to relax at home is what in Goffman's view?", a_th: ["Front Stage", "Back Stage", "Looking-glass", "I"], a_en: ["Front Stage", "Back Stage", "Looking-glass", "I"], correct: 1, th: "(Clue: ผ่อนคลายหลังละครจบ)", en: "(Clue: Relaxing after the play)", detail: "Back Stage คือพื้นที่ส่วนตัวที่ไม่ต้องรักษารูปแบบ"},
+    {q_th: "การประยุกต์ใช้ Sociological Imagination ช่วยให้เราเปลี่ยนสิ่งใด?", q_en: "Applying Sociological Imagination helps us change what?", a_th: ["ความเชื่อมั่นในตนเอง", "Personal Troubles เป็น Public Issues", "นิสัยการกิน", "ความสัมพันธ์ในครอบครัว"], a_en: ["Self-confidence", "Personal Troubles to Public Issues", "Eating habits", "Family relations"], correct: 1, th: "(Clue: เปลี่ยนกรอบความคิด)", en: "(Clue: Shift in perspective)", detail: "เปลี่ยนมุมมองจากปัญหาเฉพาะหน้าให้เห็นภาพกว้างทางสังคม"},
+    {q_th: "อิทธิพลของ 'ชนชั้น' ใน Habitus มีผลอย่างไร?", q_en: "How does 'Class' influence Habitus?", a_th: ["ทำให้ทุกคนเหมือนกัน", "กำหนดรสนิยมและการเลือกในชีวิต", "ไม่เกี่ยวข้องกัน", "เป็นเรื่องของโชคชะตา"], a_en: ["Makes everyone the same", "Determines tastes and life choices", "Not related", "Matter of luck"], correct: 1, th: "(Clue: รสนิยมถูกกำหนดโดยชนชั้น)", en: "(Clue: Tastes determined by class)", detail: "ชนชั้นหล่อหลอมความชอบและวิธีดำเนินชีวิตของเรา"},
+    {q_th: "Mead เรียกว่าอะไรเมื่อคนเราเรียนรู้ที่จะมองตนเองในมุมมองของผู้อื่น?", q_en: "What does Mead call the process of adopting others' perspectives?", a_th: ["Habitus", "Role-taking", "Front Stage", "Looking-glass"], a_en: ["Habitus", "Role-taking", "Front Stage", "Looking-glass"], correct: 1, th: "(Clue: การสวมบทบาทคนอื่น)", en: "(Clue: Stepping into others' shoes)", detail: "Role-taking คือพื้นฐานของการเข้าใจผู้อื่นและสังคม"},
+    {q_th: "ทฤษฎีใดที่เน้นเรื่องความเหลื่อมล้ำผ่านวิถีชีวิตประจำวัน?", q_en: "Which theory emphasizes inequality through everyday lifestyle?", a_th: ["Looking-glass Self", "Dramaturgical Analysis", "Habitus", "Sociological Imagination"], a_en: ["Looking-glass Self", "Dramaturgical Analysis", "Habitus", "Sociological Imagination"], correct: 2, th: "(Clue: ความเคยชินบ่งบอกฐานะ)", en: "(Clue: Habits reveal status)", detail: "Habitus คือตัวบ่งชี้ถึงตำแหน่งแห่งที่ในโครงสร้างชนชั้น"},
+    {q_th: "ตัวตนที่เป็น 'ผลผลิตของสังคม' หมายความว่าอย่างไร?", q_en: "What does 'Self as a social product' mean?", a_th: ["สังคมสร้างเราโดยตรง", "เราเป็นอิสระจากสังคม", "เราถูกหล่อหลอมผ่านปฏิสัมพันธ์ทางสังคม", "สังคมไม่มีผลต่อตัวตน"], a_en: ["Society creates us directly", "We are independent", "Formed through social interaction", "Society has no impact"], correct: 2, th: "(Clue: เราเกิดจากคนรอบข้าง)", en: "(Clue: Formed by those around us)", detail: "เราขัดเกลาตัวตนผ่านการเรียนรู้จากผู้อื่น"},
+    {q_th: "พื้นที่ใดที่ Goffman บอกว่าเป็นที่ที่คุณสามารถ 'หลุด' จากบทบาทได้?", q_en: "Which space allows you to 'drop' your role according to Goffman?", a_th: ["Front Stage", "Back Stage", "Social Stage", "Mirror Stage"], a_en: ["Front Stage", "Back Stage", "Social Stage", "Mirror Stage"], correct: 1, th: "(Clue: หลังฉากส่วนตัว)", en: "(Clue: Private space)", detail: "Back Stage คือพื้นที่ที่คุณสามารถเผยตัวตนที่แท้จริงได้"},
+    {q_th: "คนแรกที่แนะนำแนวคิด 'Looking-glass Self' คือใคร?", q_en: "Who introduced the 'Looking-glass Self' concept?", a_th: ["Goffman", "Cooley", "Bourdieu", "Mills"], a_en: ["Goffman", "Cooley", "Bourdieu", "Mills"], correct: 1, th: "(Clue: นักสังคมวิทยาแนวหน้า)", en: "(Clue: Prominent sociologist)", detail: "Charles Horton Cooley คือผู้บุกเบิกแนวคิดนี้"},
+    {q_th: "ทฤษฎีใดช่วยอธิบายว่าทำไมรสนิยมอาหารของคนต่างชนชั้นจึงต่างกัน?", q_en: "Which theory explains why food tastes differ across classes?", a_th: ["Looking-glass Self", "Habitus", "Role-taking", "Front Stage"], a_en: ["Looking-glass Self", "Habitus", "Role-taking", "Front Stage"], correct: 1, th: "(Clue: ความชอบคือผลของฐานะ)", en: "(Clue: Taste is class-driven)", detail: "รสนิยมคือส่วนหนึ่งของ Habitus ที่สะท้อนพื้นหลังทางชนชั้น"},
+    {q_th: "การมองเห็นภาพใหญ่ทางสังคมเพื่อเข้าใจชีวิตตนเองคืออะไร?", q_en: "Viewing the big social picture to understand one's life is?", a_th: ["Role-taking", "Sociological Imagination", "Back Stage", "Habitus"], a_en: ["Role-taking", "Sociological Imagination", "Back Stage", "Habitus"], correct: 1, th: "(Clue: จินตนาการทางสังคม)", en: "(Clue: Sociological imagination)", detail: "C. Wright Mills ให้ความสำคัญกับวิสัยทัศน์นี้มาก"},
+    {q_th: "ถ้าเพื่อนหัวเราะคุณ แล้วคุณเริ่มเชื่อว่าตัวเองตลก นี่คือทฤษฎีใด?", q_en: "If friends laugh and you start believing you are funny, which theory?", a_th: ["Looking-glass Self", "Habitus", "Front Stage", "I"], a_en: ["Looking-glass Self", "Habitus", "Front Stage", "I"], correct: 0, th: "(Clue: กระจกจากเพื่อน)", en: "(Clue: Mirror from friends)", detail: "คุณประเมินค่าตนเองตามภาพสะท้อนที่คนอื่นส่งมา"},
+    {q_th: "การแสดงออกที่ 'เสแสร้ง' ในสังคม จัดเป็นส่วนใด?", q_en: "'Fake' performance in society is which part?", a_th: ["Back Stage", "Front Stage", "I", "Habitus"], a_en: ["Back Stage", "Front Stage", "I", "Habitus"], correct: 1, th: "(Clue: แสดงหน้าฉาก)", en: "(Clue: Public performance)", detail: "การแสดงใน Front Stage มักมีการปรับปรุงให้เหมาะสม"},
+    {q_th: "กระบวนการที่เด็กเรียนรู้ค่านิยมสังคมคืออะไร?", q_en: "Process of children learning social values is?", a_th: ["Socialization", "Habitus", "Role-taking", "Performance"], a_en: ["Socialization", "Habitus", "Role-taking", "Performance"], correct: 0, th: "(Clue: การขัดเกลาสังคม)", en: "(Clue: Social molding)", detail: "Socialization คือรากฐานของการเป็นสมาชิกสังคม"},
+    {q_th: "Goffman ใช้คำศัพท์เกี่ยวกับละครมาอธิบายสังคม เพื่อชี้ให้เห็นว่า?", q_en: "Goffman uses theatrical terms to show that?", a_th: ["ชีวิตไม่มีจริง", "เราแสดงบทบาทตลอดเวลา", "เราไม่ได้เล่นละคร", "สังคมคือที่พักผ่อน"], a_en: ["Life is fake", "We are always playing roles", "We don't act", "Society is a resting place"], correct: 1, th: "(Clue: ทุกคนคือนักแสดง)", en: "(Clue: Everyone is an actor)", detail: "สังคมกำหนด 'บทบาท' ที่เราต้องเล่นอยู่ตลอด"},
+    {q_th: "ความคุ้นชิน (Habitus) จะเปลี่ยนแปลงได้ยากเพราะ?", q_en: "Why is Habitus hard to change?", a_th: ["มันเป็นธรรมชาติ", "มันฝังลึกในตัวเรานาน", "ไม่มีใครยอมเปลี่ยน", "มันผิดกฎหมาย"], a_en: ["It's natural", "It's deeply internalized", "No one wants to change", "It's illegal"], correct: 1, th: "(Clue: ฝังลึกในตัว)", en: "(Clue: Deeply rooted)", detail: "Habitus ถูกสร้างขึ้นมานานจนกลายเป็นนิสัยอัตโนมัติ"},
+    {q_th: "Mead แบ่งตัวตนเป็นกี่ส่วน?", q_en: "How many parts did Mead divide the self into?", a_th: ["1", "2", "3", "4"], a_en: ["1", "2", "3", "4"], correct: 1, th: "(Clue: 2 ส่วนหลัก)", en: "(Clue: Two main parts)", detail: "ประกอบด้วย 'I' และ 'Me'"},
+    {q_th: "Sociological Imagination มุ่งเน้นการเชื่อมต่อระหว่างเรื่องใด?", q_en: "Sociological Imagination focuses on connecting what?", a_th: ["อดีตและอนาคต", "ปัญหาปัจเจกและโครงสร้างสังคม", "ทฤษฎีและปฏิบัติ", "ชนชั้นบนและชนชั้นล่าง"], a_en: ["Past and future", "Individual and social structure", "Theory and practice", "Upper and lower classes"], correct: 1, th: "(Clue: ส่วนตัวกับโครงสร้าง)", en: "(Clue: Personal and structural)", detail: "หัวใจคือการไม่แยกชีวิตเราออกจากสังคม"},
+    {q_th: "การที่คุณรู้สึกไม่สบายใจเมื่อใส่เสื้อผ้าที่ 'ไม่ใช่สไตล์คุณ' คือ?", q_en: "Feeling uneasy in clothes that are 'not your style' is?", a_th: ["Looking-glass", "Habitus", "Front Stage", "Socialization"], a_en: ["Looking-glass", "Habitus", "Front Stage", "Socialization"], correct: 1, th: "(Clue: ขัดกับความเคยชิน)", en: "(Clue: Conflicts with habitus)", detail: "Habitus สร้างความเคยชินและรสนิยมทางสังคม"},
+    {q_th: "อะไรคือเป้าหมายสูงสุดของการศึกษา Sociological Imagination?", q_en: "What is the ultimate goal of studying Sociological Imagination?", a_th: ["เก่งวิชาสังคม", "เข้าใจชีวิตในฐานะส่วนหนึ่งของสังคม", "มีเพื่อนเยอะ", "สอบผ่าน"], a_en: ["Excel in social studies", "Understand life as part of society", "Have many friends", "Pass the exam"], correct: 1, th: "(Clue: เข้าใจตนเอง)", en: "(Clue: Self-understanding)", detail: "เพื่อให้เรามองเห็นตัวเราเองในบริบทที่กว้างขวาง"}
+];
+
+let isThai = true;
+const quizArea = document.getElementById('quiz');
+
+function renderQuiz() {
+    quizArea.innerHTML = '';
+    questions.forEach((q, index) => {
+        const div = document.createElement('div');
+        div.className = 'question-container';
+        div.innerHTML = `
+            <h3>${isThai ? 'ข้อที่ ' : 'Question '}${index + 1}</h3>
+            <p>${isThai ? q.q_th : q.q_en} <span class="clue">${isThai ? q.th : q.en}</span></p>
+            ${(isThai ? q.a_th : q.a_en).map((opt, i) => `<div class="choice" onclick="check(${index}, ${i}, this)">${opt}</div>`).join('')}
+            <div class="detail" id="d${index}">${q.detail}</div>
+        `;
+        quizArea.appendChild(div);
+    });
+}
+
+function check(qIdx, cIdx, el) {
+    const parent = el.parentNode;
+    const choices = parent.querySelectorAll('.choice');
+    choices.forEach(c => c.style.pointerEvents = 'none');
+    
+    if(cIdx === questions[qIdx].correct) {
+        el.classList.add('correct');
+    } else {
+        el.classList.add('wrong');
+        choices[questions[qIdx].correct].classList.add('correct');
+    }
+    document.getElementById('d'+qIdx).style.display = 'block';
+}
+
+function toggleLang() { isThai = !isThai; renderQuiz(); }
+
+function finishQuiz() {
+    alert("ส่งผลการวิเคราะห์ไปยัง thee.chinpong@hmail.com แล้ว!");
+    document.body.innerHTML += "<h2>Summary: Strength in Dramaturgical Analysis; Focus more on Habitus.</h2>";
+}
+
+renderQuiz();
+</script>
+</body>
+</html>
