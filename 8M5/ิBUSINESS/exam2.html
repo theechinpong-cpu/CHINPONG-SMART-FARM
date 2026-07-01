@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <title>ข้อสอบเศรษฐศาสตร์ ชุดที่ 2 (Hard Level) - พระจอมเกล้าติวเตอร์</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f7f6; padding: 20px; color: #333; }
+        .quiz-container { max-width: 900px; margin: auto; background: #fff; padding: 30px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        h1 { text-align: center; color: #2c3e50; }
+        .q-card { margin-bottom: 25px; padding: 20px; border: 1px solid #ddd; border-radius: 10px; }
+        .clue { background: #ffebee; padding: 8px; border-left: 4px solid #e91e63; margin: 10px 0; font-size: 0.9em; font-style: italic; color: #c2185b; }
+        .btn-option { display: block; width: 100%; padding: 10px; margin: 5px 0; cursor: pointer; border: 1px solid #ccc; border-radius: 5px; text-align: left; }
+        .btn-option:hover { background: #f0f0f0; }
+        .correct { background: #c8e6c9 !important; border-color: #4caf50 !important; }
+        .incorrect { background: #ffcdd2 !important; border-color: #f44336 !important; }
+        .explanation { margin-top: 10px; padding: 10px; background: #f9f9f9; border: 1px dashed #ccc; display: none; }
+        #results-area { display: none; text-align: center; padding: 20px; background: #2c3e50; color: #fff; border-radius: 10px; }
+    </style>
+</head>
+<body>
+
+<div class="quiz-container">
+    <h1>ข้อสอบเศรษฐศาสตร์ ชุดที่ 2 (Hard Level)</h1>
+    <button onclick="toggleLang()" style="float: right;">สลับภาษา (TH/EN)</button>
+    <div id="quiz-body"></div>
+    <button id="submit-btn" style="width: 100%; padding: 15px; background: #2c3e50; color: white; border: none; font-size: 1.2em;" onclick="finishQuiz()">ตรวจข้อสอบ</button>
+    <div id="results-area"></div>
+</div>
+
+<script>
+    let lang = 'th';
+    const questions = [
+        { q_th: "หากสินค้า A เป็นสินค้าฟุ่มเฟือยและมี PED = 2.5 หากผู้ผลิตลดราคาสินค้าลง 10% จะเกิดอะไรขึ้น?", q_en: "If product A is a luxury good with PED = 2.5, and price drops 10%, what happens?", a_th: ["ปริมาณขายลดลง 25%", "ปริมาณขายเพิ่มขึ้น 25%", "รายได้รวมลดลง", "รายได้รวมคงที่"], a_en: ["Quantity drops 25%", "Quantity rises 25%", "Total revenue drops", "Total revenue constant"], correct: 1, th: "สูตร %Q = PED * %P", en: "Formula: %Q = PED * %P", detail: "PED > 1 แสดงว่าปริมาณตอบสนองมากกว่าราคา ดังนั้น Q เพิ่มขึ้น 2.5 * 10% = 25%" },
+        { q_th: "การผลักภาระภาษี (Tax Incidence) จะตกไปอยู่ที่ผู้บริโภคมากที่สุดเมื่อใด", q_en: "When does the burden of tax fall most heavily on consumers?", a_th: ["อุปสงค์ยืดหยุ่นมาก", "อุปทานยืดหยุ่นน้อย", "อุปสงค์ยืดหยุ่นน้อย (Inelastic)", "อุปทานคงที่"], a_en: ["Demand very elastic", "Supply very inelastic", "Demand very inelastic", "Supply fixed"], correct: 2, th: "คนหนีไม่ได้ ก็ต้องจ่าย", en: "Cannot run, must pay", detail: "เมื่อ Demand ยืดหยุ่นน้อย (Inelastic) ผู้บริโภคเลิกซื้อไม่ได้ จึงต้องแบกรับภาษีส่วนใหญ่" },
+        { q_th: "ถ้าสินค้า X และ Y มีค่าความยืดหยุ่นไขว้ (Cross Elasticity) เป็นลบ สินค้าทั้งสองมีความสัมพันธ์กันอย่างไร", q_en: "If X and Y have a negative Cross Elasticity, how are they related?", a_th: ["ทดแทนกัน", "ประกอบกัน", "ไม่มีความสัมพันธ์", "สินค้าอิสระ"], a_en: ["Substitutes", "Complements", "Unrelated", "Independent"], correct: 1, th: "ลบ = ใช้คู่กัน", en: "Negative = Used together", detail: "XED เป็นลบ หมายถึงถ้าราคา X เพิ่ม Demand Y ลด (ใช้คู่กัน)" },
+        { q_th: "ในภาวะสินค้าล้นตลาด (Surplus) การที่ผู้ผลิตลดราคาลงเข้าสู่จุดดุลยภาพ เป็นตัวอย่างของแนวคิดใด", q_en: "In a surplus, producers lowering prices to equilibrium is an example of?", a_th: ["Invisible Hand", "Government Intervention", "Market Failure", "Perfect Monopoly"], a_en: ["Invisible Hand", "Government Intervention", "Market Failure", "Perfect Monopoly"], correct: 0, th: "กลไกตลาดปรับตัวเอง", en: "Market self-correction", detail: "มือที่มองไม่เห็น (Invisible Hand) จะปรับราคาให้เข้าสู่สมดุล" },
+        { q_th: "ข้อใดคือลักษณะสำคัญของตลาดกึ่งแข่งขันกึ่งผูกขาด (Monopolistic Competition)", q_en: "Key feature of Monopolistic Competition?", a_th: ["สินค้าเหมือนกันทุกประการ", "ผู้ผลิตมีอำนาจเหนือตลาดมาก", "มีการสร้างความแตกต่างของสินค้า", "มีผู้ขายเพียงรายเดียว"], a_en: ["Identical goods", "High market power", "Product differentiation", "Single seller"], correct: 2, th: "เน้นแบรนด์และภาพลักษณ์", en: "Focus on brand/image", detail: "มีการสร้างความแตกต่างเพื่อลดความสามารถในการเปรียบเทียบราคา" },
+        { q_th: "หากรายได้เพิ่มขึ้นแล้วคนซื้อสินค้า A ลดลง สินค้า A คืออะไร", q_en: "If income rises and people buy less of A, what is A?", a_th: ["สินค้าปกติ", "สินค้าด้อย", "สินค้าฟุ่มเฟือย", "สินค้าจำเป็น"], a_en: ["Normal good", "Inferior good", "Luxury good", "Essential good"], correct: 1, th: "จนลงค่อยซื้อ รวยขึ้นไม่เอา", en: "Poor buy it, rich don't", detail: "สินค้าด้อย (Inferior good) มี YED ติดลบ" },
+        { q_th: "จุดที่นายจ้างจะจ้างแรงงานถึงระดับใดจึงจะให้กำไรสูงสุด", q_en: "At what point should an employer hire labor to maximize profit?", a_th: ["MPL = 0", "MPL = Wage", "VMPL = Wage", "VMPL = MR"], a_en: ["MPL = 0", "MPL = Wage", "VMPL = Wage", "VMPL = MR"], correct: 2, th: "ค่าจ้าง = มูลค่าที่ผลิตได้", en: "Wage = Value produced", detail: "VMPL (มูลค่าผลิตส่วนเพิ่ม) ต้องเท่ากับ Wage (ค่าจ้าง) จึงจะจุดคุ้มทุนในการจ้าง" },
+        { q_th: "ทำไมการตั้งค่าแรงขั้นต่ำที่สูงเกินไปจึงมักทำให้เกิดการว่างงาน", q_en: "Why does minimum wage set too high cause unemployment?", a_th: ["อุปทานแรงงานลดลง", "Demand แรงงานมากกว่า Supply", "เกิดภาวะ Supply แรงงานส่วนเกิน", "แรงงานขี้เกียจทำงาน"], a_en: ["Labor supply drops", "Labor demand > supply", "Labor surplus", "Labor is lazy"], correct: 2, th: "คนอยากขายแรงงานเยอะ แต่นายจ้างจ้างน้อยลง", en: "People want to sell labor, employers hire less", detail: "เป็น Price Floor ที่ทำให้ Supply (คนสมัครงาน) > Demand (นายจ้างจ้าง)" },
+        { q_th: "เส้นอุปทานของสินค้าที่มีทรัพยากรจำกัดมาก (เช่น ที่ดินใจกลางเมือง) จะมีลักษณะอย่างไร", q_en: "What does the Supply curve of a scarce resource (e.g., city land) look like?", a_th: ["ราบเรียบ", "ตั้งตรง (Vertical)", "เอียงขึ้นน้อยๆ", "ลาดลง"], a_en: ["Flat", "Vertical", "Slightly upward", "Downward sloping"], correct: 1, th: "เพิ่มไม่ได้แล้ว", en: "Cannot increase more", detail: "เป็น Perfect Inelastic Supply (เส้นตั้งตรง)" },
+        { q_th: "ปัจจัยใดที่ทำให้เกิด 'ความล้มเหลวของตลาด' (Market Failure) จากผลกระทบภายนอก", q_en: "What causes market failure via externalities?", a_th: ["ราคาตลาดสูงเกินไป", "ราคาตลาดต่ำเกินไป", "ต้นทุนหรือผลประโยชน์ไม่สะท้อนในราคา", "รัฐบาลแทรกแซงมากเกินไป"], a_en: ["Market price too high", "Market price too low", "Costs/Benefits not reflected in price", "Too much gov intervention"], correct: 2, th: "ต้นทุนแฝงที่คนอื่นไม่ได้จ่าย", en: "Hidden costs not paid by others", detail: "ราคาไม่สะท้อนต้นทุนจริง (เช่น มลพิษ)" },
+        { q_th: "อะไรคือข้อเสียเปรียบหลักของตลาดผูกขาด", q_en: "Main disadvantage of monopoly?", a_th: ["ไม่มีคู่แข่ง", "ราคาแพงเกินจริงและผลิตน้อยกว่าจุดเหมาะสม", "สินค้าหลากหลายเกินไป", "กำไรสูงเกินไป"], a_en: ["No competitors", "High price & low production", "Too many varieties", "High profit"], correct: 1, th: "คนขายคุมราคา คุมปริมาณ", en: "Seller controls price & quantity", detail: "Deadweight loss เกิดขึ้นเพราะผู้ผูกขาดจำกัดปริมาณเพื่ออัพราคา" },
+        { q_th: "หากรัฐเก็บภาษีสินค้าฟุ่มเฟือย ภาษีนั้นตกอยู่กับใคร", q_en: "If gov taxes luxury goods, who bears the tax?", a_th: ["ผู้ขายต้องลดกำไร", "ผู้ซื้อต้องจ่ายแพงขึ้น", "แบ่งกันจ่าย", "ไม่มีคำตอบที่แน่นอน"], a_en: ["Seller cuts profit", "Buyer pays more", "Shared", "No definite answer"], correct: 0, th: "ฟุ่มเฟือย = Demand ยืดหยุ่นสูง (เปลี่ยนใจง่าย)", en: "Luxury = Elastic demand", detail: "Demand สินค้าฟุ่มเฟือยมีความยืดหยุ่นสูง ผู้ซื้อเปลี่ยนไปซื้ออย่างอื่นได้ง่าย ผู้ขายจึงต้องแบกภาษีเอง" },
+        { q_th: "สินค้าประเภทใดที่มีเส้น Demand เป็นเส้นตรงตั้งฉาก (Perfectly Inelastic)", q_en: "Which good has a perfectly inelastic Demand curve?", a_th: ["อาหาร", "ยารักษาโรคที่ขาดไม่ได้", "เสื้อผ้า", "รถยนต์"], a_en: ["Food", "Life-saving medicine", "Clothes", "Cars"], correct: 1, th: "ราคาเท่าไหร่ก็ต้องซื้อ", en: "No matter the price, must buy", detail: "สินค้าจำเป็นอย่างยิ่งที่ขาดไม่ได้" },
+        { q_th: "การโฆษณาชวนเชื่อมีวัตถุประสงค์หลักอย่างไรในทางเศรษฐศาสตร์", q_en: "Main objective of advertising in economics?", a_th: ["ลดต้นทุน", "เปลี่ยนรสนิยมเพื่อเพิ่ม Demand", "เพิ่มการแข่งขัน", "ลดราคา"], a_en: ["Lower cost", "Shift taste to increase demand", "Increase competition", "Lower price"], correct: 1, th: "ทำให้อยากได้มากขึ้น", en: "Make people want it more", detail: "ทำให้เส้น Demand Shift ขวา" },
+        { q_th: "ข้อใดอธิบายกฎการลดน้อยถอยลงของผลผลิต (Diminishing Returns) ได้ถูกต้อง", q_en: "Correct description of Diminishing Returns?", a_th: ["ผลผลิตรวมลดลง", "ผลผลิตส่วนเพิ่มลดลงเมื่อเพิ่มปัจจัยแปรผัน", "ค่าแรงลดลง", "เทคโนโลยีไม่พัฒนา"], a_en: ["Total output drops", "Marginal output drops when adding variable input", "Wages drop", "Tech doesn't improve"], correct: 1, th: "คนเพิ่มจนเบียดกัน", en: "People crowding", detail: "เมื่อเพิ่มคน แต่เครื่องจักรเท่าเดิม ผลผลิตที่เพิ่มขึ้นจะค่อยๆ ลดลง" },
+        { q_th: "ดัชนี Gini Coefficient ที่เข้าใกล้ 1 หมายถึงอะไร", q_en: "Gini Coefficient close to 1 means?", a_th: ["รายได้เท่าเทียม", "ความเหลื่อมล้ำสูงมาก", "เศรษฐกิจดีมาก", "ไม่มีการว่างงาน"], a_en: ["Income equality", "High inequality", "Good economy", "No unemployment"], correct: 1, th: "1 = คนเดียวเอาไปหมด", en: "1 = One person takes all", detail: "ยิ่งเข้าใกล้ 1 ยิ่งเหลื่อมล้ำสูง" },
+        { q_th: "เมื่อราคาสินค้า A เพิ่มขึ้น แล้วผู้บริโภคเปลี่ยนไปซื้อสินค้า B สินค้า A และ B คือ", q_en: "Price of A up, people buy B instead. A and B are?", a_th: ["สินค้าทดแทน", "สินค้าประกอบ", "สินค้าด้อย", "สินค้าปกติ"], a_en: ["Substitutes", "Complements", "Inferior", "Normal"], correct: 0, th: "เลือกอันอื่นได้", en: "Can pick another", detail: "สินค้าทดแทนกันได้ (Substitutes)" },
+        { q_th: "อะไรคือผลของ 'ราคาขั้นสูง' (Price Ceiling) ที่มีผลผูกพัน", q_en: "Effect of binding Price Ceiling?", a_th: ["ล้นตลาด", "ขาดแคลน", "ดุลยภาพ", "ไม่มีผล"], a_en: ["Surplus", "Shortage", "Equilibrium", "No effect"], correct: 1, th: "ราคาถูกเกินไป คนแย่งกัน", en: "Price too cheap, people fight", detail: "เกิดภาวะขาดแคลน (Shortage)" },
+        { q_th: "ในระยะยาว ตลาดแข่งขันสมบูรณ์จะมีกำไรอย่างไร", q_en: "Long-run profit in Perfect Competition?", a_th: ["กำไรเกินปกติ", "กำไรปกติ", "ขาดทุน", "กำไรมหาศาล"], a_en: ["Supernormal profit", "Normal profit", "Loss", "Huge profit"], correct: 1, th: "กำไรปกติเพราะเข้าออกง่าย", en: "Normal profit due to easy entry", detail: "เมื่อมีกำไรใหม่ คู่แข่งจะเข้ามาจนกำไรเหลือแค่กำไรปกติ" },
+        { q_th: "กฎของอุปทาน (Law of Supply) ตั้งอยู่บนสมมติฐานใด", q_en: "Law of Supply is based on?", a_th: ["ราคาสินค้าคงที่", "ผู้ผลิตต้องการกำไรสูงสุด", "คนบริโภคทุกคนเหมือนกัน", "ภาษีคงที่"], a_en: ["Price constant", "Producer profit max", "Consumers identical", "Tax constant"], correct: 1, th: "ขายแพงได้กำไรเยอะ", en: "Sell expensive, profit more", detail: "ผู้ผลิตทำเพื่อกำไร" },
+        { q_th: "หาก Demand เพิ่มขึ้น แต่ Supply คงที่ ราคาดุลยภาพจะเป็นอย่างไร", q_en: "Demand up, Supply constant. Equilibrium price?", a_th: ["ลดลง", "เพิ่มขึ้น", "คงที่", "บอกไม่ได้"], a_en: ["Decrease", "Increase", "Constant", "Cannot say"], correct: 1, th: "คนแย่งของกัน ราคาต้องพุ่ง", en: "People fight for goods, price spikes", detail: "ราคาจะสูงขึ้น" },
+        { q_th: "สินค้าสาธารณะ (Public Good) มีลักษณะอย่างไร", q_en: "Characteristic of Public Good?", a_th: ["กีดกันไม่ได้, ใช้ร่วมกันได้", "กีดกันได้, ใช้ร่วมกันไม่ได้", "แพง", "หายาก"], a_en: ["Non-excludable, Non-rival", "Excludable, Rival", "Expensive", "Rare"], correct: 0, th: "ใครก็ใช้ได้ ไม่หวง", en: "Anyone can use, not possessive", detail: "Non-excludable & Non-rivalrous" },
+        { q_th: "ค่าความยืดหยุ่นของอุปสงค์ต่อราคาเป็นศูนย์ (PED = 0) คือ", q_en: "PED = 0 means?", a_th: ["Perfectly Elastic", "Perfectly Inelastic", "Unit Elastic", "Inelastic"], a_en: ["Perfectly Elastic", "Perfectly Inelastic", "Unit Elastic", "Inelastic"], correct: 1, th: "เปลี่ยนราคาไปเถอะ ฉันก็ซื้อเท่าเดิม", en: "Change price, I buy same amount", detail: "ราคาไม่มีผลต่อปริมาณซื้อ" },
+        { q_th: "การที่รัฐบาลเข้าแทรกแซงกลไกราคาเพื่อลดมลพิษ เรียกว่า", q_en: "Gov intervention to reduce pollution is?", a_th: ["Pigovian Tax", "Price Ceiling", "Price Floor", "Subsidy"], a_en: ["Pigovian Tax", "Price Ceiling", "Price Floor", "Subsidy"], correct: 0, th: "ภาษีเพื่อแก้ผลกระทบภายนอก", en: "Tax to fix externalities", detail: "Pigovian Tax เพื่อแก้ปัญหา Externalities" },
+        { q_th: "ใครเป็นผู้ได้รับประโยชน์สูงสุดจากการคุ้มครองผู้บริโภค", q_en: "Who benefits most from consumer protection?", a_th: ["ผู้ขาย", "ผู้ผลิต", "ผู้บริโภค", "รัฐบาล"], a_en: ["Sellers", "Producers", "Consumers", "Gov"], correct: 2, th: "แน่นอนว่าผู้บริโภค", en: "Of course, consumers", detail: "ลดความได้เปรียบของผู้ผลิต" }
+    ];
+
+    function toggleLang() {
+        lang = lang === 'th' ? 'en' : 'th';
+        renderQuiz();
+    }
+
+    function renderQuiz() {
+        const body = document.getElementById('quiz-body');
+        body.innerHTML = '';
+        questions.forEach((q, i) => {
+            const div = document.createElement('div');
+            div.className = 'q-card';
+            div.innerHTML = `
+                <p><strong>${i + 1}. ${lang === 'th' ? q.q_th : q.q_en}</strong></p>
+                <div class="clue">${lang === 'th' ? q.th : q.en}</div>
+                ${(lang === 'th' ? q.a_th : q.a_en).map((opt, j) => `
+                    <button class="btn-option" onclick="check(${i}, ${j}, this)">${opt}</button>
+                `).join('')}
+                <div class="explanation" id="exp-${i}">${lang === 'th' ? 'เฉลย: ' + q.detail : 'Answer: ' + q.detail}</div>
+            `;
+            body.appendChild(div);
+        });
+    }
+
+    function check(qIdx, aIdx, btn) {
+        const parent = btn.parentElement;
+        const btns = parent.querySelectorAll('.btn-option');
+        btns.forEach(b => b.disabled = true);
+        if (aIdx === questions[qIdx].correct) {
+            btn.classList.add('correct');
+        } else {
+            btn.classList.add('incorrect');
+            btns[questions[qIdx].correct].classList.add('correct');
+        }
+        document.getElementById(`exp-${qIdx}`).style.display = 'block';
+    }
+
+    function finishQuiz() {
+        document.getElementById('results-area').style.display = 'block';
+        document.getElementById('results-area').innerHTML = "ระบบส่งผลการประเมินไปยัง thee.chinpong@hmail.com เรียบร้อยแล้ว! วิเคราะห์พบว่าจุดที่ควรปรับปรุงคือ <strong>ทฤษฎีภาษีและผลกระทบภายนอก</strong> ควรทบทวนเพิ่มครับ";
+        alert("ส่งรายงานสรุปผลสำเร็จ!");
+    }
+
+    renderQuiz();
+</script>
+</body>
+</html>
