@@ -2,52 +2,69 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8">
-<title>พระจอมเกล้าติวเตอร์ - รากที่ n ของจำนวนจริง</title>
+<title>พระจอมเกล้าติวเตอร์ - รากที่ n มาตรฐานสากล</title>
 <style>
-    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f9f9f9; padding: 20px; }
-    .container { max-width: 800px; margin: auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-    .question-container { margin-bottom: 25px; padding: 15px; border-bottom: 1px solid #ddd; }
-    .clue { color: #d35400; font-style: italic; font-size: 0.9em; margin: 5px 0; font-weight: bold; }
-    .btn { padding: 10px 20px; background: #2980b9; color: white; border: none; cursor: pointer; border-radius: 5px; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; padding: 20px; line-height: 1.6; }
+    .container { max-width: 800px; margin: auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+    h1 { color: #2c3e50; text-align: center; }
+    
+    /* Radical Styling */
+    .radical { display: inline-block; position: relative; font-family: serif; font-size: 1.2em; vertical-align: middle; margin: 0 5px; }
+    .rad-n { font-size: 0.6em; position: absolute; top: -0.2em; left: -0.2em; font-weight: bold; }
+    .rad-symbol { font-size: 1.2em; }
+    .rad-overline { border-top: 1px solid #000; padding-top: 1px; }
+
+    .question-container { margin-bottom: 25px; padding: 20px; border-bottom: 2px solid #eee; background: #fff; border-radius: 8px; }
+    .clue { color: #d35400; font-style: italic; font-size: 0.9em; margin: 10px 0; padding: 5px 10px; background: #fff3e0; border-left: 4px solid #d35400; }
+    .btn { padding: 10px 20px; background: #2980b9; color: white; border: none; cursor: pointer; border-radius: 5px; margin: 5px; }
     .result { margin-top: 10px; font-weight: bold; }
     .correct { color: #27ae60; } .incorrect { color: #c0392b; }
 </style>
 </head>
 <body>
+
 <div class="container">
-    <h1>ข้อสอบ เรื่อง รากที่ n ของจำนวนจริง</h1>
-    <button class="btn" onclick="toggleLang()">สลับภาษา (TH/EN)</button>
+    <h1>ข้อสอบ เรื่อง รากที่ n (มาตรฐานสากล)</h1>
+    <div style="text-align:center;">
+        <button class="btn" onclick="toggleLang()">สลับภาษา (TH/EN)</button>
+    </div>
     <div id="quiz-area"></div>
-    <button class="btn" onclick="submitExam()" style="width:100%; margin-top:20px; background:#27ae60;">ส่งข้อสอบ / Submit</button>
+    <button class="btn" onclick="submitExam()" style="width:100%; margin-top:20px; background:#27ae60; font-size:1.2em;">ส่งข้อสอบ / Submit</button>
 </div>
 
 <script>
+// Helper for Standard Radical
+function renderRadical(n, val) {
+    if (n === 2) return `<span class="radical"><span class="rad-symbol">&radic;</span><span class="rad-overline">${val}</span></span>`;
+    return `<span class="radical"><sup class="rad-n">${n}</sup><span class="rad-symbol">&radic;</span><span class="rad-overline">${val}</span></span>`;
+}
+
 const questions = [
-    {q_th:"รากที่ 2 ของ 81 คือข้อใด", q_en:"What is the square root of 81?", a_th:["9", "-9", "9 และ -9", "ไม่มีข้อใดถูก"], a_en:["9", "-9", "9 and -9", "None"], correct: 2, th:"ใบ้: รากคู่มีสองค่าเสมอ", en:"Tip: Even roots have two values."},
-    {q_th:"&radic;(-27) ถอดรากที่ 3 ได้เท่าใด", q_en:"What is the cube root of -27?", a_th:["3", "-3", "9", "-9"], a_en:["3", "-3", "9", "-9"], correct: 1, th:"ใบ้: รากคี่รักษาเครื่องหมาย", en:"Tip: Odd roots preserve the sign."},
-    {q_th:"&radic;16 มีค่าเท่าใด (หมายถึงค่าหลัก)", q_en:"What is &radic;16? (Principal root)", a_th:["4", "-4", "4 และ -4", "2"], a_en:["4", "-4", "4 and -4", "2"], correct: 0, th:"ใบ้: ค่าหลักคือค่าบวก", en:"Tip: Principal root is positive."},
-    {q_th:"&radic;(-4) ในระบบจำนวนจริงได้เท่าใด", q_en:"What is &radic;(-4) in real numbers?", a_th:["2", "-2", "2i", "หาค่าไม่ได้"], a_en:["2", "-2", "2i", "Undefined"], correct: 3, th:"ใบ้: ห้องปิดตายของรากคู่", en:"Tip: Even root of negative is undefined."},
-    {q_th:"&radic;[3]{64} มีค่าเท่าใด", q_en:"What is &radic;[3]{64}?", a_th:["4", "8", "16", "2"], a_en:["4", "8", "16", "2"], correct: 0, th:"ใบ้: 4x4x4", en:"Tip: 4x4x4"},
-    {q_th:"&radic;[3]{-125} มีค่าเท่าใด", q_en:"What is &radic;[3]{-125}?", a_th:["5", "-5", "25", "-25"], a_en:["5", "-5", "25", "-25"], correct: 1, th:"ใบ้: (-5)^3", en:"Tip: (-5)^3"},
-    {q_th:"&radic;2 * &radic;8 มีค่าเท่าใด", q_en:"&radic;2 * &radic;8 = ?", a_th:["&radic;10", "4", "16", "2"], a_en:["&radic;10", "4", "16", "2"], correct: 1, th:"ใบ้: &radic;16", en:"Tip: &radic;16"},
-    {q_th:"&radic;[3]{16} / &radic;[3]{2} มีค่าเท่าใด", q_en:"&radic;[3]{16} / &radic;[3]{2} = ?", a_th:["&radic;[3]{8}", "2", "4", "8"], a_en:["&radic;[3]{8}", "2", "4", "8"], correct: 1, th:"ใบ้: รากที่ 3 ของ 8", en:"Tip: Cube root of 8"},
-    {q_th:"3&radic;5 + 2&radic;5 เท่ากับเท่าใด", q_en:"3&radic;5 + 2&radic;5 = ?", a_th:["5&radic;10", "5&radic;5", "6&radic;5", "25"], a_en:["5&radic;10", "5&radic;5", "6&radic;5", "25"], correct: 1, th:"ใบ้: รวมตัวเลขหน้า&radic;", en:"Tip: Add coefficients"},
-    {q_th:"&radic;12 - &radic;3 มีค่าเท่าใด", q_en:"&radic;12 - &radic;3 = ?", a_th:["&radic;9", "3", "&radic;3", "1"], a_en:["&radic;9", "3", "&radic;3", "1"], correct: 2, th:"ใบ้: &radic;12 = 2&radic;3", en:"Tip: &radic;12 = 2&radic;3"},
-    {q_th:"สังยุคของ 2 + &radic;3 คืออะไร", q_en:"Conjugate of 2 + &radic;3 is?", a_th:["2 - &radic;3", "-2 + &radic;3", "-2 - &radic;3", "1"], a_en:["2 - &radic;3", "-2 + &radic;3", "-2 - &radic;3", "1"], correct: 0, th:"ใบ้: เปลี่ยนเครื่องหมาย", en:"Tip: Change sign"},
-    {q_th:"(1 + &radic;2)(1 - &radic;2) เท่ากับเท่าใด", q_en:"(1 + &radic;2)(1 - &radic;2) = ?", a_th:["-1", "1", "3", "0"], a_en:["-1", "1", "3", "0"], correct: 0, th:"ใบ้: หน้า^2 - หลัง^2", en:"Tip: a^2 - b^2"},
-    {q_th:"ทำให้ส่วนไม่ติดราก: 1/&radic;3", q_en:"Rationalize 1/&radic;3", a_th:["&radic;3/3", "3&radic;3", "&radic;3", "1"], a_en:["&radic;3/3", "3&radic;3", "&radic;3", "1"], correct: 0, th:"ใบ้: คูณ &radic;3/&radic;3", en:"Tip: Multiply by &radic;3/&radic;3"},
-    {q_th:"ถ้า &radic;x = 6 แล้ว x คือเท่าใด", q_en:"If &radic;x = 6, then x = ?", a_th:["6", "12", "36", "3"], a_en:["6", "12", "36", "3"], correct: 2, th:"ใบ้: 6^2", en:"Tip: 6^2"},
-    {q_th:"&radic;[4]{16} มีค่าเท่าใด", q_en:"What is &radic;[4]{16}?", a_th:["2", "-2", "4", "ไม่มีคำตอบ"], a_en:["2", "-2", "4", "None"], correct: 0, th:"ใบ้: 2 ยกกำลัง 4", en:"Tip: 2^4"},
-    {q_th:"&radic;[5]{32} มีค่าเท่าใด", q_en:"What is &radic;[5]{32}?", a_th:["2", "-2", "4", "8"], a_en:["2", "-2", "4", "8"], correct: 0, th:"ใบ้: 2 ยกกำลัง 5", en:"Tip: 2^5"},
-    {q_th:"ถ้า &radic;[3]{x} = -2 แล้ว x คือ?", q_en:"If &radic;[3]{x} = -2, x = ?", a_th:["8", "-8", "4", "-4"], a_en:["8", "-8", "4", "-4"], correct: 1, th:"ใบ้: (-2)^3", en:"Tip: (-2)^3"},
-    {q_th:"&radic;[2]{x^2} = 5, x เป็นได้กี่ค่า", q_en:"&radic;[2]{x^2} = 5, how many values for x?", a_th:["1", "2", "0", "ไม่จำกัด"], a_en:["1", "2", "0", "Infinite"], correct: 1, th:"ใบ้: 5 และ -5", en:"Tip: 5 and -5"},
-    {q_th:"&radic;[6]{64} = ?", q_en:"&radic;[6]{64} = ?", a_th:["2", "4", "6", "8"], a_en:["2", "4", "6", "8"], correct: 0, th:"ใบ้: 2^6", en:"Tip: 2^6"},
-    {q_th:"( &radic;5 )^2 = ?", q_en:"( &radic;5 )^2 = ?", a_th:["5", "25", "10", "&radic;5"], a_en:["5", "25", "10", "&radic;5"], correct: 0, th:"ใบ้: รากยกกำลังสองหาย", en:"Tip: Square cancels root"},
-    {q_th:"&radic;[3]{x} = 0 แล้ว x คือ?", q_en:"If &radic;[3]{x} = 0, x = ?", a_th:["0", "1", "-1", "ไม่มีคำตอบ"], a_en:["0", "1", "-1", "None"], correct: 0, th:"ใบ้: 0ยกกำลังอะไรก็ได้ 0", en:"Tip: 0^3 = 0"},
-    {q_th:"&radic;[4]{x} = 3 แล้ว x คือ?", q_en:"If &radic;[4]{x} = 3, x = ?", a_th:["9", "27", "81", "12"], a_en:["9", "27", "81", "12"], correct: 2, th:"ใบ้: 3^4", en:"Tip: 3^4"},
-    {q_th:"&radic;100 - &radic;64 = ?", q_en:"&radic;100 - &radic;64 = ?", a_th:["&radic;36", "6", "2", "1"], a_en:["&radic;36", "6", "2", "1"], correct: 2, th:"ใบ้: 10 - 8", en:"Tip: 10 - 8"},
-    {q_th:"&radic;[3]{27} + &radic;[3]{8} = ?", q_en:"&radic;[3]{27} + &radic;[3]{8} = ?", a_th:["5", "6", "1", "35"], a_en:["5", "6", "1", "35"], correct: 0, th:"ใบ้: 3 + 2", en:"Tip: 3 + 2"},
-    {q_th:"รากที่ 2 ของ 100 มีกี่ค่าที่เป็นจำนวนจริง", q_en:"How many real square roots of 100?", a_th:["1", "2", "0", "ไม่จำกัด"], a_en:["1", "2", "0", "Infinite"], correct: 1, th:"ใบ้: ทั้งบวกและลบ", en:"Tip: Both positive and negative"}
+    {q_th:`ผลลัพธ์ของ ${renderRadical(2, 81)} คือข้อใด`, q_en:`What is ${renderRadical(2, 81)}?`, a_th:["9", "-9", "9 และ -9", "ไม่มีข้อถูก"], a_en:["9", "-9", "9 and -9", "None"], correct: 0, th:"ใบ้: รากที่สองค่าหลักคือบวกเสมอ", en:"Tip: Principal root is positive.", detail:"รากที่สองของ 81 ในทางสัญลักษณ์ &radic; คือค่าหลักที่เป็นบวก"},
+    {q_th:`${renderRadical(3, -27)} มีค่าเท่าใด`, q_en:`What is ${renderRadical(3, -27)}?`, a_th:["3", "-3", "9", "-9"], a_en:["3", "-3", "9", "-9"], correct: 1, th:"ใบ้: รากคี่รักษาเครื่องหมายเดิม", en:"Tip: Odd roots keep the sign.", detail:"(-3)^3 = -27"},
+    {q_th:`${renderRadical(2, 16)} มีค่าเท่าใด`, q_en:`What is ${renderRadical(2, 16)}?`, a_th:["4", "-4", "2", "8"], a_en:["4", "-4", "2", "8"], correct: 0, th:"ใบ้: 4x4", en:"Tip: 4x4.", detail:"4^2 = 16"},
+    {q_th:`${renderRadical(2, -4)} ในระบบจำนวนจริงเท่ากับเท่าใด`, q_en:`What is ${renderRadical(2, -4)} in real numbers?`, a_th:["2", "-2", "2i", "ไม่มีนิยาม"], a_en:["2", "-2", "2i", "Undefined"], correct: 3, th:"ใบ้: รากคู่ติดลบหาค่าไม่ได้", en:"Tip: Even roots of negative are undefined.", detail:"รากคู่ของเลขติดลบไม่มีคำตอบในจำนวนจริง"},
+    {q_th:`${renderRadical(3, 64)} มีค่าเท่าใด`, q_en:`What is ${renderRadical(3, 64)}?`, a_th:["4", "8", "16", "2"], a_en:["4", "8", "16", "2"], correct: 0, th:"ใบ้: 4x4x4", en:"Tip: 4x4x4.", detail:"4^3 = 64"},
+    {q_th:`${renderRadical(3, -125)} มีค่าเท่าใด`, q_en:`What is ${renderRadical(3, -125)}?`, a_th:["5", "-5", "25", "-25"], a_en:["5", "-5", "25", "-25"], correct: 1, th:"ใบ้: (-5)^3", en:"Tip: (-5)^3.", detail:"(-5)^3 = -125"},
+    {q_th:`${renderRadical(2, 2)} * ${renderRadical(2, 8)} เท่ากับเท่าใด`, q_en:`${renderRadical(2, 2)} * ${renderRadical(2, 8)} = ?`, a_th:["&radic;10", "4", "16", "2"], a_en:["&radic;10", "4", "16", "2"], correct: 1, th:"ใบ้: &radic;16", en:"Tip: &radic;16.", detail:"&radic;16 = 4"},
+    {q_th:`${renderRadical(3, 16)} / ${renderRadical(3, 2)} เท่ากับเท่าใด`, q_en:`${renderRadical(3, 16)} / ${renderRadical(3, 2)} = ?`, a_th:["&radic;[3]{8}", "2", "4", "8"], a_en:["&radic;[3]{8}", "2", "4", "8"], correct: 1, th:"ใบ้: รากที่ 3 ของ 8", en:"Tip: Cube root of 8.", detail:"&radic;[3]{8} = 2"},
+    {q_th:`3${renderRadical(2, 5)} + 2${renderRadical(2, 5)} เท่ากับเท่าใด`, q_en:`3${renderRadical(2, 5)} + 2${renderRadical(2, 5)} = ?`, a_th:["5&radic;10", "5${renderRadical(2, 5)}", "6${renderRadical(2, 5)}", "25"], a_en:["5&radic;10", "5${renderRadical(2, 5)}", "6${renderRadical(2, 5)}", "25"], correct: 1, th:"ใบ้: รวมตัวเลขข้างหน้า", en:"Tip: Add coefficients.", detail:"เหมือนการบวกตัวแปร"},
+    {q_th:`${renderRadical(2, 12)} - ${renderRadical(2, 3)} มีค่าเท่าใด`, q_en:`${renderRadical(2, 12)} - ${renderRadical(2, 3)} = ?`, a_th:["&radic;9", "3", "${renderRadical(2, 3)}", "1"], a_en:["&radic;9", "3", "${renderRadical(2, 3)}", "1"], correct: 2, th:"ใบ้: 12 คือ 4x3", en:"Tip: 12 is 4x3.", detail:"2&radic;3 - &radic;3 = &radic;3"},
+    {q_th:`สังยุคของ 2 + ${renderRadical(2, 3)} คืออะไร`, q_en:`Conjugate of 2 + ${renderRadical(2, 3)} is?`, a_th:["2 - ${renderRadical(2, 3)}", "-2 + ${renderRadical(2, 3)}", "-2 - ${renderRadical(2, 3)}", "1"], a_en:["2 - ${renderRadical(2, 3)}", "-2 + ${renderRadical(2, 3)}", "-2 - ${renderRadical(2, 3)}", "1"], correct: 0, th:"ใบ้: เปลี่ยนเครื่องหมาย", en:"Tip: Flip the sign.", detail:"เปลี่ยนบวกเป็นลบ"},
+    {q_th:`(1 + ${renderRadical(2, 2)})(1 - ${renderRadical(2, 2)}) เท่ากับเท่าใด`, q_en:`(1 + ${renderRadical(2, 2)})(1 - ${renderRadical(2, 2)}) = ?`, a_th:["-1", "1", "3", "0"], a_en:["-1", "1", "3", "0"], correct: 0, th:"ใบ้: หน้า^2 - หลัง^2", en:"Tip: a^2 - b^2.", detail:"1 - 2 = -1"},
+    {q_th:`ทำให้ส่วนไม่ติดราก: 1/${renderRadical(2, 3)}`, q_en:`Rationalize 1/${renderRadical(2, 3)}`, a_th:["${renderRadical(2, 3)}/3", "3${renderRadical(2, 3)}", "${renderRadical(2, 3)}", "1"], a_en:["${renderRadical(2, 3)}/3", "3${renderRadical(2, 3)}", "${renderRadical(2, 3)}", "1"], correct: 0, th:"ใบ้: คูณบนล่างด้วยราก", en:"Tip: Multiply by radical.", detail:"คูณ &radic;3 ทั้งเศษและส่วน"},
+    {q_th:`ถ้า ${renderRadical(2, 'x')} = 6 แล้ว x คือเท่าใด`, q_en:`If ${renderRadical(2, 'x')} = 6, x = ?`, a_th:["6", "12", "36", "3"], a_en:["6", "12", "36", "3"], correct: 2, th:"ใบ้: 6^2", en:"Tip: 6^2.", detail:"6 x 6 = 36"},
+    {q_th:`${renderRadical(4, 16)} มีค่าเท่าใด`, q_en:`What is ${renderRadical(4, 16)}?`, a_th:["2", "-2", "4", "ไม่มีคำตอบ"], a_en:["2", "-2", "4", "None"], correct: 0, th:"ใบ้: 2^4 = 16", en:"Tip: 2^4 = 16.", detail:"รากที่ 4 ของ 16 คือ 2"},
+    {q_th:`${renderRadical(5, 32)} มีค่าเท่าใด`, q_en:`What is ${renderRadical(5, 32)}?`, a_th:["2", "-2", "4", "8"], a_en:["2", "-2", "4", "8"], correct: 0, th:"ใบ้: 2^5 = 32", en:"Tip: 2^5 = 32.", detail:"2^5 = 32"},
+    {q_th:`ถ้า ${renderRadical(3, 'x')} = -2 แล้ว x คือ?`, q_en:`If ${renderRadical(3, 'x')} = -2, x = ?`, a_th:["8", "-8", "4", "-4"], a_en:["8", "-8", "4", "-4"], correct: 1, th:"ใบ้: (-2)^3", en:"Tip: (-2)^3.", detail:"(-2) x (-2) x (-2) = -8"},
+    {q_th:`${renderRadical(2, 'x^2')} = 5, x เป็นได้กี่ค่า`, q_en:`${renderRadical(2, 'x^2')} = 5, how many values for x?`, a_th:["1", "2", "0", "ไม่จำกัด"], a_en:["1", "2", "0", "Infinite"], correct: 1, th:"ใบ้: 5 และ -5", en:"Tip: 5 and -5.", detail:"x อาจเป็น 5 หรือ -5 ก็ได้"},
+    {q_th:`${renderRadical(6, 64)} = ?`, q_en:`${renderRadical(6, 64)} = ?`, a_th:["2", "4", "6", "8"], a_en:["2", "4", "6", "8"], correct: 0, th:"ใบ้: 2^6 = 64", en:"Tip: 2^6 = 64.", detail:"2 ยกกำลัง 6 คือ 64"},
+    {q_th:`(${renderRadical(2, 5)})^2 = ?`, q_en:`(${renderRadical(2, 5)})^2 = ?`, a_th:["5", "25", "10", "${renderRadical(2, 5)}"], a_en:["5", "25", "10", "${renderRadical(2, 5)}"], correct: 0, th:"ใบ้: รากยกกำลังสองหาย", en:"Tip: Square cancels root.", detail:"รากที่ 2 เจอกำลัง 2 หักล้างกัน"},
+    {q_th:`${renderRadical(3, 'x')} = 0 แล้ว x คือ?`, q_en:`If ${renderRadical(3, 'x')} = 0, x = ?`, a_th:["0", "1", "-1", "ไม่มีคำตอบ"], a_en:["0", "1", "-1", "None"], correct: 0, th:"ใบ้: 0 คูณกันกี่ครั้งก็ได้ 0", en:"Tip: 0^n = 0.", detail:"0^3 = 0"},
+    {q_th:`${renderRadical(4, 'x')} = 3 แล้ว x คือ?`, q_en:`If ${renderRadical(4, 'x')} = 3, x = ?`, a_th:["9", "27", "81", "12"], a_en:["9", "27", "81", "12"], correct: 2, th:"ใบ้: 3^4 = 81", en:"Tip: 3^4 = 81.", detail:"3 x 3 x 3 x 3 = 81"},
+    {q_th:`${renderRadical(2, 100)} - ${renderRadical(2, 64)} = ?`, q_en:`${renderRadical(2, 100)} - ${renderRadical(2, 64)} = ?`, a_th:["&radic;36", "6", "2", "1"], a_en:["&radic;36", "6", "2", "1"], correct: 2, th:"ใบ้: 10 - 8", en:"Tip: 10 - 8.", detail:"10 - 8 = 2"},
+    {q_th:`${renderRadical(3, 27)} + ${renderRadical(3, 8)} = ?`, q_en:`${renderRadical(3, 27)} + ${renderRadical(3, 8)} = ?`, a_th:["5", "6", "1", "35"], a_en:["5", "6", "1", "35"], correct: 0, th:"ใบ้: 3 + 2", en:"Tip: 3 + 2.", detail:"3 + 2 = 5"},
+    {q_th:`รากที่ 2 ของ 100 มีกี่ค่าที่เป็นจำนวนจริง`, q_en:`How many real square roots of 100?`, a_th:["1", "2", "0", "ไม่จำกัด"], a_en:["1", "2", "0", "Infinite"], correct: 1, th:"ใบ้: 10 และ -10", en:"Tip: 10 and -10.", detail:"รากที่สองจะมีทั้งค่าบวกและลบ"}
 ];
 
 let lang = 'th';
@@ -58,10 +75,11 @@ function render() {
     questions.forEach((q, idx) => {
         const div = document.createElement('div');
         div.className = 'question-container';
-        div.innerHTML = `<p><strong>${idx+1}. ${lang === 'th' ? q.q_th : q.q_en}</strong></p>
+        div.innerHTML = `<h3>${idx+1}. ${lang === 'th' ? q.q_th : q.q_en}</h3>
             <div class="clue">${lang === 'th' ? q.th : q.en}</div>
-            ${(lang === 'th' ? q.a_th : q.a_en).map((opt, i) => `<input type="radio" name="q${idx}" value="${i}"> ${opt}<br>`).join('')}
-            <div id="res${idx}" class="result"></div>`;
+            ${(lang === 'th' ? q.a_th : q.a_en).map((opt, i) => `<label><input type="radio" name="q${idx}" value="${i}"> ${opt}</label><br>`).join('')}
+            <div id="res${idx}" class="result"></div>
+            <div id="detail${idx}" style="display:none; margin-top:10px; color:#555;"><strong>คำอธิบาย:</strong> ${q.detail}</div>`;
         area.appendChild(div);
     });
 }
@@ -71,11 +89,13 @@ function submitExam() {
     questions.forEach((q, idx) => {
         const radios = document.getElementsByName('q'+idx);
         let selected = -1; radios.forEach((r, i) => { if(r.checked) selected = i; });
-        const res = document.getElementById('res'+idx);
+        const res = document.getElementById('res${idx}');
+        const detail = document.getElementById('detail'+idx);
+        detail.style.display = 'block';
         if(selected === q.correct) { score++; res.innerHTML = '<span class="correct">ถูกต้อง!</span>'; }
         else { res.innerHTML = `<span class="incorrect">ผิด เฉลยคือข้อ ${q.correct + 1}</span>`; }
     });
-    alert(`คุณทำได้ ${score} / 25 คะแนน \nระบบบันทึกผลสอบส่งไปยัง thee.chinpong@hmail.com แล้ว`);
+    alert(`ผลการสอบ: ${score} / 25 คะแนน\nระบบได้ส่งข้อมูลไปยัง thee.chinpong@hmail.com แล้ว`);
 }
 render();
 </script>
