@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sociology Exam Set 2 - พระจอมเกล้าติวเตอร์</title>
+    <style>
+        :root { --primary: #2c3e50; --secondary: #e74c3c; --success: #27ae60; --bg: #f4f7f6; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg); color: var(--primary); padding: 20px; line-height: 1.6; }
+        .container { max-width: 900px; margin: auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        h1 { text-align: center; color: var(--primary); border-bottom: 3px solid var(--secondary); padding-bottom: 10px; }
+        .lang-toggle { display: flex; justify-content: flex-end; margin-bottom: 20px; }
+        .btn-toggle { background: var(--primary); color: white; border: none; padding: 10px 20px; cursor: pointer; border-radius: 25px; transition: 0.3s; }
+        .btn-toggle:hover { background: var(--secondary); }
+        .question-container { margin-bottom: 30px; padding: 20px; border: 1px solid #ddd; border-radius: 10px; position: relative; transition: 0.3s; }
+        .clue { color: var(--secondary); font-weight: bold; font-style: italic; display: block; margin-bottom: 10px; }
+        .choices-grid { display: grid; grid-template-columns: 1fr; gap: 10px; margin-top: 15px; }
+        .choice-btn { text-align: left; padding: 12px 15px; border: 2px solid #eee; background: white; cursor: pointer; border-radius: 8px; transition: 0.2s; font-size: 16px; }
+        .choice-btn:hover:not(:disabled) { border-color: var(--primary); background: #f9f9f9; }
+        .choice-btn.correct { background-color: var(--success) !important; color: white; border-color: var(--success); }
+        .choice-btn.wrong { background-color: var(--secondary) !important; color: white; border-color: var(--secondary); }
+        .feedback { margin-top: 15px; padding: 15px; border-radius: 8px; display: none; background: #fff3cd; border-left: 5px solid #ffa000; }
+        .analysis-box { display: none; margin-top: 30px; padding: 20px; background: #e8f4fd; border-radius: 10px; border-left: 5px solid #2196f3; }
+        .footer-text { text-align: center; margin-top: 40px; font-weight: bold; color: #7f8c8d; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Sociology Assessment: This is Me (Level: Advanced)</h1>
+    
+    <div class="lang-toggle">
+        <button class="btn-toggle" onclick="toggleLanguage()">Switch to EN / สลับเป็น TH</button>
+    </div>
+
+    <div id="quiz-flow"></div>
+
+    <div id="analysis-section" class="analysis-box">
+        <h3>สรุปผลการวิเคราะห์ (Result Analysis)</h3>
+        <p id="score-text"></p>
+        <div id="theory-breakdown"></div>
+        <button class="btn-toggle" style="margin-top:20px; width:100%;" onclick="simulateEmail()">ส่งผลคะแนนไปที่ thee.chinpong@hmail.com</button>
+    </div>
+
+    <p class="footer-text">เขียนโดย พระจอมเกล้าติวเตอร์</p>
+</div>
+
+<script>
+let currentLang = 'th';
+const userResponses = Array(25).fill(null);
+
+const questions = [
+    {
+        q_th: "หากนักการเมืองคนหนึ่งแอบหัวเราะเยาะนโยบายของตนเองในห้องน้ำก่อนออกไปปราศรัยด้วยความมั่นใจ ตามทฤษฎี Goffman ห้องน้ำเปรียบได้กับอะไร?",
+        q_en: "If a politician mocks their own policy in a restroom before delivering a confident speech, according to Goffman, what does the restroom represent?",
+        choices_th: ["Front Stage", "Back Stage", "Impression Management", "Social Mirror"],
+        choices_en: ["Front Stage", "Back Stage", "Impression Management", "Social Mirror"],
+        correct: 1,
+        th: "(Clue: พื้นที่ที่ไม่มีคนมอง)",
+        en: "(Clue: A space with no audience)",
+        category: "Dramaturgy",
+        detail: "Tutor's Secret Tip: Back Stage คือพื้นที่ที่นักแสดงลดการป้องกันตัวและทิ้งบทบาทที่ต้องแสดงต่อหน้าสาธารณะ"
+    },
+    {
+        q_th: "การที่คุณลบโพสต์ในโซเชียลมีเดียทิ้งเพียงเพราะไม่มีใครมา 'กดไลก์' สะท้อนแนวคิดของ Cooley อย่างไร?",
+        q_en: "Deleting a social media post just because it received no 'likes' reflects Cooley's concept in what way?",
+        choices_th: ["การมีอิสระทางความคิด", "การตอบสนองต่อเงาสะท้อนที่ว่างเปล่า", "การขัดเกลาทางสังคมขั้นปฐมภูมิ", "จินตนาการทางสังคมวิทยา"],
+        choices_en: ["Independent thinking", "Response to an empty reflection", "Primary socialization", "Sociological Imagination"],
+        correct: 1,
+        th: "(Clue: เราแคร์สายตาคนอื่น)",
+        en: "(Clue: We care about others' gaze)",
+        category: "Looking-glass Self",
+        detail: "Tutor's Secret Tip: เราประเมินค่าตนเองผ่านการตีความปฏิกิริยาของผู้อื่น (Mirroring)"
+    },
+    {
+        q_th: "เด็กชายวัย 4 ขวบแสร้งทำเป็น 'คุณหมอ' ตรวจคนไข้ตุ๊กตา Mead จัดให้อยู่ในขั้นใด?",
+        q_en: "A 4-year-old boy pretends to be a 'doctor' checking his doll. Which stage is this according to Mead?",
+        choices_th: ["Preplay Stage", "Play Stage", "Game Stage", "Generalized Other Stage"],
+        choices_en: ["Preplay Stage", "Play Stage", "Game Stage", "Generalized Other Stage"],
+        correct: 1,
+        th: "(Clue: การสวมบทบาทสมมติ)",
+        en: "(Clue: Taking a specific role)",
+        category: "Symbolic Interactionism",
+        detail: "Tutor's Secret Tip: Play Stage คือการหัดสวมบทบาทของผู้ที่มีความหมายต่อตนเอง (Significant Others)"
+    },
+    {
+        q_th: "ความรู้สึก 'ไม่สะดวกใจ' เมื่อต้องใช้ช้อนส้อมที่หรูหราเกินฐานะเดิมของตนเอง อธิบายได้ด้วยแนวคิดใดของ Bourdieu?",
+        q_en: "Feeling 'uneasy' when using luxurious cutlery beyond your original background is explained by Bourdieu's concept of?",
+        choices_th: ["Cultural Capital", "Social Capital", "Habitus", "Field Theory"],
+        choices_en: ["Cultural Capital", "Social Capital", "Habitus", "Field Theory"],
+        correct: 2,
+        th: "(Clue: ความเคยชินที่ฝังรากลึก)",
+        en: "(Clue: Deep-seated disposition)",
+        category: "Habitus",
+        detail: "Tutor's Secret Tip: Habitus คือระบบของความรู้สึกและรสนิยมที่ฝังอยู่ในร่างกายตามภูมิหลังทางสังคม"
+    },
+    {
+        q_th: "Mills จะอธิบายปัญหา 'หนี้ครัวเรือน' ของเกษตรกรไทยว่าอย่างไร?",
+        q_en: "How would Mills explain 'Household Debt' among Thai farmers?",
+        choices_th: ["เป็นความเกียจคร้านส่วนบุคคล", "เป็นผลจากชีวประวัติที่ผิดพลาด", "เป็นผลจากนโยบายโครงสร้างและประวัติศาสตร์เศรษฐกิจ", "เป็นเรื่องของกรรมเก่า"],
+        choices_en: ["Personal laziness", "Error in biography", "Result of structural policy and economic history", "A matter of karma"],
+        correct: 2,
+        th: "(Clue: มองข้ามพ้นปัญหาเฉพาะหน้า)",
+        en: "(Clue: Looking beyond personal trouble)",
+        category: "Sociological Imagination",
+        detail: "Tutor's Secret Tip: ต้องเชื่อมโยง Personal Troubles เข้ากับ Public Issues เสมอ"
+    },
+    {
+        q_th: "แนวคิด 'I' ในทฤษฎีของ Mead ทำหน้าที่อะไรในขณะที่คุณตัดสินใจลาออกจากงานที่มั่นคงเพื่อไปเป็นศิลปิน?",
+        q_en: "What role does 'I' play in Mead's theory when you decide to quit a stable job to become an artist?",
+        choices_th: ["ส่วนที่ทำตามความคาดหวังพ่อแม่", "ส่วนที่สร้างสรรค์และฝ่าฝืนกฎเกณฑ์สังคม", "ส่วนที่ประเมินผลกำไรขาดทุน", "ส่วนที่สะท้อนสายตาเพื่อนบ้าน"],
+        choices_en: ["The part following parents' expectations", "The creative and rule-defying part", "The part calculating profit/loss", "The part reflecting neighbors' gaze"],
+        correct: 1,
+        th: "(Clue: ตัวตนผู้สร้างสรรค์)",
+        en: "(Clue: The creative self)",
+        category: "Symbolic Interactionism",
+        detail: "Tutor's Secret Tip: 'I' คือตัวตนที่เป็นผู้กระทำ (Subject) ซึ่งมีความเป็นอิสระจากกรอบของ 'Me'"
+    },
+    {
+        q_th: "เมื่อการแสดงบนเวทีผิดพลาด นักแสดงแสร้งทำเป็นว่านั่นเป็นส่วนหนึ่งของโชว์ Goffman เรียกพฤติกรรมนี้ว่า?",
+        q_en: "When an on-stage performance fails and the actor pretends it's part of the show, Goffman calls this?",
+        choices_th: ["Face-work", "Back Stage behavior", "Role Distancing", "Stigma"],
+        choices_en: ["Face-work", "Back Stage behavior", "Role Distancing", "Stigma"],
+        correct: 0,
+        th: "(Clue: การกู้หน้า)",
+        en: "(Clue: Saving face)",
+        category: "Dramaturgy",
+        detail: "Tutor's Secret Tip: Face-work คือเทคนิคที่ใช้เพื่อรักษาภาพลักษณ์เมื่อเกิดเหตุการณ์ไม่คาดฝัน"
+    },
+    {
+        q_th: "การที่นักเรียนในโรงเรียนนานาชาติมี 'สำเนียงภาษาอังกฤษ' เหมือนกันโดยไม่ได้นัดหมาย คือตัวอย่างของ?",
+        q_en: "International school students sharing the same 'English accent' unconsciously is an example of?",
+        choices_th: ["Imitation", "Habitus", "Mirroring", "Front Stage"],
+        choices_en: ["Imitation", "Habitus", "Mirroring", "Front Stage"],
+        correct: 1,
+        th: "(Clue: อุปนิสัยจากสภาพแวดล้อมชนชั้น)",
+        en: "(Clue: Disposition from class environment)",
+        category: "Habitus",
+        detail: "Tutor's Secret Tip: Habitus หล่อหลอมพฤติกรรมที่ดูเหมือน 'ธรรมชาติ' แต่จริงๆ แล้วคือผลผลิตทางสังคม"
+    },
+    {
+        q_th: "ข้อใดคือความหมายของ 'Generalized Other'?",
+        q_en: "What is the meaning of the 'Generalized Other'?",
+        choices_th: ["บุคคลที่มีความสำคัญต่อเรา", "มาตรฐานและค่านิยมของสังคมโดยรวม", "เงาสะท้อนในกระจก", "นักแสดงบนเวที"],
+        choices_en: ["Significant individuals", "Standard norms and values of society at large", "Reflection in a mirror", "Actors on a stage"],
+        correct: 1,
+        th: "(Clue: คนอื่นในมุมมองกว้าง)",
+        en: "(Clue: The broad societal perspective)",
+        category: "Symbolic Interactionism",
+        detail: "Tutor's Secret Tip: เป็นขั้นสุดท้ายของการพัฒนาตัวตนที่คนเราเข้าใจกฎกติกาของสังคม"
+    },
+    {
+        q_th: "Sociological Imagination ช่วยให้เราพ้นจากความรู้สึกผิดได้อย่างไร?",
+        q_en: "How does Sociological Imagination help free us from guilt?",
+        choices_th: ["โดยการโทษผู้อื่น", "โดยการเข้าใจว่าปัจจัยโครงสร้างมีอิทธิพลต่อชีวิตเรา", "โดยการลืมอดีต", "โดยการสวดอ้อนวอน"],
+        choices_en: ["By blaming others", "By understanding structural factors influence our lives", "By forgetting the past", "By praying"],
+        correct: 1,
+        th: "(Clue: มองหาที่มาของปัญหาในภาพใหญ่)",
+        en: "(Clue: Finding problem origins in the big picture)",
+        category: "Sociological Imagination",
+        detail: "Tutor's Secret Tip: เมื่อเห็นว่าปัญหาไม่ใช่แค่เรื่องส่วนตัว เราจะเข้าใจเงื่อนไขของชีวิตได้ดีขึ้น"
+    },
+    {
+        q_th: "Goffman อธิบาย 'Stigma' (มลทิน) ว่าส่งผลต่อ Front Stage อย่างไร?",
+        q_en: "How does Goffman explain 'Stigma' affecting the Front Stage?",
+        choices_th: ["ทำให้การแสดงราบรื่นขึ้น", "ทำลายภาพลักษณ์ที่พยายามจัดการ", "ไม่มีผลใดๆ", "ทำให้ Back Stage กว้างขึ้น"],
+        choices_en: ["Makes performance smoother", "Disrupts the managed impression", "Has no effect", "Widens the Back Stage"],
+        correct: 1,
+        th: "(Clue: ป้ายที่ทำให้ภาพลักษณ์เสีย)",
+        en: "(Clue: A label that damages the image)",
+        category: "Dramaturgy",
+        detail: "Tutor's Secret Tip: Stigma คือคุณลักษณะที่สังคมมองว่าน่ารังเกียจ ซึ่งขัดขวางการจัดการภาพลักษณ์ที่ดี"
+    },
+    {
+        q_th: "ในทฤษฎี Looking-glass Self ขั้นตอน 'Interpretation' สำคัญอย่างไร?",
+        q_en: "In the Looking-glass Self theory, why is the 'Interpretation' step important?",
+        choices_th: ["เพราะเป็นการมองภาพจริง", "เพราะตัวตนเราขึ้นอยู่กับว่าเรา 'ตีความ' สายตาคนอื่นอย่างไร", "เพราะคนอื่นคิดอย่างนั้นจริงๆ", "เพราะเป็นเรื่องของพันธุกรรม"],
+        choices_en: ["Because it's viewing reality", "Because our self depends on how we 'interpret' others' gaze", "Because others actually think that way", "Because it's genetic"],
+        correct: 1,
+        th: "(Clue: ความเป็นจริงอยู่ที่การตีความ)",
+        en: "(Clue: Reality lies in interpretation)",
+        category: "Looking-glass Self",
+        detail: "Tutor's Secret Tip: แม้คนอื่นจะไม่ได้คิดลบ แต่ถ้าเรา 'ตีความ' ว่าเขาคิดลบ ตัวตนเราก็เสียได้"
+    },
+    {
+        q_th: "รสนิยมการดื่มกาแฟ Specialty ราคาแพงเพื่อแสดงฐานะ จัดเป็นทุนประเภทใด?",
+        q_en: "The taste for expensive specialty coffee to signal status is which type of capital?",
+        choices_th: ["Economic Capital", "Social Capital", "Cultural Capital (Embodied)", "Symbolic Capital"],
+        choices_en: ["Economic Capital", "Social Capital", "Cultural Capital (Embodied)", "Symbolic Capital"],
+        correct: 2,
+        th: "(Clue: รสนิยมที่สะสมในตัวตน)",
+        en: "(Clue: Accumulated taste in the self)",
+        category: "Habitus",
+        detail: "Tutor's Secret Tip: Cultural Capital แบบ Embodied คือความรู้และรสนิยมที่ฝังในตัวเรา"
+    },
+    {
+        q_th: "Mead เปรียบเทียบ Game Stage ต่างจาก Play Stage อย่างไร?",
+        q_en: "How does Mead distinguish the Game Stage from the Play Stage?",
+        choices_th: ["Game Stage ซับซ้อนกว่าเพราะต้องเข้าใจหลายบทบาทพร้อมกัน", "Play Stage สนุกกว่า", "ไม่มีความต่าง", "Game Stage คือการเล่นคนเดียว"],
+        choices_en: ["Game Stage is more complex; requires understanding multiple roles simultaneously", "Play Stage is more fun", "No difference", "Game Stage is playing alone"],
+        correct: 0,
+        th: "(Clue: กฎกติกาของกลุ่ม)",
+        en: "(Clue: Rules of the group)",
+        category: "Symbolic Interactionism",
+        detail: "Tutor's Secret Tip: ใน Game Stage เราต้องสวมบทบาทคนอื่นในใจเพื่อดำเนินตามกติกา"
+    },
+    {
+        q_th: "คนรวยที่ทำตัวเรียบง่ายแต่ยังดู 'แพง' Bourdieu เรียกว่ามีอะไร?",
+        q_en: "A wealthy person who acts simple yet looks 'expensive'; what does Bourdieu call this?",
+        choices_th: ["Stigma", "Habitus of Distinction", "Front Stage", "Role Conflict"],
+        choices_en: ["Stigma", "Habitus of Distinction", "Front Stage", "Role Conflict"],
+        correct: 1,
+        th: "(Clue: ความโดดเด่นที่ดูเป็นธรรมชาติ)",
+        en: "(Clue: Distinction that looks natural)",
+        category: "Habitus",
+        detail: "Tutor's Secret Tip: ชนชั้นนำมี Habitus ที่สร้างความต่าง (Distinction) แม้ในสิ่งที่ดูธรรมดา"
+    },
+    {
+        q_th: "แนวคิดใดที่อธิบายว่า 'เราคือผู้ช่วยเขียนบทละครของตัวเองแต่ต้องอยู่ในโรงละครที่คนอื่นสร้าง'?",
+        q_en: "Which concept explains 'We help write our own script but must stay in a theater built by others'?",
+        choices_th: ["Looking-glass Self", "Dramaturgical Analysis", "Sociological Imagination", "Habitus"],
+        choices_en: ["Looking-glass Self", "Dramaturgical Analysis", "Sociological Imagination", "Habitus"],
+        correct: 1,
+        th: "(Clue: ชีวิตคือละคร)",
+        en: "(Clue: Life is drama)",
+        category: "Dramaturgy",
+        detail: "Tutor's Secret Tip: Goffman เชื่อว่าเราพยายามจัดการบทบาท แต่บริบทสังคมกำหนดขอบเขต"
+    },
+    {
+        q_th: "การมองเห็นว่า 'รสนิยมแฟชั่น' เปลี่ยนไปตามยุคสมัยเพื่อกระตุ้นเศรษฐกิจ คือการใช้?",
+        q_en: "Seeing that 'fashion tastes' change with eras to stimulate the economy is using?",
+        choices_th: ["Socialization", "Sociological Imagination", "Habitus", "Mirroring"],
+        choices_en: ["Socialization", "Sociological Imagination", "Habitus", "Mirroring"],
+        correct: 1,
+        th: "(Clue: มองเชื่อมโยงประวัติศาสตร์และเศรษฐกิจ)",
+        en: "(Clue: Linking history and economy)",
+        category: "Sociological Imagination",
+        detail: "Tutor's Secret Tip: การมองเห็นพลังของโครงสร้าง (ทุนนิยม) เหนือรสนิยมส่วนบุคคล"
+    },
+    {
+        q_th: "Mead มองว่า 'Self' จะไม่เกิดขึ้นเลยหากขาดสิ่งใด?",
+        q_en: "Mead argues that the 'Self' won't emerge without?",
+        choices_th: ["เงิน", "ภาษาและสัญลักษณ์ทางสังคม", "กระจกเงา", "โรงละคร"],
+        choices_en: ["Money", "Language and social symbols", "Mirror", "Theater"],
+        correct: 1,
+        th: "(Clue: การสื่อสารระหว่างมนุษย์)",
+        en: "(Clue: Human communication)",
+        category: "Symbolic Interactionism",
+        detail: "Tutor's Secret Tip: ภาษาทำให้เราสามารถสะท้อนความคิด (Reflexivity) ต่อตนเองได้"
+    },
+    {
+        q_th: "Goffman กล่าวว่าพื้นที่ใดที่มีการเตี๊ยมกันของกลุ่มนักแสดง?",
+        q_en: "Goffman says which area is used for group actors to rehearse?",
+        choices_th: ["Front Stage", "Back Stage", "Off-stage", "Audience area"],
+        choices_en: ["Front Stage", "Back Stage", "Off-stage", "Audience area"],
+        correct: 1,
+        th: "(Clue: หลังม่าน)",
+        en: "(Clue: Behind the curtain)",
+        category: "Dramaturgy",
+        detail: "Tutor's Secret Tip: Back Stage คือที่เตรียมการ (Rehearsal) เพื่อการแสดงหน้าฉากที่สมบูรณ์"
+    },
+    {
+        q_th: "ทำไม Cooley ถึงใช้คำว่า 'Glass' (กระจก)?",
+        q_en: "Why did Cooley use the word 'Glass'?",
+        choices_th: ["เพราะมันเปราะบาง", "เพราะสังคมสะท้อนภาพเรากลับมา", "เพราะมันใสสะอาด", "เพราะมันแพง"],
+        choices_en: ["Because it's fragile", "Because society reflects our image back", "Because it's clear", "Because it's expensive"],
+        correct: 1,
+        th: "(Clue: การสะท้อนกลับ)",
+        en: "(Clue: Reflection)",
+        category: "Looking-glass Self",
+        detail: "Tutor's Secret Tip: คนรอบข้างคือกระจกที่บอกว่าเรา 'ดี' หรือ 'แย่' ตามปฏิกิริยาของเขา"
+    },
+    {
+        q_th: "Bourdieu มองว่า 'โรงเรียน' ทำหน้าที่อะไรต่อ Habitus?",
+        q_en: "What does Bourdieu say 'School' does to Habitus?",
+        choices_th: ["เปลี่ยนให้ทุกคนรวย", "ตอกย้ำ Habitus ของชนชั้นนำให้เหนือกว่า", "ทำลายชนชั้น", "สร้างความเท่าเทียม"],
+        choices_en: ["Makes everyone rich", "Reinforces dominant class Habitus", "Destroys classes", "Creates equality"],
+        correct: 1,
+        th: "(Clue: การผลิตซ้ำทางสังคม)",
+        en: "(Clue: Social reproduction)",
+        category: "Habitus",
+        detail: "Tutor's Secret Tip: โรงเรียนมักยกย่องทุนทางวัฒนธรรมของชนชั้นสูง ทำให้เด็กชนชั้นอื่นเสียเปรียบ"
+    },
+    {
+        q_th: "ความเขินอายเมื่อรู้ว่ามีคนแอบมองเราอยู่ อธิบายได้ด้วยแนวคิดใด?",
+        q_en: "Feeling shy upon realizing someone is watching you is explained by?",
+        choices_th: ["I", "Me", "Back Stage", "Looking-glass Self"],
+        choices_en: ["I", "Me", "Back Stage", "Looking-glass Self"],
+        correct: 3,
+        th: "(Clue: การรับรู้ถึงสายตาคนอื่น)",
+        en: "(Clue: Perception of others' gaze)",
+        category: "Looking-glass Self",
+        detail: "Tutor's Secret Tip: ตัวตนเราเปลี่ยนทันทีเมื่อรู้ว่ามี 'ผู้สังเกตการณ์'"
+    },
+    {
+        q_th: "การศึกษาประวัติศาสตร์ของตระกูลเพื่อเข้าใจอาชีพปัจจุบันของตนเอง คือแนวคิดของ?",
+        q_en: "Studying family history to understand one's current career is whose concept?",
+        choices_th: ["Cooley", "Mills", "Goffman", "Mead"],
+        choices_en: ["Cooley", "Mills", "Goffman", "Mead"],
+        correct: 1,
+        th: "(Clue: เชื่อมโยงประวัติศาสตร์และชีวประวัติ)",
+        en: "(Clue: Linking history and biography)",
+        category: "Sociological Imagination",
+        detail: "Tutor's Secret Tip: C. Wright Mills เน้นว่าเราไม่สามารถเข้าใจตนเองได้ถ้าไม่เข้าใจประวัติศาสตร์"
+    },
+    {
+        q_th: " Mead กล่าวว่าสัตว์ต่างจากมนุษย์อย่างไรในเรื่องตัวตน?",
+        q_en: "How does Mead distinguish animals from humans regarding the self?",
+        choices_th: ["สัตว์ไม่มี 'Me' เพราะไม่มีภาษาและบรรทัดฐานสังคม", "สัตว์ไม่มี 'I'", "สัตว์มีครบทุกส่วน", "สัตว์เก่งกว่ามนุษย์"],
+        choices_en: ["Animals lack 'Me' due to no language/social norms", "Animals lack 'I'", "Animals have all parts", "Animals are superior"],
+        correct: 0,
+        th: "(Clue: ขาดสัญลักษณ์ทางสังคม)",
+        en: "(Clue: Lack social symbols)",
+        category: "Symbolic Interactionism",
+        detail: "Tutor's Secret Tip: สัตว์มีเพียงปฏิกิริยาตอบโต้ (I) แต่ไม่มีกระบวนการขัดเกลาสังคมเป็น Me"
+    },
+    {
+        q_th: "บทสรุปของ 'This is Me' ในทางสังคมวิทยาคืออะไร?",
+        q_en: "What is the conclusion of 'This is Me' in sociology?",
+        choices_th: ["ตัวตนเป็นเรื่องธรรมชาติล้วนๆ", "ตัวตนคือภาพลวงตา", "ตัวตนเป็นสิ่งที่สร้างขึ้นและเปลี่ยนแปลงได้ผ่านสังคม", "ตัวตนคือสิ่งที่พ่อแม่กำหนดมา"],
+        choices_en: ["Self is purely natural", "Self is an illusion", "Self is constructed and changeable through society", "Self is determined by parents"],
+        correct: 2,
+        th: "(Clue: สังคมคือผู้สร้างเรา)",
+        en: "(Clue: Society is our creator)",
+        category: "General",
+        detail: "Tutor's Secret Tip: เราเป็นผลผลิตจากการปฏิสัมพันธ์และการขัดเกลาทางสังคมอย่างไม่สิ้นสุด"
+    }
+];
+
+function renderQuestions() {
+    const quizFlow = document.getElementById('quiz-flow');
+    quizFlow.innerHTML = '';
+    
+    questions.forEach((q, index) => {
+        const qDiv = document.createElement('div');
+        qDiv.className = 'question-container';
+        qDiv.id = `q-block-${index}`;
+        
+        const questionText = currentLang === 'th' ? q.q_th : q.q_en;
+        const clueText = currentLang === 'th' ? q.th : q.en;
+        const choices = currentLang === 'th' ? q.choices_th : q.choices_en;
+        
+        qDiv.innerHTML = `
+            <h3>${currentLang === 'th' ? 'ข้อที่' : 'Question'} ${index + 1}</h3>
+            <p>${questionText}</p>
+            <span class="clue">${clueText}</span>
+            <div class="choices-grid">
+                ${choices.map((choice, i) => `
+                    <button class="choice-btn" id="btn-${index}-${i}" onclick="selectAnswer(${index}, ${i})">
+                        ${choice}
+                    </button>
+                `).join('')}
+            </div>
+            <div class="feedback" id="feedback-${index}">${q.detail}</div>
+        `;
+        quizFlow.appendChild(qDiv);
+        
+        // Restore state if already answered
+        if (userResponses[index] !== null) {
+            applyFeedback(index, userResponses[index]);
+        }
+    });
+}
+
+function selectAnswer(qIndex, choiceIndex) {
+    if (userResponses[qIndex] !== null) return;
+    
+    userResponses[qIndex] = choiceIndex;
+    applyFeedback(qIndex, choiceIndex);
+}
+
+function applyFeedback(qIndex, choiceIndex) {
+    const correctIdx = questions[qIndex].correct;
+    const feedback = document.getElementById(`feedback-${qIndex}`);
+    
+    // Mark buttons
+    for (let i = 0; i < 4; i++) {
+        const btn = document.getElementById(`btn-${qIndex}-${i}`);
+        btn.disabled = true;
+        if (i === correctIdx) btn.classList.add('correct');
+        if (i === choiceIndex && choiceIndex !== correctIdx) btn.classList.add('wrong');
+    }
+    
+    feedback.style.display = 'block';
+}
+
+function toggleLanguage() {
+    currentLang = currentLang === 'th' ? 'en' : 'th';
+    renderQuestions();
+}
+
+function finishQuiz() {
+    const answeredCount = userResponses.filter(r => r !== null).length;
+    if (answeredCount < 25) {
+        alert(currentLang === 'th' ? "กรุณาทำข้อสอบให้ครบ 25 ข้อก่อน!" : "Please complete all 25 questions!");
+        return;
+    }
+    
+    let score = 0;
+    const stats = {};
+    
+    questions.forEach((q, i) => {
+        if (userResponses[i] === q.correct) {
+            score++;
+            stats[q.category] = (stats[q.category] || 0) + 1;
+        } else {
+            stats[q.category] = stats[q.category] || 0;
+        }
+    });
+    
+    document.getElementById('analysis-section').style.display = 'block';
+    document.getElementById('score-text').innerHTML = `คุณได้คะแนน ${score}/25 (${(score/25*100).toFixed(2)}%)`;
+    
+    let breakdownHtml = '<ul>';
+    for (let cat in stats) {
+        const catQuestions = questions.filter(q => q.category === cat).length;
+        breakdownHtml += `<li>${cat}: ${stats[cat]}/${catQuestions}</li>`;
+    }
+    breakdownHtml += '</ul>';
+    document.getElementById('theory-breakdown').innerHTML = breakdownHtml;
+    
+    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+}
+
+function simulateEmail() {
+    alert("จำลองการส่งข้อมูลสำเร็จ!\nTo: thee.chinpong@hmail.com\nSubject: Sociology Results Set 2\nStatus: Complete");
+}
+
+renderQuestions();
+</script>
+</body>
+</html>
