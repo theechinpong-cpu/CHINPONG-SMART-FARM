@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<title>พระจอมเกล้าติวเตอร์ - รากที่ n ของจำนวนจริง</title>
+<style>
+    body { font-family: sans-serif; background: #f0f2f5; padding: 20px; }
+    .container { max-width: 800px; margin: auto; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+    .q-box { margin-bottom: 25px; padding: 15px; border-left: 5px solid #007bff; background: #e9ecef; }
+    .clue { font-size: 0.85em; color: #555; font-style: italic; margin-top: 5px; display: block; }
+    .btn { padding: 8px 16px; background: #007bff; color: white; border: none; cursor: pointer; border-radius: 4px; }
+    .result { margin-top: 10px; font-weight: bold; }
+    .correct { color: green; } .incorrect { color: red; }
+</style>
+</head>
+<body>
+<div class="container">
+    <h2>ข้อสอบ เรื่อง รากที่ n ของจำนวนจริง (25 ข้อ)</h2>
+    <button class="btn" onclick="toggleLang()">สลับภาษา (TH/EN)</button>
+    <div id="quiz-area"></div>
+    <button class="btn" onclick="submitExam()" style="width:100%; margin-top:20px; background:#28a745;">ส่งข้อสอบ / Submit</button>
+</div>
+
+<script>
+const qData = [
+    {q_th:"รากที่ 2 ของ 64 คือข้อใด", q_en:"What is the square root of 64?", a_th:["8", "-8", "8 และ -8", "ไม่มีข้อใดถูก"], a_en:["8", "-8", "8 and -8", "None"], correct: 2, th:"ใบ้: รากคู่ของจำนวนบวกมีค่าบวกและลบ", en:"Tip: Even roots of positive numbers have pos/neg values."},
+    {q_th:"รากที่ 3 ของ -27 คือข้อใด", q_en:"What is the cube root of -27?", a_th:["3", "-3", "9", "-9"], a_en:["3", "-3", "9", "-9"], correct: 1, th:"ใบ้: รากคี่รักษาเครื่องหมายเดิม", en:"Tip: Odd roots preserve the sign."},
+    {q_th:"รากที่ 4 ของ 16 คือข้อใด", q_en:"What is the 4th root of 16?", a_th:["2", "-2", "2 และ -2", "4"], a_en:["2", "-2", "2 and -2", "4"], correct: 2, th:"ใบ้: n เป็นคู่ ผลลัพธ์ต้องมีบวกและลบ", en:"Tip: n is even, need pos and neg."},
+    {q_th:"ค่าของ &radic;[4]{81} คือข้อใด", q_en:"What is &radic;[4]{81}?", a_th:["3", "-3", "9", "-9"], a_en:["3", "-3", "9", "-9"], correct: 0, th:"ใบ้: สัญลักษณ์กรณฑ์คือค่าหลักที่เป็นบวก", en:"Tip: The radical symbol means principal root (pos)."},
+    {q_th:"รากที่ 5 ของ -1 คือข้อใด", q_en:"What is the 5th root of -1?", a_th:["1", "-1", "5", "-5"], a_en:["1", "-1", "5", "-5"], correct: 1, th:"ใบ้: (-1) ยกกำลัง 5 ได้อะไร?", en:"Tip: What is (-1)^5?"},
+    {q_th:"&radic;[3]{125} มีค่าเท่าใด", q_en:"What is &radic;[3]{125}?", a_th:["5", "-5", "25", "1/5"], a_en:["5", "-5", "25", "1/5"], correct: 0, th:"ใบ้: 5 คูณกัน 3 ครั้ง", en:"Tip: 5 multiplied 3 times."},
+    {q_th:"ข้อใดมีค่าเท่ากับ &radic;[3]{-8} + &radic;[3]{8}", q_en:"What is &radic;[3]{-8} + &radic;[3]{8}?", a_th:["4", "0", "-4", "8"], a_en:["4", "0", "-4", "8"], correct: 1, th:"ใบ้: นำผลลัพธ์มาบวกกัน", en:"Tip: Add the results."},
+    {q_th:"&radic;[5]{32} มีค่าเท่าใด", q_en:"What is &radic;[5]{32}?", a_th:["2", "-2", "4", "16"], a_en:["2", "-2", "4", "16"], correct: 0, th:"ใบ้: 2 ยกกำลัง 5 เท่ากับ 32", en:"Tip: 2^5 = 32."},
+    {q_th:"ค่าของ &radic;[2]{a^2} คือข้อใด (เมื่อ a เป็นจำนวนจริง)", q_en:"What is &radic;[2]{a^2}?", a_th:["a", "-a", "|a|", "a^2"], a_en:["a", "-a", "|a|", "a^2"], correct: 2, th:"ใบ้: ถอดรากคู่ออกมาต้องเป็นบวกเสมอ", en:"Tip: Even root result must be positive."},
+    {q_th:"&radic;[3]{x^3} มีค่าเท่าใด", q_en:"What is &radic;[3]{x^3}?", a_th:["x", "|x|", "x^2", "1"], a_en:["x", "|x|", "x^2", "1"], correct: 0, th:"ใบ้: รากคี่ถอดออกมาได้ตัวเดิม", en:"Tip: Odd root preserves variable."},
+    {q_th:"ถ้า &radic;[3]{x} = 4 แล้ว x เท่ากับเท่าใด", q_en:"If &radic;[3]{x} = 4, what is x?", a_th:["12", "64", "16", "8"], a_en:["12", "64", "16", "8"], correct: 1, th:"ใบ้: นำ 4 ยกกำลัง 3", en:"Tip: 4 cubed."},
+    {q_th:"&radic;[2]{2} * &radic;[2]{8} มีค่าเท่าใด", q_en:"&radic;[2]{2} * &radic;[2]{8} = ?", a_th:["&radic;10", "4", "16", "2"], a_en:["&radic;10", "4", "16", "2"], correct: 1, th:"ใบ้: รวมรากเข้าด้วยกัน", en:"Tip: Combine under the radical."},
+    {q_th:"&radic;[3]{16} / &radic;[3]{2} มีค่าเท่าใด", q_en:"&radic;[3]{16} / &radic;[3]{2} = ?", a_th:["&radic;[3]{8}", "2", "8", "4"], a_en:["&radic;[3]{8}", "2", "8", "4"], correct: 1, th:"ใบ้: หารเลขข้างในรากก่อน", en:"Tip: Divide inside the radical first."},
+    {q_th:"2&radic;[2]{3} + 5&radic;[2]{3} เท่ากับเท่าใด", q_en:"2&radic;[2]{3} + 5&radic;[2]{3} = ?", a_th:["7&radic;[2]{3}", "7&radic;[2]{6}", "10&radic;[2]{3}", "3&radic;[2]{3}"], a_en:["7&radic;[2]{3}", "7&radic;[2]{6}", "10&radic;[2]{3}", "3&radic;[2]{3}"], correct: 0, th:"ใบ้: เหมือนการบวกตัวแปร", en:"Tip: Like adding variables."},
+    {q_th:"&radic;[2]{12} - &radic;[2]{3} มีค่าเท่าใด", q_en:"&radic;[2]{12} - &radic;[2]{3} = ?", a_th:["&radic;[2]{9}", "3", "&radic;[2]{3}", "1"], a_en:["&radic;[2]{9}", "3", "&radic;[2]{3}", "1"], correct: 2, th:"ใบ้: จัดรูป &radic;12 เป็น 2&radic;3 ก่อน", en:"Tip: Simplify &radic;12 to 2&radic;3 first."},
+    {q_th:"สังยุคของ 2 + &radic;[2]{3} คือข้อใด", q_en:"Conjugate of 2 + &radic;[2]{3} is?", a_th:["2 - &radic;[2]{3}", "-2 + &radic;[2]{3}", "-2 - &radic;[2]{3}", "3 + &radic;[2]{2}"], a_en:["2 - &radic;[2]{3}", "-2 + &radic;[2]{3}", "-2 - &radic;[2]{3}", "3 + &radic;[2]{2}"], correct: 0, th:"ใบ้: เปลี่ยนเครื่องหมายตรงกลาง", en:"Tip: Flip the middle sign."},
+    {q_th:"ผลคูณของ (1 + &radic;[2]{2})(1 - &radic;[2]{2}) คือข้อใด", q_en:"(1 + &radic;[2]{2})(1 - &radic;[2]{2}) = ?", a_th:["-1", "1", "3", "0"], a_en:["-1", "1", "3", "0"], correct: 0, th:"ใบ้: หน้ากำลังสอง ลบ หลังกำลังสอง", en:"Tip: a^2 - b^2."},
+    {q_th:"เขียน 1 / &radic;[2]{2} ให้ส่วนไม่ติดราก", q_en:"Rationalize 1 / &radic;[2]{2}", a_th:["&radic;[2]{2}/2", "2&radic;[2]{2}", "&radic;[2]{2}", "1"], a_en:["&radic;[2]{2}/2", "2&radic;[2]{2}", "&radic;[2]{2}", "1"], correct: 0, th:"ใบ้: คูณ &radic;2 ทั้งเศษและส่วน", en:"Tip: Multiply by &radic;2 / &radic;2."},
+    {q_th:"(2 + &radic;[2]{5})^2 เท่ากับข้อใด", q_en:"(2 + &radic;[2]{5})^2 = ?", a_th:["4 + 5", "9 + 4&radic;[2]{5}", "9 + &radic;[2]{5}", "4 + 4&radic;[2]{5}"], a_en:["4 + 5", "9 + 4&radic;[2]{5}", "9 + &radic;[2]{5}", "4 + 4&radic;[2]{5}"], correct: 1, th:"ใบ้: (หน้า+หลัง)^2 = หน้า^2 + 2หน้าหลัง + หลัง^2", en:"Tip: (a+b)^2 = a^2 + 2ab + b^2."},
+    {q_th:"&radic;[2]{a+b} มีค่าเท่ากับ &radic;[2]{a} + &radic;[2]{b} ใช่หรือไม่", q_en:"Is &radic;[2]{a+b} = &radic;[2]{a} + &radic;[2]{b}?", a_th:["ใช่", "ไม่", "ขึ้นอยู่กับค่า", "บางกรณี"], a_en:["Yes", "No", "Depends", "Sometimes"], correct: 1, th:"ใบ้: ข้อควรระวังในการบวกราก", en:"Tip: Warning regarding root addition."},
+    {q_th:"สมการ &radic;[2]{x} = 3 มีคำตอบคือข้อใด", q_en:"&radic;[2]{x} = 3, solve for x.", a_th:["3", "9", "6", "ไม่มีคำตอบ"], a_en:["3", "9", "6", "None"], correct: 1, th:"ใบ้: ยกกำลัง 2 ทั้งสองข้าง", en:"Tip: Square both sides."},
+    {q_th:"สมการ &radic;[2]{x-1} = 2 มีคำตอบคือข้อใด", q_en:"&radic;[2]{x-1} = 2, solve for x.", a_th:["3", "5", "4", "2"], a_en:["3", "5", "4", "2"], correct: 1, th:"ใบ้: x-1 ต้องเท่ากับ 4", en:"Tip: x-1 must equal 4."},
+    {q_th:"หาก &radic;[2]{x} = -2 จะมีคำตอบหรือไม่", q_en:"If &radic;[2]{x} = -2, does it have a solution?", a_th:["มี, คือ 4", "ไม่มี", "มี, คือ -4", "มี, คือ 2"], a_en:["Yes, 4", "No", "Yes, -4", "Yes, 2"], correct: 1, th:"ใบ้: กรณฑ์ที่เป็นค่าหลักต้องไม่ติดลบ", en:"Tip: Principal root cannot be negative."},
+    {q_th:"&radic;[3]{x} = -2 ดังนั้น x เท่ากับเท่าใด", q_en:"&radic;[3]{x} = -2, solve for x.", a_th:["8", "-8", "4", "-4"], a_en:["8", "-8", "4", "-4"], correct: 1, th:"ใบ้: -2 ยกกำลัง 3", en:"Tip: -2 cubed."},
+    {q_th:"ถ้า &radic;[2]{x^2} = 5 แล้ว x เป็นได้กี่ค่า", q_en:"If &radic;[2]{x^2} = 5, how many values for x?", a_th:["1", "2", "0", "ไม่จำกัด"], a_en:["1", "2", "0", "Infinite"], correct: 1, th:"ใบ้: x อาจเป็น 5 หรือ -5", en:"Tip: x could be 5 or -5."}
+];
+
+let lang = 'th';
+function toggleLang() { lang = lang === 'th' ? 'en' : 'th'; render(); }
+
+function render() {
+    const area = document.getElementById('quiz-area');
+    area.innerHTML = '';
+    qData.forEach((q, idx) => {
+        const div = document.createElement('div');
+        div.className = 'q-box';
+        div.innerHTML = `
+            <p><strong>${idx+1}. ${lang === 'th' ? q.q_th : q.q_en}</strong></p>
+            <span class="clue">${lang === 'th' ? q.th : q.en}</span>
+            ${(lang === 'th' ? q.a_th : q.a_en).map((opt, i) => `
+                <input type="radio" name="q${idx}" value="${i}"> ${opt}<br>
+            `).join('')}
+            <div id="res${idx}" class="result"></div>
+        `;
+        area.appendChild(div);
+    });
+}
+
+function submitExam() {
+    let score = 0;
+    qData.forEach((q, idx) => {
+        const radios = document.getElementsByName(`q${idx}`);
+        let selected = -1;
+        radios.forEach((r, i) => { if(r.checked) selected = i; });
+        const resDiv = document.getElementById(`res${idx}`);
+        if(selected === q.correct) {
+            score++;
+            resDiv.innerHTML = '<span class="correct">ถูกต้อง (Correct)</span>';
+        } else {
+            resDiv.innerHTML = `<span class="incorrect">ผิด (Incorrect) เฉลยคือข้อ ${q.correct + 1}</span>`;
+        }
+    });
+    alert(`คะแนนของคุณ: ${score}/25 \n(จำลองการส่งข้อมูลไปที่ thee.chinpong@hmail.com)`);
+}
+
+render();
+</script>
+</body>
+</html>
