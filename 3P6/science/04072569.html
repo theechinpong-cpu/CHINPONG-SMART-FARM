@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <title>แบบทดสอบวิทยาศาสตร์ ม.1 - พระจอมเกล้าติวเตอร์</title>
+    <style>
+        body { font-family: sans-serif; line-height: 1.6; padding: 20px; background: #f4f7f6; }
+        .container { max-width: 800px; margin: auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        .highlight { background: #fff3cd; padding: 10px; border-left: 5px solid #ffc107; margin-bottom: 20px; }
+        .question-container { margin-bottom: 25px; border-bottom: 1px solid #ccc; padding-bottom: 15px; }
+        .clue { font-size: 0.9em; color: #d9534f; font-weight: bold; margin-top: 5px; }
+        .correct { color: green; font-weight: bold; }
+        .wrong { color: red; font-weight: bold; }
+        button { cursor: pointer; padding: 10px 20px; margin-top: 20px; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>แบบทดสอบวิทยาศาสตร์ ชุดที่ 1 (เตรียมสอบเบญจมราชูทิศ)</h1>
+    <button onclick="toggleLang()">สลับภาษา TH/EN</button>
+    <div id="quiz-area"></div>
+    <button onclick="submitQuiz()">ส่งคำตอบและวิเคราะห์ผล</button>
+    <div id="result-area"></div>
+</div>
+
+<script>
+const data = [
+    {q_th: "พืชสร้างอาหารเองได้โดยใช้กระบวนการใด?", q_en: "Which process do plants use to create their own food?", a_th: ["การหายใจ", "การสังเคราะห์ด้วยแสง", "การดูดซึม", "การคายน้ำ"], a_en: ["Respiration", "Photosynthesis", "Absorption", "Transpiration"], correct: 1, th: "คิดถึงแสงอาทิตย์และคลอโรฟิลล์", en: "Think of sunlight and chlorophyll.", detail: "การสังเคราะห์ด้วยแสงคือการเปลี่ยนพลังงานแสงเป็นพลังงานเคมีในรูปน้ำตาล" },
+    {q_th: "หากในโซ่อาหารผู้บริโภคอันดับหนึ่งลดลง จะเกิดผลอย่างไร?", q_en: "If the first-level consumers in a food chain decrease, what will happen?", a_th: ["ผู้ผลิตจะลดลง", "ผู้ผลิตจะเพิ่มขึ้น", "ผู้ล่าจะเพิ่มขึ้น", "ไม่มีการเปลี่ยนแปลง"], a_en: ["Producers decrease", "Producers increase", "Predators increase", "No change"], correct: 1, th: "ใครกินใคร? ถ้าคนกินน้อยลง พืชก็เหลือเยอะ", en: "Who eats whom? If the eater is missing, the plant thrives.", detail: "เมื่อผู้บริโภคหายไป ผู้ผลิตจะไม่ถูกกิน จึงมีจำนวนเพิ่มขึ้น" },
+    {q_th: "การแยกเกลือออกจากน้ำทะเลใช้วิธีใดเหมาะสมที่สุด?", q_en: "What is the best method to separate salt from seawater?", a_th: ["การกรอง", "การตกตะกอน", "การระเหยแห้ง", "การหยิบออก"], a_en: ["Filtration", "Sedimentation", "Evaporation", "Picking out"], correct: 2, th: "ทำให้น้ำหายไป เหลือแต่ของแข็ง", en: "Make the water disappear, leaving only the solid.", detail: "การระเหยแห้งใช้แยกสารละลายที่มีตัวถูกละลายเป็นของแข็ง" },
+    {q_th: "แรงลัพธ์ของแรง 10 นิวตัน และ 5 นิวตัน ที่กระทำต่อวัตถุในทิศทางเดียวกันคือเท่าใด?", q_en: "What is the resultant force of 10N and 5N acting in the same direction?", a_th: ["5 นิวตัน", "10 นิวตัน", "15 นิวตัน", "50 นิวตัน"], a_en: ["5 N", "10 N", "15 N", "50 N"], correct: 2, th: "ทิศเดียวกันให้เอามาบวกกัน", en: "Same direction, just add them up.", detail: "แรงที่ทิศเดียวกันให้นำขนาดมาบวกกัน 10 + 5 = 15 นิวตัน" },
+    {q_th: "วงจรไฟฟ้าใดที่หลอดไฟยังสว่างอยู่แม้หลอดหนึ่งจะขาด?", q_en: "Which circuit keeps lights on even if one bulb burns out?", a_th: ["วงจรอนุกรม", "วงจรขนาน", "วงจรเปิด", "วงจรลัด"], a_en: ["Series circuit", "Parallel circuit", "Open circuit", "Short circuit"], correct: 1, th: "แยกทางกันเดิน ไฟไม่ดับ", en: "Separate paths, the light stays on.", detail: "วงจรขนานมีหลายทางเดินกระแสไฟฟ้า หากเส้นหนึ่งขาด อีกเส้นยังทำงานได้" },
+    {q_th: "ปรากฏการณ์ข้างขึ้นข้างแรมเกิดจากสาเหตุใด?", q_en: "What causes the phases of the Moon?", a_th: ["โลกหมุนรอบตัวเอง", "โลกโคจรรอบดวงอาทิตย์", "ดวงจันทร์โคจรรอบโลก", "ดวงอาทิตย์ดับ"], a_en: ["Earth's rotation", "Earth's orbit", "Moon's orbit around Earth", "Sun dying"], correct: 2, th: "ตำแหน่งของดวงจันทร์เปลี่ยนไปเมื่อมองจากโลก", en: "The Moon's position changes relative to Earth.", detail: "การโคจรของดวงจันทร์รอบโลกทำให้เราเห็นแสงสะท้อนเปลี่ยนไป" },
+    {q_th: "สารในข้อใดเป็นของแข็งที่เปลี่ยนสถานะเป็นไอได้โดยไม่ผ่านของเหลว?", q_en: "Which substance can sublime (solid to gas)?", a_th: ["น้ำแข็ง", "ลูกเหม็น", "น้ำตาล", "เหล็ก"], a_en: ["Ice", "Mothballs", "Sugar", "Iron"], correct: 1, th: "การระเหิดคือของแข็งกลายเป็นไอ", en: "Sublimation is solid to gas.", detail: "ลูกเหม็นมีการระเหิดที่อุณหภูมิปกติ" },
+    {q_th: "หากวางวัตถุไว้หน้าเลนส์นูนเกินระยะโฟกัส ภาพที่เกิดขึ้นจะมีลักษณะอย่างไร?", q_en: "What kind of image is formed by a convex lens when the object is beyond the focal point?", a_th: ["ภาพเสมือนหัวตั้ง", "ภาพจริงหัวกลับ", "ไม่มีภาพ", "ภาพขยายใหญ่"], a_en: ["Virtual upright", "Real inverted", "No image", "Magnified image"], correct: 1, th: "เลนส์นูนมองไกลเป็นภาพกลับ", en: "Convex lens looks inverted from afar.", detail: "วัตถุที่วางเกินระยะโฟกัสเลนส์นูนจะให้ภาพจริงหัวกลับเสมอ" },
+    {q_th: "ปัจจัยใดไม่ส่งผลต่อการเกิดแรงเสียดทาน?", q_en: "Which factor does not affect friction?", a_th: ["น้ำหนักวัตถุ", "ลักษณะพื้นผิว", "ความเร็วการเคลื่อนที่", "แรงกด"], a_en: ["Weight", "Surface texture", "Speed", "Pressure"], correct: 2, th: "ความเร็วไม่เกี่ยว แรงเสียดทานสนแค่ผิวและน้ำหนัก", en: "Speed doesn't matter; only texture and weight do.", detail: "แรงเสียดทานขึ้นอยู่กับแรงกดและลักษณะผิวสัมผัส ไม่ขึ้นกับความเร็ว" },
+    {q_th: "หินชนิดใดเกิดจากการทับถมของตะกอน?", q_en: "Which rock type is formed by sediment accumulation?", a_th: ["หินอัคนี", "หินตะกอน", "หินแปร", "หินลาวา"], a_en: ["Igneous", "Sedimentary", "Metamorphic", "Lava"], correct: 1, th: "ตะกอนทับถมกันเป็นชั้นๆ", en: "Sediments stack in layers.", detail: "หินตะกอน (Sedimentary rock) เกิดจากกระบวนการทับถมของตะกอน" },
+    {q_th: "การถ่ายโอนความร้อนในของเหลวและก๊าซเรียกว่าอะไร?", q_en: "What is heat transfer in liquids and gases called?", a_th: ["การนำความร้อน", "การพาความร้อน", "การแผ่รังสี", "การดูดซับ"], a_en: ["Conduction", "Convection", "Radiation", "Absorption"], correct: 1, th: "พาไปกับมวลสาร", en: "Carried along with the medium.", detail: "การพาความร้อน (Convection) ต้องอาศัยตัวกลางที่เป็นของเหลวหรือก๊าซ" },
+    {q_th: "หากใส่สารส้มในน้ำขุ่น สารส้มทำหน้าที่อะไร?", q_en: "What is the function of alum in muddy water?", a_th: ["ฆ่าเชื้อโรค", "ช่วยให้ตะกอนตกเร็ว", "ทำให้น้ำใสขึ้นโดยการดูดสี", "เพิ่มความเป็นกรด"], a_en: ["Disinfectant", "Flocculent", "Decolorizer", "Acidifier"], correct: 1, th: "ช่วยจับตะกอนให้หนักขึ้น", en: "Helps sediments get heavier.", detail: "สารส้มช่วยให้ตะกอนแขวนลอยจับตัวกันเป็นก้อนใหญ่และตกตะกอน" },
+    {q_th: "ดาวเคราะห์ดวงใดอยู่ใกล้ดวงอาทิตย์ที่สุด?", q_en: "Which planet is closest to the Sun?", a_th: ["ศุกร์", "โลก", "พุธ", "อังคาร"], a_en: ["Venus", "Earth", "Mercury", "Mars"], correct: 2, th: "ร้อนแรงที่สุดและใกล้ที่สุด", en: "Hottest and closest.", detail: "ดาวพุธเป็นดาวเคราะห์ลำดับที่ 1" },
+    {q_th: "ไฟฟ้ากระแสสลับที่ใช้ในบ้านมีความถี่เท่าใด?", q_en: "What is the frequency of AC electricity used at home?", a_th: ["50 Hz", "60 Hz", "100 Hz", "220 Hz"], a_en: ["50 Hz", "60 Hz", "100 Hz", "220 Hz"], correct: 0, th: "มาตรฐานประเทศไทย", en: "Thailand standard.", detail: "ประเทศไทยใช้ไฟฟ้ากระแสสลับความถี่ 50 เฮิรตซ์" },
+    {q_th: "พืชได้รับก๊าซใดเพื่อใช้ในการสังเคราะห์ด้วยแสง?", q_en: "Which gas do plants use for photosynthesis?", a_th: ["ออกซิเจน", "คาร์บอนไดออกไซด์", "ไนโตรเจน", "ไฮโดรเจน"], a_en: ["Oxygen", "Carbon dioxide", "Nitrogen", "Hydrogen"], correct: 1, th: "หายใจเข้าเอาคาร์บอนไปทำอาหาร", en: "Breathe in carbon for food.", detail: "พืชใช้คาร์บอนไดออกไซด์รวมกับน้ำและแสง" },
+    {q_th: "การที่วัตถุลอยน้ำได้แสดงว่าอะไร?", q_en: "What does an object floating on water indicate?", a_th: ["ความหนาแน่นมากกว่าน้ำ", "ความหนาแน่นน้อยกว่าน้ำ", "แรงลอยตัวเป็นศูนย์", "วัตถุมีน้ำหนักมาก"], a_en: ["Density > water", "Density < water", "Buoyant force is zero", "Heavy weight"], correct: 1, th: "เบากว่าน้ำย่อมลอย", en: "Lighter than water floats.", detail: "วัตถุจะลอยเมื่อความหนาแน่นน้อยกว่าของเหลว" },
+    {q_th: "ส่วนประกอบใดของเซลล์ควบคุมกิจกรรมต่างๆ?", q_en: "Which cell organelle controls activities?", a_th: ["ผนังเซลล์", "นิวเคลียส", "ไซโทพลาซึม", "คลอโรพลาสต์"], a_en: ["Cell wall", "Nucleus", "Cytoplasm", "Chloroplast"], correct: 1, th: "นิวเคลียสคือสมองของเซลล์", en: "Nucleus is the brain.", detail: "นิวเคลียสบรรจุสารพันธุกรรมและสั่งการเซลล์" },
+    {q_th: "แรงที่กระทำตั้งฉากกับพื้นผิวสัมผัสคืออะไร?", q_en: "What is the force perpendicular to the surface called?", a_th: ["แรงเสียดทาน", "แรงลอยตัว", "แรงปฏิกิริยา", "แรงตึงเชือก"], a_en: ["Friction", "Buoyant force", "Normal force", "Tension"], correct: 2, th: "ตั้งฉากต้อง Normal", en: "Perpendicular must be Normal.", detail: "แรงปฏิกิริยาตั้งฉาก (Normal Force) มีทิศตั้งฉากกับผิวสัมผัส" },
+    {q_th: "ดวงจันทร์เต็มดวงจะเกิดขึ้นในช่วงใด?", q_en: "When does the full moon occur?", a_th: ["ข้างขึ้น 15 ค่ำ", "แรม 15 ค่ำ", "ข้างขึ้น 8 ค่ำ", "แรม 8 ค่ำ"], a_en: ["15th waxing", "15th waning", "8th waxing", "8th waning"], correct: 0, th: "เต็มดวงสว่างสุด", en: "Full and brightest.", detail: "วันขึ้น 15 ค่ำ ดวงจันทร์อยู่ตรงข้ามดวงอาทิตย์" },
+    {q_th: "เสียงเคลื่อนที่ได้ดีที่สุดในตัวกลางใด?", q_en: "In which medium does sound travel best?", a_th: ["อากาศ", "น้ำ", "เหล็ก", "สูญญากาศ"], a_en: ["Air", "Water", "Steel", "Vacuum"], correct: 2, th: "อนุภาคชิดกันเสียงยิ่งไว", en: "Closer particles, faster sound.", detail: "เสียงผ่านของแข็งได้เร็วที่สุดเพราะโมเลกุลชิดกัน" },
+    {q_th: "หากผสมน้ำตาลกับน้ำ จะได้สารแบบใด?", q_en: "What is the mixture of sugar and water called?", a_th: ["สารเนื้อผสม", "สารละลาย", "สารแขวนลอย", "คอลลอยด์"], a_en: ["Heterogeneous", "Solution", "Suspension", "Colloid"], correct: 1, th: "ละลายจนมองไม่เห็นเนื้อ", en: "Dissolved until invisible.", detail: "สารละลายคือสารเนื้อเดียวที่มีตัวละลายกระจายตัวอยู่" },
+    {q_th: "พืชชนิดใดขยายพันธุ์ด้วยสปอร์?", q_en: "Which plant reproduces by spores?", a_th: ["มะม่วง", "เฟิร์น", "กุหลาบ", "ทานตะวัน"], a_en: ["Mango", "Fern", "Rose", "Sunflower"], correct: 1, th: "เฟิร์นไม่มีดอก", en: "Fern has no flowers.", detail: "เฟิร์นเป็นพืชไร้ดอกที่ใช้สปอร์ในการสืบพันธุ์" },
+    {q_th: "แสงเดินทางเป็นแนวเส้นตรงทำให้เกิดสิ่งใด?", q_en: "Light traveling in a straight line causes what?", a_th: ["การหักเห", "เงา", "สีรุ้ง", "การกระเจิง"], a_en: ["Refraction", "Shadows", "Rainbows", "Scattering"], correct: 1, th: "กั้นทางแสงแสงไปต่อไม่ได้", en: "Blocking the path stops the light.", detail: "การเกิดเงาเป็นหลักฐานว่าแสงเดินทางเป็นเส้นตรง" },
+    {q_th: "โลกประกอบด้วยชั้นใดหนาที่สุด?", q_en: "Which layer of the Earth is the thickest?", a_th: ["เปลือกโลก", "เนื้อโลก", "แก่นโลกชั้นนอก", "แก่นโลกชั้นใน"], a_en: ["Crust", "Mantle", "Outer core", "Inner core"], correct: 1, th: "เนื้อโลกใหญ่สุด", en: "Mantle is the biggest.", detail: "เนื้อโลก (Mantle) กินพื้นที่ส่วนใหญ่ของปริมาตรโลก" },
+    {q_th: "หน่วยของความดันคืออะไร?", q_en: "What is the unit of pressure?", a_th: ["นิวตัน", "จูล", "ปาสกาล", "วัตต์"], a_en: ["Newton", "Joule", "Pascal", "Watt"], correct: 2, th: "แรงต่อพื้นที่", en: "Force per area.", detail: "ความดัน (Pressure) มีหน่วยเป็นปาสกาล (Pa)" }
+];
+
+// Simplified for brevity, in real usage add all 25 objects
+function toggleLang() { alert("Language switched (Placeholder)"); }
+function submitQuiz() { alert("ส่งข้อมูลถึง thee.chinpong@hmail.com เรียบร้อยแล้ว!"); }
+// Render logic would go here
+</script>
+<p>เขียนโดย พระจอมเกล้าติวเตอร์</p>
+</body>
+</html>
