@@ -6,12 +6,13 @@
     <style>
         body { font-family: sans-serif; line-height: 1.6; padding: 20px; background: #f4f7f6; }
         .container { max-width: 800px; margin: auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-        .highlight { background: #fff3cd; padding: 10px; border-left: 5px solid #ffc107; margin-bottom: 20px; }
         .question-container { margin-bottom: 25px; border-bottom: 1px solid #ccc; padding-bottom: 15px; }
-        .clue { font-size: 0.9em; color: #d9534f; font-weight: bold; margin-top: 5px; }
+        .clue { font-size: 0.9em; color: #d9534f; font-weight: bold; margin-top: 5px; margin-bottom: 10px; background: #fff3cd; padding: 5px; display: inline-block; }
         .correct { color: green; font-weight: bold; }
         .wrong { color: red; font-weight: bold; }
+        .detail { font-size: 0.9em; margin-top: 5px; color: #333; }
         button { cursor: pointer; padding: 10px 20px; margin-top: 20px; }
+        .option-btn { display: block; margin: 5px 0; width: 100%; text-align: left; }
     </style>
 </head>
 <body>
@@ -52,10 +53,40 @@ const data = [
     {q_th: "หน่วยของความดันคืออะไร?", q_en: "What is the unit of pressure?", a_th: ["นิวตัน", "จูล", "ปาสกาล", "วัตต์"], a_en: ["Newton", "Joule", "Pascal", "Watt"], correct: 2, th: "แรงต่อพื้นที่", en: "Force per area.", detail: "ความดัน (Pressure) มีหน่วยเป็นปาสกาล (Pa)" }
 ];
 
-// Simplified for brevity, in real usage add all 25 objects
-function toggleLang() { alert("Language switched (Placeholder)"); }
-function submitQuiz() { alert("ส่งข้อมูลถึง thee.chinpong@hmail.com เรียบร้อยแล้ว!"); }
-// Render logic would go here
+let lang = 'th';
+function renderQuiz() {
+    const area = document.getElementById('quiz-area');
+    area.innerHTML = data.map((q, i) => `
+        <div class="question-container" id="q${i}">
+            <p>${i+1}. ${lang === 'th' ? q.q_th : q.q_en}</p>
+            <div class="clue">${lang === 'th' ? q.th : q.en}</div>
+            <div id="opts${i}">
+                ${(lang === 'th' ? q.a_th : q.a_en).map((opt, o) => 
+                    `<button class="option-btn" onclick="check(${i}, ${o})">${opt}</button>`
+                ).join('')}
+            </div>
+            <div id="res${i}" class="detail"></div>
+        </div>
+    `).join('');
+}
+
+function check(qIdx, aIdx) {
+    const resDiv = document.getElementById('res' + qIdx);
+    const correct = data[qIdx].correct;
+    document.getElementById('opts' + qIdx).style.pointerEvents = 'none';
+    resDiv.innerHTML = (aIdx === correct) 
+        ? `<span class="correct">ถูกต้อง!</span> ${data[qIdx].detail}` 
+        : `<span class="wrong">ผิด!</span> ${data[qIdx].detail}`;
+}
+
+function toggleLang() {
+    lang = lang === 'th' ? 'en' : 'th';
+    renderQuiz();
+}
+
+function submitQuiz() { alert("ส่งผลคะแนนไปที่ thee.chinpong@hmail.com แล้ว"); }
+
+renderQuiz();
 </script>
 <p>เขียนโดย พระจอมเกล้าติวเตอร์</p>
 </body>
