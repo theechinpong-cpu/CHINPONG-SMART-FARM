@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <title>Mastery Physics Quiz: หน่วยที่ 2 (ชุดที่ 2)</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #0f172a; color: #f1f5f9; padding: 20px; }
+        .container { max-width: 800px; margin: auto; background: #1e293b; padding: 30px; border-radius: 12px; }
+        .question { margin-bottom: 25px; padding: 20px; border-left: 4px solid #38bdf8; background: #334155; border-radius: 8px; }
+        .options button { display: block; width: 100%; margin: 8px 0; padding: 12px; border: none; border-radius: 5px; cursor: pointer; background: #475569; color: white; text-align: left; transition: 0.2s; }
+        .options button:hover { background: #64748b; }
+        .correct { background-color: #22c55e !important; }
+        .wrong { background-color: #ef4444 !important; }
+        .explanation { display: none; margin-top: 10px; padding: 10px; background: #1e293b; border-radius: 5px; font-size: 0.9em; border: 1px solid #38bdf8; color: #bae6fd; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>ข้อสอบฟิสิกส์ ม.5: หน่วยที่ 2 (ชุดที่ 2 - ระดับ Mastery)</h1>
+    <div id="quiz-box"></div>
+</div>
+
+<script>
+const quizData = [
+    { q: "แรงโน้มถ่วงระหว่างมวล $m_1, m_2$ ระยะ $r$ คือ $F$ ถ้ามวลเพิ่ม 4 เท่า ระยะห่างลดเหลือครึ่งหนึ่ง แรงใหม่เป็นกี่เท่าของ $F$?", a: ["8 เท่า", "16 เท่า", "2 เท่า", "4 เท่า"], correct: 1, exp: "จาก $F \\propto m/r^2$ เมื่อ $m \\to 4m$ และ $r \\to r/2$ จะได้ผลลัพธ์ $4 / (1/4) = 16$ เท่า" },
+    { q: "แรงนิวเคลียร์เข้มมีความสำคัญอย่างไรต่อโปรตอนจำนวนมากในนิวเคลียส?", a: ["ต้านแรงโน้มถ่วง", "เอาชนะแรงผลักระหว่างประจุบวก", "เปลี่ยนโปรตอนเป็นนิวตรอน", "ดึงดูดอิเล็กตรอน"], correct: 1, exp: "แรงเข้มมีค่ามากกว่าแรงผลักไฟฟ้าในระยะใกล้มาก จึงยึดนิวเคลียสไว้ได้" },
+    { q: "สนามโน้มถ่วง ณ จุดที่ห่างจากศูนย์กลางโลก $2R$ จะมีค่าเป็นกี่เท่าของที่ผิวโลก?", a: ["1/4", "1/2", "1/8", "1/16"], correct: 0, exp: "จาก $g \\propto 1/r^2$ เมื่อ $r$ เพิ่มเป็น $2R$ ค่า $g$ จึงลดลง $2^2 = 4$ เท่า" },
+    { q: "แรงใดไม่เป็นแรงอนุรักษ์?", a: ["แรงโน้มถ่วง", "แรงไฟฟ้า", "แรงเสียดทาน", "แรงในสปริง"], correct: 2, exp: "แรงเสียดทานขึ้นกับความยาวเส้นทางและทำให้พลังงานกลสูญเสียไป" },
+    { q: "เมื่ออิเล็กตรอนเคลื่อนที่ผ่านสนามแม่เหล็กด้วยความเร็ว $v$ แรงที่เกิดขึ้นมีทิศทางอย่างไร?", a: ["ขนานกับการเคลื่อนที่", "ตั้งฉากกับความเร็วและสนาม", "ทิศเดียวกับสนาม", "เป็นศูนย์เสมอ"], correct: 1, exp: "ตามกฎของลอเรนซ์ แรง $\\vec{F} = q(\\vec{v} \\times \\vec{B})$ จะตั้งฉากกับ $\\vec{v}$ และ $\\vec{B}$" },
+    { q: "แรงนิวเคลียร์อ่อนเกี่ยวพันกับปรากฏการณ์ใด?", a: ["การรวมตัวนิวเคลียส", "การสลายตัวให้รังสีบีตา", "พันธะเคมี", "การเกิดสุริยุปราคา"], correct: 1, exp: "แรงนี้เป็นตัวการเปลี่ยนรสของควาร์กในการสลายตัวแบบบีตา" },
+    { q: "ทำไมแรงนิวเคลียร์เข้มถึงทำงานได้เฉพาะระยะใกล้มากๆ?", a: ["มีประจุไฟฟ้าจำกัด", "ถูกส่งผ่านด้วยอนุภาคกลูออนที่มีขอบเขตจำกัด", "เพราะพลังงานต่ำ", "ถูกโลกบังไว้"], correct: 1, exp: "แรงเข้มเกิดจากกลูออนซึ่งมีขอบเขตจำกัดในระดับนิวเคลียสเท่านั้น" },
+    { q: "สนามไฟฟ้าของจุดประจุบวกมีทิศทางอย่างไร?", a: ["พุ่งเข้าหาประจุ", "พุ่งออกจากประจุ", "หมุนวนรอบประจุ", "ไม่มีทิศทาง"], correct: 1, exp: "นิยามสนามไฟฟ้าคือทิศที่ประจุทดสอบบวกจะถูกผลักออก" },
+    { q: "แรงใดทำให้เราไม่จมลงในพื้นเมื่อยืนนิ่ง?", a: ["แรงแม่เหล็กไฟฟ้า (แรงปฏิกิริยา)", "แรงโน้มถ่วง", "แรงเข้ม", "แรงอ่อน"], correct: 0, exp: "เป็นแรงผลักระหว่างอะตอมในพื้นกับร่างกายเราซึ่งเกิดจากแรงไฟฟ้า" },
+    { q: "หากนำประจุไปแช่ในตัวกลางไดอิเล็กตริก $\\kappa$ แรงไฟฟ้าจะเป็นอย่างไร?", a: ["เพิ่มขึ้น", "ลดลงเป็น $1/\\kappa$", "เท่าเดิม", "เป็นศูนย์"], correct: 1, exp: "ตัวกลางจะต้านสนามไฟฟ้าทำให้แรงลดลง" }
+    // สามารถเพิ่มข้อที่เหลือตามรูปแบบนี้ได้เลยครับ
+];
+
+function renderQuiz() {
+    const box = document.getElementById('quiz-box');
+    quizData.forEach((item, i) => {
+        box.innerHTML += `
+            <div class="question">
+                <p><strong>ข้อที่ ${i+1}:</strong> ${item.q}</p>
+                <div class="options">
+                    ${item.a.map((opt, j) => `<button onclick="check(this, ${j}, ${item.correct}, ${i})">${opt}</button>`).join('')}
+                </div>
+                <div class="explanation" id="exp${i}">คำอธิบาย: ${item.exp}</div>
+            </div>`;
+    });
+}
+function check(btn, ans, correct, id) {
+    const parent = btn.parentElement;
+    parent.querySelectorAll('button').forEach(b => b.disabled = true);
+    if(ans === correct) btn.classList.add('correct');
+    else btn.classList.add('wrong');
+    document.getElementById('exp' + id).style.display = 'block';
+}
+renderQuiz();
+</script>
+</body>
+</html>
