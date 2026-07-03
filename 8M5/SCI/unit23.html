@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <title>Mastery Physics Quiz: Set 6 (Final Challenge)</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #0f172a; color: #f1f5f9; padding: 20px; }
+        .container { max-width: 800px; margin: auto; background: #1e293b; padding: 30px; border-radius: 12px; }
+        .question { margin-bottom: 25px; padding: 20px; border-left: 4px solid #38bdf8; background: #334155; }
+        .options button { display: block; width: 100%; margin: 8px 0; padding: 12px; border: none; border-radius: 5px; cursor: pointer; background: #475569; color: white; text-align: left; transition: 0.2s; }
+        .options button:hover { background: #64748b; }
+        .correct { background-color: #22c55e !important; }
+        .wrong { background-color: #ef4444 !important; }
+        .hidden { display: none; margin-top: 10px; padding: 10px; background: #1e293b; border-radius: 5px; font-size: 0.9em; border: 1px solid #38bdf8; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>ข้อสอบฟิสิกส์ ม.5 ชุดที่ 5 (ระดับยากที่สุด)</h1>
+    <div id="quiz-box"></div>
+</div>
+
+<script>
+const quizData = [
+    { q: "วัตถุ A และ B มวล m เท่ากัน ผูกติดกันด้วยเชือกเบาบนพื้นราบลื่น แรง F ดึง A ด้วยมุม 60 องศา ความเร่งของระบบคือ?", a: ["F/2m", "F/4m", "F/m", "F/3m"], correct: 1, exp: "F_x = F cos 60 = F/2; a = F_x / (2m) = F/4m" },
+    { q: "ในระบบรอกที่เคลื่อนที่ได้ หากวัตถุเคลื่อนที่ด้วยความเร็ว v ความเร็วของรอกจะเป็นเท่าใด?", a: ["v", "2v", "v/2", "v^2"], correct: 2, exp: "รอกที่เคลื่อนที่ได้จะมีความสัมพันธ์ผกผันกับระยะทางเชือก (Mechanical Advantage = 2)" },
+    { q: "ข้อใดอธิบายแรงลัพธ์ในกฎข้อที่ 2 ของนิวตันได้ถูกต้องที่สุด?", a: ["แรงที่ทำมุมมากที่สุด", "ผลรวมเวกเตอร์ของแรงทุกแรง", "แรงที่กระทำในช่วงเวลาสั้นๆ", "แรงที่ไม่มีทิศทาง"], correct: 1, exp: "ต้องรวมแรงทุกแรงแบบเวกเตอร์" },
+    { q: "โมเมนต์ของแรงคู่ควบที่มีแรง F กระทำห่างกัน d มีค่าเท่าใด?", a: ["F x d", "2Fd", "Fd/2", "0"], correct: 0, exp: "คำนวณจาก แรงหนึ่งแรงคูณระยะห่างระหว่างแรง" },
+    { q: "ความเร่งสูงสุดของวัตถุที่สั่นแบบ SHM คือ?", a: ["A*omega", "A^2*omega", "A*omega^2", "A/omega"], correct: 2, exp: "จาก a = -A*omega^2*sin(omega*t)" },
+    { q: "งานของแรงเสียดทานจลน์จะมีค่าเป็นอย่างไร?", a: ["บวกเสมอ", "ลบเสมอ", "เป็นศูนย์", "ขึ้นกับตำแหน่ง"], correct: 1, exp: "แรงเสียดทานต้านการเคลื่อนที่เสมอ งานจึงเป็นลบ" },
+    { q: "เมื่อห่างจากโลกเป็น 2 เท่าจากจุดศูนย์กลาง ค่า g จะเป็นเท่าใด?", a: ["g/2", "g/4", "2g", "4g"], correct: 1, exp: "g แปรผกผันกับระยะห่างยกกำลังสอง" },
+    { q: "พลังงานกลรวมในระบบสปริงไร้แรงเสียดทานเป็นอย่างไร?", a: ["คงที่", "เพิ่มขึ้น", "ลดลง", "แปรผันตามเวลา"], correct: 0, exp: "ไม่มีแรงไม่อนุรักษ์มาทำงาน" },
+    { q: "เครื่องเคาะสัญญาณเวลา วัดค่าใดได้โดยตรง?", a: ["ความเร็วเฉลี่ย", "แรงลัพธ์", "มวล", "ความเร่งสูงสุด"], correct: 0, exp: "วัดระยะทางในเวลาที่กำหนดไว้" },
+    { q: "แรงตึงเชือกในระบบรอกมวลแขวนและพื้นราบคือ?", a: ["m1m2/(m1+m2)g", "m1+m2/m1*g", "m1g", "m2g"], correct: 0, exp: "ใช้การตั้งสมการ F=ma" },
+    { q: "ถ้าความเร่ง a(t) = 3t^2 ความเร็วที่ t=2 วินาทีคือ?", a: ["4", "8", "12", "16"], correct: 1, exp: "อินทิเกรต 3t^2 ได้ t^3" },
+    { q: "ข้อใดคือแรงลอยตัวของอาร์คิมีดีส?", a: ["น้ำหนักวัตถุ", "น้ำหนักน้ำที่ถูกแทนที่", "แรงเสียดทานน้ำ", "แรงตึงผิว"], correct: 1, exp: "เป็นหลักการทางฟิสิกส์พื้นฐาน" },
+    { q: "การกระจัดรวมของวัตถุที่เดินไปกลับจุดเริ่มต้นคือ?", a: ["ระยะทางรวม", "0", "ระยะทางหารสอง", "ไม่นิยาม"], correct: 1, exp: "จุดเริ่มต้นและจุดสุดท้ายอยู่ที่เดียวกัน" },
+    { q: "ความสัมพันธ์แรงต้านอากาศ F = -kv สัมพันธ์กับความเร่งอย่างไร?", a: ["คงที่", "แปรผันตามความเร็ว", "เป็นศูนย์", "แปรผันตามมวล"], correct: 1, exp: "แรงต้านเปลี่ยนความเร่งให้ลดลงเมื่อความเร็วเพิ่ม" },
+    { q: "โมเมนต์จะน้อยที่สุดเมื่อแรงทำมุมอย่างไรกับคาน?", a: ["90 องศา", "0 องศา (ขนาน)", "45 องศา", "30 องศา"], correct: 1, exp: "แรงที่ขนานกับคานไม่มีระยะตั้งฉาก" },
+    { q: "ข้อใดไม่ใช่แรงไม่อนุรักษ์?", a: ["แรงเสียดทาน", "แรงต้านอากาศ", "แรงโน้มถ่วง", "แรงลาก"], correct: 2, exp: "แรงโน้มถ่วงเป็นแรงอนุรักษ์" },
+    { q: "ทฤษฎีงาน-พลังงานจลน์ กล่าวว่า W = ?", a: ["Delta K", "Delta U", "m*a", "F*t"], correct: 0, exp: "งานเท่ากับพลังงานจลน์ที่เปลี่ยนไป" },
+    { q: "การเคลื่อนที่แบบวงกลมด้วยอัตราเร็วคงที่ ความเร่งสัมผัสคือ?", a: ["สูงสุด", "เท่ากับ g", "0", "ไม่แน่นอน"], correct: 2, exp: "ไม่มีการเปลี่ยนอัตราเร็วในแนวสัมผัส" },
+    { q: "ถ้าลิฟต์เร่งขึ้น แรงกดพื้นจะเป็น?", a: ["mg", "m(g+a)", "m(g-a)", "0"], correct: 1, exp: "แรง N จะมากกว่าน้ำหนักจริง" },
+    { q: "สนามไฟฟ้า E สัมพันธ์กับแรง F และประจุ q อย่างไร?", a: ["F=qE", "E=Fq", "q=FE", "E=F/q"], correct: 0, exp: "นิยามของแรงไฟฟ้า" },
+    { q: "คาบการแกว่งลูกตุ้ม T แปรผันตาม?", a: ["มวล", "มุม", "รากที่สองของความยาว", "ความเร็ว"], correct: 2, exp: "T = 2pi*sqrt(L/g)" },
+    { q: "แรงดึงบนพื้นเอียงคือ?", a: ["mg sin(theta)", "mg cos(theta)", "mg tan(theta)", "mg"], correct: 0, exp: "แรงองค์ประกอบขนานพื้นเอียง" },
+    { q: "เมื่อวัตถุอยู่นิ่ง แรงลัพธ์คือ?", a: ["สูงสุด", "น้อยที่สุด", "0", "mg"], correct: 2, exp: "สมดุลสถิต" },
+    { q: "การคิดเชิงระบบ (System approach) มีประโยชน์อย่างไร?", a: ["แก้โจทย์ง่ายขึ้น", "ไม่ต้องเขียนรูป", "ลดเวลาจำสูตร", "ช่วยให้เข้าใจภาพรวมและแรงภายใน"], correct: 3, exp: "หัวใจของ Mastery Physics" },
+    { q: "ข้อใดสำคัญที่สุดในการแก้โจทย์ฟิสิกส์ระดับยาก?", a: ["เครื่องคิดเลข", "การวาด FBD", "การท่องจำโจทย์", "การเดา"], correct: 1, exp: "FBD คือจุดเริ่มต้นของการวิเคราะห์" }
+];
+
+function renderQuiz() {
+    const box = document.getElementById('quiz-box');
+    quizData.forEach((item, i) => {
+        box.innerHTML += `
+            <div class="question">
+                <p><strong>ข้อที่ ${i+1}:</strong> ${item.q}</p>
+                <div class="options">
+                    ${item.a.map((opt, j) => `<button onclick="check(this, ${j}, ${item.correct}, ${i})">${opt}</button>`).join('')}
+                </div>
+                <div class="hidden" id="exp${i}">คำอธิบาย: ${item.exp}</div>
+            </div>`;
+    });
+}
+function check(btn, ans, correct, id) {
+    const parent = btn.parentElement;
+    parent.querySelectorAll('button').forEach(b => b.disabled = true);
+    if(ans === correct) btn.classList.add('correct');
+    else btn.classList.add('wrong');
+    document.getElementById('exp' + id).style.display = 'block';
+}
+renderQuiz();
+</script>
+</body>
+</html>
