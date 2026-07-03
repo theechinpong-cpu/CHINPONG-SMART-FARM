@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Exam by พระจอมเกล้าติวเตอร์</title>
+    <style>
+        :root {
+            --primary: #003366;
+            --secondary: #ff6600;
+            --success: #28a745;
+            --danger: #dc3545;
+            --light: #f8f9fa;
+        }
+        body { font-family: 'Sarabun', sans-serif; background: #eceff1; color: #333; line-height: 1.6; padding: 20px; }
+        .container { max-width: 900px; margin: auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        .header { text-align: center; border-bottom: 3px solid var(--primary); margin-bottom: 30px; padding-bottom: 10px; }
+        .summary-box { background: var(--light); border-left: 5px solid var(--secondary); padding: 15px; margin-bottom: 30px; border-radius: 0 10px 10px 0; }
+        .question-container { background: #fff; border: 1px solid #ddd; padding: 20px; margin-bottom: 20px; border-radius: 10px; position: relative; transition: 0.3s; }
+        .question-container:hover { border-color: var(--primary); }
+        .lang-toggle { position: absolute; top: 10px; right: 10px; background: var(--primary); color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 12px; }
+        .clue-box { background: #fff3cd; color: #856404; padding: 10px; border-radius: 5px; margin: 10px 0; font-size: 14px; font-weight: bold; border: 1px dashed #ffeeba; }
+        .option { display: block; width: 100%; text-align: left; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; background: #fff; cursor: pointer; transition: 0.2s; }
+        .option:hover { background: #f0f7ff; }
+        .option.selected-correct { background: var(--success) !important; color: white; }
+        .option.selected-wrong { background: var(--danger) !important; color: white; }
+        .detail-box { display: none; margin-top: 15px; padding: 15px; background: #e3f2fd; border-radius: 8px; border-left: 5px solid #2196f3; font-size: 14px; }
+        .footer-btn { display: block; width: 100%; padding: 20px; background: var(--primary); color: white; border: none; border-radius: 10px; font-size: 18px; font-weight: bold; cursor: pointer; margin-top: 30px; }
+        .footer-btn:hover { background: #002244; }
+        .result-panel { display: none; margin-top: 30px; padding: 25px; background: var(--light); border-radius: 15px; text-align: center; }
+        .score-circle { width: 150px; height: 150px; line-height: 150px; border-radius: 50%; background: var(--primary); color: white; font-size: 40px; margin: 20px auto; }
+        .analysis-box { text-align: left; margin-top: 20px; padding: 15px; background: white; border-radius: 10px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1>วิทยาศาสตร์กายภาพ ม.5 (หน่วยที่ 1)</h1>
+        <p>Expert Interactive Quiz System v.1.0</p>
+    </div>
+
+    <div class="summary-box">
+        <strong>📌 เทคนิคการคิดเชิงระบบ:</strong> การทำข้อสอบฟิสิกส์ให้จำลองภาพในหัว (Mental Model) ก่อนเสมอ แยกให้ออกว่าวัตถุกำลัง "คงที่" หรือ "กำลังเปลี่ยน" เพื่อเลือกกฎของนิวตันให้ถูกต้อง
+    </div>
+
+    <div id="quiz-wrapper"></div>
+
+    <button class="footer-btn" onclick="showFinalResults()">สรุปคะแนนและวิเคราะห์ผล</button>
+
+    <div id="result-panel" class="result-panel">
+        <h2>วิเคราะห์ผลการทดสอบ</h2>
+        <div class="score-circle" id="score-display">0/25</div>
+        <div id="analysis-content" class="analysis-box"></div>
+        <p>ระบบได้จำลองการส่งผลคะแนนไปที่: <strong>thee.chinpong@hmail.com</strong> เรียบร้อยแล้ว</p>
+        <button class="footer-btn" onclick="location.reload()">ทำข้อสอบอีกครั้ง</button>
+    </div>
+
+    <p style="text-align: center; color: #666; margin-top: 20px;">เขียนโดย พระจอมเกล้าติวเตอร์</p>
+</div>
+
+<script>
+    const questions = [
+        {
+            q_th: "การกระจัดหมายถึงอะไร?",
+            q_en: "What is displacement?",
+            a_th: ["ระยะทางที่วัตถุเคลื่อนที่ได้จริงตามเส้นทาง", "ระยะห่างจากจุดเริ่มต้นถึงจุดสุดท้ายในแนวเส้นตรง", "อัตราการเปลี่ยนแปลงตำแหน่งต่อเวลา", "ความเร็ว ณ จุดใดจุดหนึ่ง"],
+            a_en: ["Actual distance traveled along the path", "Shortest straight-line distance from start to end", "Rate of change of position per time", "Instantaneous velocity"],
+            correct: 1,
+            th: "คำใบ้: นึกถึงการลากเส้นตรงบนแผนที่จาก A ไป B",
+            en: "Hint: Think of drawing a straight line on a map from A to B.",
+            detail: "การกระจัดเป็นเวกเตอร์ วัดจากจุดเริ่มต้นถึงจุดสุดท้ายในแนวเส้นตรงเท่านั้น / Displacement is a vector, measuring only the straight line from start to end.",
+            cat: "ปริมาณการเคลื่อนที่"
+        },
+        {
+            q_th: "ข้อใดเป็นปริมาณเวกเตอร์ทั้งหมด?",
+            q_en: "Which of these are all vector quantities?",
+            a_th: ["ระยะทาง, อัตราเร็ว", "การกระจัด, ความเร็ว, แรง", "มวล, เวลา, ระยะทาง", "พลังงาน, อุณหภูมิ"],
+            a_en: ["Distance, Speed", "Displacement, Velocity, Force", "Mass, Time, Distance", "Energy, Temperature"],
+            correct: 1,
+            th: "คำใบ้: ปริมาณที่ต้องบอกทั้ง 'ขนาด' และ 'ทิศทาง'",
+            en: "Hint: Quantities that require both 'magnitude' and 'direction'.",
+            detail: "เวกเตอร์ต้องมีทิศทาง เช่น แรงต้องรู้ว่าผลักไปทางไหน / Vectors must have direction, e.g., Force needs a direction.",
+            cat: "ปริมาณการเคลื่อนที่"
+        },
+        {
+            q_th: "นายกอเดินไปทางทิศเหนือ 3 เมตร แล้วเดินต่อไปทางทิศตะวันออก 4 เมตร ระยะทางและการกระจัดเป็นเท่าใด?",
+            q_en: "A man walks 3m North then 4m East. What are the distance and displacement?",
+            a_th: ["7ม. และ 7ม.", "7ม. และ 5ม.", "5ม. และ 7ม.", "12ม. และ 5ม."],
+            a_en: ["7m and 7m", "7m and 5m", "5m and 7m", "12m and 5m"],
+            correct: 1,
+            th: "คำใบ้: ระยะทางจับบวกกันตรงๆ การกระจัดใช้พิทาโกรัส",
+            en: "Hint: Distance is direct sum. Displacement uses Pythagoras theorem.",
+            detail: "Distance = 3+4=7m, Displacement = root(3^2 + 4^2) = 5m.",
+            cat: "การคำนวณพื้นฐาน"
+        },
+        {
+            q_th: "เมื่อวัตถุเคลื่อนที่ด้วยความเร็วคงที่ ความเร่งจะมีค่าเท่าใด?",
+            q_en: "If an object moves at a constant velocity, what is its acceleration?",
+            a_th: ["มีค่าสูงสุด", "มีค่าเพิ่มขึ้นเรื่อยๆ", "เป็นศูนย์", "เท่ากับแรงดึงดูดโลก"],
+            a_en: ["Maximum", "Increasing", "Zero", "Equal to g"],
+            correct: 2,
+            th: "คำใบ้: ความเร่งคือ 'การเปลี่ยนแปลง' ของความเร็ว",
+            en: "Hint: Acceleration is the 'change' in velocity.",
+            detail: "ความเร็วคงที่ แปลว่าไม่มีการเปลี่ยนแปลงความเร็ว ความเร่งจึงเป็น 0 / Constant velocity means no change, so a = 0.",
+            cat: "ปริมาณการเคลื่อนที่"
+        },
+        {
+            q_th: "กฎข้อที่ 1 ของนิวตันเรียกอีกอย่างว่าอะไร?",
+            q_en: "What is Newton's First Law also known as?",
+            a_th: ["กฎของแรง", "กฎของแรงกิริยา-ปฏิกิริยา", "กฎความเฉื่อย", "กฎการสะท้อน"],
+            a_en: ["Law of Force", "Law of Action-Reaction", "Law of Inertia", "Law of Reflection"],
+            correct: 2,
+            th: "คำใบ้: การที่วัตถุพยายามจะอยู่ที่เดิมหรือเคลื่อนที่เหมือนเดิม",
+            en: "Hint: The tendency of an object to resist changes in its motion.",
+            detail: "กฎความเฉื่อยคือสภาพที่วัตถุต่อต้านการเปลี่ยนแปลงการเคลื่อนที่ / Inertia is the resistance to change in motion.",
+            cat: "กฎของนิวตัน"
+        },
+        {
+            q_th: "ถ้าแรงลัพธ์ที่กระทำต่อวัตถุไม่เป็นศูนย์ วัตถุจะเคลื่อนที่อย่างไร?",
+            q_en: "If the net force on an object is not zero, how will it move?",
+            a_th: ["หยุดนิ่ง", "เคลื่อนที่ด้วยความเร็วคงที่", "เคลื่อนที่ด้วยความเร่ง", "เคลื่อนที่ถอยหลังเสมอ"],
+            a_en: ["At rest", "Constant velocity", "Accelerated motion", "Always backward"],
+            correct: 2,
+            th: "คำใบ้: เข้ากฎข้อที่ 2 F = ma",
+            en: "Hint: Applies Newton's 2nd Law, F = ma.",
+            detail: "แรงลัพธ์ทำให้เกิดความเร่งตามกฎข้อที่ 2 / Net force causes acceleration according to the 2nd Law.",
+            cat: "กฎของนิวตัน"
+        },
+        {
+            q_th: "หน่วยของแรงในระบบ SI คืออะไร?",
+            q_en: "What is the SI unit of Force?",
+            a_th: ["กิโลกรัม", "เมตรต่อวินาที", "นิวตัน", "จูล"],
+            a_en: ["Kilogram", "Meter per second", "Newton", "Joule"],
+            correct: 2,
+            th: "คำใบ้: ตั้งชื่อตามนักวิทยาศาสตร์ที่ถูกลูกแอปเปิ้ลตกใส่หัว",
+            en: "Hint: Named after the scientist who had an apple fall on his head.",
+            detail: "นิวตัน (N) คือหน่วยมาตรฐานของแรง / Newton (N) is the standard unit of Force.",
+            cat: "ปริมาณการเคลื่อนที่"
+        },
+        {
+            q_th: "แรงกิริยาและแรงปฏิกิริยา มีขนาดและทิศทางอย่างไร?",
+            q_en: "Action and Reaction forces have what magnitude and direction?",
+            a_th: ["ขนาดเท่ากัน ทิศทางเดียวกัน", "ขนาดต่างกัน ทิศทางตรงข้าม", "ขนาดเท่ากัน ทิศทางตรงข้าม", "ขนาดเท่ากัน และต้องหยุดนิ่ง"],
+            a_en: ["Equal magnitude, Same direction", "Different magnitude, Opposite direction", "Equal magnitude, Opposite direction", "Equal magnitude, Must be at rest"],
+            correct: 2,
+            th: "คำใบ้: กฎข้อที่ 3 ของนิวตัน",
+            en: "Hint: Newton's 3rd Law.",
+            detail: "Action = Reaction แต่กระทำต่อวัตถุคนละก้อน / Action = Reaction but act on different objects.",
+            cat: "กฎของนิวตัน"
+        },
+        {
+            q_th: "ทำไมเมื่อรถหยุดกะทันหัน ตัวเราจึงพุ่งไปข้างหน้า?",
+            q_en: "Why do we lean forward when a car stops suddenly?",
+            a_th: ["เพราะมีแรงผลักเรา", "เพราะกฎความเฉื่อย", "เพราะแรงเสียดทานมีค่ามาก", "เพราะความดันอากาศ"],
+            a_en: ["Due to pushing force", "Due to Law of Inertia", "High friction", "Air pressure"],
+            correct: 1,
+            th: "คำใบ้: วัตถุพยายามรักษาสภาพการเคลื่อนที่เดิมไว้",
+            en: "Hint: Objects try to maintain their state of motion.",
+            detail: "ร่างกายเราเคลื่อนที่มาพร้อมรถ เมื่อรถหยุด ร่างกายยังอยากเคลื่อนที่ต่อ / Body wants to keep moving forward due to inertia.",
+            cat: "กฎของนิวตัน"
+        },
+        {
+            q_th: "ข้อใดคือลักษณะของความเร่งเนื่องจากแรงโน้มถ่วงของโลก (g)?",
+            q_en: "What is the characteristic of gravitational acceleration (g)?",
+            a_th: ["มีค่าเท่ากันทุกที่ในจักรวาล", "มีทิศพุ่งออกจากศูนย์กลางโลก", "มีทิศพุ่งเข้าหาศูนย์กลางโลกเสมอ", "แปรผันตามมวลของวัตถุที่ตก"],
+            a_en: ["Same everywhere in universe", "Pointing away from Earth's center", "Always pointing towards Earth's center", "Depends on the mass of the falling object"],
+            correct: 2,
+            th: "คำใบ้: โลกดึงดูดทุกอย่างลงสู่...",
+            en: "Hint: Earth attracts everything down to...",
+            detail: "g มีทิศลงเข้าสู่จุดศูนย์กลางโลกเสมอ ประมาณ 9.8 หรือ 10 m/s^2 / g is always directed towards Earth's center.",
+            cat: "แรงพื้นฐาน"
+        },
+        {
+            q_th: "ปล่อยลูกบอลจากดาดฟ้า ความเร็วของลูกบอลขณะตกจะเป็นอย่างไร?",
+            q_en: "Drop a ball from a roof, what happens to its velocity as it falls?",
+            a_th: ["ลดลง", "คงที่", "เพิ่มขึ้นอย่างสม่ำเสมอ", "เป็นศูนย์จนกว่าจะถึงพื้น"],
+            a_en: ["Decreasing", "Constant", "Increasing uniformly", "Zero until it hits ground"],
+            correct: 2,
+            th: "คำใบ้: เพราะมีความเร่ง g มากระทำ",
+            en: "Hint: Because acceleration 'g' is acting on it.",
+            detail: "ความเร่งทำให้ความเร็วเพิ่มขึ้นวินาทีละประมาณ 10 m/s / Acceleration causes velocity to increase by ~10 m/s every second.",
+            cat: "การคำนวณพื้นฐาน"
+        },
+        {
+            q_th: "แรงเสียดทานมีทิศทางอย่างไร?",
+            q_en: "What is the direction of friction?",
+            a_th: ["ทิศเดียวกับการเคลื่อนที่", "ทิศตรงข้ามกับการเคลื่อนที่", "ทิศตั้งฉากกับการเคลื่อนที่", "ทิศพุ่งลงดินเสมอ"],
+            a_en: ["Same as motion", "Opposite to motion", "Perpendicular to motion", "Downwards"],
+            correct: 1,
+            th: "คำใบ้: แรงที่ 'ต้าน' การเคลื่อนที่",
+            en: "Hint: The force that 'resists' motion.",
+            detail: "แรงเสียดทานจะต้านการสไลด์ของผิวสัมผัสเสมอ / Friction always opposes the sliding of surfaces.",
+            cat: "แรงพื้นฐาน"
+        },
+        {
+            q_th: "วัตถุ A มวล 2kg วัตถุ B มวล 10kg ตกจากที่สูงเท่ากัน (ไม่คิดแรงต้านอากาศ) ข้อใดถูก?",
+            q_en: "Object A (2kg) and B (10kg) fall from the same height (no air resistance), which is true?",
+            a_th: ["B ถึงพื้นก่อนเพราะหนักกว่า", "A ถึงพื้นก่อน", "ทั้งคู่ถึงพื้นพร้อมกัน", "A เคลื่อนที่ด้วยความเร่งมากกว่า"],
+            a_en: ["B hits first because it's heavier", "A hits first", "Both hit at the same time", "A has more acceleration"],
+            correct: 2,
+            th: "คำใบ้: กาลิเลโอเคยทดลองที่หอเอนเมืองปิซ่า",
+            en: "Hint: Galileo's experiment at the Leaning Tower of Pisa.",
+            detail: "ในสุญญากาศ วัตถุทุกชนิดตกด้วยความเร่ง g เท่ากัน ไม่เกี่ยวกับมวล / In vacuum, all objects fall with same 'g'.",
+            cat: "การคำนวณพื้นฐาน"
+        },
+        {
+            q_th: "การเคลื่อนที่แบบโพรเจกไทล์ แนวราบมีความเร่งเท่าใด?",
+            q_en: "In projectile motion, what is the horizontal acceleration?",
+            a_th: ["9.8 m/s^2", "เท่ากับแนวราบ", "เป็นศูนย์", "ขึ้นอยู่กับมุมที่ยิง"],
+            a_en: ["9.8 m/s^2", "Same as vertical", "Zero", "Depends on the launch angle"],
+            correct: 2,
+            th: "คำใบ้: แนวราบไม่มีแรงใดมากระทำ (ไม่คิดแรงต้านอากาศ)",
+            en: "Hint: No force acts horizontally (ignoring air resistance).",
+            detail: "แนวดิ่งมี g แต่แนวราบไม่มีแรง ความเร่งแนวราบจึงเป็น 0 / Vertical has g, horizontal has no force, so ax = 0.",
+            cat: "ลักษณะการเคลื่อนที่"
+        },
+        {
+            q_th: "การเตะฟุตบอลให้โด่งไปในอากาศ เป็นการเคลื่อนที่แบบใด?",
+            q_en: "Kicking a football into the air is what type of motion?",
+            a_th: ["แนวเส้นตรง", "โพรเจกไทล์", "วงกลม", "ฮาร์มอนิก"],
+            a_en: ["Linear", "Projectile", "Circular", "Harmonic"],
+            correct: 1,
+            th: "คำใบ้: วิถีโค้งพาราโบลา",
+            en: "Hint: Parabolic path.",
+            detail: "การเคลื่อนที่วิถีโค้งภายใต้แรงโน้มถ่วงคือโพรเจกไทล์ / Curved motion under gravity is projectile.",
+            cat: "ลักษณะการเคลื่อนที่"
+        },
+        {
+            q_th: "ข้อใดคือตัวอย่างของการเคลื่อนที่แบบฮาร์มอนิกอย่างง่าย?",
+            q_en: "Which is an example of Simple Harmonic Motion?",
+            a_th: ["การโยนส้มขึ้นตรงๆ", "การแกว่งของชิงช้า", "รถเลี้ยวโค้ง", "พัดลมหมุน"],
+            a_en: ["Tossing an orange up", "Swing of a swing", "Car turning a corner", "Fan spinning"],
+            correct: 1,
+            th: "คำใบ้: การเคลื่อนที่กลับไปกลับมาซ้ำรอยเดิม",
+            en: "Hint: Back and forth motion over the same path.",
+            detail: "การแกว่งลูกตุ้มหรือชิงช้าเป็นการเคลื่อนที่แบบ SHM / Swing or pendulum is SHM.",
+            cat: "ลักษณะการเคลื่อนที่"
+        },
+        {
+            q_th: "แรงลัพธ์หมายถึงอะไร?",
+            q_en: "What is net force?",
+            a_th: ["แรงที่มากที่สุดแรงเดียว", "แรงเสียดทานลบด้วยแรงผลัก", "ผลรวมแบบเวกเตอร์ของแรงทั้งหมด", "แรงดึงดูดของโลก"],
+            a_en: ["The single largest force", "Friction minus push", "Vector sum of all forces", "Earth's gravity"],
+            correct: 2,
+            th: "คำใบ้: การรวมแรงทุกแรงที่กระทำต่อวัตถุ",
+            en: "Hint: Combining all forces acting on an object.",
+            detail: "แรงลัพธ์คือการเอาทุกแรงมารวมกันแบบเวกเตอร์ / Net force is the vector sum of all forces.",
+            cat: "แรงพื้นฐาน"
+        },
+        {
+            q_th: "ถ้ามวลของวัตถุเพิ่มขึ้น แต่แรงเท่าเดิม ความเร่งจะเป็นอย่างไร?",
+            q_en: "If mass increases but force remains same, what happens to acceleration?",
+            a_th: ["เพิ่มขึ้น", "ลดลง", "เท่าเดิม", "เป็นศูนย์"],
+            a_en: ["Increases", "Decreases", "Same", "Zero"],
+            correct: 1,
+            th: "คำใบ้: a = F/m (ตัวหารมากขึ้น ผลลัพธ์จะเป็นอย่างไร?)",
+            en: "Hint: a = F/m (If divisor increases, what happens to the result?)",
+            detail: "ความเร่งแปรผกผันกับมวล / Acceleration is inversely proportional to mass.",
+            cat: "กฎของนิวตัน"
+        },
+        {
+            q_th: "การปั่นจักรยานเข้าโค้ง ต้องมีแรงใดมาเกี่ยวข้องเป็นสำคัญ?",
+            q_en: "Biking through a curve involves which essential force?",
+            a_th: ["แรงดีด", "แรงต้านอากาศ", "แรงเข้าสู่ศูนย์กลาง", "แรงผลักไปข้างหน้า"],
+            a_en: ["Bounce force", "Air resistance", "Centripetal force", "Forward thrust"],
+            correct: 2,
+            th: "คำใบ้: แรงที่ดึงวัตถุไว้ไม่ให้หลุดออกนอกโค้ง",
+            en: "Hint: The force that keeps an object from flying out of the curve.",
+            detail: "การเคลื่อนที่แนวโค้งหรือวงกลมต้องมีแรงเข้าสู่ศูนย์กลาง / Circular motion needs centripetal force.",
+            cat: "ลักษณะการเคลื่อนที่"
+        },
+        {
+            q_th: "กราฟระหว่างการกระจัดกับเวลา (s-t) ความชันหมายถึงอะไร?",
+            q_en: "In a displacement-time graph (s-t), what does the slope represent?",
+            a_th: ["ความเร่ง", "ความเร็ว", "ระยะทาง", "แรง"],
+            a_en: ["Acceleration", "Velocity", "Distance", "Force"],
+            correct: 1,
+            th: "คำใบ้: Slope = delta S / delta t",
+            en: "Hint: Slope = delta S / delta t.",
+            detail: "ความชันของกราฟ s-t คือความเร็ว / Slope of s-t graph is velocity.",
+            cat: "การวิเคราะห์กราฟ"
+        },
+        {
+            q_th: "พื้นที่ใต้กราฟของความเร็วกับเวลา (v-t) หมายถึงอะไร?",
+            q_en: "What does the area under a velocity-time graph (v-t) represent?",
+            a_th: ["ความชัน", "ความเร่ง", "การกระจัด", "เวลา"],
+            a_en: ["Slope", "Acceleration", "Displacement", "Time"],
+            correct: 2,
+            th: "คำใบ้: พื้นที่ = v x t",
+            en: "Hint: Area = v x t.",
+            detail: "พื้นที่ใต้กราฟ v-t คือการกระจัด / Area under v-t graph is displacement.",
+            cat: "การวิเคราะห์กราฟ"
+        },
+        {
+            q_th: "ข้อใดคือการเคลื่อนที่ที่มีระยะทางและการกระจัดเท่ากัน?",
+            q_en: "In which case are distance and displacement equal?",
+            a_th: ["เดินเป็นวงกลม 1 รอบ", "เดินเป็นเส้นตรงทิศทางเดียว", "เดินไปแล้วเดินกลับ", "โยนวัตถุขึ้นแล้วตกกลับมาที่เดิม"],
+            a_en: ["Walk 1 full circle", "Walk in a single straight line", "Walk forward and back", "Toss up and catch at same spot"],
+            correct: 1,
+            th: "คำใบ้: เส้นทางเดินต้องไม่โค้งและไม่ย้อนกลับ",
+            en: "Hint: Path must be straight and non-reversing.",
+            detail: "เมื่อเดินเส้นตรงทิศเดียว ระยะทางและการกระจัดจะมีค่าเท่ากัน / Straight line, one direction: distance = displacement.",
+            cat: "ปริมาณการเคลื่อนที่"
+        },
+        {
+            q_th: "เครื่องเคาะสัญญาณเวลาทำหน้าที่วัดอะไร?",
+            q_en: "What does a ticker tape timer measure?",
+            a_th: ["วัดแรงลัพธ์", "วัดมวล", "วัดอัตราเร็วและความเร่ง", "วัดทิศทางลม"],
+            a_en: ["Measure net force", "Measure mass", "Measure speed and acceleration", "Measure wind direction"],
+            correct: 2,
+            th: "คำใบ้: จุดบนกระดาษที่เกิดขึ้นตามเวลา",
+            en: "Hint: Dots on paper created over time.",
+            detail: "เครื่องเคาะสัญญาณใช้หาความเร็วและความเร่งจากการเว้นระยะจุด / It finds speed/acceleration from dot spacing.",
+            cat: "การเคลื่อนที่และเครื่องมือ"
+        },
+        {
+            q_th: "มวลและน้ำหนัก ต่างกันอย่างไร?",
+            q_en: "What is the difference between mass and weight?",
+            a_th: ["เหมือนกันทุกประการ", "มวลเปลี่ยนตามสถานที่ แต่น้ำหนักคงที่", "มวลคงที่ แต่น้ำหนักเปลี่ยนตามแรงโน้มถ่วง", "น้ำหนักเป็นสเกลาร์ มวลเป็นเวกเตอร์"],
+            a_en: ["Exactly the same", "Mass changes with location, weight is constant", "Mass is constant, weight changes with gravity", "Weight is scalar, mass is vector"],
+            correct: 2,
+            th: "คำใบ้: มวลคือเนื้อสาร น้ำหนักคือแรงดึงดูด (W=mg)",
+            en: "Hint: Mass is matter, Weight is gravity (W=mg).",
+            detail: "มวลคงที่เสมอ แต่น้ำหนักเปลี่ยนถ้าไปอยู่บนดวงจันทร์ / Mass stays same, weight changes on the Moon.",
+            cat: "แรงพื้นฐาน"
+        },
+        {
+            q_th: "เข็มขัดนิรภัยในรถยนต์ มีไว้เพื่อป้องกันอันตรายตามกฎข้อใด?",
+            q_en: "Seatbelts protect passengers based on which law?",
+            a_th: ["กฎข้อที่ 1 (ความเฉื่อย)", "กฎข้อที่ 2 (F=ma)", "กฎข้อที่ 3 (Action-Reaction)", "กฎของก๊าซ"],
+            a_en: ["1st Law (Inertia)", "2nd Law (F=ma)", "3rd Law (Action-Reaction)", "Gas Law"],
+            correct: 0,
+            th: "คำใบ้: ป้องกันร่างกายไม่ให้พุ่งไปข้างหน้าตามสภาพเดิม",
+            en: "Hint: Prevents the body from moving forward due to its previous state.",
+            detail: "เข็มขัดต้านความเฉื่อยของร่างกายไม่ให้พุ่งไปกระแทกหน้ารถ / Belts counteract inertia.",
+            cat: "กฎของนิวตัน"
+        }
+    ];
+
+    let userAnswers = new Array(25).fill(null);
+    let lang = new Array(25).fill('th');
+
+    function renderQuiz() {
+        const wrapper = document.getElementById('quiz-wrapper');
+        wrapper.innerHTML = '';
+        questions.forEach((q, index) => {
+            const container = document.createElement('div');
+            container.className = 'question-container';
+            container.id = `q-container-${index}`;
+
+            const qText = lang[index] === 'th' ? q.q_th : q.q_en;
+            const clueText = lang[index] === 'th' ? q.th : q.en;
+            const btnLabel = lang[index] === 'th' ? 'EN' : 'TH';
+
+            container.innerHTML = `
+                <button class="lang-toggle" onclick="toggleLang(${index})">${btnLabel}</button>
+                <h3>ข้อที่ ${index + 1}</h3>
+                <p><strong>${qText}</strong></p>
+                <div class="clue-box">${clueText}</div>
+                <div id="options-${index}"></div>
+                <div id="detail-${index}" class="detail-box">${q.detail}</div>
+            `;
+            wrapper.appendChild(container);
+            renderOptions(index);
+        });
+    }
+
+    function renderOptions(qIdx) {
+        const optionsDiv = document.getElementById(`options-${qIdx}`);
+        optionsDiv.innerHTML = '';
+        const opts = lang[qIdx] === 'th' ? questions[qIdx].a_th : questions[qIdx].a_en;
+
+        opts.forEach((opt, oIdx) => {
+            const btn = document.createElement('button');
+            btn.className = 'option';
+            btn.innerHTML = opt;
+            btn.onclick = () => selectOption(qIdx, oIdx);
+            
+            if (userAnswers[qIdx] !== null) {
+                btn.disabled = true;
+                if (oIdx === questions[qIdx].correct) {
+                    btn.classList.add('selected-correct');
+                } else if (oIdx === userAnswers[qIdx]) {
+                    btn.classList.add('selected-wrong');
+                }
+            }
+            optionsDiv.appendChild(btn);
+        });
+
+        if (userAnswers[qIdx] !== null) {
+            document.getElementById(`detail-${qIdx}`).style.display = 'block';
+        }
+    }
+
+    function toggleLang(index) {
+        lang[index] = lang[index] === 'th' ? 'en' : 'th';
+        const qText = lang[index] === 'th' ? questions[index].q_th : questions[index].q_en;
+        const clueText = lang[index] === 'th' ? questions[index].th : questions[index].en;
+        const btnLabel = lang[index] === 'th' ? 'EN' : 'TH';
+
+        const container = document.getElementById(`q-container-${index}`);
+        container.querySelector('p strong').innerText = qText;
+        container.querySelector('.clue-box').innerText = clueText;
+        container.querySelector('.lang-toggle').innerText = btnLabel;
+        renderOptions(index);
+    }
+
+    function selectOption(qIdx, oIdx) {
+        if (userAnswers[qIdx] !== null) return;
+        userAnswers[qIdx] = oIdx;
+        renderOptions(qIdx);
+    }
+
+    function showFinalResults() {
+        let score = 0;
+        let analysis = {};
+        
+        // Check if all answered
+        if (userAnswers.includes(null)) {
+            alert("กรุณาทำข้อสอบให้ครบทุกข้อก่อนสรุปผลครับ!");
+            return;
+        }
+
+        questions.forEach((q, i) => {
+            if (!analysis[q.cat]) analysis[q.cat] = { score: 0, total: 0 };
+            analysis[q.cat].total++;
+            if (userAnswers[i] === q.correct) {
+                score++;
+                analysis[q.cat].score++;
+            }
+        });
+
+        document.getElementById('quiz-wrapper').style.display = 'none';
+        document.querySelector('.footer-btn').style.display = 'none';
+        document.getElementById('result-panel').style.display = 'block';
+        document.getElementById('score-display').innerText = `${score}/25`;
+
+        let analysisHtml = '<ul>';
+        for (let cat in analysis) {
+            let p = (analysis[cat].score / analysis[cat].total) * 100;
+            analysisHtml += `<li><strong>${cat}:</strong> ได้ ${analysis[cat].score}/${analysis[cat].total} (${p.toFixed(0)}%)</li>`;
+        }
+        analysisHtml += '</ul>';
+        document.getElementById('analysis-content').innerHTML = analysisHtml;
+
+        alert(`ระบบจำลอง: ส่งผลคะแนน ${score}/25 ไปยัง thee.chinpong@hmail.com เรียบร้อยแล้ว!`);
+    }
+
+    renderQuiz();
+</script>
+
+</body>
+</html>
