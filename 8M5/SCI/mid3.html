@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <title>Advanced Physics Quiz: Unit 1 (Mastery Level)</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f0f2f5; padding: 20px; }
+        .container { max-width: 900px; margin: auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .question-container { border-bottom: 2px solid #e1e4e8; padding: 20px 0; position: relative; }
+        .lang-toggle { position: absolute; top: 10px; right: 0; cursor: pointer; background: #2563eb; color: white; border: none; padding: 5px 10px; border-radius: 5px; font-size: 12px; }
+        .option { display: block; width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #cbd5e1; border-radius: 8px; cursor: pointer; text-align: left; background: #f8fafc; transition: 0.2s; }
+        .option:hover { background: #e2e8f0; }
+        .correct { background: #dcfce7 !important; border-color: #22c55e !important; color: #166534; }
+        .wrong { background: #fee2e2 !important; border-color: #ef4444 !important; color: #991b1b; }
+        .detail { display: none; margin-top: 10px; padding: 12px; background: #eff6ff; border-left: 4px solid #3b82f6; font-size: 0.9em; }
+        .clue { font-style: italic; color: #475569; font-size: 0.85em; margin: 5px 0; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>ข้อสอบฟิสิกส์ ม.5 ชุดที่ 3 (ระดับมาสเตอร์)</h1>
+    <div id="quiz-area"></div>
+    <button onclick="submitQuiz()" style="width:100%; padding:15px; background:#1e293b; color:white; border:none; border-radius:8px; font-size:16px; margin-top:20px;">สรุปคะแนนและวิเคราะห์ผล</button>
+</div>
+
+<script>
+const data = [
+    { q_th: "วัตถุสองก้อน มวล m1 และ m2 เชื่อมด้วยเชือกเบา ลากด้วยแรง F ความเร่งของระบบคือ?", q_en: "Two masses m1 and m2 connected by string, pulled by force F. System acceleration?", a_th: ["F/(m1-m2)", "F/(m1+m2)", "F/m1", "F/m2"], a_en: ["F/(m1-m2)", "F/(m1+m2)", "F/m1", "F/m2"], correct: 1, th: "คำใบ้: มองเป็นวัตถุก้อนเดียวที่มีมวลรวม", en: "Hint: View as a single mass system.", detail: "ตามกฎข้อ 2: F_net = m_total * a" },
+    { q_th: "หากพื้นมีสัมประสิทธิ์ความเสียดทาน μ ระบบมวลข้างต้นจะมีความเร่งเท่าใด?", q_en: "If friction coefficient is μ, what is the system acceleration?", a_th: ["(F - μ(m1+m2)g)/(m1+m2)", "F/(m1+m2)", "(F + μ(m1+m2)g)/(m1+m2)", "0"], a_en: ["(F - μ(m1+m2)g)/(m1+m2)", "F/(m1+m2)", "(F + μ(m1+m2)g)/(m1+m2)", "0"], correct: 0, th: "คำใบ้: แรงเสียดทานต้องหักออกจากแรงดึง", en: "Hint: Friction must be subtracted from pulling force.", detail: "a = (F - f) / m_total" },
+    { q_th: "รอกเดี่ยวตายตัวใช้เพื่อจุดประสงค์ใด?", q_en: "What is the purpose of a fixed pulley?", a_th: ["ผ่อนแรง", "เปลี่ยนทิศทางแรง", "เพิ่มความเร่ง", "สะสมพลังงาน"], a_en: ["Reduce force", "Change force direction", "Increase acceleration", "Store energy"], correct: 1, th: "คำใบ้: ไม่ได้ช่วยลดแรง แต่ช่วยให้ดึงสะดวกขึ้น", en: "Hint: Doesn't reduce force, but aids convenience.", detail: "รอกเดี่ยวตายตัวมีข้อได้เปรียบเชิงกลเท่ากับ 1" },
+    { q_th: "ลูกตุ้มในลิฟต์ที่กำลังเร่งขึ้น ความตึงเชือก T จะเป็นอย่างไร?", q_en: "Pendulum in an accelerating elevator, Tension T?", a_th: ["T = mg", "T > mg", "T < mg", "T = 0"], a_en: ["T = mg", "T > mg", "T < mg", "T = 0"], correct: 1, th: "คำใบ้: ลิฟต์เร่งขึ้นเหมือนน้ำหนักเราเพิ่ม", en: "Hint: Accelerating up feels like weight increase.", detail: "T = m(g+a)" },
+    { q_th: "เมื่อวัตถุเคลื่อนที่เป็นวงกลม แรงเสียดทานทำหน้าที่เป็น?", q_en: "In circular motion, what does friction act as?", a_th: ["แรงเหวี่ยง", "แรงเข้าสู่ศูนย์กลาง", "แรงคู่ควบ", "งาน"], a_en: ["Centrifugal force", "Centripetal force", "Couple force", "Work"], correct: 1, th: "คำใบ้: แรงที่ดึงเข้าหาจุดศูนย์กลางวงกลม", en: "Hint: Force pulling toward circle center.", detail: "f = F_c = mv^2/r" },
+    { q_th: "กฎของเคปเลอร์ข้อที่ 2 บอกว่ารัศมีกวาดพื้นที่อย่างไร?", q_en: "Kepler's 2nd Law states?", a_th: ["พื้นที่เท่ากันในเวลาเท่ากัน", "ความเร็วคงที่เสมอ", "คาบแปรผันตามระยะทาง", "วงโคจรเป็นวงกลมสมบูรณ์"], a_en: ["Equal area in equal time", "Constant speed", "Period varies with distance", "Perfect circular orbit"], correct: 0, th: "คำใบ้: ดาวเคราะห์จะเคลื่อนที่เร็วขึ้นเมื่อใกล้ดวงอาทิตย์", en: "Hint: Planets move faster when closer to the Sun.", detail: "กวาดพื้นที่ได้เท่ากันในช่วงเวลาที่เท่ากัน" },
+    { q_th: "แรงนิวเคลียร์อย่างอ่อนเกี่ยวข้องกับอะไร?", q_en: "Weak nuclear force is involved in?", a_th: ["การยึดเหนี่ยวโปรตอน", "การสลายตัวของกัมมันตรังสี", "แรงโน้มถ่วง", "แรงแม่เหล็กไฟฟ้า"], a_en: ["Proton binding", "Radioactive decay", "Gravity", "Electromagnetism"], correct: 1, th: "คำใบ้: การเปลี่ยนชนิดของอนุภาค", en: "Hint: Particle type change.", detail: "เกี่ยวข้องกับกระบวนการสลายตัวเบต้า" },
+    { q_th: "ข้อใดไม่ใช่แรงพื้นฐาน?", q_en: "Which is NOT a fundamental force?", a_th: ["แรงแม่เหล็กไฟฟ้า", "แรงโน้มถ่วง", "แรงเสียดทาน", "แรงนิวเคลียร์อย่างเข้ม"], a_en: ["Electromagnetic", "Gravity", "Friction", "Strong Nuclear"], correct: 2, th: "คำใบ้: แรงนี้เกิดจากการสัมผัสกัน", en: "Hint: Force from contact.", detail: "แรงเสียดทานเป็นแรงปฏิกิริยาระหว่างโมเลกุล" },
+    { q_th: "วัตถุเคลื่อนที่ด้วยความเร่ง 0 แสดงว่า?", q_en: "Object with 0 acceleration means?", a_th: ["หยุดนิ่งเท่านั้น", "กำลังเลี้ยวโค้ง", "แรงลัพธ์เป็น 0", "มีความเร็วเพิ่มขึ้น"], a_en: ["Stationary only", "Turning", "Net force is 0", "Speed increasing"], correct: 2, th: "คำใบ้: กฎข้อที่ 1 ของนิวตัน", en: "Hint: Newton's 1st Law.", detail: "ΣF = ma = 0" },
+    { q_th: "พลังงานจลน์ขึ้นอยู่กับอะไร?", q_en: "Kinetic energy depends on?", a_th: ["มวลและความสูง", "มวลและความเร็ว", "แรงและความเร่ง", "เวลาและระยะทาง"], a_en: ["Mass and height", "Mass and velocity", "Force and acceleration", "Time and distance"], correct: 1, th: "คำใบ้: Ek = 1/2mv^2", en: "Hint: Ek = 1/2mv^2.", detail: "มวลและความเร็ว" },
+    { q_th: "ถ้ามวลเพิ่ม 2 เท่า และความเร็วลดเหลือครึ่งหนึ่ง Ek จะเป็นอย่างไร?", q_en: "Mass double, velocity half, Ek becomes?", a_th: ["เท่าเดิม", "ครึ่งหนึ่ง", "สองเท่า", "สี่เท่า"], a_en: ["Same", "Half", "Double", "Quadruple"], correct: 1, th: "คำใบ้: แทนค่า 2m และ (v/2)^2", en: "Hint: Substitute 2m and (v/2)^2.", detail: "Ek_new = 1/2 * (2m) * (v/2)^2 = 1/4 * mv^2" },
+    { q_th: "แรงดีดตัวของสปริงมีค่า 20N เมื่อดึงออก 0.1m ค่า k คือ?", q_en: "Spring force 20N, displacement 0.1m, k?", a_th: ["2 N/m", "20 N/m", "200 N/m", "2000 N/m"], a_en: ["2 N/m", "20 N/m", "200 N/m", "2000 N/m"], correct: 2, th: "คำใบ้: F = kx", en: "Hint: F = kx.", detail: "k = 20 / 0.1 = 200" },
+    { q_th: "งานในการดันกำแพงเป็นเท่าใด?", q_en: "Work done pushing a wall?", a_th: ["มหาศาล", "0", "เท่ากับแรงที่ออก", "เป็นลบ"], a_en: ["Huge", "0", "Equal to force", "Negative"], correct: 1, th: "คำใบ้: งาน = แรง x ระยะทาง (S=0)", en: "Hint: Work = Force x Distance (S=0).", detail: "ถ้าวัตถุไม่เคลื่อนที่ งานเป็น 0" },
+    { q_th: "การตกแบบเสรี คือการเคลื่อนที่ภายใต้แรงใดเท่านั้น?", q_en: "Free fall is motion under what force?", a_th: ["แรงเสียดทาน", "แรงโน้มถ่วง", "แรงแม่เหล็ก", "แรงดึงของเชือก"], a_en: ["Friction", "Gravity", "Magnetic", "Tension"], correct: 1, th: "คำใบ้: ไม่คิดแรงต้านอากาศ", en: "Hint: No air resistance.", detail: "ภายใต้แรงโน้มถ่วงเพียงอย่างเดียว" },
+    { q_th: "วัตถุเคลื่อนที่เป็นเส้นตรง กราฟ v-t เป็นเส้นตรงขนานแกน t หมายถึง?", q_en: "v-t graph is a horizontal line means?", a_th: ["หยุดนิ่ง", "ความเร็วคงที่", "ความเร่งคงที่", "ความเร่งเป็นลบ"], a_en: ["Stationary", "Constant velocity", "Constant acceleration", "Negative acceleration"], correct: 1, th: "คำใบ้: ความชันเป็น 0", en: "Hint: Slope is 0.", detail: "ความเร็วไม่เปลี่ยน = ความเร่ง 0" },
+    { q_th: "แรงที่ตั้งฉากกับผิวสัมผัสเรียกว่า?", q_en: "Force perpendicular to surface?", a_th: ["แรงดึง", "แรงลัพธ์", "แรงตั้งฉาก (Normal force)", "แรงเสียดทาน"], a_en: ["Tension", "Net force", "Normal force", "Friction"], correct: 2, th: "คำใบ้: ในสมการแรงเสียดทานคือ N", en: "Hint: N in friction equation.", detail: "Normal force" },
+    { q_th: "วัตถุ A และ B มีมวลเท่ากัน ตกจากความสูงเท่ากันในสุญญากาศ?", q_en: "A and B same mass, same height, vacuum?", a_th: ["ถึงพื้นพร้อมกัน", "A ถึงก่อน", "B ถึงก่อน", "ขึ้นกับรูปทรง"], a_en: ["Same time", "A first", "B first", "Depends on shape"], correct: 0, th: "คำใบ้: ทุกอย่างตกด้วยความเร่ง g", en: "Hint: All fall with acceleration g.", detail: "มวลและรูปร่างไม่มีผลในสุญญากาศ" },
+    { q_th: "แรงแม่เหล็กไฟฟ้าครอบคลุมเรื่องใด?", q_en: "Electromagnetism covers?", a_th: ["ประจุหยุดนิ่ง", "ประจุเคลื่อนที่", "แม่เหล็ก", "ถูกทุกข้อ"], a_en: ["Static charges", "Moving charges", "Magnets", "All correct"], correct: 3, th: "คำใบ้: แรงระหว่างประจุและแม่เหล็ก", en: "Hint: Force between charges and magnets.", detail: "รวมไฟฟ้าและแม่เหล็กเข้าด้วยกัน" },
+    { q_th: "เวกเตอร์ลัพธ์ของ 3N (ตะวันออก) และ 4N (เหนือ) คือ?", q_en: "Vector sum of 3N (East) and 4N (North)?", a_th: ["7 N", "1 N", "5 N", "12 N"], a_en: ["7 N", "1 N", "5 N", "12 N"], correct: 2, th: "คำใบ้: สามเหลี่ยมมุมฉาก 3-4-5", en: "Hint: 3-4-5 right triangle.", detail: "sqrt(3^2 + 4^2) = 5" },
+    { q_th: "มวล 10kg ชั่งน้ำหนักบนโลก (g=10) ได้กี่นิวตัน?", q_en: "10kg mass weight on Earth (g=10) is?", a_th: ["1 N", "10 N", "100 N", "1000 N"], a_en: ["1 N", "10 N", "100 N", "1000 N"], correct: 2, th: "คำใบ้: W = mg", en: "Hint: W = mg.", detail: "10 * 10 = 100" },
+    { q_th: "กฎของนิวตันใช้ไม่ได้กับอะไร?", q_en: "Newton's laws fail for?", a_th: ["วัตถุขนาดใหญ่", "ความเร็วใกล้แสง", "วัตถุที่หยุดนิ่ง", "แรงโน้มถ่วงต่ำ"], a_en: ["Large objects", "Speed near light", "Stationary objects", "Low gravity"], correct: 1, th: "คำใบ้: ต้องใช้ทฤษฎีสัมพัทธภาพ", en: "Hint: Relativity required.", detail: "ที่ความเร็วสูงมาก ต้องใช้สัมพัทธภาพของไอน์สไตน์" },
+    { q_th: "การเคลื่อนที่แบบวงกลม ความเร็วมีทิศทางอย่างไร?", q_en: "Direction of velocity in circular motion?", a_th: ["เข้าสู่ศูนย์กลาง", "ออกจากศูนย์กลาง", "สัมผัสเส้นโค้ง", "ไม่มีทิศ"], a_en: ["Toward center", "Away from center", "Tangent", "No direction"], correct: 2, th: "คำใบ้: ทิศของการเคลื่อนที่ในขณะนั้น", en: "Hint: Direction of motion at that instant.", detail: "ทิศสัมผัสวงกลมเสมอ" },
+    { q_th: "แรงที่ทำให้วัตถุเปลี่ยนความเร็วคือ?", q_en: "Force that changes velocity is?", a_th: ["แรงลัพธ์", "แรงเสียดทาน", "แรงดึงดูด", "ความเฉื่อย"], a_en: ["Net force", "Friction", "Gravity", "Inertia"], correct: 0, th: "คำใบ้: กฎข้อ 2", en: "Hint: Newton's 2nd Law.", detail: "แรงลัพธ์ทำให้เกิดความเร่ง" },
+    { q_th: "หน่วยของความเร่งในระบบ SI?", q_en: "SI unit of acceleration?", a_th: ["m/s", "m/s^2", "N/m", "kg/s"], a_en: ["m/s", "m/s^2", "N/m", "kg/s"], correct: 1, th: "คำใบ้: ความเร็วต่อวินาที", en: "Hint: Velocity per second.", detail: "เมตรต่อวินาทีกำลังสอง" },
+    { q_th: "พระจอมเกล้าติวเตอร์เชื่อในอะไร?", q_en: "What does Preachomklao Tutor believe in?", a_th: ["ท่องจำ", "กระบวนการคิดเชิงระบบ", "ไม่ต้องทำโจทย์", "โชคชะตา"], a_en: ["Memorization", "Systematic thought process", "Skip practice", "Fate"], correct: 1, th: "คำใบ้: ดูที่หัวข้อ System Instruction", en: "Hint: Check System Instruction.", detail: "การคิดเชิงระบบคือรากฐานของวิทยาศาสตร์" }
+];
+
+function render() {
+    const area = document.getElementById('quiz-area');
+    data.forEach((q, i) => {
+        area.innerHTML += `
+            <div class="question-container" id="q${i}">
+                <button class="lang-toggle" onclick="toggle(${i})">TH/EN</button>
+                <p><strong>ข้อที่ ${i+1}: </strong><span id="text${i}">${q.q_th}</span></p>
+                <div class="clue">Tip: <span id="clue${i}">${q.th}</span></div>
+                ${q.a_th.map((a, j) => `<button class="option" onclick="ans(${i}, ${j})">${a}</button>`).join('')}
+                <div class="detail" id="d${i}">เฉลย: ${q.detail}</div>
+            </div>`;
+    });
+}
+
+function ans(q, a) {
+    const cont = document.getElementById('q'+q);
+    const btns = cont.querySelectorAll('.option');
+    btns.forEach((b, idx) => {
+        b.disabled = true;
+        if(idx === data[q].correct) b.classList.add('correct');
+        else if(idx === a) b.classList.add('wrong');
+    });
+    document.getElementById('d'+q).style.display = 'block';
+}
+
+function toggle(i) {
+    const text = document.getElementById('text'+i);
+    const clue = document.getElementById('clue'+i);
+    text.innerText = text.innerText === data[i].q_th ? data[i].q_en : data[i].q_th;
+    clue.innerText = clue.innerText === data[i].th ? data[i].en : data[i].th;
+}
+
+function submitQuiz() {
+    alert("ระบบจำลอง: ได้รับการบันทึกคะแนนและส่งผลสรุปไปยัง thee.chinpong@hmail.com เรียบร้อยแล้วครับ");
+}
+
+render();
+</script>
+</body>
+</html>
