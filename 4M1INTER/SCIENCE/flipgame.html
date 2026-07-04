@@ -6,47 +6,50 @@
     <style>
         :root { --primary: #2c3e50; --accent: #3498db; --bg: #f4f7f6; }
         body { font-family: 'Kanit', sans-serif; background: var(--bg); display: flex; flex-direction: column; align-items: center; padding: 20px; }
-        .game-container { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; max-width: 800px; margin-top: 20px; }
+        .game-container { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; max-width: 700px; margin-top: 20px; }
         .card { width: 100px; height: 100px; perspective: 1000px; cursor: pointer; }
         .card-inner { position: relative; width: 100%; height: 100%; text-align: center; transition: transform 0.6s; transform-style: preserve-3d; }
         .card.flipped .card-inner { transform: rotateY(180deg); }
-        .card-front, .card-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; display: flex; align-items: center; justify-content: center; border-radius: 8px; font-weight: bold; }
+        .card-front, .card-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; display: flex; align-items: center; justify-content: center; border-radius: 8px; font-weight: bold; border: 2px solid var(--primary); }
         .card-front { background: var(--primary); color: white; }
         .card-back { background: var(--accent); color: white; transform: rotateY(180deg); padding: 5px; font-size: 0.9em; }
         .stats { font-size: 1.5em; color: var(--primary); margin-bottom: 10px; }
+        button { padding: 10px 20px; font-size: 1em; cursor: pointer; background: var(--accent); color: white; border: none; border-radius: 5px; }
     </style>
 </head>
 <body>
 
-    <div class="stats">เลเวล: <span id="level">1</span> | ธาตุที่เหลือ: <span id="remaining">30</span></div>
+    <div class="stats">เลเวล: <span id="level">1</span> | คู่ที่เหลือ: <span id="remaining">15</span></div>
     <div id="gameBoard" class="game-container"></div>
+    <br>
+    <button onclick="nextLevel()" id="nextBtn" style="display:none;">ไปเลเวลถัดไป</button>
 
     <script>
         const allElements = [
-   { s: "H", n: "Hydrogen" }, { s: "He", n: "Helium" }, { s: "Li", n: "Lithium" }, { s: "Be", n: "Beryllium" }, { s: "B", n: "Boron" },
-    { s: "C", n: "Carbon" }, { s: "N", n: "Nitrogen" }, { s: "O", n: "Oxygen" }, { s: "F", n: "Fluorine" }, { s: "Ne", n: "Neon" },
-    { s: "Na", n: "Sodium" }, { s: "Mg", n: "Magnesium" }, { s: "Al", n: "Aluminum" }, { s: "Si", n: "Silicon" }, { s: "P", n: "Phosphorus" },
-    { s: "S", n: "Sulfur" }, { s: "Cl", n: "Chlorine" }, { s: "Ar", n: "Argon" }, { s: "K", n: "Potassium" }, { s: "Ca", n: "Calcium" },
-    { s: "Sc", n: "Scandium" }, { s: "Ti", n: "Titanium" }, { s: "V", n: "Vanadium" }, { s: "Cr", n: "Chromium" }, { s: "Mn", n: "Manganese" },
-    { s: "Fe", n: "Iron" }, { s: "Co", n: "Cobalt" }, { s: "Ni", n: "Nickel" }, { s: "Cu", n: "Copper" }, { s: "Zn", n: "Zinc" },
-    { s: "Ga", n: "Gallium" }, { s: "Ge", n: "Germanium" }, { s: "As", n: "Arsenic" }, { s: "Se", n: "Selenium" }, { s: "Br", n: "Bromine" },
-    { s: "Kr", n: "Krypton" }, { s: "Rb", n: "Rubidium" }, { s: "Sr", n: "Strontium" }, { s: "Y", n: "Yttrium" }, { s: "Zr", n: "Zirconium" },
-    { s: "Nb", n: "Niobium" }, { s: "Mo", n: "Molybdenum" }, { s: "Tc", n: "Technetium" }, { s: "Ru", n: "Ruthenium" }, { s: "Rh", n: "Rhodium" },
-    { s: "Pd", n: "Palladium" }, { s: "Ag", n: "Silver" }, { s: "Cd", n: "Cadmium" }, { s: "In", n: "Indium" }, { s: "Sn", n: "Tin" },
-    { s: "Sb", n: "Antimony" }, { s: "Te", n: "Tellurium" }, { s: "I", n: "Iodine" }, { s: "Xe", n: "Xenon" }, { s: "Cs", n: "Cesium" },
-    { s: "Ba", n: "Barium" }, { s: "La", n: "Lanthanum" }, { s: "Ce", n: "Cerium" }, { s: "Pr", n: "Praseodymium" }, { s: "Nd", n: "Neodymium" },
-    { s: "Pm", n: "Promethium" }, { s: "Sm", n: "Samarium" }, { s: "Eu", n: "Europium" }, { s: "Gd", n: "Gadolinium" }, { s: "Tb", n: "Terbium" },
-    { s: "Dy", n: "Dysprosium" }, { s: "Ho", n: "Holmium" }, { s: "Er", n: "Erbium" }, { s: "Tm", n: "Thulium" }, { s: "Yb", n: "Ytterbium" },
-    { s: "Lu", n: "Lutetium" }, { s: "Hf", n: "Hafnium" }, { s: "Ta", n: "Tantalum" }, { s: "W", n: "Tungsten" }, { s: "Re", n: "Rhenium" },
-    { s: "Os", n: "Osmium" }, { s: "Ir", n: "Iridium" }, { s: "Pt", n: "Platinum" }, { s: "Au", n: "Gold" }, { s: "Hg", n: "Mercury" },
-    { s: "Tl", n: "Thallium" }, { s: "Pb", n: "Lead" }, { s: "Bi", n: "Bismuth" }, { s: "Po", n: "Polonium" }, { s: "At", n: "Astatine" },
-    { s: "Rn", n: "Radon" }, { s: "Fr", n: "Francium" }, { s: "Ra", n: "Radium" }, { s: "Ac", n: "Actinium" }, { s: "Th", n: "Thorium" },
-    { s: "Pa", n: "Protactinium" }, { s: "U", n: "Uranium" }, { s: "Np", n: "Neptunium" }, { s: "Pu", n: "Plutonium" }, { s: "Am", n: "Americium" },
-    { s: "Cm", n: "Curium" }, { s: "Bk", n: "Berkelium" }, { s: "Cf", n: "Californium" }, { s: "Es", n: "Einsteinium" }, { s: "Fm", n: "Fermium" },
-    { s: "Md", n: "Mendelevium" }, { s: "No", n: "Nobelium" }, { s: "Lr", n: "Lawrencium" }, { s: "Rf", n: "Rutherfordium" }, { s: "Db", n: "Dubnium" },
-    { s: "Sg", n: "Seaborgium" }, { s: "Bh", n: "Bohrium" }, { s: "Hs", n: "Hassium" }, { s: "Mt", n: "Meitnerium" }, { s: "Ds", n: "Darmstadtium" },
-    { s: "Rg", n: "Roentgenium" }, { s: "Cn", n: "Copernicium" }, { s: "Nh", n: "Nihonium" }, { s: "Fl", n: "Flerovium" }, { s: "Mc", n: "Moscovium" },
-    { s: "Lv", n: "Livermorium" }, { s: "Ts", n: "Tennessine" }, { s: "Og", n: "Oganesson" }
+            { s: "H", n: "Hydrogen" }, { s: "He", n: "Helium" }, { s: "Li", n: "Lithium" }, { s: "Be", n: "Beryllium" }, { s: "B", n: "Boron" },
+            { s: "C", n: "Carbon" }, { s: "N", n: "Nitrogen" }, { s: "O", n: "Oxygen" }, { s: "F", n: "Fluorine" }, { s: "Ne", n: "Neon" },
+            { s: "Na", n: "Sodium" }, { s: "Mg", n: "Magnesium" }, { s: "Al", n: "Aluminum" }, { s: "Si", n: "Silicon" }, { s: "P", n: "Phosphorus" },
+            { s: "S", n: "Sulfur" }, { s: "Cl", n: "Chlorine" }, { s: "Ar", n: "Argon" }, { s: "K", n: "Potassium" }, { s: "Ca", n: "Calcium" },
+            { s: "Sc", n: "Scandium" }, { s: "Ti", n: "Titanium" }, { s: "V", n: "Vanadium" }, { s: "Cr", n: "Chromium" }, { s: "Mn", n: "Manganese" },
+            { s: "Fe", n: "Iron" }, { s: "Co", n: "Cobalt" }, { s: "Ni", n: "Nickel" }, { s: "Cu", n: "Copper" }, { s: "Zn", n: "Zinc" },
+            { s: "Ga", n: "Gallium" }, { s: "Ge", n: "Germanium" }, { s: "As", n: "Arsenic" }, { s: "Se", n: "Selenium" }, { s: "Br", n: "Bromine" },
+            { s: "Kr", n: "Krypton" }, { s: "Rb", n: "Rubidium" }, { s: "Sr", n: "Strontium" }, { s: "Y", n: "Yttrium" }, { s: "Zr", n: "Zirconium" },
+            { s: "Nb", n: "Niobium" }, { s: "Mo", n: "Molybdenum" }, { s: "Tc", n: "Technetium" }, { s: "Ru", n: "Ruthenium" }, { s: "Rh", n: "Rhodium" },
+            { s: "Pd", n: "Palladium" }, { s: "Ag", n: "Silver" }, { s: "Cd", n: "Cadmium" }, { s: "In", n: "Indium" }, { s: "Sn", n: "Tin" },
+            { s: "Sb", n: "Antimony" }, { s: "Te", n: "Tellurium" }, { s: "I", n: "Iodine" }, { s: "Xe", n: "Xenon" }, { s: "Cs", n: "Cesium" },
+            { s: "Ba", n: "Barium" }, { s: "La", n: "Lanthanum" }, { s: "Ce", n: "Cerium" }, { s: "Pr", n: "Praseodymium" }, { s: "Nd", n: "Neodymium" },
+            { s: "Pm", n: "Promethium" }, { s: "Sm", n: "Samarium" }, { s: "Eu", n: "Europium" }, { s: "Gd", n: "Gadolinium" }, { s: "Tb", n: "Terbium" },
+            { s: "Dy", n: "Dysprosium" }, { s: "Ho", n: "Holmium" }, { s: "Er", n: "Erbium" }, { s: "Tm", n: "Thulium" }, { s: "Yb", n: "Ytterbium" },
+            { s: "Lu", n: "Lutetium" }, { s: "Hf", n: "Hafnium" }, { s: "Ta", n: "Tantalum" }, { s: "W", n: "Tungsten" }, { s: "Re", n: "Rhenium" },
+            { s: "Os", n: "Osmium" }, { s: "Ir", n: "Iridium" }, { s: "Pt", n: "Platinum" }, { s: "Au", n: "Gold" }, { s: "Hg", n: "Mercury" },
+            { s: "Tl", n: "Thallium" }, { s: "Pb", n: "Lead" }, { s: "Bi", n: "Bismuth" }, { s: "Po", n: "Polonium" }, { s: "At", n: "Astatine" },
+            { s: "Rn", n: "Radon" }, { s: "Fr", n: "Francium" }, { s: "Ra", n: "Radium" }, { s: "Ac", n: "Actinium" }, { s: "Th", n: "Thorium" },
+            { s: "Pa", n: "Protactinium" }, { s: "U", n: "Uranium" }, { s: "Np", n: "Neptunium" }, { s: "Pu", n: "Plutonium" }, { s: "Am", n: "Americium" },
+            { s: "Cm", n: "Curium" }, { s: "Bk", n: "Berkelium" }, { s: "Cf", n: "Californium" }, { s: "Es", n: "Einsteinium" }, { s: "Fm", n: "Fermium" },
+            { s: "Md", n: "Mendelevium" }, { s: "No", n: "Nobelium" }, { s: "Lr", n: "Lawrencium" }, { s: "Rf", n: "Rutherfordium" }, { s: "Db", n: "Dubnium" },
+            { s: "Sg", n: "Seaborgium" }, { s: "Bh", n: "Bohrium" }, { s: "Hs", n: "Hassium" }, { s: "Mt", n: "Meitnerium" }, { s: "Ds", n: "Darmstadtium" },
+            { s: "Rg", n: "Roentgenium" }, { s: "Cn", n: "Copernicium" }, { s: "Nh", n: "Nihonium" }, { s: "Fl", n: "Flerovium" }, { s: "Mc", n: "Moscovium" },
+            { s: "Lv", n: "Livermorium" }, { s: "Ts", n: "Tennessine" }, { s: "Og", n: "Oganesson" }
         ];
 
         let flippedCards = [];
@@ -55,8 +58,17 @@
 
         function initGame() {
             const board = document.getElementById('gameBoard');
+            document.getElementById('level').innerText = currentLevel;
+            document.getElementById('remaining').innerText = 15;
+            document.getElementById('nextBtn').style.display = 'none';
             board.innerHTML = '';
-            const gameData = [...allElements, ...allElements.map(e => ({ s: e.n, n: e.n }))];
+            matchedPairs = 0;
+            
+            // สุ่ม 15 ธาตุสำหรับเลเวลนี้
+            const startIndex = (currentLevel - 1) * 15;
+            const levelElements = allElements.slice(startIndex, startIndex + 15);
+            
+            const gameData = [...levelElements.map(e => ({ s: e.s, n: e.n })), ...levelElements.map(e => ({ s: e.n, n: e.n }))];
             gameData.sort(() => Math.random() - 0.5);
 
             gameData.forEach(item => {
@@ -86,9 +98,11 @@
             const [c1, c2] = flippedCards;
             if (c1.name === c2.name) {
                 matchedPairs++;
-                document.getElementById('remaining').innerText = 30 - matchedPairs;
+                document.getElementById('remaining').innerText = 15 - matchedPairs;
                 flippedCards = [];
-                if (matchedPairs === 30) alert("ยินดีด้วย! คุณผ่านเลเวล " + currentLevel);
+                if (matchedPairs === 15) {
+                    document.getElementById('nextBtn').style.display = 'block';
+                }
             } else {
                 setTimeout(() => {
                     c1.card.classList.remove('flipped');
@@ -98,8 +112,16 @@
             }
         }
 
+        function nextLevel() {
+            currentLevel++;
+            if ((currentLevel - 1) * 15 >= allElements.length) {
+                alert("ยินดีด้วย! คุณพิชิตครบทุกธาตุในตารางธาตุแล้ว!");
+                currentLevel = 1;
+            }
+            initGame();
+        }
+
         initGame();
     </script>
 </body>
 </html>
-
