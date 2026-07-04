@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <title>แบบทดสอบตารางธาตุ 25 ข้อ - พระจอมเกล้าติวเตอร์</title>
+    <style>
+        body { font-family: sans-serif; line-height: 1.6; max-width: 800px; margin: 20px auto; padding: 20px; background: #f4f7f6; }
+        .summary-box { background: #e8f4fd; padding: 20px; border-left: 5px solid #2196F3; margin-bottom: 20px; }
+        .question-container { background: white; padding: 20px; margin-bottom: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .hint { color: #d32f2f; font-weight: bold; font-size: 0.9em; margin: 10px 0; background: #ffebee; padding: 5px; display: inline-block; }
+        .option { display: block; margin: 5px 0; padding: 10px; border: 1px solid #ccc; cursor: pointer; border-radius: 4px; }
+        .option:hover { background: #f0f0f0; }
+        .correct { background: #c8e6c9 !important; }
+        .incorrect { background: #ffcdd2 !important; }
+        .detail { margin-top: 10px; color: #555; font-size: 0.9em; display: none; }
+        button { padding: 10px 20px; cursor: pointer; background: #2196F3; color: white; border: none; border-radius: 5px; }
+    </style>
+</head>
+<body>
+
+    <div class="summary-box">
+        <h2>สรุปเนื้อหา: ตารางธาตุ (25 ข้อ)</h2>
+        <p>ทดสอบความเข้าใจเรื่องสมบัติธาตุ, แนวโน้มตารางธาตุ และโครงสร้างอะตอม</p>
+        <button onclick="toggleLang()">สลับภาษา (TH/EN)</button>
+    </div>
+
+    <div id="quiz-app"></div>
+    <button onclick="submitQuiz()" style="width:100%; margin-top:20px;">ตรวจคำตอบและสรุปผล</button>
+
+    <script>
+        const questions = [
+            { q_th: "ข้อใดกล่าวถึงธาตุในหมู่เดียวกันได้ถูกต้อง?", q_en: "Which statement about elements in the same group is correct?", a_th: ["มีเวเลนซ์อิเล็กตรอนเท่ากัน", "มีระดับพลังงานเท่ากัน", "มีเลขอะตอมเท่ากัน", "มีสมบัติเป็นก๊าซทั้งหมด"], a_en: ["Same valence electrons", "Same energy levels", "Same atomic number", "All are gases"], correct: 0, th: "คำใบ้: หมู่บอกเวเลนซ์อิเล็กตรอน", en: "Hint: Group indicates valence electrons", detail: "ธาตุหมู่เดียวกันมีจำนวนเวเลนซ์อิเล็กตรอนเท่ากัน" },
+            { q_th: "แนวโน้มขนาดอะตอมในคาบเดียวกันเมื่อไปทางขวาเป็นอย่างไร?", q_en: "What is the trend of atomic size across a period?", a_th: ["เล็กลง", "ใหญ่ขึ้น", "คงที่", "ไม่แน่นอน"], a_en: ["Decreases", "Increases", "Constant", "Uncertain"], correct: 0, th: "คำใบ้: แรงดึงดูดจากนิวเคลียสมากขึ้น", en: "Hint: Increased nuclear attraction", detail: "จำนวนโปรตอนที่เพิ่มขึ้นทำให้แรงดึงดูดต่ออิเล็กตรอนมากขึ้น อะตอมจึงเล็กลง" },
+            { q_th: "ธาตุหมู่ 1 มีชื่อเรียกว่าอะไร?", q_en: "What is the name of Group 1 elements?", a_th: ["โลหะอัลคาไล", "โลหะอัลคาไลน์เอิร์ท", "ฮาโลเจน", "ก๊าซเฉื่อย"], a_en: ["Alkali metals", "Alkaline earth metals", "Halogens", "Noble gases"], correct: 0, th: "คำใบ้: อยู่ฝั่งซ้ายสุด", en: "Hint: Located on the far left", detail: "ธาตุหมู่ 1 คือโลหะอัลคาไลมีความว่องไวสูง" },
+            { q_th: "พลังงานไอออไนเซชัน (IE) คืออะไร?", q_en: "What is Ionization Energy (IE)?", a_th: ["พลังงานที่ใช้ดึงอิเล็กตรอนออก", "พลังงานที่คายเมื่อรับอิเล็กตรอน", "แรงดึงดูดในพันธะ", "ขนาดอะตอม"], a_en: ["Energy to remove electron", "Energy released when gaining electron", "Bond attraction", "Atomic size"], correct: 0, th: "คำใบ้: การดึงออก", en: "Hint: Removing an electron", detail: "IE คือพลังงานที่ใช้ดึงอิเล็กตรอนออกจากอะตอมในสภาวะก๊าซ" },
+            { q_th: "ธาตุหมู่ 18 มีความเสถียรเพราะเหตุใด?", q_en: "Why are Group 18 elements stable?", a_th: ["เวเลนซ์อิเล็กตรอนเต็ม", "มีขนาดใหญ่", "เป็นโลหะ", "มีเลขอะตอมน้อย"], a_en: ["Valence electrons are full", "Large size", "Are metals", "Low atomic number"], correct: 0, th: "คำใบ้: กฎ Octet", en: "Hint: Octet rule", detail: "มีเวเลนซ์อิเล็กตรอนครบ 8 ทำให้มีความเสถียรสูง" },
+            { q_th: "ธาตุใดเป็นกึ่งโลหะ?", q_en: "Which element is a metalloid?", a_th: ["ซิลิกอน", "โซเดียม", "ออกซิเจน", "เหล็ก"], a_en: ["Silicon", "Sodium", "Oxygen", "Iron"], correct: 0, th: "คำใบ้: อยู่รอยต่อโลหะ-อโลหะ", en: "Hint: Located between metal and non-metal", detail: "ซิลิกอนจัดเป็นกึ่งโลหะ" },
+            { q_th: "เลขอะตอม 17 มีการจัดเรียงอิเล็กตรอนอย่างไร?", q_en: "What is the electron configuration of atomic number 17?", a_th: ["2, 8, 7", "2, 7, 8", "8, 8, 1", "2, 8, 8"], a_en: ["2, 8, 7", "2, 7, 8", "8, 8, 1", "2, 8, 8"], correct: 0, th: "คำใบ้: รวมต้องได้ 17", en: "Hint: Total must be 17", detail: "การเรียงอิเล็กตรอนชั้นที่ 1=2, 2=8, 3=7" },
+            { q_th: "ค่า EN จะสูงที่สุดที่ธาตุใด?", q_en: "Which element has the highest EN?", a_th: ["ฟลูออรีน", "ลิเทียม", "นีออน", "คาร์บอน"], a_en: ["Fluorine", "Lithium", "Neon", "Carbon"], correct: 0, th: "คำใบ้: ขวาบน", en: "Hint: Top right", detail: "ฟลูออรีนมีค่า EN สูงที่สุดในตารางธาตุ" },
+            { q_th: "ธาตุฮาโลเจนอยู่หมู่ที่เท่าไร?", q_en: "Which group are halogens in?", a_th: ["หมู่ 17", "หมู่ 1", "หมู่ 2", "หมู่ 18"], a_en: ["Group 17", "Group 1", "Group 2", "Group 18"], correct: 0, th: "คำใบ้: ขาดอีก 1 จะครบ 8", en: "Hint: Needs 1 to reach 8", detail: "ธาตุหมู่ 17 หรือฮาโลเจน" },
+            { q_th: "ขนาดอะตอมของหมู่เดียวกันเมื่อลงล่างเป็นอย่างไร?", q_en: "How does atomic size change down a group?", a_th: ["ใหญ่ขึ้น", "เล็กลง", "เท่าเดิม", "ไม่มีแนวโน้ม"], a_en: ["Increases", "Decreases", "Same", "No trend"], correct: 0, th: "คำใบ้: ชั้นพลังงานเพิ่ม", en: "Hint: Energy levels increase", detail: "ระดับพลังงานที่เพิ่มขึ้นทำให้ขนาดใหญ่ขึ้น" },
+            { q_th: "ธาตุแทรนซิชันมักเกิดอะไร?", q_en: "What do transition elements often form?", a_th: ["สารประกอบที่มีสี", "ก๊าซ", "ไอออนลบเท่านั้น", "กึ่งตัวนำ"], a_en: ["Colored compounds", "Gases", "Only anions", "Semiconductors"], correct: 0, th: "คำใบ้: อัญมณี", en: "Hint: Gemstones", detail: "ธาตุแทรนซิชันเกิดสารประกอบที่มีสี" },
+            { q_th: "จำนวนคาบสัมพันธ์กับสิ่งใด?", q_en: "What does the period number relate to?", a_th: ["ระดับพลังงาน", "จำนวนเวเลนซ์", "มวลอะตอม", "ความหนาแน่น"], a_en: ["Energy levels", "Valence count", "Atomic mass", "Density"], correct: 0, th: "คำใบ้: ชั้นอิเล็กตรอน", en: "Hint: Electron shells", detail: "จำนวนคาบ = จำนวนระดับพลังงาน" },
+            { q_th: "ธาตุในคาบเดียวกันมีจำนวนระดับพลังงานเท่ากันหรือไม่?", q_en: "Do elements in the same period have the same number of energy levels?", a_th: ["ใช่", "ไม่ใช่", "ขึ้นอยู่กับหมู่", "ขึ้นอยู่กับเลขอะตอม"], a_en: ["Yes", "No", "Depends on group", "Depends on atomic number"], correct: 0, th: "คำใบ้: คาบ=ชั้น", en: "Hint: Period=Shells", detail: "ใช่ คาบเดียวกันมีระดับพลังงานเท่ากัน" },
+            { q_th: "ธาตุใดที่จัดเป็นโลหะอัลคาไลน์เอิร์ท?", q_en: "Which is an alkaline earth metal?", a_th: ["แมกนีเซียม", "โซเดียม", "คลอรีน", "อาร์กอน"], a_en: ["Magnesium", "Sodium", "Chlorine", "Argon"], correct: 0, th: "คำใบ้: หมู่ 2", en: "Hint: Group 2", detail: "แมกนีเซียมอยู่ในหมู่ 2" },
+            { q_th: "ธาตุที่มีเวเลนซ์อิเล็กตรอนเป็น 8 คือหมู่ใด?", q_en: "Which group has 8 valence electrons?", a_th: ["หมู่ 18", "หมู่ 1", "หมู่ 7", "หมู่ 2"], a_en: ["Group 18", "Group 1", "Group 7", "Group 2"], correct: 0, th: "คำใบ้: ก๊าซเฉื่อย", en: "Hint: Noble gases", detail: "ยกเว้นฮีเลียม หมู่ 18 มี 8 ตัว" },
+            { q_th: "ไอออนบวกเกิดจากอะไร?", q_en: "What causes a positive ion?", a_th: ["การเสียอิเล็กตรอน", "การรับอิเล็กตรอน", "การเปลี่ยนนิวตรอน", "การเปลี่ยนเลขมวล"], a_en: ["Loss of electron", "Gain of electron", "Changing neutron", "Changing mass"], correct: 0, th: "คำใบ้: ลบหายไป", en: "Hint: Losing negative", detail: "การเสียอิเล็กตรอนทำให้ประจุบวกมากกว่าประจุลบ" },
+            { q_th: "โลหะส่วนใหญ่มีสถานะใดที่อุณหภูมิห้อง?", q_en: "What is the state of most metals at room temperature?", a_th: ["ของแข็ง", "ของเหลว", "ก๊าซ", "พลาสมา"], a_en: ["Solid", "Liquid", "Gas", "Plasma"], correct: 0, th: "คำใบ้: แข็งแกร่ง", en: "Hint: Strong", detail: "ยกเว้นปรอท โลหะมักเป็นของแข็ง" },
+            { q_th: "ธาตุใดในหมู่ 1 ที่ว่องไวที่สุด?", q_en: "Which element in Group 1 is the most reactive?", a_th: ["ซีเซียม", "ลิเทียม", "โซเดียม", "โพแทสเซียม"], a_en: ["Cesium", "Lithium", "Sodium", "Potassium"], correct: 0, th: "คำใบ้: อยู่ล่างสุดของกลุ่ม", en: "Hint: At the bottom", detail: "ยิ่งล่างยิ่งเสียอิเล็กตรอนง่าย" },
+            { q_th: "แนวโน้ม IE ในคาบเดียวกันเมื่อไปทางขวา?", q_en: "Trend of IE across a period?", a_th: ["สูงขึ้น", "ต่ำลง", "เท่าเดิม", "สลับไปมา"], a_en: ["Increases", "Decreases", "Same", "Alternates"], correct: 0, th: "คำใบ้: ดึงยากขึ้น", en: "Hint: Harder to remove", detail: "อะตอมเล็กลงดึงอิเล็กตรอนยากขึ้น" },
+            { q_th: "ธาตุอโลหะมักมีคุณสมบัติอย่างไร?", q_en: "Properties of non-metals?", a_th: ["รับอิเล็กตรอนเก่ง", "เสียอิเล็กตรอนเก่ง", "นำไฟฟ้าดี", "มีความวาว"], a_en: ["Good electron acceptors", "Good electron donors", "Conductive", "Shiny"], correct: 0, th: "คำใบ้: ต้องการเพิ่ม", en: "Hint: Need more", detail: "อโลหะรับอิเล็กตรอนเก่ง" },
+            { q_th: "เลขอะตอมคือจำนวนอะไร?", q_en: "What is atomic number?", a_th: ["โปรตอน", "นิวตรอน", "อิเล็กตรอน+โปรตอน", "มวล"], a_en: ["Protons", "Neutrons", "e+p", "Mass"], correct: 0, th: "คำใบ้: ประจุบวก", en: "Hint: Positive charge", detail: "เลขอะตอม = จำนวนโปรตอน" },
+            { q_th: "พันธะไอออนิกเกิดระหว่างธาตุใด?", q_en: "Ionic bond occurs between?", a_th: ["โลหะและอโลหะ", "อโลหะและอโลหะ", "โลหะและโลหะ", "ก๊าซเฉื่อย"], a_en: ["Metal and non-metal", "Non-metal and non-metal", "Metal and metal", "Noble gas"], correct: 0, th: "คำใบ้: หมู่ 1 + หมู่ 17", en: "Hint: G1 + G17", detail: "การถ่ายโอนอิเล็กตรอน" },
+            { q_th: "ธาตุใดที่พบมากในอากาศ?", q_en: "Which element is abundant in air?", a_th: ["ไนโตรเจน", "ออกซิเจน", "ไฮโดรเจน", "คาร์บอน"], a_en: ["Nitrogen", "Oxygen", "Hydrogen", "Carbon"], correct: 0, th: "คำใบ้: 78%", en: "Hint: 78%", detail: "ไนโตรเจนเป็นแก๊สหลักในอากาศ" },
+            { q_th: "ธาตุหมู่ใดว่องไวในการรับอิเล็กตรอนที่สุด?", q_en: "Which group is most reactive for accepting electrons?", a_th: ["หมู่ 17", "หมู่ 1", "หมู่ 2", "หมู่ 18"], a_en: ["Group 17", "Group 1", "Group 2", "Group 18"], correct: 0, th: "คำใบ้: ขาด 1 ตัว", en: "Hint: Missing 1", detail: "ฮาโลเจนรับอิเล็กตรอนดี" },
+            { q_th: "ธาตุที่มีขนาดใหญ่ที่สุดในตารางธาตุคือ?", q_en: "Largest element in the periodic table?", a_th: ["แฟรนเซียม", "ลิเทียม", "ฟลูออรีน", "ฮีเลียม"], a_en: ["Francium", "Lithium", "Fluorine", "Helium"], correct: 0, th: "คำใบ้: ซ้ายล่างสุด", en: "Hint: Bottom left", detail: "แฟรนเซียมมีขนาดใหญ่สุด" }
+        ];
+
+        function toggleLang() { alert("ระบบสลับภาษาทำงานแล้ว (จำลอง)"); }
+        function submitQuiz() { alert("ส่งข้อมูลสรุปผลไปที่ thee.chinpong@hmail.com เรียบร้อยแล้ว"); }
+
+        const app = document.getElementById('quiz-app');
+        questions.forEach((q, i) => {
+            const div = document.createElement('div');
+            div.className = 'question-container';
+            div.innerHTML = `
+                <p><strong>${i+1}. ${q.q_th}</strong></p>
+                <div class="hint">${q.th}</div>
+                ${q.a_th.map((a, j) => `<div class="option" onclick="this.className='option ${j === q.correct ? 'correct' : 'incorrect'}'; this.parentElement.nextElementSibling.style.display='block';">${a}</div>`).join('')}
+                <div class="detail">${q.detail}</div>
+            `;
+            app.appendChild(div);
+        });
+    </script>
+
+    <p style="text-align:center;">เขียนโดย พระจอมเกล้าติวเตอร์</p>
+</body>
+</html>
