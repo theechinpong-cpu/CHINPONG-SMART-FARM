@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <title>คลังข้อสอบสมการ 2 ตัวแปร (ป.6)</title>
+    <style>
+        body { font-family: sans-serif; background: #f0f2f5; padding: 20px; line-height: 1.6; }
+        .container { max-width: 850px; margin: auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .question-box { margin-bottom: 25px; padding: 20px; border: 1px solid #ddd; border-radius: 10px; background: #fafafa; }
+        .clue { background: #e7f3ff; padding: 10px; border-left: 5px solid #2196F3; margin: 10px 0; font-size: 0.9em; }
+        .detail { color: #d32f2f; font-weight: bold; margin-top: 10px; display: none; }
+        .option-btn { display: block; width: 100%; text-align: left; padding: 8px; margin: 5px 0; cursor: pointer; border: 1px solid #ccc; border-radius: 5px; }
+        .correct { background: #c8e6c9 !important; }
+        .wrong { background: #ffcdd2 !important; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2 id="title">ข้อสอบสมการ 2 ตัวแปร (ป.6)</h2>
+    <button onclick="toggleLang()">สลับภาษา (TH/EN)</button>
+    <div id="quiz-container"></div>
+    <div id="result"></div>
+</div>
+
+<script>
+    let lang = 'th';
+    const quizData = [
+        { q_th: "ข้อ 1: ถ้า x + y = 10 และ x = 3 แล้ว y เท่ากับเท่าใด?", q_en: "Q1: If x + y = 10 and x = 3, what is y?", a_th: ["5", "6", "7", "8"], a_en: ["5", "6", "7", "8"], correct: 2, th: "แทนค่า x ลงไปในสมการ", en: "Substitute x into the equation", detail: "10 - 3 = 7" },
+        { q_th: "ข้อ 2: ถ้า a - b = 5 และ b = 2 แล้ว a เท่ากับเท่าใด?", q_en: "Q2: If a - b = 5 and b = 2, what is a?", a_th: ["3", "5", "7", "9"], a_en: ["3", "5", "7", "9"], correct: 2, th: "ย้าย b ไปบวก", en: "Move b to add", detail: "a = 5 + 2 = 7" },
+        { q_th: "ข้อ 3: 2x = y ถ้า x = 4 แล้ว y คือ?", q_en: "Q3: 2x = y, if x = 4, what is y?", a_th: ["2", "4", "6", "8"], a_en: ["2", "4", "6", "8"], correct: 3, th: "นำ 2 ไปคูณ x", en: "Multiply 2 by x", detail: "2 * 4 = 8" },
+        { q_th: "ข้อ 4: x + 5 = y ถ้า x = 2 แล้ว y คือ?", q_en: "Q4: x + 5 = y, if x = 2, what is y?", a_th: ["5", "6", "7", "8"], a_en: ["5", "6", "7", "8"], correct: 2, th: "นำ 2 ไปบวก 5", en: "Add 2 and 5", detail: "2 + 5 = 7" },
+        { q_th: "ข้อ 5: y - 3 = x ถ้า y = 10 แล้ว x คือ?", q_en: "Q5: y - 3 = x, if y = 10, what is x?", a_th: ["5", "6", "7", "8"], a_en: ["5", "6", "7", "8"], correct: 2, th: "10 ลบออก 3", en: "10 minus 3", detail: "10 - 3 = 7" },
+        { q_th: "ข้อ 6: x + y = 15 และ x = 5 แล้ว y คือ?", q_en: "Q6: x + y = 15 and x = 5, what is y?", a_th: ["5", "10", "15", "20"], a_en: ["5", "10", "15", "20"], correct: 1, th: "15 ลบด้วย 5", en: "15 minus 5", detail: "15 - 5 = 10" },
+        { q_th: "ข้อ 7: 3x = y ถ้า x = 3 แล้ว y คือ?", q_en: "Q7: 3x = y, if x = 3, what is y?", a_th: ["3", "6", "9", "12"], a_en: ["3", "6", "9", "12"], correct: 2, th: "3 คูณ 3", en: "3 times 3", detail: "3 * 3 = 9" },
+        { q_th: "ข้อ 8: x - 4 = y ถ้า x = 10 แล้ว y คือ?", q_en: "Q8: x - 4 = y, if x = 10, what is y?", a_th: ["4", "5", "6", "7"], a_en: ["4", "5", "6", "7"], correct: 2, th: "10 ลบ 4", en: "10 minus 4", detail: "10 - 4 = 6" },
+        { q_th: "ข้อ 9: ถ้า 2x + 1 = y และ x = 2 แล้ว y คือ?", q_en: "Q9: If 2x + 1 = y and x = 2, what is y?", a_th: ["3", "4", "5", "6"], a_en: ["3", "4", "5", "6"], correct: 2, th: "ทำคูณก่อนแล้วบวก", en: "Do multiplication then addition", detail: "2(2)+1 = 5" },
+        { q_th: "ข้อ 10: ถ้า x/2 = y และ x = 8 แล้ว y คือ?", q_en: "Q10: If x/2 = y and x = 8, what is y?", a_th: ["2", "4", "6", "8"], a_en: ["2", "4", "6", "8"], correct: 1, th: "นำ 8 หาร 2", en: "Divide 8 by 2", detail: "8 / 2 = 4" },
+        { q_th: "ข้อ 11: ถ้า x + y = 20 และ y = 10 แล้ว x คือ?", q_en: "Q11: If x + y = 20 and y = 10, what is x?", a_th: ["5", "10", "15", "20"], a_en: ["5", "10", "15", "20"], correct: 1, th: "20 หักออก 10", en: "20 minus 10", detail: "20 - 10 = 10" },
+        { q_th: "ข้อ 12: ถ้า 4x = 20 แล้ว x คือ?", q_en: "Q12: If 4x = 20, what is x?", a_th: ["4", "5", "6", "7"], a_en: ["4", "5", "6", "7"], correct: 1, th: "อะไรคูณ 4 ได้ 20", en: "What times 4 is 20", detail: "20 / 4 = 5" },
+        { q_th: "ข้อ 13: ถ้า x - 7 = 3 แล้ว x คือ?", q_en: "Q13: If x - 7 = 3, what is x?", a_th: ["7", "8", "9", "10"], a_en: ["7", "8", "9", "10"], correct: 3, th: "ย้าย 7 ไปบวก", en: "Move 7 to add", detail: "3 + 7 = 10" },
+        { q_th: "ข้อ 14: ถ้า 5 + x = 12 แล้ว x คือ?", q_en: "Q14: If 5 + x = 12, what is x?", a_th: ["5", "6", "7", "8"], a_en: ["5", "6", "7", "8"], correct: 2, th: "12 ลบ 5", en: "12 minus 5", detail: "12 - 5 = 7" },
+        { q_th: "ข้อ 15: ถ้า 2x = 14 แล้ว x คือ?", q_en: "Q15: If 2x = 14, what is x?", a_th: ["5", "6", "7", "8"], a_en: ["5", "6", "7", "8"], correct: 2, th: "14 หาร 2", en: "14 divided by 2", detail: "14 / 2 = 7" },
+        { q_th: "ข้อ 16: ถ้า x + 3 = 10 แล้ว x คือ?", q_en: "Q16: If x + 3 = 10, what is x?", a_th: ["5", "6", "7", "8"], a_en: ["5", "6", "7", "8"], correct: 2, th: "10 ลบ 3", en: "10 minus 3", detail: "10 - 3 = 7" },
+        { q_th: "ข้อ 17: ถ้า y - 5 = 15 แล้ว y คือ?", q_en: "Q17: If y - 5 = 15, what is y?", a_th: ["15", "18", "20", "25"], a_en: ["15", "18", "20", "25"], correct: 2, th: "15 บวก 5", en: "15 plus 5", detail: "15 + 5 = 20" },
+        { q_th: "ข้อ 18: ถ้า 3x = 12 แล้ว x คือ?", q_en: "Q18: If 3x = 12, what is x?", a_th: ["2", "3", "4", "5"], a_en: ["2", "3", "4", "5"], correct: 2, th: "12 หาร 3", en: "12 divided by 3", detail: "12 / 3 = 4" },
+        { q_th: "ข้อ 19: ถ้า x / 4 = 3 แล้ว x คือ?", q_en: "Q19: If x / 4 = 3, what is x?", a_th: ["7", "10", "12", "15"], a_en: ["7", "10", "12", "15"], correct: 2, th: "4 คูณ 3", en: "4 times 3", detail: "3 * 4 = 12" },
+        { q_th: "ข้อ 20: ถ้า 2x + 2 = 10 แล้ว x คือ?", q_en: "Q20: If 2x + 2 = 10, what is x?", a_th: ["2", "3", "4", "5"], a_en: ["2", "3", "4", "5"], correct: 2, th: "10 ลบ 2 แล้วหาร 2", en: "10 minus 2 then divide by 2", detail: "(10-2)/2 = 4" },
+        { q_th: "ข้อ 21: ถ้า x + y = 25 และ x = 12 แล้ว y คือ?", q_en: "Q21: If x + y = 25 and x = 12, what is y?", a_th: ["10", "11", "12", "13"], a_en: ["10", "11", "12", "13"], correct: 3, th: "25 ลบ 12", en: "25 minus 12", detail: "25 - 12 = 13" },
+        { q_th: "ข้อ 22: ถ้า 2x - 1 = 7 แล้ว x คือ?", q_en: "Q22: If 2x - 1 = 7, what is x?", a_th: ["2", "3", "4", "5"], a_en: ["2", "3", "4", "5"], correct: 2, th: "7 บวก 1 แล้วหาร 2", en: "7 plus 1 then divide by 2", detail: "8 / 2 = 4" },
+        { q_th: "ข้อ 23: ถ้า 3x + 3 = 18 แล้ว x คือ?", q_en: "Q23: If 3x + 3 = 18, what is x?", a_th: ["3", "4", "5", "6"], a_en: ["3", "4", "5", "6"], correct: 2, th: "18 ลบ 3 แล้วหาร 3", en: "18 minus 3 then divide by 3", detail: "15 / 3 = 5" },
+        { q_th: "ข้อ 24: ถ้า 5x = 25 แล้ว x คือ?", q_en: "Q24: If 5x = 25, what is x?", a_th: ["3", "4", "5", "6"], a_en: ["3", "4", "5", "6"], correct: 2, th: "25 หาร 5", en: "25 divided by 5", detail: "25 / 5 = 5" },
+        { q_th: "ข้อ 25: ถ้า x + 10 = 20 แล้ว x คือ?", q_en: "Q25: If x + 10 = 20, what is x?", a_th: ["5", "10", "15", "20"], a_en: ["5", "10", "15", "20"], correct: 1, th: "20 ลบ 10", en: "20 minus 10", detail: "20 - 10 = 10" }
+    ];
+
+    function render() {
+        const container = document.getElementById('quiz-container');
+        container.innerHTML = '';
+        quizData.forEach((item, i) => {
+            const div = document.createElement('div');
+            div.className = 'question-box';
+            div.innerHTML = `
+                <p><strong>${lang === 'th' ? item.q_th : item.q_en}</strong></p>
+                <div class="clue">${lang === 'th' ? item.th : item.en}</div>
+                ${(lang === 'th' ? item.a_th : item.a_en).map((opt, j) => 
+                    `<button class="option-btn" onclick="check(${i}, ${j}, this)">${String.fromCharCode(65+j)}. ${opt}</button>`
+                ).join('')}
+                <div class="detail" id="d${i}">${item.detail}</div>
+            `;
+            container.appendChild(div);
+        });
+    }
+
+    function check(qIdx, aIdx, btn) {
+        const parent = btn.parentElement;
+        parent.querySelectorAll('button').forEach(b => b.disabled = true);
+        if (aIdx + 1 === quizData[qIdx].correct) {
+            btn.classList.add('correct');
+        } else {
+            btn.classList.add('wrong');
+        }
+        document.getElementById('d' + qIdx).style.display = 'block';
+    }
+
+    function toggleLang() {
+        lang = lang === 'th' ? 'en' : 'th';
+        render();
+    }
+
+    render();
+</script>
+<p>เขียนโดย พระจอมเกล้าติวเตอร์</p>
+</body>
+</html>
