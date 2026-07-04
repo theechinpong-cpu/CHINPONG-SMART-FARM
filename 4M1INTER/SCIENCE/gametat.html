@@ -2,40 +2,47 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <title>เกมจับคู่ธาตุ - พระจอมเกล้าติวเตอร์</title>
+    <title>ตะลุยด่านตารางธาตุ - พระจอมเกล้าติวเตอร์</title>
     <style>
-        body { font-family: sans-serif; display: flex; flex-direction: column; align-items: center; background: #fdfbf7; }
-        .game-container { display: flex; gap: 50px; margin-top: 20px; }
-        .box { width: 150px; min-height: 300px; border: 2px dashed #333; padding: 10px; }
-        .item { padding: 10px; margin: 5px; background: #fff; border: 1px solid #999; cursor: grab; text-align: center; }
+        body { font-family: sans-serif; text-align: center; background: #fdfbf7; padding: 20px; }
+        .level-box { border: 2px solid #2c3e50; padding: 20px; margin: 20px; display: none; }
+        .active { display: block; }
+        .game-area { display: flex; justify-content: center; gap: 20px; margin-top: 20px; }
+        .box { width: 120px; min-height: 200px; border: 2px dashed #333; padding: 10px; }
+        .item { padding: 10px; margin: 5px; background: #fff; border: 1px solid #999; cursor: grab; }
     </style>
 </head>
 <body>
-    <h2>เกมจับคู่: ธาตุและชื่อเรียก (Drag & Drop)</h2>
-    <div class="game-container">
-        <div><h3>ธาตุ (Symbol)</h3>
-            <div id="symbols" class="box" ondrop="drop(event)" ondragover="allowDrop(event)">
-                <div id="d1" class="item" draggable="true" ondragstart="drag(event)">H</div>
-                <div id="d2" class="item" draggable="true" ondragstart="drag(event)">Li</div>
-                <div id="d3" class="item" draggable="true" ondragstart="drag(event)">Be</div>
-                <div id="d4" class="item" draggable="true" ondragstart="drag(event)">F</div>
-                <div id="d5" class="item" draggable="true" ondragstart="drag(event)">He</div>
-            </div>
-        </div>
-        <div><h3>ชื่อเต็ม (Name)</h3>
-            <div id="names" class="box" ondrop="drop(event)" ondragover="allowDrop(event)">
-                <div id="n1" class="item" draggable="true" ondragstart="drag(event)">ไฮโดรเจน</div>
-                <div id="n2" class="item" draggable="true" ondragstart="drag(event)">ลิเทียม</div>
-                <div id="n3" class="item" draggable="true" ondragstart="drag(event)">เบริลเลียม</div>
-                <div id="n4" class="item" draggable="true" ondragstart="drag(event)">ฟลูออรีน</div>
-                <div id="n5" class="item" draggable="true" ondragstart="drag(event)">ฮีเลียม</div>
-            </div>
-        </div>
-    </div>
+    <h1>เกมตะลุยด่านตารางธาตุ</h1>
+    <div id="game-container"></div>
+    <button onclick="nextLevel()">ด่านถัดไป</button>
+
     <script>
-        function allowDrop(ev) { ev.preventDefault(); }
-        function drag(ev) { ev.dataTransfer.setData("text", ev.target.id); }
-        function drop(ev) { ev.preventDefault(); var data = ev.dataTransfer.getData("text"); ev.target.appendChild(document.getElementById(data)); }
+        const levels = [
+            { title: "Level 1: หมู่ 1 (โลหะอัลคาไล)", pairs: [['H', 'ไฮโดรเจน'], ['Li', 'ลิเทียม'], ['Na', 'โซเดียม']] },
+            { title: "Level 2: หมู่ 2 (โลหะอัลคาไลน์เอิร์ท)", pairs: [['Be', 'เบริลเลียม'], ['Mg', 'แมกนีเซียม'], ['Ca', 'แคลเซียม']] },
+            { title: "Level 3: หมู่ 3-12 (โลหะแทรนซิชัน)", pairs: [['Fe', 'เหล็ก'], ['Cu', 'ทองแดง'], ['Zn', 'สังกะสี']] },
+            { title: "Level 4: หมู่ 13-16 (กลุ่มธาตุหลัก)", pairs: [['B', 'โบรอน'], ['C', 'คาร์บอน'], ['N', 'ไนโตรเจน']] },
+            { title: "Level 5: หมู่ 17 (ฮาโลเจน)", pairs: [['F', 'ฟลูออรีน'], ['Cl', 'คลอรีน'], ['Br', 'โบรมีน']] },
+            { title: "Level 6: หมู่ 18 (ก๊าซเฉื่อย)", pairs: [['He', 'ฮีเลียม'], ['Ne', 'นีออน'], ['Ar', 'อาร์กอน']] }
+        ];
+
+        let current = 0;
+        function render() {
+            const container = document.getElementById('game-container');
+            container.innerHTML = `<div class="level-box active">
+                <h3>${levels[current].title}</h3>
+                <div class="game-area">
+                    <div class="box" ondrop="drop(event)" ondragover="allowDrop(event)">${levels[current].pairs.map(p => `<div class="item" draggable="true" ondragstart="drag(event)" id="${p[0]}">${p[0]}</div>`).join('')}</div>
+                    <div class="box" ondrop="drop(event)" ondragover="allowDrop(event)">${levels[current].pairs.map(p => `<div class="item" draggable="true" ondragstart="drag(event)" id="${p[1]}">${p[1]}</div>`).join('')}</div>
+                </div>
+            </div>`;
+        }
+        function allowDrop(e) { e.preventDefault(); }
+        function drag(e) { e.dataTransfer.setData("text", e.target.id); }
+        function drop(e) { e.preventDefault(); e.target.appendChild(document.getElementById(e.dataTransfer.getData("text"))); }
+        function nextLevel() { if(current < levels.length-1) { current++; render(); } else { alert("ยินดีด้วย! คุณพิชิตทุกด่านแล้ว!"); } }
+        render();
     </script>
     <p>เขียนโดย พระจอมเกล้าติวเตอร์</p>
 </body>
