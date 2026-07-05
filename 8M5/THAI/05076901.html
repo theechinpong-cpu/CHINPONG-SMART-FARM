@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <title>ข้อสอบภาษาไทย 3 - พระจอมเกล้าติวเตอร์</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; max-width: 800px; margin: auto; padding: 20px; background: #f9f9f9; }
+        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        .btn { padding: 12px 24px; cursor: pointer; border: none; border-radius: 4px; background: #2c3e50; color: white; font-weight: bold; }
+        .option { display: block; margin: 8px 0; padding: 12px; border: 1px solid #ddd; border-radius: 4px; cursor: pointer; transition: 0.3s; }
+        .option:hover { background: #eef; }
+        .correct { background: #d4edda !important; border-color: #28a745; }
+        .wrong { background: #f8d7da !important; border-color: #dc3545; }
+        .detail { margin-top: 10px; padding: 10px; background: #fff3cd; border-left: 4px solid #ffc107; display: none; }
+    </style>
+</head>
+<body>
+
+<h1>ข้อสอบภาษาไทย 3 (ม.5 เทอม 1)</h1>
+<button class="btn" onclick="toggleLang()">สลับภาษา (TH/EN)</button>
+<div id="quiz-area"></div>
+<button class="btn" onclick="submitExam()">ส่งข้อสอบและดูผลลัพธ์</button>
+
+<script>
+    const questions = [
+        { q_th: "คำใดเป็นคำสมาสโดยวิธีสนธิ", q_en: "Which word is formed by Sandhi?", a_th: "ธันวาคม (ธนู + อาคม)", a_en: "Thanwakhom (Thanu + Akhom)", correct: 0, th: ["ธันวาคม", "ราชการ", "ผลไม้", "ภูมิศาสตร์"], en: ["Thanwakhom", "Ratchakan", "Phonlamai", "Phumisat"], detail: "ธันวาคม เกิดจาก ธนู + อาคม เป็นการสนธิ" },
+        { q_th: "ระดับภาษาในข้อใดเหมาะสำหรับใช้เขียนรายงานทางวิชาการ", q_en: "Which language level is suitable for academic reports?", a_th: "ระดับทางการ", a_en: "Formal level", correct: 0, th: ["ระดับทางการ", "ระดับกันเอง", "ระดับไม่เป็นทางการ", "ระดับปากเปล่า"], en: ["Formal level", "Casual level", "Informal level", "Spoken level"], detail: "รายงานทางวิชาการต้องใช้ระดับทางการ" },
+        { q_th: "เหตุใดวัสสการพราหมณ์จึงใช้วิธีการ 'ยุยง' ในสามัคคีเภทคำฉันท์", q_en: "Why did Vassakara use 'slander' in Samakkhaphet Khamchan?", a_th: "ทำลายความสามัคคี", a_en: "To destroy unity", correct: 0, th: ["ทำลายความสามัคคี", "สร้างความบันเทิง", "ทดสอบปัญญา", "ปฏิบัติตามคำสั่งกษัตริย์"], en: ["To destroy unity", "To create entertainment", "To test wisdom", "To obey king's order"], detail: "ใช้วิธีการแตกแยกเพื่อทำลายความสามัคคีของเหล่าลิจฉวี" },
+        { q_th: "จากขุนช้างขุนแผน ตอนขุนช้างถวายฎีกา ขุนช้างถวายฎีกาด้วยเหตุผลใด", q_en: "Why did Khun Chang submit a petition in Khun Chang Khun Phaen?", a_th: "ต้องการตัวนางวันทอง", a_en: "Wanted Nang Wanthong back", correct: 0, th: ["ต้องการตัวนางวันทอง", "ต้องการเงินทอง", "ต้องการแก้แค้นขุนแผน", "ต้องการอำนาจการเมือง"], en: ["Wanted Nang Wanthong back", "Wanted wealth", "Wanted revenge on Khun Phaen", "Wanted political power"], detail: "เพื่อทวงสิทธิ์ความเป็นสามีและเรียกร้องให้นางวันทองกลับไปอยู่กับตน" },
+        { q_th: "การตีความบทความเชิงโน้มน้าวใจ ควรเน้นสิ่งใดมากที่สุด", q_en: "What should be emphasized in interpreting a persuasive article?", a_th: "วัตถุประสงค์ของผู้เขียน", a_en: "Author's intent", correct: 0, th: ["วัตถุประสงค์ของผู้เขียน", "ความไพเราะของคำ", "ความยาวของบทความ", "ประวัติผู้เขียน"], en: ["Author's intent", "Beauty of words", "Length of article", "Author's biography"], detail: "งานเขียนประเภทโน้มน้าวใจเน้นที่เจตนาของสารเป็นหลัก" },
+        { q_th: "คำในข้อใด 'ไม่ใช่' คำสมาส", q_en: "Which of the following is 'not' a Samas?", a_th: "ผลไม้", a_en: "Phonlamai (Fruit)", correct: 0, th: ["ผลไม้", "มหาจักร", "ราชการ", "ศาสนศาสตร์"], en: ["Phonlamai", "Mahajak", "Ratchakan", "Satsanasat"], detail: "ผลไม้ เป็นคำประสม (ผล + ไม้)" },
+        { q_th: "ข้อใดกล่าวถึงลักษณะของคำสนธิได้ถูกต้อง", q_en: "Which description of Sandhi is correct?", a_th: "มีการเปลี่ยนรูปสระหรือพยัญชนะ", a_en: "Changes in vowel or consonant", correct: 0, th: ["มีการเปลี่ยนรูปสระหรือพยัญชนะ", "เป็นการเรียงคำบาลีต่อกัน", "ต้องมีไม้ทัณฑฆาต", "ต้องมีเครื่องหมายวรรคตอน"], en: ["Changes in vowel or consonant", "Combining Pali words", "Must have mark", "Must have punctuation"], detail: "สนธิคือสมาสที่เชื่อมเสียงจนเกิดการเปลี่ยนแปลงรูป" },
+        { q_th: "สามัคคีเภทคำฉันท์ใช้คำประพันธ์ประเภทใด", q_en: "What type of poem is Samakkhaphet Khamchan?", a_th: "อินทรวิเชียรฉันท์", a_en: "Indrawichian Chan", correct: 0, th: ["อินทรวิเชียรฉันท์", "กลอนสุภาพ", "กาพย์ยานี", "ร่ายสุภาพ"], en: ["Indrawichian Chan", "Klon Suphap", "Kap Yani", "Rai Suphap"], detail: "ใช้ฉันท์โดยเฉพาะอินทรวิเชียรฉันท์ 11" },
+        { q_th: "ใครคือผู้แต่งสามัคคีเภทคำฉันท์", q_en: "Who wrote Samakkhaphet Khamchan?", a_th: "ชิต บุรทัต", a_en: "Chit Burathat", correct: 0, th: ["ชิต บุรทัต", "สุนทรภู่", "พระยาโกษาเหล็ก", "รัชกาลที่ 2"], en: ["Chit Burathat", "Sunthorn Phu", "Phraya Kosa Lek", "King Rama II"], detail: "ชิต บุรทัต เป็นผู้แต่ง" },
+        { q_th: "การเขียนสื่อสารในข้อใดเป็นภาษาที่ไม่เป็นทางการ", q_en: "Which is informal communication?", a_th: "จดหมายถึงเพื่อน", a_en: "Letter to a friend", correct: 0, th: ["จดหมายถึงเพื่อน", "ประกาศราชการ", "บทความวิจัย", "รายงานการประชุม"], en: ["Letter to a friend", "Government announcement", "Research article", "Meeting minutes"], detail: "จดหมายถึงเพื่อนเป็นระดับไม่เป็นทางการหรือกันเอง" },
+        { q_th: "นัยประหวัด (Connotation) หมายถึงข้อใด", q_en: "What does 'Connotation' mean?", a_th: "ความหมายแฝง", a_en: "Hidden meaning", correct: 0, th: ["ความหมายแฝง", "ความหมายตรงตัว", "ความหมายในพจนานุกรม", "ความหมายเชิงประวัติ"], en: ["Hidden meaning", "Literal meaning", "Dictionary meaning", "Historical meaning"], detail: "นัยประหวัดคือความหมายที่ซ่อนอยู่ภายใต้คำ" },
+        { q_th: "คำว่า 'พลาธิการ' เป็นคำประเภทใด", q_en: "What type of word is 'Phalathikan'?", a_th: "คำสมาส", a_en: "Samas", correct: 0, th: ["คำสมาส", "คำสนธิ", "คำประสม", "คำซ้อน"], en: ["Samas", "Sandhi", "Compound", "Echo word"], detail: "พลาธิการ (พละ + อธิการ) เป็นคำสมาส" },
+        { q_th: "ข้อใดเป็นคำสนธิสระ", q_en: "Which is a vowel Sandhi?", a_th: "มเหสี (มหา + อีสี)", a_en: "Mahesi (Maha + Isi)", correct: 0, th: ["มเหสี", "สมาคม", "กรรมาธิการ", "ประวัติศาสตร์"], en: ["Mahesi", "Samakhom", "Kammathikan", "Prawattisat"], detail: "มเหสี เป็นการสนธิสระ" },
+        { q_th: "ตัวละครใดในขุนช้างขุนแผนที่แสดงถึงความยึดติดในศีลธรรมน้อยที่สุด", q_en: "Which character in Khun Chang Khun Phaen shows least moral attachment?", a_th: "ขุนช้าง", a_en: "Khun Chang", correct: 0, th: ["ขุนช้าง", "วันทอง", "ขุนแผน", "พระพันวษา"], en: ["Khun Chang", "Wanthong", "Khun Phaen", "Phra Phanthawansa"], detail: "ขุนช้างมักทำตามความต้องการของตนเองโดยไม่สนใจความถูกต้อง" },
+        { q_th: "การตีความสารต้องใช้สิ่งใดประกอบ", q_en: "What is needed for interpreting a message?", a_th: "ประสบการณ์และบริบท", a_en: "Experience and context", correct: 0, th: ["ประสบการณ์และบริบท", "การเดาสุ่ม", "พจนานุกรมฉบับเดียว", "ความรู้สึกส่วนตัวล้วนๆ"], en: ["Experience and context", "Random guessing", "Single dictionary", "Purely personal feelings"], detail: "การตีความต้องพิจารณาบริบทแวดล้อมประกอบ" },
+        { q_th: "คำว่า 'ชลาลัย' เป็นการรวมคำแบบใด", q_en: "How is 'Chalalai' formed?", a_th: "สมาส", a_en: "Samas", correct: 0, th: ["สมาส", "สนธิ", "ประสม", "ซ้ำ"], en: ["Samas", "Sandhi", "Compound", "Reduplication"], detail: "ชลาลัย เกิดจากการสมาสคำ" },
+        { q_th: "จุดประสงค์หลักของวรรณคดีเรื่องสามัคคีเภทคำฉันท์คืออะไร", q_en: "What is the main purpose of Samakkhaphet Khamchan?", a_th: "สอนเรื่องการรักษาความสามัคคี", a_en: "Teaching unity", correct: 0, th: ["สอนเรื่องการรักษาความสามัคคี", "บันทึกประวัติศาสตร์", "ความบันเทิง", "ชมบารมีกษัตริย์"], en: ["Teaching unity", "Historical record", "Entertainment", "Praising the king"], detail: "เน้นย้ำถึงภัยของการแตกความสามัคคี" },
+        { q_th: "ข้อใดไม่ใช่ระดับภาษาที่ทางการ", q_en: "Which is not formal language?", a_th: "ภาษาปาก", a_en: "Colloquialism", correct: 0, th: ["ภาษาปาก", "ภาษาราชการ", "ภาษากึ่งทางการ", "ภาษาพิธีการ"], en: ["Colloquialism", "Official language", "Semi-formal", "Formal language"], detail: "ภาษาปากจัดเป็นระดับไม่เป็นทางการ" },
+        { q_th: "สนธิแบบ 'นิคหิตสนธิ' คืออะไร", q_en: "What is 'Nikahit Sandhi'?", a_th: "การเชื่อมด้วยนิคหิต", a_en: "Connecting with Nikahit", correct: 0, th: ["การเชื่อมด้วยนิคหิต", "การเชื่อมด้วยสระ", "การเชื่อมด้วยพยัญชนะ", "การซ้ำคำ"], en: ["Connecting with Nikahit", "Vowel connection", "Consonant connection", "Reduplication"], detail: "การเชื่อมโดยใช้ นิคหิต (-ํ)" },
+        { q_th: "ความรักของนางวันทองในเรื่องขุนช้างขุนแผนมีความซับซ้อนอย่างไร", q_en: "How is Nang Wanthong's love complex?", a_th: "มีความผูกพันกับทั้งสองคน", a_en: "Bound to both men", correct: 0, th: ["มีความผูกพันกับทั้งสองคน", "รักขุนช้างคนเดียว", "เกลียดทุกคน", "ไม่มีความรักเลย"], en: ["Bound to both men", "Loves only Khun Chang", "Hates everyone", "Has no love"], detail: "เป็นความรักแบบมีพันธะต่อทั้งขุนแผนและขุนช้าง" },
+        { q_th: "ข้อใดจัดเป็นคำสมาส", q_en: "Which is a Samas word?", a_th: "ศิลปกรรม", a_en: "Sinlapakam", correct: 0, th: ["ศิลปกรรม", "บ้านเรือน", "กินข้าว", "ไปเที่ยว"], en: ["Sinlapakam", "Ban-Ruan", "Kin-Khao", "Pai-Tiao"], detail: "ศิลปกรรม คือ ศิลป + กรรม" },
+        { q_th: "เมื่ออ่านวรรณคดี ควรใช้ทักษะใดมากที่สุด", q_en: "What skill is most needed when reading literature?", a_th: "การวิเคราะห์และวิจารณ์", a_en: "Analysis and criticism", correct: 0, th: ["การวิเคราะห์และวิจารณ์", "การท่องจำเนื้อหา", "การอ่านออกเสียง", "การลอกลายเส้น"], en: ["Analysis and criticism", "Rote memorization", "Reading aloud", "Tracing lines"], detail: "การอ่านวรรณคดีให้แตกฉานต้องอาศัยการคิดวิเคราะห์" },
+        { q_th: "การเขียนสื่อสารในสถานการณ์ทางการควรหลีกเลี่ยงสิ่งใด", q_en: "What should be avoided in formal writing?", a_th: "คำสแลง", a_en: "Slang", correct: 0, th: ["คำสแลง", "คำเชื่อม", "ประโยคบอกเล่า", "คำอธิบาย"], en: ["Slang", "Conjunctions", "Declarative sentences", "Explanations"], detail: "คำสแลงไม่เหมาะสมในงานเขียนระดับทางการ" },
+        { q_th: "สนธิแบบใดเปลี่ยน 'อุ' เป็น 'โอ'", q_en: "Which Sandhi changes 'U' to 'O'?", a_th: "สระสนธิ", a_en: "Vowel Sandhi", correct: 0, th: ["สระสนธิ", "พยัญชนะสนธิ", "นิคหิตสนธิ", "ไม่มีข้อใดถูก"], en: ["Vowel Sandhi", "Consonant Sandhi", "Nikahit Sandhi", "None of the above"], detail: "การเปลี่ยนเสียงสระเป็นลักษณะของสระสนธิ" },
+        { q_th: "ขุนช้างเป็นตัวละครที่มีลักษณะเด่นอย่างไร", q_en: "What is Khun Chang's prominent trait?", a_th: "เจ้าเล่ห์และหลงรักนางวันทองมาก", a_en: "Cunning and obsessed with Wanthong", correct: 0, th: ["เจ้าเล่ห์และหลงรักนางวันทองมาก", "มีความเป็นธรรมสูง", "เป็นยอดนักรบ", "รักความสงบ"], en: ["Cunning and obsessed with Wanthong", "Highly fair", "Great warrior", "Loves peace"], detail: "ขุนช้างมีบุคลิกโดดเด่นเรื่องความรักที่นำไปสู่การกระทำที่ผิด" }
+    ];
+
+    let currentLang = 'th';
+    const container = document.getElementById('quiz-area');
+
+    function toggleLang() {
+        currentLang = currentLang === 'th' ? 'en' : 'th';
+        render();
+    }
+
+    function render() {
+        container.innerHTML = '';
+        questions.forEach((q, qIdx) => {
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.innerHTML = `
+                <p><strong>${qIdx + 1}. ${currentLang === 'th' ? q.q_th : q.q_en}</strong></p>
+                ${(currentLang === 'th' ? q.th : q.en).map((opt, i) => `
+                    <div class="option" onclick="check(${qIdx}, ${i})">${opt}</div>
+                `).join('')}
+                <div class="detail" id="detail-${qIdx}">คำอธิบาย: ${q.detail}</div>
+            `;
+            container.appendChild(card);
+        });
+    }
+
+    function check(qIdx, optIdx) {
+        const options = document.querySelectorAll(`#detail-${qIdx}`).previousElementSibling.querySelectorAll('.option');
+        if (optIdx === questions[qIdx].correct) {
+            options[optIdx].classList.add('correct');
+        } else {
+            options[optIdx].classList.add('wrong');
+            options[questions[qIdx].correct].classList.add('correct');
+        }
+        document.getElementById(`detail-${qIdx}`).style.display = 'block';
+    }
+
+    function submitExam() {
+        alert("ส่งคะแนนของคุณไปที่ thee.chinpong@hmail.com แล้ว! ขอบคุณที่ตั้งใจเรียนครับ");
+    }
+
+    render();
+</script>
+</body>
+</html>
