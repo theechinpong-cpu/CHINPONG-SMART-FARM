@@ -9,7 +9,7 @@
         .memory-box { background: #e8f4fd; padding: 15px; border-left: 5px solid #2196f3; margin: 15px 0; }
         .question-card { background: #fff; padding: 20px; margin-bottom: 15px; border-radius: 8px; border: 1px solid #ddd; }
         .hidden { display: none; }
-        .detail { margin-top: 10px; font-style: italic; font-weight: bold; }
+        .detail { margin-top: 10px; padding: 10px; border-radius: 5px; font-weight: bold; }
         button { cursor: pointer; padding: 10px 20px; background: #2196f3; color: white; border: none; border-radius: 5px; margin: 5px; }
         #result { font-weight: bold; font-size: 1.2em; margin-top: 20px; text-align: center; }
     </style>
@@ -34,9 +34,10 @@
 </div>
 
 <div id="exam-container"></div>
-<button onclick="checkAnswers()">ตรวจคำตอบ</button>
-<button onclick="location.reload()">รีเซ็ตข้อสอบ</button>
 <div id="result"></div>
+<div style="text-align: center;">
+    <button onclick="location.reload()">เริ่มทำข้อสอบใหม่</button>
+</div>
 
 <script>
 const questions = [
@@ -67,35 +68,48 @@ const questions = [
     { q: "สรุปเนื้อหาบทที่ 1-4 เน้นย้ำเรื่องใดมากที่สุด?", options: ["การอยู่ร่วมกันอย่างสันติสุข", "การหาเงินให้รวยที่สุด", "การใช้เทคโนโลยีให้ทันสมัย", "การสอบให้ได้คะแนนเต็ม"], correct: 0, detail: "เป้าหมายหลักคือการเรียนรู้ที่จะอยู่ร่วมกันอย่างมีความสุขและถูกต้อง" }
 ];
 
+let score = 0;
+let answeredCount = 0;
+
 function render() {
     const container = document.getElementById('exam-container');
     questions.forEach((q, i) => {
         let div = document.createElement('div');
         div.className = 'question-card';
+        div.id = `card${i}`;
         div.innerHTML = `<p>${i + 1}. ${q.q}</p>`;
         q.options.forEach((opt, idx) => {
-            div.innerHTML += `<input type="radio" name="q${i}" value="${idx}"> ${opt}<br>`;
+            div.innerHTML += `<label><input type="radio" name="q${i}" value="${idx}" onclick="handleAnswer(${i}, ${idx})"> ${opt}</label><br>`;
         });
         div.innerHTML += `<div id="d${i}" class="hidden detail"></div>`;
         container.appendChild(div);
     });
 }
 
-function checkAnswers() {
-    let score = 0;
-    questions.forEach((q, i) => {
-        let selected = document.querySelector(`input[name="q${i}"]:checked`);
-        let detail = document.getElementById(`d${i}`);
-        detail.classList.remove('hidden');
-        if (selected && parseInt(selected.value) === q.correct) {
-            score++;
-            detail.innerHTML = "<span style='color:green'>ถูกต้อง: </span>" + q.detail;
-        } else {
-            detail.innerHTML = "<span style='color:red'>ผิด: </span>" + q.detail;
-        }
-    });
-    document.getElementById('result').innerText = `สรุปผลคะแนน: ${score}/25 ข้อ`;
-    alert("จำลองการส่งข้อมูลคะแนนไปที่ thee.chinpong@hmail.com เรียบร้อยแล้ว");
+function handleAnswer(qIndex, selectedIndex) {
+    const q = questions[qIndex];
+    const detailDiv = document.getElementById(`d${qIndex}`);
+    const radios = document.getElementsByName(`q${qIndex}`);
+    
+    // Disable inputs after selection
+    radios.forEach(r => r.disabled = true);
+    
+    answeredCount++;
+    detailDiv.classList.remove('hidden');
+    
+    if (selectedIndex === q.correct) {
+        score++;
+        detailDiv.style.backgroundColor = "#dff0d8";
+        detailDiv.innerHTML = "<span style='color:green'>ถูกต้อง! </span>" + q.detail;
+    } else {
+        detailDiv.style.backgroundColor = "#f2dede";
+        detailDiv.innerHTML = "<span style='color:red'>ผิด... </span>" + q.detail;
+    }
+
+    if (answeredCount === questions.length) {
+        document.getElementById('result').innerText = `สรุปผลคะแนนรวม: ${score}/25 ข้อ`;
+        alert("จำลองการส่งข้อมูลคะแนนไปที่ thee.chinpong@hmail.com เรียบร้อยแล้ว");
+    }
 }
 
 render();
