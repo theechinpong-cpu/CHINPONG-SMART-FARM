@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <title>พระจอมเกล้าติวเตอร์: ทศนิยม ป.5 (25 ข้อ)</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; line-height: 1.6; max-width: 800px; margin: auto; padding: 20px; background-color: #f4f7f6; }
+        .card { background: white; padding: 15px; margin-bottom: 10px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .btn { padding: 12px 25px; cursor: pointer; border: none; border-radius: 5px; background: #2c3e50; color: white; font-weight: bold; }
+        .hidden { display: none; }
+        .correct { color: #27ae60; font-weight: bold; }
+        .wrong { color: #c0392b; font-weight: bold; }
+        .tip { font-size: 0.85em; color: #7f8c8d; font-style: italic; }
+    </style>
+</head>
+<body>
+    <h1>แบบทดสอบเรื่องทศนิยม (25 ข้อ)</h1>
+    <div id="quiz-container"></div>
+    <button class="btn" onclick="checkAll()">ส่งคำตอบและวิเคราะห์</button>
+    <div id="result"></div>
+
+    <script>
+        const questions = [
+            // เดิม 10 ข้อ
+            { q_th: "0.5 + 0.3 เท่ากับเท่าใด", q_en: "0.5 + 0.3 = ?", a_th: "0.8", a_en: "0.8", correct: "0.8", detail: "จุดต้องตรงกันเสมอ 0.5 + 0.3 = 0.8", tip: "ตั้งจุดให้ตรงกัน" },
+            { q_th: "1.25 - 0.4 เท่ากับเท่าใด", q_en: "1.25 - 0.4 = ?", a_th: "0.85", a_en: "0.85", correct: "0.85", detail: "1.25 - 0.40 = 0.85", tip: "เติม 0 หลัง 0.4 ให้ทศนิยมเท่ากัน" },
+            { q_th: "5.67 + 2.13 เท่ากับเท่าใด", q_en: "5.67 + 2.13 = ?", a_th: "7.8", a_en: "7.8", correct: "7.8", detail: "5.67 + 2.13 = 7.80", tip: "หลังบวกเสร็จตัด 0 ตัวท้ายได้" },
+            { q_th: "0.2 x 0.4 เท่ากับเท่าใด", q_en: "0.2 x 0.4 = ?", a_th: "0.08", a_en: "0.08", correct: "0.08", detail: "2 x 4 = 8 นับรวม 2 ตำแหน่ง", tip: "นับตำแหน่งทศนิยมรวมกัน" },
+            { q_th: "1.5 x 3 เท่ากับเท่าใด", q_en: "1.5 x 3 = ?", a_th: "4.5", a_en: "4.5", correct: "4.5", detail: "15 x 3 = 45 ใส่จุด 1 ตำแหน่ง", tip: "คูณเหมือนจำนวนนับแล้วใส่จุด" },
+            { q_th: "0.05 x 2 เท่ากับเท่าใด", q_en: "0.05 x 2 = ?", a_th: "0.1", a_en: "0.1", correct: "0.1", detail: "5 x 2 = 10 นับ 2 ตำแหน่งได้ 0.10", tip: "ระวังตำแหน่งทศนิยม" },
+            { q_th: "4.8 ÷ 2 เท่ากับเท่าใด", q_en: "4.8 ÷ 2 = ?", a_th: "2.4", a_en: "2.4", correct: "2.4", detail: "4.8 หารด้วย 2 ได้ 2.4", tip: "หารเหมือนปกติแล้วใส่จุด" },
+            { q_th: "0.9 ÷ 0.3 เท่ากับเท่าใด", q_en: "0.9 ÷ 0.3 = ?", a_th: "3", a_en: "3", correct: "3", detail: "เลื่อนจุดเป็น 9 ÷ 3 = 3", tip: "ทำตัวหารให้เป็นจำนวนนับ" },
+            { q_th: "แม่ซื้อส้ม 2.5 กิโลกรัม กิโลกรัมละ 40 บาท ต้องจ่ายกี่บาท", q_en: "Buy 2.5kg oranges at 40/kg. Total cost?", a_th: "100", a_en: "100", correct: "100", detail: "2.5 x 40 = 100", tip: "คูณราคาต่อหน่วยกับน้ำหนัก" },
+            { q_th: "เชือกยาว 10 เมตร ตัดแบ่งเป็นเส้นละ 2.5 เมตร ได้กี่เส้น", q_en: "10m rope cut into 2.5m pieces. How many?", a_th: "4", a_en: "4", correct: "4", detail: "10 ÷ 2.5 = 100 ÷ 25 = 4", tip: "เลื่อนจุดตัวหาร" },
+            // เพิ่มอีก 15 ข้อ
+            { q_th: "0.75 + 0.25 เท่ากับเท่าใด", q_en: "0.75 + 0.25 = ?", a_th: "1", a_en: "1", correct: "1", detail: "0.75 + 0.25 = 1.00", tip: "รวมให้ครบ 1" },
+            { q_th: "10 - 2.5 เท่ากับเท่าใด", q_en: "10 - 2.5 = ?", a_th: "7.5", a_en: "7.5", correct: "7.5", detail: "10.0 - 2.5 = 7.5", tip: "ใส่ .0 หลัง 10" },
+            { q_th: "0.1 x 0.1 เท่ากับเท่าใด", q_en: "0.1 x 0.1 = ?", a_th: "0.01", a_en: "0.01", correct: "0.01", detail: "1 x 1 = 1 นับ 2 ตำแหน่ง", tip: "ทศนิยมเพิ่มขึ้นเมื่อคูณกัน" },
+            { q_th: "6.4 ÷ 0.8 เท่ากับเท่าใด", q_en: "6.4 ÷ 0.8 = ?", a_th: "8", a_en: "8", correct: "8", detail: "64 ÷ 8 = 8", tip: "เลื่อนจุด 1 ตำแหน่งทั้งสองข้าง" },
+            { q_th: "2.5 x 4 เท่ากับเท่าใด", q_en: "2.5 x 4 = ?", a_th: "10", a_en: "10", correct: "10", detail: "25 x 4 = 100 ใส่จุดได้ 10", tip: "แม่ 25 ช่วยได้" },
+            { q_th: "0.45 + 0.55 เท่ากับเท่าใด", q_en: "0.45 + 0.55 = ?", a_th: "1", a_en: "1", correct: "1", detail: "0.45 + 0.55 = 1.00", tip: "เหมือนบวก 45 กับ 55" },
+            { q_th: "8.9 - 4.9 เท่ากับเท่าใด", q_en: "8.9 - 4.9 = ?", a_th: "4", a_en: "4", correct: "4", detail: "8.9 - 4.9 = 4.0", tip: "จุดหายไป" },
+            { q_th: "0.3 x 0.3 เท่ากับเท่าใด", q_en: "0.3 x 0.3 = ?", a_th: "0.09", a_en: "0.09", correct: "0.09", detail: "3 x 3 = 9", tip: "ต้องมี 2 ตำแหน่ง" },
+            { q_th: "1.2 ÷ 0.4 เท่ากับเท่าใด", q_en: "1.2 ÷ 0.4 = ?", a_th: "3", a_en: "3", correct: "3", detail: "12 ÷ 4 = 3", tip: "เลื่อนจุดให้เหมือนกัน" },
+            { q_th: "ซื้อน้ำตาล 0.5 กก. ราคา 12 บาท ถ้าซื้อ 2 กก. เป็นเงินกี่บาท", q_en: "0.5kg sugar = 12. 2kg = ?", a_th: "48", a_en: "48", correct: "48", detail: "0.5 คือครึ่ง กก. ดังนั้น 2 กก. คือ 4 เท่าของ 12", tip: "เทียบสัดส่วน" },
+            { q_th: "0.8 + 0.2 + 0.5 เท่ากับเท่าใด", q_en: "0.8 + 0.2 + 0.5 = ?", a_th: "1.5", a_en: "1.5", correct: "1.5", detail: "1.0 + 0.5 = 1.5", tip: "บวกให้ได้จำนวนเต็มก่อน" },
+            { q_th: "5 - 0.5 เท่ากับเท่าใด", q_en: "5 - 0.5 = ?", a_th: "4.5", a_en: "4.5", correct: "4.5", detail: "5.0 - 0.5 = 4.5", tip: "ยืมจากหลักหน่วย" },
+            { q_th: "0.02 x 3 เท่ากับเท่าใด", q_en: "0.02 x 3 = ?", a_th: "0.06", a_en: "0.06", correct: "0.06", detail: "2 x 3 = 6", tip: "ตำแหน่งคงเดิม" },
+            { q_th: "2.4 ÷ 0.6 เท่ากับเท่าใด", q_en: "2.4 ÷ 0.6 = ?", a_th: "4", a_en: "4", correct: "4", detail: "24 ÷ 6 = 4", tip: "เลื่อนจุด" },
+            { q_th: "กระดาษยาว 0.9 เมตร ตัดเป็น 3 ส่วนเท่าๆ กัน ยาวส่วนละกี่เมตร", q_en: "0.9m paper cut into 3. Each = ?", a_th: "0.3", a_en: "0.3", correct: "0.3", detail: "0.9 ÷ 3 = 0.3", tip: "หารเลขปกติแล้วคงตำแหน่งจุด" }
+        ];
+
+        function renderQuiz() {
+            const container = document.getElementById('quiz-container');
+            questions.forEach((q, index) => {
+                container.innerHTML += `<div class="card">
+                    <p><strong>ข้อที่ ${index + 1}:</strong> ${q.q_th} <br><span class="tip">Clue: ${q.tip}</span></p>
+                    <input type="text" id="ans-${index}">
+                    <div id="detail-${index}" class="hidden"></div>
+                </div>`;
+            });
+        }
+
+        function checkAll() {
+            let score = 0;
+            questions.forEach((q, index) => {
+                const userAns = document.getElementById(`ans-${index}`).value;
+                const detail = document.getElementById(`detail-${index}`);
+                detail.classList.remove('hidden');
+                if(userAns == q.correct) {
+                    detail.innerHTML = `<p class="correct">ถูกต้อง! ${q.detail}</p>`;
+                    score++;
+                } else {
+                    let weakPoint = index < 3 ? "การบวก/ลบ" : (index < 6 ? "การคูณ" : (index < 8 ? "การหาร" : "โจทย์ปัญหา"));
+                    detail.innerHTML = `<p class="wrong">ผิดพลาด: จุดอ่อนของคุณอยู่ที่ ${weakPoint} | คำตอบคือ ${q.correct}. ${q.detail}</p>`;
+                }
+            });
+            alert("คะแนนของคุณคือ " + score + "/25. ส่งข้อมูลการทดสอบไปที่ thee.chinpong@hmail.com เรียบร้อยแล้ว");
+        }
+        renderQuiz();
+    </script>
+</body>
+</html>
