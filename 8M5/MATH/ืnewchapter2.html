@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <title>พระจอมเกล้าติวเตอร์ - ข้อสอบชุดที่ 2</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; line-height: 1.6; max-width: 850px; margin: auto; padding: 25px; background-color: #fdfbf7; }
+        h1 { color: #2c3e50; text-align: center; border-bottom: 2px solid #2c3e50; padding-bottom: 10px; }
+        .question { margin-bottom: 20px; padding: 20px; border: 1px solid #ddd; border-radius: 10px; background: white; }
+        .detail { margin-top: 10px; padding: 15px; font-size: 0.95em; color: #34495e; background: #e8f4fd; border-radius: 5px; display: none; }
+        .clue { color: #c0392b; font-size: 0.85em; font-weight: bold; }
+        button { cursor: pointer; padding: 15px 30px; background: #2c3e50; color: white; border: none; border-radius: 5px; font-size: 18px; margin-top: 20px; width: 100%; }
+        .score-box { font-size: 1.2em; font-weight: bold; text-align: center; margin: 20px 0; padding: 15px; border: 2px dashed #2c3e50; }
+    </style>
+</head>
+<body>
+
+<h1>แบบทดสอบชุดที่ 2: เลขยกกำลังเลขชี้กำลังเป็นจำนวนตรรกยะ</h1>
+<div id="quiz-container"></div>
+<button onclick="submitQuiz()">ส่งคำตอบและตรวจผลคะแนน</button>
+<div id="result" class="score-box" style="display:none;"></div>
+
+<script>
+    const questions = [
+        {"q": "32<sup>1/5</sup> มีค่าเท่าใด", "clue": "(2 ยกกำลังอะไรได้ 32)", "correct": 0, "options": ["2", "4", "8", "16"], "detail": "32 = 2<sup>5</sup> ดังนั้น 32<sup>1/5</sup> = 2"},
+        {"q": "(-32)<sup>1/5</sup> มีค่าเท่าใด", "clue": "(รากที่คี่ของค่าลบ)", "correct": 1, "options": ["2", "-2", "ไม่นิยาม", "4"], "detail": "(-2)<sup>5</sup> = -32"},
+        {"q": "4<sup>3/2</sup> มีค่าเท่าใด", "clue": "(√4 ยกกำลัง 3)", "correct": 2, "options": ["4", "6", "8", "16"], "detail": "2<sup>3</sup> = 8"},
+        {"q": "27<sup>-2/3</sup> มีค่าเท่าใด", "clue": "(กลับเศษส่วนและถอดราก)", "correct": 3, "options": ["9", "1/3", "1/6", "1/9"], "detail": "1/27<sup>2/3</sup> = 1/(3<sup>2</sup>) = 1/9"},
+        {"q": "(x<sup>4</sup>)<sup>1/4</sup> คือเท่าใด", "clue": "(เลขชี้กำลังซ้อนคูณกัน)", "correct": 0, "options": ["x", "x<sup>2</sup>", "x<sup>16</sup>", "1"], "detail": "x<sup>(4×1/4)</sup> = x<sup>1</sup> = x"},
+        {"q": "3<sup>1/2</sup> × 27<sup>1/2</sup> มีค่าเท่าใด", "clue": "(ฐานรวมกันได้หรือไม่)", "correct": 1, "options": ["3", "9", "81", "18"], "detail": "√(3×27) = √81 = 9"},
+        {"q": "125<sup>-1/3</sup> มีค่าเท่าใด", "clue": "(กลับเศษส่วนของรากที่ 3)", "correct": 2, "options": ["5", "-5", "1/5", "1/25"], "detail": "1/∛125 = 1/5"},
+        {"q": "ถ้า 2<sup>x</sup> = 8<sup>1/3</sup> แล้ว x คืออะไร", "clue": "(ทำฐานให้เป็น 2)", "correct": 0, "options": ["1", "2", "3", "0"], "detail": "2<sup>x</sup> = (2<sup>3</sup>)<sup>1/3</sup> = 2<sup>1</sup> ดังนั้น x = 1"},
+        {"q": "(0.25)<sup>1/2</sup> มีค่าเท่าใด", "clue": "(เปลี่ยนเป็นเศษส่วน 1/4)", "correct": 3, "options": ["0.25", "0.125", "0.1", "0.5"], "detail": "√(1/4) = 1/2 = 0.5"},
+        {"q": "8<sup>2/3</sup> ÷ 4<sup>1/2</sup> มีค่าเท่าใด", "clue": "(หาค่าทีละตัว)", "correct": 1, "options": ["2", "4", "8", "16"], "detail": "4 ÷ 2 = 2"},
+        {"q": "ค่าของ 16<sup>3/4</sup> คือเท่าใด", "clue": "(รากที่ 4 ของ 16 ยกกำลัง 3)", "correct": 2, "options": ["2", "4", "8", "16"], "detail": "2<sup>3</sup> = 8"},
+        {"q": "(25<sup>1/2</sup>)<sup>2</sup> คือเท่าใด", "clue": "(สมบัติการซ้อน)", "correct": 0, "options": ["25", "5", "125", "625"], "detail": "25<sup>(1/2×2)</sup> = 25<sup>1</sup> = 25"},
+        {"q": "(-1/8)<sup>1/3</sup> คือเท่าใด", "clue": "(รากคี่ของค่าลบ)", "correct": 1, "options": ["1/2", "-1/2", "2", "-2"], "detail": "∛(-1/8) = -1/2"},
+        {"q": "(a<sup>1/2</sup>)<sup>4</sup> คือเท่าใด", "clue": "(a<sup>1/2×4</sup>)", "correct": 3, "options": ["a", "a<sup>4</sup>", "a<sup>1/2</sup>", "a<sup>2</sup>"], "detail": "a<sup>2</sup>"},
+        {"q": "9<sup>1/2</sup> + 16<sup>1/2</sup> มีค่าเท่าใด", "clue": "(3 + 4)", "correct": 2, "options": ["5", "6", "7", "12"], "detail": "3 + 4 = 7"},
+        {"q": "2<sup>3/2</sup> × 2<sup>1/2</sup> คือเท่าใด", "clue": "(บวกเลขชี้กำลัง)", "correct": 0, "options": ["4", "2", "8", "16"], "detail": "2<sup>(3/2+1/2)</sup> = 2<sup>2</sup> = 4"},
+        {"q": "(x<sup>3</sup>y<sup>6</sup>)<sup>1/3</sup> คือเท่าใด", "clue": "(กระจาย 1/3 เข้าไป)", "correct": 1, "options": ["x<sup>3</sup>y<sup>2</sup>", "xy<sup>2</sup>", "x<sup>1/3</sup>y<sup>2</sup>", "xy<sup>3</sup>"], "detail": "x<sup>1</sup>y<sup>2</sup>"},
+        {"q": "81<sup>-1/2</sup> คือเท่าใด", "clue": "(1/ √81)", "correct": 2, "options": ["9", "-9", "1/9", "-1/9"], "detail": "1/9"},
+        {"q": "ค่าของ (2<sup>5</sup>)<sup>0.2</sup> คือเท่าใด", "clue": "(0.2 = 1/5)", "correct": 0, "options": ["2", "4", "5", "32"], "detail": "2<sup>(5×1/5)</sup> = 2<sup>1</sup> = 2"},
+        {"q": "จงหาค่าของ 4<sup>0.5</sup> × 9<sup>0.5</sup>", "clue": "(√4 × √9)", "correct": 3, "options": ["2", "3", "5", "6"], "detail": "2 × 3 = 6"},
+        {"q": "(x<sup>1/3</sup>)<sup>3</sup> คือเท่าใด", "clue": "(สมบัติการซ้อน)", "correct": 1, "options": ["x<sup>1/3</sup>", "x", "x<sup>3</sup>", "3x"], "detail": "x<sup>(1/3×3)</sup> = x"},
+        {"q": "625<sup>1/4</sup> คือเท่าใด", "clue": "(5 ยกกำลังอะไรได้ 625)", "correct": 0, "options": ["5", "15", "25", "125"], "detail": "5<sup>4</sup> = 625"},
+        {"q": "(1/1000)<sup>-1/3</sup> คือเท่าใด", "clue": "(กลับเศษส่วนแล้วหาค่า)", "correct": 3, "options": ["10", "1/10", "-10", "100"], "detail": "1000<sup>1/3</sup> = 10"},
+        {"q": "5<sup>x</sup> = 1 แล้ว x เท่ากับเท่าใด", "clue": "(เลขใดๆ ยกกำลังอะไรได้ 1)", "correct": 2, "options": ["1", "5", "0", "-1"], "detail": "x = 0"},
+        {"q": "(8<sup>1/3</sup> + 1)<sup>2</sup> คือเท่าใด", "clue": "(2 + 1) ยกกำลัง 2", "correct": 1, "options": ["3", "9", "4", "6"], "detail": "3<sup>2</sup> = 9"}
+    ];
+
+    const container = document.getElementById('quiz-container');
+    questions.forEach((q, i) => {
+        let html = `<div class="question" id="q${i}">
+            <p><strong>ข้อที่ ${i+1}:</strong> ${q.q} <br><span class="clue">${q.clue}</span></p>`;
+        q.options.forEach((opt, j) => {
+            html += `<input type="radio" name="q${i}" value="${j}" onclick="showDetail(${i})"> ${opt}<br>`;
+        });
+        html += `<div class="detail" id="d${i}"><strong>เฉลย:</strong> ${q.detail}</div></div>`;
+        container.innerHTML += html;
+    });
+
+    function showDetail(i) { document.getElementById('d'+i).style.display = 'block'; }
+    
+    function submitQuiz() {
+        let score = 0;
+        questions.forEach((q, i) => {
+            const selected = document.querySelector(`input[name="q${i}"]:checked`);
+            if (selected && parseInt(selected.value) === q.correct) score++;
+        });
+        document.getElementById('result').style.display = 'block';
+        document.getElementById('result').innerHTML = `สรุปผลคะแนน: ${score} / ${questions.length} คะแนน`;
+    }
+</script>
+</body>
+</html>
