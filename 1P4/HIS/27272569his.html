@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>แบบทดสอบประวัติศาสตร์ ชั้น ป.4 - พระจอมเกล้าติวเตอร์</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; padding: 20px; line-height: 1.6; }
+        .container { max-width: 800px; margin: auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        h1, h2 { color: #2c3e50; text-align: center; }
+        .question { margin-bottom: 25px; padding: 15px; border-bottom: 1px solid #eee; }
+        .options button { display: block; width: 100%; margin: 5px 0; padding: 10px; text-align: left; background: #ecf0f1; border: 1px solid #bdc3c7; cursor: pointer; border-radius: 5px; transition: 0.3s; }
+        .options button:hover { background: #dcdde1; }
+        .detail { display: none; margin-top: 10px; padding: 10px; background: #e8f8f5; border-left: 4px solid #27ae60; font-size: 0.9em; }
+        .correct { background-color: #27ae60 !important; color: white; }
+        .wrong { background-color: #c0392b !important; color: white; }
+        #result-summary { margin-top: 30px; padding: 20px; background: #34495e; color: white; border-radius: 8px; text-align: center; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>แบบทดสอบประวัติศาสตร์ ป.4</h1>
+        <button onclick="toggleLanguage()">สลับภาษา (TH/EN)</button>
+        <div id="quiz-area"></div>
+        <div id="result-summary" style="display:none;"></div>
+    </div>
+
+    <script>
+        let currentLang = 'th';
+        const questions = [
+            {
+                q_th: "ข้อใดคือวิธีการทางประวัติศาสตร์ขั้นแรกสุดที่ต้องทำ?",
+                q_en: "What is the very first step of the historical method?",
+                a_th: ["การวิเคราะห์ข้อมูล", "การนำเสนอข้อมูล", "การตั้งคำถาม", "การตรวจสอบหลักฐาน"],
+                a_en: ["Data Analysis", "Data Presentation", "Formulating Questions", "Verifying Evidence"],
+                correct: 2,
+                th: "คำใบ้: เริ่มต้นด้วยความสงสัยก่อน", en: "Hint: Start with curiosity",
+                detail: "การตั้งคำถามเป็นจุดเริ่มต้นของการสืบค้นข้อมูล เพื่อกำหนดทิศทางในการศึกษา"
+            },
+            {
+                q_th: "หลักฐานประเภทใดที่สร้างขึ้นในเหตุการณ์นั้นโดยตรง?",
+                q_en: "Which type of evidence was created directly during the event?",
+                a_th: ["หลักฐานชั้นรอง", "หลักฐานชั้นต้น", "หลักฐานตีความ", "หลักฐานบันทึกใหม่"],
+                a_en: ["Secondary Source", "Primary Source", "Interpretive Source", "New Record Source"],
+                correct: 1,
+                th: "คำใบ้: ประจักษ์พยานในที่เกิดเหตุ", en: "Hint: Witness at the scene",
+                detail: "หลักฐานชั้นต้นคือสิ่งที่เกิดขึ้นร่วมสมัยกับเหตุการณ์นั้นๆ"
+            },
+            {
+                q_th: "หากต้องการทราบความรู้สึกของทหารในยุคอยุธยา ควรใช้หลักฐานใด?",
+                q_en: "To know the feelings of soldiers in Ayutthaya, which evidence is best?",
+                a_th: ["จดหมายเหตุรายวัน", "หนังสือเรียนประวัติศาสตร์", "สารคดีโทรทัศน์", "บทความวิจัยสมัยใหม่"],
+                a_en: ["Daily Records", "History Textbook", "Television Documentary", "Modern Research Article"],
+                correct: 0,
+                th: "คำใบ้: เอกสารที่เขียนโดยคนในยุคนั้น", en: "Hint: Documents written by people of that era",
+                detail: "จดหมายเหตุรายวันคือหลักฐานชั้นต้นที่บันทึกความรู้สึกจริงของผู้เขียนในเวลานั้น"
+            },
+            {
+                q_th: "พ.ศ. 2567 ตรงกับ ค.ศ. ใด?",
+                q_en: "What is 2567 B.E. in A.D.?",
+                a_th: ["ค.ศ. 2024", "ค.ศ. 2025", "ค.ศ. 2026", "ค.ศ. 2027"],
+                a_en: ["A.D. 2024", "A.D. 2025", "A.D. 2026", "A.D. 2027"],
+                correct: 0,
+                th: "คำใบ้: พ.ศ. มากกว่า ค.ศ. อยู่ 543", en: "Hint: B.E. is 543 years ahead of A.D.",
+                detail: "นำ 2567 - 543 = 2024"
+            },
+            {
+                q_th: "ระยะเวลา 10 ปี เรียกว่าอะไร?",
+                q_en: "What is a period of 10 years called?",
+                a_th: ["ศตวรรษ", "สหัสวรรษ", "ทศวรรษ", "สมัยกาล"],
+                a_en: ["Century", "Millennium", "Decade", "Era"],
+                correct: 2,
+                th: "คำใบ้: ทศ แปลว่า สิบ", en: "Hint: 'Tos' means ten",
+                detail: "ทศวรรษ คือ รอบ 10 ปี"
+            },
+            {
+                q_th: "คำว่า 'ศตวรรษ' หมายถึงระยะเวลากี่ปี?",
+                q_en: "What does 'Century' refer to in years?",
+                a_th: ["10 ปี", "100 ปี", "1,000 ปี", "500 ปี"],
+                a_en: ["10 years", "100 years", "1,000 years", "500 years"],
+                correct: 1,
+                th: "คำใบ้: ศต = 100", en: "Hint: 'Sata' means 100",
+                detail: "ศตวรรษ คือ รอบ 100 ปี"
+            },
+            {
+                q_th: "ยุคสมัยก่อนประวัติศาสตร์ต่างจากยุคประวัติศาสตร์อย่างไร?",
+                q_en: "How does the Pre-historic era differ from the Historic era?",
+                a_th: ["การใช้โลหะ", "การตั้งถิ่นฐาน", "การใช้ตัวอักษร", "การนับถือศาสนา"],
+                a_en: ["Metal usage", "Settlement", "Writing system", "Religious belief"],
+                correct: 2,
+                th: "คำใบ้: บันทึกข้อมูลได้หรือไม่", en: "Hint: Recording ability",
+                detail: "ยุคประวัติศาสตร์เริ่มเมื่อมนุษย์เริ่มมีตัวอักษรบันทึกเรื่องราว"
+            },
+            {
+                q_th: "ปัจจัยสำคัญที่สุดในการเลือกตั้งถิ่นฐานของคนโบราณคืออะไร?",
+                q_en: "What is the most important factor for ancient settlements?",
+                a_th: ["มีภูเขาสูง", "อยู่ใกล้แหล่งน้ำ", "มีหินสวยงาม", "มีป่าไม้อุดมสมบูรณ์"],
+                a_en: ["High mountains", "Water source proximity", "Beautiful stones", "Dense forests"],
+                correct: 1,
+                th: "คำใบ้: สิ่งที่จำเป็นต่อชีวิตประจำวัน", en: "Hint: Necessity for daily life",
+                detail: "น้ำเป็นปัจจัยพื้นฐานทั้งการบริโภค การเกษตร และการเดินทาง"
+            },
+            {
+                q_th: "ข้อใดไม่ใช่แหล่งน้ำที่สำคัญในการตั้งถิ่นฐาน?",
+                q_en: "Which is not an important water source for settlement?",
+                a_th: ["แม่น้ำ", "ลำคลอง", "ทะเลทราย", "หนองบึง"],
+                a_en: ["River", "Canal", "Desert", "Marsh/Swamp"],
+                correct: 2,
+                th: "คำใบ้: พื้นที่แห้งแล้ง", en: "Hint: Arid area",
+                detail: "ทะเลทรายเป็นพื้นที่แห้งแล้ง ไม่เอื้อต่อการตั้งถิ่นฐานในอดีต"
+            },
+            {
+                q_th: "การรวมกลุ่มของคนโบราณนำไปสู่สิ่งใด?",
+                q_en: "What did the grouping of ancient people lead to?",
+                a_th: ["การสร้างอาณาจักร", "การเดินทางไกล", "การประดิษฐ์เครื่องบิน", "การห้ามทำเกษตร"],
+                a_en: ["Building kingdoms", "Long travel", "Inventing planes", "Banning agriculture"],
+                correct: 0,
+                th: "คำใบ้: การจัดการระเบียบสังคม", en: "Hint: Managing social order",
+                detail: "การอยู่รวมกันนำไปสู่การจัดระเบียบและการสร้างอาณาจักรเพื่อความปลอดภัย"
+            },
+            {
+                q_th: "ศิลาจารึก จัดเป็นหลักฐานประเภทใด?",
+                q_en: "Is a stone inscription a primary or secondary source?",
+                a_th: ["หลักฐานชั้นต้น", "หลักฐานชั้นรอง", "หลักฐานใหม่", "หลักฐานสมมติ"],
+                a_en: ["Primary source", "Secondary source", "New source", "Hypothetical source"],
+                correct: 0,
+                th: "คำใบ้: จารึกในขณะที่เกิดเหตุ", en: "Hint: Inscribed during the event",
+                detail: "ศิลาจารึกคือหลักฐานชั้นต้นที่จารึกเรื่องราวโดยคนในสมัยนั้น"
+            },
+            {
+                q_th: "หนังสือเรียนประวัติศาสตร์ จัดเป็นหลักฐานประเภทใด?",
+                q_en: "Is a history textbook a primary or secondary source?",
+                a_th: ["หลักฐานชั้นต้น", "หลักฐานชั้นรอง", "หลักฐานจริง", "หลักฐานโบราณ"],
+                a_en: ["Primary source", "Secondary source", "Actual source", "Ancient source"],
+                correct: 1,
+                th: "คำใบ้: รวบรวมข้อมูลมาเขียนทีหลัง", en: "Hint: Compiled and written later",
+                detail: "หนังสือเรียนเป็นการเรียบเรียงข้อมูลจากหลักฐานหลายๆ แห่ง จึงเป็นหลักฐานชั้นรอง"
+            },
+            {
+                q_th: "ทศวรรษ คือกี่ปี?",
+                q_en: "How many years is a decade?",
+                a_th: ["1 ปี", "10 ปี", "100 ปี", "1,000 ปี"],
+                a_en: ["1 year", "10 years", "100 years", "1,000 years"],
+                correct: 1,
+                th: "คำใบ้: ทศ = สิบ", en: "Hint: 'Tos' = 10",
+                detail: "ทศวรรษ หมายถึง ระยะเวลา 10 ปี"
+            },
+            {
+                q_th: "การนับเวลาแบบพุทธศักราช (พ.ศ.) เริ่มเมื่อใด?",
+                q_en: "When did the Buddhist Era (B.E.) start?",
+                a_th: ["พระพุทธเจ้าประสูติ", "พระพุทธเจ้าตรัสรู้", "พระพุทธเจ้าปรินิพพาน", "พระพุทธเจ้าเทศนา"],
+                a_en: ["Birth of Buddha", "Enlightenment of Buddha", "Passing of Buddha", "First Sermon"],
+                correct: 2,
+                th: "คำใบ้: เริ่มนับหลังท่านจากไป", en: "Hint: Starts after he passed away",
+                detail: "พ.ศ. เริ่มนับเมื่อพระพุทธเจ้าเสด็จดับขันธปรินิพพาน"
+            },
+            {
+                q_th: "การตั้งถิ่นฐานแบบเดิมคือการรวมกลุ่มกันเป็น...",
+                q_en: "What were original settlements grouped as?",
+                a_th: ["หมู่บ้าน", "เมือง", "รัฐ", "ประเทศ"],
+                a_en: ["Village", "City", "State", "Country"],
+                correct: 0,
+                th: "คำใบ้: เล็กที่สุด", en: "Hint: The smallest unit",
+                detail: "การตั้งถิ่นฐานเริ่มจากชุมชนเล็กๆ หรือหมู่บ้าน ก่อนพัฒนาไปเป็นเมือง"
+            },
+            {
+                q_th: "การตรวจสอบความน่าเชื่อถือของหลักฐานทำเพื่ออะไร?",
+                q_en: "Why check the credibility of evidence?",
+                a_th: ["เพื่อความสนุก", "เพื่อความถูกต้อง", "เพื่อเพิ่มจำนวน", "เพื่อลดความยาก"],
+                a_en: ["For fun", "For accuracy", "To increase quantity", "To reduce difficulty"],
+                correct: 1,
+                th: "คำใบ้: ป้องกันความผิดพลาด", en: "Hint: Preventing mistakes",
+                detail: "การตรวจสอบเพื่อป้องกันข้อมูลที่เป็นเท็จหรือความเข้าใจคลาดเคลื่อน"
+            },
+            {
+                q_th: "แม่น้ำสายใดมีความสำคัญต่อประวัติศาสตร์ไทยมาก?",
+                q_en: "Which river is very important to Thai history?",
+                a_th: ["แม่น้ำเจ้าพระยา", "แม่น้ำไนล์", "แม่น้ำแอมะซอน", "แม่น้ำมิสซิสซิปปี"],
+                a_en: ["Chao Phraya River", "Nile River", "Amazon River", "Mississippi River"],
+                correct: 0,
+                th: "คำใบ้: อู่ข้าวอู่น้ำของไทย", en: "Hint: The rice bowl of Thailand",
+                detail: "ลุ่มน้ำเจ้าพระยาเป็นแหล่งตั้งถิ่นฐานสำคัญที่สุดในดินแดนไทย"
+            },
+            {
+                q_th: "ข้อใดเป็นข้อดีของการเรียนประวัติศาสตร์?",
+                q_en: "What is a benefit of studying history?",
+                a_th: ["คาดเดาอนาคตได้ 100%", "เข้าใจรากเหง้าของสังคม", "ไม่ต้องอ่านหนังสืออีก", "มีเงินเพิ่มขึ้น"],
+                a_en: ["Predicting future with 100% accuracy", "Understanding social roots", "No more reading needed", "Getting more money"],
+                correct: 1,
+                th: "คำใบ้: รู้ว่าเรามาจากไหน", en: "Hint: Knowing where we come from",
+                detail: "เรียนประวัติศาสตร์เพื่อเข้าใจที่มาและพัฒนาการของสังคมปัจจุบัน"
+            },
+            {
+                q_th: "ช่วงเวลา 1,000 ปี เรียกว่าอะไร?",
+                q_en: "What is a 1,000-year period called?",
+                a_th: ["ทศวรรษ", "ศตวรรษ", "สหัสวรรษ", "สมัยกลาง"],
+                a_en: ["Decade", "Century", "Millennium", "Middle Ages"],
+                correct: 2,
+                th: "คำใบ้: สหัส = พัน", en: "Hint: 'Sahas' means thousand",
+                detail: "สหัสวรรษ หมายถึง ระยะเวลา 1,000 ปี"
+            },
+            {
+                q_th: "ชุมชนโบราณมักตั้งอยู่ใกล้แหล่งน้ำเพราะเหตุใด?",
+                q_en: "Why were ancient communities near water sources?",
+                a_th: ["เพื่อการประมงและเกษตร", "เพื่อความบันเทิง", "เพื่อสร้างรีสอร์ท", "เพื่อความสวยงาม"],
+                a_en: ["For fishing and agriculture", "For entertainment", "To build resorts", "For aesthetics"],
+                correct: 0,
+                th: "คำใบ้: การทำมาหากิน", en: "Hint: Means of livelihood",
+                detail: "น้ำจำเป็นต่อการเกษตรและอาชีพประมง เป็นแหล่งทรัพยากรหลัก"
+            },
+            {
+                q_th: "ใครคือผู้ที่สืบค้นประวัติศาสตร์?",
+                q_en: "Who searches for history?",
+                a_th: ["นักวิทยาศาสตร์", "นักประวัติศาสตร์", "นักกีฬา", "นักดนตรี"],
+                a_en: ["Scientist", "Historian", "Athlete", "Musician"],
+                correct: 1,
+                th: "คำใบ้: ผู้ศึกษาอดีต", en: "Hint: Someone who studies the past",
+                detail: "นักประวัติศาสตร์มีหน้าที่ศึกษาและรวบรวมหลักฐานเกี่ยวกับอดีต"
+            },
+            {
+                q_th: "ข้อใดคือการนับเวลาแบบสากล?",
+                q_en: "What is the international way of counting time?",
+                a_th: ["พ.ศ.", "ค.ศ.", "จ.ศ.", "ร.ศ."],
+                a_en: ["B.E.", "A.D.", "J.S.", "R.S."],
+                correct: 1,
+                th: "คำใบ้: ระบบที่ใช้ทั่วโลก", en: "Hint: System used worldwide",
+                detail: "คริสต์ศักราช (ค.ศ.) เป็นระบบนับเวลาสากลที่ใช้กันทั่วโลก"
+            },
+            {
+                q_th: "การมีตัวอักษรบันทึกเรื่องราวสำคัญอย่างไร?",
+                q_en: "Why is having a writing system important?",
+                a_th: ["ทำให้เขียนหนังสือสวย", "ทำให้สื่อสารข้ามกาลเวลาได้", "ทำให้ไม่ต้องพูด", "ทำให้คนอ่านหนังสือออก"],
+                a_en: ["Makes writing beautiful", "Enables communication across time", "Eliminates need for speaking", "Helps people read"],
+                correct: 1,
+                th: "คำใบ้: การสืบทอดความรู้", en: "Hint: Transmitting knowledge",
+                detail: "ตัวอักษรทำให้เราสามารถบันทึกเหตุการณ์และส่งต่อความรู้ไปยังคนรุ่นหลังได้แม่นยำ"
+            },
+            {
+                q_th: "ข้อใดคือความหมายของ 'หลักฐานชั้นรอง'?",
+                q_en: "What is the meaning of 'Secondary source'?",
+                a_th: ["สิ่งที่สร้างขึ้นภายหลัง", "สิ่งที่เกิดขึ้นทันที", "ร่องรอยในที่เกิดเหตุ", "บันทึกในจารึก"],
+                a_en: ["Something created later", "Something that happened instantly", "Clues at the scene", "Records in inscriptions"],
+                correct: 0,
+                th: "คำใบ้: ไม่ได้เห็นเหตุการณ์จริง", en: "Hint: Didn't witness the event",
+                detail: "หลักฐานชั้นรองคืองานเขียนที่ตีความหรือรวบรวมจากหลักฐานชั้นต้นอีกที"
+            },
+            {
+                q_th: "การสร้างอาณาจักรมีจุดประสงค์หลักเพื่ออะไร?",
+                q_en: "What is the main purpose of creating a kingdom?",
+                a_th: ["เพื่อความมั่นคงและปลอดภัย", "เพื่อความสนุกสนาน", "เพื่อการแข่งขันกีฬา", "เพื่อหาที่เที่ยวใหม่"],
+                a_en: ["For stability and safety", "For fun", "For sports competitions", "To find new travel spots"],
+                correct: 0,
+                th: "คำใบ้: ปกป้องคนในชุมชน", en: "Hint: Protecting community members",
+                detail: "อาณาจักรช่วยรวมอำนาจและกฎหมายเพื่อป้องกันศัตรูและจัดระเบียบสังคม"
+            }
+        ];
+
+        function renderQuiz() {
+            const area = document.getElementById('quiz-area');
+            area.innerHTML = '';
+            questions.forEach((q, index) => {
+                const div = document.createElement('div');
+                div.className = 'question';
+                div.innerHTML = `
+                    <p><strong>${index + 1}. ${currentLang === 'th' ? q.q_th : q.q_en}</strong></p>
+                    <div class="options">
+                        ${(currentLang === 'th' ? q.a_th : q.a_en).map((opt, i) => `
+                            <button onclick="checkAnswer(${index}, ${i}, this)">${opt}</button>
+                        `).join('')}
+                    </div>
+                    <div class="detail" id="detail-${index}">${currentLang === 'th' ? q.detail : q.detail}</div>
+                `;
+                area.appendChild(div);
+            });
+        }
+
+        function checkAnswer(qIndex, aIndex, btn) {
+            const q = questions[qIndex];
+            const buttons = btn.parentElement.querySelectorAll('button');
+            buttons.forEach(b => b.disabled = true);
+            if (aIndex === q.correct) {
+                btn.classList.add('correct');
+            } else {
+                btn.classList.add('wrong');
+                buttons[q.correct].classList.add('correct');
+            }
+            document.getElementById(`detail-${qIndex}`).style.display = 'block';
+        }
+
+        function toggleLanguage() {
+            currentLang = currentLang === 'th' ? 'en' : 'th';
+            renderQuiz();
+        }
+
+        renderQuiz();
+    </script>
+</body>
+</html>
