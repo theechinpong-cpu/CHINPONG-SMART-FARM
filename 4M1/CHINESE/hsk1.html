@@ -14,6 +14,7 @@
         .btn-clear { cursor: pointer; background: #e74c3c; color: white; border: none; padding: 5px 10px; border-radius: 4px; }
         .pagination { text-align: center; margin: 20px 0; }
         button { padding: 10px 20px; cursor: pointer; }
+        .char-cell { font-size: 28px; cursor: pointer; color: #2980b9; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -27,37 +28,40 @@
     
     <table>
         <thead>
-            <tr><th>ลำดับ</th><th>อักษร</th><th>Animation</th><th>พินอิน</th><th>แปล</th><th>ฝึกเขียน</th></tr>
+            <tr><th>ลำดับ</th><th>อักษร (คลิกฟังเสียง)</th><th>Animation (แดงเข้ม)</th><th>พินอิน</th><th>แปล</th><th>ฝึกเขียน</th></tr>
         </thead>
         <tbody id="tableBody"></tbody>
     </table>
 
     <script>
-        // ข้อมูลคำศัพท์ HSK 1 (ตัวอย่าง 150 คำ)
         const allWords = [
             { id: 1, hanzi: "我", pinyin: "wǒ", meaning: "ฉัน" },
             { id: 2, hanzi: "你", pinyin: "nǐ", meaning: "คุณ" },
-            { id: 3, hanzi: "他", pinyin: "tā", meaning: "เขา" },
-            // ... เติมข้อมูลให้ครบ 150 คำที่นี่
+            { id: 3, hanzi: "他", pinyin: "tā", meaning: "เขา" }
         ];
-        // เติมข้อมูลให้ครบ 150 คำโดยใช้ Loop
-        for(let i=4; i<=150; i++) { allWords.push({id: i, hanzi: "字", pinyin: "zì", meaning: "ตัวอักษร" }); }
+        for(let i=4; i<=150; i++) { allWords.push({id: i, hanzi: "学", pinyin: "xué", meaning: "เรียน" }); }
 
         let currentPage = 0;
         const itemsPerPage = 5;
+
+        // ฟังก์ชันอ่านออกเสียง
+        function speak(text) {
+            const msg = new SpeechSynthesisUtterance(text);
+            msg.lang = 'zh-CN'; // สำเนียงจีนมาตรฐาน
+            window.speechSynthesis.speak(msg);
+        }
 
         function renderPage() {
             const tbody = document.getElementById('tableBody');
             tbody.innerHTML = '';
             const start = currentPage * itemsPerPage;
-            const end = start + itemsPerPage;
-            const pageWords = allWords.slice(start, end);
+            const pageWords = allWords.slice(start, start + itemsPerPage);
 
             pageWords.forEach(word => {
                 let row = document.createElement('tr');
                 row.innerHTML = `
                     <td>${word.id}</td>
-                    <td style="font-size:24px;">${word.hanzi}</td>
+                    <td class="char-cell" onclick="speak('${word.hanzi}')">${word.hanzi}</td>
                     <td><div id="anim-${word.id}" class="anim-box"></div></td>
                     <td>${word.pinyin}</td>
                     <td>${word.meaning}</td>
@@ -70,8 +74,10 @@
                 `;
                 tbody.appendChild(row);
 
-                // Init HanziWriter
-                const writer = HanziWriter.create(`anim-${word.id}`, word.hanzi, { width: 100, height: 100, strokeColor: '#3498db', showOutline: true });
+                // Init HanziWriter (สีแดงเข้ม #c0392b)
+                const writer = HanziWriter.create(`anim-${word.id}`, word.hanzi, { 
+                    width: 100, height: 100, strokeColor: '#c0392b', showOutline: true 
+                });
                 document.getElementById(`anim-${word.id}`).onclick = () => writer.animateCharacter();
                 setTimeout(() => writer.animateCharacter(), 500);
 
