@@ -2,26 +2,28 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <title>พระจอมเกล้าติวเตอร์ - ฝึกเขียนสีสัน HSK 1</title>
-    <script src="https://cdn.jsdelivr.net/npm/hanzi-writer@3.5.0/dist/hanzi-writer.min.js"></script>
+    <title>พระจอมเกล้าติวเตอร์ - HSK 1 Professional</title>
     <style>
         body { font-family: 'Kanit', sans-serif; padding: 20px; background-color: #f4f4f4; }
-        table { width: 100%; border-collapse: collapse; background: white; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        table { width: 100%; border-collapse: collapse; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         th, td { border: 1px solid #ddd; padding: 12px; text-align: center; }
-        .stroke-box { width: 80px; height: 80px; border: 1px solid #ccc; background: #fff; cursor: crosshair; margin: 0 auto; }
-        .color-picker { margin-top: 5px; }
+        .whiteboard { width: 100px; height: 100px; border: 2px solid #333; background: #fff; cursor: crosshair; touch-action: none; }
+        select { padding: 5px; }
+        button { padding: 5px 10px; cursor: pointer; }
     </style>
 </head>
 <body>
 
-    <h2>HSK 1 - ฝึกเขียนเปลี่ยนสีได้ (Professional Edition)</h2>
+    <h2>HSK 1 - ฝึกเขียนตัวอักษรจีน (Professional Whiteboard)</h2>
     <table>
         <thead>
             <tr>
-                <th>อักษร</th>
+                <th>ลำดับ</th>
+                <th>อักษรจีน</th>
                 <th>พินอิน</th>
-                <th>ช่องฝึกเขียน (คลิกเขียนตาม)</th>
-                <th>เลือกสีปากกา</th>
+                <th>คำแปล</th>
+                <th>สีปากกา</th>
+                <th>กระดานฝึกเขียน</th>
             </tr>
         </thead>
         <tbody id="tableBody"></tbody>
@@ -29,9 +31,9 @@
 
     <script>
         const words = [
-            { hanzi: "我", pinyin: "wǒ" },
-            { hanzi: "你", pinyin: "nǐ" },
-            { hanzi: "他", pinyin: "tā" }
+            { id: 1, hanzi: "我", pinyin: "wǒ", meaning: "ฉัน" },
+            { id: 2, hanzi: "你", pinyin: "nǐ", meaning: "คุณ" },
+            { id: 3, hanzi: "他", pinyin: "tā", meaning: "เขา" }
         ];
 
         const tbody = document.getElementById('tableBody');
@@ -39,34 +41,47 @@
         words.forEach(word => {
             let row = document.createElement('tr');
             row.innerHTML = `
-                <td style="font-size:28px;">${word.hanzi}</td>
+                <td>${word.id}</td>
+                <td style="font-size:24px;">${word.hanzi}</td>
                 <td>${word.pinyin}</td>
-                <td><div id="box-${word.hanzi}" class="stroke-box"></div></td>
+                <td>${word.meaning}</td>
                 <td>
-                    <select class="color-picker" id="color-${word.hanzi}" onchange="changeColor('${word.hanzi}')">
-                        <option value="#2c3e50">ดำ (มาตรฐาน)</option>
-                        <option value="#e74c3c">แดง</option>
-                        <option value="#3498db">น้ำเงิน</option>
-                        <option value="#27ae60">เขียว</option>
+                    <select id="color-${word.id}">
+                        <option value="black">ดำ</option>
+                        <option value="red">แดง</option>
+                        <option value="blue">น้ำเงิน</option>
                     </select>
+                    <button onclick="clearCanvas(${word.id})">ล้าง</button>
                 </td>
+                <td><canvas id="canvas-${word.id}" class="whiteboard" width="100" height="100"></canvas></td>
             `;
             tbody.appendChild(row);
-
-            // สร้าง Writer instance เริ่มต้น
-            const writer = HanziWriter.create(`box-${word.hanzi}`, word.hanzi, {
-                width: 80, height: 80, padding: 5,
-                strokeColor: '#2c3e50', showOutline: true
-            });
-            
-            // เก็บ reference ไว้ใช้ในฟังก์ชันเปลี่ยนสี
-            window[`writer_${word.hanzi}`] = writer;
+            initCanvas(word.id);
         });
 
-        // ฟังก์ชันเปลี่ยนสีปากกา
-        function changeColor(char) {
-            const color = document.getElementById(`color-${char}`).value;
-            window[`writer_${char}`].updateColor('strokeColor', color);
+        function initCanvas(id) {
+            const canvas = document.getElementById(`canvas-${id}`);
+            const ctx = canvas.getContext('2d');
+            let drawing = false;
+
+            canvas.addEventListener('mousedown', () => drawing = true);
+            canvas.addEventListener('mouseup', () => { drawing = false; ctx.beginPath(); });
+            canvas.addEventListener('mousemove', (e) => {
+                if (!drawing) return;
+                const rect = canvas.getBoundingClientRect();
+                ctx.strokeStyle = document.getElementById(`color-${id}`).value;
+                ctx.lineWidth = 4;
+                ctx.lineCap = 'round';
+                ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
+            });
+        }
+
+        function clearCanvas(id) {
+            const canvas = document.getElementById(`canvas-${id}`);
+            canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
         }
     </script>
 </body>
