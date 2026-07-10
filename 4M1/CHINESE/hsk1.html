@@ -2,48 +2,66 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <title>พระจอมเกล้าติวเตอร์ - ฝึกเขียนแบบมีไกด์</title>
+    <title>พระจอมเกล้าติวเตอร์ - HSK 1 Master</title>
     <style>
-        #canvas { border: 2px solid #333; background-color: #fff; position: relative; }
-        .wrapper { position: relative; width: 300px; height: 300px; }
+        body { font-family: 'Kanit', sans-serif; display: flex; flex-direction: column; align-items: center; background: #f0f2f5; }
+        .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); width: 350px; text-align: center; }
+        canvas { border: 2px solid #ccc; background: #fff; margin: 10px 0; touch-action: none; }
+        .controls { margin-top: 15px; display: flex; gap: 10px; justify-content: center; }
     </style>
 </head>
 <body>
 
-    <h2>ฝึกเขียนอักษร: 一 (หนึ่ง)</h2>
-    <div class="wrapper">
-        <canvas id="guideCanvas" width="300" height="300" style="position: absolute; z-index: 1;"></canvas>
-        <canvas id="userCanvas" width="300" height="300" style="position: absolute; z-index: 2;"></canvas>
+    <div class="card">
+        <h2 id="hanzi">我</h2>
+        <p id="pinyin">wǒ | ฉัน</p>
+        <canvas id="canvas" width="250" height="250"></canvas>
+        <div class="controls">
+            <button onclick="prevWord()">ก่อนหน้า</button>
+            <button onclick="clearCanvas()">ล้าง</button>
+            <button onclick="nextWord()">ถัดไป</button>
+        </div>
     </div>
 
     <script>
-        const guideCanvas = document.getElementById('guideCanvas');
-        const gCtx = guideCanvas.getContext('2d');
-        const userCanvas = document.getElementById('userCanvas');
-        const uCtx = userCanvas.getContext('2d');
+        // 1. ฐานข้อมูล 150 คำ (ตัวอย่าง)
+        const vocabulary = [
+            { hanzi: "我", pinyin: "wǒ", meaning: "ฉัน" },
+            { hanzi: "你", pinyin: "nǐ", meaning: "คุณ" },
+            { hanzi: "他", pinyin: "tā", meaning: "เขา" }
+            // เพิ่มอีก 147 คำที่นี่...
+        ];
 
-        // 1. วาดเส้นจางๆ (Guide) ให้เด็กเห็นก่อน
-        gCtx.strokeStyle = '#e0e0e0'; // สีเทาจาง
-        gCtx.lineWidth = 10;
-        gCtx.lineCap = 'round';
-        gCtx.moveTo(50, 150);
-        gCtx.lineTo(250, 150);
-        gCtx.stroke();
+        let currentIndex = 0;
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        // 2. ฟังก์ชันอัปเดตหน้าจอ
+        function updateWord() {
+            document.getElementById('hanzi').innerText = vocabulary[currentIndex].hanzi;
+            document.getElementById('pinyin').innerText = `${vocabulary[currentIndex].pinyin} | ${vocabulary[currentIndex].meaning}`;
+            clearCanvas();
+        }
 
-        // 2. Logic การเขียนของเด็ก
+        // 3. ระบบวาด (Engine)
         let drawing = false;
-        userCanvas.addEventListener('mousedown', () => drawing = true);
-        userCanvas.addEventListener('mouseup', () => { drawing = false; uCtx.beginPath(); });
-        userCanvas.addEventListener('mousemove', (e) => {
+        canvas.addEventListener('mousedown', () => drawing = true);
+        canvas.addEventListener('mouseup', () => { drawing = false; ctx.beginPath(); });
+        canvas.addEventListener('mousemove', (e) => {
             if (!drawing) return;
-            const rect = userCanvas.getBoundingClientRect();
-            uCtx.lineWidth = 10;
-            uCtx.strokeStyle = '#000'; // สีดำเข้มที่เด็กเขียน
-            uCtx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
-            uCtx.stroke();
-            uCtx.beginPath();
-            uCtx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
+            const rect = canvas.getBoundingClientRect();
+            ctx.lineWidth = 15;
+            ctx.lineCap = 'round';
+            ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
+            ctx.stroke();
+            ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
         });
+
+        function clearCanvas() { ctx.clearRect(0, 0, canvas.width, canvas.height); }
+        function nextWord() { currentIndex = (currentIndex + 1) % vocabulary.length; updateWord(); }
+        function prevWord() { currentIndex = (currentIndex - 1 + vocabulary.length) % vocabulary.length; updateWord(); }
+
+        updateWord();
     </script>
 </body>
 </html>
