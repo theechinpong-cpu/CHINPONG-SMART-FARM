@@ -2,82 +2,65 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <title>พระจอมเกล้าติวเตอร์ - ฝึกเขียน HSK 1</title>
+    <title>พระจอมเกล้าติวเตอร์ - Engine ควบคุมการเขียน</title>
     <script src="https://cdn.jsdelivr.net/npm/hanzi-writer@3.5.0/dist/hanzi-writer.min.js"></script>
     <style>
         body { font-family: 'Kanit', sans-serif; display: flex; flex-direction: column; align-items: center; background: #f9f9f9; padding: 20px; }
         .card { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 20px rgba(0,0,0,0.1); width: 400px; text-align: center; }
         #writer-container { width: 300px; height: 300px; margin: 20px auto; border: 2px dashed #aaa; }
-        .hanzi-big { font-size: 60px; font-weight: bold; color: #333; }
-        .details { font-size: 20px; color: #555; margin: 10px 0; }
-        .controls { display: flex; justify-content: center; gap: 10px; margin-top: 15px; flex-wrap: wrap; }
-        button { padding: 10px 15px; cursor: pointer; border: none; border-radius: 5px; background: #007bff; color: white; transition: 0.3s; }
-        button:hover { background: #0056b3; }
-        button.stop { background: #dc3545; }
+        .controls { display: flex; justify-content: center; gap: 10px; }
+        button { padding: 10px 15px; cursor: pointer; border: none; border-radius: 5px; background: #007bff; color: white; }
     </style>
 </head>
 <body>
 
     <div class="card">
-        <div class="info">
-            <div id="display-hanzi" class="hanzi-big"></div>
-            <div id="display-details" class="details"></div>
-        </div>
-        
+        <h2 id="display-hanzi"></h2>
         <div id="writer-container"></div>
-        
         <div class="controls">
             <button onclick="prevWord()">ก่อนหน้า</button>
-            <button onclick="playAnimation()">เล่น</button>
-            <button class="stop" onclick="stopAnimation()">หยุด</button>
+            <button onclick="playNextStroke()">เล่นต่อ</button>
+            <button onclick="stopAnimation()" style="background: #dc3545;">หยุด</button>
             <button onclick="nextWord()">ถัดไป</button>
         </div>
     </div>
 
     <script>
-        const vocabulary = [
-            { hanzi: "我", pinyin: "wǒ", meaning: "ฉัน" },
-            { hanzi: "你", pinyin: "nǐ", meaning: "คุณ" },
-            { hanzi: "他", pinyin: "tā", meaning: "เขา" }
-        ];
-
+        const vocabulary = [{hanzi: "我"}, {hanzi: "你"}, {hanzi: "他"}];
         let currentIndex = 0;
         let writer = null;
+        let strokeIndex = 0;
+        let isPaused = true;
+        let timer = null;
 
         function initWriter() {
-            const container = document.getElementById('writer-container');
-            container.innerHTML = ""; 
-            
+            document.getElementById('writer-container').innerHTML = "";
             document.getElementById('display-hanzi').innerText = vocabulary[currentIndex].hanzi;
-            document.getElementById('display-details').innerText = `${vocabulary[currentIndex].pinyin} | ${vocabulary[currentIndex].meaning}`;
-
+            
             writer = HanziWriter.create('writer-container', vocabulary[currentIndex].hanzi, {
-                width: 300, height: 300, padding: 10,
-                strokeColor: '#333', showOutline: true,
-                strokeAnimationSpeed: 0.3, // ช้าลงให้เด็กเขียนทัน
-                delayBetweenStrokes: 2000 // เว้นจังหวะนานขึ้น
+                width: 300, height: 300, showOutline: true
             });
+            strokeIndex = 0;
+            isPaused = true;
         }
 
-        function playAnimation() {
-            // เล่นต่อจากจุดที่ค้างอยู่ หรือเริ่มใหม่
-            writer.animateCharacter();
+        function playNextStroke() {
+            isPaused = false;
+            // ใช้ Loop เพื่อรันทีละขีดโดยมีจังหวะหยุดพัก
+            if (strokeIndex < 10) { // เลข 10 คือจำนวนขีดสมมติ
+                writer.showStroke(strokeIndex);
+                strokeIndex++;
+                timer = setTimeout(playNextStroke, 1500); // เว้นจังหวะ 1.5 วินาที
+            }
         }
 
         function stopAnimation() {
-            // หยุดการทำงานของ Animation ทันที
-            writer.cancelAnimation();
+            isPaused = true;
+            clearTimeout(timer); // หยุด Loop ของการเขียนทันที
         }
 
-        function nextWord() {
-            currentIndex = (currentIndex + 1) % vocabulary.length;
-            initWriter();
-        }
-
-        function prevWord() {
-            currentIndex = (currentIndex - 1 + vocabulary.length) % vocabulary.length;
-            initWriter();
-        }
+        function nextWord() { currentIndex = (currentIndex + 1) % vocabulary.length; initWriter(); }
+        function prevWord() { currentIndex = (currentIndex - 1 + vocabulary.length) % vocabulary.length; initWriter(); }
 
         initWriter();
     </script>
