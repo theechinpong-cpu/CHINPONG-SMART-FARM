@@ -5,51 +5,48 @@
     <title>พระจอมเกล้าติวเตอร์ - ฝึกเขียน HSK 1</title>
     <script src="https://cdn.jsdelivr.net/npm/hanzi-writer@3.5.0/dist/hanzi-writer.min.js"></script>
     <style>
-        .stroke-box { width: 80px; height: 80px; cursor: pointer; border: 1px solid #ccc; display: inline-block; margin: 5px; }
+        .stroke-box { width: 80px; height: 80px; cursor: pointer; border: 2px solid #333; display: inline-block; margin: 10px; background: #fff; }
     </style>
 </head>
 <body>
-    <h2>HSK 1 - คลิกเพื่อฝึกเขียน</h2>
-    <div id="app"></div>
+    <h2>HSK 1 - ฝึกเขียนตัวอักษรจีน (คลิกที่ช่องสีขาว)</h2>
+    <div id="container"></div>
 
     <script>
-        const words = ["我", "你", "他"];
-        const app = document.getElementById('app');
-
-        words.forEach((char, index) => {
-            const row = document.createElement('div');
-            app.appendChild(row);
+        window.onload = function() {
+            const char = "我";
+            const container = document.getElementById('container');
 
             for (let i = 0; i < 5; i++) {
-                const boxId = `writer-${index}-${i}`;
+                const boxId = `box-${i}`;
                 const div = document.createElement('div');
                 div.id = boxId;
                 div.className = 'stroke-box';
-                row.appendChild(div);
+                container.appendChild(div);
 
-                // สร้าง Writer instance
+                // สร้าง Writer
                 const writer = HanziWriter.create(boxId, char, {
                     width: 80, height: 80, padding: 5,
-                    strokeColor: '#000000', showCharacter: false, showOutline: true
+                    strokeColor: '#000', showCharacter: false, showOutline: true
                 });
 
-                // Logic การคลิกที่เสถียรที่สุด
-                let strokeIndex = 0;
-                div.addEventListener('click', () => {
-                    // ดึงข้อมูลจำนวนขีดทั้งหมดของตัวอักษรนั้นๆ
-                    HanziWriter.getCharacterData(char).then(data => {
-                        const total = data.strokes.length;
-                        if (strokeIndex < total) {
-                            writer.showStroke(strokeIndex);
-                            strokeIndex++;
+                // ใช้ state object แยกกันในแต่ละกล่อง
+                let state = { currentStroke: 0 };
+
+                div.addEventListener('click', function() {
+                    // ดึงข้อมูลใหม่ทุกครั้งที่คลิกเพื่อความชัวร์
+                    HanziWriter.getCharacterData(char).then(function(data) {
+                        if (state.currentStroke < data.strokes.length) {
+                            writer.showStroke(state.currentStroke);
+                            state.currentStroke++;
                         } else {
-                            strokeIndex = 0;
+                            state.currentStroke = 0;
                             writer.hideCharacter();
                         }
                     });
                 });
             }
-        });
+        };
     </script>
 </body>
 </html>
