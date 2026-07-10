@@ -8,9 +8,8 @@
         body { font-family: 'Kanit', sans-serif; padding: 20px; background-color: #f4f4f4; }
         table { width: 100%; border-collapse: collapse; background: white; }
         th, td { border: 1px solid #ccc; padding: 10px; text-align: center; }
-        /* ช่อง Animation */
         .anim-box { width: 100px; height: 100px; cursor: pointer; }
-        /* Whiteboard */
+        .board-wrapper { display: flex; flex-direction: column; align-items: center; gap: 5px; }
         .board { 
             width: 100px; height: 100px; border: 2px solid #333; position: relative;
             background-image: linear-gradient(to right, #ddd 1px, transparent 1px), 
@@ -18,6 +17,7 @@
             background-size: 50px 50px; cursor: crosshair;
         }
         canvas { position: absolute; top: 0; left: 0; }
+        .btn-clear { cursor: pointer; background: #e74c3c; color: white; border: none; padding: 5px 10px; border-radius: 4px; font-size: 12px; }
     </style>
 </head>
 <body>
@@ -26,7 +26,7 @@
     <table>
         <thead>
             <tr>
-                <th>1. ลำดับ</th><th>2. อักษร</th><th>3. Animation</th><th>4. พินอิน</th><th>5. แปล</th><th>6. ไกด์ไลน์</th><th>7. ฝึกเขียน</th>
+                <th>1. ลำดับ</th><th>2. อักษร</th><th>3. Animation</th><th>4. พินอิน</th><th>5. แปล</th><th>6. ฝึกเขียน</th>
             </tr>
         </thead>
         <tbody id="tableBody"></tbody>
@@ -49,28 +49,25 @@
                 <td><div id="anim-${word.id}" class="anim-box"></div></td>
                 <td>${word.pinyin}</td>
                 <td>${word.meaning}</td>
-                <td style="font-size:30px; opacity:0.3;">${word.hanzi}</td>
                 <td>
-                    <div class="board">
-                        <canvas id="canvas-${word.id}" width="100" height="100"></canvas>
+                    <div class="board-wrapper">
+                        <div class="board" id="board-${word.id}">
+                            <canvas id="canvas-${word.id}" width="100" height="100"></canvas>
+                        </div>
+                        <button class="btn-clear" onclick="clearCanvas('${word.id}')">ล้าง</button>
                     </div>
                 </td>
             `;
             tbody.appendChild(row);
 
-            // 1. สร้าง Animation ลำดับขีด (พร้อมให้กดเล่นซ้ำได้)
+            // 1. Animation
             const writer = HanziWriter.create(`anim-${word.id}`, word.hanzi, {
-                width: 100, height: 100, padding: 5,
-                strokeColor: '#3498db', showOutline: true
+                width: 100, height: 100, padding: 5, strokeColor: '#3498db', showOutline: true
             });
-            
-            // สั่งให้เริ่มเล่นทันทีตอนโหลดหน้าจอ
             setTimeout(() => writer.animateCharacter(), 500);
-            
-            // ให้คลิกที่ช่อง Animation เพื่อเล่นใหม่
             document.getElementById(`anim-${word.id}`).onclick = () => writer.animateCharacter();
 
-            // 2. ระบบ Whiteboard ฝึกเขียน
+            // 2. Whiteboard
             const canvas = document.getElementById(`canvas-${word.id}`);
             const ctx = canvas.getContext('2d');
             let drawing = false;
@@ -82,6 +79,13 @@
             };
             canvas.onmouseup = () => drawing = false;
         });
+
+        // ฟังก์ชันล้างกระดาน
+        function clearCanvas(id) {
+            const canvas = document.getElementById(`canvas-${id}`);
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
     </script>
 </body>
 </html>
