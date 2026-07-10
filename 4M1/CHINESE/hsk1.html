@@ -2,88 +2,78 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <title>พระจอมเกล้าติวเตอร์ - ฝึกเขียน HSK 1 (Professional Edition)</title>
+    <title>พระจอมเกล้าติวเตอร์ - HSK 1 Professional Training</title>
+    <script src="https://cdn.jsdelivr.net/npm/hanzi-writer@3.5.0/dist/hanzi-writer.min.js"></script>
     <style>
-        body { font-family: 'Kanit'; display: flex; flex-direction: column; align-items: center; background: #f0f0f0; }
-        .wrapper { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
-        #canvas-container { position: relative; width: 300px; height: 300px; border: 1px solid #999; background: white; }
-        #canvas-container svg { width: 100%; height: 100%; }
-        .controls { margin-top: 20px; display: flex; gap: 10px; }
-        button { padding: 10px 20px; cursor: pointer; border: none; border-radius: 5px; background: #28a745; color: white; }
-        button.stop { background: #dc3545; }
+        body { font-family: 'Kanit', sans-serif; padding: 20px; background-color: #f8f9fa; color: #333; }
+        table { width: 100%; border-collapse: separate; border-spacing: 0; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        th { background: #2c3e50; color: white; padding: 15px; }
+        td { border: 1px solid #edf2f7; padding: 10px; text-align: center; }
+        .stroke-box { width: 80px; height: 80px; cursor: pointer; background: #fff; border: 1px solid #e2e8f0; border-radius: 4px; transition: 0.3s; }
+        .stroke-box:hover { border-color: #3498db; background: #f0f7ff; }
+        .hanzi-cell { font-size: 24px; font-weight: bold; color: #2c3e50; }
     </style>
 </head>
 <body>
 
-    <h2>ฝึกเขียน: 我 (wǒ) - ฉัน</h2>
-    <div class="wrapper">
-        <div id="canvas-container">
-            <!-- SVG สำหรับแสดงลำดับขีดและตาราง -->
-            <svg id="svg-engine" viewBox="0 0 1024 1024">
-                <!-- ตารางฝึกเขียน (Guideline) -->
-                <line x1="512" y1="0" x2="512" y2="1024" stroke="#eee" stroke-width="10"/>
-                <line x1="0" y1="512" x2="1024" y2="512" stroke="#eee" stroke-width="10"/>
-                <line x1="0" y1="0" x2="1024" y2="1024" stroke="#eee" stroke-width="10"/>
-                <line x1="1024" y1="0" x2="0" y2="1024" stroke="#eee" stroke-width="10"/>
-                <!-- เส้นอักษรจะถูกใส่ที่นี่ -->
-                <g id="stroke-layer"></g>
-            </svg>
-        </div>
-        <div class="controls">
-            <button onclick="play()">เล่น</button>
-            <button class="stop" onclick="pause()">หยุด</button>
-            <button onclick="reset()">เริ่มใหม่</button>
-        </div>
-    </div>
+    <h2>HSK 1 - ฝึกเขียนตัวอักษรจีน (Professional Edition)</h2>
+    <table id="hskTable">
+        <thead>
+            <tr>
+                <th>ลำดับ</th>
+                <th>อักษร</th>
+                <th>พินอิน</th>
+                <th>การใช้งาน</th>
+                <th>ช่องฝึกเขียน (คลิกเพื่อเริ่ม)</th>
+            </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+    </table>
 
     <script>
-        // ข้อมูลพิกัดอักษร (SVG Path) ของตัว "我"
-        const paths = [
-            "M230,225c5,5,10,15,10,30c0,10-5,40-10,60",
-            "M150,350c30-10,120-20,200-20",
-            "M350,150c-20,100-30,250-40,350",
-            "M420,120c10,50,40,150,70,250",
-            "M500,200c50,20,150,80,200,150",
-            "M600,100c-20,100-30,200-40,300"
+        const words = [
+            { id: 1, hanzi: "我", pinyin: "wǒ" },
+            { id: 2, hanzi: "你", pinyin: "nǐ" },
+            { id: 3, hanzi: "他", pinyin: "tā" }
         ];
 
-        let strokeIndex = 0;
-        let isRunning = false;
-        let timer = null;
-        const layer = document.getElementById('stroke-layer');
+        const tbody = document.getElementById('tableBody');
 
-        function play() {
-            if (isRunning) return;
-            isRunning = true;
-            renderNext();
-        }
+        words.forEach(word => {
+            let row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${word.id}</td>
+                <td class="hanzi-cell">${word.hanzi}</td>
+                <td>${word.pinyin}</td>
+                <td>คลิกช่องขวาเพื่อเริ่ม</td>
+                <td><div id="container-${word.id}" style="display:flex; gap:5px;"></div></td>
+            `;
+            tbody.appendChild(row);
 
-        function renderNext() {
-            if (strokeIndex < paths.length && isRunning) {
-                const p = document.createElementNS("http://www.w3.org/2000/svg", "path");
-                p.setAttribute("d", paths[strokeIndex]);
-                p.setAttribute("stroke", "black");
-                p.setAttribute("stroke-width", "50");
-                p.setAttribute("fill", "none");
-                layer.appendChild(p);
-                
-                strokeIndex++;
-                timer = setTimeout(renderNext, 1000); // จังหวะการเขียน
-            } else {
-                isRunning = false;
+            const container = document.getElementById(`container-${word.id}`);
+            
+            // สร้างช่องฝึก 5 ช่องต่อ 1 ตัวอักษร
+            for(let i = 1; i <= 5; i++) {
+                let box = document.createElement('div');
+                box.id = `box-${word.id}-${i}`;
+                box.className = 'stroke-box';
+                container.appendChild(box);
+
+                // สร้าง Writer instance แบบมืออาชีพ
+                const writer = HanziWriter.create(box.id, word.hanzi, {
+                    width: 80, height: 80, padding: 5,
+                    strokeColor: '#2c3e50',
+                    showCharacter: false, 
+                    showOutline: true,
+                    strokeAnimationSpeed: 0.5
+                });
+
+                // การสั่งงานที่เสถียร
+                box.addEventListener('click', () => {
+                    writer.animateCharacter();
+                });
             }
-        }
-
-        function pause() {
-            isRunning = false;
-            clearTimeout(timer);
-        }
-
-        function reset() {
-            pause();
-            strokeIndex = 0;
-            layer.innerHTML = "";
-        }
+        });
     </script>
 </body>
 </html>
