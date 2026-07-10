@@ -20,16 +20,10 @@
                 <th>ลำดับ</th>
                 <th>คำศัพท์</th>
                 <th>พินอิน</th>
-                <th>ข้อมูลเขียน</th>
-                <th>ช่องฝึกเขียน 1</th>
-                <th>ช่องฝึกเขียน 2</th>
-                <th>ช่องฝึกเขียน 3</th>
-                <th>ช่องฝึกเขียน 4</th>
-                <th>ช่องฝึกเขียน 5</th>
+                <th>ช่องฝึกเขียน (คลิกเพื่อเพิ่มเส้น)</th>
             </tr>
         </thead>
-        <tbody id="tableBody">
-            </tbody>
+        <tbody id="tableBody"></tbody>
     </table>
 
     <script>
@@ -46,13 +40,14 @@
                 <td>${word.id}</td>
                 <td>${word.hanzi}</td>
                 <td>${word.pinyin}</td>
-                <td>คลิกเพื่อเริ่มฝึก</td>
-                ${[1, 2, 3, 4, 5].map(i => `<td><div id="box-${word.id}-${i}" class="stroke-box"></div></td>`).join('')}
+                <td>
+                    ${[1, 2, 3, 4, 5].map(i => `<div id="box-${word.id}-${i}" class="stroke-box"></div>`).join('')}
+                </td>
             </tr>`;
             tbody.innerHTML += row;
         });
 
-        // Initialize Hanzi Writer for each box
+        // Initialize Hanzi Writer
         words.forEach(word => {
             [1, 2, 3, 4, 5].forEach(i => {
                 const writer = HanziWriter.create(`box-${word.id}-${i}`, word.hanzi, {
@@ -60,13 +55,18 @@
                     showCharacter: false, showOutline: true
                 });
                 
-                // คลิกเพื่อแสดงเส้นทีละเส้น
-                let count = 0;
+                let currentStroke = 0; // ตัวแปรเก็บจำนวนขีดที่แสดง
+                
                 document.getElementById(`box-${word.id}-${i}`).addEventListener('click', () => {
-                    count++;
-                    writer.animateCharacter({
-                        onComplete: () => { if(count >= 10) writer.hideCharacter(); }
-                    });
+                    // แสดงเส้นถัดไปทีละ 1 เส้น
+                    writer.showStroke(currentStroke);
+                    currentStroke++;
+                    
+                    // ถ้าครบทุกขีดแล้ว ให้ Reset เมื่อคลิกอีกครั้ง (เลือกได้ตามต้องการ)
+                    if (currentStroke >= 10) { // เลข 10 คือจำนวนขีดสูงสุดโดยประมาณ
+                        currentStroke = 0;
+                        setTimeout(() => writer.hideCharacter(), 500);
+                    }
                 });
             });
         });
