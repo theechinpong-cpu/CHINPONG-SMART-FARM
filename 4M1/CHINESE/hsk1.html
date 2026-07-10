@@ -8,7 +8,7 @@
         body { font-family: 'Kanit', sans-serif; padding: 20px; background-color: #f4f7f6; }
         table { width: 100%; border-collapse: collapse; background: white; }
         th, td { border: 1px solid #ddd; padding: 10px; text-align: center; }
-        .stroke-box { width: 80px; height: 80px; cursor: pointer; border: 1px solid #ccc; display: inline-block; }
+        .stroke-box { width: 80px; height: 80px; cursor: pointer; border: 1px solid #ccc; display: inline-block; background-color: #fff; }
     </style>
 </head>
 <body>
@@ -20,7 +20,7 @@
                 <th>ลำดับ</th>
                 <th>คำศัพท์</th>
                 <th>พินอิน</th>
-                <th>ช่องฝึกเขียน (คลิกเพื่อเพิ่มเส้น)</th>
+                <th>ช่องฝึกเขียน (คลิกที่ช่อง)</th>
             </tr>
         </thead>
         <tbody id="tableBody"></tbody>
@@ -40,35 +40,44 @@
                 <td>${word.id}</td>
                 <td>${word.hanzi}</td>
                 <td>${word.pinyin}</td>
-                <td>
-                    ${[1, 2, 3, 4, 5].map(i => `<div id="box-${word.id}-${i}" class="stroke-box"></div>`).join('')}
-                </td>
+                <td id="container-${word.id}"></td>
             </tr>`;
             tbody.innerHTML += row;
+            
+            // สร้าง 5 ช่องในคอลัมน์เดียว
+            const container = document.getElementById(`container-${word.id}`);
+            for(let i=1; i<=5; i++) {
+                container.innerHTML += `<div id="box-${word.id}-${i}" class="stroke-box"></div>`;
+            }
         });
 
         // Initialize Hanzi Writer
         words.forEach(word => {
-            [1, 2, 3, 4, 5].forEach(i => {
-                const writer = HanziWriter.create(`box-${word.id}-${i}`, word.hanzi, {
+            for(let i=1; i<=5; i++) {
+                const targetId = `box-${word.id}-${i}`;
+                const writer = HanziWriter.create(targetId, word.hanzi, {
                     width: 80, height: 80, padding: 5, strokeColor: '#000000',
                     showCharacter: false, showOutline: true
                 });
                 
-                let currentStroke = 0; // ตัวแปรเก็บจำนวนขีดที่แสดง
+                let currentStroke = 0; 
                 
-                document.getElementById(`box-${word.id}-${i}`).addEventListener('click', () => {
-                    // แสดงเส้นถัดไปทีละ 1 เส้น
-                    writer.showStroke(currentStroke);
-                    currentStroke++;
+                // ใช้ตัวแปรนี้เพื่อเช็คจำนวนขีดจริงของตัวอักษรนั้นๆ
+                writer.getCharacterData(word.hanzi).then(data => {
+                    const totalStrokes = data.strokes.length;
                     
-                    // ถ้าครบทุกขีดแล้ว ให้ Reset เมื่อคลิกอีกครั้ง (เลือกได้ตามต้องการ)
-                    if (currentStroke >= 10) { // เลข 10 คือจำนวนขีดสูงสุดโดยประมาณ
-                        currentStroke = 0;
-                        setTimeout(() => writer.hideCharacter(), 500);
-                    }
+                    document.getElementById(targetId).addEventListener('click', () => {
+                        if (currentStroke < totalStrokes) {
+                            writer.showStroke(currentStroke);
+                            currentStroke++;
+                        } else {
+                            // ถ้าครบแล้วให้ Reset
+                            currentStroke = 0;
+                            writer.hideCharacter();
+                        }
+                    });
                 });
-            });
+            }
         });
     </script>
 </body>
