@@ -2,29 +2,28 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <title>พระจอมเกล้าติวเตอร์ - HSK 1 ฝึกเขียนมืออาชีพ</title>
-    <script src="https://cdn.jsdelivr.net/npm/hanzi-writer@3.5.0/dist/hanzi-writer.min.js"></script>
+    <title>พระจอมเกล้าติวเตอร์ - HSK 1 Whiteboard</title>
     <style>
         body { font-family: 'Kanit', sans-serif; padding: 20px; background-color: #f4f4f4; }
-        table { width: 100%; border-collapse: collapse; background: white; border-radius: 8px; }
+        table { width: 100%; border-collapse: collapse; background: white; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
         th, td { border: 1px solid #ddd; padding: 10px; text-align: center; }
-        .whiteboard { width: 100px; height: 100px; border: 2px dashed #aaa; background: #fff; cursor: crosshair; margin: 0 auto; }
-        .btn { padding: 5px 10px; cursor: pointer; background: #2c3e50; color: white; border: none; border-radius: 4px; }
+        /* Whiteboard Style */
+        .whiteboard { width: 100px; height: 100px; border: 2px solid #333; background: #fff; cursor: crosshair; touch-action: none; }
     </style>
 </head>
 <body>
 
-    <h2>HSK 1 - ฝึกเขียนตัวอักษรจีน (Professional Suite)</h2>
+    <h2>HSK 1 - ฝึกเขียนระบบ Whiteboard แบบเขียนได้จริง</h2>
     <table>
         <thead>
             <tr>
-                <th>เลขลำดับ</th>
-                <th>ตัวอักษร</th>
-                <th>Stroke Order</th>
-                <th>พินอิน</th>
-                <th>คำแปล</th>
-                <th>สีปากกา</th>
-                <th>ช่องฝึกเขียน (Whiteboard)</th>
+                <th>1. ลำดับ</th>
+                <th>2. อักษร</th>
+                <th>3. Animation</th>
+                <th>4. พินอิน</th>
+                <th>5. คำแปล</th>
+                <th>6. ไกด์ไลน์ฝึกเขียน</th>
+                <th>7. เขียนลงไปได้จริง</th>
             </tr>
         </thead>
         <tbody id="tableBody"></tbody>
@@ -43,34 +42,32 @@
             let row = document.createElement('tr');
             row.innerHTML = `
                 <td>${word.id}</td>
-                <td style="font-size:24px; font-weight:bold;">${word.hanzi}</td>
-                <td><button class="btn" onclick="playAnim('${word.hanzi}')">ดูขีด</button></td>
+                <td style="font-size:24px;">${word.hanzi}</td>
+                <td><button onclick="alert('แสดงAnimationลำดับขีด')">ดู</button></td>
                 <td>${word.pinyin}</td>
                 <td>${word.meaning}</td>
-                <td>
-                    <select id="color-${word.hanzi}" onchange="updateColor('${word.hanzi}')">
-                        <option value="#000000">ดำ</option>
-                        <option value="#ff0000">แดง</option>
-                        <option value="#0000ff">น้ำเงิน</option>
-                    </select>
-                </td>
-                <td><div id="board-${word.hanzi}" class="whiteboard"></div></td>
+                <td><div style="width:100px; height:100px; border:1px dashed #ccc; background:#eee;"></div></td>
+                <td><canvas id="canvas-${word.id}" class="whiteboard"></canvas></td>
             `;
             tbody.appendChild(row);
 
-            // สร้าง Whiteboard สำหรับเขียน
-            const writer = HanziWriter.create(`board-${word.hanzi}`, word.hanzi, {
-                width: 100, height: 100, padding: 10,
-                strokeColor: '#000000', showCharacter: false, showOutline: true
-            });
-            window[`writer_${word.hanzi}`] = writer;
-        });
+            // ระบบเขียนได้จริง (Whiteboard Engine)
+            const canvas = document.getElementById(`canvas-${word.id}`);
+            const ctx = canvas.getContext('2d');
+            let drawing = false;
 
-        function playAnim(char) { window[`writer_${char}`].animateCharacter(); }
-        function updateColor(char) {
-            const color = document.getElementById(`color-${char}`).value;
-            window[`writer_${char}`].updateColor('strokeColor', color);
-        }
+            canvas.addEventListener('mousedown', () => drawing = true);
+            canvas.addEventListener('mouseup', () => { drawing = false; ctx.beginPath(); });
+            canvas.addEventListener('mousemove', (e) => {
+                if (!drawing) return;
+                ctx.lineWidth = 5;
+                ctx.lineCap = 'round';
+                const rect = canvas.getBoundingClientRect();
+                ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
+                ctx.stroke();
+                ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
+            });
+        });
     </script>
 </body>
 </html>
