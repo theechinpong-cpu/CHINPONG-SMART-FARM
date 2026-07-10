@@ -2,82 +2,88 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <title>พระจอมเกล้าติวเตอร์ - Custom Timeline Engine</title>
+    <title>พระจอมเกล้าติวเตอร์ - ฝึกเขียน HSK 1 (Professional Edition)</title>
     <style>
-        body { font-family: 'Kanit'; display: flex; flex-direction: column; align-items: center; background: #f4f4f4; }
-        .canvas-area { position: relative; width: 300px; height: 300px; background: white; border: 2px solid #333; }
-        canvas { position: absolute; top: 0; left: 0; }
-        .controls { margin-top: 20px; }
+        body { font-family: 'Kanit'; display: flex; flex-direction: column; align-items: center; background: #f0f0f0; }
+        .wrapper { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+        #canvas-container { position: relative; width: 300px; height: 300px; border: 1px solid #999; background: white; }
+        #canvas-container svg { width: 100%; height: 100%; }
+        .controls { margin-top: 20px; display: flex; gap: 10px; }
+        button { padding: 10px 20px; cursor: pointer; border: none; border-radius: 5px; background: #28a745; color: white; }
+        button.stop { background: #dc3545; }
     </style>
 </head>
 <body>
 
-    <h2>ฝึกเขียน: 我</h2>
-    <div class="canvas-area">
-        <canvas id="guideLayer" width="300" height="300"></canvas>
-        <canvas id="drawLayer" width="300" height="300"></canvas>
-    </div>
-
-    <div class="controls">
-        <button onclick="togglePlayback()" id="btnPlay">เล่น / หยุด</button>
-        <button onclick="resetEngine()">เริ่มใหม่</button>
+    <h2>ฝึกเขียน: 我 (wǒ) - ฉัน</h2>
+    <div class="wrapper">
+        <div id="canvas-container">
+            <!-- SVG สำหรับแสดงลำดับขีดและตาราง -->
+            <svg id="svg-engine" viewBox="0 0 1024 1024">
+                <!-- ตารางฝึกเขียน (Guideline) -->
+                <line x1="512" y1="0" x2="512" y2="1024" stroke="#eee" stroke-width="10"/>
+                <line x1="0" y1="512" x2="1024" y2="512" stroke="#eee" stroke-width="10"/>
+                <line x1="0" y1="0" x2="1024" y2="1024" stroke="#eee" stroke-width="10"/>
+                <line x1="1024" y1="0" x2="0" y2="1024" stroke="#eee" stroke-width="10"/>
+                <!-- เส้นอักษรจะถูกใส่ที่นี่ -->
+                <g id="stroke-layer"></g>
+            </svg>
+        </div>
+        <div class="controls">
+            <button onclick="play()">เล่น</button>
+            <button class="stop" onclick="pause()">หยุด</button>
+            <button onclick="reset()">เริ่มใหม่</button>
+        </div>
     </div>
 
     <script>
-        // 1. DATA: กำหนด Path ลำดับขีด (สมมติพิกัด)
-        const strokes = [
-            { start: [150, 50], end: [100, 150] }, // ขีดที่ 1
-            { start: [100, 100], end: [200, 100] }, // ขีดที่ 2
-            // คุณสามารถใส่พิกัดเพิ่มได้เรื่อยๆ ที่นี่
+        // ข้อมูลพิกัดอักษร (SVG Path) ของตัว "我"
+        const paths = [
+            "M230,225c5,5,10,15,10,30c0,10-5,40-10,60",
+            "M150,350c30-10,120-20,200-20",
+            "M350,150c-20,100-30,250-40,350",
+            "M420,120c10,50,40,150,70,250",
+            "M500,200c50,20,150,80,200,150",
+            "M600,100c-20,100-30,200-40,300"
         ];
 
-        let isPlaying = false;
-        let currentStroke = 0;
-        let progress = 0; // 0 to 1
-        const drawCtx = document.getElementById('drawLayer').getContext('2d');
+        let strokeIndex = 0;
+        let isRunning = false;
+        let timer = null;
+        const layer = document.getElementById('stroke-layer');
 
-        // 2. ENGINE: ควบคุมการวาดด้วยเวลา (Timeline)
-        function animate() {
-            if (!isPlaying) return;
+        function play() {
+            if (isRunning) return;
+            isRunning = true;
+            renderNext();
+        }
 
-            if (currentStroke < strokes.length) {
-                const s = strokes[currentStroke];
-                progress += 0.01; // ปรับความเร็วที่นี่ (ยิ่งน้อยยิ่งช้า)
-
-                // คำนวณจุดปัจจุบัน
-                let x = s.start[0] + (s.end[0] - s.start[0]) * progress;
-                let y = s.start[1] + (s.end[1] - s.start[1]) * progress;
-
-                drawCtx.lineTo(x, y);
-                drawCtx.stroke();
-
-                if (progress >= 1) {
-                    currentStroke++;
-                    progress = 0;
-                    drawCtx.beginPath(); // เริ่มเส้นใหม่
-                }
-                requestAnimationFrame(animate);
+        function renderNext() {
+            if (strokeIndex < paths.length && isRunning) {
+                const p = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                p.setAttribute("d", paths[strokeIndex]);
+                p.setAttribute("stroke", "black");
+                p.setAttribute("stroke-width", "50");
+                p.setAttribute("fill", "none");
+                layer.appendChild(p);
+                
+                strokeIndex++;
+                timer = setTimeout(renderNext, 1000); // จังหวะการเขียน
+            } else {
+                isRunning = false;
             }
         }
 
-        function togglePlayback() {
-            isPlaying = !isPlaying;
-            if (isPlaying) animate();
+        function pause() {
+            isRunning = false;
+            clearTimeout(timer);
         }
 
-        function resetEngine() {
-            isPlaying = false;
-            currentStroke = 0;
-            progress = 0;
-            drawCtx.clearRect(0, 0, 300, 300);
-            drawCtx.beginPath();
+        function reset() {
+            pause();
+            strokeIndex = 0;
+            layer.innerHTML = "";
         }
-
-        // วาดไกด์ไลน์ (Background)
-        const gCtx = document.getElementById('guideLayer').getContext('2d');
-        gCtx.strokeStyle = "#ddd";
-        gCtx.lineWidth = 2;
-        gCtx.strokeRect(50, 50, 200, 200); // ช่องฝึกเขียน
     </script>
 </body>
 </html>
