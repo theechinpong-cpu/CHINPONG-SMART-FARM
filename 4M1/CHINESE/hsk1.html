@@ -2,67 +2,82 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <title>พระจอมเกล้าติวเตอร์ - Engine ควบคุมการเขียน</title>
-    <script src="https://cdn.jsdelivr.net/npm/hanzi-writer@3.5.0/dist/hanzi-writer.min.js"></script>
+    <title>พระจอมเกล้าติวเตอร์ - Custom Timeline Engine</title>
     <style>
-        body { font-family: 'Kanit', sans-serif; display: flex; flex-direction: column; align-items: center; background: #f9f9f9; padding: 20px; }
-        .card { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 20px rgba(0,0,0,0.1); width: 400px; text-align: center; }
-        #writer-container { width: 300px; height: 300px; margin: 20px auto; border: 2px dashed #aaa; }
-        .controls { display: flex; justify-content: center; gap: 10px; }
-        button { padding: 10px 15px; cursor: pointer; border: none; border-radius: 5px; background: #007bff; color: white; }
+        body { font-family: 'Kanit'; display: flex; flex-direction: column; align-items: center; background: #f4f4f4; }
+        .canvas-area { position: relative; width: 300px; height: 300px; background: white; border: 2px solid #333; }
+        canvas { position: absolute; top: 0; left: 0; }
+        .controls { margin-top: 20px; }
     </style>
 </head>
 <body>
 
-    <div class="card">
-        <h2 id="display-hanzi"></h2>
-        <div id="writer-container"></div>
-        <div class="controls">
-            <button onclick="prevWord()">ก่อนหน้า</button>
-            <button onclick="playNextStroke()">เล่นต่อ</button>
-            <button onclick="stopAnimation()" style="background: #dc3545;">หยุด</button>
-            <button onclick="nextWord()">ถัดไป</button>
-        </div>
+    <h2>ฝึกเขียน: 我</h2>
+    <div class="canvas-area">
+        <canvas id="guideLayer" width="300" height="300"></canvas>
+        <canvas id="drawLayer" width="300" height="300"></canvas>
+    </div>
+
+    <div class="controls">
+        <button onclick="togglePlayback()" id="btnPlay">เล่น / หยุด</button>
+        <button onclick="resetEngine()">เริ่มใหม่</button>
     </div>
 
     <script>
-        const vocabulary = [{hanzi: "我"}, {hanzi: "你"}, {hanzi: "他"}];
-        let currentIndex = 0;
-        let writer = null;
-        let strokeIndex = 0;
-        let isPaused = true;
-        let timer = null;
+        // 1. DATA: กำหนด Path ลำดับขีด (สมมติพิกัด)
+        const strokes = [
+            { start: [150, 50], end: [100, 150] }, // ขีดที่ 1
+            { start: [100, 100], end: [200, 100] }, // ขีดที่ 2
+            // คุณสามารถใส่พิกัดเพิ่มได้เรื่อยๆ ที่นี่
+        ];
 
-        function initWriter() {
-            document.getElementById('writer-container').innerHTML = "";
-            document.getElementById('display-hanzi').innerText = vocabulary[currentIndex].hanzi;
-            
-            writer = HanziWriter.create('writer-container', vocabulary[currentIndex].hanzi, {
-                width: 300, height: 300, showOutline: true
-            });
-            strokeIndex = 0;
-            isPaused = true;
-        }
+        let isPlaying = false;
+        let currentStroke = 0;
+        let progress = 0; // 0 to 1
+        const drawCtx = document.getElementById('drawLayer').getContext('2d');
 
-        function playNextStroke() {
-            isPaused = false;
-            // ใช้ Loop เพื่อรันทีละขีดโดยมีจังหวะหยุดพัก
-            if (strokeIndex < 10) { // เลข 10 คือจำนวนขีดสมมติ
-                writer.showStroke(strokeIndex);
-                strokeIndex++;
-                timer = setTimeout(playNextStroke, 1500); // เว้นจังหวะ 1.5 วินาที
+        // 2. ENGINE: ควบคุมการวาดด้วยเวลา (Timeline)
+        function animate() {
+            if (!isPlaying) return;
+
+            if (currentStroke < strokes.length) {
+                const s = strokes[currentStroke];
+                progress += 0.01; // ปรับความเร็วที่นี่ (ยิ่งน้อยยิ่งช้า)
+
+                // คำนวณจุดปัจจุบัน
+                let x = s.start[0] + (s.end[0] - s.start[0]) * progress;
+                let y = s.start[1] + (s.end[1] - s.start[1]) * progress;
+
+                drawCtx.lineTo(x, y);
+                drawCtx.stroke();
+
+                if (progress >= 1) {
+                    currentStroke++;
+                    progress = 0;
+                    drawCtx.beginPath(); // เริ่มเส้นใหม่
+                }
+                requestAnimationFrame(animate);
             }
         }
 
-        function stopAnimation() {
-            isPaused = true;
-            clearTimeout(timer); // หยุด Loop ของการเขียนทันที
+        function togglePlayback() {
+            isPlaying = !isPlaying;
+            if (isPlaying) animate();
         }
 
-        function nextWord() { currentIndex = (currentIndex + 1) % vocabulary.length; initWriter(); }
-        function prevWord() { currentIndex = (currentIndex - 1 + vocabulary.length) % vocabulary.length; initWriter(); }
+        function resetEngine() {
+            isPlaying = false;
+            currentStroke = 0;
+            progress = 0;
+            drawCtx.clearRect(0, 0, 300, 300);
+            drawCtx.beginPath();
+        }
 
-        initWriter();
+        // วาดไกด์ไลน์ (Background)
+        const gCtx = document.getElementById('guideLayer').getContext('2d');
+        gCtx.strokeStyle = "#ddd";
+        gCtx.lineWidth = 2;
+        gCtx.strokeRect(50, 50, 200, 200); // ช่องฝึกเขียน
     </script>
 </body>
 </html>
