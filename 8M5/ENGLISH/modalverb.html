@@ -6,10 +6,11 @@
     <style>
         body { font-family: Arial, sans-serif; line-height: 1.6; max-width: 800px; margin: 20px auto; padding: 20px; background-color: #f9f9f9; }
         .summary { background: #fff; padding: 20px; border-radius: 8px; border: 1px solid #ddd; margin-bottom: 20px; }
-        .question-card { background: #fff; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #eee; }
+        .question-card { background: #fff; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #eee; transition: background 0.3s; }
         .btn-submit { padding: 15px 30px; background: #2c3e50; color: #fff; border: none; cursor: pointer; display: block; margin: 20px auto; }
-        .detail { color: #555; font-size: 0.9em; margin-top: 10px; padding: 10px; background: #f0f0f0; border-radius: 4px; display: none; }
-        .option { margin: 5px 0; display: block; }
+        .detail { color: #555; font-size: 0.9em; margin-top: 10px; padding: 10px; border-radius: 4px; display: none; margin-top: 10px; border-left: 5px solid #ccc; }
+        .option { margin: 5px 0; display: block; cursor: pointer; }
+        .clue { color: red; font-size: 0.85em; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -32,65 +33,66 @@
 
 <form id="quiz-form">
     <div id="quiz-container"></div>
-    <button type="button" class="btn-submit" onclick="submitQuiz()">ส่งคำตอบ (Submit)</button>
 </form>
 
 <script>
 const questions = [
-    { q: "He _____ his keys at the restaurant. (มั่นใจมากในอดีต)", options: ["must have left", "must leave", "should leave", "can leave"], a: 0 },
-    { q: "You _____ come here tomorrow morning. (ไม่จำเป็น)", options: ["mustn't", "don't have to", "shouldn't", "can't"], a: 1 },
-    { q: "She _____ sleeping; it's very quiet now. (คาดคะเนปัจจุบัน)", options: ["might be", "might have been", "must have", "should be"], a: 0 },
-    { q: "Students _____ use their phones during the exam. (ข้อห้าม)", options: ["don't have to", "mustn't", "might not", "shouldn't"], a: 1 },
-    { q: "I _____ go to the party if I finish my homework. (ความเป็นไปได้)", options: ["must", "might", "have to", "should"], a: 1 },
-    { q: "He looks exhausted. He _____ hard all day. (อดีต)", options: ["must work", "must have worked", "should work", "might work"], a: 1 },
-    { q: "I _____ swim very far in the past. (อดีต)", options: ["can", "could", "must", "might"], a: 1 },
-    { q: "You _____ see a doctor if your headache persists. (แนะนำ)", options: ["should", "must", "can", "have to"], a: 0 },
-    { q: "It _____ true that he lied to me. (ไม่เชื่อ)", options: ["must be", "can't be", "should be", "might be"], a: 1 },
-    { q: "We _____ submit the report by today. (จำเป็น)", options: ["must", "might", "can", "should"], a: 0 },
-    { q: "She _____ my email. (อนุมานเชิงปฏิเสธในอดีต)", options: ["mustn't have read", "can't have read", "shouldn't have read", "might have read"], a: 1 },
-    { q: "_____ you help me carry these bags? (ขอร้อง)", options: ["Must", "Should", "Could", "Have to"], a: 2 },
-    { q: "He _____ home by now. (มั่นใจในปัจจุบัน)", options: ["must be", "must have been", "should be", "could be"], a: 0 },
-    { q: "I _____ that. (เสียใจภายหลัง)", options: ["shouldn't have said", "shouldn't say", "mustn't have said", "can't have said"], a: 0 },
-    { q: "You _____ in such a hurry. (ไม่จำเป็น)", options: ["mustn't be", "don't have to be", "shouldn't be", "can't be"], a: 1 },
-    { q: "That _____ the best idea. (คาดคะเนเชิงลบ)", options: ["might not be", "must not be", "can't be", "shouldn't be"], a: 0 },
-    { q: "I _____ every day when I was a child. (อดีต)", options: ["can play", "could play", "must play", "should play"], a: 1 },
-    { q: "You _____ wear a mask in this area. (กฎ)", options: ["have to", "might", "could", "should"], a: 0 },
-    { q: "He _____ forgotten. (เดาอดีต)", options: ["must have", "might have", "should have", "can have"], a: 1 },
-    { q: "You _____ break his trust. (แนะนำเชิงลบ)", options: ["shouldn't", "mustn't", "don't have to", "can't"], a: 0 },
-    { q: "_____ he arrive late? (ถามความเป็นไปได้)", options: ["Must", "Should", "Could", "Have to"], a: 2 },
-    { q: "We _____ reveal this secret. (ข้อห้าม)", options: ["mustn't", "don't have to", "shouldn't", "can't"], a: 0 },
-    { q: "They _____ arrived there by now. (เดาอดีต)", options: ["must have", "should have", "might have", "could have"], a: 0 },
-    { q: "You _____ be late if you don't hurry. (ความเป็นไปได้)", options: ["must", "could", "have to", "should"], a: 1 },
-    { q: "I _____ more prepared. (สะท้อนอดีต)", options: ["should have been", "must have been", "could have been", "might have been"], a: 0 }
+    { q: "He _____ his keys at the restaurant.", clue: "มั่นใจมากในอดีต", options: ["must have left", "must leave", "should leave", "can leave"], a: 0 },
+    { q: "You _____ come here tomorrow morning.", clue: "ไม่จำเป็น", options: ["mustn't", "don't have to", "shouldn't", "can't"], a: 1 },
+    { q: "She _____ sleeping; it's very quiet now.", clue: "คาดคะเนปัจจุบัน", options: ["might be", "might have been", "must have", "should be"], a: 0 },
+    { q: "Students _____ use their phones during the exam.", clue: "ข้อห้าม", options: ["don't have to", "mustn't", "might not", "shouldn't"], a: 1 },
+    { q: "I _____ go to the party if I finish my homework.", clue: "ความเป็นไปได้", options: ["must", "might", "have to", "should"], a: 1 },
+    { q: "He looks exhausted. He _____ hard all day.", clue: "อดีต", options: ["must work", "must have worked", "should work", "might work"], a: 1 },
+    { q: "I _____ swim very far in the past.", clue: "อดีต", options: ["can", "could", "must", "might"], a: 1 },
+    { q: "You _____ see a doctor if your headache persists.", clue: "แนะนำ", options: ["should", "must", "can", "have to"], a: 0 },
+    { q: "It _____ true that he lied to me.", clue: "ไม่เชื่อ", options: ["must be", "can't be", "should be", "might be"], a: 1 },
+    { q: "We _____ submit the report by today.", clue: "จำเป็น", options: ["must", "might", "can", "should"], a: 0 },
+    { q: "She _____ my email.", clue: "อนุมานเชิงปฏิเสธในอดีต", options: ["mustn't have read", "can't have read", "shouldn't have read", "might have read"], a: 1 },
+    { q: "_____ you help me carry these bags?", clue: "ขอร้อง", options: ["Must", "Should", "Could", "Have to"], a: 2 },
+    { q: "He _____ home by now.", clue: "มั่นใจในปัจจุบัน", options: ["must be", "must have been", "should be", "could be"], a: 0 },
+    { q: "I _____ that.", clue: "เสียใจภายหลัง", options: ["shouldn't have said", "shouldn't say", "mustn't have said", "can't have said"], a: 0 },
+    { q: "You _____ in such a hurry.", clue: "ไม่จำเป็น", options: ["mustn't be", "don't have to be", "shouldn't be", "can't be"], a: 1 },
+    { q: "That _____ the best idea.", clue: "คาดคะเนเชิงลบ", options: ["might not be", "must not be", "can't be", "shouldn't be"], a: 0 },
+    { q: "I _____ every day when I was a child.", clue: "อดีต", options: ["can play", "could play", "must play", "should play"], a: 1 },
+    { q: "You _____ wear a mask in this area.", clue: "กฎ", options: ["have to", "might", "could", "should"], a: 0 },
+    { q: "He _____ forgotten.", clue: "เดาอดีต", options: ["must have", "might have", "should have", "can have"], a: 1 },
+    { q: "You _____ break his trust.", clue: "แนะนำเชิงลบ", options: ["shouldn't", "mustn't", "don't have to", "can't"], a: 0 },
+    { q: "_____ he arrive late?", clue: "ถามความเป็นไปได้", options: ["Must", "Should", "Could", "Have to"], a: 2 },
+    { q: "We _____ reveal this secret.", clue: "ข้อห้าม", options: ["mustn't", "don't have to", "shouldn't", "can't"], a: 0 },
+    { q: "They _____ arrived there by now.", clue: "เดาอดีต", options: ["must have", "should have", "might have", "could have"], a: 0 },
+    { q: "You _____ be late if you don't hurry.", clue: "ความเป็นไปได้", options: ["must", "could", "have to", "should"], a: 1 },
+    { q: "I _____ more prepared.", clue: "สะท้อนอดีต", options: ["should have been", "must have been", "could have been", "might have been"], a: 0 }
 ];
 
 const container = document.getElementById('quiz-container');
+
 questions.forEach((item, index) => {
-    let html = `<div class="question-card">
-        <p>${index + 1}. ${item.q}</p>`;
+    let html = `<div class="question-card" id="card${index}">
+        <p><strong>${index + 1}. ${item.q} <span class="clue">(${item.clue})</span></strong></p>`;
     item.options.forEach((opt, oIndex) => {
-        html += `<label class="option"><input type="radio" name="q${index}" value="${oIndex}"> ${opt}</label>`;
+        html += `<label class="option"><input type="radio" name="q${index}" value="${oIndex}" onclick="checkAnswer(${index}, ${oIndex})"> ${opt}</label>`;
     });
     html += `<div id="d${index}" class="detail"></div></div>`;
     container.innerHTML += html;
 });
 
-function submitQuiz() {
-    let score = 0;
-    questions.forEach((item, index) => {
-        const selected = document.querySelector(`input[name="q${index}"]:checked`);
-        const detail = document.getElementById('d'+index);
-        detail.style.display = 'block';
-        if (selected && parseInt(selected.value) === item.a) {
-            score++;
-            detail.style.background = '#d4edda';
-            detail.innerHTML = "ถูกต้อง!";
-        } else {
-            detail.style.background = '#f8d7da';
-            detail.innerHTML = "คำตอบที่ถูกต้องคือ: <strong>" + item.options[item.a] + "</strong>";
-        }
-    });
-    alert("คุณได้คะแนน " + score + " / 25");
+function checkAnswer(qIndex, selectedValue) {
+    const detail = document.getElementById('d' + qIndex);
+    const card = document.getElementById('card' + qIndex);
+    const correct = questions[qIndex].a;
+    
+    // ป้องกันการคลิกซ้ำ
+    const radios = document.getElementsByName('q' + qIndex);
+    radios.forEach(r => r.disabled = true);
+
+    detail.style.display = 'block';
+    if (selectedValue === correct) {
+        card.style.background = '#d4edda';
+        detail.innerHTML = "✅ ถูกต้อง!";
+    } else {
+        card.style.background = '#f8d7da';
+        detail.innerHTML = "❌ ผิดครับ! คำตอบที่ถูกต้องคือ: <strong>" + questions[qIndex].options[correct] + "</strong>";
+    }
 }
 </script>
 
