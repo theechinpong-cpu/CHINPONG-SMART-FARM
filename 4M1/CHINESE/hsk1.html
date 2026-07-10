@@ -5,74 +5,45 @@
     <title>พระจอมเกล้าติวเตอร์ - ฝึกเขียน HSK 1</title>
     <script src="https://cdn.jsdelivr.net/npm/hanzi-writer@3.5.0/dist/hanzi-writer.min.js"></script>
     <style>
-        body { font-family: 'Kanit', sans-serif; padding: 20px; background-color: #f4f7f6; }
-        table { width: 100%; border-collapse: collapse; background: white; }
-        th, td { border: 1px solid #ddd; padding: 10px; text-align: center; }
-        .stroke-box { width: 80px; height: 80px; cursor: pointer; border: 1px solid #ccc; display: inline-block; background-color: #fff; }
+        .stroke-box { width: 80px; height: 80px; cursor: pointer; border: 1px solid #ccc; display: inline-block; margin: 5px; }
     </style>
 </head>
 <body>
-
-    <h2>HSK ระดับ 1 - ฝึกเขียนตัวอักษรจีน</h2>
-    <table id="hskTable">
-        <thead>
-            <tr>
-                <th>ลำดับ</th>
-                <th>คำศัพท์</th>
-                <th>พินอิน</th>
-                <th>ช่องฝึกเขียน (คลิกที่ช่อง)</th>
-            </tr>
-        </thead>
-        <tbody id="tableBody"></tbody>
-    </table>
+    <h2>HSK 1 - คลิกเพื่อฝึกเขียน</h2>
+    <div id="app"></div>
 
     <script>
-        const words = [
-            { id: 1, hanzi: "我", pinyin: "wǒ" },
-            { id: 2, hanzi: "你", pinyin: "nǐ" },
-            { id: 3, hanzi: "他", pinyin: "tā" }
-        ];
+        const words = ["我", "你", "他"];
+        const app = document.getElementById('app');
 
-        const tbody = document.getElementById('tableBody');
+        words.forEach((char, index) => {
+            const row = document.createElement('div');
+            app.appendChild(row);
 
-        words.forEach(word => {
-            let row = `<tr>
-                <td>${word.id}</td>
-                <td>${word.hanzi}</td>
-                <td>${word.pinyin}</td>
-                <td id="container-${word.id}"></td>
-            </tr>`;
-            tbody.innerHTML += row;
-            
-            // สร้าง 5 ช่องในคอลัมน์เดียว
-            const container = document.getElementById(`container-${word.id}`);
-            for(let i=1; i<=5; i++) {
-                container.innerHTML += `<div id="box-${word.id}-${i}" class="stroke-box"></div>`;
-            }
-        });
+            for (let i = 0; i < 5; i++) {
+                const boxId = `writer-${index}-${i}`;
+                const div = document.createElement('div');
+                div.id = boxId;
+                div.className = 'stroke-box';
+                row.appendChild(div);
 
-        // Initialize Hanzi Writer
-        words.forEach(word => {
-            for(let i=1; i<=5; i++) {
-                const targetId = `box-${word.id}-${i}`;
-                const writer = HanziWriter.create(targetId, word.hanzi, {
-                    width: 80, height: 80, padding: 5, strokeColor: '#000000',
-                    showCharacter: false, showOutline: true
+                // สร้าง Writer instance
+                const writer = HanziWriter.create(boxId, char, {
+                    width: 80, height: 80, padding: 5,
+                    strokeColor: '#000000', showCharacter: false, showOutline: true
                 });
-                
-                let currentStroke = 0; 
-                
-                // ใช้ตัวแปรนี้เพื่อเช็คจำนวนขีดจริงของตัวอักษรนั้นๆ
-                writer.getCharacterData(word.hanzi).then(data => {
-                    const totalStrokes = data.strokes.length;
-                    
-                    document.getElementById(targetId).addEventListener('click', () => {
-                        if (currentStroke < totalStrokes) {
-                            writer.showStroke(currentStroke);
-                            currentStroke++;
+
+                // Logic การคลิกที่เสถียรที่สุด
+                let strokeIndex = 0;
+                div.addEventListener('click', () => {
+                    // ดึงข้อมูลจำนวนขีดทั้งหมดของตัวอักษรนั้นๆ
+                    HanziWriter.getCharacterData(char).then(data => {
+                        const total = data.strokes.length;
+                        if (strokeIndex < total) {
+                            writer.showStroke(strokeIndex);
+                            strokeIndex++;
                         } else {
-                            // ถ้าครบแล้วให้ Reset
-                            currentStroke = 0;
+                            strokeIndex = 0;
                             writer.hideCharacter();
                         }
                     });
