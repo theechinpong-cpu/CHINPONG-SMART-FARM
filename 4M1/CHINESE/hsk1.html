@@ -2,25 +2,26 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <title>พระจอมเกล้าติวเตอร์ - ฝึกเขียน HSK 1 (Pro พร้อมเลขกำกับ)</title>
+    <title>พระจอมเกล้าติวเตอร์ - HSK 1 Professional</title>
     <script src="https://cdn.jsdelivr.net/npm/hanzi-writer@3.5.0/dist/hanzi-writer.min.js"></script>
     <style>
         body { font-family: 'Kanit', sans-serif; padding: 20px; background-color: #f8f9fa; }
-        table { width: 100%; border-collapse: separate; background: white; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        table { width: 100%; border-collapse: collapse; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         th { background: #2c3e50; color: white; padding: 15px; }
-        td { border: 1px solid #edf2f7; padding: 10px; text-align: center; }
-        .stroke-box { width: 80px; height: 80px; cursor: pointer; border: 1px solid #e2e8f0; position: relative; }
-        /* สไตล์สำหรับตัวเลขสีแดง */
-        .stroke-number { position: absolute; color: red; font-size: 12px; font-weight: bold; pointer-events: none; z-index: 10; }
+        td { border: 1px solid #edf2f7; padding: 10px; text-align: left; vertical-align: top; }
+        .stroke-box { width: 80px; height: 80px; cursor: pointer; border: 1px solid #e2e8f0; display: inline-block; }
     </style>
 </head>
 <body>
 
-    <h2>HSK 1 - ฝึกเขียนตัวอักษรจีน (พร้อมเลขลำดับขีด)</h2>
+    <h2>HSK 1 - ฝึกเขียนตัวอักษรจีน</h2>
     <table id="hskTable">
         <thead>
             <tr>
-                <th>ลำดับ</th><th>อักษร</th><th>พินอิน</th><th>ช่องฝึกเขียน</th>
+                <th>อักษร</th>
+                <th>พินอิน</th>
+                <th>ลำดับขีด (แนะนำ)</th>
+                <th>ช่องฝึกเขียน</th>
             </tr>
         </thead>
         <tbody id="tableBody"></tbody>
@@ -28,45 +29,34 @@
 
     <script>
         const words = [
-            { id: 1, hanzi: "我", pinyin: "wǒ" },
-            { id: 2, hanzi: "你", pinyin: "nǐ" },
-            { id: 3, hanzi: "他", pinyin: "tā" }
+            { hanzi: "我", pinyin: "wǒ", sequence: "1.ขีดขวาง 2.ขีดตั้ง 3.ขีดตวัด" },
+            { hanzi: "你", pinyin: "nǐ", sequence: "1.ขีดตั้ง 2.ขีดขวาง 3.ขีดเบี่ยง" },
+            { hanzi: "他", pinyin: "tā", sequence: "1.ขีดตั้ง 2.ขีดขวาง 3.ขีดตั้ง" }
         ];
 
         const tbody = document.getElementById('tableBody');
 
         words.forEach(word => {
             let row = document.createElement('tr');
-            row.innerHTML = `<td>${word.id}</td><td style="font-size:24px">${word.hanzi}</td><td>${word.pinyin}</td><td><div id="container-${word.id}" style="display:flex; gap:5px;"></div></td>`;
+            row.innerHTML = `
+                <td style="font-size:24px; font-weight:bold;">${word.hanzi}</td>
+                <td>${word.pinyin}</td>
+                <td style="font-size: 14px; color: #555;">${word.sequence}</td>
+                <td><div id="container-${word.hanzi}" style="display:flex; gap:5px;"></div></td>
+            `;
             tbody.appendChild(row);
 
-            const container = document.getElementById(`container-${word.id}`);
-            
-            // สร้างช่องฝึก 5 ช่อง
-            for(let i = 1; i <= 5; i++) {
+            const container = document.getElementById(`container-${word.hanzi}`);
+            for(let i = 1; i <= 3; i++) {
                 let box = document.createElement('div');
-                box.id = `box-${word.id}-${i}`;
+                box.id = `box-${word.hanzi}-${i}`;
                 box.className = 'stroke-box';
                 container.appendChild(box);
 
                 const writer = HanziWriter.create(box.id, word.hanzi, {
-                    width: 80, height: 80, padding: 5,
-                    strokeColor: '#2c3e50', showCharacter: false, showOutline: true
+                    width: 80, height: 80, padding: 5, strokeColor: '#2c3e50',
+                    showCharacter: false, showOutline: true
                 });
-
-                // ดึงข้อมูลพิกัดมาแปะเลขลำดับขีด
-                HanziWriter.getCharacterData(word.hanzi).then(function(charData) {
-                    charData.strokes.forEach((stroke, index) => {
-                        let num = document.createElement('div');
-                        num.className = 'stroke-number';
-                        // คำนวณตำแหน่งพิกัดเริ่มต้นของขีด
-                        num.style.left = (stroke.pathPoints[0].x / 1024 * 80) + 'px';
-                        num.style.top = (stroke.pathPoints[0].y / 1024 * 80) + 'px';
-                        num.innerText = index + 1;
-                        box.appendChild(num);
-                    });
-                });
-
                 box.addEventListener('click', () => writer.animateCharacter());
             }
         });
