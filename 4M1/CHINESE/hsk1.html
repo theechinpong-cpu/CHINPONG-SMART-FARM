@@ -2,34 +2,83 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <title>พระจอมเกล้าติวเตอร์ - ฝึกเขียน HSK 1 พร้อมลำดับขีด</title>
+    <title>พระจอมเกล้าติวเตอร์ - ฝึกเขียน HSK 1</title>
     <script src="https://cdn.jsdelivr.net/npm/hanzi-writer@3.5.0/dist/hanzi-writer.min.js"></script>
     <style>
-        .container { display: flex; flex-direction: column; align-items: center; font-family: 'Kanit'; }
-        #target-writer { width: 300px; height: 300px; border: 1px solid #ccc; }
-        .info { margin: 20px; text-align: center; }
+        body { font-family: 'Kanit', sans-serif; display: flex; flex-direction: column; align-items: center; background: #f9f9f9; padding: 20px; }
+        .card { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 20px rgba(0,0,0,0.1); width: 400px; text-align: center; }
+        #writer-container { width: 300px; height: 300px; margin: 20px auto; border: 2px dashed #aaa; }
+        .info { margin-bottom: 20px; }
+        .hanzi-big { font-size: 60px; font-weight: bold; color: #333; }
+        .details { font-size: 20px; color: #555; margin: 10px 0; }
+        .controls { display: flex; justify-content: center; gap: 20px; margin-top: 20px; }
+        button { padding: 10px 20px; cursor: pointer; border: none; border-radius: 5px; background: #007bff; color: white; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h2>ฝึกเขียน: <span id="char">我</span></h2>
-        <div id="target-writer"></div>
+
+    <div class="card">
         <div class="info">
-            <button onclick="writer.animateCharacter()">ดูวิธีเขียนตามลำดับ (1, 2, 3...)</button>
-            <p>คลิกปุ่มเพื่อดู Animation ลำดับขีดที่ถูกต้อง</p>
+            <div id="display-hanzi" class="hanzi-big"></div>
+            <div id="display-details" class="details"></div>
+        </div>
+        
+        <div id="writer-container"></div>
+        
+        <div class="controls">
+            <button onclick="prevWord()">ก่อนหน้า</button>
+            <button onclick="playAnimation()">ดูวิธีเขียน (ช้าๆ)</button>
+            <button onclick="nextWord()">ถัดไป</button>
         </div>
     </div>
 
     <script>
-        // Instance ของตัวเขียนอักษร
-        const writer = HanziWriter.create('target-writer', '我', {
-            width: 300,
-            height: 300,
-            padding: 5,
-            showOutline: true,
-            strokeAnimationSpeed: 1, // ความเร็วในการเขียน
-            delayBetweenStrokes: 500 // หน่วงเวลาให้เห็นลำดับชัดๆ
-        });
+        const vocabulary = [
+            { hanzi: "我", pinyin: "wǒ", meaning: "ฉัน" },
+            { hanzi: "你", pinyin: "nǐ", meaning: "คุณ" },
+            { hanzi: "他", pinyin: "tā", meaning: "เขา" },
+            { hanzi: "好", pinyin: "hǎo", meaning: "ดี" },
+            { hanzi: "吃", pinyin: "chī", meaning: "กิน" }
+        ];
+
+        let currentIndex = 0;
+        let writer = null;
+
+        function initWriter() {
+            const container = document.getElementById('writer-container');
+            container.innerHTML = ""; // เคลียร์ของเก่า
+            
+            document.getElementById('display-hanzi').innerText = vocabulary[currentIndex].hanzi;
+            document.getElementById('display-details').innerText = `${vocabulary[currentIndex].pinyin} | ${vocabulary[currentIndex].meaning}`;
+
+            // สร้าง Writer ใหม่
+            writer = HanziWriter.create('writer-container', vocabulary[currentIndex].hanzi, {
+                width: 300,
+                height: 300,
+                padding: 10,
+                strokeColor: '#333',
+                showOutline: true,
+                strokeAnimationSpeed: 0.5, // ปรับค่านี้ให้ช้าลงตามต้องการ
+                delayBetweenStrokes: 1500  // เว้นจังหวะแต่ละขีดนานขึ้น
+            });
+        }
+
+        function playAnimation() {
+            writer.animateCharacter();
+        }
+
+        function nextWord() {
+            currentIndex = (currentIndex + 1) % vocabulary.length;
+            initWriter();
+        }
+
+        function prevWord() {
+            currentIndex = (currentIndex - 1 + vocabulary.length) % vocabulary.length;
+            initWriter();
+        }
+
+        // เริ่มต้น
+        initWriter();
     </script>
 </body>
 </html>
