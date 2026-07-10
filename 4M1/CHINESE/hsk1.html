@@ -2,27 +2,26 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <title>พระจอมเกล้าติวเตอร์ - HSK 1 Engine</title>
+    <title>พระจอมเกล้าติวเตอร์ - ฝึกเขียนสีสัน HSK 1</title>
     <script src="https://cdn.jsdelivr.net/npm/hanzi-writer@3.5.0/dist/hanzi-writer.min.js"></script>
     <style>
         body { font-family: 'Kanit', sans-serif; padding: 20px; background-color: #f4f4f4; }
         table { width: 100%; border-collapse: collapse; background: white; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
         th, td { border: 1px solid #ddd; padding: 12px; text-align: center; }
-        .stroke-box { width: 80px; height: 80px; border: 1px solid #ccc; background: #fff; cursor: pointer; }
-        .btn-play { background: #28a745; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; }
-        .btn-play:hover { background: #218838; }
+        .stroke-box { width: 80px; height: 80px; border: 1px solid #ccc; background: #fff; cursor: crosshair; margin: 0 auto; }
+        .color-picker { margin-top: 5px; }
     </style>
 </head>
 <body>
 
-    <h2>HSK 1 - ฝึกเขียนตัวอักษรจีน (Professional Core Engine)</h2>
+    <h2>HSK 1 - ฝึกเขียนเปลี่ยนสีได้ (Professional Edition)</h2>
     <table>
         <thead>
             <tr>
                 <th>อักษร</th>
                 <th>พินอิน</th>
-                <th>กดดูเลขลำดับขีด</th>
-                <th>ช่องฝึกเขียน (คลิกเพื่อเขียน)</th>
+                <th>ช่องฝึกเขียน (คลิกเขียนตาม)</th>
+                <th>เลือกสีปากกา</th>
             </tr>
         </thead>
         <tbody id="tableBody"></tbody>
@@ -42,24 +41,32 @@
             row.innerHTML = `
                 <td style="font-size:28px;">${word.hanzi}</td>
                 <td>${word.pinyin}</td>
-                <td><button class="btn-play" onclick="showOrder('${word.hanzi}')">ดูลำดับขีด</button></td>
-                <td><div id="container-${word.hanzi}" class="stroke-box"></div></td>
+                <td><div id="box-${word.hanzi}" class="stroke-box"></div></td>
+                <td>
+                    <select class="color-picker" id="color-${word.hanzi}" onchange="changeColor('${word.hanzi}')">
+                        <option value="#2c3e50">ดำ (มาตรฐาน)</option>
+                        <option value="#e74c3c">แดง</option>
+                        <option value="#3498db">น้ำเงิน</option>
+                        <option value="#27ae60">เขียว</option>
+                    </select>
+                </td>
             `;
             tbody.appendChild(row);
 
-            // สร้าง Writer สำหรับฝึกเขียน
-            const writer = HanziWriter.create(`container-${word.hanzi}`, word.hanzi, {
+            // สร้าง Writer instance เริ่มต้น
+            const writer = HanziWriter.create(`box-${word.hanzi}`, word.hanzi, {
                 width: 80, height: 80, padding: 5,
-                showOutline: true, showCharacter: false
+                strokeColor: '#2c3e50', showOutline: true
             });
-            document.getElementById(`container-${word.hanzi}`).addEventListener('click', () => writer.animateCharacter());
+            
+            // เก็บ reference ไว้ใช้ในฟังก์ชันเปลี่ยนสี
+            window[`writer_${word.hanzi}`] = writer;
         });
 
-        // ฟังก์ชันแสดงลำดับขีดแยกต่างหาก
-        function showOrder(char) {
-            // เราเปิดหน้าต่างใหม่หรือ Modal เพื่อแสดงลำดับขีดแบบเลข 1, 2, 3 กำกับ
-            // วิธีนี้ปลอดภัยและเลขขึ้นแน่นอนครับ
-            alert("ระบบกำลังแสดงลำดับขีดสำหรับตัว: " + char + "\n(ในหน้าจอจริงส่วนนี้จะเป็น Modal แสดงเลข 1, 2, 3 กำกับบนเส้น)");
+        // ฟังก์ชันเปลี่ยนสีปากกา
+        function changeColor(char) {
+            const color = document.getElementById(`color-${char}`).value;
+            window[`writer_${char}`].updateColor('strokeColor', color);
         }
     </script>
 </body>
