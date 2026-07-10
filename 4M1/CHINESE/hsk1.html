@@ -2,50 +2,48 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <title>พระจอมเกล้าติวเตอร์ - Stroke Engine</title>
+    <title>พระจอมเกล้าติวเตอร์ - ฝึกเขียนแบบมีไกด์</title>
     <style>
-        #canvas { border: 2px solid #333; background-color: #fff; cursor: crosshair; }
-        .controls { margin-top: 10px; }
+        #canvas { border: 2px solid #333; background-color: #fff; position: relative; }
+        .wrapper { position: relative; width: 300px; height: 300px; }
     </style>
 </head>
 <body>
 
     <h2>ฝึกเขียนอักษร: 一 (หนึ่ง)</h2>
-    <canvas id="canvas" width="300" height="300"></canvas>
-    <div class="controls">
-        <button onclick="clearCanvas()">ล้างกระดาน</button>
+    <div class="wrapper">
+        <canvas id="guideCanvas" width="300" height="300" style="position: absolute; z-index: 1;"></canvas>
+        <canvas id="userCanvas" width="300" height="300" style="position: absolute; z-index: 2;"></canvas>
     </div>
 
     <script>
-        const canvas = document.getElementById('canvas');
-        const ctx = canvas.getContext('2d');
+        const guideCanvas = document.getElementById('guideCanvas');
+        const gCtx = guideCanvas.getContext('2d');
+        const userCanvas = document.getElementById('userCanvas');
+        const uCtx = userCanvas.getContext('2d');
+
+        // 1. วาดเส้นจางๆ (Guide) ให้เด็กเห็นก่อน
+        gCtx.strokeStyle = '#e0e0e0'; // สีเทาจาง
+        gCtx.lineWidth = 10;
+        gCtx.lineCap = 'round';
+        gCtx.moveTo(50, 150);
+        gCtx.lineTo(250, 150);
+        gCtx.stroke();
+
+        // 2. Logic การเขียนของเด็ก
         let drawing = false;
-
-        // ตั้งค่าพู่กัน
-        ctx.strokeStyle = '#000';
-        ctx.lineWidth = 10;
-        ctx.lineCap = 'round';
-
-        // Event Listener สำหรับเมาส์และสัมผัส
-        canvas.addEventListener('mousedown', () => drawing = true);
-        canvas.addEventListener('mouseup', () => { drawing = false; ctx.beginPath(); });
-        canvas.addEventListener('mousemove', draw);
-
-        function draw(e) {
+        userCanvas.addEventListener('mousedown', () => drawing = true);
+        userCanvas.addEventListener('mouseup', () => { drawing = false; uCtx.beginPath(); });
+        userCanvas.addEventListener('mousemove', (e) => {
             if (!drawing) return;
-            const rect = canvas.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-
-            ctx.lineTo(x, y);
-            ctx.stroke();
-            ctx.beginPath();
-            ctx.moveTo(x, y);
-        }
-
-        function clearCanvas() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-        }
+            const rect = userCanvas.getBoundingClientRect();
+            uCtx.lineWidth = 10;
+            uCtx.strokeStyle = '#000'; // สีดำเข้มที่เด็กเขียน
+            uCtx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
+            uCtx.stroke();
+            uCtx.beginPath();
+            uCtx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
+        });
     </script>
 </body>
 </html>
