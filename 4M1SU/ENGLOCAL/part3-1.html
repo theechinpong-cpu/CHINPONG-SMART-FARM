@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <title>พระจอมเกล้าติวเตอร์: Vocabulary & Descriptive Words (Set 1)</title>
+    <style>
+        body { font-family: sans-serif; line-height: 1.6; max-width: 800px; margin: auto; padding: 20px; background-color: #f4f4f9; }
+        .summary { background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        .trick { background: #e8f5e9; border-left: 5px solid #4caf50; padding: 10px; margin: 10px 0; }
+        .question { background: #fff; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #ddd; }
+        .options button { display: block; width: 100%; text-align: left; margin: 5px 0; padding: 10px; cursor: pointer; border: 1px solid #ccc; border-radius: 5px; }
+        .correct { background-color: #c8e6c9 !important; border-color: #4caf50 !important; }
+        .wrong { background-color: #ffcdd2 !important; border-color: #f44336 !important; }
+        .detail { display: none; margin-top: 10px; padding: 10px; background: #fff3e0; border-radius: 5px; font-size: 0.9em; }
+        .clue { font-size: 0.85em; color: #555; font-style: italic; margin-top: 5px; }
+    </style>
+</head>
+<body>
+
+<div id="quiz-container"></div>
+<button onclick="calculateScore()" style="padding: 15px; width: 100%; font-size: 1.2em; background: #2196f3; color: white; border: none; border-radius: 5px; cursor: pointer;">ส่งข้อสอบและสรุปผล</button>
+
+<script>
+const questions = [
+    { q: "The water at the ________ is crystal clear and perfect for swimming.", options: ["mountain top", "sandy beach", "busy city", "dark cave"], correct: 1, detail: "การว่ายน้ำและน้ำใสเป็นลักษณะเฉพาะของชายหาด", clue: "Search for a place to swim." },
+    { q: "We hiked up the ________ to see the breathtaking sunrise.", options: ["deep valley", "wide ocean", "rugged mountain", "flat desert"], correct: 2, detail: "การปีนขึ้นไปเพื่อดูพระอาทิตย์ขึ้นมักทำบนภูเขา", clue: "Think of high places." },
+    { q: "The atmosphere in the forest was very ________ and quiet.", options: ["peaceful", "crowded", "loud", "noisy"], correct: 0, detail: "ป่าไม้ที่เงียบสงบมักใช้คำว่า peaceful", clue: "Synonym for calm." },
+    { q: "The city was ________ with thousands of people and bright lights.", options: ["vibrant", "empty", "deserted", "abandoned"], correct: 0, detail: "เมืองที่มีผู้คนพลุกพล่านและแสงสีมักถูกอธิบายว่า vibrant", clue: "Full of energy." },
+    { q: "The island is ________ by the beautiful blue sea.", options: ["surrounded", "pushed", "hidden", "broken"], correct: 0, detail: "เกาะมักจะถูกล้อมรอบด้วยน้ำ", clue: "Located in the middle." },
+    { q: "The cave was dark and ________, so we needed a flashlight.", options: ["mysterious", "bright", "sunny", "clear"], correct: 0, detail: "ถ้ำที่มืดมักมีความลึกลับและต้องใช้ไฟฉาย", clue: "Dark places are often..." },
+    { q: "The view from the top of the tower was ________.", options: ["spectacular", "ordinary", "simple", "dull"], correct: 0, detail: "วิวที่สวยงามจากที่สูงมักใช้คำว่า spectacular", clue: "Very impressive." },
+    { q: "He lives in a ________ village far away from the big city.", options: ["remote", "popular", "central", "busy"], correct: 0, detail: "หมู่บ้านที่ห่างไกลจากเมืองมักเรียกว่า remote", clue: "Distant location." },
+    { q: "The desert is ________ and has very little water.", options: ["arid", "humid", "watery", "rainy"], correct: 0, detail: "พื้นที่ที่แห้งแล้งและขาดแคลนน้ำคือ arid", clue: "Lack of moisture." },
+    { q: "The tropical forest is full of ________ plants and trees.", options: ["lush", "bare", "dry", "dead"], correct: 0, detail: "ป่าที่สมบูรณ์เต็มไปด้วยพืชพรรณมักใช้คำว่า lush", clue: "Green and thick." },
+    { q: "The old castle looks very ________ with its stone walls.", options: ["ancient", "modern", "current", "fresh"], correct: 0, detail: "ปราสาทเก่าแก่ที่สร้างด้วยหินใช้คำว่า ancient", clue: "Very old." },
+    { q: "The park is a ________ place for families to spend time.", options: ["pleasant", "hostile", "dangerous", "gloomy"], correct: 0, detail: "สวนสาธารณะเป็นสถานที่พักผ่อนที่น่ารื่นรมย์ (pleasant)", clue: "Nice and enjoyable." },
+    { q: "The river flows through the ________ valley.", options: ["fertile", "barren", "empty", "vacant"], correct: 0, detail: "พื้นที่ที่อุดมสมบูรณ์สำหรับเกษตรกรรมคือ fertile", clue: "Good for growing things." },
+    { q: "The small town is famous for its ________ local market.", options: ["bustling", "lifeless", "static", "quiet"], correct: 0, detail: "ตลาดที่คึกคักและมีชีวิตชีวาใช้คำว่า bustling", clue: "Full of activity." },
+    { q: "The giant waterfall is a ________ sight to see.", options: ["majestic", "tiny", "weak", "small"], correct: 0, detail: "น้ำตกขนาดใหญ่ที่ดูยิ่งใหญ่ใช้คำว่า majestic", clue: "Grand appearance." },
+    { q: "The path to the temple is ________ and steep.", options: ["narrow", "wide", "broad", "large"], correct: 0, detail: "ทางเดินขึ้นวัดมักจะแคบและชัน", clue: "Not wide." },
+    { q: "The sea was ________ during the storm yesterday.", options: ["turbulent", "calm", "smooth", "steady"], correct: 0, detail: "ทะเลที่มีคลื่นลมแรงและไม่สงบคือ turbulent", clue: "Opposite of calm." },
+    { q: "The building has a ________ design with many glass walls.", options: ["contemporary", "ancient", "historic", "primeval"], correct: 0, detail: "การออกแบบสมัยใหม่ใช้คำว่า contemporary", clue: "Modern style." },
+    { q: "The garden is ________ with colorful flowers everywhere.", options: ["blooming", "dying", "fading", "wilting"], correct: 0, detail: "สวนที่เต็มไปด้วยดอกไม้ที่บานสะพรั่งใช้คำว่า blooming", clue: "Full of flowers." },
+    { q: "The museum holds many ________ artifacts from the past.", options: ["valuable", "useless", "cheap", "worthless"], correct: 0, detail: "ของโบราณที่มีคุณค่ามักเรียกว่า valuable", clue: "High in worth." },
+    { q: "The sky was ________ after the rain stopped.", options: ["radiant", "gloomy", "dark", "cloudy"], correct: 0, detail: "ท้องฟ้าที่สดใสและเปล่งประกายใช้คำว่า radiant", clue: "Bright and shining." },
+    { q: "The hotel offers a ________ view of the city skyline.", options: ["panoramic", "partial", "narrow", "limited"], correct: 0, detail: "การมองเห็นภาพรวมกว้างๆ เรียกว่า panoramic", clue: "Wide view." },
+    { q: "The streets were ________ after the midnight festival.", options: ["deserted", "crowded", "packed", "busy"], correct: 0, detail: "ถนนที่เงียบเหงาและไร้ผู้คนใช้คำว่า deserted", clue: "Empty of people." },
+    { q: "The local cuisine is ________ and full of exotic spices.", options: ["aromatic", "bland", "plain", "tasteless"], correct: 0, detail: "อาหารที่มีกลิ่นหอมและรสชาติดีใช้คำว่า aromatic", clue: "Strong pleasant smell." },
+    { q: "The mountain trail is ________ for beginners to hike.", options: ["challenging", "easy", "simple", "basic"], correct: 0, detail: "เส้นทางเดินเขาที่ยากลำบากเรียกว่า challenging", clue: "Demanding effort." }
+];
+
+function renderQuiz() {
+    const container = document.getElementById('quiz-container');
+    questions.forEach((q, index) => {
+        const qDiv = document.createElement('div');
+        qDiv.className = 'question';
+        qDiv.innerHTML = `<p>${index + 1}. ${q.q}</p><div class="options"></div><div class="clue">คำใบ้: ${q.clue}</div><div class="detail" id="detail-${index}">${q.detail}</div>`;
+        container.appendChild(qDiv);
+        const optDiv = qDiv.querySelector('.options');
+        q.options.forEach((opt, oIdx) => {
+            const btn = document.createElement('button');
+            btn.innerText = opt;
+            btn.onclick = () => checkAnswer(index, oIdx, btn);
+            optDiv.appendChild(btn);
+        });
+    });
+}
+
+function checkAnswer(qIdx, oIdx, btn) {
+    const q = questions[qIdx];
+    const parent = btn.parentElement;
+    const btns = parent.querySelectorAll('button');
+    btns.forEach(b => b.disabled = true);
+    if(oIdx === q.correct) {
+        btn.classList.add('correct');
+    } else {
+        btn.classList.add('wrong');
+        btns[q.correct].classList.add('correct');
+    }
+    document.getElementById(`detail-${qIdx}`).style.display = 'block';
+}
+
+function calculateScore() {
+    let score = 0;
+    document.querySelectorAll('.correct').forEach(el => { if(el.tagName === 'BUTTON') score++; });
+    alert("คะแนนของคุณคือ: " + score + "/25");
+    console.log("Simulating data sending to thee.chinpong@hmail.com: Score = " + score);
+}
+
+renderQuiz();
+</script>
+<p>เขียนโดย พระจอมเกล้าติวเตอร์</p>
+</body>
+</html>
