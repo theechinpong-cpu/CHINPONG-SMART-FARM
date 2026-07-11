@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CHINESE MASTER v1.0</title>
+  
+  <!-- Fonts & Tailwind -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- React 18 & Babel CDN -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  
+  <!-- HanziWriter CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/hanzi-writer@3.5/dist/hanzi-writer.min.js"></script>
+
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #FDFCF8;
+    }
+  </style>
+</head>
+<body class="antialiased text-[#2D2D2D] bg-[#FDFCF8]">
+
+  <div id="root"></div>
+
+  <!-- React Standalone App under Babel -->
+  <script type="text/babel">
+    const { useState, useEffect, useRef } = React;
+
+    // --- Elegant Compressed Vocabulary List ---
+    const VOCABULARY_LIST = [
+      { id: '1', word: '你', pinyin: 'nǐ', translation: 'คุณ', characters: [{ char: '你', strokes: Array(7).fill({}) }] },
+      { id: '2', word: '是', pinyin: 'shì', translation: 'เป็น, คือ', characters: [{ char: '是', strokes: Array(9).fill({}) }] },
+      { id: '3', word: '我', pinyin: 'wǒ', translation: 'ฉัน', characters: [{ char: '我', strokes: Array(7).fill({}) }] },
+      { id: '4', word: '他', pinyin: 'tā', translation: 'เขา (ผู้ชาย)', characters: [{ char: '他', strokes: Array(5).fill({}) }] },
+      { id: '5', word: '叫', pinyin: 'jiào', translation: 'เรียก', characters: [{ char: '叫', strokes: Array(5).fill({}) }] },
+      { id: '6', word: '什么', pinyin: 'shénme', translation: 'อะไร', characters: [{ char: '什', strokes: Array(4).fill({}) }, { char: '么', strokes: Array(3).fill({}) }] },
+      { id: '7', word: '再见', pinyin: 'zàijiàn', translation: 'ลาก่อน', characters: [{ char: '再', strokes: Array(6).fill({}) }, { char: '见', strokes: Array(4).fill({}) }] },
+      { id: '8', word: '你好', pinyin: 'nǐhǎo', translation: 'สวัสดี', characters: [{ char: '你', strokes: Array(7).fill({}) }, { char: '好', strokes: Array(6).fill({}) }] },
+      { id: '9', word: '老师', pinyin: 'lǎoshī', translation: 'คุณครู', characters: [{ char: '老', strokes: Array(6).fill({}) }, { char: '师', strokes: Array(6).fill({}) }] },
+      { id: '10', word: '学生', pinyin: 'xuésheng', translation: 'นักเรียน', characters: [{ char: '学', strokes: Array(8).fill({}) }, { char: '生', strokes: Array(5).fill({}) }] }
+    ];
+
+    // --- Helper for Audio Synthesis ---
+    const playSoundEffect = (type) => {
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        
+        if (type === 'success') {
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(523.25, ctx.currentTime);
+          osc.frequency.setValueAtTime(659.25, ctx.currentTime + 0.1);
+          gain.gain.setValueAtTime(0.1, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.25);
+          osc.start(); osc.stop(ctx.currentTime + 0.25);
+        } else if (type === 'error') {
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(150, ctx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(80, ctx.currentTime + 0.2);
+          gain.gain.setValueAtTime(0.1, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.2);
+          osc.start(); osc.stop(ctx.currentTime + 0.2);
+        } else if (type === 'complete') {
+          [523, 659, 784, 1046].forEach((f, idx) => {
+            const o = ctx.createOscillator();
+            const g = ctx.createGain();
+            o.type = 'sine'; o.frequency.value = f;
+            o.connect(g); g.connect(ctx.destination);
+            g.gain.setValueAtTime(0, ctx.currentTime);
+            g.gain.linearRampToValueAtTime(0.08, ctx.currentTime + idx * 0.05 + 0.02);
+            g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.6);
+            o.start(ctx.currentTime + idx * 0.05); o.stop(ctx.currentTime + 0.6);
+          });
+        }
+      } catch (e) { console.warn("Audio context not supported inside iframe:", e); }
+    };
+
+    // --- Voice Synthesis via Web Speech API ---
+    const speakPinyinWord = (text) => {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'zh-CN';
+        utterance.rate = 0.75;
+        window.speechSynthesis.speak(utterance);
+      }
+    };
+
+    // --- Custom Inline SVGs representing Lucide Icons ---
+    const Icons = {
+      BookOpen: () => <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" /></svg>,
+      GraduationCap: () => <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M4.26 10.147a60.436 60.436 0 00-.491 6.347A48.62 48.62 0 0112 20.904a48.62 48.62 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.57 50.57 0 00-2.658-.813A59.905 59.905 0 0112 3.493a59.902 59.902 0 0110.399 5.84a50.58 50.58 0 00-2.658.814m-15.482 0A50.697 50.697 0 0112 13.489a50.702 50.702 0 017.74-3.342M6.75 15a.75.75 0 100-1.5.75.75 0 000 1.5zm0 0v-3.675A55.378 55.378 0 0112 8.443m-5.25 6.557a.75.75 0 110-1.5.75.75 0 010 1.5zm0 0v3.675C8.384 17.513 10.117 17 12 17c1.883 0 3.616.513 5.25 1.557v-3.675" /></svg>,
+      Volume2: () => <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19.114 5.636a9 9 0 010 12.728M16.463 8.288a5.25 5.25 0 010 7.424M6.75 8.25l4.72-4.72a.75.75 0 011.28.53v15.88a.75.75 0 01-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.01 9.01 0 012.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75z" /></svg>,
+      RotateCcw: () => <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" /></svg>,
+      ArrowLeft: () => <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" /></svg>,
+      ArrowRight: () => <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" /></svg>,
+      Search: () => <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.637 10.637z" /></svg>,
+      Award: () => <svg className="w-10 h-10" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M16.5 18.75h-9m9 0a3 3 0 013 3h-15a3 3 0 013-3m9 0v-3.375c0-.621-.504-1.125-1.125-1.125h-6.75A1.125 1.125 0 007.5 15.375v3.375m9 0h-9m9 0V12m-9 6.75V12m-.75 0h10.5M18 12a3 3 0 100-6M6 12a3 3 0 100-6m12 6a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
+      Trash: () => <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" /></svg>,
+      Sparkles: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 21l-.813-5.096L3.091 15 8.187 14.187 9 9l.813 5.187L14.909 15l-5.096.904zM18.5 4.5l-.25 1.5-.25-1.5L16.5 4.25l1.5-.25.25-1.5.25 1.5 1.5.25-1.5.25zM19 19.25l-.25 1.5-.25-1.5-1.5-.25 1.5-.25.25-1.5.25 1.5 1.5.25-1.5.25z" /></svg>,
+      Check: () => <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
+    };
+
+    // --- INTERACTIVE WRITING CANVAS COMPONENT ---
+    function TianZiGeCanvas({ character, pinyin, translation, onCharacterCompleted, onNextChar, onPrevChar, charIndex, totalChars }) {
+      const writerContainerRef = useRef(null);
+      const writerRef = useRef(null);
+      const [currentStroke, setCurrentStroke] = useState(0);
+      const [completedList, setCompletedList] = useState([]);
+      const [errors, setErrors] = useState(0);
+      const [isComplete, setIsComplete] = useState(false);
+      const [isAnimating, setIsAnimating] = useState(false);
+      const [feedback, setFeedback] = useState({ message: 'เริ่มเขียนทีละขีดตามตัวอย่างได้เลยครับ!', type: 'info' });
+
+      const startQuizMode = (writer) => {
+        if (!writer) return;
+        setIsComplete(false);
+        writer.quiz({
+          onCorrectStroke(strokeData) {
+            playSoundEffect('success');
+            setCurrentStroke(strokeData.strokeNum + 1);
+            setCompletedList(prev => [...new Set([...prev, strokeData.strokeNum])]);
+            setFeedback({ message: `ยอดเยี่ยม! ขีดที่ ${strokeData.strokeNum + 1} ถูกต้องแล้ว`, type: 'success' });
+          },
+          onMistake(strokeData) {
+            playSoundEffect('error');
+            setErrors(strokeData.totalMistakes);
+            setFeedback({ message: 'ผิดพลาด! ลองเขียนขีดใหม่อีกครั้งตามเส้นพินทุ', type: 'error' });
+          },
+          onComplete(summaryData) {
+            playSoundEffect('complete');
+            setIsComplete(true);
+            const stars = summaryData.totalMistakes >= 3 ? 1 : summaryData.totalMistakes >= 1 ? 2 : 3;
+            setFeedback({ message: `สมบูรณ์แบบ! อักษร "${character.char}" สำเร็จแล้ว (${stars} ดาว ⭐)`, type: 'success' });
+            onCharacterCompleted(stars);
+          }
+        });
+      };
+
+      const resetCanvas = () => {
+        setIsComplete(false);
+        setErrors(0);
+        setCurrentStroke(0);
+        setCompletedList([]);
+        setIsAnimating(false);
+        setFeedback({ message: 'เริ่มเขียนทีละขีดตามตัวอย่างได้เลยครับ!', type: 'info' });
+        if (writerRef.current) {
+          writerRef.current.cancelAnimations();
+          startQuizMode(writerRef.current);
+        }
+      };
+
+      const startFullAnimation = () => {
+        if (!writerRef.current || isAnimating) return;
+        setIsAnimating(true);
+        writerRef.current.cancelAnimations();
+        writerRef.current.animateCharacter({
+          onComplete() {
+            setIsAnimating(false);
+            startQuizMode(writerRef.current);
+          }
+        });
+      };
+
+      useEffect(() => {
+        setIsComplete(false);
+        setErrors(0);
+        setCurrentStroke(0);
+        setCompletedList([]);
+        setIsAnimating(false);
+        setFeedback({ message: 'เริ่มเขียนทีละขีดตามตัวอย่างได้เลยครับ!', type: 'info' });
+
+        const synthTimeout = setTimeout(() => speakPinyinWord(character.char), 250);
+
+        if (writerRef.current) {
+          try { writerRef.current.destroy(); } catch (e) {}
+          writerRef.current = null;
+        }
+
+        if (writerContainerRef.current) {
+          writerContainerRef.current.innerHTML = '';
+          const writer = HanziWriter.create(writerContainerRef.current, character.char, {
+            width: 280,
+            height: 280,
+            padding: 24,
+            showOutline: true,
+            strokeColor: '#1A1A1A',
+            outlineColor: '#E2E8F0',
+            drawingColor: '#3B82F6',
+            drawingWidth: 12,
+            showHintAfterMisses: 2,
+            highlightColor: '#C8102E'
+          });
+          writerRef.current = writer;
+          startQuizMode(writer);
+        }
+
+        return () => {
+          clearTimeout(synthTimeout);
+          if (writerRef.current) {
+            try { writerRef.current.destroy(); } catch (e) {}
+          }
+        };
+      }, [character.char]);
+
+      return (
+        <div className="flex flex-col items-center bg-white rounded-lg border border-[#E5E2D9] p-6 md:p-8 shadow-sm w-full max-w-2xl mx-auto">
+          <div className="flex flex-row justify-between items-center w-full mb-6 pb-4 border-b border-[#E5E2D9]">
+            <div>
+              <div className="flex items-center gap-3">
+                <span className="text-4xl font-serif font-black text-[#1A1A1A]">{character.char}</span>
+                <span className="text-sm font-bold text-[#C8102E] bg-[#C8102E]/5 border border-[#C8102E]/10 px-3 py-1 font-mono rounded">{pinyin}</span>
+              </div>
+              <p className="text-[#8B8678] mt-1 text-xs font-bold uppercase tracking-widest">แปลไทย: <span className="text-[#1A1A1A] font-serif text-sm normal-case">{translation}</span></p>
+            </div>
+
+            <div className="flex items-center gap-2">
+              {totalChars > 1 && (
+                <div className="flex items-center bg-[#F9F7F2] rounded px-2 py-1 gap-2 border border-[#E5E2D9]">
+                  <button onClick={onPrevChar} disabled={charIndex === 0} className="p-1.5 rounded hover:bg-white text-[#2D2D2D] disabled:opacity-30 cursor-pointer"><Icons.ArrowLeft /></button>
+                  <span className="text-xs font-bold font-mono">{charIndex + 1} / {totalChars}</span>
+                  <button onClick={onNextChar} disabled={charIndex === totalChars - 1} className="p-1.5 rounded hover:bg-white text-[#2D2D2D] disabled:opacity-30 cursor-pointer"><Icons.ArrowRight /></button>
+                </div>
+              )}
+              <button onClick={() => speakPinyinWord(character.char)} className="flex items-center gap-1.5 bg-[#F9F7F2] border border-[#E5E2D9] hover:bg-[#E5E2D9] text-[#1A1A1A] px-3.5 py-2 rounded text-xs font-bold uppercase tracking-widest cursor-pointer">
+                <Icons.Volume2 /> ออกเสียง
+              </button>
+            </div>
+          </div>
+
+          <div className="flex flex-col md:flex-row items-center gap-8 w-full justify-center">
+            <div className="relative bg-[#FDFCF8] p-4 rounded border border-[#E5E2D9] shadow-sm flex items-center justify-center">
+              <div className="relative w-[280px] h-[280px] bg-[#FDFCF8] border-2 border-[#C8102E]/25">
+                <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 100 100">
+                  <line x1="0" y1="50" x2="100" y2="50" stroke="rgba(200, 16, 46, 0.2)" strokeWidth="0.5" strokeDasharray="3,3" />
+                  <line x1="50" y1="0" x2="50" y2="100" stroke="rgba(200, 16, 46, 0.2)" strokeWidth="0.5" strokeDasharray="3,3" />
+                  <line x1="0" y1="0" x2="100" y2="100" stroke="rgba(200, 16, 46, 0.1)" strokeWidth="0.5" strokeDasharray="2,3" />
+                  <line x1="100" y1="0" x2="0" y2="100" stroke="rgba(200, 16, 46, 0.1)" strokeWidth="0.5" strokeDasharray="2,3" />
+                </svg>
+                <div ref={writerContainerRef} className="w-[280px] h-[280px] relative z-10" />
+              </div>
+
+              {isComplete && (
+                <div className="absolute inset-0 bg-[#1A1A1A]/85 flex flex-col items-center justify-center z-20">
+                  <div className="bg-[#FDFCF8] border-2 border-[#C8102E] rounded p-5 shadow-2xl flex flex-col items-center scale-100">
+                    <div className="bg-[#C8102E]/10 p-2 text-[#C8102E] mb-2"><Icons.Sparkles /></div>
+                    <h4 className="font-serif font-bold text-lg text-[#1A1A1A]">เขียนอักษรเสร็จสิ้น!</h4>
+                    <button onClick={resetCanvas} className="mt-3 text-xs bg-[#1A1A1A] hover:bg-black text-white font-bold py-1.5 px-4 rounded uppercase tracking-widest cursor-pointer">ฝึกอีกครั้ง</button>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="flex flex-col flex-1 w-full max-w-sm">
+              <div className="bg-[#F9F7F2] rounded border border-[#E5E2D9] p-4 mb-4">
+                <div className="flex items-center justify-between mb-2 pb-2 border-b border-[#E5E2D9]/60">
+                  <span className="font-bold text-[10px] uppercase tracking-widest">ลำดับขีดอักษร / STROKE ORDER</span>
+                  <button onClick={startFullAnimation} disabled={isAnimating} className="text-[10px] bg-[#1A1A1A] hover:bg-black text-white font-bold py-1 px-3 rounded uppercase tracking-widest cursor-pointer disabled:opacity-50">
+                    {isAnimating ? 'กำลังเล่น...' : 'เล่นตัวอย่าง'}
+                  </button>
+                </div>
+                <p className="text-xs text-[#5C574F] mb-3">มีทั้งหมด <span className="font-bold font-mono text-[#C8102E]">{character.strokes.length} ขีด</span> เขียนเรียงลำดับจาก 1 ไปถึงลำดับสุดท้าย:</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {character.strokes.map((_, idx) => (
+                    <span key={idx} className={`text-[10px] font-bold px-2 py-1 rounded border ${completedList.includes(idx) ? 'bg-[#E5E2D9] text-[#8B8678]' : idx === currentStroke ? 'bg-[#C8102E] text-white border-[#C8102E]' : 'bg-white text-[#2D2D2D]'}`}>
+                      ขีด {idx + 1}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              <div className={`p-4 rounded border flex items-start gap-3 ${feedback.type === 'success' ? 'bg-[#E5E2D9]/20 border-[#E5E2D9]' : feedback.type === 'error' ? 'bg-[#C8102E]/5 border-[#C8102E]/15 text-[#C8102E]' : 'bg-[#F9F7F2] border-[#E5E2D9]'}`}>
+                <div>
+                  <span className="font-bold text-[9px] uppercase tracking-widest text-[#8B8678]">สถานะการฝึกเขียน</span>
+                  <p className="text-xs font-semibold leading-relaxed mt-0.5">{feedback.message}</p>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between mt-4 text-xs text-[#8B8678]">
+                <span>เขียนผิด: <strong className="text-[#C8102E]">{errors} ครั้ง</strong></span>
+                <button onClick={resetCanvas} className="flex items-center gap-1 text-[#C8102E] font-bold uppercase tracking-widest cursor-pointer"><Icons.RotateCcw /> ล้างหน้าจอ</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // --- QUIZ GAME COMPONENT ---
+    function VocabularyQuiz({ onBackToPractice, onUpdateHighScore, highScore }) {
+      const [questions, setQuestions] = useState([]);
+      const [currentIndex, setCurrentIndex] = useState(0);
+      const [selectedAnswer, setSelectedAnswer] = useState(null);
+      const [score, setScore] = useState(0);
+      const [isAnswered, setIsAnswered] = useState(false);
+      const [quizFinished, setQuizFinished] = useState(false);
+
+      const generateQuiz = () => {
+        const qList = [];
+        VOCABULARY_LIST.forEach((item) => {
+          // Translate Chinese to Thai
+          const distThai = VOCABULARY_LIST.filter(v => v.id !== item.id).map(v => v.translation);
+          const shuffledThai = [item.translation, ...distThai.slice(0, 3)].sort(() => Math.random() - 0.5);
+          qList.push({
+            prompt: item.word,
+            correct: item.translation,
+            options: shuffledThai,
+            typeLabel: 'แปลอักษรจีนเป็นภาษาไทย',
+            explanation: `"${item.word}" อ่านว่า "${item.pinyin}" แปลว่า "${item.translation}"`
+          });
+        });
+        setQuestions(qList.sort(() => Math.random() - 0.5).slice(0, 5));
+        setCurrentIndex(0);
+        setSelectedAnswer(null);
+        setScore(0);
+        setIsAnswered(false);
+        setQuizFinished(false);
+      };
+
+      useEffect(() => { generateQuiz(); }, []);
+
+      if (questions.length === 0) return <div className="text-center py-10">กำลังเตรียมแบบทดสอบ...</div>;
+
+      const currentQ = questions[currentIndex];
+
+      const handleSelect = (answer) => {
+        if (isAnswered) return;
+        setSelectedAnswer(answer);
+        setIsAnswered(true);
+        if (answer === currentQ.correct) setScore(s => s + 1);
+      };
+
+      const handleNext = () => {
+        if (currentIndex < questions.length - 1) {
+          setCurrentIndex(idx => idx + 1);
+          setSelectedAnswer(null);
+          setIsAnswered(false);
+        } else {
+          setQuizFinished(true);
+          onUpdateHighScore(score);
+        }
+      };
+
+      return (
+        <div className="w-full max-w-2xl mx-auto">
+          {!quizFinished ? (
+            <div className="bg-white rounded border border-[#E5E2D9] p-6 md:p-8 shadow-sm flex flex-col">
+              <div className="flex items-center justify-between border-b border-[#E5E2D9] pb-4 mb-6">
+                <div className="flex items-center gap-3">
+                  <button onClick={onBackToPractice} className="p-1.5 rounded hover:bg-[#F9F7F2] text-[#8B8678] hover:text-[#1A1A1A] cursor-pointer"><Icons.ArrowLeft /></button>
+                  <div>
+                    <span className="text-[10px] font-bold text-[#C8102E] bg-[#C8102E]/5 px-2.5 py-0.5 rounded font-mono">ข้อที่ {currentIndex + 1} / {questions.length}</span>
+                    <h3 className="text-[10px] font-bold text-[#8B8678] mt-1 uppercase tracking-widest">{currentQ.typeLabel}</h3>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="text-[10px] text-[#8B8678] font-bold">คะแนนปัจจุบัน</p>
+                  <p className="text-lg font-bold font-mono">{score} / {questions.length}</p>
+                </div>
+              </div>
+
+              <div className="flex flex-col items-center justify-center py-8 bg-[#F9F7F2] rounded border border-[#E5E2D9] mb-8">
+                <span className="text-6xl font-serif font-black text-[#1A1A1A] tracking-wide">{currentQ.prompt}</span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+                {currentQ.options.map((option, idx) => {
+                  const isSelected = selectedAnswer === option;
+                  const isCorrect = option === currentQ.correct;
+                  let style = "bg-white border-[#E5E2D9] hover:bg-[#F9F7F2]";
+                  if (isAnswered) {
+                    if (isCorrect) style = "bg-[#E5E2D9]/30 border-2 border-[#1A1A1A] font-bold";
+                    else if (isSelected) style = "bg-[#C8102E]/5 border-2 border-[#C8102E] text-[#C8102E]";
+                    else style = "bg-white opacity-40 text-[#8B8678] cursor-not-allowed";
+                  }
+                  return (
+                    <button key={idx} onClick={() => handleSelect(option)} disabled={isAnswered} className={`flex items-center p-4 border rounded text-left transition-all cursor-pointer ${style}`}>
+                      <span className="bg-[#F9F7F2] text-xs font-mono w-6 h-6 flex items-center justify-center border border-[#E5E2D9] rounded mr-3">{String.fromCharCode(65 + idx)}</span>
+                      <span className="flex-1 font-serif text-base">{option}</span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {isAnswered && (
+                <div className="bg-[#F9F7F2] border border-[#E5E2D9] rounded p-4 mb-6">
+                  <h4 className="text-[10px] font-bold text-[#C8102E] tracking-widest">คำอธิบาย</h4>
+                  <p className="text-xs text-[#5C574F] mt-1 font-semibold">{currentQ.explanation}</p>
+                </div>
+              )}
+
+              {isAnswered && (
+                <button onClick={handleNext} className="w-full flex items-center justify-center gap-2 bg-[#1A1A1A] hover:bg-black text-white font-bold py-3 px-6 rounded uppercase tracking-widest text-xs cursor-pointer">
+                  <span>{currentIndex === questions.length - 1 ? 'เสร็จสิ้นแบบทดสอบ' : 'ข้อถัดไป'}</span>
+                </button>
+              )}
+            </div>
+          ) : (
+            <div className="bg-white rounded border border-[#E5E2D9] p-8 md:p-12 shadow-sm flex flex-col items-center text-center">
+              <div className="bg-[#C8102E]/5 border border-[#C8102E]/10 p-4 rounded-full text-[#C8102E] mb-6">
+                <Icons.Award />
+              </div>
+              <h2 className="text-2xl font-serif font-black text-[#1A1A1A]">เสร็จสิ้นแบบทดสอบ!</h2>
+              <div className="bg-[#F9F7F2] border border-[#E5E2D9] rounded p-6 my-8 w-full max-w-sm flex justify-around">
+                <div className="text-center">
+                  <p className="text-[10px] text-[#8B8678] font-bold">คะแนนที่ได้</p>
+                  <p className="text-3xl font-bold text-[#C8102E] font-mono mt-1">{score} <span className="text-sm text-[#8B8678]">/ {questions.length}</span></p>
+                </div>
+                <div className="w-[1px] bg-[#E5E2D9] h-10 self-center" />
+                <div className="text-center">
+                  <p className="text-[10px] text-[#8B8678] font-bold">คะแนนสูงสุด</p>
+                  <p className="text-3xl font-bold text-[#1A1A1A] font-mono mt-1">{Math.max(highScore, score)} <span className="text-sm text-[#8B8678]">/ {questions.length}</span></p>
+                </div>
+              </div>
+              <div className="flex flex-col sm:flex-row gap-4 w-full justify-center">
+                <button onClick={generateQuiz} className="flex items-center justify-center gap-2 border border-[#E5E2D9] hover:bg-[#F9F7F2] text-[#2D2D2D] font-bold py-3 px-6 rounded uppercase tracking-widest text-xs cursor-pointer"><Icons.RotateCcw /> ทำใหม่อีกครั้ง</button>
+                <button onClick={onBackToPractice} className="flex items-center justify-center bg-[#C8102E] hover:bg-[#A50C22] text-white font-bold py-3 px-8 rounded uppercase tracking-widest text-xs cursor-pointer"><Icons.Check /> กลับหน้าบทเรียน</button>
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    // --- MAIN APPLICATION ENTRANCE ---
+    function App() {
+      const [activeTab, setActiveTab] = useState('practice');
+      const [selectedWord, setSelectedWord] = useState(VOCABULARY_LIST[0]);
+      const [selectedCharIndex, setSelectedCharIndex] = useState(0);
+      const [searchQuery, setSearchQuery] = useState('');
+      
+      const [completedWords, setCompletedWords] = useState([]);
+      const [wordStars, setWordStars] = useState({});
+      const [quizHighScore, setQuizHighScore] = useState(0);
+      const [totalStrokesWritten, setTotalStrokesWritten] = useState(0);
+
+      useEffect(() => {
+        try {
+          const savedCompleted = localStorage.getItem('zh_completed_words');
+          if (savedCompleted) setCompletedWords(JSON.parse(savedCompleted));
+          const savedStars = localStorage.getItem('zh_word_stars');
+          if (savedStars) setWordStars(JSON.parse(savedStars));
+          const savedHighScore = localStorage.getItem('zh_quiz_highscore');
+          if (savedHighScore) setQuizHighScore(parseInt(savedHighScore, 10));
+          const savedStrokes = localStorage.getItem('zh_total_strokes');
+          if (savedStrokes) setTotalStrokesWritten(parseInt(savedStrokes, 10));
+        } catch (e) { console.warn("Load failed", e); }
+      }, []);
+
+      const saveProgress = (newCompleted, newStars, newStrokes) => {
+        try {
+          localStorage.setItem('zh_completed_words', JSON.stringify(newCompleted));
+          localStorage.setItem('zh_word_stars', JSON.stringify(newStars));
+          localStorage.setItem('zh_total_strokes', newStrokes.toString());
+        } catch (e) {}
+      };
+
+      const handleCharacterCompleted = (stars) => {
+        const strokeCount = selectedWord.characters[selectedCharIndex].strokes.length;
+        const newStrokes = totalStrokesWritten + strokeCount;
+        setTotalStrokesWritten(newStrokes);
+
+        if (selectedCharIndex < selectedWord.characters.length - 1) {
+          setTimeout(() => { setSelectedCharIndex(prev => prev + 1); }, 1500);
+        } else {
+          const newCompleted = completedWords.includes(selectedWord.id) ? completedWords : [...completedWords, selectedWord.id];
+          const newStars = { ...wordStars, [selectedWord.id]: Math.max(wordStars[selectedWord.id] || 0, stars) };
+          setCompletedWords(newCompleted);
+          setWordStars(newStars);
+          saveProgress(newCompleted, newStars, newStrokes);
+        }
+      };
+
+      const handleUpdateHighScore = (score) => {
+        if (score > quizHighScore) {
+          setQuizHighScore(score);
+          localStorage.setItem('zh_quiz_highscore', score.toString());
+        }
+      };
+
+      const handleReset = () => {
+        if (window.confirm('คุณต้องการรีเซ็ตประวัติการเรียนทั้งหมดใช่หรือไม่?')) {
+          setCompletedWords([]);
+          setWordStars({});
+          setQuizHighScore(0);
+          setTotalStrokesWritten(0);
+          setSelectedCharIndex(0);
+          setSelectedWord(VOCABULARY_LIST[0]);
+          localStorage.clear();
+        }
+      };
+
+      const filteredWords = VOCABULARY_LIST.filter(item => 
+        item.word.includes(searchQuery) ||
+        item.pinyin.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.translation.includes(searchQuery)
+      );
+
+      return (
+        <div className="min-h-screen bg-[#FDFCF8] flex flex-col text-[#2D2D2D] antialiased">
+          <header className="bg-white border-b border-[#E5E2D9] sticky top-0 z-40">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-[#C8102E] rounded-lg flex items-center justify-center text-white font-serif font-black text-2xl shadow-sm">漢</div>
+                <div>
+                  <h1 className="text-xl font-bold tracking-tight uppercase text-[#1A1A1A]">CHINESE MASTER</h1>
+                  <p className="text-xs text-[#8B8678] font-bold tracking-widest uppercase">VOCABULARY TRAINING SUITE</p>
+                </div>
+              </div>
+
+              <div className="flex bg-[#F9F7F2] p-1 rounded-lg border border-[#E5E2D9] w-full sm:w-auto">
+                <button onClick={() => { setActiveTab('practice'); setSelectedCharIndex(0); }} className={`flex-1 sm:flex-initial flex items-center justify-center gap-2 px-5 py-2.5 rounded font-bold text-xs uppercase tracking-widest transition-all cursor-pointer ${activeTab === 'practice' ? 'bg-[#1A1A1A] text-white' : 'text-[#8B8678]'}`}>
+                  <Icons.BookOpen /> <span>ฝึกเขียนคำศัพท์</span>
+                </button>
+                <button onClick={() => setActiveTab('quiz')} className={`flex-1 sm:flex-initial flex items-center justify-center gap-2 px-5 py-2.5 rounded font-bold text-xs uppercase tracking-widest transition-all cursor-pointer ${activeTab === 'quiz' ? 'bg-[#1A1A1A] text-white' : 'text-[#8B8678]'}`}>
+                  <Icons.GraduationCap /> <span>ทดสอบคำศัพท์</span>
+                </button>
+              </div>
+            </div>
+          </header>
+
+          <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            {activeTab === 'practice' ? (
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                <div className="lg:col-span-4 flex flex-col gap-6">
+                  <div className="bg-white border border-[#E5E2D9] p-4 rounded-sm shadow-sm">
+                    <div className="relative">
+                      <input type="text" placeholder="ค้นหาคำศัพท์ / พินอิน..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full bg-[#FDFCF8] border border-[#E5E2D9] rounded-sm pl-10 pr-4 py-2 text-sm focus:outline-none focus:border-[#C8102E] font-medium" />
+                      <div className="absolute left-3.5 top-3 text-[#8B8678]"><Icons.Search /></div>
+                    </div>
+                  </div>
+
+                  <div className="bg-white border border-[#E5E2D9] rounded-sm shadow-sm overflow-hidden flex-1 max-h-[500px] overflow-y-auto">
+                    <div className="p-4 border-b border-[#E5E2D9] bg-[#F9F7F2]">
+                      <span className="text-[10px] font-bold text-[#8B8678] tracking-widest uppercase">รายการคำศัพท์ ({filteredWords.length})</span>
+                    </div>
+                    <div className="divide-y divide-[#E5E2D9]/60">
+                      {filteredWords.map((item) => {
+                        const isSelected = selectedWord.id === item.id;
+                        const stars = wordStars[item.id] || 0;
+                        return (
+                          <button key={item.id} onClick={() => { setSelectedWord(item); setSelectedCharIndex(0); }} className={`w-full flex items-center justify-between p-4 text-left transition-all cursor-pointer ${isSelected ? 'bg-[#E5E2D9]/20 border-l-4 border-l-[#C8102E]' : 'hover:bg-[#FDFCF8]'}`}>
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <span className="font-serif font-black text-xl text-[#1A1A1A]">{item.word}</span>
+                                <span className="text-xs font-bold text-[#C8102E] font-mono">{item.pinyin}</span>
+                              </div>
+                              <span className="text-xs text-[#5C574F] font-semibold">{item.translation}</span>
+                            </div>
+                            <div className="flex flex-col items-end gap-1.5">
+                              {stars > 0 && (
+                                <div className="flex gap-0.5">
+                                  {Array.from({ length: stars }).map((_, i) => <span key={i} className="text-amber-500 text-xs">★</span>)}
+                                </div>
+                              )}
+                              {completedWords.includes(item.id) && <span className="text-[9px] bg-emerald-50 text-emerald-600 border border-emerald-100 px-1.5 py-0.5 rounded font-bold">สำเร็จแล้ว</span>}
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="lg:col-span-8">
+                  <TianZiGeCanvas character={selectedWord.characters[selectedCharIndex]} pinyin={selectedWord.pinyin} translation={selectedWord.translation} charIndex={selectedCharIndex} totalChars={selectedWord.characters.length} onPrevChar={() => setSelectedCharIndex(idx => idx - 1)} onNextChar={() => setSelectedCharIndex(idx => idx + 1)} onCharacterCompleted={handleCharacterCompleted} />
+                </div>
+              </div>
+            ) : (
+              <VocabularyQuiz onBackToPractice={() => setActiveTab('practice')} onUpdateHighScore={handleUpdateHighScore} highScore={quizHighScore} />
+            )}
+          </main>
+
+          <footer className="bg-white border-t border-[#E5E2D9] py-6 mt-12">
+            <div className="max-w-7xl mx-auto px-4 text-center text-xs text-[#8B8678] flex flex-col sm:flex-row items-center justify-between gap-4 font-semibold">
+              <p>© 2026 CHINESE MASTER SUITE. ขีดจำลองอักษรจีนมาตรฐานกระทรวงศึกษาธิการ</p>
+              <button onClick={handleReset} className="flex items-center gap-1.5 text-[#C8102E] hover:text-[#A50C22] uppercase tracking-widest cursor-pointer font-bold"><Icons.Trash /> ล้างบันทึกคะแนนทั้งหมด</button>
+            </div>
+          </footer>
+        </div>
+      );
+    }
+
+    const container = document.getElementById('root');
+    const root = ReactDOM.createRoot(container);
+    root.render(<App />);
+  </script>
+</body>
+</html>
