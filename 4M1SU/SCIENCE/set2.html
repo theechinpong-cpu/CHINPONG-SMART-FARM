@@ -18,7 +18,7 @@
 <body>
     <div id="tutor-summary-section" style="max-width: 800px; margin: 20px auto; padding: 25px; background: #ffffff; border: 2px solid #007bff; border-radius: 15px;">
         <h2 style="color: #007bff; text-align: center;">📚 เจาะลึกเนื้อหา: วิทยาศาสตร์ ม.1 (กลางภาค)</h2>
-        <p>ตั้งใจทำข้อสอบนะครับ! สู้ๆ ครับ! - <em>พระจอมเกล้าติวเตอร์</em></p>
+        <p>สู้ๆ ครับ! ข้อสอบชุดนี้มีการสลับตำแหน่งตัวเลือกแบบสุ่มแล้ว - <em>พระจอมเกล้าติวเตอร์</em></p>
     </div>
 
 <div class="container">
@@ -28,8 +28,8 @@
 </div>
 
 <script>
-// รวมข้อสอบทั้งหมดไว้ที่นี่
-const questions = [
+// ข้อมูลคำถามดั้งเดิม
+const rawQuestions = [
     { q: "สารที่มีจุดเดือดคงที่แน่นอนเรียกว่าอะไร?", a: ["สารบริสุทธิ์", "สารผสม", "สารละลาย", "คอลลอยด์"], correct: 0, clue: "นิยามพื้นฐาน", detail: "สารบริสุทธิ์มีจุดเดือดและจุดหลอมเหลวคงที่" },
     { q: "กราฟสารบริสุทธิ์ขณะเปลี่ยนสถานะจะมีลักษณะอย่างไร?", a: ["เป็นเส้นตรงขนานแกน X", "มีความชันคงที่", "เป็นเส้นโค้ง", "มีความชันเป็นลบ"], correct: 0, clue: "สังเกตความชัน", detail: "พลังงานความร้อนถูกใช้ในการทำลายแรงยึดเหนี่ยว ทำให้อุณหภูมิไม่เพิ่ม" },
     { q: "สารผสมมีจุดเดือดเป็นอย่างไรเมื่อเทียบกับสารบริสุทธิ์?", a: ["ไม่คงที่", "คงที่เสมอ", "สูงกว่าเสมอ", "ต่ำกว่าเสมอ"], correct: 0, clue: "ความเข้มข้นเปลี่ยนแปลง", detail: "สารผสมไม่มีจุดเดือดคงที่เนื่องจากความเข้มข้นเปลี่ยนไปขณะระเหย" },
@@ -82,14 +82,40 @@ const questions = [
     { q: "เลขอะตอมระบุอะไร?", a: ["จำนวนโปรตอน", "จำนวนนิวตรอน", "จำนวนมวล", "จำนวนชั้น"], correct: 0, clue: "เลขประจำตัวธาตุ", detail: "เลขอะตอมคือจำนวนโปรตอนที่กำหนดความเป็นธาตุ" }
 ];
 
+// เตรียมตัวแปร global สำหรับเก็บลำดับที่สุ่มแล้ว
+let questions = [];
+
+function shuffle(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+}
+
 function renderQuiz() {
     const container = document.getElementById('quiz-container');
-    container.innerHTML = ''; // เคลียร์ก่อนแสดงผล
+    container.innerHTML = ''; 
+
+    // สุ่มตัวเลือกสำหรับทุกข้อ
+    questions = rawQuestions.map(item => {
+        let options = item.a.map((text, idx) => ({ text, isCorrect: (idx === item.correct) }));
+        options = shuffle(options);
+        
+        let correctIdx = options.findIndex(opt => opt.isCorrect);
+        
+        return {
+            ...item,
+            shuffledOptions: options,
+            shuffledCorrect: correctIdx
+        };
+    });
+
     questions.forEach((q, index) => {
         let html = `<div class="question">
             <p>${index + 1}. ${q.q}</p>`;
-        q.a.forEach((opt, i) => {
-            html += `<label><input type="radio" name="q${index}" value="${i}" onclick="checkAnswer(${index}, ${i})"> ${opt}</label><br>`;
+        q.shuffledOptions.forEach((opt, i) => {
+            html += `<label><input type="radio" name="q${index}" value="${i}" onclick="checkAnswer(${index}, ${i})"> ${opt.text}</label><br>`;
         });
         html += `<div class="clue" onclick="toggleClue(${index})">🔍 ดูคำใบ้/เฉลย</div>
                  <div id="feedback${index}" class="feedback"></div></div>`;
@@ -99,7 +125,7 @@ function renderQuiz() {
 
 function checkAnswer(qIdx, aIdx) {
     const feedback = document.getElementById(`feedback${qIdx}`);
-    const isCorrect = aIdx === questions[qIdx].correct;
+    const isCorrect = (aIdx === questions[qIdx].shuffledCorrect);
     feedback.style.display = 'block';
     feedback.className = `feedback ${isCorrect ? 'correct' : 'wrong'}`;
     feedback.innerHTML = `<strong>${isCorrect ? 'ถูกต้อง!' : 'ผิดครับ!'}</strong> ${questions[qIdx].detail}`;
@@ -113,12 +139,11 @@ function submitQuiz() {
     let score = 0;
     questions.forEach((q, index) => {
         const selected = document.querySelector(`input[name="q${index}"]:checked`);
-        if (selected && parseInt(selected.value) === q.correct) score++;
+        if (selected && parseInt(selected.value) === q.shuffledCorrect) score++;
     });
     alert("คะแนนรวมของคุณคือ: " + score + "/" + questions.length + " คะแนน");
 }
 
-// เริ่มการทำงาน
 renderQuiz();
 </script>
 </body>
