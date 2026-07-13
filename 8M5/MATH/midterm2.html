@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <title>ข้อสอบคณิตศาสตร์ ม.5 - ชุดที่ 2 (ระดับยากมาก)</title>
+    <style>
+        body { font-family: sans-serif; line-height: 1.6; max-width: 800px; margin: auto; padding: 20px; background: #f4f7f6; }
+        .summary { background: #fff; padding: 20px; border-radius: 8px; border-left: 5px solid #2c3e50; margin-bottom: 20px; }
+        .q-card { background: #fff; padding: 20px; margin-bottom: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .hint { color: #e74c3c; font-style: italic; font-size: 0.9em; margin-bottom: 10px; display: block; font-weight: bold; }
+        .options { display: grid; gap: 10px; margin-top: 10px; }
+        button { padding: 10px; cursor: pointer; border: 1px solid #ddd; border-radius: 4px; background: #fff; transition: 0.3s; }
+        button:hover { background: #e0e0e0; }
+        .correct { background: #2ecc71 !important; color: white; }
+        .wrong { background: #e74c3c !important; color: white; }
+        .detail { margin-top: 10px; padding: 10px; background: #f9f9f9; border-left: 4px solid #3498db; display: none; }
+    </style>
+</head>
+<body>
+
+<div class="summary">
+    <h2>ข้อสอบกลางภาค คณิต ม.5 - ชุดที่ 2 (ระดับยากมาก)</h2>
+    <p>วิชา: เลขยกกำลังและรากที่ n | จำนวน: 25 ข้อ</p>
+    <div style="background: #fff3cd; padding: 10px;"><b>เทคนิคติวเตอร์:</b> ข้อสอบชุดนี้เน้นการแก้สมการเลขยกกำลังและการจัดรูปรากที่ n ในรูปแบบที่ซับซ้อน ขอให้ตั้งสติและแปลงทุกอย่างเป็นฐานจำนวนเฉพาะก่อนเสมอ</div>
+</div>
+
+<div id="quiz-container"></div>
+
+<script>
+    // ฟังก์ชันช่วยสุ่มตัวเลือกและรักษาความสัมพันธ์ของคำตอบที่ถูก
+    function shuffleOptions(options, correctIndex) {
+        let items = options.map((opt, i) => ({ val: opt, isCorrect: (i === correctIndex) }));
+        for (let i = items.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [items[i], items[j]] = [items[j], items[i]];
+        }
+        return {
+            shuffled: items.map(item => item.val),
+            newCorrect: items.findIndex(item => item.isCorrect)
+        };
+    }
+
+    const rawQuestions = [
+        { q: "ค่าของ (2<sup>3n+1</sup> * 4<sup>n</sup>) / 8<sup>n</sup> คือข้อใด", opt: ["2<sup>n</sup>", "2<sup>n+1</sup>", "4<sup>n</sup>", "2<sup>2n</sup>"], corr: 1, th: "แปลงทุกอย่างเป็นฐาน 2", det: "2<sup>3n+1</sup> * (2<sup>2</sup>)<sup>n</sup> / (2<sup>3</sup>)<sup>n</sup> = 2<sup>3n+1</sup> * 2<sup>2n</sup> / 2<sup>3n</sup> = 2<sup>3n+1+2n-3n</sup> = 2<sup>2n+1</sup>" },
+        { q: "ถ้า 3<sup>x+2</sup> - 3<sup>x</sup> = 216 แล้ว x มีค่าเท่าใด", opt: ["2", "3", "4", "5"], corr: 1, th: "ดึงตัวร่วม 3<sup>x</sup> ออกมา", det: "3<sup>x</sup>(3<sup>2</sup> - 1) = 216 => 3<sup>x</sup>(8) = 216 => 3<sup>x</sup> = 27 => x = 3" },
+        { q: "ค่าของ &radic;<sup>3</sup>( &radic; (64) ) คือข้อใด", opt: ["1", "2", "4", "8"], corr: 1, th: "ถอดรากทีละชั้นจากด้านใน", det: "&radic;<sup>3</sup>(8) = 2" },
+        { q: "ค่าของ (x<sup>-1/2</sup> * x<sup>2/3</sup>) / x<sup>1/6</sup>", opt: ["0", "1", "x", "x<sup>-1</sup>"], corr: 1, th: "นำเลขชี้กำลังบวกกันตามกฎฐานเดียวกัน", det: "x<sup>-1/2 + 2/3 - 1/6</sup> = x<sup>(-3+4-1)/6</sup> = x<sup>0</sup> = 1" },
+        { q: "จงหาค่าของ (27<sup>2/3</sup>) / (9<sup>1/2</sup> * 3<sup>0</sup>)", opt: ["3", "6", "9", "27"], corr: 2, th: "แปลงเป็นฐาน 3", det: "(3<sup>3</sup>)<sup>2/3</sup> / (3<sup>2</sup>)<sup>1/2</sup> * 1 = 3<sup>2</sup> / 3<sup>1</sup> = 3" },
+        { q: "ถ้า &radic;<sup>x</sup>(256) = 4 แล้ว x คือข้อใด", opt: ["2", "3", "4", "8"], corr: 2, th: "เขียน 256 เป็น 4 ยกกำลัง", det: "4<sup>4</sup> = 256 ดังนั้น x = 4" },
+        { q: "ผลลัพธ์ของ (a<sup>2</sup>)<sup>3</sup> / a<sup>2*3</sup> คือข้อใด", opt: ["1", "a", "a<sup>2</sup>", "a<sup>6</sup>"], corr: 0, th: "เทียบสมบัติเลขยกกำลังซ้อนและเลขยกกำลังคูณ", det: "a<sup>6</sup> / a<sup>6</sup> = 1" },
+        { q: "ค่าของ 8<sup>-2/3</sup> + 16<sup>-1/4</sup>", opt: ["1/4", "1/2", "3/4", "1"], corr: 2, th: "คำนวณแต่ละพจน์แยกกัน", det: "(1/2<sup>3</sup>)<sup>2/3</sup> + (1/2<sup>4</sup>)<sup>1/4</sup> = 1/4 + 1/2 = 3/4" },
+        { q: "ค่าของ (0.00032)<sup>1/5</sup>", opt: ["0.2", "0.02", "0.002", "2"], corr: 0, th: "เขียน 0.00032 = 32/100000", det: "(2/10)<sup>5</sup> ยกกำลัง 1/5 = 0.2" },
+        { q: "จงหาค่าของ (2<sup>n+3</sup> - 2<sup>n</sup>) / 7", opt: ["2<sup>n</sup>", "2<sup>n+1</sup>", "2<sup>n-1</sup>", "2<sup>2n</sup>"], corr: 0, th: "ดึงตัวร่วม 2<sup>n</sup>", det: "2<sup>n</sup>(8-1)/7 = 2<sup>n</sup>(7)/7 = 2<sup>n</sup>" },
+        { q: "ค่าของ (x<sup>a</sup> / x<sup>b</sup>)<sup>a+b</sup> * (x<sup>b</sup> / x<sup>c</sup>)<sup>b+c</sup> * (x<sup>c</sup> / x<sup>a</sup>)<sup>c+a</sup>", opt: ["0", "1", "x", "x<sup>abc</sup>"], corr: 1, th: "ใช้กฎ (x<sup>m</sup>)<sup>n</sup> = x<sup>mn</sup>", det: "x<sup>(a-b)(a+b)</sup> * x<sup>(b-c)(b+c)</sup> * x<sup>(c-a)(c+a)</sup> = x<sup>a^2-b^2+b^2-c^2+c^2-a^2</sup> = x<sup>0</sup> = 1" },
+        { q: "ค่าของ &radic;<sup>3</sup>(2 &radic;<sup>3</sup>(2 &radic;<sup>3</sup>(2)))", opt: ["2<sup>1/9</sup>", "2<sup>7/27</sup>", "2<sup>1/3</sup>", "2<sup>13/27</sup>"], corr: 3, th: "นำเลขชี้กำลังบวกเข้าด้วยกัน", det: "2<sup>1/3</sup> * 2<sup>1/9</sup> * 2<sup>1/27</sup> = 2<sup>(9+3+1)/27</sup> = 2<sup>13/27</sup>" },
+        { q: "ถ้า a<sup>x</sup> = b, b<sup>y</sup> = c, c<sup>z</sup> = a จงหาค่า xyz", opt: ["0", "1", "a", "abc"], corr: 1, th: "แทนค่าต่อเนื่อง", det: "(a<sup>x</sup>)<sup>yz</sup> = a => a<sup>xyz</sup> = a<sup>1</sup> => xyz = 1" },
+        { q: "ค่าของ (16<sup>0.75</sup> + 27<sup>2/3</sup>)", opt: ["15", "16", "17", "18"], corr: 2, th: "แปลงเป็นเลขฐาน", det: "(2<sup>4</sup>)<sup>3/4</sup> + (3<sup>3</sup>)<sup>2/3</sup> = 2<sup>3</sup> + 3<sup>2</sup> = 8 + 9 = 17" },
+        { q: "ค่าของ (5<sup>n</sup> * 25<sup>n-1</sup>) / 125<sup>n</sup>", opt: ["1/25", "1/5", "5", "25"], corr: 0, th: "แปลงทุกตัวเป็นฐาน 5", det: "5<sup>n</sup> * 5<sup>2n-2</sup> / 5<sup>3n</sup> = 5<sup>3n-2-3n</sup> = 5<sup>-2</sup> = 1/25" },
+        { q: "ค่าของ &radic; (x<sup>3</sup> &radic; (x<sup>3</sup> &radic; x))", opt: ["x<sup>13/8</sup>", "x<sup>15/8</sup>", "x<sup>7/4</sup>", "x<sup>2</sup>"], corr: 1, th: "ถอดรากจากข้างในออกมา", det: "x<sup>1/2</sup> * x<sup>3/2</sup> * x<sup>3/2</sup>... ไม่ใช่! (x<sup>3</sup>(x<sup>3</sup>*x<sup>1/2</sup>)<sup>1/2</sup>)<sup>1/2</sup> = x<sup>15/8</sup>" },
+        { q: "ถ้า 2<sup>x+1</sup> + 2<sup>x</sup> = 96 จงหาค่า x", opt: ["3", "4", "5", "6"], corr: 2, th: "ดึงตัวร่วม 2<sup>x</sup>", det: "2<sup>x</sup>(2+1) = 96 => 2<sup>x</sup> = 32 => x = 5" },
+        { q: "ค่าของ (3<sup>-1</sup> + 4<sup>-1</sup>)<sup>-1</sup>", opt: ["7/12", "12/7", "1", "7"], corr: 1, th: "บวกเศษส่วนก่อนแล้วกลับตัวตั้ง", det: "(1/3 + 1/4)<sup>-1</sup> = (7/12)<sup>-1</sup> = 12/7" },
+        { q: "ค่าของ &radic;<sup>3</sup>(54) + &radic;<sup>3</sup>(16) - &radic;<sup>3</sup>(2)", opt: ["2&radic;<sup>3</sup>(2)", "3&radic;<sup>3</sup>(2)", "4&radic;<sup>3</sup>(2)", "5&radic;<sup>3</sup>(2)"], corr: 0, th: "แยกตัวประกอบในราก", det: "3&radic;<sup>3</sup>(2) + 2&radic;<sup>3</sup>(2) - &radic;<sup>3</sup>(2) = 4&radic;<sup>3</sup>(2) - &radic;<sup>3</sup>(2) = 3&radic;<sup>3</sup>(2)" },
+        { q: "ค่าของ (1/3)<sup>-2</sup> * 2<sup>-3</sup>", opt: ["9/8", "1/9", "8/9", "18"], corr: 0, th: "คำนวณแยกตัว", det: "9 * 1/8 = 9/8" },
+        { q: "จงหาค่า x จาก (1/4)<sup>x</sup> = 64", opt: ["-3", "-2", "2", "3"], corr: 0, th: "ฐาน 4", det: "4<sup>-x</sup> = 4<sup>3</sup> => -x = 3 => x = -3" },
+        { q: "ค่าของ (2<sup>n</sup> + 2<sup>n+1</sup>) / 2<sup>n-1</sup>", opt: ["2", "4", "6", "8"], corr: 2, th: "ดึงตัวร่วม", det: "2<sup>n</sup>(1+2) / 2<sup>n</sup> * 2<sup>-1</sup> = 3 / 0.5 = 6" },
+        { q: "ค่าของ (x<sup>2</sup>y<sup>-1</sup>)<sup>3</sup> / (x<sup>-1</sup>y<sup>2</sup>)<sup>2</sup>", opt: ["x<sup>8</sup>y<sup>-7</sup>", "x<sup>6</sup>y<sup>-3</sup>", "x<sup>5</sup>y<sup>-4</sup>", "x<sup>7</sup>y<sup>-5</sup>"], corr: 0, th: "กระจายเลขชี้กำลัง", det: "x<sup>6</sup>y<sup>-3</sup> / x<sup>-2</sup>y<sup>4</sup> = x<sup>6-(-2)</sup>y<sup>-3-4</sup> = x<sup>8</sup>y<sup>-7</sup>" },
+        { q: "ค่าของ (125<sup>-1/3</sup>) * (25<sup>1/2</sup>)", opt: ["1", "5", "1/5", "25"], corr: 0, th: "ถอดราก", det: "1/5 * 5 = 1" },
+        { q: "ค่าของ 2<sup>x+2</sup> = 1/32 แล้ว x คือข้อใด", opt: ["-7", "-5", "-3", "0"], corr: 0, th: "ฐาน 2", det: "2<sup>x+2</sup> = 2<sup>-5</sup> => x+2 = -5 => x = -7" }
+    ];
+
+    const container = document.getElementById('quiz-container');
+    rawQuestions.forEach((item, index) => {
+        const shuffled = shuffleOptions(item.opt, item.corr);
+        const div = document.createElement('div');
+        div.className = 'q-card';
+        div.innerHTML = `
+            <p><b>ข้อ ${index + 1}:</b> ${item.q}</p>
+            <span class="hint">คำใบ้: ${item.th}</span>
+            <div class="options">
+                ${shuffled.shuffled.map((opt, i) => `<button onclick="check(this, ${i}, ${shuffled.newCorrect}, ${index})">${opt}</button>`).join('')}
+            </div>
+            <div id="detail-${index}" class="detail">${item.det}</div>
+        `;
+        container.appendChild(div);
+    });
+
+    function check(btn, selected, correct, idx) {
+        const buttons = btn.parentElement.querySelectorAll('button');
+        buttons.forEach(b => b.disabled = true);
+        if(selected === correct) btn.className = 'correct';
+        else { btn.className = 'wrong'; buttons[correct].className = 'correct'; }
+        document.getElementById(`detail-${idx}`).style.display = 'block';
+    }
+</script>
+
+</body>
+</html>
