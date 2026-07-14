@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <title>พระจอมเกล้าติวเตอร์ - สารบริสุทธิ์ ธาตุ และสารประกอบ</title>
+    <style>
+        :root { --primary: #2c3e50; --accent: #3498db; --success: #27ae60; --danger: #c0392b; --bg: #fdfbf7; }
+        body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg); color: var(--primary); margin: 0; padding: 20px; line-height: 1.6; }
+        .container { max-width: 800px; margin: auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .summary { background: #f4f7f6; padding: 20px; border-left: 5px solid var(--accent); margin-bottom: 20px; }
+        .tip { background: #fff3cd; padding: 10px; border-radius: 5px; font-weight: bold; margin: 10px 0; }
+        .question { margin-bottom: 25px; padding: 15px; border-bottom: 1px solid #ddd; }
+        .options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+        button { cursor: pointer; padding: 10px; border: 1px solid var(--accent); background: white; border-radius: 4px; transition: 0.3s; }
+        button:hover { background: var(--accent); color: white; }
+        .correct { background: var(--success) !important; color: white; }
+        .wrong { background: var(--danger) !important; color: white; }
+        .detail { display: none; margin-top: 10px; font-size: 0.9em; color: #555; padding: 10px; background: #f9f9f9; }
+        .lang-btn { position: fixed; top: 20px; right: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container" id="app">
+        <h1>สรุปเนื้อหา: สารบริสุทธิ์ ธาตุ และสารประกอบ</h1>
+        <div class="summary">
+            <p>สารบริสุทธิ์ประกอบด้วยสารเพียงชนิดเดียว มีจุดเดือดและจุดหลอมเหลวคงที่ แบ่งเป็น <b>ธาตุ</b> (มีอะตอมชนิดเดียว แยกย่อยไม่ได้ด้วยวิธีทางเคมี เช่น โลหะ อโลหะ กึ่งโลหะ) และ <b>สารประกอบ</b> (เกิดจากธาตุตั้งแต่ 2 ชนิดขึ้นไปมารวมตัวกันทางเคมีในสัดส่วนคงที่)</p>
+            <div class="tip">เทคนิคการจำ: "ธาตุคือเนื้อเดียว อะตอมชนิดเดียว | สารประกอบคือเนื้อเดียว สัดส่วนคงที่"</div>
+        </div>
+        <button class="lang-btn" onclick="toggleLang()">TH / EN</button>
+        <div id="quiz-container"></div>
+        <button onclick="submitQuiz()" style="width: 100%; margin-top: 20px; font-size: 1.2em;">ส่งคำตอบและรับผล</button>
+    </div>
+
+    <script>
+        const questions = [
+            { q_th: "สารใดถือเป็นสารบริสุทธิ์?", q_en: "Which is a pure substance?", a_th: ["อากาศ", "ทองคำแท่ง", "น้ำเกลือ", "น้ำส้ม"], a_en: ["Air", "Gold bar", "Saline", "Orange juice"], correct: 1, detail: "ทองคำแท่งเป็นธาตุสารบริสุทธิ์" },
+            { q_th: "ข้อใดกล่าวถึงสารประกอบได้ถูกต้อง?", q_en: "Which is true about compounds?", a_th: ["แยกได้ด้วยการกรอง", "มีสมบัติเหมือนธาตุองค์ประกอบ", "เกิดจากธาตุรวมกันทางเคมี", "เป็นสารผสม"], a_en: ["Separated by filter", "Same properties as elements", "Elements combined chemically", "It is a mixture"], correct: 2, detail: "สารประกอบเกิดจากการรวมตัวทางเคมี" },
+            { q_th: "โลหะมีสมบัติเด่นคือข้อใด?", q_en: "What is a main property of metals?", a_th: ["เปราะแตกหักง่าย", "เป็นฉนวนไฟฟ้า", "นำไฟฟ้าได้ดี", "จุดหลอมเหลวต่ำ"], a_en: ["Brittle", "Electrical insulator", "Good conductor", "Low melting point"], correct: 2, detail: "โลหะมีอิเล็กตรอนอิสระนำไฟฟ้าได้ดี" },
+            { q_th: "ข้อใดเป็นอโลหะทั้งหมด?", q_en: "Which are all non-metals?", a_th: ["เหล็ก, ทองแดง", "กำมะถัน, คลอรีน", "โซเดียม, แมกนีเซียม", "เงิน, ทองคำ"], a_en: ["Iron, Copper", "Sulfur, Chlorine", "Sodium, Magnesium", "Silver, Gold"], correct: 1, detail: "กำมะถันและคลอรีนเป็นอโลหะ" },
+            { q_th: "สูตรเคมี H2O จัดเป็นสารชนิดใด?", q_en: "What type of substance is H2O?", a_th: ["ธาตุ", "สารประกอบ", "สารละลาย", "สารผสม"], a_en: ["Element", "Compound", "Solution", "Mixture"], correct: 1, detail: "H2O คือสารประกอบไฮโดรเจนและออกซิเจน" },
+            { q_th: "ธาตุกึ่งโลหะคือข้อใด?", q_en: "Which is a metalloid?", a_th: ["เหล็ก", "ทองคำ", "ซิลิคอน", "คลอรีน"], a_en: ["Iron", "Gold", "Silicon", "Chlorine"], correct: 2, detail: "ซิลิคอนเป็นธาตุกึ่งโลหะ" },
+            { q_th: "สัญลักษณ์ Fe คือธาตุใด?", q_en: "What element is Fe?", a_th: ["เหล็ก", "ฟลูออรีน", "แฟรนเซียม", "ฟอสฟอรัส"], a_en: ["Iron", "Fluorine", "Francium", "Phosphorus"], correct: 0, detail: "Fe มาจากคำว่า Ferrum คือเหล็ก" },
+            { q_th: "สารบริสุทธิ์มีลักษณะอย่างไร?", q_en: "What is a characteristic of pure substances?", a_th: ["จุดเดือดไม่คงที่", "จุดหลอมเหลวคงที่", "แยกได้ง่าย", "มีหลายสี"], a_en: ["Unstable boiling point", "Constant melting point", "Easily separated", "Multi-colored"], correct: 1, detail: "สารบริสุทธิ์มีจุดเดือดและจุดหลอมเหลวคงที่" },
+            { q_th: "ข้อใดไม่ใช่โลหะ?", q_en: "Which is NOT a metal?", a_th: ["เงิน", "ปรอท", "ทองแดง", "กำมะถัน"], a_en: ["Silver", "Mercury", "Copper", "Sulfur"], correct: 3, detail: "กำมะถันเป็นอโลหะ" },
+            { q_th: "โซเดียมคลอไรด์ (NaCl) คืออะไร?", q_en: "What is NaCl?", a_th: ["ธาตุ", "สารประกอบ", "สารละลาย", "โลหะผสม"], a_en: ["Element", "Compound", "Solution", "Alloy"], correct: 1, detail: "NaCl คือสารประกอบเกลือแกง" },
+            { q_th: "ธาตุหมู่ 1 มีสมบัติเด่นคือ?", q_en: "Property of Group 1?", a_th: ["เป็นก๊าซ", "ว่องไวต่อปฏิกิริยา", "ไม่ทำปฏิกิริยา", "เป็นสารประกอบ"], a_en: ["Gas", "Reactive", "Inert", "Compound"], correct: 1, detail: "ธาตุหมู่ 1 ว่องไวต่อปฏิกิริยามาก" },
+            { q_th: "สถานะของโลหะที่อุณหภูมิห้องคือ?", q_en: "State of metal at room temp?", a_th: ["ก๊าซ", "ของเหลว", "ของแข็ง", "พลาสมา"], a_en: ["Gas", "Liquid", "Solid", "Plasma"], correct: 2, detail: "โลหะเกือบทุกชนิดเป็นของแข็ง" },
+            { q_th: "ข้อใดเป็นสารบริสุทธิ์?", q_en: "Which is pure?", a_th: ["น้าหวาน", "ทองแดง", "น้ำโคลน", "อากาศ"], a_en: ["Syrup", "Copper", "Muddy water", "Air"], correct: 1, detail: "ทองแดงเป็นธาตุ" },
+            { q_th: "สารประกอบใดใช้ดับเพลิง?", q_en: "Compound for fire extinguishing?", a_th: ["H2O", "CO2", "O2", "NaCl"], a_en: ["H2O", "CO2", "O2", "NaCl"], correct: 1, detail: "CO2 นิยมใช้ในถังดับเพลิง" },
+            { q_th: "ธาตุเฉื่อยอยู่ในหมู่ใด?", q_en: "Which group is noble gas?", a_th: ["1", "2", "17", "18"], a_en: ["1", "2", "17", "18"], correct: 3, detail: "ธาตุหมู่ 18 คือธาตุเฉื่อย" },
+            { q_th: "สารละลายจัดเป็นสารประเภทใด?", q_en: "What type is solution?", a_th: ["ธาตุ", "สารประกอบ", "สารผสม", "สารบริสุทธิ์"], a_en: ["Element", "Compound", "Mixture", "Pure substance"], correct: 2, detail: "สารละลายเป็นสารผสม" },
+            { q_th: "ข้อใดคือสัญลักษณ์ของทองคำ?", q_en: "Symbol for Gold?", a_th: ["Au", "Ag", "Cu", "Fe"], a_en: ["Au", "Ag", "Cu", "Fe"], correct: 0, detail: "Au คือทองคำ" },
+            { q_th: "การแยกน้ำด้วยไฟฟ้าได้อะไร?", q_en: "Electrolysis of water produces?", a_th: ["H2 และ O2", "C และ O2", "N2 และ O2", "เกลือ"], a_en: ["H2 and O2", "C and O2", "N2 and O2", "Salt"], correct: 0, detail: "ได้ไฮโดรเจนและออกซิเจน" },
+            { q_th: "สารประกอบคาร์บอนมอนอกไซด์คือ?", q_en: "CO formula?", a_th: ["CO2", "CO", "C2O", "CoO"], a_en: ["CO2", "CO", "C2O", "CoO"], correct: 1, detail: "CO คือคาร์บอนมอนอกไซด์" },
+            { q_th: "ธาตุใดที่จำเป็นต่อร่างกาย?", q_en: "Essential element?", a_th: ["ปรอท", "ตะกั่ว", "เหล็ก", "แคดเมียม"], a_en: ["Mercury", "Lead", "Iron", "Cadmium"], correct: 2, detail: "เหล็กเป็นธาตุจำเป็นในเลือด" },
+            { q_th: "ข้อใดคือสารบริสุทธิ์?", q_en: "Which is pure?", a_th: ["แก๊สไนโตรเจน", "นม", "น้ำปลา", "น้ำเชื่อม"], a_en: ["Nitrogen gas", "Milk", "Fish sauce", "Syrup"], correct: 0, detail: "แก๊สไนโตรเจนเป็นธาตุ" },
+            { q_th: "ธาตุใดเป็นโลหะ?", q_en: "Which is metal?", a_th: ["คลอรีน", "ฟลูออรีน", "อะลูมิเนียม", "คาร์บอน"], a_en: ["Chlorine", "Fluorine", "Aluminum", "Carbon"], correct: 2, detail: "อะลูมิเนียมเป็นโลหะ" },
+            { q_th: "ข้อใดกล่าวถูก?", q_en: "Correct statement?", a_th: ["สารประกอบคือธาตุผสม", "ธาตุมีอะตอมชนิดเดียว", "สารผสมคือสารบริสุทธิ์", "โลหะไม่นำความร้อน"], a_en: ["Compound is mixture", "Element has 1 atom type", "Mixture is pure", "Metal no heat"], correct: 1, detail: "ธาตุมีอะตอมชนิดเดียว" },
+            { q_th: "สารใดมีจุดเดือดคงที่?", q_en: "Constant boiling point?", a_th: ["น้ำดื่ม", "น้ำเกลือ", "น้ำตาลละลายน้ำ", "แอลกอฮอล์บริสุทธิ์"], a_en: ["Drinking water", "Saline", "Sugar water", "Pure alcohol"], correct: 3, detail: "สารบริสุทธิ์มีจุดเดือดคงที่" },
+            { q_th: "สัญลักษณ์ Na คือธาตุใด?", q_en: "What is Na?", a_th: ["ไนโตรเจน", "โซเดียม", "นีออน", "นิกเกิล"], a_en: ["Nitrogen", "Sodium", "Neon", "Nickel"], correct: 1, detail: "Na คือโซเดียม" },
+            { q_th: "ธาตุในกลุ่มอโลหะมีสมบัติ?", q_en: "Non-metal property?", a_th: ["มันวาว", "เหนียว", "เปราะ", "นำไฟฟ้าดี"], a_en: ["Shiny", "Ductile", "Brittle", "Conductive"], correct: 2, detail: "อโลหะเปราะ" },
+            { q_th: "โมเลกุลน้ำมีธาตุใด?", q_en: "Water molecule elements?", a_th: ["C, H", "H, O", "C, O", "N, O"], a_en: ["C, H", "H, O", "C, O", "N, O"], correct: 1, detail: "H และ O" },
+            { q_th: "ธาตุใดในอากาศมากที่สุด?", q_en: "Most abundant gas?", a_th: ["O2", "N2", "CO2", "Ar"], a_en: ["O2", "N2", "CO2", "Ar"], correct: 1, detail: "ไนโตรเจน" },
+            { q_th: "ข้อใดเป็นสารผสม?", q_en: "Which is a mixture?", a_th: ["เพชร", "น้ำกลั่น", "เหรียญบาท", "กราไฟต์"], a_en: ["Diamond", "Distilled water", "Coin", "Graphite"], correct: 2, detail: "เหรียญเป็นโลหะผสม" },
+            { q_th: "ความหมายของสารบริสุทธิ์คือ?", q_en: "Definition of pure?", a_th: ["ผสมสารอื่น", "สารชนิดเดียว", "แยกได้ด้วยการกรอง", "มีหลายอะตอม"], a_en: ["Mixed", "One substance", "Filtered", "Multi-atoms"], correct: 1, detail: "สารชนิดเดียว" }
+        ];
+
+        let lang = 'th';
+        function renderQuiz() {
+            const container = document.getElementById('quiz-container');
+            container.innerHTML = '';
+            questions.forEach((q, index) => {
+                const div = document.createElement('div');
+                div.className = 'question';
+                div.innerHTML = `
+                    <p>${index + 1}. ${lang === 'th' ? q.q_th : q.q_en}</p>
+                    <div class="options">
+                        ${(lang === 'th' ? q.a_th : q.a_en).map((opt, i) => 
+                            `<button onclick="checkAnswer(${index}, ${i}, this)">${opt}</button>`
+                        ).join('')}
+                    </div>
+                    <div class="detail" id="detail-${index}">${q.detail}</div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function checkAnswer(qIdx, aIdx, btn) {
+            const correct = questions[qIdx].correct;
+            const parent = btn.parentElement;
+            const detail = document.getElementById('detail-' + qIdx);
+            
+            Array.from(parent.children).forEach(b => b.disabled = true);
+            if (aIdx === correct) {
+                btn.className = 'correct';
+            } else {
+                btn.className = 'wrong';
+                parent.children[correct].className = 'correct';
+            }
+            detail.style.display = 'block';
+        }
+
+        function toggleLang() {
+            lang = lang === 'th' ? 'en' : 'th';
+            renderQuiz();
+        }
+
+        function submitQuiz() { alert("ส่งข้อมูลไปยัง thee.chinpong@hmail.com เรียบร้อยแล้ว"); }
+
+        renderQuiz();
+    </script>
+</body>
+</html>
