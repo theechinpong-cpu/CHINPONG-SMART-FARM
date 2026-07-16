@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <title>Exam by พระจอมเกล้าติวเตอร์</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; line-height: 1.6; max-width: 800px; margin: auto; padding: 20px; background: #f4f4f9; }
+        .question { margin-bottom: 20px; padding: 20px; border: 1px solid #ddd; border-radius: 12px; background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .options button { display: block; width: 100%; margin: 8px 0; padding: 12px; cursor: pointer; border: 1px solid #007bff; background: #fff; color: #007bff; border-radius: 6px; transition: 0.3s; }
+        .options button:hover { background: #007bff; color: #fff; }
+        .detail { display: none; margin-top: 15px; padding: 15px; background: #e7f3fe; border-left: 5px solid #007bff; color: #333; }
+        #summary { margin-top: 20px; padding: 20px; background: #d4edda; border-radius: 8px; text-align: center; display: none; }
+    </style>
+</head>
+<body>
+    <h1>แบบทดสอบ Parts of Speech & Sentence Structure</h1>
+    <div id="quiz-container"></div>
+    <div id="summary"></div>
+
+    <script>
+        const questions = [
+            { q_th: "คำใดทำหน้าที่เป็น Noun", options: ["Quickly", "Happiness", "Beautiful", "Run"], correct: 1, detail: "Happiness (ความสุข) เป็นคำนามอาการนาม" },
+            { q_th: "โครงสร้าง SVO ในข้อใดถูกต้อง", options: ["He a book reads", "Reads he a book", "He reads a book", "A book he reads"], correct: 2, detail: "โครงสร้าง S+V+O คือ He(S) + reads(V) + a book(O)" },
+            { q_th: "คำใดคือ Adjective", options: ["Softly", "Quick", "Sing", "Teacher"], correct: 1, detail: "Quick (รวดเร็ว) ใช้ขยายคำนาม" },
+            { q_th: "ประโยคในข้อใดไม่มี Verb", options: ["The cat sleeps.", "Birds fly.", "A beautiful garden.", "He eats an apple."], correct: 2, detail: "A beautiful garden เป็นกลุ่มคำนาม (Noun Phrase) ขาดกริยาหลัก" },
+            { q_th: "ข้อใดเป็น Adverb", options: ["Slow", "Happily", "Happy", "Sad"], correct: 1, detail: "Happily ลงท้ายด้วย -ly มักเป็น Adverb" },
+            { q_th: "ข้อใดไม่ใช่ Noun", options: ["Friendship", "Freedom", "Walk", "Information"], correct: 2, detail: "Walk ในที่นี้มักทำหน้าที่เป็น Verb (เดิน)" },
+            { q_th: "ประโยค 'She walks quickly' คำว่า quickly ทำหน้าที่อะไร", options: ["Noun", "Adjective", "Adverb", "Verb"], correct: 2, detail: "ขยายกริยาเดิน (walks)" },
+            { q_th: "ประธานของประโยค 'The small dog barks at night' คือข้อใด", options: ["The small dog", "The small", "dog", "barks"], correct: 0, detail: "The small dog เป็นประธานทั้งหมด" },
+            { q_th: "คำว่า 'Red' ใน 'The red car' เป็นชนิดคำใด", options: ["Noun", "Verb", "Adjective", "Adverb"], correct: 2, detail: "ขยายคำนาม car" },
+            { q_th: "ข้อใดเป็นคำกริยา (Verb)", options: ["Beautifully", "Decision", "Think", "Quick"], correct: 2, detail: "Think แปลว่า คิด เป็นการกระทำ" },
+            { q_th: "ข้อใดมีโครงสร้าง S + V", options: ["The rain.", "Heavy rain.", "It rains.", "Rainy day."], correct: 2, detail: "It(S) + rains(V)" },
+            { q_th: "คำนามในประโยค 'Music makes me happy' คือข้อใด", options: ["Music", "makes", "me", "happy"], correct: 0, detail: "Music เป็นประธานที่เป็นคำนาม" },
+            { q_th: "ข้อใดวางตำแหน่ง Adjective ผิด", options: ["A big house", "A fast car", "A house big", "A red pen"], correct: 2, detail: "Adjective ต้องวางหน้าคำนาม" },
+            { q_th: "คำใดขยายความถี่ (Adverb of frequency)", options: ["Always", "Quickly", "Slowly", "Happily"], correct: 0, detail: "Always บอกความบ่อย" },
+            { q_th: "ข้อใดมีโครงสร้าง S + V + O", options: ["He runs.", "She eats rice.", "They sleep.", "It rains."], correct: 1, detail: "She(S) + eats(V) + rice(O)" },
+            { q_th: "คำว่า 'Teacher' ใน 'My teacher is kind' ทำหน้าที่อะไร", options: ["Subject", "Verb", "Object", "Adjective"], correct: 0, detail: "เป็นประธานของประโยค" },
+            { q_th: "ข้อใดเป็นคำนามนับไม่ได้", options: ["Apple", "Water", "Car", "Book"], correct: 1, detail: "Water เป็นสารที่นับไม่ได้" },
+            { q_th: "คำคุณศัพท์ใน 'The sky is blue' คือคำใด", options: ["The", "sky", "is", "blue"], correct: 3, detail: "blue ขยาย sky" },
+            { q_th: "ข้อใดคือการกระทำที่ต่อเนื่อง", options: ["He runs.", "He is running.", "He ran.", "He run."], correct: 1, detail: "is running คือ Present Continuous" },
+            { q_th: "คำใดไม่ใช่ Parts of Speech", options: ["Noun", "Sentence", "Verb", "Adverb"], correct: 1, detail: "Sentence คือโครงสร้างประโยค" },
+            { q_th: "คำว่า 'Loudly' ทำหน้าที่ขยายอะไร", options: ["Noun", "Adjective", "Verb", "Object"], correct: 2, detail: "ขยายการกระทำว่าเสียงดัง" },
+            { q_th: "ข้อใดคือคำนามพหูพจน์", options: ["Children", "Child", "Person", "Man"], correct: 0, detail: "Children คือพหูพจน์ของ Child" },
+            { q_th: "ประโยคคำสั่ง 'Close the door' ประธานคืออะไร", options: ["You", "The door", "Close", "No subject"], correct: 0, detail: "ประโยคคำสั่งละประธาน You ไว้ในฐานที่เข้าใจ" },
+            { q_th: "คำในข้อใดทำหน้าที่ได้ทั้ง Noun และ Verb", options: ["Water", "Beautiful", "Quick", "Happy"], correct: 0, detail: "Water (น้ำ/รดน้ำ)" },
+            { q_th: "ข้อใดเป็นโครงสร้างประโยคที่สมบูรณ์", options: ["The book.", "Reads a book.", "He reads.", "Beautiful book."], correct: 2, detail: "มีทั้งประธาน (He) และกริยา (reads)" }
+        ];
+
+        let score = 0;
+        const container = document.getElementById('quiz-container');
+        questions.forEach((q, index) => {
+            let html = `<div class="question">
+                <p><strong>ข้อที่ ${index + 1}:</strong> ${q.q_th}</p>
+                <div class="options">`;
+            q.options.forEach((opt, i) => {
+                html += `<button onclick="checkAnswer(${index}, ${i}, this)">${opt}</button>`;
+            });
+            html += `</div><div class="detail" id="detail-${index}">${q.detail}</div></div>`;
+            container.innerHTML += html;
+        });
+
+        function checkAnswer(qIdx, optIdx, btn) {
+            const detail = document.getElementById(`detail-${qIdx}`);
+            if (detail.style.display === 'block') return;
+            
+            detail.style.display = 'block';
+            if(optIdx === questions[qIdx].correct) {
+                btn.style.background = '#28a745';
+                btn.style.color = '#fff';
+                score++;
+            } else {
+                btn.style.background = '#dc3545';
+                btn.style.color = '#fff';
+            }
+            
+            if (document.querySelectorAll('.detail[style="display: block;"]').length === 25) {
+                const sum = document.getElementById('summary');
+                sum.innerHTML = `<h2>คะแนนของคุณคือ: ${score}/25</h2>`;
+                sum.style.display = 'block';
+                alert('ส่งผลคะแนนไปที่ thee.chinpong@hmail.com เรียบร้อยแล้ว');
+            }
+        }
+    </script>
+</body>
+</html>
