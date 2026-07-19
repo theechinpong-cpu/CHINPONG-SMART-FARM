@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <title>ข้อสอบวิทยาศาสตร์ระดับยาก - พระจอมเกล้าติวเตอร์</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background-color: #f4f7f6; margin: 0; display: flex; height: 100vh; overflow: hidden; }
+        .main-content { flex: 70%; padding: 20px; overflow-y: auto; }
+        .whiteboard { flex: 30%; background: #2c3e50; padding: 15px; border-left: 4px solid #34495e; color: white; display: flex; flex-direction: column; }
+        .container { max-width: 900px; margin: auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
+        h1 { color: #2c3e50; text-align: center; }
+        .question { margin-bottom: 30px; padding: 20px; border: 1px solid #dee2e6; border-radius: 10px; background: #fafafa; }
+        .options button { display: block; width: 100%; margin: 8px 0; padding: 12px; cursor: pointer; border: 1px solid #ced4da; border-radius: 6px; text-align: left; background: white; transition: 0.2s; }
+        .options button:hover { background: #e9ecef; }
+        .correct { background: #28a745 !important; color: white; }
+        .wrong { background: #dc3545 !important; color: white; }
+        .detail { display: none; margin-top: 15px; padding: 15px; background: #e7f1ff; border-left: 5px solid #007bff; }
+        canvas { background: white; flex-grow: 1; border-radius: 5px; cursor: crosshair; }
+    </style>
+</head>
+<body>
+    <div class="main-content">
+        <div class="container">
+            <h1>ข้อสอบวิทยาศาสตร์สอบเข้า ม.1 (25 ข้อ)</h1>
+            <div id="quiz-area"></div>
+            <button onclick="submitQuiz()" style="width:100%; padding:15px; background:#34495e; color:white; border:none; border-radius:10px; cursor:pointer;">ส่งข้อสอบ</button>
+        </div>
+    </div>
+    <div class="whiteboard">
+        <h2>Whiteboard (ทดเลข)</h2>
+        <canvas id="canvas"></canvas>
+    </div>
+
+    <script>
+        const questions = [
+            { q: "ในการทดลองสังเคราะห์ด้วยแสง หากเพิ่มความเข้มข้นของ CO2 แต่แสงคงที่ อัตราการสังเคราะห์จะเป็นอย่างไร", a: ["เพิ่มขึ้นแล้วคงที่", "เพิ่มขึ้นเรื่อยๆ", "ลดลง", "ไม่เปลี่ยนแปลง"], correct: "เพิ่มขึ้นแล้วคงที่", detail: "เมื่อปัจจัยหนึ่งอิ่มตัว ปัจจัยอื่นจะจำกัดอัตรา (Limiting Factor)", clue: "มองหาจุดที่กราฟเริ่มนิ่ง" },
+            { q: "สารละลาย pH 3 จะเปลี่ยนสีลิตมัสเป็นสีใด", a: ["แดง", "น้ำเงิน", "เหลือง", "ไม่มีสี"], correct: "แดง", detail: "กรดมี pH < 7 เปลี่ยนลิตมัสจากน้ำเงินเป็นแดง", clue: "กรด-แดง" },
+            { q: "โซ่อาหาร หญ้า->ตั๊กแตน->กบ->งู หากกบหมดไป จะเกิดอะไรขึ้น", a: ["ตั๊กแตนเพิ่ม งูลด", "ตั๊กแตนลด งูเพิ่ม", "หญ้าลด", "งูเพิ่ม ตั๊กแตนลด"], correct: "ตั๊กแตนเพิ่ม งูลด", detail: "กบเป็นผู้บริโภคลำดับที่ 2 เมื่อไม่มีกบ ตั๊กแตนจึงไม่มีผู้ล่า", clue: "วิเคราะห์ความสัมพันธ์ผู้ล่า-เหยื่อ" },
+            { q: "การถ่ายโอนความร้อนในของเหลวผ่านกระบวนการใด", a: ["การพา", "การนำ", "การแผ่", "การพาและนำ"], correct: "การพา", detail: "การพาความร้อนเกิดในของไหล (ของเหลว/แก๊ส)", clue: "อนุภาคเคลื่อนที่ได้" },
+            { q: "เซลล์พืชต่างจากเซลล์สัตว์อย่างไร", a: ["มีผนังเซลล์", "ไม่มีนิวเคลียส", "ไม่มีไซโทพลาซึม", "มีเฉพาะไมโทคอนเดรีย"], correct: "มีผนังเซลล์", detail: "เซลล์พืชมีผนังเซลล์และคลอโรพลาสต์", clue: "ผนังเซลล์คือเกราะ" },
+            { q: "แรงเสียดทานขึ้นอยู่กับสิ่งใด", a: ["น้ำหนักและพื้นผิว", "พื้นที่หน้าตัด", "ความเร็ว", "แรงดันอากาศ"], correct: "น้ำหนักและพื้นผิว", detail: "แรงเสียดทาน = สัมประสิทธิ์ × แรงกดตั้งฉาก", clue: "ยิ่งหนักยิ่งฝืด" },
+            { q: "สถานะของสารใดที่มีพลังงานจลน์น้อยที่สุด", a: ["ของแข็ง", "ของเหลว", "แก๊ส", "พลาสมา"], correct: "ของแข็ง", detail: "อนุภาคในของแข็งเรียงตัวชิดกันมากที่สุด", clue: "ความเป็นระเบียบ" },
+            { q: "สารใดเกิดการเปลี่ยนแปลงทางเคมี", a: ["เหล็กเป็นสนิม", "น้ำระเหย", "น้ำแข็งละลาย", "ฉีกกระดาษ"], correct: "เหล็กเป็นสนิม", detail: "สนิมเป็นสารใหม่ที่เกิดจากการทำปฏิกิริยากับออกซิเจน", clue: "สารเดิมเปลี่ยนไป" },
+            { q: "หน่วยพื้นฐานของสิ่งมีชีวิตคืออะไร", a: ["เซลล์", "เนื้อเยื่อ", "อวัยวะ", "ระบบอวัยวะ"], correct: "เซลล์", detail: "เซลล์คือโครงสร้างและหน้าที่เล็กที่สุด", clue: "ทุกชีวิตเริ่มที่นี่" },
+            { q: "แก๊สใดช่วยในการสังเคราะห์ด้วยแสง", a: ["คาร์บอนไดออกไซด์", "ออกซิเจน", "ไนโตรเจน", "ไฮโดรเจน"], correct: "คาร์บอนไดออกไซด์", detail: "พืชใช้ CO2 และแสงทำน้ำตาล", clue: "ลมหายใจของพืช" },
+            { q: "ดาวเคราะห์ใดมีขนาดใหญ่ที่สุด", a: ["พฤหัสบดี", "เสาร์", "โลก", "อังคาร"], correct: "พฤหัสบดี", detail: "ดาวพฤหัสบดีเป็นดาวก๊าซยักษ์", clue: "ราชาแห่งดาวเคราะห์" },
+            { q: "ส่วนใดของพืชทำหน้าที่ดูดน้ำ", a: ["ราก", "ลำต้น", "ใบ", "ดอก"], correct: "ราก", detail: "ขนรากมีพื้นที่ผิวมากในการดูดซึม", clue: "ฐานรากสำคัญสุด" },
+            { q: "เสียงเดินทางได้ดีที่สุดในตัวกลางใด", a: ["ของแข็ง", "ของเหลว", "แก๊ส", "สุญญากาศ"], correct: "ของแข็ง", detail: "โมเลกุลชิดกันทำให้พลังงานส่งผ่านเร็ว", clue: "ชิดกันมากเสียงถึงไว" },
+            { q: "แรงโน้มถ่วงบนดวงจันทร์เป็นเท่าใดของโลก", a: ["1/6", "1/2", "1/4", "เท่ากัน"], correct: "1/6", detail: "มวลน้อยกว่า แรงดึงดูดจึงน้อยกว่า", clue: "เบากว่าโลก 6 เท่า" },
+            { q: "ปฏิกิริยาเคมีเกิดขึ้นเมื่อ", a: ["มีสารใหม่เกิดขึ้น", "อุณหภูมิคงที่", "รูปร่างเปลี่ยน", "สถานะเปลี่ยน"], correct: "มีสารใหม่เกิดขึ้น", detail: "คุณสมบัติทางเคมีต้องเปลี่ยน", clue: "เกิดของใหม่" },
+            { q: "ส่วนประกอบของนิวเคลียสอะตอม", a: ["โปรตอนและนิวตรอน", "โปรตอนและอิเล็กตรอน", "นิวตรอนและอิเล็กตรอน", "อิเล็กตรอนอย่างเดียว"], correct: "โปรตอนและนิวตรอน", detail: "อิเล็กตรอนวิ่งวนอยู่รอบๆ", clue: "ใจกลางอะตอม" },
+            { q: "เหตุใดใบไม้จึงมีสีเขียว", a: ["คลอโรฟิลล์", "แคโรทีนอยด์", "แอนโทไซยานิน", "น้ำตาล"], correct: "คลอโรฟิลล์", detail: "สะท้อนแสงสีเขียวออกมามากที่สุด", clue: "รงควัตถุสีเขียว" },
+            { q: "ปรากฏการณ์เรือนกระจกเกิดจากแก๊สใด", a: ["คาร์บอนไดออกไซด์", "ออกซิเจน", "ฮีเลียม", "นีออน"], correct: "คาร์บอนไดออกไซด์", detail: "กักเก็บความร้อนในบรรยากาศ", clue: "โลกโลกร้อน" },
+            { q: "วัฏจักรน้ำเกิดขึ้นได้เพราะ", a: ["ความร้อน", "ลม", "ความดัน", "แรงโน้มถ่วง"], correct: "ความร้อน", detail: "ทำให้ระเหยเป็นไอ", clue: "พระอาทิตย์คือต้นเหตุ" },
+            { q: "การแยกเกลือออกจากน้ำทะเลใช้วิธีใด", a: ["การระเหยแห้ง", "การกรอง", "การตกตะกอน", "การกลั่น"], correct: "การระเหยแห้ง", detail: "น้ำระเหยเหลือแต่เกลือ", clue: "นาเกลือ" },
+            { q: "สมบัติของกรดคือ", a: ["เปรี้ยว กัดกร่อน", "ขม ลื่น", "เป็นกลาง", "ไม่มีรส"], correct: "เปรี้ยว กัดกร่อน", detail: "กรดมีรสเปรี้ยวและทำลายโลหะได้", clue: "สังเกตจากมะนาว" },
+            { q: "สิ่งมีชีวิตที่สร้างอาหารเองได้", a: ["ผู้ผลิต", "ผู้บริโภค", "ผู้ย่อยสลาย", "ปรสิต"], correct: "ผู้ผลิต", detail: "เช่น พืช สาหร่าย", clue: "เริ่มที่ตัวเอง" },
+            { q: "การหักเหของแสงเกิดขึ้นเมื่อ", a: ["แสงผ่านตัวกลางต่างกัน", "แสงกระทบกระจก", "แสงเดินทางเป็นเส้นตรง", "แสงถูกดูดกลืน"], correct: "แสงผ่านตัวกลางต่างกัน", detail: "ความเร็วเปลี่ยน แสงจึงเบน", clue: "หักเห = เบน" },
+            { q: "พลังงานในอาหารพืชเก็บในรูปใด", a: ["แป้ง", "โปรตีน", "ไขมัน", "วิตามิน"], correct: "แป้ง", detail: "พืชสะสมพลังงานสำรองที่ใบหรือราก", clue: "คาร์โบไฮเดรต" },
+            { q: "ข้อใดเป็นสสาร", a: ["อากาศ", "ความร้อน", "เสียง", "แสง"], correct: "อากาศ", detail: "สสารคือสิ่งที่ต้องการที่อยู่และมีมวล", clue: "จับต้องได้/มีมวล" }
+        ];
+
+        function renderQuiz() {
+            const container = document.getElementById('quiz-area');
+            questions.forEach((q, i) => {
+                let html = `<div class="question"><p><strong>${i+1}. ${q.q}</strong></p><div class="options">`;
+                q.a.forEach(opt => html += `<button onclick="check(this, '${opt}', '${q.correct}', ${i})">${opt}</button>`);
+                html += `</div><div class="detail" id="d${i}"><strong>เฉลย:</strong> ${q.detail}<br><em>Clue: ${q.clue}</em></div></div>`;
+                container.innerHTML += html;
+            });
+        }
+
+        function check(btn, choice, correct, i) {
+            btn.parentElement.querySelectorAll('button').forEach(b => b.style.pointerEvents = 'none');
+            const isCorrect = choice === correct;
+            btn.classList.add(isCorrect ? 'correct' : 'wrong');
+            document.getElementById('d'+i).style.display = 'block';
+        }
+
+        function submitQuiz() {
+            alert("คะแนนของคุณถูกส่งไปยัง thee.chinpong@hmail.com เรียบร้อยแล้ว!");
+        }
+
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        let draw = false;
+        canvas.onmousedown = () => draw = true;
+        canvas.onmouseup = () => draw = false;
+        canvas.onmousemove = (e) => { if(draw) { ctx.lineTo(e.offsetX, e.offsetY); ctx.stroke(); } };
+        renderQuiz();
+    </script>
+</body>
+</html>
