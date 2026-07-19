@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <title>คลังข้อสอบคณิตศาสตร์ - พระจอมเกล้าติวเตอร์</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; line-height: 1.6; background-color: #f4f4f9; }
+        .container { max-width: 800px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        .question { margin-bottom: 30px; padding: 15px; border: 1px solid #ddd; border-radius: 8px; }
+        .options button { display: block; width: 100%; margin: 5px 0; padding: 10px; cursor: pointer; border: 1px solid #ccc; border-radius: 5px; }
+        .correct { background-color: #d4edda !important; color: #155724; border-color: #c3e6cb !important; }
+        .wrong { background-color: #f8d7da !important; color: #721c24; border-color: #f5c6cb !important; }
+        #result { font-weight: bold; font-size: 1.2em; text-align: center; margin-top: 20px; color: #333; }
+        .clue { font-style: italic; color: #666; font-size: 0.85em; margin-top: 5px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>ข้อสอบเรขาคณิตเข้า ม.1 (สนามสอบเบญจมราชูทิศ)</h1>
+        <div id="lang-toggle" style="margin-bottom: 20px;">
+            <button onclick="toggleLang('th')">ภาษาไทย</button>
+            <button onclick="toggleLang('en')">English</button>
+        </div>
+        <div id="quiz-area"></div>
+        <div id="result"></div>
+    </div>
+
+    <script>
+        let currentLang = 'th';
+        const questions = [
+            { q_th: "รูปสามเหลี่ยมฐาน 10 ซม. สูง 8 ซม. มีพื้นที่เท่าใด", q_en: "Find the area of a triangle with a base of 10 cm and height of 8 cm.", a: ["40 ตร.ซม.", "80 ตร.ซม.", "20 ตร.ซม.", "50 ตร.ซม."], correct: 0, detail: "0.5 × ฐาน × สูง = 0.5 × 10 × 8 = 40", clue: "จำไว้ว่าสามเหลี่ยมคือครึ่งหนึ่งของสี่เหลี่ยม" },
+            { q_th: "สี่เหลี่ยมผืนผ้ากว้าง 5 ซม. ยาว 12 ซม. พื้นที่คือ", q_en: "A rectangle has a width of 5 cm and a length of 12 cm. Find the area.", a: ["60 ตร.ซม.", "34 ตร.ซม.", "17 ตร.ซม.", "25 ตร.ซม."], correct: 0, detail: "กว้าง × ยาว = 5 × 12 = 60", clue: "สูตรพื้นฐานจำให้แม่น" },
+            { q_th: "สี่เหลี่ยมจัตุรัสมีด้านยาว 7 ซม. พื้นที่คือ", q_en: "A square has a side of 7 cm. Find the area.", a: ["49 ตร.ซม.", "28 ตร.ซม.", "14 ตร.ซม.", "56 ตร.ซม."], correct: 0, detail: "ด้าน × ด้าน = 7 × 7 = 49", clue: "จัตุรัสคือกว้างเท่ากับยาว" },
+            { q_th: "สี่เหลี่ยมคางหมูมีด้านคู่ขนานยาว 4 และ 6 ซม. สูง 5 ซม. พื้นที่คือ", q_en: "A trapezoid has parallel sides of 4 and 6 cm, height 5 cm. Find the area.", a: ["25 ตร.ซม.", "50 ตร.ซม.", "20 ตร.ซม.", "30 ตร.ซม."], correct: 0, detail: "0.5 × (4+6) × 5 = 25", clue: "เอาด้านขนานมาบวกกันก่อน แล้วคูณสูง แล้วหารสอง" },
+            { q_th: "วงกลมมีรัศมี 7 ซม. (π=22/7) พื้นที่คือ", q_en: "A circle has a radius of 7 cm (π=22/7). Find the area.", a: ["154 ตร.ซม.", "44 ตร.ซม.", "88 ตร.ซม.", "120 ตร.ซม."], correct: 0, detail: "π × r² = (22/7) × 7 × 7 = 154", clue: "รัศมี 7 คือตัวเลขยอดฮิตที่ตัด 22/7 ได้พอดี" },
+            { q_th: "สี่เหลี่ยมขนมเปียกปูนฐาน 8 ซม. สูง 4 ซม. พื้นที่คือ", q_en: "A rhombus has a base of 8 cm and height of 4 cm. Find the area.", a: ["32 ตร.ซม.", "16 ตร.ซม.", "24 ตร.ซม.", "40 ตร.ซม."], correct: 0, detail: "ฐาน × สูง = 8 × 4 = 32", clue: "ใช้สูตรเหมือนสี่เหลี่ยมด้านขนาน" },
+            { q_th: "สามเหลี่ยมมุมฉากมีด้านประกอบมุมฉากยาว 6 และ 8 ซม. พื้นที่คือ", q_en: "A right triangle has legs of 6 and 8 cm. Find the area.", a: ["24 ตร.ซม.", "48 ตร.ซม.", "14 ตร.ซม.", "30 ตร.ซม."], correct: 0, detail: "0.5 × 6 × 8 = 24", clue: "ด้านประกอบมุมฉากถือเป็นฐานและสูง" },
+            { q_th: "สี่เหลี่ยมด้านขนานฐาน 10 ซม. สูง 7 ซม. พื้นที่คือ", q_en: "A parallelogram has a base of 10 cm and height of 7 cm. Find the area.", a: ["70 ตร.ซม.", "35 ตร.ซม.", "17 ตร.ซม.", "50 ตร.ซม."], correct: 0, detail: "ฐาน × สูง = 10 × 7 = 70", clue: "อย่านำด้านเอียงมาคูณ ให้ใช้ความสูงตรงเท่านั้น" },
+            { q_th: "สี่เหลี่ยมจัตุรัสมีเส้นทแยงมุมยาว 10 ซม. พื้นที่คือ", q_en: "A square has a diagonal of 10 cm. Find the area.", a: ["50 ตร.ซม.", "100 ตร.ซม.", "25 ตร.ซม.", "75 ตร.ซม."], correct: 0, detail: "0.5 × ผลคูณเส้นทแยงมุม = 0.5 × 10 × 10 = 50", clue: "ถ้าไม่ทราบด้านใช้สูตรเส้นทแยงมุมได้เลย" },
+            { q_th: "วงกลมที่มีเส้นผ่านศูนย์กลาง 14 ซม. (π=22/7) พื้นที่คือ", q_en: "A circle has a diameter of 14 cm. Find the area.", a: ["154 ตร.ซม.", "308 ตร.ซม.", "77 ตร.ซม.", "44 ตร.ซม."], correct: 0, detail: "รัศมี = 7 ดังนั้นพื้นที่ = 154", clue: "ระวัง! สูตรใช้รัศมี ไม่ใช่เส้นผ่านศูนย์กลาง" },
+            { q_th: "สี่เหลี่ยมรูปว่าวมีเส้นทแยงมุมยาว 6 และ 8 ซม. พื้นที่คือ", q_en: "A kite has diagonals of 6 and 8 cm. Find the area.", a: ["24 ตร.ซม.", "48 ตร.ซม.", "14 ตร.ซม.", "30 ตร.ซม."], correct: 0, detail: "0.5 × 6 × 8 = 24", clue: "ใช้สูตรเหมือนรูปสี่เหลี่ยมขนมเปียกปูน" },
+            { q_th: "สามเหลี่ยมที่มีความสูง 10 ซม. และพื้นที่ 50 ตร.ซม. ฐานยาวเท่าใด", q_en: "A triangle has a height of 10 cm and area of 50 sq.cm. Find the base.", a: ["10 ซม.", "5 ซม.", "20 ซม.", "15 ซม."], correct: 0, detail: "50 = 0.5 × ฐาน × 10 => ฐาน = 10", clue: "ย้ายข้างสมการให้คล่อง" },
+            { q_th: "สี่เหลี่ยมผืนผ้าที่มีพื้นที่ 100 ตร.ซม. และกว้าง 10 ซม. ยาวเท่าใด", q_en: "A rectangle has an area of 100 sq.cm and width of 10 cm. Find the length.", a: ["10 ซม.", "20 ซม.", "5 ซม.", "100 ซม."], correct: 0, detail: "100 = 10 × ยาว => ยาว = 10", clue: "พื้นที่หารด้วยกว้าง เท่ากับยาว" },
+            { q_th: "หากขยายด้านสี่เหลี่ยมจัตุรัสขึ้น 2 เท่า พื้นที่จะเพิ่มเป็นกี่เท่า", q_en: "If the side of a square is doubled, how many times does the area increase?", a: ["4 เท่า", "2 เท่า", "8 เท่า", "1 เท่า"], correct: 0, detail: "ด้าน × 2 -> (2×ด้าน)² = 4 × พื้นที่เดิม", clue: "จำไว้ว่าเลขยกกำลังสองจะส่งผลต่อพื้นที่" },
+            { q_th: "สามเหลี่ยมด้านเท่ามีด้านยาว 4 ซม. สูตรพื้นที่ประยุกต์คือ (√3/4) × ด้าน² จงหาพื้นที่", q_en: "An equilateral triangle with side 4 cm. Area = (√3/4) × side². Find area.", a: ["4√3 ตร.ซม.", "2√3 ตร.ซม.", "8√3 ตร.ซม.", "16√3 ตร.ซม."], correct: 0, detail: "(√3/4) × 16 = 4√3", clue: "สูตรลัดนี้ต้องจำให้แม่นสำหรับรูปสามเหลี่ยมด้านเท่า" },
+            { q_th: "สี่เหลี่ยมใดที่เส้นทแยงมุมแบ่งครึ่งซึ่งกันและกันและตั้งฉากกัน", q_en: "Which shape has diagonals that bisect each other at right angles?", a: ["สี่เหลี่ยมขนมเปียกปูน", "สี่เหลี่ยมผืนผ้า", "สี่เหลี่ยมคางหมู", "สี่เหลี่ยมด้านขนาน"], correct: 0, detail: "ขนมเปียกปูนและจัตุรัสมีสมบัตินี้", clue: "สังเกตความสมมาตรของรูป" },
+            { q_th: "รัศมีของวงกลมเพิ่ม 2 เท่า พื้นที่จะเพิ่มขึ้นเป็นกี่เท่า", q_en: "If the radius of a circle doubles, how many times does the area increase?", a: ["4 เท่า", "2 เท่า", "8 เท่า", "1 เท่า"], correct: 0, detail: "π(2r)² = 4πr²", clue: "การเพิ่มรัศมีส่งผลเป็นกำลังสองเสมอ" },
+            { q_th: "รูปสามเหลี่ยมฐาน 12 ซม. สูง 6 ซม. พื้นที่คือ", q_en: "A triangle with base 12 cm and height 6 cm. Find the area.", a: ["36 ตร.ซม.", "72 ตร.ซม.", "18 ตร.ซม.", "48 ตร.ซม."], correct: 0, detail: "0.5 × 12 × 6 = 36", clue: "อย่าลืมหารสอง" },
+            { q_th: "สี่เหลี่ยมคางหมูฐานยาว 8 และ 12 ซม. สูง 10 ซม. พื้นที่คือ", q_en: "A trapezoid with parallel sides 8 and 12 cm, height 10 cm. Find the area.", a: ["100 ตร.ซม.", "200 ตร.ซม.", "50 ตร.ซม.", "80 ตร.ซม."], correct: 0, detail: "0.5 × 20 × 10 = 100", clue: "หาผลรวมฐานก่อนค่อยคูณ" },
+            { q_th: "ครึ่งวงกลมรัศมี 7 ซม. (π=22/7) พื้นที่คือ", q_en: "A semicircle with radius 7 cm. Find the area.", a: ["77 ตร.ซม.", "154 ตร.ซม.", "38.5 ตร.ซม.", "22 ตร.ซม."], correct: 0, detail: "0.5 × (22/7 × 7 × 7) = 77", clue: "ระวังโจทย์หลอกว่าเป็น 'ครึ่ง' วงกลม" },
+            { q_th: "สี่เหลี่ยมขนมเปียกปูนเส้นทแยงมุม 10 และ 12 ซม. พื้นที่คือ", q_en: "A rhombus with diagonals 10 and 12 cm. Find the area.", a: ["60 ตร.ซม.", "120 ตร.ซม.", "30 ตร.ซม.", "40 ตร.ซม."], correct: 0, detail: "0.5 × 10 × 12 = 60", clue: "ใช้สูตรเดียวกับสี่เหลี่ยมรูปว่าว" },
+            { q_th: "สี่เหลี่ยมจัตุรัสพื้นที่ 64 ตร.ซม. มีด้านยาวเท่าใด", q_en: "A square has an area of 64 sq.cm. Find the side length.", a: ["8 ซม.", "16 ซม.", "4 ซม.", "32 ซม."], correct: 0, detail: "√64 = 8", clue: "หาเลขที่ยกกำลังสองแล้วได้พื้นที่" },
+            { q_th: "สามเหลี่ยมฐาน 20 ซม. สูง 5 ซม. พื้นที่คือ", q_en: "A triangle with base 20 cm and height 5 cm. Find the area.", a: ["50 ตร.ซม.", "100 ตร.ซม.", "25 ตร.ซม.", "40 ตร.ซม."], correct: 0, detail: "0.5 × 20 × 5 = 50", clue: "คำนวณเลขง่ายๆ ให้ไว" },
+            { q_th: "สี่เหลี่ยมผืนผ้าพื้นที่ 80 ตร.ซม. ยาว 10 ซม. กว้างเท่าใด", q_en: "A rectangle has an area of 80 sq.cm and length 10 cm. Find the width.", a: ["8 ซม.", "10 ซม.", "20 ซม.", "4 ซม."], correct: 0, detail: "80 ÷ 10 = 8", clue: "กว้าง = พื้นที่ ÷ ยาว" },
+            { q_th: "ถ้าเพิ่มความสูงสามเหลี่ยม 2 เท่า และฐานเท่าเดิม พื้นที่จะเพิ่มเป็นกี่เท่า", q_en: "If the height of a triangle doubles and the base stays the same, how many times does the area increase?", a: ["2 เท่า", "4 เท่า", "1 เท่า", "0.5 เท่า"], correct: 0, detail: "0.5 × ฐาน × 2สูง = 2 × พื้นที่เดิม", clue: "ดูความสัมพันธ์เชิงเส้น" }
+        ];
+
+        function renderQuiz() {
+            const container = document.getElementById('quiz-area');
+            container.innerHTML = '';
+            questions.forEach((q, index) => {
+                const qDiv = document.createElement('div');
+                qDiv.className = 'question';
+                qDiv.innerHTML = `<p>${index + 1}. ${currentLang === 'th' ? q.q_th : q.q_en}</p>
+                                  <div class="options">
+                                    ${q.a.map((opt, i) => `<button onclick="checkAnswer(${index}, ${i}, this)">${opt}</button>`).join('')}
+                                  </div>
+                                  <div id="detail-${index}" style="display:none; margin-top:10px; font-size:0.9em; color:blue;">
+                                    <strong>เฉลย/Answer:</strong> ${q.detail}<br>
+                                    <span class="clue">Tutor's Secret Tip: ${q.clue}</span>
+                                  </div>`;
+                container.appendChild(qDiv);
+            });
+        }
+
+        function toggleLang(lang) {
+            currentLang = lang;
+            renderQuiz();
+        }
+
+        function checkAnswer(qIndex, choiceIndex, btn) {
+            const correct = questions[qIndex].correct;
+            const detail = document.getElementById(`detail-${qIndex}`);
+            const buttons = btn.parentElement.querySelectorAll('button');
+            
+            buttons.forEach(b => b.style.pointerEvents = 'none');
+            
+            if (choiceIndex === correct) {
+                btn.classList.add('correct');
+            } else {
+                btn.classList.add('wrong');
+                buttons[correct].classList.add('correct');
+            }
+            detail.style.display = 'block';
+            
+            // Simulation of data sending
+            if (document.querySelectorAll('.correct').length === questions.length) {
+                alert("ส่งข้อมูลคะแนนไปยัง thee.chinpong@hmail.com เรียบร้อยแล้ว!");
+            }
+        }
+
+        renderQuiz();
+    </script>
+</body>
+</html>
