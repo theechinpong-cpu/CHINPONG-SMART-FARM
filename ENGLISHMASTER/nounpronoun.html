@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <title>Advanced English Exam by Phrachomklao Tutor</title>
+    <style>
+        body { font-family: sans-serif; line-height: 1.6; padding: 20px; background: #f4f4f9; }
+        .container { max-width: 800px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        .question { margin-bottom: 25px; padding: 15px; border-bottom: 2px solid #eee; }
+        .options button { display: block; width: 100%; margin: 5px 0; padding: 10px; cursor: pointer; border: 1px solid #ddd; border-radius: 4px; }
+        .options button:hover { background-color: #e9ecef; }
+        .correct { background-color: #d4edda !important; border-color: #28a745 !important; }
+        .wrong { background-color: #f8d7da !important; border-color: #dc3545 !important; }
+        .detail { display: none; margin-top: 10px; padding: 10px; background: #fff3cd; border-left: 5px solid #ffc107; font-size: 0.9em; }
+        #summary { margin-top: 20px; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="container" id="quiz-app">
+        <h1>ข้อสอบภาษาอังกฤษขั้นสูง: Noun & Pronoun</h1>
+        <button onclick="toggleLang()">สลับภาษา (TH/EN)</button>
+        <div id="questions-container"></div>
+        <button onclick="submitExam()" style="width: 100%; padding: 15px; background: #007bff; color: white; border: none; cursor: pointer;">ส่งข้อสอบ</button>
+        <div id="summary"></div>
+    </div>
+
+    <script>
+        let isThai = true;
+        const questions = [
+            { q_th: "เลือกข้อที่ใช้คำนามได้ถูกต้อง", q_en: "Choose the correct noun usage.", options: ["I need some advices.", "I need some advice.", "I need an advice.", "I need advices."], correct: 1, detail: "Advice เป็นคำนามนับไม่ได้ ห้ามเติม s และไม่ใช้ an" },
+            { q_th: "ใครคือผู้ที่เขาต้องการพบ?", q_en: "Who is the person ___ he wants to meet?", options: ["who", "whom", "whose", "which"], correct: 1, detail: "ใช้ whom เพราะเป็นกรรมของประโยค" },
+            { q_th: "The committee ___ decided to postpone the meeting.", q_en: "The committee ___ decided to postpone the meeting.", options: ["has", "have", "are", "were"], correct: 0, detail: "มองเป็นเอกภาพ ใช้ has" },
+            { q_th: "Choose the plural form of 'Father-in-law'", q_en: "Choose the plural form of 'Father-in-law'", options: ["Father-in-laws", "Fathers-in-law", "Fathers-in-laws", "Father-in-lawes"], correct: 1, detail: "คำนามหลักคือ Father จึงเปลี่ยนที่ Father" },
+            { q_th: "None of the students ___ finished the task.", q_en: "None of the students ___ finished the task.", options: ["has", "have", "is", "was"], correct: 1, detail: "None of + พหูพจน์ กริยาเป็นพหูพจน์" },
+            { q_th: "ความรักคือสิ่งสวยงาม", q_en: "___ is beautiful.", options: ["Love", "A love", "The love", "Loves"], correct: 0, detail: "Abstract noun ไม่ใช้ article ในบริบททั่วไป" },
+            { q_th: "She bought three pieces of ___.", q_en: "She bought three pieces of ___.", options: ["equipments", "furniture", "furnitures", "an equipment"], correct: 1, detail: "Furniture นับไม่ได้เสมอ" },
+            { q_th: "That is the girl ___ brother is a doctor.", q_en: "That is the girl ___ brother is a doctor.", options: ["who", "whom", "whose", "which"], correct: 2, detail: "ใช้ whose แสดงความเป็นเจ้าของ" },
+            { q_th: "Everyone ___ to be happy.", q_en: "Everyone ___ to be happy.", options: ["want", "wants", "are wanting", "have wanted"], correct: 1, detail: "Everyone เป็นเอกพจน์เสมอ" },
+            { q_th: "This pen is ___.", q_en: "This pen is ___.", options: ["my", "mine", "me", "I"], correct: 1, detail: "Possessive pronoun (mine) ไม่ต้องมีนามตามหลัง" },
+            { q_th: "Choose the correct noun for a group of lions.", q_en: "Choose the correct noun for a group of lions.", options: ["A pack", "A pride", "A herd", "A flock"], correct: 1, detail: "Pride of lions" },
+            { q_th: "He is taller than ___.", q_en: "He is taller than ___.", options: ["I", "me", "my", "mine"], correct: 0, detail: "การเปรียบเทียบในเชิงไวยากรณ์ขั้นสูงนิยมใช้รูปประธาน" },
+            { q_th: "Either of the roads ___ to the city.", q_en: "Either of the roads ___ to the city.", options: ["lead", "leads", "are leading", "were leading"], correct: 1, detail: "Either of เป็นเอกพจน์" },
+            { q_th: "The news ___ very shocking.", q_en: "The news ___ very shocking.", options: ["is", "are", "were", "have been"], correct: 0, detail: "News ลงท้ายด้วย s แต่เป็นเอกพจน์" },
+            { q_th: "She did the work by ___.", q_en: "She did the work by ___.", options: ["hers", "her", "herself", "she"], correct: 2, detail: "Reflexive pronoun" },
+            { q_th: "Which one is an uncountable noun?", q_en: "Which one is an uncountable noun?", options: ["Idea", "Information", "Computer", "Student"], correct: 1, detail: "Information นับไม่ได้" },
+            { q_th: "All that glitters ___ not gold.", q_en: "All that glitters ___ not gold.", options: ["is", "are", "were", "has"], correct: 0, detail: "สุภาษิตที่ใช้โครงสร้างเอกพจน์" },
+            { q_th: "Whom did you speak to? The answer is ___.", q_en: "Whom did you speak to? The answer is ___.", options: ["he", "him", "his", "himself"], correct: 1, detail: "Object pronoun" },
+            { q_th: "___ information is correct.", q_en: "___ information is correct.", options: ["These", "Those", "This", "Them"], correct: 2, detail: "Uncountable noun ใช้ this" },
+            { q_th: "Neither of them ___ invited.", q_en: "Neither of them ___ invited.", options: ["was", "were", "are", "have"], correct: 0, detail: "Neither of เป็นเอกพจน์" },
+            { q_th: "The police ___ searching for the thief.", q_en: "The police ___ searching for the thief.", options: ["is", "are", "was", "has"], correct: 1, detail: "Police เป็น Collective noun ที่เป็นพหูพจน์เสมอ" },
+            { q_th: "This car is ___.", q_en: "This car is ___.", options: ["our", "ours", "us", "we"], correct: 1, detail: "Possessive pronoun" },
+            { q_th: "There are ___ people in the room.", q_en: "There are ___ people in the room.", options: ["many", "much", "little", "a lot"], correct: 0, detail: "People นับได้ ใช้ many" },
+            { q_th: "Someone ___ knocking at the door.", q_en: "Someone ___ knocking at the door.", options: ["is", "are", "were", "have"], correct: 0, detail: "Indefinite pronoun เอกพจน์" },
+            { q_th: "The staff ___ voting for the new leader.", q_en: "The staff ___ voting for the new leader.", options: ["is", "are", "has", "was"], correct: 1, detail: "Staff ในบริบทนี้มองเป็นรายบุคคล" }
+        ];
+
+        function toggleLang() { isThai = !isThai; renderQuestions(); }
+        function renderQuestions() {
+            const container = document.getElementById('questions-container');
+            container.innerHTML = '';
+            questions.forEach((q, index) => {
+                const div = document.createElement('div');
+                div.className = 'question';
+                div.innerHTML = `<p>${index + 1}. ${isThai ? q.q_th : q.q_en}</p><div class="options" id="opts${index}"></div><div class="detail" id="det${index}"></div>`;
+                container.appendChild(div);
+                q.options.forEach((opt, i) => {
+                    const btn = document.createElement('button');
+                    btn.innerText = opt;
+                    btn.onclick = () => checkAnswer(index, i);
+                    document.getElementById(`opts${index}`).appendChild(btn);
+                });
+            });
+        }
+        function checkAnswer(qIdx, aIdx) {
+            const isCorrect = aIdx === questions[qIdx].correct;
+            const det = document.getElementById(`det${qIdx}`);
+            det.style.display = 'block';
+            det.style.backgroundColor = isCorrect ? '#d4edda' : '#f8d7da';
+            det.innerText = (isCorrect ? "ถูกต้อง! " : "ผิดพลาด. ") + questions[qIdx].detail;
+        }
+        function submitExam() {
+            alert("ผลคะแนนของคุณถูกส่งไปยัง thee.chinpong@hmail.com เรียบร้อยแล้ว");
+            document.getElementById('summary').innerText = "Exam Submitted Successfully.";
+        }
+        renderQuestions();
+    </script>
+</body>
+</html>
