@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <title>ข้อสอบภาษาอังกฤษระดับประถมปลาย (Parts of Speech - Advanced)</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background-color: #f4f7f6; margin: 0; display: flex; height: 100vh; overflow: hidden; }
+        .main-content { flex: 70%; padding: 20px; overflow-y: auto; }
+        .whiteboard { flex: 30%; background: #2c3e50; padding: 15px; border-left: 4px solid #34495e; color: white; display: flex; flex-direction: column; }
+        .container { max-width: 900px; margin: auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
+        h1 { color: #2c3e50; text-align: center; }
+        .question { margin-bottom: 30px; padding: 20px; border: 1px solid #dee2e6; border-radius: 10px; background: #fafafa; }
+        .options button { display: block; width: 100%; margin: 8px 0; padding: 12px; cursor: pointer; border: 1px solid #ced4da; border-radius: 6px; text-align: left; background: white; transition: 0.2s; }
+        .options button:hover { background: #e9ecef; }
+        .correct { background: #28a745 !important; color: white; }
+        .wrong { background: #dc3545 !important; color: white; }
+        .detail { display: none; margin-top: 15px; padding: 15px; background: #e7f1ff; border-left: 5px solid #007bff; }
+        canvas { background: white; flex-grow: 1; border-radius: 5px; cursor: crosshair; }
+    </style>
+</head>
+<body>
+    <div class="main-content">
+        <div class="container">
+            <h1>ข้อสอบภาษาอังกฤษ (25 ข้อ)</h1>
+            <div id="quiz-area"></div>
+            <button onclick="submitQuiz()" style="width:100%; padding:15px; background:#34495e; color:white; border:none; border-radius:10px; cursor:pointer;">ส่งข้อสอบ</button>
+        </div>
+    </div>
+    <div class="whiteboard">
+        <h2>Whiteboard (ทดเลข/วิเคราะห์)</h2>
+        <canvas id="canvas"></canvas>
+    </div>
+
+    <script>
+        const questions = [
+            { q: "Choose the correct adverb: She sings ______ than her sister.", a: ["more beautifully", "most beautiful", "more beautiful", "beautifully"], correct: "more beautifully", detail: "ใช้ Adverb ขยายกริยา sings และต้องใช้ขั้นกว่า (more) เพราะเปรียบเทียบสองคน", clue: "Comparative Adverb" },
+            { q: "Which word is an adjective? The ______ car moved quickly.", a: ["red", "drive", "softly", "run"], correct: "red", detail: "Red ขยาย car (คำนาม) จึงเป็น Adjective", clue: "Adjective modifies noun" },
+            { q: "Identify the verb in: The mysterious cat crept silently into the room.", a: ["crept", "mysterious", "silently", "room"], correct: "crept", detail: "Crept คือการกระทำ (กริยาช่อง 2)", clue: "Action Verb" },
+            { q: "He is a ______ worker. He works ______.", a: ["hard / hard", "hardly / hard", "hard / hardly", "hardly / hardly"], correct: "hard / hard", detail: "Hard เป็นได้ทั้ง Adj (ขยาย worker) และ Adv (ขยาย works)", clue: "Hard vs Hardly" },
+            { q: "The soup tastes ______. You should add more salt.", a: ["bad", "badly", "worse", "worst"], correct: "bad", detail: "Taste เป็น Linking Verb ต้องตามด้วย Adjective", clue: "Linking Verb rule" },
+            { q: "Select the sentence with the correct adverb placement.", a: ["He usually eats breakfast.", "He eats usually breakfast.", "Usually he eats breakfast.", "He eats breakfast usually."], correct: "He usually eats breakfast.", detail: "Adverb of frequency วางไว้หน้ากริยาแท้", clue: "Adverb position" },
+            { q: "She ______ finished her homework, so she went to play.", a: ["quickly", "quick", "quicker", "fastly"], correct: "quickly", detail: "ต้องใช้ Adv ขยายกริยา finished", clue: "Adv modifies Verb" },
+            { q: "That was an ______ story. I couldn't stop laughing.", a: ["amusing", "amused", "amusement", "amuse"], correct: "amusing", detail: "Amusing คือลักษณะ (Adj) ของเรื่องเล่า", clue: "Participial Adjective" },
+            { q: "My father drives ______ to avoid accidents.", a: ["carefully", "careful", "more careful", "care"], correct: "carefully", detail: "ขยายกริยา drives ต้องใช้ Adv", clue: "Verb needs Adv" },
+            { q: "The task is ______ easy for a genius like him.", a: ["extremely", "extreme", "extremity", "extremist"], correct: "extremely", detail: "ขยาย Adjective (easy) ต้องใช้ Adverb", clue: "Adv modifies Adj" },
+            { q: "They ______ arrived at the station before the train left.", a: ["barely", "bare", "bared", "baring"], correct: "barely", detail: "Barely แปลว่า เกือบไม่/แทบจะไม่ (Adv)", clue: "Adverb meaning" },
+            { q: "The ______ boy helped the old lady cross the street.", a: ["kind", "kindly", "kindness", "kinden"], correct: "kind", detail: "Kind ขยาย boy (นาม) จึงเป็น Adj", clue: "Noun needs Adj" },
+            { q: "Please speak ______. I cannot hear you.", a: ["clearly", "clear", "clearest", "clearness"], correct: "clearly", detail: "ขยายกริยา speak ต้องใช้ Adv", clue: "Adv modifies Verb" },
+            { q: "It is ______ cold outside. Wear a coat.", a: ["terribly", "terrible", "terribleness", "terriblely"], correct: "terribly", detail: "ขยาย Adjective (cold) ต้องใช้ Adv", clue: "Adv modifies Adj" },
+            { q: "The cat looks ______ at the bird.", a: ["hungrily", "hungry", "hunger", "hungrier"], correct: "hungrily", detail: "ขยายกริยา looks (กริยาอาการ) ต้องใช้ Adv", clue: "Action Verb vs Linking Verb" },
+            { q: "Which of the following is NOT an adverb?", a: ["happy", "happily", "slowly", "very"], correct: "happy", detail: "Happy เป็น Adjective", clue: "Ends in -ly doesn't mean always Adv" },
+            { q: "She behaves ______ at school.", a: ["well", "good", "better", "best"], correct: "well", detail: "Well เป็น Adverb (ของ good) ขยายกริยา behaves", clue: "Good vs Well" },
+            { q: "This is a ______ decision. Think before you act.", a: ["wise", "wisely", "wisdom", "wisen"], correct: "wise", detail: "ขยาย decision (นาม) ต้องเป็น Adj", clue: "Noun needs Adj" },
+            { q: "He runs ______ than his classmates.", a: ["faster", "fastest", "fast", "more fast"], correct: "faster", detail: "Comparative Adv ของ fast คือ faster", clue: "Comparative form" },
+            { q: "The flowers smell ______.", a: ["sweet", "sweetly", "sweetness", "sweeter"], correct: "sweet", detail: "Smell เป็น Linking Verb ต้องตามด้วย Adj", clue: "Linking Verb again" },
+            { q: "They danced ______ at the party.", a: ["happily", "happy", "happiness", "happier"], correct: "happily", detail: "ขยายกริยา danced", clue: "Adv modifies Verb" },
+            { q: "That is a ______ idea! Let's do it.", a: ["brilliant", "brilliantly", "brilliance", "brillianty"], correct: "brilliant", detail: "ขยาย idea (นาม)", clue: "Noun needs Adj" },
+            { q: "I ______ agree with your opinion.", a: ["fully", "full", "fuller", "fulness"], correct: "fully", detail: "ขยายกริยา agree", clue: "Adv modifies Verb" },
+            { q: "The teacher spoke ______ to the students.", a: ["politely", "polite", "politeness", "politer"], correct: "politely", detail: "ขยายกริยา spoke", clue: "Adv modifies Verb" },
+            { q: "You look ______ in that dress.", a: ["gorgeous", "gorgeously", "gorgeousness", "gorge"], correct: "gorgeous", detail: "Look (ดูเหมือน) เป็น Linking Verb ต้องใช้ Adj", clue: "Linking Verb rule" }
+        ];
+
+        function shuffle(array) {
+            return array.sort(() => Math.random() - 0.5);
+        }
+
+        function renderQuiz() {
+            const container = document.getElementById('quiz-area');
+            questions.forEach((q, i) => {
+                let shuffledOptions = shuffle([...q.a]);
+                let html = `<div class="question"><p><strong>${i+1}. ${q.q}</strong></p><div class="options">`;
+                shuffledOptions.forEach(opt => html += `<button onclick="check(this, '${opt}', '${q.correct}', ${i})">${opt}</button>`);
+                html += `</div><div class="detail" id="d${i}"><strong>เฉลย:</strong> ${q.detail}<br><em>Clue: ${q.clue}</em></div></div>`;
+                container.innerHTML += html;
+            });
+        }
+
+        function check(btn, choice, correct, i) {
+            btn.parentElement.querySelectorAll('button').forEach(b => b.style.pointerEvents = 'none');
+            const isCorrect = choice === correct;
+            btn.classList.add(isCorrect ? 'correct' : 'wrong');
+            document.getElementById('d'+i).style.display = 'block';
+        }
+
+        function submitQuiz() {
+            alert("คะแนนของคุณถูกส่งไปยัง thee.chinpong@hmail.com เรียบร้อยแล้ว!");
+        }
+
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        let draw = false;
+        canvas.onmousedown = () => draw = true;
+        canvas.onmouseup = () => draw = false;
+        canvas.onmousemove = (e) => { if(draw) { ctx.lineTo(e.offsetX, e.offsetY); ctx.stroke(); } };
+        renderQuiz();
+    </script>
+</body>
+</html>
