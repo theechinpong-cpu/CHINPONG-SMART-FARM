@@ -598,8 +598,9 @@
 
         // Initialize Quiz with Options Shuffled
         function initQuiz() {
+            // [VERIFY]: แก้ไขจาก q.th.map เป็น q.a_th.map และ q.en[idx] เป็น q.a_en[idx] 
             shuffledQuestions = rawQuestions.map((q, originalIndex) => {
-                let options = q.th.map((opt, idx) => ({ text_th: opt, text_en: q.en[idx], originalIdx: idx }));
+                let options = q.a_th.map((opt, idx) => ({ text_th: opt, text_en: q.a_en[idx], originalIdx: idx }));
                 // Shuffle options
                 options = shuffleArray(options);
                 let newCorrect = options.findIndex(opt => opt.originalIdx === q.correct);
@@ -659,7 +660,7 @@
                 if (userAnswers[index] !== null) {
                     detailDisplay = 'block';
                 }
-                html += `<div class="detail-box" id="detail-${index}" style="display: ${detailDisplay};"><strong>เฉลยและวิธีคิด:</strong> ${currentLang === 'th' ? q.th : q.en} (${q.detail})</div>`;
+                html += `<div class="detail-box" id="detail-${index}" style="display: ${detailDisplay};"><strong>เฉลยและวิธีคิด:</strong> ${currentLang === 'th' ? q.th : q.en}</div>`;
 
                 card.innerHTML = html;
                 container.appendChild(card);
@@ -797,7 +798,13 @@
                 initQuiz();
             } else {
                 loadLocalStorage();
-                renderQuiz();
+                // ถ้า LocalStorage จำข้อมูลในตอนที่โค้ดเก่าเกิด Error ไว้ ให้เคลียร์ทิ้งและสร้างใหม่
+                if (!shuffledQuestions || shuffledQuestions.length === 0) {
+                    localStorage.removeItem('exam_phrachomklao_set4');
+                    initQuiz();
+                } else {
+                    renderQuiz();
+                }
             }
         }
     </script>
