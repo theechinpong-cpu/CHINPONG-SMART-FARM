@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบข้อสอบ Interactive - ภาษาอังกฤษ ป.6</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+            --success-color: #2ecc71;
+            --warning-color: #f39c12;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --text-color: #333333;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            position: relative;
+            margin-bottom: 30px;
+        }
+
+        .header-controls {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+        }
+
+        button {
+            background-color: rgba(255, 255, 255, 0.2);
+            border: 1px solid white;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        button:hover {
+            background-color: white;
+            color: var(--primary-color);
+        }
+
+        h1, h2, h3 {
+            margin-top: 0;
+        }
+
+        .summary-box {
+            background-color: var(--card-bg);
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            margin-bottom: 30px;
+        }
+
+        .tip-box {
+            background-color: #e8f8f5;
+            border-left: 5px solid var(--success-color);
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .thought-process-box {
+            background-color: #fef9e7;
+            border-left: 5px solid var(--warning-color);
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .quiz-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .question-card {
+            background-color: var(--card-bg);
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            transition: transform 0.2s;
+        }
+
+        .question-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .question-title {
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: var(--primary-color);
+        }
+
+        .options-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .option-item {
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            background-color: #fafafa;
+        }
+
+        .option-item:hover {
+            border-color: var(--secondary-color);
+            background-color: #f0f8ff;
+        }
+
+        .option-item.correct {
+            border-color: var(--success-color);
+            background-color: #eafaf1;
+            color: #1e8449;
+            font-weight: bold;
+        }
+
+        .option-item.incorrect {
+            border-color: var(--accent-color);
+            background-color: #f5b7b1;
+            color: #922b21;
+        }
+
+        .clue-box {
+            font-size: 0.9rem;
+            color: #7f8c8d;
+            margin-top: 10px;
+            font-style: italic;
+        }
+
+        .detail-box {
+            margin-top: 15px;
+            padding: 15px;
+            background-color: #ebf5fb;
+            border-radius: 8px;
+            border-left: 4px solid var(--secondary-color);
+            display: none;
+        }
+
+        .submit-section {
+            text-align: center;
+            margin-top: 40px;
+            margin-bottom: 40px;
+        }
+
+        #submit-btn {
+            background-color: var(--success-color);
+            color: white;
+            font-size: 1.2rem;
+            padding: 15px 40px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(46, 204, 113, 0.4);
+        }
+
+        #submit-btn:hover {
+            background-color: #27ae60;
+        }
+
+        .result-modal {
+            display: none;
+            background-color: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            .header-controls {
+                position: static;
+                margin-top: 15px;
+                justify-content: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <div class="header-controls">
+            <button id="lang-toggle-btn" onclick="toggleLanguage()">Switch to EN</button>
+            <button onclick="resetExam()">Reset</button>
+        </div>
+        <h1 id="main-title">ข้อสอบวิชาภาษาอังกฤษ ชั้นประถมศึกษาปีที่ 6</h1>
+        <p id="main-subtitle">ชุดที่ 1: การทดสอบความรู้พื้นฐาน ไวยากรณ์ คำศัพท์ และการสนทนา</p>
+    </header>
+
+    <div class="summary-box">
+        <h2 id="summary-heading">สรุปเนื้อหาและองค์ความรู้สำคัญ (Summary & Thought Process)</h2>
+        <p id="summary-p1">
+            การเรียนภาษาอังกฤษระดับประถมศึกษาปีที่ 6 เน้นการบูรณาการทักษะทั้ง 4 ด้าน ได้แก่ การฟัง การพูด การอ่าน และการเขียน โดยมีหัวใจสำคัญอยู่ที่การเข้าใจโครงสร้างทางไวยากรณ์ (Grammar) ที่ใช้งานบ่อยในชีวิตประจำวัน เช่น Tense ต่าง ๆ (Present Simple, Past Simple, Future Simple) การเปรียบเทียบขั้นกว่าและขั้นสุด (Comparatives and Superlatives) รวมถึงสำนวนการสนทนาในสถานการณ์จำลองต่าง ๆ เช่น การทักทาย การแสดงความเสียใจ และการขอร้องอย่างสุภาพ
+        </p>
+        <p id="summary-p2">
+            นอกจากนี้ การสะสมคลังคำศัพท์ (Vocabulary) หมวดหมู่ใกล้ตัว เช่น อาหาร เครื่องแต่งกาย วัน สัปดาห์ เดือน สภาพอากาศ และอาชีพ จะช่วยให้ผู้เรียนสามารถประยุกต์ใช้ภาษาได้อย่างมั่นใจ การทำข้อสอบวัดผลจึงมิใช่เพียงการอาศัยการท่องจำ แต่ต้องอาศัยกระบวนการคิดวิเคราะห์เชิงเหตุผลเพื่อเลือกคำตอบที่เหมาะสมที่สุดในบริบทนั้น ๆ
+        </p>
+        
+        <div class="tip-box">
+            <strong>เทคนิคการจำ (Memory Tricks):</strong> 
+            <span id="tip-text">จำโครงสร้าง Tense ง่าย ๆ ด้วยไทม์ไลน์: Present คือเรื่องจริงปัจจุบัน (Verb ช่อง 1), Past คืออดีตจบไปแล้ว (Verb ช่อง 2 มักมีคำบอกเวลาเช่น yesterday, last), และ Future คืออนาคต (will + Verb 1) ส่วนการเปรียบเทียบจำหลักสั้นเติม -er / -est ยาวเติม more / most เสมอ!</span>
+        </div>
+
+        <div class="thought-process-box">
+            <strong>กระบวนการคิด (Thought Process):</strong> 
+            <span id="thought-text">เมื่อเจอโจทย์สนทนา (Conversation) ให้มองหา "คีย์เวิร์ด" ของประโยคคำถาม เช่น "How much" ต้องตอบเรื่องราคาหรือจำนวนเงิน "Nice to meet you" ต้องตอบรับด้วยประโยคเดียวกันเติม too และเมื่อเจอโจทย์ไวยากรณ์ให้เช็ค Time Marker (คำบอกเวลา) ก่อนทุกครั้งเพื่อเลือกรูปกริยาที่ถูกต้อง</span>
+        </div>
+    </div>
+
+    <div class="quiz-container" id="quiz-container">
+        <!-- Questions will be rendered dynamically by JavaScript -->
+    </div>
+
+    <div class="submit-section">
+        <button id="submit-btn" onclick="submitExam()">ส่งข้อสอบและประเมินผล</button>
+    </div>
+
+    <div class="result-modal" id="result-modal">
+        <h2 id="result-title">ผลการประเมินการทดสอบ</h2>
+        <div id="result-content"></div>
+    </div>
+</div>
+
+<script>
+    let currentLang = 'th';
+    let userAnswers = {};
+    let isSubmitted = false;
+
+    const questions = [
+        {
+            id: 1,
+            q_th: "1. คำใดออกเสียงสระแตกต่างไปจากกลุ่ม",
+            q_en: "1. Which word has a different vowel sound?",
+            a_th: ["out", "group", "count", "blouse"],
+            a_en: ["out", "group", "count", "blouse"],
+            correct: 1,
+            th: "คำว่า group ออกเสียงสระ /u:/ ในขณะที่ out, count และ blouse ออกเสียงสระประสม /aʊ/",
+            en: "The word 'group' has the /u:/ sound, while 'out', 'count', and 'blouse' have the /aʊ/ sound."
+        },
+        {
+            id: 2,
+            q_th: "2. คำใดออกเสียงพยัญชนะท้ายแตกต่างไปจากกลุ่ม",
+            q_en: "2. Which word has a different final consonant sound?",
+            a_th: ["tent", "sent", "lend", "went"],
+            a_en: ["tent", "sent", "lend", "went"],
+            correct: 2,
+            th: "คำว่า lend ลงท้ายด้วยเสียง /d/ ในขณะที่ tent, sent และ went ลงท้ายด้วยเสียง /t/",
+            en: "The word 'lend' ends with the /d/ sound, while 'tent', 'sent', and 'went' end with the /t/ sound."
+        },
+        {
+            id: 3,
+            q_th: "3. คำใดออกเสียงสระแตกต่างไปจากกลุ่ม",
+            q_en: "3. Which word has a different vowel sound?",
+            a_th: ["late", "rain", "train", "again"],
+            a_en: ["late", "rain", "train", "again"],
+            correct: 3,
+            th: "คำว่า again ส่วนใหญ่ลงท้ายออกเสียงสระ /e/ หรือ /ə/ (อะ-เกน) ในขณะที่ late, rain และ train ออกเสียงสระ /eɪ/",
+            en: "The word 'again' usually has the /e/ or /ə/ sound, whereas 'late', 'rain', and 'train' have the /eɪ/ sound."
+        },
+        {
+            id: 4,
+            q_th: "4. คำใดมีความหมายตรงกับภาพป้ายเตือนระวังพื้นเปียก (CAUTION WET FLOOR)",
+            q_en: "4. Which phrase matches the warning sign concept?",
+            image: "4.jpg",
+            a_th: ["Careful.", "Be careful", "Please careful.", "Don't be careful"],
+            a_en: ["Careful.", "Be careful", "Please careful.", "Don't be careful"],
+            correct: 1,
+            th: "สำนวนตักเตือนให้ระวังตัวนิยมใช้รูปประโยคคำสั่งว่า Be careful.",
+            en: "The standard imperative phrase for warning is 'Be careful'."
+        },
+        {
+            id: 5,
+            q_th: "5. คำใดมีความหมายตรงกับภาพยานพาหนะรถไฟลอยฟ้า",
+            q_en: "5. Which word matches the elevated train?",
+            image: "5.jpg",
+            a_th: ["plane", "train", "skytrain", "subway"],
+            a_en: ["plane", "train", "skytrain", "subway"],
+            correct: 2,
+            th: "รถไฟลอยฟ้าเรียกว่า skytrain ตรงตามคำศัพท์คมนาคมสมัยใหม่",
+            en: "An elevated train is called a 'skytrain'."
+        },
+        {
+            id: 6,
+            q_th: "6. ________ is my favorite food. (พิจารณาจากตัวเลือกอาหาร)",
+            q_en: "6. ________ is my favorite food.",
+            a_th: ["Chicken", "An elephant", "A wardrobe", "A blue dress"],
+            a_en: ["Chicken", "An elephant", "A wardrobe", "A blue dress"],
+            correct: 0,
+            th: "Chicken (ไก่) เป็นประเภทอาหาร (food) ในขณะที่ตัวเลือกอื่นเป็นสัตว์หรือเสื้อผ้า",
+            en: "Chicken is food, whereas the other options are an animal, a piece of furniture, and clothing."
+        },
+        {
+            id: 7,
+            q_th: "7. ________ is for taking photos.",
+            q_en: "7. ________ is for taking photos.",
+            a_th: ["A radio", "A record", "A camera", "A computer"],
+            a_en: ["A radio", "A record", "A camera", "A computer"],
+            correct: 2,
+            th: "กล้องถ่ายรูปภาษาอังกฤษคือ camera ใช้สำหรับถ่ายภาพ",
+            en: "A camera is specifically used for taking photos."
+        },
+        {
+            id: 8,
+            q_th: "8. Oranges, apples, pineapples are ________",
+            q_en: "8. Oranges, apples, pineapples are ________",
+            a_th: ["food", "fruits", "clothes", "vegetables"],
+            a_en: ["food", "fruits", "clothes", "vegetables"],
+            correct: 1,
+            th: "ส้ม แอปเปิ้ล สับปะรด จัดอยู่ในหมวดหมู่ผลไม้ (fruits)",
+            en: "Oranges, apples, and pineapples belong to the category of fruits."
+        },
+        {
+            id: 9,
+            q_th: "9. คำใดมีความหมายใกล้เคียงกับคำว่า afraid (กลัว)",
+            q_en: "9. Which word is closest in meaning to 'afraid'?",
+            a_th: ["sad", "tired", "sorry", "scared"],
+            a_en: ["sad", "tired", "sorry", "scared"],
+            correct: 3,
+            th: "afraid และ scared แปลว่ากลัว เหมือนกัน",
+            en: "'Afraid' and 'scared' both mean feeling fear or apprehension."
+        },
+        {
+            id: 10,
+            q_th: "10. คำใดตรงข้ามกับคำว่า bored (เบื่อหน่าย)",
+            q_en: "10. Which word is the opposite of 'bored'?",
+            a_th: ["excited", "pleased", "surprised", "interested"],
+            a_en: ["excited", "pleased", "surprised", "interested"],
+            correct: 0,
+            th: "bored แปลว่าเบื่อ ตรงข้ามกับ excited ที่แปลว่าตื่นเต้นเร้าใจ",
+            en: "'Bored' means feeling weary and restless through lack of interest, while 'excited' is its direct emotional opposite."
+        },
+        {
+            id: 11,
+            q_th: "11. What is furniture?",
+            q_en: "11. What is furniture?",
+            a_th: ["sofa", "paper", "necklace", "computer"],
+            a_en: ["sofa", "paper", "necklace", "computer"],
+            correct: 0,
+            th: "โซฟา (sofa) จัดเป็นเฟอร์นิเจอร์แต่งบ้าน",
+            en: "A sofa is a piece of furniture."
+        },
+        {
+            id: 12,
+            q_th: "12. Which one is a tool?",
+            q_en: "12. Which one is a tool?",
+            a_th: ["pot", "spoon", "hammer", "pencil case"],
+            a_en: ["pot", "spoon", "hammer", "pencil case"],
+            correct: 2,
+            th: "ค้อน (hammer) จัดเป็นเครื่องมือช่าง (tool)",
+            en: "A hammer is classified as a tool."
+        },
+        {
+            id: 13,
+            q_th: "13. What is the day before Friday?",
+            q_en: "13. What is the day before Friday?",
+            a_th: ["Sunday", "Saturday", "Thursday", "Wednesday"],
+            a_en: ["Sunday", "Saturday", "Thursday", "Wednesday"],
+            correct: 2,
+            th: "วันก่อนหน้าวันศุกร์ (Friday) คือวันพฤหัสบดี (Thursday)",
+            en: "The day before Friday is Thursday."
+        },
+        {
+            id: 14,
+            q_th: "14. We are very happy today. We ________",
+            q_en: "14. We are very happy today. We ________",
+            a_th: ["cry", "sleep", "smile", "bother"],
+            a_en: ["cry", "sleep", "smile", "bother"],
+            correct: 2,
+            th: "มีความสุขมากจึงแสดงอาการยิ้ม (smile)",
+            en: "When people are very happy, they smile."
+        },
+        {
+            id: 15,
+            q_th: "15. A: I failed my English test. / B: Oh, ________",
+            q_en: "15. A: I failed my English test. / B: Oh, ________",
+            a_th: ["Thank you", "That's good", "Congratulations", "I am sorry to hear that"],
+            a_en: ["Thank you", "That's good", "Congratulations", "I am sorry to hear that"],
+            correct: 3,
+            th: "เมื่อเพื่อนสอบตก ควรแสดงความเห็นใจด้วยประโยค I am sorry to hear that",
+            en: "When someone shares bad news, expressing sympathy with 'I am sorry to hear that' is appropriate."
+        },
+        {
+            id: 16,
+            q_th: "16. A: Give me the book, please? / B: ________",
+            q_en: "16. A: Give me the book, please? / B: ________",
+            a_th: ["It's me", "Here it is", "You are here", "Here you are"],
+            a_en: ["It's me", "Here it is", "You are here", "Here you are"],
+            correct: 3,
+            th: "เมื่อมีคนขอสิ่งของและเราส่งให้ จะพูดว่า Here you are.",
+            en: "When handing something to someone, we say 'Here you are'."
+        },
+        {
+            id: 17,
+            q_th: "17. A: Nice to meet you. / B: ________",
+            q_en: "17. A: Nice to meet you. / B: ________",
+            a_th: ["Goodbye", "I'm OK.", "See you soon", "Nice to meet you, too"],
+            a_en: ["Goodbye", "I'm OK.", "See you soon", "Nice to meet you, too"],
+            correct: 3,
+            th: "คำทักทาย Nice to meet you ต้องตอบรับด้วย Nice to meet you, too",
+            en: "The standard response to 'Nice to meet you' is 'Nice to meet you, too'."
+        },
+        {
+            id: 18,
+            q_th: "18. A: Sorry. I'm late. / B: ________",
+            q_en: "18. A: Sorry. I'm late. / B: ________",
+            a_th: ["Sure", "All right", "Of course", "That's OK"],
+            a_en: ["Sure", "All right", "Of course", "That's OK"],
+            correct: 3,
+            th: "เมื่อมีคนกล่าวคำขอโทษ (Sorry) เราสามารถตอบรับเพื่อให้อภัยด้วย That's OK",
+            en: "To accept an apology, 'That's OK' is the polite response."
+        },
+        {
+            id: 19,
+            q_th: "19. A: How much is it? / B: It's ________",
+            q_en: "19. A: How much is it? / B: It's ________",
+            a_th: ["delicious", "very cheap", "not expensive", "25 baht, please."],
+            a_en: ["delicious", "very cheap", "not expensive", "25 baht, please."],
+            correct: 3,
+            th: "คำถาม How much ถามราคา คำตอบต้องระบุราคาเป็นตัวเงิน เช่น 25 baht",
+            en: "'How much' asks for a price, so the answer must state a monetary value."
+        },
+        {
+            id: 20,
+            q_th: "20. A: 086 752 4278. / B: Hello. Can I Speak to Ann, please? / A: ________ / B: Thanks.",
+            q_en: "20. A: 086 752 4278. / B: Hello. Can I Speak to Ann, please? / A: ________ / B: Thanks.",
+            a_th: ["Pardon?", "I'm sorry.", "Please speak up.", "Wait a moment, please."],
+            a_en: ["Pardon?", "I'm sorry.", "Please speak up.", "Wait a moment, please."],
+            correct: 3,
+            th: "สถานการณ์ทางโทรศัพท์เมื่อมีคนขอสายบุคคลอื่น ผู้รับสายจะบอกให้รอสักครู่ด้วย Wait a moment, please.",
+            en: "In phone conversations, when someone asks to speak to another person, you ask them to wait using 'Wait a moment, please'."
+        },
+        {
+            id: 21,
+            q_th: "21. Sam is my ________ friend.",
+            q_en: "21. Sam is my ________ friend.",
+            a_th: ["best", "well", "most", "better than"],
+            a_en: ["best", "well", "most", "better than"],
+            correct: 0,
+            th: "ใช้คำคุณศัพท์ขั้นสุด best เพื่อบอกว่าเป็นเพื่อนสนิทที่สุด",
+            en: "Use the superlative 'best' to indicate the closest friend."
+        },
+        {
+            id: 22,
+            q_th: "22. Why didn't your brother come to school yesterday?",
+            q_en: "22. Why didn't your brother come to school yesterday?",
+            a_th: ["No, he didn't.", "Yes, he was sick.", "Because I was sick.", "Because he was sick."],
+            a_en: ["No, he didn't.", "Yes, he was sick.", "Because I was sick.", "Because he was sick."],
+            correct: 3,
+            th: "คำถามขึ้นต้นด้วย Why ต้องตอบด้วย Because และประธานในคำถามคือ your brother (he) สอดคล้องกับ Because he was sick.",
+            en: "A 'Why' question requires a 'Because' answer, and matching the subject 'your brother' yields 'he'."
+        },
+        {
+            id: 23,
+            q_th: "23. I ________ Wipawee a letter yesterday afternoon.",
+            q_en: "23. I ________ Wipawee a letter yesterday afternoon.",
+            a_th: ["sent", "will send", "am sending", "am going to send"],
+            a_en: ["sent", "will send", "am sending", "am going to send"],
+            correct: 0,
+            th: "มีคำบอกเวลา yesterday afternoon เป็นอดีต จึงต้องใช้ Verb ช่อง 2 คือ sent",
+            en: "The time marker 'yesterday afternoon' indicates past tense, requiring the past form 'sent'."
+        },
+        {
+            id: 24,
+            q_th: "24. What ________ his mother ________ last night?",
+            q_en: "24. What ________ his mother ________ last night?",
+            a_th: ["did, do", "did, did", "does, do", "did, does"],
+            a_en: ["did, do", "did, did", "does, do", "did, does"],
+            correct: 0,
+            th: "เหตุการณ์เกิดขึ้นเมื่อ last night (อดีต) โครงสร้างคำถามคือ did + ประธาน + V.1 (do)",
+            en: "Past tense question structure uses 'did' as the auxiliary and the base verb 'do'."
+        },
+        {
+            id: 25,
+            q_th: "25. A: The carpenters ________ the chairs yesterday. / B: Err... They made them 3 days ago.",
+            q_en: "25. A: The carpenters ________ the chairs yesterday. / B: Err... They made them 3 days ago.",
+            a_th: ["don't make", "didn't make", "wasn't make", "doesn't make"],
+            a_en: ["don't make", "didn't make", "wasn't make", "doesn't make"],
+            correct: 1,
+            th: "เหตุการณ์ในอดีตปฏิเสธใช้ didn't + V.1",
+            en: "Past tense negation uses 'didn't' followed by the base verb."
+        }
+    ];
+
+    function renderQuiz() {
+        const container = document.getElementById('quiz-container');
+        container.innerHTML = '';
+
+        questions.forEach((q, index) => {
+            const card = document.createElement('div');
+            card.className = 'question-card';
+            
+            const qText = currentLang === 'th' ? q.q_th : q.q_en;
+            const options = currentLang === 'th' ? q.a_th : q.a_en;
+
+            let imageHtml = '';
+            if (q.image) {
+                imageHtml = `
+                    <div style="border: 1px dashed #ccc; padding: 10px; text-align: center; margin: 10px 0; background: #fafafa; border-radius: 6px;">
+                        <img src="${q.image}" alt="Question ${q.id} Image" style="max-width: 100%; height: auto; max-height: 150px; display: block; margin: 0 auto;" onerror="this.onerror=null;this.src='https://placehold.co/300x150/eee/333?text=Image+${q.image}';">
+                        <span style="font-size: 0.85em; color: #666; margin-top: 5px; display: block;">[ ไฟล์ภาพอ้างอิง: ${q.image} ]</span>
+                    </div>
+                `;
+            }
+
+            let optionsHtml = '';
+            options.forEach((opt, optIndex) => {
+                let extraClass = '';
+                if (userAnswers[q.id] !== undefined) {
+                    if (optIndex === q.correct) {
+                        extraClass = 'correct';
+                    } else if (userAnswers[q.id] === optIndex) {
+                        extraClass = 'incorrect';
+                    }
+                }
+
+                optionsHtml += `
+                    <div class="option-item ${extraClass}" onclick="selectOption(${q.id}, ${optIndex})">
+                        ${String.fromCharCode(65 + optIndex)}. ${opt}
+                    </div>
+                `;
+            });
+
+            const detailText = currentLang === 'th' ? q.th : q.en;
+            const detailDisplay = userAnswers[q.id] !== undefined ? 'block' : 'none';
+
+            card.innerHTML = `
+                <div class="question-title">${qText}</div>
+                ${imageHtml}
+                <div class="options-list">${optionsHtml}</div>
+                <div class="clue-box">Tutor's Secret Tip: วิเคราะห์คำสำคัญและโครงสร้างไวยากรณ์ในโจทย์ให้รอบคอบก่อนตัดสินใจ</div>
+                <div class="detail-box" id="detail-${q.id}" style="display: ${detailDisplay};">
+                    <strong>เฉลยและคำอธิบาย:</strong> ${detailText}
+                </div>
+            `;
+            container.appendChild(card);
+        });
+    }
+
+    function selectOption(questionId, optionIndex) {
+        if (isSubmitted) return;
+        userAnswers[questionId] = optionIndex;
+        localStorage.setItem('userAnswers', JSON.stringify(userAnswers));
+        renderQuiz();
+    }
+
+    function toggleLanguage() {
+        currentLang = currentLang === 'th' ? 'en' : 'th';
+        document.getElementById('lang-toggle-btn').innerText = currentLang === 'th' ? 'Switch to EN' : 'เปลี่ยนเป็นไทย';
+        document.getElementById('main-title').innerText = currentLang === 'th' ? 'ข้อสอบวิชาภาษาอังกฤษ ชั้นประถมศึกษาปีที่ 6' : 'Grade 6 English Examination';
+        document.getElementById('main-subtitle').innerText = currentLang === 'th' ? 'ชุดที่ 1: การทดสอบความรู้พื้นฐาน ไวยากรณ์ คำศัพท์ และการสนทนา' : 'Set 1: Basic Knowledge, Grammar, Vocabulary, and Conversation';
+        document.getElementById('summary-heading').innerText = currentLang === 'th' ? 'สรุปเนื้อหาและองค์ความรู้สำคัญ (Summary & Thought Process)' : 'Summary & Thought Process';
+        document.getElementById('submit-btn').innerText = currentLang === 'th' ? 'ส่งข้อสอบและประเมินผล' : 'Submit Exam & Evaluate';
+        renderQuiz();
+    }
+
+    function resetExam() {
+        userAnswers = {};
+        isSubmitted = false;
+        localStorage.removeItem('userAnswers');
+        document.getElementById('result-modal').style.display = 'none';
+        renderQuiz();
+    }
+
+    function submitExam() {
+        isSubmitted = true;
+        let score = 0;
+        questions.forEach(q => {
+            if (userAnswers[q.id] === q.correct) {
+                score++;
+            }
+        });
+
+        const modal = document.getElementById('result-modal');
+        const content = document.getElementById('result-content');
+        
+        let weakAreas = [];
+        if (score < 15) {
+            weakAreas.push(currentLang === 'th' ? 'โครงสร้างไวยากรณ์ (Grammar และ Tense ในอดีต)' : 'Grammar & Past Tenses');
+            weakAreas.push(currentLang === 'th' ? 'สำนวนการสนทนาในสถานการณ์ต่างๆ' : 'Conversational Expressions');
+        } else {
+            weakAreas.push(currentLang === 'th' ? 'มีความเข้าใจในระดับดีเยี่ยม ควรทบทวนคำศัพท์เพิ่มเติม' : 'Excellent understanding, review advanced vocabulary');
+        }
+
+        content.innerHTML = `
+            <h3>คะแนนรวมที่คุณได้: ${score} / ${questions.length} คะแนน</h3>
+            <p><strong>วิเคราะห์จุดที่ต้องพัฒนา (Weak Areas):</strong> ${weakAreas.join(', ')}</p>
+            <p style="color: green; font-weight: bold;">[จำลองระบบ] ส่งข้อมูลผลการสอบไปที่ thee.chinpong@hmail.com เรียบร้อยแล้ว</p>
+        `;
+        modal.style.display = 'block';
+        alert(`ส่งผลการสอบสำเร็จ! คะแนนของคุณคือ ${score}/${questions.length} ระบบได้จัดส่งข้อมูลไปที่ thee.chinpong@hmail.com เรียบร้อยแล้ว`);
+        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+    }
+
+    window.onload = function() {
+        const savedAnswers = localStorage.getItem('userAnswers');
+        if (savedAnswers) {
+            userAnswers = JSON.parse(savedAnswers);
+        }
+        renderQuiz();
+    };
+</script>
+
+เขียนโดย พระจอมเกล้าติวเตอร์
+</body>
+</html>
