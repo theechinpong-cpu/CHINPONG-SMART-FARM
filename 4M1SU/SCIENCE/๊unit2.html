@@ -1,0 +1,1077 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบคลังข้อสอบวิชาวิทยาศาสตร์ ม.1 - พระจอมเกล้าติวเตอร์</title>
+    <style>
+        :root {
+            --primary-color: #2e7d32;
+            --primary-light: #e8f5e9;
+            --secondary-color: #388e3c;
+            --accent-color: #ff9800;
+            --bg-color: #f4f6f8;
+            --card-bg: #ffffff;
+            --text-color: #333333;
+            --border-color: #d0d7de;
+            --correct-color: #2e7d32;
+            --incorrect-color: #d32f2f;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            position: relative;
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            margin-bottom: 5px;
+        }
+
+        .subtitle {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+
+        .lang-btn {
+            background: white;
+            color: var(--primary-color);
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        .lang-btn:hover {
+            background: var(--primary-light);
+            transform: translateY(-2px);
+        }
+
+        .summary-box {
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+
+        .summary-box h2 {
+            color: var(--primary-color);
+            margin-bottom: 15px;
+            font-size: 1.4rem;
+            border-bottom: 2px solid var(--primary-light);
+            padding-bottom: 8px;
+        }
+
+        .summary-box p, .summary-box li {
+            margin-bottom: 12px;
+            text-align: justify;
+        }
+
+        .summary-box ul, .summary-box ol {
+            padding-left: 20px;
+            margin-bottom: 15px;
+        }
+
+        .highlight-box {
+            background: var(--primary-light);
+            border-left: 5px solid var(--primary-color);
+            padding: 15px 20px;
+            border-radius: 0 8px 8px 0;
+            margin: 20px 0;
+        }
+
+        .highlight-box h3 {
+            color: var(--primary-color);
+            margin-bottom: 8px;
+            font-size: 1.1rem;
+        }
+
+        .quiz-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .question-card {
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            border: 1px solid var(--border-color);
+            transition: transform 0.2s;
+        }
+
+        .question-card:hover {
+            box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+        }
+
+        .question-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: var(--text-color);
+        }
+
+        .options-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .option-btn {
+            background: #f8f9fa;
+            border: 1.5px solid var(--border-color);
+            padding: 12px 18px;
+            border-radius: 8px;
+            text-align: left;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.2s ease;
+            width: 100%;
+        }
+
+        .option-btn:hover:not(:disabled) {
+            background: var(--primary-light);
+            border-color: var(--secondary-color);
+        }
+
+        .option-btn.correct {
+            background: #d4edda !important;
+            border-color: var(--correct-color) !important;
+            color: #155724;
+            font-weight: 600;
+        }
+
+        .option-btn.incorrect {
+            background: #f8d7da !important;
+            border-color: var(--incorrect-color) !important;
+            color: #721c24;
+        }
+
+        .option-btn:disabled {
+            cursor: default;
+        }
+
+        .clue-box {
+            background: #fff8e1;
+            border-left: 4px solid var(--accent-color);
+            padding: 10px 15px;
+            font-size: 0.9rem;
+            border-radius: 0 6px 6px 0;
+            margin-top: 12px;
+            display: none;
+        }
+
+        .clue-box.show {
+            display: block;
+        }
+
+        .detail-box {
+            background: #e8f4fd;
+            border-left: 4px solid #1976d2;
+            padding: 12px 15px;
+            font-size: 0.95rem;
+            border-radius: 0 6px 6px 0;
+            margin-top: 12px;
+            display: none;
+        }
+
+        .detail-box.show {
+            display: block;
+        }
+
+        .submit-section {
+            margin-top: 30px;
+            text-align: center;
+        }
+
+        .submit-btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 30px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(46, 125, 50, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .submit-btn:hover {
+            background: var(--secondary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(46, 125, 50, 0.4);
+        }
+
+        .results-modal {
+            display: none;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            margin-top: 30px;
+            text-align: center;
+            border: 2px solid var(--primary-color);
+        }
+
+        .results-modal.show {
+            display: block;
+        }
+
+        .results-modal h2 {
+            color: var(--primary-color);
+            margin-bottom: 15px;
+        }
+
+        .score-display {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--secondary-color);
+            margin: 15px 0;
+        }
+
+        .analysis-box {
+            text-align: left;
+            margin-top: 20px;
+            background: #fdfdfd;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        .footer-credit {
+            text-align: center;
+            margin-top: 40px;
+            font-size: 0.9rem;
+            color: #666;
+            padding: 20px 0;
+            border-top: 1px solid var(--border-color);
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+            header {
+                padding: 20px;
+            }
+            h1 {
+                font-size: 1.4rem;
+            }
+            .question-card {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-top">
+                <div>
+                    <h1 id="main-title">คลังข้อสอบวิชาวิทยาศาสตร์ ม.1 (ระดับยาก)</h1>
+                    <div class="subtitle" id="main-subtitle">ระบบทดสอบความรู้ชีววิทยาพืชและการสังเคราะห์ด้วยแสง</div>
+                </div>
+                <button class="lang-btn" id="langToggleBtn" onclick="toggleLanguage()">English / ไทย</button>
+            </div>
+        </header>
+
+        <section class="summary-box">
+            <h2 id="sum-title-1">บทที่ 1 การขยายพันธุ์พืช</h2>
+            <p id="sum-desc-1">การขยายพันธุ์พืชเป็นกระบวนการเพิ่มจำนวนต้นพืชให้มีปริมาณมากขึ้น โดยยังคงลักษณะทางพันธุกรรมที่ดีเอาไว้ การขยายพันธุ์มีหลายวิธี ได้แก่ การตอนกิ่ง (Girdling and Layering) ซึ่งทำให้กิ่งพืชเกิดรากขณะที่ยังติดอยู่กับต้นแม่ โดยการควั่นกิ่ง ลอกเปลือกออก แล้วหุ้มด้วยวัสดุชุ่มชื้น การปักชำ (Cutting) คือการตัดส่วนของลำต้น กิ่ง หรือใบ ไปปักลงในวัสดุเพาะชำเพื่อให้งอกรากและยอดใหม่ และการเพาะเลี้ยงเนื้อเยื่อ (Tissue Culture) ซึ่งเป็นการนำเนื้อเยื่อหรือเซลล์พืชส่วนน้อยมาเลี้ยงในอาหารสังเคราะห์ภายใต้สภาพปลอดเชื้อ เพื่อให้เจริญเติบโตเป็นต้นพืชจำนวนมากในเวลาอันรวดเร็วและมีลักษณะพันธุกรรมเหมือนต้นแม่ทุกประการ</p>
+            
+            <div class="highlight-box">
+                <h3 id="tip-title-1">เทคนิคการจำ & กระบวนการคิด (บทที่ 1)</h3>
+                <p id="tip-desc-1">จำแนกตามโครงสร้าง: ตอนกิ่งใช้กับกิ่งที่ยังติดต้นแม่เพื่อสร้างรากจากแคมเบียมที่เหลืออยู่, ปักชำตัดขาดจากต้นแม่ อาศัยฮอร์โมนพืช (ออกซิน) กระตุ้นการเกิดรากที่แผลตัด, เพาะเลี้ยงเนื้อเยื่อใช้หลักการโทติโพเทนซี (Totipotency) ของเซลล์พืชที่สามารถพัฒนาเป็นต้นใหม่ได้ครบถ้วนในสภาพปลอดเชื้อ</p>
+            </div>
+
+            <h2 id="sum-title-2">บทที่ 2 การสังเคราะห์ด้วยแสง</h2>
+            <p id="sum-desc-2">กระบวนการสังเคราะห์ด้วยแสง (Photosynthesis) เป็นกระบวนการที่สำคัญที่สุดกระบวนการหนึ่งบนโลก ซึ่งเกิดขึ้นในคลอโรพลาสต์ (Chloroplast) ที่มีสารคลอโรฟิลล์สีเขียวทำหน้าที่ดูดกลืนพลังงานแสงจากดวงอาทิตย์ เพื่อนำมาใช้ขับเคลื่อนปฏิกิริยาเคมีภายในเซลล์พืช ปัจจัยที่จำเป็นประกอบด้วยแสงสว่าง คลอโรฟิลล์ แก๊สคาร์บอนไดออกไซด์ที่รับเข้ามาทางปากใบ (Stomata) และน้ำที่ดูดซึมขึ้นมาจากราก ผลผลิตที่ได้คือน้ำตาลกลูโคสสำหรับใช้เป็นพลังงานและสะสมในรูปของแป้ง พร้อมด้วยแก๊สออกซิเจนที่ปลดปล่อยสู่บรรยากาศเพื่อรักษาสมดุลของระบบนิเวศ</p>
+
+            <div class="highlight-box">
+                <h3 id="tip-title-2">เทคนิคการจำ & กระบวนการคิด (บทที่ 2)</h3>
+                <p id="tip-desc-2">สมการเคมีคิดง่ายๆ: 6CO₂ + 6H₂O + พลังงานแสง -> C₆H₁₂O₆ + 6O₂. จำว่าพืช "กิน" คาร์บอนไดออกไซด์ น้ำ และแสง แล้ว "คาย" ออกซิเจนออกมา พร้อมสร้างแป้งเก็บไว้ทดสอบด้วยสารละลายไอโอดีน (เปลี่ยนจากสีน้ำตาลเป็นสีน้ำเงินเข้ม)</p>
+            </div>
+
+            <h2 id="sum-title-3">บทที่ 3 การลำเลียงน้ำ ธาตุอาหาร และอาหารของพืช</h2>
+            <p id="sum-desc-3">พืชจำเป็นต้องมีการลำเลียงน้ำ แร่ธาตุ และสารอาหารไปยังส่วนต่างๆ ระบบลำเลียงในพืชชั้นสูงประกอบด้วยท่อลำเลียงหลัก 2 ชนิด ได้แก่ ท่อลำเลียงน้ำหรือไซเลม (Xylem) ทำหน้าที่ลำเลียงน้ำและแร่ธาตุจากรากขึ้นสู่ยอดโดยอาศัยแรงดึงจากการคายน้ำ (Transpiration Pull) และท่อลำเลียงอาหารหรือโฟลเอ็ม (Phloem) ทำหน้าที่ลำเลียงน้ำตาลที่สังเคราะห์จากใบไปยังส่วนต่างๆ ของพืช นอกจากนี้พืชยังต้องการธาตุอาหารหลักในปริมาณมาก ได้แก่ ไนโตรเจน (N) ฟอสฟอรัส (P) และโพแทสเซียม (K) เพื่อเสริมสร้างการเจริญเติบโต</p>
+
+            <div class="highlight-box">
+                <h3 id="tip-title-3">เทคนิคการจำ & กระบวนการคิด (บทที่ 3)</h3>
+                <p id="tip-desc-3">วิธีจำง่ายๆ: "Xylem ขึ้น Phloem ลงทั่วทิศ" (ไซเลมลำเลียงน้ำขึ้นด้านบนทิศทางเดียวจากรากสู่ใบ โฟลเอ็มลำเลียงอาหารไปได้ทั้งขึ้นและลงตามความต้องการของเซลล์พืช) และจำธาตุอาหารหลักด้วยรหัสย่อ N-P-K (ไนโตรเจน-ใบ, ฟอสฟอรัส-ดอกผล, โพแทสเซียม-รากและลำต้น)</p>
+            </div>
+        </section>
+
+        <div class="quiz-container" id="quizContainer">
+            <!-- Questions will be dynamically loaded via JavaScript -->
+        </div>
+
+        <div class="submit-section">
+            <button class="submit-btn" id="submitBtn" onclick="submitExam()">ส่งข้อสอบและตรวจผล</button>
+        </div>
+
+        <div class="results-modal" id="resultsModal">
+            <h2 id="res-heading">ผลการทดสอบของคุณ</h2>
+            <div class="score-display" id="scoreDisplay">0 / 25</div>
+            <p id="res-message" style="margin-bottom: 15px; font-weight: 500;"></p>
+            <div class="analysis-box" id="analysisBox">
+                <!-- Analysis content here -->
+            </div>
+        </div>
+
+        <div class="footer-credit">
+            เขียนโดย พระจอมเกล้าติวเตอร์
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            {
+                id: 1,
+                q_th: "ข้อใดคือหลักการทางสรีรวิทยาที่สำคัญที่สุดในการตอนกิ่งพืชเพื่อให้เกิดรากใหม่?",
+                q_en: "What is the most crucial physiological principle in plant layering to induce new root growth?",
+                a_th: [
+                    "การตัดท่อโฟลเอ็มเพื่อสะสมอาหารและฮอร์โมนกระตุ้นรากบริเวณรอยควั่น",
+                    "การตัดท่อไซเลมเพื่อเพิ่มแรงดันน้ำบริเวณกิ่งตอน",
+                    "การกระตุ้นให้เซลล์ใบบริเวณใกล้เคียงสังเคราะห์แสงเพิ่มขึ้น",
+                    "การเพิ่มปริมาณคลอโรฟิลล์เพื่อให้กิ่งตอนดูดซับแสงได้ดีขึ้น"
+                ],
+                a_en: [
+                    "Cutting the phloem to accumulate food and rooting hormones at the girdled area",
+                    "Cutting the xylem to increase water pressure around the layered branch",
+                    "Stimulating adjacent leaves to increase photosynthesis",
+                    "Increasing chlorophyll to help the layered branch absorb more light"
+                ],
+                correct: 0,
+                th: "การควั่นกิ่งเป็นการลอกเปลือกออกซึ่งรวมถึงท่อโฟลเอ็ม ทำให้สารอาหารและออกซิน (ฮอร์โมนกระตุ้นราก) ที่ลำเลียงลงมาจากใบมาสะสมอยู่บริเวณขอบบนของรอยควั่น กระตุ้นให้เกิดรากใหม่",
+                en: "Girdling removes the phloem, causing carbohydrates and auxins synthesized in the leaves to accumulate above the cut, stimulating root formation."
+            },
+            {
+                id: 2,
+                q_th: "ในการเพาะเลี้ยงเนื้อเยื่อพืช เหตุใดจึงต้องนำชิ้นส่วนพืช (Explant) ไปผ่านกระบวนการฟอกฆ่าเชื้อ (Surface Sterilization) ก่อนนำมาเลี้ยงในอาหารสังเคราะห์?",
+                q_en: "In plant tissue culture, why must explants undergo surface sterilization before being cultured in nutrient media?",
+                a_th: [
+                    "เพื่อกำจัดจุลินทรีย์ปนเปื้อน เช่น เชื้อราและแบคทีเรียที่แย่งอาหารและทำลายเนื้อเยื่อพืช",
+                    "เพื่อกระตุ้นให้เซลล์พืชเกิดการแบ่งตัวเร็วกว่าปกติถึง 10 เท่า",
+                    "เพื่อละลายผนังเซลล์ของพืชให้ดูดซึมสารอาหารได้ง่ายขึ้น",
+                    "เพื่อปรับเปลี่ยนโครงสร้างพันธุกรรมของชิ้นส่วนพืชให้ทนทานต่อโรค"
+                ],
+                a_en: [
+                    "To eliminate contaminating microorganisms like fungi and bacteria that compete for nutrients and destroy plant tissue",
+                    "To stimulate plant cells to divide 10 times faster than normal",
+                    "To dissolve the plant cell wall for easier nutrient absorption",
+                    "To modify the genetic structure of the plant part to be disease-resistant"
+                ],
+                correct: 0,
+                th: "สภาพอาหารสังเคราะห์ที่มีน้ำตาลและวิตามินอุดมสมบูรณ์เป็นแหล่งอาหารชั้นดีของเชื้อโรค หากไม่ฆ่าเชื้อผิวพืชให้หมด เชื้อราและแบคทีเรียจะเจริญเติบโตเร็วกว่าพืชและทำลายเนื้อเยื่อทั้งหมด",
+                en: "Nutrient media rich in sugars and vitamins are ideal for microbial growth. Without sterilization, microbes outgrow and destroy the plant tissue."
+            },
+            {
+                id: 3,
+                q_th: "สมบัติข้อใดของเซลล์พืชที่ทำให้กระบวนการเพาะเลี้ยงเนื้อเยื่อประสบความสำเร็จและได้ต้นพืชที่มีพันธุกรรมเหมือนต้นแม่ทุกประการ?",
+                q_en: "Which plant cell property enables successful tissue culture, producing plants genetically identical to the parent?",
+                a_th: [
+                    "โทติโพเทนซี (Totipotency) ซึ่งเซลล์พืชที่เจริญเต็มที่แล้วสามารถกลับมาแบ่งตัวและพัฒนาเป็นอวัยวะหรือต้นใหม่ได้ครบถ้วน",
+                    "การมีผนังเซลล์ชั้นนอกสุดที่แข็งแรงและยืดหยุ่นสูง",
+                    "ความสามารถในการสังเคราะห์ด้วยแสงได้ในที่มืดสนิท",
+                    "การมีคอร์โลพลาสต์จำนวนมากในทุกเซลล์ของพืช"
+                ],
+                a_en: [
+                    "Totipotency, where fully differentiated plant cells can dedifferentiate and regenerate a whole plant",
+                    "Having a strong and highly flexible outermost cell wall",
+                    "The ability to photosynthesize in absolute darkness",
+                    "Having numerous chloroplasts in every plant cell"
+                ],
+                correct: 0,
+                th: "Totipotency คือศักยภาพรอบด้านของเซลล์พืชที่ยังมียีนครบถ้วน ทำให้เซลล์เนื้อเยื่อเจริญเติบโตย้อนกลับมาพัฒนาเป็นแคลลัสและงอกเป็นต้นใหม่ได้",
+                en: "Totipotency refers to the genetic potential of a plant cell to develop into a complete organism, retaining all genetic information."
+            },
+            {
+                id: 4,
+                q_th: "กระบวนการสังเคราะห์ด้วยแสงของพืชเกิดขึ้นที่ส่วนประกอบใดของเซลล์ และสารใดทำหน้าที่หลักในการดูดกลืนพลังงานแสง?",
+                q_en: "In which cell organelle does photosynthesis occur, and which substance primarily absorbs light energy?",
+                a_th: [
+                    "คลอโรพลาสต์ (Chloroplast) และคลอโรฟิลล์ (Chlorophyll)",
+                    "ไมโทคอนเดรีย (Mitochondria) และไซโตพลาสซึม (Cytoplasm)",
+                    "นิวเคลียส (Nucleus) และโครมาทิน (Chromatin)",
+                    "แวคิวโอล (Vacuole) และแอนโทไซยานิน (Anthocyanin)"
+                ],
+                a_en: [
+                    "Chloroplast and Chlorophyll",
+                    "Mitochondria and Cytoplasm",
+                    "Nucleus and Chromatin",
+                    "Vacuole and Anthocyanin"
+                ],
+                correct: 0,
+                th: "คลอโรพลาสต์เป็นออร์แกเนลล์ที่มีเยื่อหุ้มสองชั้น ภายในมีคลอโรฟิลล์ทำหน้าที่ดูดกลืนแสงในช่วงความยาวคลื่นสีแดงและสีน้ำเงินเพื่อใช้ในปฏิกิริยาเคมี",
+                en: "Chloroplasts contain chlorophyll, which absorbs red and blue light to drive the light-dependent reactions of photosynthesis."
+            },
+            {
+                id: 5,
+                q_th: "แก๊สคาร์บอนไดออกไซด์ที่พืชนำมาใช้ในกระบวนการสังเคราะห์ด้วยแสงเข้าสู่ภายในใบพืชผ่านโครงสร้างใด และในเวลากลางคืนโครงสร้างนี้ส่วนใหญ่จะมีลักษณะอย่างไร?",
+                q_en: "Through which structure does carbon dioxide enter the plant leaf, and what is its typical state at night?",
+                a_th: [
+                    "ปากใบ (Stomata) โดยส่วนใหญ่จะปิดในเวลากลางคืนเพื่อลดการสูญเสียน้ำ",
+                    "ผิวใบชั้นคิวติเคิล (Cuticle) โดยจะเปิดกว้างขึ้นในเวลากลางคืน",
+                    "ท่อลำเลียงไซเลม (Xylem) โดยเปิดรับแก๊สจากรากในเวลากลางคืน",
+                    "ช่องเลนติเซล (Lenticel) ที่ลำต้น โดยเปิดตลอด 24 ชั่วโมง"
+                ],
+                a_en: [
+                    "Stomata, which mostly close at night to minimize water loss",
+                    "Cuticle, which opens wider at night",
+                    "Xylem vessels, absorbing gas from roots at night",
+                    "Lenticels on the stem, remaining open 24 hours"
+                ],
+                correct: 0,
+                th: "ปากใบประกอบด้วยเซลล์คุม (Guard cells) ทำหน้าที่ควบคุมการเปิด-ปิด ปรกติจะเปิดในเวลากลางวันเพื่อรับ CO₂ และปิดในเวลากลางคืนเพื่อป้องกันน้ำระเหยออก",
+                en: "Stomata are regulated by guard cells that typically open during the day for gas exchange and close at night to prevent transpiration."
+            },
+            {
+                id: 6,
+                q_th: "ผลผลิตสุทธิที่ได้จากกระบวนการสังเคราะห์ด้วยแสงประกอบด้วยสารใดบ้าง และพืชนำผลผลิตเหล่านี้ไปใช้ประโยชน์อย่างไร?",
+                q_en: "What are the net products of photosynthesis, and how does the plant utilize them?",
+                a_th: [
+                    "น้ำตาลกลูโคส (ใช้เป็นพลังงานและสะสมเป็นแป้ง) และแก๊สออกซิเจน (ปล่อยสู่อากาศ)",
+                    "แก๊สคาร์บอนไดออกไซด์และน้ำ (ใช้ในการหายใจระดับเซลล์)",
+                    "แร่ธาตุ N, P, K (ใช้บำรุงรากและลำต้นให้แข็งแรง)",
+                    "กรดอะมิโนและโปรตีน (ใช้สร้างเนื้อเยื่อโดยตรงโดยไม่ต้องผ่านกระบวนการอื่น)"
+                ],
+                a_en: [
+                    "Glucose (used for energy and stored as starch) and Oxygen gas (released into the air)",
+                    "Carbon dioxide and water (used for cellular respiration)",
+                    "Minerals N, P, K (used to strengthen roots and stems)",
+                    "Amino acids and proteins (used directly to build tissues without further processing)"
+                ],
+                correct: 0,
+                th: "พืชสังเคราะห์น้ำตาลกลูโคสซึ่งส่วนหนึ่งนำไปเผาผลาญให้พลังงาน ส่วนที่เหลือแปลงเป็นแป้งสะสม และมีออกซิเจนเป็นผลพลอยได้",
+                en: "Plants produce glucose for cellular energy and starch storage, releasing oxygen as a byproduct of water photolysis."
+            },
+            {
+                id: 7,
+                q_th: "ท่อลำเลียงน้ำและแร่ธาตุ (Xylem) ในพืชมีทิศทางการลำเลียงอย่างไร และอาศัยแรงขับเคลื่อนหลักคืออะไร?",
+                q_en: "What is the direction of transport in the xylem, and what is the primary driving force?",
+                a_th: [
+                    "ลำเลียงจากรากขึ้นสู่ยอดและใบในทิศทางเดียว โดยอาศัยแรงดึงจากการคายน้ำ (Transpiration Pull)",
+                    "ลำเลียงจากใบลงสู่รากในทิศทางเดียวโดยอาศัยแรงโน้มถ่วงของโลก",
+                    "ลำเลียงขึ้นและลงทั่วทุกทิศทางด้วยแรงดันจากเซลล์คุม",
+                    "ลำเลียงจากรากออกสู่ดินรอบข้างด้วยการแพร่แบบใช้อัตราเร่ง"
+                ],
+                a_en: [
+                    "Transported upward from roots to leaves in one direction, driven mainly by transpiration pull",
+                    "Transported downward from leaves to roots in one direction driven by gravity",
+                    "Transported in all directions up and down using guard cell pressure",
+                    "Transported from roots into surrounding soil via facilitated diffusion"
+                ],
+                correct: 0,
+                th: "ไซเลมลำเลียงน้ำแบบทางเดียว (Unidirectional) จากรากขึ้นสู่ยอด แรงดึงหลักเกิดจากการระเหยของน้ำที่ใบ (Transpiration Pull) ร่วมกับแรงโคฮีชันของโมเลกุลน้ำ",
+                en: "Xylem transports water unidirectionally from roots to leaves, driven primarily by transpiration pull and water molecule cohesion."
+            },
+            {
+                id: 8,
+                q_th: "ท่อลำเลียงอาหาร (Phloem) มีลักษณะการทำงานและทิศทางการลำเลียงสารอาหารแตกต่างจาก Xylem อย่างไร?",
+                q_en: "How do the function and direction of transport in the phloem differ from the xylem?",
+                a_th: [
+                    "Phloem ลำเลียงสารละลายน้ำตาลในทุกทิศทาง (Multi-directional) จากแหล่งสร้าง (Source) ไปยังแหล่งรับ (Sink)",
+                    "Phloem ลำเลียงน้ำและแร่ธาตุจากบนลงล่างเท่านั้นด้วยความเร็วสูงกว่า Xylem",
+                    "Phloem ไม่ใช้พลังงานในเซลล์เลยขณะทำการลำเลียงสารอาหาร",
+                    "Phloem ประกอบด้วยเซลล์ที่ตายแล้วเช่นเดียวกับ Xylem เพื่อลดแรงเสียดทาน"
+                ],
+                a_en: [
+                    "Phloem transports sugar solutions multi-directionally from source to sink tissues",
+                    "Phloem transports water and minerals downward only at higher speeds than xylem",
+                    "Phloem requires zero cellular energy during sugar transport",
+                    "Phloem consists of dead cells just like xylem to reduce friction"
+                ],
+                correct: 0,
+                th: "โฟลเอ็มทำหน้าที่ลำเลียงน้ำตาลที่สังเคราะห์จากใบ (Source) ไปยังส่วนที่ต้องการใช้หรือเก็บสะสม เช่น ราก ผล เมล็ด (Sink) ซึ่งสามารถลำเลียงได้ทั้งขึ้นและลง",
+                en: "Phloem transports organic nutrients (sugars) bi-directionally or multi-directionally from sources (leaves) to sinks (roots, fruits)."
+            },
+            {
+                id: 9,
+                q_th: "ธาตุอาหารหลัก 3 ชนิดที่พืชต้องการในปริมาณมาก (Macro-nutrients) ซึ่งมักเป็นส่วนผสมหลักในปุ๋ยเคมีคือธาตุใดบ้าง?",
+                q_en: "What are the three primary macro-nutrients required in large quantities by plants, commonly found in chemical fertilizers?",
+                a_th: [
+                    "ไนโตรเจน (N), ฟอสฟอรัส (P), โพแทสเซียม (K)",
+                    "แคลเซียม (Ca), แมกนีเซียม (Mg), กำมะถัน (S)",
+                    "เหล็ก (Fe), สังกะสี (Zn), ทองแดง (Cu)",
+                    "คาร์บอน (C), ไฮโดรเจน (H), ออกซิเจน (O)"
+                ],
+                a_en: [
+                    "Nitrogen (N), Phosphorus (P), Potassium (K)",
+                    "Calcium (Ca), Magnesium (Mg), Sulfur (S)",
+                    "Iron (Fe), Zinc (Zn), Copper (Cu)",
+                    "Carbon (C), Hydrogen (H), Oxygen (O)"
+                ],
+                correct: 0,
+                th: "N-P-K คือธาตุอาหารหลักที่พืชขาดไม่ได้ ไนโตรเจนช่วยเรื่องการเจริญเติบโตของใบและลำต้น ฟอสฟอรัสช่วยเรื่องราก ดอก และเมล็ด โพแทสเซียมช่วยเสริมความแข็งแรงและต้านทานโรค",
+                en: "N-P-K are the primary macronutrients: Nitrogen for vegetative growth, Phosphorus for roots/flowers, and Potassium for overall vigor."
+            },
+            {
+                id: 10,
+                q_th: "หากพืชขาดธาตุไนโตรเจน (N) อาการผิดปกติที่เด่นชัดที่สุดมักจะปรากฏให้เห็นบริเวณใดของต้นพืช?",
+                q_en: "If a plant lacks Nitrogen (N), where do deficiency symptoms typically first appear?",
+                a_th: [
+                    "ใบแก่ด้านล่างจะมีสีเหลืองซีดเนื่องจากการสลายตัวของคลอโรฟิลล์เพื่อนำไนโตรเจนไปใช้ที่ใบอ่อน",
+                    "ยอดอ่อนและใบอ่อนจะแห้งตายและหงิกงอทันที",
+                    "รากพืชจะหยุดเจริญเติบโตและมีสีดำคล้ำ",
+                    "ผลผลิตและดอกจะร่วงหล่นก่อนการปฏิสนธิ"
+                ],
+                a_en: [
+                    "Older lower leaves turn pale yellow due to chlorophyll breakdown to supply young leaves",
+                    "Young shoots and leaves wither and curl immediately",
+                    "Plant roots stop growing and turn dark black",
+                    "Fruits and flowers drop before fertilization"
+                ],
+                correct: 0,
+                th: "ไนโตรเจนเป็นธาตุที่เคลื่อนย้ายได้ง่ายในพืช (Mobile element) เมื่อขาดแคลน พืชจะดึงไนโตรเจนจากใบแก่ไปเลี้ยงใบอ่อน อาการขาดจึงปรากฏที่ใบแก่ก่อน",
+                en: "Nitrogen is a mobile nutrient. During deficiency, the plant mobilizes N from older leaves to younger tissues, causing chlorosis in older leaves first."
+            },
+            {
+                id: 11,
+                q_th: "กระบวนการปักชำ (Cutting) อาศัยการเจริญของเนื้อเยื่อส่วนใดของลำต้นเพื่อพัฒนาไปเป็นระบบรากใหม่?",
+                q_en: "What part of the stem tissue does plant cutting rely on to develop a new root system?",
+                a_th: [
+                    "เนื้อเยื่อเจริญด้านข้าง (Cambium) และเนื้อเยื่อรอบท่อลำเลียงที่บริเวณรอยตัด",
+                    "ผิวใบนอกสุด (Cuticle layer) บริเวณโคนกิ่ง",
+                    "กลุ่มเซลล์ในท่อลำเลียงน้ำ (Xylem vessel) ที่ตายแล้ว",
+                    "เนื้อเยื่อผิวใบ (Epidermis) ที่สัมผัสกับวัสดุเพาะชำ"
+                ],
+                a_en: [
+                    "Lateral meristem (cambium) and vascular tissues around the cut",
+                    "Outermost cuticle layer at the base of the stem",
+                    "Dead cells in the xylem vessels",
+                    "Epidermal leaf tissue touching the rooting medium"
+                ],
+                correct: 0,
+                th: "บริเวณรอยตัดของการปักชำ เซลล์แคมเบียมจะเกิดการแบ่งตัวเป็นแคลลัส และพัฒนาเป็นรากวิสามัญ (Adventitious roots) โดยอาศัยฮอร์โมนออกซินกระตุ้น",
+                en: "At the cut site of a cutting, cambial cells divide to form callus tissue and subsequently differentiate into adventitious roots, stimulated by auxins."
+            },
+            {
+                id: 12,
+                q_th: "ข้อใดกล่าวถึงความแตกต่างระหว่างการเพาะเลี้ยงเนื้อเยื่อกับการปักชำได้ถูกต้องที่สุด?",
+                q_en: "Which statement best describes the difference between tissue culture and plant cutting?",
+                a_th: [
+                    "การเพาะเลี้ยงเนื้อเยื่อใช้เซลล์หรือเนื้อเยื่อปริมาณน้อยในสภาพปลอดเชื้อและได้จำนวนมากในเวลาสั้น ส่วนการปักชำใช้กิ่งหรือลำต้นขนาดใหญ่ในสภาพธรรมชาติ",
+                    "การเพาะเลี้ยงเนื้อเยื่อทำให้เกิดความหลากหลายทางพันธุกรรมสูงกว่าการปักชำ",
+                    "การปักชำต้องควบคุมสภาพแวดล้อมปลอดเชื้ออย่างเข้มงวดมากกว่าการเพาะเลี้ยงเนื้อเยื่อ",
+                    "การเพาะเลี้ยงเนื้อเยื่อไม่สามารถทำกับพืชใบเลี้ยงเดี่ยวได้เลย"
+                ],
+                a_en: [
+                    "Tissue culture uses small tissue pieces under sterile conditions yielding many plants quickly, while cutting uses larger stems in natural settings",
+                    "Tissue culture creates higher genetic diversity than cutting",
+                    "Cutting requires stricter aseptic control than tissue culture",
+                    "Tissue culture cannot be performed on monocots at all"
+                ],
+                correct: 0,
+                th: "การเพาะเลี้ยงเนื้อเยื่อใช้ชิ้นส่วนเล็กๆ และเทคโนโลยีปลอดเชื้อเพื่อเร่งการขยายพันธุ์จำนวนมาก ขณะที่การปักชำใช้กิ่งขนาดใหญ่ในแปลงเพาะปกติ",
+                en: "Tissue culture utilizes micropropagation from tiny explants under sterile lab conditions, whereas cutting relies on macro-cuttings in standard environments."
+            },
+            {
+                id: 13,
+                q_th: "ในกระบวนการสังเคราะห์ด้วยแสง ปฏิกิริยาที่ต้องใช้แสง (Light-dependent reaction) เกิดขึ้นที่บริเวณใดของคลอโรพลาสต์?",
+                q_en: "In photosynthesis, where do the light-dependent reactions take place within the chloroplast?",
+                a_th: [
+                    "ไทลาคอยด์ (Thylakoid membrane)",
+                    "สโตรมา (Stroma matrix)",
+                    "เยื่อหุ้มคลอโรพลาสต์ชั้นนอก (Outer membrane)",
+                    "ผนังเซลล์ของพืช (Cell wall)"
+                ],
+                a_en: [
+                    "Thylakoid membrane",
+                    "Stroma matrix",
+                    "Outer chloroplast membrane",
+                    "Plant cell wall"
+                ],
+                correct: 0,
+                th: "ไทลาคอยด์เป็นเยื่อเมมเบรนภายในคลอโรพลาสต์ที่มีสารคลอโรฟิลล์ฝังอยู่ ทำหน้าที่ดูดกลืนแสงและเกิดการแตกตัวของน้ำ (Photolysis) ในปฏิกิริยาแสง",
+                en: "The thylakoid membranes contain chlorophyll and protein complexes necessary for capturing light and executing photolysis during light-dependent reactions."
+            },
+            {
+                id: 14,
+                q_th: "หากนำพืชไปไว้ในห้องมืดสนิทต่อเนื่องเป็นเวลา 48 ชั่วโมง ผลลัพธ์ที่จะเกิดขึ้นกับปริมาณแป้งในใบพืชคืออะไร เพราะเหตุใด?",
+                q_en: "If a plant is kept in total darkness for 48 hours, what happens to the starch content in its leaves and why?",
+                a_th: [
+                    "ปริมาณแป้งจะลดลงจนหมด เนื่องจากพืชต้องดึงแป้งสะสมมาเปลี่ยนเป็นน้ำตาลเพื่อใช้ในการหายใจยามไม่มีแสง",
+                    "ปริมาณแป้งจะเพิ่มขึ้นเนื่องจากพืชเร่งสร้างแป้งเก็บไว้เพื่อทดแทนแสงที่ขาดหายไป",
+                    "ปริมาณแป้งจะไม่เปลี่ยนแปลงเพราะพืชสามารถเก็บรักษาแป้งไว้ได้ถาวร",
+                    "พืชจะเปลี่ยนแป้งไปเป็นโปรตีนและไขมันทั้งหมดเพื่อความอยู่รอด"
+                ],
+                a_en: [
+                    "Starch content decreases to zero because the plant converts stored starch back into sugars for cellular respiration in the absence of light",
+                    "Starch content increases as the plant accelerates storage to compensate for missing light",
+                    "Starch content remains unchanged because plants store starch permanently",
+                    "The plant converts all starch into proteins and fats for survival"
+                ],
+                correct: 0,
+                th: "ในความมืดพืชไม่สามารถสังเคราะห์ด้วยแสงได้ แต่ยังต้องหายใจเพื่อดำรงชีวิต จึงต้องนำแป้งที่สะสมไว้มาเปลี่ยนเป็นน้ำตาลเพื่อใช้เป็นพลังงาน ทำให้แป้งหมดไป",
+                en: "In darkness, photosynthesis stops, but respiration continues. The plant depletes its stored starch reserves by converting them back into sugars for metabolic energy."
+            },
+            {
+                id: 15,
+                q_th: "แรงดึงจากการคายน้ำ (Transpiration Pull) เกิดขึ้นจากกลไกทางฟิสิกส์และชีววิทยาข้อใดร่วมกัน?",
+                q_en: "Transpiration pull is driven by which combined physical and biological mechanisms?",
+                a_th: [
+                    "การระเหยของน้ำที่ปากใบสร้างแรงดึง และแรงโคฮีชัน (Cohesion) ระหว่างโมเลกุลน้ำทำให้สายน้ำใน Xylem ดึงต่อเนื่องกันขึ้นไป",
+                    "แรงดันจากราก (Root pressure) ดันน้ำขึ้นไปถึงยอดสูง 100 เมตรโดยลำพัง",
+                    "การหดตัวของท่อลำเลียงอาหาร (Phloem) บีบให้น้ำในไซเลมเคลื่อนที่ขึ้น",
+                    "แรงโน้มถ่วงของโลกดึงน้ำขึ้นจากรากสู่ยอดพืช"
+                ],
+                a_en: [
+                    "Evaporation at stomata creates tension, and cohesion between water molecules maintains a continuous water column in the xylem",
+                    "Root pressure alone pushes water up to 100 meters high",
+                    "Contraction of phloem vessels squeezes water upward in the xylem",
+                    "Earth's gravity pulls water from roots to leaves"
+                ],
+                correct: 0,
+                th: "การคายน้ำที่ใบดึงน้ำให้เคลื่อนที่ต่อเนื่อง อาศัยแรงดึง (Tension) และแรงยึดเหนี่ยวระหว่างโมเลกุลน้ำด้วยกันเอง (Cohesion) รวมทั้งแรงยึดกับผนังท่อ (Adhesion)",
+                en: "Transpiration creates negative pressure at the leaf surface. Water's high cohesion and adhesion maintain an unbroken column of water up the xylem."
+            },
+            {
+                id: 16,
+                q_th: "ธาตุอาหารฟอสฟอรัส (P) มีบทบาทสำคัญที่สุดต่อการเจริญเติบโตส่วนใดของพืช?",
+                q_en: "Phosphorus (P) plays its most critical role in which aspect of plant growth?",
+                a_th: [
+                    "การส่งเสริมการเจริญเติบโตของราก การออกดอก การติดผล และการสร้างเมล็ด",
+                    "การเร่งสีเขียวของใบและการขยายขนาดของลำต้น",
+                    "การควบคุมความเต่งของเซลล์คุมเพื่อเปิด-ปิดปากใบ",
+                    "การสร้างเยื่อหุ้มเซลล์และผนังเซลล์ชั้นนอกสุดให้หนาขึ้น"
+                ],
+                a_en: [
+                    "Promoting root development, flowering, fruit setting, and seed formation",
+                    "Enhancing leaf greenness and stem expansion",
+                    "Regulating guard cell turgor pressure for stomatal opening",
+                    "Building thick outer cell walls and membranes"
+                ],
+                correct: 0,
+                th: "ฟอสฟอรัสเป็นองค์ประกอบของสารพลังงานสูง (ATP) และกรดนิวคลีอิก จำเป็นมากในช่วงออกดอก ติดผล และพัฒนาระบบราก",
+                en: "Phosphorus is a core component of ATP and nucleic acids, vital for energy transfer, root system establishment, flowering, and fruiting."
+            },
+            {
+                id: 17,
+                q_th: "นักเรียนทดลองสกัดคลอโรฟิลล์จากใบไม้สีเขียวด้วยแอลกอฮอล์ร้อน ข้อใดคือเหตุผลหลักที่ต้องต้มใบไม้ในแอลกอฮอล์ผ่านอ่างน้ำร้อน (Water bath) แทนที่จะให้ความร้อนโดยตรงกับแอลกอฮอล์?",
+                q_en: "When extracting chlorophyll with hot alcohol, why is a water bath used instead of direct heating?",
+                a_th: [
+                    "แอลกอฮอล์เป็นสารไวไฟสูง การให้ความร้อนโดยตรงอาจทำให้เกิดประกายไฟและอันตรายร้ายแรง",
+                    "เพื่อป้องกันไม่ให้แอลกอฮอล์เดือดและระเหยกลายเป็นแก๊สเร็วเกินไป",
+                    "เพื่อให้คลอโรฟิลล์ละลายได้ดีในน้ำเดือดมากกว่าแอลกอฮอล์",
+                    "เพื่อไม่ให้ใบไม้ไหม้เกรียมก่อนที่คลอโรฟิลล์จะถูกสกัดออกมา"
+                ],
+                a_en: [
+                    "Alcohol is highly flammable; direct heating can cause dangerous fires",
+                    "To prevent alcohol from boiling and evaporating too quickly",
+                    "To help chlorophyll dissolve better in boiling water than alcohol",
+                    "To prevent the leaf from burning before chlorophyll is extracted"
+                ],
+                correct: 0,
+                th: "แอลกอฮอล์มีจุดวาบไฟต่ำและติดไฟได้ง่ายมาก การต้มโดยตรงบนเปลวไฟอันตรายมาก จึงต้องใช้วิธีต้มผ่านน้ำร้อน (Water bath)",
+                en: "Alcohol is extremely flammable. Direct heating poses a severe fire hazard, so indirect heating via a water bath is mandatory."
+            },
+            {
+                id: 18,
+                q_th: "หากทำการทดลองทดสอบแป้งในใบพืชด้วยสารละลายไอโอดีน ใบพืชที่ถูกสกัดคลอโรฟิลล์ออกแล้วและมีแป้งสะสมอยู่จะเปลี่ยนเป็นสีอะไร?",
+                q_en: "In a starch test using iodine solution, what color does a destarched leaf with accumulated starch turn?",
+                a_th: [
+                    "สีน้ำเงินเข้มเกือบดำ (Dark blue-black)",
+                    "สีแดงสด (Bright red)",
+                    "สีเหลืองอำพัน (Amber yellow)",
+                    "สีเขียวมรกต (Emerald green)"
+                ],
+                a_en: [
+                    "Dark blue-black",
+                    "Bright red",
+                    "Amber yellow",
+                    "Emerald green"
+                ],
+                correct: 0,
+                th: "ไอโอดีนทำปฏิกิริยากับโครงสร้างโมเลกุลเกลียวของแป้ง (Amylose) ทำให้เกิดสารประกอบเชิงซ้อนที่มีสีน้ำเงินเข้มจนถึงดำ",
+                en: "Iodine molecules fit into the helical structure of starch (amylose), producing a characteristic dark blue-black color complex."
+            },
+            {
+                id: 19,
+                q_th: "พืชในเขตแห้งแล้ง (เช่น กระบองเพชร) มีการปรับตัวด้านโครงสร้างอย่างไรเพื่อลดการสูญเสียน้ำผ่านทางการคายน้ำ?",
+                q_en: "How do desert plants (e.g., cacti) structurally adapt to minimize water loss through transpiration?",
+                a_th: [
+                    "เปลี่ยนใบให้กลายเป็นหนามและมีลำต้นอวบน้ำสำหรับเก็บน้ำ พร้อมทั้งมีชั้นคิวติเคิลหนาเคลือบ",
+                    "เพิ่มจำนวนปากใบต่อพื้นที่ใบให้มากขึ้น 5 เท่า",
+                    "ขยายขนาดใบให้กว้างขึ้นเพื่อรับลมเย็นในเวลากลางคืน",
+                    "เปลี่ยนระบบท่อลำเลียงน้ำทั้งหมดให้เป็นเนื้อเยื่อที่ไม่มีชีวิต"
+                ],
+                a_en: [
+                    "Modifying leaves into spines, having succulent stems for water storage, and a thick cuticle layer",
+                    "Increasing stomatal density by 5 times",
+                    "Enlarging leaf surface area to catch cool night breezes",
+                    "Converting all xylem vessels into non-living tissues"
+                ],
+                correct: 0,
+                th: "หนามช่วยลดพื้นที่ผิวในการคายน้ำ ลำต้นอวบน้ำเก็บน้ำได้ดี และคิวติเคิล (ชั้นแวกซ์เคลือบผิว) ที่หนาช่วยป้องกันการระเหยของน้ำออกสู่บรรยากาศแห้ง",
+                en: "Spines reduce surface area, succulent stems store water, and a thick waxy cuticle prevents excessive water evaporation in arid climates."
+            },
+            {
+                id: 20,
+                q_th: "ข้อใดคือความสัมพันธ์ที่ถูกต้องระหว่างแสงสว่างกับอัตราการสังเคราะห์ด้วยแสงของพืชทั่วไป?",
+                q_en: "What is the correct relationship between light intensity and the rate of photosynthesis in typical plants?",
+                a_th: [
+                    "อัตราการสังเคราะห์ด้วยแสงจะเพิ่มขึ้นเมื่อความเข้มของแสงเพิ่มขึ้น จนถึงจุดอิ่มตัวของแสง (Light saturation point) อัตราจะคงที่",
+                    "อัตราการสังเคราะห์ด้วยแสงจะสูงที่สุดเสมอแม้ในที่มืดสนิท",
+                    "ความเข้มของแสงไม่มีผลใดๆ ต่ออัตราการสร้างน้ำตาลของพืช",
+                    "ยิ่งแสงมีความเข้มสูงมากเท่าไร อัตราการสังเคราะห์ด้วยแสงจะสูงขึ้นเรื่อยๆ ไม่มีที่สิ้นสุด"
+                ],
+                a_en: [
+                    "Photosynthesis rate increases with light intensity until reaching a light saturation point, after which it plateaus",
+                    "Photosynthesis rate is highest in absolute darkness",
+                    "Light intensity has no effect on sugar production",
+                    "The higher the light intensity, the higher the photosynthesis rate infinitely"
+                ],
+                correct: 0,
+                th: "เมื่อเพิ่มแสง อัตราจะเพิ่มขึ้นเพราะมีพลังงานมากขึ้น แต่เมื่อถึงจุดหนึ่ง (Light saturation point) ปัจจัยอื่นเช่น CO₂ หรือเอนไซม์จะกลายเป็นตัวจำกัดทำให้อัตราคงที่",
+                en: "Photosynthesis increases with light intensity up to a saturation point, where other limiting factors (like CO₂ or temperature) cap the maximum rate."
+            },
+            {
+                id: 21,
+                q_th: "เพราะเหตุใดการคายน้ำของพืชจึงมีความจำเป็น แม้ว่าพืชจะต้องสูญเสียน้ำไปส่วนหนึ่งก็ตาม?",
+                q_en: "Why is plant transpiration necessary even though the plant loses a portion of its water?",
+                a_th: [
+                    "ช่วยดึงน้ำและแร่ธาตุขึ้นจากราก และช่วยลดอุณหภูมิของใบพืชไม่ให้ร้อนเกินไปเมื่อโดนแสงแดดจัด",
+                    "ช่วยให้พืชสามารถสังเคราะห์แก๊สออกซิเจนในเวลากลางคืนได้",
+                    "ช่วยเร่งให้ท่อโฟลเอ็มลำเลียงอาหารได้เร็วขึ้น 10 เท่า",
+                    "ช่วยป้องกันไม่ให้สัตว์มากัดกินใบพืช"
+                ],
+                a_en: [
+                    "It drives water and mineral uptake from roots and cools the leaf surface under intense sunlight",
+                    "It enables plants to synthesize oxygen at night",
+                    "It accelerates phloem nutrient transport tenfold",
+                    "It prevents herbivores from eating the leaves"
+                ],
+                correct: 0,
+                th: "การคายน้ำสร้างแรงดึง (Transpiration pull) ช่วยดึงน้ำและแร่ธาตุจากรากขึ้นสู่ยอด และกระบวนการระเหยของน้ำยังช่วยระบายความร้อนให้ใบพืชด้วย",
+                en: "Transpiration generates tension to pull water/minerals upward and provides evaporative cooling to protect leaves from overheating."
+            },
+            {
+                id: 22,
+                q_th: "สารประกอบใดที่ทำหน้าที่เป็นตัวรับแก๊สคาร์บอนไดออกไซด์ในวัฏจักรคัลวิน (Calvin cycle) ของกระบวนการสังเคราะห์ด้วยแสง?",
+                q_en: "Which compound acts as the carbon dioxide acceptor in the Calvin cycle of photosynthesis?",
+                a_th: [
+                    "RuBP (Ribulose bisphosphate)",
+                    "ATP (Adenosine triphosphate)",
+                    "NADPH (Nicotinamide adenine dinucleotide phosphate)",
+                    "Glucose (C6H12O6)"
+                ],
+                a_en: [
+                    "RuBP (Ribulose bisphosphate)",
+                    "ATP (Adenosine triphosphate)",
+                    "NADPH (Nicotinamide adenine dinucleotide phosphate)",
+                    "Glucose (C6H12O6)"
+                ],
+                correct: 0,
+                th: "RuBP เป็นคาร์บอน 5 อะตอมในสโตรมาของคลอโรพลาสต์ ทำหน้าที่รวมตัวกับแก๊สคาร์บอนไดออกไซด์ในปฏิกิริยาที่ไม่ต้องใช้แสง (Light-independent reaction)",
+                en: "RuBP is a 5-carbon molecule in the stroma that fixes incoming carbon dioxide during the light-independent reactions of the Calvin cycle."
+            },
+            {
+                id: 23,
+                q_th: "หากเกษตรกรต้องการเร่งการเจริญเติบโตของใบและลำต้นของพืชผักสวนครัวให้เขียวชะอุ่ม ควรเลือกใช้ปุ๋ยเคมีที่มีธาตุอาหารใดเป็นองค์ประกอบหลัก?",
+                q_en: "If a farmer wants to accelerate vegetative growth and lush green leaves in vegetables, which primary nutrient should be emphasized?",
+                a_th: [
+                    "ไนโตรเจน (Nitrogen - N)",
+                    "ฟอสฟอรัส (Phosphorus - P)",
+                    "โพแทสเซียม (Potassium - K)",
+                    "แคลเซียม (Calcium - Ca)"
+                ],
+                a_en: [
+                    "Nitrogen (Nitrogen - N)",
+                    "Phosphorus (Phosphorus - P)",
+                    "Potassium (Potassium - K)",
+                    "Calcium (Calcium - Ca)"
+                ],
+                correct: 0,
+                th: "ไนโตรเจนเป็นส่วนประกอบสำคัญของกรดามิโน โปรตีน และคลอโรฟิลล์ ซึ่งช่วยกระตุ้นการเจริญเติบโตของใบและลำต้นให้เขียวขจี",
+                en: "Nitrogen is essential for amino acid, protein, and chlorophyll synthesis, promoting vigorous leaf and stem development."
+            },
+            {
+                id: 24,
+                q_th: "ข้อใดอธิบายบทบาทของปากใบ (Stomata) ในสภาวะที่พืชขาดแคลนน้ำอย่างรุนแรงได้ถูกต้องที่สุด?",
+                q_en: "Which best describes the role of stomata under severe water stress conditions?",
+                a_th: [
+                    "ปากใบจะปิดสนิทเพื่อลดการคายน้ำและการสูญเสียความชื้นภายในต้นพืช",
+                    "ปากใบจะเปิดกว้างขึ้นเพื่อรับน้ำจากอากาศรอบข้าง",
+                    "ปากใบจะเร่งขับน้ำส่วนเกินออกมาทางหยดน้ำที่ขอบใบ",
+                    "ปากใบจะไม่มีการเปลี่ยนแปลงใดๆ ทั้งสิ้น"
+                ],
+                a_en: [
+                    "Stomata close tightly to minimize transpiration and moisture loss",
+                    "Stomata open wider to absorb atmospheric moisture",
+                    "Stomata excrete excess water as guttation droplets",
+                    "Stomata show no changes whatsoever"
+                ],
+                correct: 0,
+                th: "เมื่อขาดน้ำ เซลล์คุมจะสูญเสียความเต่ง ทำให้ปากใบปิดลงเพื่อรักษาปริมาณน้ำภายในต้นพืชไม่ให้ระเหยออกไปจนเหี่ยวเฉาตาย",
+                en: "Under water stress, guard cells lose turgor pressure and close the stomatal pore to conserve internal water and prevent wilting."
+            },
+            {
+                id: 25,
+                q_th: "ในการทดลองแยกสารสีจากใบพืชด้วยวิธีโครมาโทกราฟีบนกระดาษ (Paper chromatography) สารสีชนิดใดจะเคลื่อนที่ไปได้ไกลที่สุดบนกระดาษ?",
+                q_en: "In paper chromatography of plant leaf pigments, which pigment travels the furthest up the paper strip?",
+                a_th: [
+                    "แคโรทีนอยด์ (Carotenoids) เนื่องจากละลายได้ดีในตัวทำละลายและเกาะติดกับกระดาษน้อยที่สุด",
+                    "คลอโรฟิลล์ บี (Chlorophyll b)",
+                    "คลอโรฟิลล์ เอ (Chlorophyll a)",
+                    "แอนโทไซยานิน (Anthocyanin) สีแดง"
+                ],
+                a_en: [
+                    "Carotenoids, because they dissolve well in the solvent and have low affinity for the paper",
+                    "Chlorophyll b",
+                    "Chlorophyll a",
+                    "Anthocyanin (red)"
+                ],
+                correct: 0,
+                th: "สารสีที่มีความสามารถในการละลายในตัวทำละลายสูงและดูดซับกับกระดาษน้อยจะเคลื่อนที่ขึ้นไปได้ไกลที่สุด ซึ่งได้แก่ แคโรทีนอยด์ (สีส้ม/เหลือง)",
+                en: "Pigments with high solubility in the mobile solvent and low adsorption to the stationary paper (like carotenes) travel the furthest."
+            }
+        ];
+
+        let currentLang = 'th';
+        let userAnswers = {};
+
+        function renderQuiz() {
+            const container = document.getElementById('quizContainer');
+            container.innerHTML = '';
+
+            questions.forEach((q, index) => {
+                const qText = currentLang === 'th' ? `${index + 1}. ${q.q_th}` : `${index + 1}. ${q.q_en}`;
+                const options = currentLang === 'th' ? q.a_th : q.a_en;
+                const clueText = currentLang === 'th' ? `💡 Tutor's Secret Tip: ${q.th}` : `💡 Tutor's Secret Tip: ${q.en}`;
+                const detailText = currentLang === 'th' ? `📘 เฉลยละเอียด: ${q.th}` : `📘 Detailed Explanation: ${q.en}`;
+
+                const card = document.createElement('div');
+                card.className = 'question-card';
+                card.id = `q-card-${index}`;
+
+                let optionsHtml = '';
+                options.forEach((opt, optIdx) => {
+                    optionsHtml += `<button class="option-btn" id="btn-${index}-${optIdx}" onclick="selectOption(${index}, ${optIdx})">${opt}</button>`;
+                });
+
+                card.innerHTML = `
+                    <div class="question-title">${qText}</div>
+                    <div class="options-list">${optionsHtml}</div>
+                    <button class="lang-btn" style="background:#ff9800; color:white; font-size:0.85rem; padding:5px 10px; margin-top:5px;" onclick="toggleClue(${index})">${currentLang === 'th' ? '🔍 ดูคำใบ้ (Clue)' : '🔍 Show Clue'}</button>
+                    <div class="clue-box" id="clue-${index}">${clueText}</div>
+                    <div class="detail-box" id="detail-${index}">${detailText}</div>
+                `;
+                container.appendChild(card);
+            });
+
+            // Restore previous answers if any
+            for (let qIdx in userAnswers) {
+                const optIdx = userAnswers[qIdx];
+                highlightSelectedOption(parseInt(qIdx), optIdx);
+            }
+
+            updateTexts();
+        }
+
+        function toggleLanguage() {
+            currentLang = currentLang === 'th' ? 'en' : 'th';
+            renderQuiz();
+            saveState();
+        }
+
+        function updateTexts() {
+            if (currentLang === 'en') {
+                document.getElementById('main-title').innerText = 'Grade 7 Science Quiz Bank (Advanced Level)';
+                document.getElementById('main-subtitle').innerText = 'Plant Biology & Photosynthesis Interactive Assessment';
+                document.getElementById('langToggleBtn').innerText = 'ไทย / English';
+                document.getElementById('submitBtn').innerText = 'Submit & Grade Exam';
+                document.getElementById('sum-title-1').innerText = 'Chapter 1: Plant Propagation';
+                document.getElementById('sum-desc-1').innerText = 'Plant propagation is the process of multiplying plants while preserving superior genetic traits. Methods include layering (girdling stems to induce roots while attached to the mother plant), cutting (snipping stems, branches, or leaves to root in propagation media), and tissue culture (culturing tiny cells or tissues in sterile nutrient media to rapidly produce identical clones).';
+                document.getElementById('tip-title-1').innerText = 'Memory Tricks & Thought Process (Chapter 1)';
+                document.getElementById('tip-desc-1').innerText = 'Categorize by structure: Layering keeps the branch attached to the mother plant utilizing cambium; Cutting detaches the plant utilizing auxin hormones at the cut; Tissue culture relies on cell totipotency under sterile aseptic lab conditions.';
+                document.getElementById('sum-title-2').innerText = 'Chapter 2: Photosynthesis';
+                document.getElementById('sum-desc-2').innerText = 'Photosynthesis is a vital global process occurring in chloroplasts containing green chlorophyll to absorb solar energy. Necessary factors include light, chlorophyll, carbon dioxide absorbed via stomata, and water absorbed by roots. Products include glucose (stored as starch) and oxygen gas released into the atmosphere.';
+                document.getElementById('tip-title-2').innerText = 'Memory Tricks & Thought Process (Chapter 2)';
+                document.getElementById('tip-desc-2').innerText = 'Chemical equation shortcut: 6CO₂ + 6H₂O + Light -> C₆H₁₂O₆ + 6O₂. Plants "consume" carbon dioxide, water, and light, and "release" oxygen while storing starch testable with iodine.';
+                document.getElementById('sum-title-3').innerText = 'Chapter 3: Plant Transport Systems & Nutrients';
+                document.getElementById('sum-desc-3').innerText = 'Advanced plants require efficient transport systems: Xylem transports water and minerals upward driven by transpiration pull, while Phloem transports sugars multi-directionally from source to sink. Essential macronutrients include Nitrogen (N), Phosphorus (P), and Potassium (K).';
+                document.getElementById('tip-title-3').innerText = 'Memory Tricks & Thought Process (Chapter 3)';
+                document.getElementById('tip-desc-3').innerText = 'Memory rule: "Xylem Up, Phloem All Ways". Macronutrient mnemonic: N-P-K (Nitrogen for leaves, Phosphorus for flowers/fruits, Potassium for overall vigor and roots).';
+            } else {
+                document.getElementById('main-title').innerText = 'คลังข้อสอบวิชาวิทยาศาสตร์ ม.1 (ระดับยาก)';
+                document.getElementById('main-subtitle').innerText = 'ระบบทดสอบความรู้ชีววิทยาพืชและการสังเคราะห์ด้วยแสง';
+                document.getElementById('langToggleBtn').innerText = 'English / ไทย';
+                document.getElementById('submitBtn').innerText = 'ส่งข้อสอบและตรวจผล';
+                document.getElementById('sum-title-1').innerText = 'บทที่ 1 การขยายพันธุ์พืช';
+                document.getElementById('sum-desc-1').innerText = 'การขยายพันธุ์พืชเป็นกระบวนการเพิ่มจำนวนต้นพืชให้มีปริมาณมากขึ้น โดยยังคงลักษณะทางพันธุกรรมที่ดีเอาไว้ การขยายพันธุ์มีหลายวิธี ได้แก่ การตอนกิ่ง (Girdling and Layering) ซึ่งทำให้กิ่งพืชเกิดรากขณะที่ยังติดอยู่กับต้นแม่ โดยการควั่นกิ่ง ลอกเปลือกออก แล้วหุ้มด้วยวัสดุชุ่มชื้น การปักชำ (Cutting) คือการตัดส่วนของลำต้น กิ่ง หรือใบ ไปปักลงในวัสดุเพาะชำเพื่อให้งอกรากและยอดใหม่ และการเพาะเลี้ยงเนื้อเยื่อ (Tissue Culture) ซึ่งเป็นการนำเนื้อเยื่อหรือเซลล์พืชส่วนน้อยมาเลี้ยงในอาหารสังเคราะห์ภายใต้สภาพปลอดเชื้อ เพื่อให้เจริญเติบโตเป็นต้นพืชจำนวนมากในเวลาอันรวดเร็วและมีลักษณะพันธุกรรมเหมือนต้นแม่ทุกประการ';
+                document.getElementById('tip-title-1').innerText = 'เทคนิคการจำ & กระบวนการคิด (บทที่ 1)';
+                document.getElementById('tip-desc-1').innerText = 'จำแนกตามโครงสร้าง: ตอนกิ่งใช้กับกิ่งที่ยังติดต้นแม่เพื่อสร้างรากจากแคมเบียมที่เหลืออยู่, ปักชำตัดขาดจากต้นแม่ อาศัยฮอร์โมนพืช (ออกซิน) กระตุ้นการเกิดรากที่แผลตัด, เพาะเลี้ยงเนื้อเยื่อใช้หลักการโทติโพเทนซี (Totipotency) ของเซลล์พืชที่สามารถพัฒนาเป็นต้นใหม่ได้ครบถ้วนในสภาพปลอดเชื้อ';
+                document.getElementById('sum-title-2').innerText = 'บทที่ 2 การสังเคราะห์ด้วยแสง';
+                document.getElementById('sum-desc-2').innerText = 'กระบวนการสังเคราะห์ด้วยแสง (Photosynthesis) เป็นกระบวนการที่สำคัญที่สุดกระบวนการหนึ่งบนโลก ซึ่งเกิดขึ้นในคลอโรพลาสต์ (Chloroplast) ที่มีสารคลอโรฟิลล์สีเขียวทำหน้าที่ดูดกลืนพลังงานแสงจากดวงอาทิตย์ เพื่อนำมาใช้ขับเคลื่อนปฏิกิริยาเคมีภายในเซลล์พืช ปัจจัยที่จำเป็นประกอบด้วยแสงสว่าง คลอโรฟิลล์ แก๊สคาร์บอนไดออกไซด์ที่รับเข้ามาทางปากใบ (Stomata) และน้ำที่ดูดซึมขึ้นมาจากราก ผลผลิตที่ได้คือน้ำตาลกลูโคสสำหรับใช้เป็นพลังงานและสะสมในรูปของแป้ง พร้อมด้วยแก๊สออกซิเจนที่ปลดปล่อยสู่บรรยากาศเพื่อรักษาสมดุลของระบบนิเวศ';
+                document.getElementById('tip-title-2').innerText = 'เทคนิคการจำ & กระบวนการคิด (บทที่ 2)';
+                document.getElementById('tip-desc-2').innerText = 'สมการเคมีคิดง่ายๆ: 6CO₂ + 6H₂O + พลังงานแสง -> C₆H₁₂O₆ + 6O₂. จำว่าพืช "กิน" คาร์บอนไดออกไซด์ น้ำ และแสง แล้ว "คาย" ออกซิเจนออกมา พร้อมสร้างแป้งเก็บไว้ทดสอบด้วยสารละลายไอโอดีน (เปลี่ยนจากสีน้ำตาลเป็นสีน้ำเงินเข้ม)';
+                document.getElementById('sum-title-3').innerText = 'บทที่ 3 การลำเลียงน้ำ ธาตุอาหาร และอาหารของพืช';
+                document.getElementById('sum-desc-3').innerText = 'พืชจำเป็นต้องมีการลำเลียงน้ำ แร่ธาตุ และสารอาหารไปยังส่วนต่างๆ ระบบลำเลียงในพืชชั้นสูงประกอบด้วยท่อลำเลียงหลัก 2 ชนิด ได้แก่ ท่อลำเลียงน้ำหรือไซเลม (Xylem) ทำหน้าที่ลำเลียงน้ำและแร่ธาตุจากรากขึ้นสู่ยอดโดยอาศัยแรงดึงจากการคายน้ำ (Transpiration Pull) และท่อลำเลียงอาหารหรือโฟลเอ็ม (Phloem) ทำหน้าที่ลำเลียงน้ำตาลที่สังเคราะห์จากใบไปยังส่วนต่างๆ ของพืช นอกจากนี้พืชยังต้องการธาตุอาหารหลักในปริมาณมาก ได้แก่ ไนโตรเจน (N) ฟอสฟอรัส (P) และโพแทสเซียม (K) เพื่อเสริมสร้างการเจริญเติบโต';
+                document.getElementById('tip-title-3').innerText = 'เทคนิคการจำ & กระบวนการคิด (บทที่ 3)';
+                document.getElementById('tip-desc-3').innerText = 'วิธีจำง่ายๆ: "Xylem ขึ้น Phloem ลงทั่วทิศ" (ไซเลมลำเลียงน้ำขึ้นด้านบนทิศทางเดียวจากรากสู่ใบ โฟลเอ็มลำเลียงอาหารไปได้ทั้งขึ้นและลงตามความต้องการของเซลล์พืช) และจำธาตุอาหารหลักด้วยรหัสย่อ N-P-K (ไนโตรเจน-ใบ, ฟอสฟอรัส-ดอกผล, โพแทสเซียม-รากและลำต้น)';
+            }
+        }
+
+        function selectOption(qIdx, optIdx) {
+            userAnswers[qIdx] = optIdx;
+            highlightSelectedOption(qIdx, optIdx);
+            
+            // Show detail box immediately upon selection
+            const detailBox = document.getElementById(`detail-${qIdx}`);
+            detailBox.classList.add('show');
+
+            saveState();
+        }
+
+        function highlightSelectedOption(qIdx, optIdx) {
+            const correctOpt = questions[qIdx].correct;
+            for (let i = 0; i < 4; i++) {
+                const btn = document.getElementById(`btn-${qIdx}-${i}`);
+                btn.disabled = true;
+                if (i === correctOpt) {
+                    btn.classList.add('correct');
+                } else if (i === optIdx) {
+                    btn.classList.add('incorrect');
+                }
+            }
+        }
+
+        function toggleClue(qIdx) {
+            const clueBox = document.getElementById(`clue-${qIdx}`);
+            clueBox.classList.toggle('show');
+        }
+
+        function submitExam() {
+            let score = 0;
+            let weakAreas = {
+                chapter1: 0,
+                chapter2: 0,
+                chapter3: 0
+            };
+
+            questions.forEach((q, index) => {
+                const userAns = userAnswers[index];
+                if (userAns === q.correct) {
+                    score++;
+                } else {
+                    if (index < 3) weakAreas.chapter1++;
+                    else if (index >= 3 && index < 6) weakAreas.chapter2++;
+                    else if (index >= 6 && index < 9) weakAreas.chapter3++;
+                    else {
+                        if (index === 10 || index === 11) weakAreas.chapter1++;
+                        else if (index === 3 || index === 4 || index === 5 || index === 12 || index === 13 || index === 14 || index === 17 || index === 19 || index === 21 || index === 24) weakAreas.chapter2++;
+                        else weakAreas.chapter3++;
+                    }
+                }
+            });
+
+            const modal = document.getElementById('resultsModal');
+            document.getElementById('scoreDisplay').innerText = `${score} / 25`;
+            
+            let msg = currentLang === 'th' ? `คุณทำคะแนนได้ ${score} จาก 25 คะแนน` : `You scored ${score} out of 25 points.`;
+            document.getElementById('res-message').innerText = msg;
+
+            let analysisHtml = currentLang === 'th' ? `<h3>📊 การวิเคราะห์จุดอ่อน (Weakness Analysis)</h3><ul>` : `<h3>📊 Weakness Analysis</h3><ul>`;
+            
+            if (weakAreas.chapter1 > 1) {
+                analysisHtml += currentLang === 'th' ? `<li>บทที่ 1 การขยายพันธุ์พืช: ควรทบทวนเรื่องกลไกการเกิดรากและการเพาะเลี้ยงเนื้อเยื่อ</li>` : `<li>Chapter 1 Plant Propagation: Review root formation mechanisms and tissue culture.</li>`;
+            }
+            if (weakAreas.chapter2 > 1) {
+                analysisHtml += currentLang === 'th' ? `<li>บทที่ 2 การสังเคราะห์ด้วยแสง: ควรทบทวนปัจจัย ปฏิกิริยาแสง และวัฏจักรคัลวิน</li>` : `<li>Chapter 2 Photosynthesis: Review light-dependent reactions, factors, and the Calvin cycle.</li>`;
+            }
+            if (weakAreas.chapter3 > 1) {
+                analysisHtml += currentLang === 'th' ? `<li>บทที่ 3 การลำเลียงและธาตุอาหาร: ควรทบทวนการทำงานของ Xylem/Phloem และธาตุอาหาร N-P-K</li>` : `<li>Chapter 3 Transport & Nutrients: Review Xylem/Phloem functions and N-P-K nutrients.</li>`;
+            }
+            if (score === 25) {
+                analysisHtml += currentLang === 'th' ? `<li>ยอดเยี่ยม! คุณมีความเข้าใจในเนื้อหาวิทยาศาสตร์ ม.1 ระดับยากอย่างสมบูรณ์แบบ</li>` : `<li>Excellent! You have a complete mastery of advanced Grade 7 science concepts.</li>`;
+            }
+            analysisHtml += `</ul>`;
+
+            document.getElementById('analysisBox').innerHTML = analysisHtml;
+            modal.classList.add('show');
+            modal.scrollIntoView({ behavior: 'smooth' });
+
+            // Simulate sending data and alert notification
+            simulateDataTransmission(score);
+        }
+
+        function simulateDataTransmission(score) {
+            const dataPayload = {
+                tutor: "พระจอมเกล้าติวเตอร์",
+                recipient: "thee.chinpong@hmail.com",
+                score: score,
+                total: 25,
+                answers: userAnswers,
+                timestamp: new Date().toISOString()
+            };
+            console.log("Simulating data transmission to thee.chinpong@hmail.com:", dataPayload);
+            alert(currentLang === 'th' ? 'ระบบได้ทำการบันทึกและส่งผลคะแนนไปที่ thee.chinpong@hmail.com เรียบร้อยแล้ว' : 'Exam results have been successfully recorded and sent to thee.chinpong@hmail.com');
+        }
+
+        function saveState() {
+            const state = {
+                currentLang: currentLang,
+                userAnswers: userAnswers
+            };
+            localStorage.setItem('science_quiz_state_kmutt', JSON.stringify(state));
+        }
+
+        function loadState() {
+            const saved = localStorage.getItem('science_quiz_state_kmutt');
+            if (saved) {
+                try {
+                    const parsed = JSON.parse(saved);
+                    currentLang = parsed.currentLang || 'th';
+                    userAnswers = parsed.userAnswers || {};
+                } catch(e) {
+                    console.error(e);
+                }
+            }
+        }
+
+        window.onload = function() {
+            loadState();
+            renderQuiz();
+        };
+    </script>
+</body>
+</html>
