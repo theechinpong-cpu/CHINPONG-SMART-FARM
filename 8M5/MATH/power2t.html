@@ -1,1242 +1,507 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ระบบคลังข้อสอบอัจฉริยะ - เลขยกกำลังที่มีเลขชี้กำลังเป็นจำนวนตรรกยะ</title>
-    <style>
-        :root {
-            --primary-color: #2563eb;
-            --secondary-color: #1e40af;
-            --bg-color: #f8fafc;
-            --card-bg: #ffffff;
-            --text-color: #1e293b;
-            --border-color: #e2e8f0;
-            --success-color: #16a34a;
-            --error-color: #dc2626;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>เลขยกกำลังที่มีเลขชี้กำลังเป็นจำนวนตรรกยะ | คู่มือครู</title>
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;600;700;800&family=Sarabun:wght@300;400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
 
-        body {
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            line-height: 1.6;
-        }
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
 
-        header {
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-            color: white;
-            padding: 2rem 1rem;
-            text-align: center;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-        }
+<style>
+:root{
+  --board:#16261f;
+  --board-2:#1d332a;
+  --chalk:#f2ede0;
+  --chalk-dim:#c9c2ae;
+  --gold:#e3b23c;
+  --teal:#5fb3a3;
+  --coral:#d97a5a;
+  --rule:rgba(242,237,224,0.14);
+  --radius:14px;
+}
 
-        header h1 {
-            font-size: 2rem;
-            margin-bottom: 0.5rem;
-        }
+*{box-sizing:border-box;}
+html{scroll-behavior:smooth;}
 
-        header p {
-            font-size: 1.1rem;
-            opacity: 0.9;
-        }
+body{
+  margin:0;
+  background:var(--board);
+  color:var(--chalk);
+  font-family:'Sarabun',sans-serif;
+  font-weight:400;
+  line-height:1.75;
+  position:relative;
+  overflow-x:hidden;
+}
 
-        .container {
-            max-width: 1400px;
-            margin: 2rem auto;
-            padding: 0 1rem;
-        }
+/* chalk dust texture */
+body::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  opacity:0.05;
+  background-image:
+    radial-gradient(circle at 15% 20%, var(--chalk) 0, transparent 1px),
+    radial-gradient(circle at 78% 65%, var(--chalk) 0, transparent 1px),
+    radial-gradient(circle at 45% 85%, var(--chalk) 0, transparent 1px),
+    radial-gradient(circle at 92% 12%, var(--chalk) 0, transparent 1px),
+    radial-gradient(circle at 5% 60%, var(--chalk) 0, transparent 1px);
+  background-size:280px 280px;
+  z-index:1;
+}
 
-        .summary-section {
-            background: var(--card-bg);
-            border-radius: 12px;
-            padding: 2rem;
-            margin-bottom: 2rem;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-            border: 1px solid var(--border-color);
-        }
+.katex{font-size:1.08em;}
+.katex-display{margin:0.4em 0;}
 
-        .summary-section h2 {
-            color: var(--primary-color);
-            margin-bottom: 1rem;
-            font-size: 1.5rem;
-            border-bottom: 2px solid var(--border-color);
-            padding-bottom: 0.5rem;
-        }
+/* ---------- HERO ---------- */
+header.hero{
+  position:relative;
+  padding:88px 24px 64px;
+  text-align:center;
+  border-bottom:1px solid var(--rule);
+  background:
+    linear-gradient(180deg, var(--board-2) 0%, var(--board) 100%);
+}
+.hero-eyebrow{
+  font-family:'JetBrains Mono',monospace;
+  letter-spacing:0.28em;
+  text-transform:uppercase;
+  font-size:12.5px;
+  color:var(--teal);
+  margin-bottom:22px;
+}
+.hero h1{
+  font-family:'Kanit',sans-serif;
+  font-weight:800;
+  font-size:clamp(28px,5vw,50px);
+  margin:0 0 18px;
+  color:var(--chalk);
+  max-width:820px;
+  margin-inline:auto;
+  line-height:1.3;
+}
+.hero .subtitle{
+  color:var(--chalk-dim);
+  font-size:17px;
+  max-width:640px;
+  margin:0 auto 30px;
+}
+.hero-formula{
+  display:inline-flex;
+  gap:34px;
+  flex-wrap:wrap;
+  justify-content:center;
+  padding:20px 30px;
+  border:1px solid var(--rule);
+  border-radius:var(--radius);
+  background:rgba(255,255,255,0.02);
+  color:var(--gold);
+  font-size:22px;
+}
+.hero-byline{
+  margin-top:34px;
+  font-family:'JetBrains Mono',monospace;
+  font-size:13px;
+  color:var(--chalk-dim);
+}
+.hero-byline b{color:var(--gold);font-weight:700;}
 
-        .summary-section p {
-            margin-bottom: 1rem;
-            text-align: justify;
-        }
+/* ---------- INDEX RAIL ---------- */
+nav.index{
+  position:sticky;
+  top:0;
+  z-index:20;
+  background:rgba(22,38,31,0.92);
+  backdrop-filter:blur(6px);
+  border-bottom:1px solid var(--rule);
+  padding:12px 18px;
+}
+nav.index .index-inner{
+  max-width:1040px;
+  margin:0 auto;
+  display:flex;
+  gap:8px;
+  overflow-x:auto;
+  scrollbar-width:thin;
+  padding-bottom:2px;
+}
+nav.index a{
+  flex:0 0 auto;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  width:34px;
+  height:34px;
+  border-radius:8px;
+  color:var(--chalk-dim);
+  text-decoration:none;
+  font-family:'JetBrains Mono',monospace;
+  font-size:13px;
+  border:1px solid transparent;
+  transition:all .15s ease;
+}
+nav.index a:hover, nav.index a.active{
+  border-color:var(--teal);
+  color:var(--teal);
+  background:rgba(95,179,163,0.08);
+}
 
-        .highlight-box {
-            background: #eff6ff;
-            border-left: 5px solid var(--primary-color);
-            padding: 1.25rem;
-            margin: 1.5rem 0;
-            border-radius: 0 8px 8px 0;
-        }
+/* ---------- MAIN / CARDS ---------- */
+main{
+  max-width:840px;
+  margin:0 auto;
+  padding:56px 22px 20px;
+  position:relative;
+  z-index:2;
+}
 
-        .highlight-box h3 {
-            color: var(--secondary-color);
-            margin-bottom: 0.5rem;
-        }
+section.card{
+  border:1px solid var(--rule);
+  border-radius:var(--radius);
+  background:rgba(255,255,255,0.015);
+  margin-bottom:34px;
+  padding:34px 30px 30px;
+  scroll-margin-top:70px;
+  position:relative;
+  overflow:hidden;
+}
+section.card::before{
+  content:"";
+  position:absolute;
+  left:0;top:0;bottom:0;
+  width:4px;
+  background:linear-gradient(180deg, var(--teal), var(--gold));
+}
 
-        .controls-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: var(--card-bg);
-            padding: 1rem 1.5rem;
-            border-radius: 12px;
-            margin-bottom: 1.5rem;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            border: 1px solid var(--border-color);
-            flex-wrap: wrap;
-            gap: 1rem;
-        }
+.card-eyebrow{
+  font-family:'JetBrains Mono',monospace;
+  font-size:12px;
+  letter-spacing:0.18em;
+  color:var(--chalk-dim);
+  text-transform:uppercase;
+  margin-bottom:14px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+.card-eyebrow .n{color:var(--gold);font-weight:700;}
+.card-eyebrow .tag{
+  font-family:'Sarabun',sans-serif;
+  letter-spacing:0;
+  text-transform:none;
+  font-size:12.5px;
+  color:var(--teal);
+  border:1px solid rgba(95,179,163,0.4);
+  padding:2px 9px;
+  border-radius:999px;
+}
 
-        .btn {
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            padding: 0.6rem 1.2rem;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: background-color 0.2s, transform 0.1s;
-        }
+.problem{
+  font-family:'Kanit',sans-serif;
+  font-size:clamp(22px,3.4vw,30px);
+  font-weight:600;
+  color:var(--chalk);
+  margin:0 0 26px;
+  padding-bottom:22px;
+  border-bottom:1px dashed var(--rule);
+}
+.problem .lead{
+  font-size:15px;
+  font-family:'Sarabun',sans-serif;
+  font-weight:400;
+  color:var(--chalk-dim);
+  display:block;
+  margin-bottom:10px;
+}
 
-        .btn:hover {
-            background-color: var(--secondary-color);
-        }
+.block{
+  margin-bottom:20px;
+  padding:18px 20px;
+  border-radius:10px;
+  border-left:3px solid var(--teal);
+  background:rgba(95,179,163,0.05);
+}
+.block.shortcut{
+  border-left-color:var(--gold);
+  background:rgba(227,178,60,0.06);
+}
+.block h4{
+  margin:0 0 10px;
+  font-family:'Kanit',sans-serif;
+  font-size:14.5px;
+  font-weight:600;
+  letter-spacing:0.02em;
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.block.standard h4{color:var(--teal);}
+.block.shortcut h4{color:var(--gold);}
+.block p{margin:6px 0;font-size:15.5px;color:var(--chalk);}
+.block p.step{margin:10px 0;}
 
-        .btn:active {
-            transform: scale(0.98);
-        }
+.script{
+  margin-top:22px;
+  padding:22px 24px 20px 56px;
+  position:relative;
+  border-radius:10px;
+  background:rgba(217,122,90,0.07);
+  border:1px solid rgba(217,122,90,0.25);
+}
+.script::before{
+  content:"“";
+  position:absolute;
+  left:16px;
+  top:6px;
+  font-family:'Kanit',sans-serif;
+  font-size:52px;
+  color:var(--coral);
+  opacity:0.55;
+  line-height:1;
+}
+.script h4{
+  margin:0 0 8px;
+  font-family:'Kanit',sans-serif;
+  font-size:13.5px;
+  font-weight:600;
+  color:var(--coral);
+  letter-spacing:0.03em;
+}
+.script p{
+  margin:0;
+  font-size:15.5px;
+  font-style:italic;
+  color:#f0e6de;
+}
 
-        .btn-reset {
-            background-color: #475569;
-        }
+footer{
+  text-align:center;
+  padding:50px 20px 70px;
+  color:var(--chalk-dim);
+  font-family:'JetBrains Mono',monospace;
+  font-size:13px;
+  letter-spacing:0.05em;
+  position:relative;
+  z-index:2;
+}
+footer b{color:var(--gold);}
 
-        .btn-reset:hover {
-            background-color: #334155;
-        }
-
-        /* Layout 2 Frames: Left 70%, Right 30% */
-        .workspace-layout {
-            display: flex;
-            gap: 1.5rem;
-            align-items: flex-start;
-        }
-
-        .exam-frame {
-            flex: 0 0 70%;
-            background: var(--card-bg);
-            border-radius: 12px;
-            padding: 2rem;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-            border: 1px solid var(--border-color);
-        }
-
-        .whiteboard-frame {
-            flex: 0 0 calc(30% - 1.5rem);
-            background: var(--card-bg);
-            border-radius: 12px;
-            padding: 1.5rem;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-            border: 1px solid var(--border-color);
-            position: sticky;
-            top: 2rem;
-        }
-
-        .whiteboard-frame h3 {
-            font-size: 1.1rem;
-            margin-bottom: 1rem;
-            color: var(--secondary-color);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        #whiteboard {
-            width: 100%;
-            height: 500px;
-            border: 2px dashed var(--border-color);
-            border-radius: 8px;
-            background-color: #ffffff;
-            cursor: crosshair;
-            touch-action: none;
-        }
-
-        .wb-tools {
-            display: flex;
-            gap: 0.5rem;
-            margin-top: 0.75rem;
-        }
-
-        .wb-btn {
-            padding: 0.4rem 0.8rem;
-            font-size: 0.85rem;
-            background: #e2e8f0;
-            color: var(--text-color);
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: 600;
-        }
-
-        .wb-btn.active {
-            background: var(--primary-color);
-            color: white;
-        }
-
-        /* Question Card Styles */
-        .question-card {
-            margin-bottom: 2rem;
-            padding-bottom: 2rem;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .question-card:last-child {
-            border-bottom: none;
-            margin-bottom: 0;
-            padding-bottom: 0;
-        }
-
-        .q-header {
-            font-size: 1.1rem;
-            font-weight: 700;
-            color: var(--secondary-color);
-            margin-bottom: 0.75rem;
-        }
-
-        .q-text {
-            font-size: 1.05rem;
-            margin-bottom: 1rem;
-            font-weight: 600;
-        }
-
-        .options-list {
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-            margin-bottom: 1rem;
-        }
-
-        .option-item {
-            padding: 0.75rem 1rem;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.2s;
-            background: #ffffff;
-        }
-
-        .option-item:hover {
-            background: #f1f5f9;
-            border-color: #cbd5e1;
-        }
-
-        .option-item.correct {
-            background: #dcfce7;
-            border-color: var(--success-color);
-            color: #166534;
-            font-weight: 600;
-        }
-
-        .option-item.incorrect {
-            background: #fee2e2;
-            border-color: var(--error-color);
-            color: #991b1b;
-        }
-
-        .clue-box {
-            font-size: 0.9rem;
-            color: #64748b;
-            margin-top: 0.5rem;
-            font-style: italic;
-        }
-
-        .explanation-box {
-            margin-top: 1rem;
-            padding: 1rem;
-            background: #f8fafc;
-            border-radius: 8px;
-            border: 1px solid var(--border-color);
-            display: none;
-        }
-
-        .explanation-box.show {
-            display: block;
-            animation: fadeIn 0.3s ease-in-out;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-5px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .exp-title {
-            font-weight: 700;
-            color: var(--primary-color);
-            margin-bottom: 0.5rem;
-        }
-
-        .exp-section {
-            margin-top: 0.5rem;
-        }
-
-        /* Results Panel */
-        .results-panel {
-            display: none;
-            background: var(--card-bg);
-            border-radius: 12px;
-            padding: 2.5rem;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-            border: 1px solid var(--border-color);
-            text-align: center;
-        }
-
-        .results-panel.show {
-            display: block;
-        }
-
-        .score-display {
-            font-size: 3rem;
-            font-weight: 800;
-            color: var(--primary-color);
-            margin: 1rem 0;
-        }
-
-        .analysis-container {
-            text-align: left;
-            margin-top: 2rem;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1.5rem;
-        }
-
-        .analysis-box {
-            padding: 1.5rem;
-            border-radius: 8px;
-            border: 1px solid var(--border-color);
-        }
-
-        .analysis-box.strength {
-            background: #f0fdf4;
-            border-color: #bbf7d0;
-        }
-
-        .analysis-box.weakness {
-            background: #fef2f2;
-            border-color: #fecaca;
-        }
-
-        .footer {
-            text-align: center;
-            padding: 2rem;
-            color: #64748b;
-            font-size: 0.95rem;
-        }
-
-        /* Responsive Design */
-        @media (max-width: 1024px) {
-            .workspace-layout {
-                flex-direction: column;
-            }
-            .exam-frame, .whiteboard-frame {
-                flex: 1 1 100%;
-                width: 100%;
-            }
-            .whiteboard-frame {
-                position: relative;
-                top: 0;
-            }
-            .analysis-container {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
+@media (max-width:560px){
+  section.card{padding:26px 18px 22px;}
+  .script{padding-left:44px;}
+  .script::before{font-size:40px;left:10px;}
+}
+</style>
 </head>
 <body>
 
-    <header>
-        <h1>ระบบคลังข้อสอบอัจฉริยะ</h1>
-        <p>วิชาคณิตศาสตร์: เรื่อง เลขยกกำลังที่มีเลขชี้กำลังเป็นจำนวนตรรกยะ</p>
-    </header>
+<header class="hero">
+  <div class="hero-eyebrow">คู่มือครู · เลขยกกำลัง</div>
+  <h1>เลขยกกำลังที่มีเลขชี้กำลัง<br>เป็นจำนวนตรรกยะ</h1>
+  <p class="subtitle">แนวทางสอนเฉลยข้อสอบทั้ง 25 ข้ออย่างเป็นระบบ พร้อมวิธีทำแบบมาตรฐาน เทคนิควิธีลัด และบทพูดสำหรับครูที่ใช้ภาษาพูดเข้าใจง่าย</p>
+  <div class="hero-formula">
+    <span>$a^{1/n}=\sqrt[n]{a}$</span>
+    <span>$a^{m/n}=(\sqrt[n]{a})^m$</span>
+    <span>$a^{-n}=\dfrac{1}{a^{n}}$</span>
+  </div>
+  <div class="hero-byline">จัดทำโดย <b>พระจอมเกล้าติวเตอร์</b></div>
+</header>
 
-    <div class="container">
-        <!-- สรุปเนื้อหาตามกฎ (500 คำขึ้นไป + เทคนิคการจำ) -->
-        <section class="summary-section">
-            <h2>สรุปเนื้อหาบทเรียน: เลขยกกำลังที่มีเลขชี้กำลังเป็นจำนวนตรรกยะ</h2>
-            <p>
-                ในทางคณิตศาสตร์ระดับมัธยมศึกษาตอนปลาย แนวคิดเรื่องเลขยกกำลังที่มีเลขชี้กำลังเป็นจำนวนตรรกยะ (Rational Exponents) ถือเป็นหัวใจสำคัญต่อยอดไปสู่ฟังก์ชันเอกซ์โปเนนเชียล ลอการิทึม และการแคลคูลัส โดยมีนิยามพื้นฐานมาจากรากที่ n (nth root) ของจำนวนจริง เมื่อกำหนดให้ $a$ เป็นจำนวนจริง และ $n$ เป็นจำนวนเต็มบวกที่มากกว่า 1 โดยที่ถ้า $a$ เป็นจำนวนลบ $n$ ต้องเป็นจำนวนคี่ เพื่อหลีกเลี่ยงจำนวนเชิงซ้อนในเบื้องต้น สมบัติของรากที่ $n$ สามารถเขียนให้อยู่ในรูปเลขยกกำลังที่มีเศษส่วนได้ผ่านความสัมพันธ์ที่ว่า $a^{1/n} = \sqrt[n]{a}$ ซึ่งทำให้การคำนวณที่ซับซ้อนด้วยเครื่องหมายกรณฑ์ (Radical sign) สามารถเปลี่ยนรูปให้อยู่ในระบบเลขยกกำลังปกติ เพื่อใช้กฎของเลขยกกำลังในการทดและจัดรูปได้อย่างราบรื่น
-            </p>
-            <p>
-                สำหรับการขยายความไปสู่เลขชี้กำลังที่เป็นเศษส่วนทั่วไปในรูป $a^{m/n}$ หรือ $a^{(m/n)}$ จะถูกนิยามขึ้นโดยอาศัยสมบัติการซ้อนกันของเลขยกกำลัง เกิดเป็นสูตรสำคัญคือ $a^{m/n} = (\sqrt[n]{a})^m = \sqrt[n]{a^m}$ ซึ่งข้อดีของการใช้รูปแบบ $(\sqrt[n]{a})^m$ คือการลดขนาดของตัวเลขก่อนนำไปยกกำลัง ทำให้ผู้เรียนสามารถคำนวณตัวเลขที่มีค่ามากได้อย่างรวดเร็วโดยไม่ต้องทดเลขขนาดใหญ่ นอกจากนี้ยังมีสมบัติที่สำคัญและจำเป็นต้องแม่นยำ ได้แก่ การคูณเลขยกกำลังที่มีฐานเดียวกันให้นำเลขชี้กำลังมาบวกกัน ($a^m \cdot a^n = a^{m+n}$), การหารเลขยกกำลังที่มีฐานเดียวกันให้นำเลขชี้กำลังมาลบกัน ($a^m / a^n = a^{m-n}$), สมบัติกำลังซ้อนกำลังให้นำเลขชี้กำลังมาคูณกัน ($(a^m)^n = a^{m \cdot n}$), สมบัติการกระจายผลคูณและผลหาร ตลอดจนสมบัติของเลขชี้กำลังติดลบที่มีหลักการสำคัญคือการสลับตำแหน่งจากเศษไปส่วนหรือส่วนไปพร้อมกับเปลี่ยนเครื่องหมายของเลขชี้กำลังให้เป็นบวก ($a^{-n} = 1/a^n$)
-            </p>
-            <p>
-                ในกระบวนการแก้โจทย์ปัญหาเกี่ยวกับเลขยกกำลังตรรกยะ ผู้เรียนมักจะพบข้อผิดพลาดบ่อยครั้ง เช่น การนำฐานมาบวกหรือคูณกันโดยตรงเมื่อฐานเท่ากันในการคูณ (ซึ่งที่ถูกต้องคือฐานคงเดิมแล้วนำเลขชี้กำลังมาดำเนินการ), การสับสนเรื่องเครื่องหมายลบเมื่อถอดรากอันดับคี่และอันดับคู่, หรือการละเลยการแปลงฐานให้เป็นจำนวนเฉพาะ (Prime factorization) ก่อนเริ่มทำการตัดทอนเลขชี้กำลัง การฝึกฝนผ่านโจทย์ชุดนี้จึงถูกออกแบบมาเพื่อทดสอบความเข้าใจเชิงลึก ป้องกันการท่องจำแบบผิดๆ และสร้างทักษะกระบวนการคิดวิเคราะห์อย่างเป็นระบบ เพื่อให้ผู้เรียนสามารถประยุกต์ใช้ในการแก้โจทย์ปัญหาแข่งขันและข้อสอบเข้ามหาวิทยาลัยได้อย่างมั่นใจ
-            </p>
-            
-            <div class="highlight-box">
-                <h3>เทคนิคการจำและกระบวนการคิดระดับเซียนจากติวเตอร์</h3>
-                <ul>
-                    <li><strong>คาถา "ล่างคือราก บนคือกำลัง":</strong> เมื่อเจอ $a^{m/n}$ ให้จำทันทีว่าตัวส่วน $n$ คืออันดับของราก (ต้องเอาไปถอดรากก่อนเพื่อให้เลขมีขนาดลดลง) ส่วนตัวเศษ $m$ คือกำลังที่นำมาคิดทีหลัง</li>
-                    <li><strong>คาถา "แปลงฐานเป็นจำนวนเฉพาะ":</strong> ก่อนคำนวณเลขยกกำลังที่มีค่ามาก เช่น 8, 16, 27, 32, 64, 81 หรือ 125 ให้แปลงเป็นเลขฐานเฉพาะ (เช่น $2^3, 2^4, 3^3, 2^5, 2^6, 3^4, 5^3$) ทุกครั้ง เพื่อให้สามารถใช้สมบัติการตัดทอนเศษส่วนของเลขชี้กำลังได้อย่างรวดเร็ว</li>
-                    <li><strong>คาถา "ตบลงล่าง กำลังเปลี่ยนเป็นบวก":</strong> เมื่อเจอเลขชี้กำลังติดลบ ห้ามตกใจ ให้ตบพจน์นั้นสลับข้ามเศษส่วน (จากบนลงล่าง หรือจากล่างขึ้นบน) แล้วเครื่องหมายลบที่ชี้กำลังจะหายไปทันที</li>
-                </ul>
-            </div>
-        </section>
+<nav class="index">
+  <div class="index-inner" id="indexRail"></div>
+</nav>
 
-        <!-- Controls Bar -->
-        <div class="controls-bar">
-            <div>
-                <button class="btn" id="lang-toggle-btn" onclick="toggleLanguage()">🌐 เปลี่ยนภาษา (TH / EN)</button>
-            </div>
-            <div>
-                <button class="btn btn-reset" onclick="resetExam()">🔄 Reset ข้อสอบในหน่วยความจำ</button>
-            </div>
-        </div>
+<main id="main"></main>
 
-        <!-- Workspace Layout: Exam on Left (70%), Whiteboard on Right (30%) -->
-        <div class="workspace-layout">
-            <div class="exam-frame">
-                <form id="quiz-form">
-                    <div id="questions-container">
-                        <!-- Dynamic Questions injected via JavaScript -->
-                    </div>
-                    <div style="margin-top: 2rem; text-align: center;">
-                        <button type="button" class="btn" id="submit-btn" onclick="submitExam()" style="padding: 0.8rem 2rem; font-size: 1.1rem;">ส่งคำตอบและดูผลวิเคราะห์</button>
-                    </div>
-                </form>
+<footer>เขียนโดย <b>พระจอมเกล้าติวเตอร์</b></footer>
 
-                <!-- Results & Analysis Panel -->
-                <div id="results-panel" class="results-panel">
-                    <h2>ผลการประเมินการทดสอบ</h2>
-                    <div class="score-display" id="score-display">0 / 25</div>
-                    <p id="score-comment" style="font-size: 1.1rem; margin-bottom: 1.5rem;"></p>
-                    
-                    <div class="analysis-container">
-                        <div class="analysis-box strength">
-                            <h3 style="color: var(--success-color); margin-bottom: 0.75rem;">🌟 จุดเด่น (Strengths)</h3>
-                            <p id="strength-text">ผู้เรียนมีความเข้าใจในระดับดีเยี่ยมเกี่ยวกับการใช้สมบัติพื้นฐานของเลขยกกำลัง การแปลงรูปรากเป็นเลขชี้กำลังเศษส่วน และการใช้เทคนิคแปลงฐานเป็นจำนวนเฉพาะได้อย่างแม่นยำ</p>
-                        </div>
-                        <div class="analysis-box weakness">
-                            <h3 style="color: var(--error-color); margin-bottom: 0.75rem;">⚠️ จุดด้อยที่ควรพัฒนา (Areas for Improvement)</h3>
-                            <p id="weakness-text">ควรกลับไปทบทวนเพิ่มเติมในส่วนของการจัดการเครื่องหมายลบในเลขชี้กำลังซ้อนกัน และความแม่นยำในการบวกลบเศษส่วนของเลขชี้กำลังที่มีตัวส่วนไม่เท่ากัน</p>
-                        </div>
-                    </div>
-                    <button class="btn" onclick="resetExam()" style="margin-top: 2rem;">ทำข้อสอบใหม่อีกครั้ง</button>
-                </div>
-            </div>
+<script>
+const questions = [
+{n:1, tag:"รากที่สอง", problem:"16^{1/2}",
+ standard:["จากนิยาม $a^{1/n}=\\sqrt[n]{a}$","ดังนั้น $16^{1/2}=\\sqrt{16}$","เนื่องจาก $4\\times4=16$ ดังนั้น $\\sqrt{16}=4$"],
+ shortcut:["เปลี่ยนฐาน 16 ให้อยู่ในรูป $4^2$ จะได้ $(4^2)^{1/2}=4^{2\\times(1/2)}=4^1=4$"],
+ script:"นักเรียนครับ เจอชี้กำลังเป็น $\\frac{1}{2}$ เมื่อไหร่ ให้จำไว้เลยว่ามันคือ 'เครื่องหมายรากที่สอง' ครับ โจทย์ถาม $16^{1/2}$ ก็เหมือนถามเราว่า 'เลขอะไรเอ่ยคูณตัวเองแล้วได้ 16?' คำตอบก็คือ 4 นั่นเองครับง่ายๆ เลย!"},
 
-            <!-- Whiteboard Frame (Right 30%) -->
-            <div class="whiteboard-frame">
-                <h3>
-                    <span>กระดานทด (Whiteboard)</span>
-                    <span style="font-size: 0.8rem; font-weight: normal; color: #64748b;">ทดเลข / วาดภาพ</span>
-                </h3>
-                <canvas id="whiteboard"></canvas>
-                <div class="wb-tools">
-                    <button class="wb-btn active" id="pen-btn" onclick="setWbTool('pen')">ปากกา</button>
-                    <button class="wb-btn" id="eraser-btn" onclick="setWbTool('eraser')">ยางลบ</button>
-                    <button class="wb-btn" onclick="clearWhiteboard()">ล้างกระดาน</button>
-                </div>
-            </div>
-        </div>
+{n:2, tag:"รากที่สาม", problem:"27^{1/3}",
+ standard:["จากนิยาม $a^{1/n}=\\sqrt[n]{a}$","จะได้ $27^{1/3}=\\sqrt[3]{27}$","หาจำนวนจริงที่คูณกัน 3 ตัวแล้วได้ 27 คือ $3\\times3\\times3=27$ ดังนั้นคำตอบคือ 3"],
+ shortcut:["เปลี่ยน 27 เป็น $3^3$ จะได้ $(3^3)^{1/3}=3^{3\\times(1/3)}=3^1=3$"],
+ script:"ข้อนี้เลขชี้กำลังคือ $\\frac{1}{3}$ ตัวส่วนข้างล่างคือเลข 3 แปลว่าเรากำลังมองหา 'รากที่สาม' ครับ ลองคิดในใจสิว่า เลขอะไรที่หน้าตาเหมือนกันเป๊ะๆ คูณกัน 3 ครั้งแล้วได้ 27... ลองเอา 3 มาคูณกันดู $3\\times3=9$ แล้ว $9\\times3=27$ เป๊ะเลย! ตอบ 3 ครับ"},
+
+{n:3, tag:"ล่างคือราก บนคือกำลัง", problem:"8^{2/3}",
+ standard:["จากนิยาม $a^{m/n}=(\\sqrt[n]{a})^m$","จะได้ $8^{2/3}=(\\sqrt[3]{8})^2$","หาค่า $\\sqrt[3]{8}=2$ จากนั้นนำไปยกกำลังสอง $2^2=4$"],
+ shortcut:["คาถา: 'ล่างคือราก บนคือกำลัง'","1. ถอดรากที่ 3 ของ 8 ก่อน ได้ 2","2. เอา 2 ไปยกกำลัง 2 ข้างบน ได้ 4"],
+ script:"ถ้าเจอเศษส่วนซ้อนกันแบบนี้ อย่าเพิ่งตกใจครับ ใช้เทคนิค 'ล่างคือราก บนคือกำลัง' เลข 3 อยู่ล่างจับถอดรากก่อน $\\sqrt[3]{8}$ ได้ 2 พอได้ 2 ปุ๊บ นำไปยกกำลัง 2 ตัวบนต่อทันที $2^2$ ได้ 4 เห็นไหมครับ ถอดรากก่อนช่วยให้ตัวเลขน้อยลง คำนวณง่ายขึ้นเยอะเลย!"},
+
+{n:4, tag:"แปลงฐานเป็นจำนวนเฉพาะ", problem:"32^{3/5}",
+ standard:["$32^{3/5}=(\\sqrt[5]{32})^3$","หาค่า $\\sqrt[5]{32}$ เนื่องจาก $2^5=32$ ดังนั้น $\\sqrt[5]{32}=2$","นำไปยกกำลังสามจะได้ $2^3=8$"],
+ shortcut:["แปลงฐาน 32 เป็น $2^5$ จะได้ $(2^5)^{3/5}=2^{5\\times(3/5)}=2^3=8$"],
+ script:"ครูมีทริคสำคัญมาบอกครับ 'แปลงฐานให้เป็นจำนวนเฉพาะก่อนเสมอ' พอเจอ 32 ปุ๊บ ให้เปลี่ยนเป็น $2^5$ ทันที ทีนี้เราเอาเลขชี้กำลัง $5\\times\\frac{3}{5}$ เลข 5 ตัดกันหายไปเลย เหลือแค่ $2^3$ ซึ่งก็คือ 8 จบใน 2 บรรทัดครับ"},
+
+{n:5, tag:"ตัดเลขชี้กำลัง", problem:"81^{3/4}",
+ standard:["$81^{3/4}=(\\sqrt[4]{81})^3$","หาค่า $\\sqrt[4]{81}=3$ (เพราะ $3\\times3\\times3\\times3=81$)","นำมาคิดต่อ $3^3=27$"],
+ shortcut:["แปลง 81 เป็น $3^4 \\rightarrow (3^4)^{3/4}=3^{4\\times(3/4)}=3^3=27$"],
+ script:"81 มาจากอะไรครับ? $9\\times9$ ใช่ไหม และ 9 ละครับ ก็คือ $3\\times3$ สรุป 81 คือ $3^4$ นำไปตัดกับส่วน 4 ของเลขชี้กำลังตัดฉับ! เหลือ $3^3$ ตอบ 27 ได้ทันที ไม่ต้องตั้งคูณตัวเลขเยอะๆ ให้เหนื่อยเลยครับ"},
+
+{n:6, tag:"เลขชี้กำลังติดลบ", problem:"9^{-1/2}",
+ standard:["จากนิยาม $a^{-n}=\\dfrac{1}{a^n}$","จัดรูปเป็น $\\dfrac{1}{9^{1/2}}=\\dfrac{1}{\\sqrt{9}}=\\dfrac{1}{3}$"],
+ shortcut:["ท่องว่า 'ตบลงล่าง กำลังเป็นบวก'","เจอ $9^{-1/2}$ ให้ย้ายลงไปเป็นตัวส่วนข้างล่าง ได้ $\\dfrac{1}{9^{1/2}}=\\dfrac{1}{3}$"],
+ script:"จำไว้นะครับ เครื่องหมายลบที่เลขชี้กำลังไม่ได้แปลว่าค่านั้นติดลบ! แต่มันคือการร้องบอกว่า 'ช่วยย้ายฉันลงไปข้างล่างหน่อย!' พอเราตบ $9^{-1/2}$ ลงไปเป็นตัวส่วน ลบจะหายไปทันที กลายเป็น $\\frac{1}{9^{1/2}}$ ซึ่ง $\\sqrt{9}=3$ คำตอบเลยได้ $\\frac{1}{3}$ ครับ"},
+
+{n:7, tag:"รวมสองทริค", problem:"125^{-2/3}",
+ standard:["ย้ายลงล่างเพื่อปลดเครื่องหมายลบ: $\\dfrac{1}{125^{2/3}}$","คำนวณ $125^{2/3}=(\\sqrt[3]{125})^2=5^2=25$","ดังนั้นคำตอบคือ $\\dfrac{1}{25}$"],
+ shortcut:["$125=5^3 \\rightarrow \\dfrac{1}{(5^3)^{2/3}}=\\dfrac{1}{5^{3\\times(2/3)}}=\\dfrac{1}{5^2}=\\dfrac{1}{25}$"],
+ script:"ข้อนี้รวม 2 ทริคเข้าด้วยกัน! ขั้นแรก ลบที่กำลัง ย้ายลงล่างเป็น $\\frac{1}{125^{2/3}}$ ขั้นที่สอง $125$ ถอดรากที่ $3$ ได้ $5$ แล้วยกกำลัง $2$ ได้ $25$ รวบคำตอบเข้าด้วยกันได้ $\\frac{1}{25}$ ตรวจสอบสติให้ดี อย่าลืมใส่เลข 1 ข้างบนนะครับ"},
+
+{n:8, tag:"ฐานเดียวกันคูณกัน", problem:"2^{1/2}\\times 2^{3/2}",
+ standard:["ใช้สมบัติ $a^m\\times a^n=a^{m+n}$","จะได้ $2^{(1/2+3/2)}=2^{4/2}=2^2=4$"],
+ shortcut:["ฐานเหมือนกันคูณกัน นำกำลังมาบวกกัน: $\\frac{1}{2}+\\frac{3}{2}=\\frac{4}{2}=2$ ตอบ $2^2=4$"],
+ script:"เห็นฐาน 2 เหมือนกันไหมครับ? กฎเหล็กของเลขยกกำลังคือ 'ฐานเดียวกันคูณกัน นำกำลังมาบวกกัน' เอาเศษส่วน $\\frac{1}{2}+\\frac{3}{2}$ ได้ $\\frac{4}{2}$ ซึ่งหารกันลงตัวได้ $2$ ยุบรวมเหลือ $2^2$ เท่ากับ $4$ จำไว้ว่าฐานห้ามคูณกันนะ ฐานยังเป็น 2 เหมือนเดิม!"},
+
+{n:9, tag:"ฐานเดียวกันหารกัน", problem:"5^{5/2}\\div 5^{1/2}",
+ standard:["ใช้สมบัติ $a^m\\div a^n=a^{m-n}$","จะได้ $5^{(5/2-1/2)}=5^{4/2}=5^2=25$"],
+ shortcut:["หารกันนำกำลังมาลบ: $\\frac{5}{2}-\\frac{1}{2}=\\frac{4}{2}=2 \\rightarrow 5^2=25$"],
+ script:"คูณนำกำลังมาบวก แล้วถ้าหารกันล่ะ? ถูกต้องครับ นำกำลังมาลบกัน! $\\frac{5}{2}$ ลบออก $\\frac{1}{2}$ เหลือ $\\frac{4}{2}$ ซึ่งก็คือ $2$ นำกลับไปตั้งบนฐาน $5$ ได้ $5^2=25$ ชิลๆ เลยครับข้อนี้"},
+
+{n:10, tag:"รากอันดับคี่ของค่าลบ", problem:"(-8)^{1/3}",
+ standard:["$(-8)^{1/3}=\\sqrt[3]{-8}$","หาจำนวนที่คูณกัน 3 ครั้งได้ -8 คือ $(-2)\\times(-2)\\times(-2)=-8$","ดังนั้นคำตอบคือ -2"],
+ shortcut:["รากอันดับคี่ (เช่น รากที่ 3, 5, 7) ของติดลบ หาค่าได้เสมอ คำตอบจะติดลบตาม"],
+ script:"ข้อระวังระดับชาติ! ถ้ารากเป็น 'เลขคี่' อย่างรากที่ 3 ถอดค่าติดลบได้นะครับ เช่นข้อนี้ $(-2)$ คูณกันสามครั้งได้ $-8$ คำตอบจึงเป็น $-2$ ได้เลย ไม่ต้องตอบว่าหาค่าไม่ได้นะครับ"},
+
+{n:11, tag:"ในหารด้วยนอก", problem:"\\sqrt[4]{x^8}",
+ standard:["เปลี่ยนรากเป็นเลขชี้กำลังเศษส่วน $\\sqrt[n]{a^m}=a^{m/n}$","จะได้ $x^{8/4}=x^2$"],
+ shortcut:["เอาดีกรีข้างใน (8) หารด้วยอันดับรากข้างนอก (4) ได้ $8\\div4=2$ ตอบ $x^2$"],
+ script:"จำสูตรง่ายๆ ไว้ครับ 'เอาข้างในหารด้วยข้างนอก' กำลังข้างในคือ 8 อันดับรากข้างนอกคือ 4 จับ 8 ตั้งหารด้วย 4 ได้ 2 ปุ๊บ หลุดออกจากรูทกลายเป็น $x^2$ ทันทีครับ"},
+
+{n:12, tag:"แจกกำลังเข้าไป", problem:"(16x^4)^{1/2}",
+ standard:["ใช้สมบัติกระจายเลขชี้กำลัง $(ab)^n=a^nb^n$","$=16^{1/2}\\times(x^4)^{1/2}=\\sqrt{16}\\times x^{4/2}=4x^2$"],
+ shortcut:["ถอดรากที่ 2 ของทั้งตัวเลขและตัวแปรทีละตัว: $\\sqrt{16}=4$ และ $\\sqrt{x^4}=x^2$ ตอบ $4x^2$"],
+ script:"มีวงเล็บแล้วมีกำลังอยู่ข้างนอก ให้แจกแจงเข้าไปหาทุกตัวข้างในนะครับ! แจกให้ 16 กลายเป็น $\\sqrt{16}=4$ แจกให้ $x^4$ นำกำลังคูณกัน $4\\times\\frac{1}{2}=2$ จับมารวมกันได้ $4x^2$ อย่าลืมแจกให้ตัวเลขข้างหน้าด้วยนะ เด็กๆ มักจะลืมกันเยอะ"},
+
+{n:13, tag:"ทำตัวเลขให้เล็กก่อน", problem:"64^{5/6}",
+ standard:["แปลง 64 เป็นเลขฐาน 2: $64=2^6$","$(2^6)^{5/6}=2^{6\\times(5/6)}=2^5$","$2^5=32$"],
+ shortcut:["ถอดรากที่ 6 ของ 64 ได้ 2 แล้วยกกำลัง 5 ได้ 32"],
+ script:"เจอ 64 อย่ายกกำลัง 5 ก่อนเด็ดขาด ไม่งั้นตัวเลขจะมหาศาลมาก! ให้ทำตัวเลขให้เล็กก่อนด้วยการแปลง $64=2^6$ เห็นไหมครับว่าส่วน 6 ข้างล่างกับกำลัง 6 ตัดกันหายวับ เหลือแค่ $2^5$ นับนิ้วแป๊บเดียวได้ 32 ครับ"},
+
+{n:14, tag:"นับเลขศูนย์", problem:"10000^{3/4}",
+ standard:["$10000=10^4$","$(10^4)^{3/4}=10^{4\\times(3/4)}=10^3=1000$"],
+ shortcut:["นับศูนย์มี 4 ตัว ถอดรากที่ 4 เหลือศูนย์ 1 ตัว (คือ 10) นำ 10 ไปยกกำลัง 3 ได้ศูนย์ 3 ตัว ตอบ 1000"],
+ script:"10,000 มีเลข 0 อยู่ 4 ตัว ใช่ไหมครับ? แปลว่ามันคือ $10^4$ นำไปเจอชี้กำลัง $\\frac{3}{4}$ เลข 4 ตัด 4 เหลือ $10^3$ คำตอบก็คือ มีเลข 0 สามตัว หรือ 1,000 นั่นเองครับ"},
+
+{n:15, tag:"ตัวแปรฐานเดียวกัน", problem:"x^{2/3}\\cdot x^{4/3}",
+ standard:["ฐาน $x$ เหมือนกันคูณกัน นำเลขชี้กำลังมาบวกกัน","$x^{(2/3+4/3)}=x^{6/3}=x^2$"],
+ shortcut:["ส่วนเป็น 3 เหมือนกัน จับเศษบวกกัน $2+4=6 \\rightarrow 6/3=2$ ตอบ $x^2$"],
+ script:"ข้อนี้ติดตัวแปร $x$ แต่ใช้หลักการเดิมเป๊ะครับ ฐาน $x$ เหมือนกันคูณกัน เอาตัวบนบวกกันได้ $\\frac{2+4}{3}=\\frac{6}{3}$ ตัดทอนเป็นเศษส่วนอย่างต่ำได้ $2$ ได้คำตอบเป็น $x^2$ ครับ"},
+
+{n:16, tag:"หารตัวแปรฐานเดียวกัน", problem:"x^{3/4}/x^{1/4}",
+ standard:["ฐาน $x$ เหมือนกันหารกัน นำเลขชี้กำลังมาลบกัน","$x^{(3/4-1/4)}=x^{2/4}=x^{1/2}=\\sqrt{x}$"],
+ shortcut:["$\\frac{3}{4}-\\frac{1}{4}=\\frac{2}{4}=\\frac{1}{2}$ เปลี่ยนรูปกลับเป็นเครื่องหมายรากได้ $\\sqrt{x}$"],
+ script:"จับเลขชี้กำลังมาลบกันครับ $\\frac{3}{4}-\\frac{1}{4}$ เหลือ $\\frac{2}{4}$ ตัดทอนได้ $\\frac{1}{2}$ จำได้ไหมเอ่ยว่ากำลัง $\\frac{1}{2}$ แปลงกลับเป็นสัญลักษณ์อะไร? ถูกต้องครับ คือ $\\sqrt{x}$ นั่นเอง"},
+
+{n:17, tag:"ฐานลบ รากคี่", problem:"(-32)^{3/5}",
+ standard:["$(-32)=(-2)^5$","$[(-2)^5]^{3/5}=(-2)^{5\\times(3/5)}=(-2)^3=-8$"],
+ shortcut:["ถอดรากที่ 5 ของ -32 ได้ -2 นำ -2 ไปยกกำลัง 3 ได้ -8"],
+ script:"มีเครื่องหมายลบข้างในวงเล็บ ตั้งสติก่อนครับ! แปลง $-32$ เป็น $(-2)^5$ เลข 5 ตัดกับส่วน 5 ข้างนอก เหลือ $(-2)^3$ ซึ่ง ลบ คูณ ลบ คูณ ลบ ผลลัพธ์ต้องออกมาติดลบ ได้ $-8$ ครับ"},
+
+{n:18, tag:"บนอยู่บน ล่างอยู่ล่าง", problem:"\\sqrt[3]{x^2}",
+ standard:["จากสูตรเปลี่ยนรูปสัญลักษณ์รากเป็นเศษส่วน $\\sqrt[n]{a^m}=a^{m/n}$","ดังนั้น $\\sqrt[3]{x^2}=x^{2/3}$"],
+ shortcut:["คาถาเดิม: 'ในอยู่บน นอกอยู่ล่าง' (เลขกำลังในรากอยู่บน อันดับรากอยู่ล่าง)"],
+ script:"ข้อนี้เน้นการเปลี่ยนรูปสัญลักษณ์ครับ จำท่องขึ้นใจเลยนะ 'ตัวในอยู่บน ตัวนอกอยู่ล่าง' เลข 2 อยู่ข้างในเอาไว้บน เลข 3 อยู่ข้างนอกเอาไว้ล่าง ได้ $x^{2/3}$ ทันทีครับ"},
+
+{n:19, tag:"แยกคิดตัวเลขและตัวแปร", problem:"(81x^8)^{1/4}",
+ standard:["กระจายกำลัง $\\frac{1}{4}$ เข้าไป: $81^{1/4}\\times(x^8)^{1/4}$","$=(3^4)^{1/4}\\times x^{8/4}=3^1\\times x^2=3x^2$"],
+ shortcut:["ถอดรากที่ 4 ของ 81 ได้ 3 และนำ 8 ไปหาร 4 ได้ 2 ตอบ $3x^2$"],
+ script:"แยกคิดสองส่วนครับ ส่วนตัวเลข $\\sqrt[4]{81}=3$ ส่วนตัวแปร เอา 8 หารด้วย 4 ได้ 2 จับมารวมกันเป็น $3x^2$ ตอบได้รวดเร็วและแม่นยำมากครับ"},
+
+{n:20, tag:"แปลงฐานให้เล็กลง", problem:"16^{3/4}",
+ standard:["$16=2^4$","$(2^4)^{3/4}=2^{4\\times(3/4)}=2^3=8$"],
+ shortcut:["ถอดรากที่ 4 ของ 16 ได้ 2 แล้วนำ 2 ไปยกกำลัง 3 ได้ 8"],
+ script:"เปลี่ยน 16 ให้เป็นฐาน 2 จะได้ $2^4$ พอยกกำลัง $\\frac{3}{4}$ เลข 4 ตัดกันพอดี เหลือ $2^3$ ได้คำตอบคือ 8 ครับ"},
+
+{n:21, tag:"ย้ายขึ้น กำลังติดลบ", problem:"\\dfrac{1}{\\sqrt{x}}",
+ standard:["แปลง $\\sqrt{x}=x^{1/2}$ จะได้ $\\dfrac{1}{x^{1/2}}$","ย้ายขึ้นมาจากตัวส่วน โดยเปลี่ยนเลขชี้กำลังเป็นติดลบ ได้ $x^{-1/2}$"],
+ shortcut:["ติดรูทอยู่ข้างล่าง = กำลังติดลบเศษส่วน ตอบ $x^{-1/2}$"],
+ script:"ข้อนี้มีสองขั้นตอนนะเด็กๆ ขั้นแรก รูท $x$ คือ $x^{1/2}$ แต่มันนอนอยู่ข้างล่างเป็นตัวส่วน ถ้าเราจะดึงมันขึ้นมาข้างบน กำลังต้องติดลบ! จึงกลายเป็น $x^{-1/2}$ ครับ"},
+
+{n:22, tag:"กำลังซ้อนกำลัง", problem:"(x^{-2/3})^{-3}",
+ standard:["ใช้สมบัติยกกำลังซ้อนกัน $(a^m)^n=a^{m\\times n}$","จะได้ $x^{(-2/3)\\times(-3)}=x^{+6/3}=x^2$"],
+ shortcut:["ลบคูณลบเป็นบวก $3$ ตัด $3$ เหลือ $2$ ตอบ $x^2$"],
+ script:"กำลังซ้อนกำลัง เอาเลขชี้กำลังมาคูณกัน! ลบสี่ส่วนสาม คูณกับ ลบสาม เครื่องหมายลบเจอติดลบกลายเป็นบวก $3$ ตัด $3$ หายไป เหลือแค่ $x^2$ สบายเลยครับ"},
+
+{n:23, tag:"ทศนิยมเป็นเศษส่วน", problem:"4^{1.5}",
+ standard:["แปลงทศนิยมเป็นเศษส่วน $1.5=\\frac{15}{10}=\\frac{3}{2}$","คำนวณ $4^{3/2}=(2^2)^{3/2}=2^{2\\times(3/2)}=2^3=8$"],
+ shortcut:["$1.5$ คือ 'หนึ่งครึ่ง' หรือ $\\frac{3}{2}$ ถอดรากที่สองของ 4 ได้ 2 แล้วยกกำลัง 3 ได้ 8"],
+ script:"เจอเลขชี้กำลังเป็นทศนิยม อย่าเพิ่งตกใจครับ! เปลี่ยน $1.5$ เป็นเศษส่วนอย่างต่ำได้ $\\frac{3}{2}$ ทีนี้ก็หวานหมูเลย $4^{\\frac{3}{2}}$ ถอดรากที่สองของ $4$ ได้ $2$ แล้วยกกำลังสาม ได้คำตอบเป็น 8 ครับ"},
+
+{n:24, tag:"ถอดรากทีละส่วน", problem:"\\sqrt[3]{-27x^6}",
+ standard:["ถอดรากแยกทีละส่วน: $\\sqrt[3]{-27}\\times\\sqrt[3]{x^6}$","$=(-3)\\times x^{6/3}=-3x^2$"],
+ shortcut:["$\\sqrt[3]{-27}=-3$ และเอา 6 หาร 3 ได้ 2 ตอบ $-3x^2$"],
+ script:"ถอดรากทีละตัวครับ รากที่สามของ $-27$ ได้ $-3$ ส่วน $x^6$ เอาดีกรี $6$ หารด้วย $3$ ได้ $2$ นำมารวมกันเป็น $-3x^2$ ระวังเรื่องเครื่องหมายติดลบด้วยนะ"},
+
+{n:25, tag:"รวบทุกสมบัติ", problem:"\\dfrac{x^2\\cdot x^{1/2}}{x^{3/2}}",
+ standard:["ยุบตัวบน (คูณกันนำกำลังมาบวก): $x^{(2+1/2)}=x^{5/2}$","ยุบกับตัวล่าง (หารกันนำกำลังมาลบ): $x^{(5/2-3/2)}=x^{2/2}=x^1=x$"],
+ shortcut:["นำเลขชี้กำลังทั้งหมดมารวบในบรรทัดเดียว: $2+0.5-1.5=1$ ตอบ $x^1=x$"],
+ script:"ข้อสุดท้ายรวมสมบัติทุกอย่างไว้เลย! ตัวบนคูณกันเอาเลขชี้กำลังมาบวก $2+0.5=2.5$ ตัวล่างหารอยู่เอาไปลบ $2.5-1.5=1$ ผลลัพธ์สุดท้ายเหลือ $x^1$ หรือ $x$ ตัวเดียวจบเกมอย่างสวยงามครับ!"}
+];
+
+const main = document.getElementById('main');
+const rail = document.getElementById('indexRail');
+
+questions.forEach(q => {
+  const link = document.createElement('a');
+  link.href = '#q' + q.n;
+  link.textContent = q.n;
+  rail.appendChild(link);
+
+  const section = document.createElement('section');
+  section.className = 'card';
+  section.id = 'q' + q.n;
+
+  section.innerHTML = `
+    <div class="card-eyebrow"><span class="n">ข้อที่ ${String(q.n).padStart(2,'0')}</span><span class="tag">${q.tag}</span></div>
+    <div class="problem"><span class="lead">จงหาผลลัพธ์ของ</span>$${q.problem}$</div>
+    <div class="block standard">
+      <h4>วิธีทำแบบมาตรฐาน</h4>
+      ${q.standard.map(s => `<p class="step">${s}</p>`).join('')}
     </div>
-
-    <div class="footer">
-        เขียนโดย พระจอมเกล้าติวเตอร์
+    <div class="block shortcut">
+      <h4>เทคนิควิธีลัด</h4>
+      ${q.shortcut.map(s => `<p class="step">${s}</p>`).join('')}
     </div>
+    <div class="script">
+      <h4>บทพูดสำหรับครู</h4>
+      <p>${q.script}</p>
+    </div>
+  `;
+  main.appendChild(section);
+});
 
-    <script>
-        // Data containing all 25 questions with TH/EN support
-        const rawQuestions = [
-            {
-                id: 1,
-                th: {
-                    question: "จงหาค่าของ 16^(1/2)",
-                    options: ["2", "4", "8", "16"],
-                    correct: 1,
-                    clue: "คำใบ้: ชี้กำลัง 1/2 คือรากที่สองของ 16",
-                    std: "จากนิยาม a^(1/n) = รากที่ n ของ a ดังนั้น 16^(1/2) = √16 เนื่องจาก 4 × 4 = 16 ดังนั้น √16 = 4",
-                    shortcut: "เปลี่ยนฐาน 16 เป็น 4^2 จะได้ (4^2)^(1/2) = 4^(2 × 1/2) = 4^1 = 4",
-                    script: "นักเรียนครับ เจอชี้กำลังเป็น 1/2 เมื่อไหร่ ให้จำไว้เลยว่ามันคือ 'เครื่องหมายรากที่สอง' ครับ โจทย์ถาม 16^(1/2) ก็เหมือนถามเราว่า 'เลขอะไรเอ่ยคูณตัวเองแล้วได้ 16?' คำตอบก็คือ 4 นั่นเองครับง่ายๆ เลย!"
-                },
-                en: {
-                    question: "Find the value of 16^(1/2)",
-                    options: ["2", "4", "8", "16"],
-                    correct: 1,
-                    clue: "Clue: Power of 1/2 means the square root of 16.",
-                    std: "By definition a^(1/n) = nth root of a, so 16^(1/2) = √16 = 4.",
-                    shortcut: "Change base 16 to 4^2 -> (4^2)^(1/2) = 4^1 = 4.",
-                    script: "Students, whenever you see an exponent of 1/2, it means square root. What multiplies by itself to give 16? Exactly 4!"
-                }
-            },
-            {
-                id: 2,
-                th: {
-                    question: "จงหาค่าของ 27^(1/3)",
-                    options: ["3", "9", "27", "1/3"],
-                    correct: 0,
-                    clue: "คำใบ้: ชี้กำลัง 1/3 คือรากที่สาม มองหาเลขที่คูณกัน 3 ครั้งได้ 27",
-                    std: "จากนิยาม a^(1/n) = รากที่ n ของ a จะได้ 27^(1/3) = รากที่สามของ 27 เนื่องจาก 3 × 3 × 3 = 27 ดังนั้นคำตอบคือ 3",
-                    shortcut: "เปลี่ยน 27 เป็น 3^3 จะได้ (3^3)^(1/3) = 3^(3 × 1/3) = 3^1 = 3",
-                    script: "ข้อนี้เลขชี้กำลังคือ 1/3 ตัวส่วนข้างล่างคือเลข 3 แปลว่าเรากำลังมองหา 'รากที่สาม' ครับ ลองคิดในใจสิว่า เลขอะไรที่หน้าตาเหมือนกันเป๊ะๆ คูณกัน 3 ครั้งแล้วได้ 27... ลองเอา 3 มาคูณกันดู 3 × 3 = 9 แล้ว 9 × 3 = 27 เป๊ะเลย! ตอบ 3 ครับ"
-                },
-                en: {
-                    question: "Find the value of 27^(1/3)",
-                    options: ["3", "9", "27", "1/3"],
-                    correct: 0,
-                    clue: "Clue: Power of 1/3 is the cube root.",
-                    std: "27^(1/3) = cube root of 27. Since 3 × 3 × 3 = 27, the answer is 3.",
-                    shortcut: "Rewrite 27 as 3^3 -> (3^3)^(1/3) = 3^1 = 3.",
-                    script: "The exponent is 1/3, meaning cube root. What number multiplied by itself 3 times equals 27? It's 3!"
-                }
-            },
-            {
-                id: 3,
-                th: {
-                    question: "จงหาค่าของ 8^(2/3)",
-                    options: ["2", "4", "8", "16"],
-                    correct: 1,
-                    clue: "คำใบ้: ใช้คาถา 'ล่างคือราก บนคือกำลัง'",
-                    std: "จากนิยาม a^(m/n) = (รากที่ n ของ a)^m จะได้ 8^(2/3) = (รากที่สามของ 8)^2 หาค่ารากที่สามของ 8 ได้ 2 จากนั้นนำไปยกกำลังสอง 2^2 = 4",
-                    shortcut: "1. ถอดรากที่ 3 ของ 8 ได้ 2\n2. นำ 2 ไปยกกำลัง 2 ได้ 4",
-                    script: "ถ้าเจอเศษส่วนซ้อนกันแบบนี้ อย่าเพิ่งตกใจครับ ใช้เทคนิค 'ล่างคือราก บนคือกำลัง' เลข 3 อยู่ล่างจับถอดรากก่อน รากที่สามของ 8 ได้ 2 พอได้ 2 ปุ๊บ นำไปยกกำลัง 2 ตัวบนต่อทันที 2^2 ได้ 4 เห็นไหมครับ ถอดรากก่อนช่วยให้ตัวเลขน้อยลง คำนวณง่ายขึ้นเยอะเลย!"
-                },
-                en: {
-                    question: "Find the value of 8^(2/3)",
-                    options: ["2", "4", "8", "16"],
-                    correct: 1,
-                    clue: "Clue: Denominator is root, numerator is power.",
-                    std: "8^(2/3) = (cube root of 8)^2 = (2)^2 = 4.",
-                    shortcut: "1. Cube root of 8 is 2.\n2. 2 squared is 4.",
-                    script: "Use the rule: bottom is root, top is power. Cube root of 8 is 2, then square it to get 4."
-                }
-            },
-            {
-                id: 4,
-                th: {
-                    question: "จงหาค่าของ 32^(3/5)",
-                    options: ["4", "8", "16", "32"],
-                    correct: 1,
-                    clue: "คำใบ้: แปลง 32 ให้เป็นเลขฐาน 2 ก่อน",
-                    std: "32^(3/5) = (รากที่ 5 ของ 32)^3 หาค่ารากที่ 5 ของ 32 เนื่องจาก 2^5 = 32 ดังนั้นรากที่ 5 ของ 32 คือ 2 นำไปยกกำลังสามจะได้ 2^3 = 8",
-                    shortcut: "แปลงฐาน 32 เป็น 2^5 จะได้ (2^5)^(3/5) = 2^(5 × 3/5) = 2^3 = 8",
-                    script: "ครูมีทริคสำคัญมาบอกครับ 'แปลงฐานให้เป็นจำนวนเฉพาะก่อนเสมอ' พอเจอ 32 ปุ๊บ ให้เปลี่ยนเป็น 2^5 ทันที ทีนี้เราเอาเลขชี้กำลัง 5 × (3/5) เลข 5 ตัดกันหายไปเลย เหลือแค่ 2^3 ซึ่งก็คือ 8 จบใน 2 บรรทัดครับ"
-                },
-                en: {
-                    question: "Find the value of 32^(3/5)",
-                    options: ["4", "8", "16", "32"],
-                    correct: 1,
-                    clue: "Clue: Convert 32 to base 2.",
-                    std: "32^(3/5) = (5th root of 32)^3 = (2)^3 = 8.",
-                    shortcut: "Convert 32 to 2^5 -> (2^5)^(3/5) = 2^3 = 8.",
-                    script: "Always convert to prime base first! 32 is 2^5. Multiply exponents to get 2^3 which is 8."
-                }
-            },
-            {
-                id: 5,
-                th: {
-                    question: "จงหาค่าของ 81^(3/4)",
-                    options: ["9", "27", "81", "243"],
-                    correct: 1,
-                    clue: "คำใบ้: 81 คือ 3 ยกกำลังอะไร?",
-                    std: "81^(3/4) = (รากที่ 4 ของ 81)^3 หาค่ารากที่ 4 ของ 81 ได้ 3 (เพราะ 3×3×3×3 = 81) นำมาคิดต่อ 3^3 = 27",
-                    shortcut: "แปลง 81 เป็น 3^4 -> (3^4)^(3/4) = 3^(4 × 3/4) = 3^3 = 27",
-                    script: "81 มาจากอะไรครับ? 9 × 9 ใช่ไหม และ 9 ละครับ ก็คือ 3 × 3 สรุป 81 คือ 3^4 นำไปตัดกับส่วน 4 ของเลขชี้กำลังตัดฉับ! เหลือ 3^3 ตอบ 27 ได้ทันที ไม่ต้องตั้งคูณตัวเลขเยอะๆ ให้เหนื่อยเลยครับ"
-                },
-                en: {
-                    question: "Find the value of 81^(3/4)",
-                    options: ["9", "27", "81", "243"],
-                    correct: 1,
-                    clue: "Clue: 81 is 3 to what power?",
-                    std: "81^(3/4) = (4th root of 81)^3 = (3)^3 = 27.",
-                    shortcut: "81 = 3^4 -> (3^4)^(3/4) = 3^3 = 27.",
-                    script: "81 is 3^4. Multiply with 3/4 to get 3^3, which equals 27."
-                }
-            },
-            {
-                id: 6,
-                th: {
-                    question: "จงหาค่าของ 9^(-1/2)",
-                    options: ["-3", "3", "1/3", "-1/3"],
-                    correct: 2,
-                    clue: "คำใบ้: เครื่องหมายลบที่ชี้กำลังหมายถึงการย้ายลงตัวส่วน",
-                    std: "จากนิยาม a^(-n) = 1/a^n จัดรูปเป็น 1/(9^(1/2)) = 1/√9 = 1/3",
-                    shortcut: "ท่องว่า 'ตบลงล่าง กำลังเป็นบวก' จะได้ 1/(9^(1/2)) = 1/3",
-                    script: "จำไว้นะครับ เครื่องหมายลบที่เลขชี้กำลังไม่ได้แปลว่าค่านั้นติดลบ! แต่มันคือการร้องบอกว่า 'ช่วยย้ายฉันลงไปข้างล่างหน่อย!' พอเราตบ 9^(-1/2) ลงไปเป็นตัวส่วน ลบจะหายไปทันที กลายเป็น 1/(9^(1/2)) ซึ่ง √9 = 3 คำตอบเลยได้ 1/3 ครับ"
-                },
-                en: {
-                    question: "Find the value of 9^(-1/2)",
-                    options: ["-3", "3", "1/3", "-1/3"],
-                    correct: 2,
-                    clue: "Clue: Negative exponent means reciprocal.",
-                    std: "9^(-1/2) = 1 / (9^(1/2)) = 1 / √9 = 1/3.",
-                    shortcut: "Move to denominator to make exponent positive: 1 / 3.",
-                    script: "Negative exponent moves the term to the denominator: 1 over the square root of 9, which is 1/3."
-                }
-            },
-            {
-                id: 7,
-                th: {
-                    question: "จงหาค่าของ 125^(-2/3)",
-                    options: ["1/5", "1/25", "25", "1/125"],
-                    correct: 1,
-                    clue: "คำใบ้: ย้ายลงล่างก่อน แล้วค่อยถอดรากที่ 3 ยกกำลัง 2",
-                    std: "ย้ายลงล่างเพื่อปลดเครื่องหมายลบ: 1/(125^(2/3)) คำนวณ 125^(2/3) = (รากที่ 3 ของ 125)^2 = 5^2 = 25 ดังนั้นคำตอบคือ 1/25",
-                    shortcut: "125 = 5^3 -> 1/((5^3)^(2/3)) = 1/(5^2) = 1/25",
-                    script: "ข้อนี้รวม 2 ทริคเข้าด้วยกัน! ขั้นแรก ลบที่กำลัง ย้ายลงล่างเป็น 1/(125^(2/3)) ขั้นที่สอง 125 ถอดรากที่ 3 ได้ 5 แล้วยกกำลัง 2 ได้ 25 รวบคำตอบเข้าด้วยกันได้ 1/25 ตรวจสอบสติให้ดี อย่าลืมใส่เลข 1 ข้างบนนะครับ"
-                },
-                en: {
-                    question: "Find the value of 125^(-2/3)",
-                    options: ["1/5", "1/25", "25", "1/125"],
-                    correct: 1,
-                    clue: "Clue: Move down, then take cube root and square.",
-                    std: "1 / (125^(2/3)) = 1 / ((cube root of 125)^2) = 1 / (5^2) = 1/25.",
-                    shortcut: "125 = 5^3 -> 1 / (5^2) = 1/25.",
-                    script: "Combine two tricks: make positive by moving down, cube root of 125 is 5, square it to get 25. Result is 1/25."
-                }
-            },
-            {
-                id: 8,
-                th: {
-                    question: "ทำให้เป็นผลสำเร็จ: 2^(1/2) × 2^(3/2)",
-                    options: ["2", "4", "8", "16"],
-                    correct: 1,
-                    clue: "คำใบ้: ฐานเหมือนกันคูณกัน นำเลขชี้กำลังมาบวกกัน",
-                    std: "ใช้สมบัติ a^m × a^n = a^(m+n) จะได้ 2^(1/2 + 3/2) = 2^(4/2) = 2^2 = 4",
-                    shortcut: "บวกเศษชี้กำลัง: 1/2 + 3/2 = 4/2 = 2 -> ตอบ 2^2 = 4",
-                    script: "เห็นฐาน 2 เหมือนกันไหมครับ? กฎเหล็กของเลขยกกำลังคือ 'ฐานเดียวกันคูณกัน นำกำลังมาบวกกัน' เอาเศษส่วน 1/2 + 3/2 ได้ 4/2 ซึ่งหารกันลงตัวได้ 2 ยุบรวมเหลือ 2^2 เท่ากับ 4 จำไว้ว่าฐานห้ามคูณกันนะ ฐานยังเป็น 2 เหมือนเดิม!"
-                },
-                en: {
-                    question: "Simplify: 2^(1/2) × 2^(3/2)",
-                    options: ["2", "4", "8", "16"],
-                    correct: 1,
-                    clue: "Clue: Same base multiplication, add exponents.",
-                    std: "2^(1/2 + 3/2) = 2^(4/2) = 2^2 = 4.",
-                    shortcut: "Add fractions: 1/2 + 3/2 = 2 -> 2^2 = 4.",
-                    script: "Same base multiplied means add exponents: 1/2 + 3/2 = 2. 2^2 = 4."
-                }
-            },
-            {
-                id: 9,
-                th: {
-                    question: "ทำให้เป็นผลสำเร็จ: 5^(5/2) ÷ 5^(1/2)",
-                    options: ["5", "25", "125", "1"],
-                    correct: 1,
-                    clue: "คำใบ้: ฐานเหมือนกันหารกัน นำเลขชี้กำลังมาลบกัน",
-                    std: "ใช้สมบัติ a^m ÷ a^n = a^(m-n) จะได้ 5^(5/2 - 1/2) = 5^(4/2) = 5^2 = 25",
-                    shortcut: "นำกำลังมาลบ: 5/2 - 1/2 = 4/2 = 2 -> 5^2 = 25",
-                    script: "คูณนำกำลังมาบวก แล้วถ้าหารกันล่ะ? ถูกต้องครับ นำกำลังมาลบกัน! 5/2 ลบออก 1/2 เหลือ 4/2 ซึ่งก็คือ 2 นำกลับไปตั้งบนฐาน 5 ได้ 5^2 = 25 ชิลๆ เลยครับข้อนี้"
-                },
-                en: {
-                    question: "Simplify: 5^(5/2) ÷ 5^(1/2)",
-                    options: ["5", "25", "125", "1"],
-                    correct: 1,
-                    clue: "Clue: Same base division, subtract exponents.",
-                    std: "5^(5/2 - 1/2) = 5^(4/2) = 5^2 = 25.",
-                    shortcut: "Subtract exponents: 5/2 - 1/2 = 2 -> 5^2 = 25.",
-                    script: "Division means subtract exponents: 5/2 - 1/2 = 2, so 5^2 = 25."
-                }
-            },
-            {
-                id: 10,
-                th: {
-                    question: "จงหาค่าของ (-8)^(1/3)",
-                    options: ["2", "-2", "หาค่าไม่ได้", "4"],
-                    correct: 1,
-                    clue: "คำใบ้: รากอันดับคี่ของจำนวนลบจะได้ค่าติดลบ",
-                    std: "(-8)^(1/3) = รากที่สามของ -8 หาจำนวนที่คูณกัน 3 ครั้งได้ -8 คือ (-2) × (-2) × (-2) = -8 ดังนั้นคำตอบคือ -2",
-                    shortcut: "รากอันดับคี่ (เช่น รากที่ 3, 5) ของติดลบ หาค่าได้เสมอ คำตอบจะติดลบตาม",
-                    script: "ข้อระวังระดับชาติ! ถ้ารากเป็น 'เลขคี่' อย่างรากที่ 3 ถอดค่าติดลบได้นะครับ เช่นข้อนี้ (-2) คูณกันสามครั้งได้ -8 คำตอบจึงเป็น -2 ได้เลย ไม่ต้องตอบว่าหาค่าไม่ได้นะครับ"
-                },
-                en: {
-                    question: "Find the value of (-8)^(1/3)",
-                    options: ["2", "-2", "Undefined", "4"],
-                    correct: 1,
-                    clue: "Clue: Odd root of a negative number is negative.",
-                    std: "Cube root of -8 is -2 since (-2) × (-2) × (-2) = -8.",
-                    shortcut: "Odd roots preserve negative signs.",
-                    script: "An odd root of a negative number is valid and negative. Cube root of -8 is -2."
-                }
-            },
-            {
-                id: 11,
-                th: {
-                    question: "รูปอย่างง่ายของรากที่ 4 ของ (x^8) คือข้อใด",
-                    options: ["x^2", "x^4", "x^8", "x^(1/2)"],
-                    correct: 0,
-                    clue: "คำใบ้: เอาดีกรีข้างในหารด้วยอันดับรากข้างนอก",
-                    std: "เปลี่ยนรากเป็นเลขชี้กำลังเศษส่วน: x^(8/4) = x^2",
-                    shortcut: "เอาข้างในหารข้างนอก: 8 ÷ 4 = 2 -> ตอบ x^2",
-                    script: "จำสูตรง่ายๆ ไว้ครับ 'เอาข้างในหารด้วยข้างนอก' กำลังข้างในคือ 8 อันดับรากข้างนอกคือ 4 จับ 8 ตั้งหารด้วย 4 ได้ 2 ปุ๊บ หลุดออกจากรูทกลายเป็น x^2 ทันทีครับ"
-                },
-                en: {
-                    question: "Simplify the 4th root of (x^8)",
-                    options: ["x^2", "x^4", "x^8", "x^(1/2)"],
-                    correct: 0,
-                    clue: "Clue: Divide inside power by outside root index.",
-                    std: "Convert to fractional exponent: x^(8/4) = x^2.",
-                    shortcut: "8 divided by 4 is 2 -> x^2.",
-                    script: "Inside power divided by outside root index: 8 / 4 = 2, so x^2."
-                }
-            },
-            {
-                id: 12,
-                th: {
-                    question: "รูปอย่างง่ายของ (16x^4)^(1/2) คือข้อใด",
-                    options: ["4x^2", "2x^2", "4x", "16x^2"],
-                    correct: 0,
-                    clue: "คำใบ้: แจกแจงเลขชี้กำลัง 1/2 เข้าไปทุกตัวในวงเล็บ",
-                    std: "กระจายเลขชี้กำลัง: 16^(1/2) × (x^4)^(1/2) = √16 × x^(4/2) = 4x^2",
-                    shortcut: "ถอดรากที่ 2 ของ 16 ได้ 4 และ x^4 ได้ x^2 -> ตอบ 4x^2",
-                    script: "มีวงเล็บแล้วมีกำลังอยู่ข้างนอก ให้แจกแจงเข้าไปหาทุกตัวข้างในนะครับ! แจกให้ 16 กลายเป็น √16 = 4 แจกให้ x^4 นำกำลังคูณกัน 4 × (1/2) = 2 จับมารวมกันได้ 4x^2 อย่าลืมแจกให้ตัวเลขข้างหน้าด้วยนะ เด็กๆ มักจะลืมกันเยอะ"
-                },
-                en: {
-                    question: "Simplify (16x^4)^(1/2)",
-                    options: ["4x^2", "2x^2", "4x", "16x^2"],
-                    correct: 0,
-                    clue: "Clue: Distribute the 1/2 exponent to both terms.",
-                    std: "16^(1/2) × x^(4/2) = 4x^2.",
-                    shortcut: "Square root of 16 is 4, square root of x^4 is x^2.",
-                    script: "Distribute power: 16^(1/2) is 4, x^4 raised to 1/2 is x^2. Result 4x^2."
-                }
-            },
-            {
-                id: 13,
-                th: {
-                    question: "จงหาค่าของ 64^(5/6)",
-                    options: ["16", "32", "64", "8"],
-                    correct: 1,
-                    clue: "คำใบ้: แปลง 64 เป็น 2 ยกกำลังอะไร?",
-                    std: "แปลง 64 เป็นเลขฐาน 2: 64 = 2^6 จะได้ (2^6)^(5/6) = 2^(6 × 5/6) = 2^5 = 32",
-                    shortcut: "ถอดรากที่ 6 ของ 64 ได้ 2 แล้วยกกำลัง 5 ได้ 32",
-                    script: "เจอ 64 อย่ายกกำลัง 5 ก่อนเด็ดขาด ไม่งั้นตัวเลขจะมหาศาลมาก! ให้ทำตัวเลขให้เล็กก่อนด้วยการแปลง 64 = 2^6 เห็นไหมครับว่าส่วน 6 ข้างล่างกับกำลัง 6 ตัดกันหายวับ เหลือแค่ 2^5 นับนิ้วแป๊บเดียวได้ 32 ครับ"
-                },
-                en: {
-                    question: "Find the value of 64^(5/6)",
-                    options: ["16", "32", "64", "8"],
-                    correct: 1,
-                    clue: "Clue: Convert 64 to base 2.",
-                    std: "64 = 2^6 -> (2^6)^(5/6) = 2^5 = 32.",
-                    shortcut: "6th root of 64 is 2, 2^5 = 32.",
-                    script: "Rewrite 64 as 2^6. 6 cancels out leaving 2^5, which is 32."
-                }
-            },
-            {
-                id: 14,
-                th: {
-                    question: "จงหาค่าของ 10000^(3/4)",
-                    options: ["100", "1000", "10000", "10"],
-                    correct: 1,
-                    clue: "คำใบ้: 10,000 คือ 10 ยกกำลัง 4",
-                    std: "10000 = 10^4 จะได้ (10^4)^(3/4) = 10^(4 × 3/4) = 10^3 = 1000",
-                    shortcut: "นับศูนย์มี 4 ตัว ถอดรากที่ 4 เหลือ 10 ยกกำลัง 3 ได้ 1000",
-                    script: "10,000 มีเลข 0 อยู่ 4 ตัว ใช่ไหมครับ? แปลว่ามันคือ 10^4 นำไปเจอชี้กำลัง 3/4 เลข 4 ตัด 4 เหลือ 10^3 คำตอบก็คือ มีเลข 0 สามตัว หรือ 1,000 นั่นเองครับ"
-                },
-                en: {
-                    question: "Find the value of 10000^(3/4)",
-                    options: ["100", "1000", "10000", "10"],
-                    correct: 1,
-                    clue: "Clue: 10000 is 10^4.",
-                    std: "10000 = 10^4 -> (10^4)^(3/4) = 10^3 = 1000.",
-                    shortcut: "4th root of 10000 is 10, cubed is 1000.",
-                    script: "10000 is 10^4. Power 3/4 gives 10^3, which is 1000."
-                }
-            },
-            {
-                id: 15,
-                th: {
-                    question: "ผลลัพธ์ของ x^(2/3) × x^(4/3) คือข้อใด",
-                    options: ["x", "x^2", "x^3", "x^(8/9)"],
-                    correct: 1,
-                    clue: "คำใบ้: ฐาน x เหมือนกันคูณกัน นำเลขชี้กำลังมาบวกกัน",
-                    std: "ฐาน x เหมือนกันคูณกัน นำเลขชี้กำลังมาบวกกัน: x^(2/3 + 4/3) = x^(6/3) = x^2",
-                    shortcut: "ส่วนเป็น 3 เหมือนกัน จับเศษบวกกัน: 2 + 4 = 6 -> 6/3 = 2 ตอบ x^2",
-                    script: "ข้อนี้ติดตัวแปร x แต่ใช้หลักการเดิมเป๊ะครับ ฐาน x เหมือนกันคูณกัน เอาตัวบนบวกกันได้ (2+4)/3 = 6/3 ตัดทอนเป็นเศษส่วนอย่างต่ำได้ 2 ได้คำตอบเป็น x^2 ครับ"
-                },
-                en: {
-                    question: "Simplify x^(2/3) × x^(4/3)",
-                    options: ["x", "x^2", "x^3", "x^(8/9)"],
-                    correct: 1,
-                    clue: "Clue: Same base multiplication, add exponents.",
-                    std: "x^(2/3 + 4/3) = x^(6/3) = x^2.",
-                    shortcut: "2/3 + 4/3 = 6/3 = 2 -> x^2.",
-                    script: "Add exponents when multiplying same base: 2/3 + 4/3 = 6/3 = 2, so x^2."
-                }
-            },
-            {
-                id: 16,
-                th: {
-                    question: "ผลลัพธ์ของ x^(3/4) ÷ x^(1/4) คือข้อใด",
-                    options: ["x", "x^(1/2)", "x^2", "x^(1/4)"],
-                    correct: 1,
-                    clue: "คำใบ้: ฐาน x เหมือนกันหารกัน นำเลขชี้กำลังมาลบกัน",
-                    std: "ฐาน x เหมือนกันหารกัน นำเลขชี้กำลังมาลบกัน: x^(3/4 - 1/4) = x^(2/4) = x^(1/2) = รากที่ 2 ของ x",
-                    shortcut: "3/4 - 1/4 = 2/4 = 1/2 แปลงเป็นรากได้ รากที่ 2 ของ x",
-                    script: "จับเลขชี้กำลังมาลบกันครับ 3/4 - 1/4 เหลือ 2/4 ตัดทอนได้ 1/2 จำได้ไหมเอ่ยว่ากำลัง 1/2 แปลงกลับเป็นสัญลักษณ์อะไร? ถูกต้องครับ คือ รากที่ 2 ของ x นั่นเอง"
-                },
-                en: {
-                    question: "Simplify x^(3/4) ÷ x^(1/4)",
-                    options: ["x", "x^(1/2)", "x^2", "x^(1/4)"],
-                    correct: 1,
-                    clue: "Clue: Subtract exponents for division.",
-                    std: "x^(3/4 - 1/4) = x^(2/4) = x^(1/2).",
-                    shortcut: "3/4 - 1/4 = 2/4 = 1/2.",
-                    script: "Subtract exponents: 3/4 - 1/4 = 2/4 = 1/2, which is the square root of x."
-                }
-            },
-            {
-                id: 17,
-                th: {
-                    question: "ค่าของ (-32)^(3/5) คือข้อใด",
-                    options: ["8", "-8", "16", "-16"],
-                    correct: 1,
-                    clue: "คำใบ้: -32 คือ (-2) ยกกำลัง 5",
-                    std: "(-32) = (-2)^5 จะได้ [(-2)^5]^(3/5) = (-2)^(5 × 3/5) = (-2)^3 = -8",
-                    shortcut: "ถอดรากที่ 5 ของ -32 ได้ -2 นำไปยกกำลัง 3 ได้ -8",
-                    script: "มีเครื่องหมายลบข้างในวงเล็บ ตั้งสติก่อนครับ! แปลง -32 เป็น (-2)^5 เลข 5 ตัดกับส่วน 5 ข้างนอก เหลือ (-2)^3 ซึ่ง ลบ คูณ ลบ คูณ ลบ ผลลัพธ์ต้องออกมาติดลบ ได้ -8 ครับ"
-                },
-                en: {
-                    question: "Find the value of (-32)^(3/5)",
-                    options: ["8", "-8", "16", "-16"],
-                    correct: 1,
-                    clue: "Clue: -32 is (-2)^5.",
-                    std: "[(-2)^5]^(3/5) = (-2)^3 = -8.",
-                    shortcut: "5th root of -32 is -2, cubed is -8.",
-                    script: "-32 is (-2)^5. Multiply exponent by 3/5 to get (-2)^3 = -8."
-                }
-            },
-            {
-                id: 18,
-                th: {
-                    question: "แปลงรากที่ 3 ของ (x^2) ให้อยู่ในรูปเลขยกกำลัง",
-                    options: ["x^(2/3)", "x^(3/2)", "x^6", "x^(-2/3)"],
-                    correct: 0,
-                    clue: "คำใบ้: 'ในอยู่บน นอกอยู่ล่าง'",
-                    std: "จากสูตรแปลงรากเป็นเศษส่วน a^(m/n) = รากที่ n ของ (a^m) ดังนั้น รากที่ 3 ของ (x^2) = x^(2/3)",
-                    shortcut: "กำลัง 2 อยู่ข้างในเอาไว้บน อันดับราก 3 อยู่ข้างนอกเอาไว้ล่าง ได้ x^(2/3)",
-                    script: "ข้อนี้เน้นการเปลี่ยนรูปสัญลักษณ์ครับ จำท่องขึ้นใจเลยนะ 'ตัวในอยู่บน ตัวนอกอยู่ล่าง' เลข 2 อยู่ข้างในเอาไว้บน เลข 3 อยู่ข้างนอกเอาไว้ล่าง ได้ x^(2/3) ทันทีครับ"
-                },
-                en: {
-                    question: "Convert cube root of (x^2) to exponential form.",
-                    options: ["x^(2/3)", "x^(3/2)", "x^6", "x^(-2/3)"],
-                    correct: 0,
-                    clue: "Clue: Inside power on top, outside root index on bottom.",
-                    std: "cube root of (x^2) = x^(2/3).",
-                    shortcut: "Inside power 2 on numerator, outside index 3 on denominator.",
-                    script: "Inside is on top, outside is on bottom: x^(2/3)."
-                }
-            },
-            {
-                id: 19,
-                th: {
-                    question: "รูปอย่างง่ายของ (81x^8)^(1/4) คือข้อใด",
-                    options: ["3x^2", "9x^2", "3x^4", "27x^2"],
-                    correct: 0,
-                    clue: "คำใบ้: กระจายกำลัง 1/4 เข้าไปทั้งตัวเลขและตัวแปร",
-                    std: "81^(1/4) × (x^8)^(1/4) = (3^4)^(1/4) × x^(8/4) = 3^1 × x^2 = 3x^2",
-                    shortcut: "ถอดรากที่ 4 ของ 81 ได้ 3 และเอา 8 หาร 4 ได้ 2 -> ตอบ 3x^2",
-                    script: "แยกคิดสองส่วนครับ ส่วนตัวเลข รากที่ 4 ของ 81 คือ 3 ส่วนตัวแปร เอา 8 หารด้วย 4 ได้ 2 จับมารวมกันเป็น 3x^2 ตอบได้รวดเร็วและแม่นยำมากครับ"
-                },
-                en: {
-                    question: "Simplify (81x^8)^(1/4)",
-                    options: ["3x^2", "9x^2", "3x^4", "27x^2"],
-                    correct: 0,
-                    clue: "Clue: Apply 1/4 power to both coefficient and variable.",
-                    std: "81^(1/4) × x^(8/4) = 3x^2.",
-                    shortcut: "4th root of 81 is 3, 8/4 = 2 -> 3x^2.",
-                    script: "Split into number and variable: 4th root of 81 is 3, x^8 raised to 1/4 is x^2. 3x^2."
-                }
-            },
-            {
-                id: 20,
-                th: {
-                    question: "จงหาค่าของ 16^(3/4)",
-                    options: ["4", "8", "2", "16"],
-                    correct: 1,
-                    clue: "คำใบ้: 16 คือ 2 ยกกำลัง 4",
-                    std: "16 = 2^4 จะได้ (2^4)^(3/4) = 2^(4 × 3/4) = 2^3 = 8",
-                    shortcut: "ถอดรากที่ 4 ของ 16 ได้ 2 แล้วยกกำลัง 3 ได้ 8",
-                    script: "เปลี่ยน 16 ให้เป็นฐาน 2 จะได้ 2^4 พอยกกำลัง 3/4 เลข 4 ตัดกันพอดี เหลือ 2^3 ได้คำตอบคือ 8 ครับ"
-                },
-                en: {
-                    question: "Find the value of 16^(3/4)",
-                    options: ["4", "8", "2", "16"],
-                    correct: 1,
-                    clue: "Clue: 16 is 2^4.",
-                    std: "16 = 2^4 -> (2^4)^(3/4) = 2^3 = 8.",
-                    shortcut: "4th root of 16 is 2, cubed is 8.",
-                    script: "16 is 2^4. Multiply by 3/4 to get 2^3 = 8."
-                }
-            },
-            {
-                id: 21,
-                th: {
-                    question: "แปลง 1 / รากที่ 2 ของ x ให้อยู่ในรูปเลขยกกำลัง",
-                    options: ["x^(1/2)", "x^(-1/2)", "x^2", "x^(-2)"],
-                    correct: 1,
-                    clue: "คำใบ้: รูทอยู่ข้างล่าง ดึงขึ้นบนกำลังต้องติดลบ",
-                    std: "1. แปลงรากเป็น x^(1/2) จะได้ 1 / x^(1/2) \n2. ย้ายขึ้นเศษโดยเปลี่ยนกำลังเป็นติดลบ ได้ x^(-1/2)",
-                    shortcut: "ติดรูทอยู่ข้างล่าง = กำลังติดลบเศษส่วน -> x^(-1/2)",
-                    script: "ข้อนี้มีสองขั้นตอนนะเด็กๆ ขั้นแรก รูท x คือ x^(1/2) แต่มันนอนอยู่ข้างล่างเป็นตัวส่วน ถ้าเราจะดึงมันขึ้นมาข้างบน กำลังต้องติดลบ! จึงกลายเป็น x^(-1/2) ครับ"
-                },
-                en: {
-                    question: "Convert 1 / sqrt(x) to exponential form.",
-                    options: ["x^(1/2)", "x^(-1/2)", "x^2", "x^(-2)"],
-                    correct: 1,
-                    clue: "Clue: Radical in denominator moves up with negative exponent.",
-                    std: "1 / x^(1/2) = x^(-1/2).",
-                    shortcut: "Denominator radical becomes negative fractional exponent.",
-                    script: "Square root in denominator is x^(1/2). Moving it to numerator makes it x^(-1/2)."
-                }
-            },
-            {
-                id: 22,
-                th: {
-                    question: "ทำให้เป็นผลสำเร็จ: [x^(-2/3)]^(-3)",
-                    options: ["x^2", "x^(-2)", "x^(2/9)", "x^(-9/2)"],
-                    correct: 0,
-                    clue: "คำใบ้: กำลังซ้อนกำลังให้นำเลขชี้กำลังมาคูณกัน",
-                    std: "ใช้สมบัติ (a^m)^n = a^(m × n) จะได้ x^[(-2/3) × (-3)] = x^(6/3) = x^2",
-                    shortcut: "ลบคูณลบเป็นบวก 3 ตัด 3 เหลือ 2 -> ตอบ x^2",
-                    script: "กำลังซ้อนกำลัง เอาเลขชี้กำลังมาคูณกัน! ลบสองส่วนสาม คูณกับ -3 เครื่องหมายลบเจอติดลบกลายเป็นบวก 3 ตัด 3 หายไป เหลือแค่ x^2 สบายเลยครับ"
-                },
-                en: {
-                    question: "Simplify [x^(-2/3)]^(-3)",
-                    options: ["x^2", "x^(-2)", "x^(2/9)", "x^(-9/2)"],
-                    correct: 0,
-                    clue: "Clue: Power of a power, multiply exponents.",
-                    std: "x^[(-2/3) × (-3)] = x^(6/3) = x^2.",
-                    shortcut: "Negative times negative is positive, 3 cancels out -> x^2.",
-                    script: "Multiply powers: (-2/3) × (-3) = 2, so x^2."
-                }
-            },
-            {
-                id: 23,
-                th: {
-                    question: "ค่าของ 4^(1.5) มีค่าเท่าใด",
-                    options: ["6", "8", "4", "16"],
-                    correct: 1,
-                    clue: "คำใบ้: 1.5 คือเศษส่วน 3/2",
-                    std: "1. แปลงทศนิยมเป็นเศษส่วน: 1.5 = 3/2 \n2. คำนวณ 4^(3/2) = (2^2)^(3/2) = 2^3 = 8",
-                    shortcut: "1.5 คือหนึ่งครึ่งหรือ 3/2 ถอดรากที่ 2 ของ 4 ได้ 2 ยกกำลัง 3 ได้ 8",
-                    script: "เจอเลขชี้กำลังเป็นทศนิยม อย่าเพิ่งตกใจครับ! เปลี่ยน 1.5 เป็นเศษส่วนอย่างต่ำได้ 3/2 ทีนี้ก็หวานหมูเลย 4^(3/2) ถอดรากที่ 2 ของ 4 ได้ 2 แล้วยกกำลังสาม ได้คำตอบเป็น 8 ครับ"
-                },
-                en: {
-                    question: "Find the value of 4^(1.5)",
-                    options: ["6", "8", "4", "16"],
-                    correct: 1,
-                    clue: "Clue: 1.5 is 3/2.",
-                    std: "4^(3/2) = (2^2)^(3/2) = 2^3 = 8.",
-                    shortcut: "Square root of 4 is 2, cubed is 8.",
-                    script: "1.5 is 3/2. Square root of 4 is 2, cubed is 8."
-                }
-            },
-            {
-                id: 24,
-                th: {
-                    question: "ทำให้เป็นผลสำเร็จ: รากที่ 3 ของ (-27x^6)",
-                    options: ["-3x^2", "3x^2", "-3x^3", "-9x^2"],
-                    correct: 0,
-                    clue: "คำใบ้: ถอดรากที่ 3 แยกทีละส่วนระหว่างตัวเลขกับตัวแปร",
-                    std: "แยกคิด: รากที่ 3 ของ (-27) × รากที่ 3 ของ (x^6) = (-3) × x^(6/3) = -3x^2",
-                    shortcut: "รากที่ 3 ของ -27 ได้ -3 และ x^6 หาร 3 ได้ x^2 -> ตอบ -3x^2",
-                    script: "ถอดรากทีละตัวครับ รากที่สามของ -27 ได้ -3 ส่วน x^6 เอาดีกรี 6 หารด้วย 3 ได้ 2 นำมารวมกันเป็น -3x^2 ระวังเรื่องเครื่องหมายติดลบด้วยนะ"
-                },
-                en: {
-                    question: "Simplify cube root of (-27x^6)",
-                    options: ["-3x^2", "3x^2", "-3x^3", "-9x^2"],
-                    correct: 0,
-                    clue: "Clue: Take cube root of coefficient and variable separately.",
-                    std: "cube root of (-27) × cube root of (x^6) = -3x^2.",
-                    shortcut: "Cube root of -27 is -3, x^(6/3) = x^2.",
-                    script: "Cube root of -27 is -3, x^6 under cube root becomes x^2. Result -3x^2."
-                }
-            },
-            {
-                id: 25,
-                th: {
-                    question: "รูปอย่างง่ายของ (x^2 × x^(1/2)) / x^(3/2) คือข้อใด",
-                    options: ["x", "x^2", "x^(1/2)", "1"],
-                    correct: 0,
-                    clue: "คำใบ้: ตัวบนคูณกันนำกำลังมาบวก ตัวล่างหารนำกำลังมาลบ",
-                    std: "1. ตัวเศษ: x^(2 + 1/2) = x^(5/2) \n2. นำไปหารตัวส่วน: x^(5/2 - 3/2) = x^(2/2) = x^1 = x",
-                    shortcut: "รวบกำลังในบรรทัดเดียว: 2 + 0.5 - 1.5 = 1 -> ตอบ x^1 = x",
-                    script: "ข้อสุดท้ายรวมสมบัติทุกอย่างไว้เลย! ตัวบนคูณกันเอาเลขชี้กำลังมาบวก 2 + 0.5 = 2.5 ตัวล่างหารอยู่เอาไปลบ 2.5 - 1.5 = 1 ผลลัพธ์สุดท้ายเหลือ x^1 หรือ x ตัวเดียวจบเกมอย่างสวยงามครับ!"
-                },
-                en: {
-                    question: "Simplify (x^2 × x^(1/2)) / x^(3/2)",
-                    options: ["x", "x^2", "x^(1/2)", "1"],
-                    correct: 0,
-                    clue: "Clue: Add exponents on top, subtract exponent on bottom.",
-                    std: "Numerator: x^(5/2). Divide by denominator: x^(5/2 - 3/2) = x^1 = x.",
-                    shortcut: "2 + 0.5 - 1.5 = 1 -> x.",
-                    script: "Combine rules: top exponents add (2 + 0.5 = 2.5), bottom subtracts (2.5 - 1.5 = 1). Answer is x."
-                }
-            }
-        ];
+renderMathInElement(document.body, {
+  delimiters: [
+    {left: "$$", right: "$$", display: true},
+    {left: "$", right: "$", display: false}
+  ],
+  throwOnError: false
+});
 
-        let currentLang = 'th';
-        let shuffledQuestions = [];
-        let userAnswers = {};
-
-        // Fisher-Yates Shuffle Algorithm
-        function shuffleArray(array) {
-            let currentIndex = array.length, randomIndex;
-            while (currentIndex !== 0) {
-                randomIndex = Math.floor(Math.random() * currentIndex);
-                currentIndex--;
-                [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
-            }
-            return array;
-        }
-
-        // Initialize Exam
-        function initExam() {
-            // Check LocalStorage for saved state
-            const savedState = localStorage.getItem('exam_state_rt');
-            if (savedState) {
-                try {
-                    const data = JSON.parse(savedState);
-                    currentLang = data.lang || 'th';
-                    shuffledQuestions = data.questions || shuffleArray([...rawQuestions]);
-                    userAnswers = data.userAnswers || {};
-                } catch (e) {
-                    shuffledQuestions = shuffleArray([...rawQuestions]);
-                }
-            } else {
-                shuffledQuestions = shuffleArray([...rawQuestions]);
-            }
-            renderExam();
-        }
-
-        function saveState() {
-            const state = {
-                lang: currentLang,
-                questions: shuffledQuestions,
-                userAnswers: userAnswers
-            };
-            localStorage.setItem('exam_state_rt', JSON.stringify(state));
-        }
-
-        function toggleLanguage() {
-            currentLang = currentLang === 'th' ? 'en' : 'th';
-            saveState();
-            renderExam();
-        }
-
-        function resetExam() {
-            localStorage.removeItem('exam_state_rt');
-            userAnswers = {};
-            shuffledQuestions = shuffleArray([...rawQuestions]);
-            document.getElementById('results-panel').classList.remove('show');
-            document.getElementById('quiz-form').style.display = 'block';
-            clearWhiteboard();
-            renderExam();
-        }
-
-        function renderExam() {
-            const container = document.getElementById('questions-container');
-            container.innerHTML = '';
-
-            shuffledQuestions.forEach((qObj, index) => {
-                const qData = qObj[currentLang];
-                // Shuffle options using Fisher-Yates and track correct answer mapping
-                // For simplicity in this demo, options are mapped or we shuffle indices.
-                // Let's store shuffled options inside qObj if not already done.
-                if (!qObj.shuffledOptionsMap) {
-                    let origOpts = qData.options.map((opt, i) => ({ text: opt, originalIndex: i }));
-                    shuffleArray(origOpts);
-                    qObj.shuffledOptionsMap = origOpts;
-                }
-
-                let optionsHtml = '';
-                qObj.shuffledOptionsMap.forEach((optObj, optIdx) => {
-                    let isSelected = userAnswers[qObj.id] === optObj.originalIndex;
-                    let optionClass = 'option-item';
-                    
-                    // If exam submitted, show correct/incorrect styling
-                    let isSubmitted = document.getElementById('results-panel').classList.contains('show');
-                    if (isSubmitted) {
-                        if (optObj.originalIndex === qData.correct) {
-                            optionClass += ' correct';
-                        } else if (isSelected && optObj.originalIndex !== qData.correct) {
-                            optionClass += ' incorrect';
-                        }
-                    } else if (isSelected) {
-                        optionClass += ' correct'; // Visual selection feedback
-                    }
-
-                    optionsHtml += `
-                        <div class="${optionClass}" onclick="selectOption(${qObj.id}, ${optObj.originalIndex})">
-                            <span style="font-weight: 600; margin-right: 0.5rem;">${String.fromCharCode(65 + optIdx)}.</span> ${optObj.text}
-                        </div>
-                    `;
-                });
-
-                let explanationClass = 'explanation-box';
-                let isSubmitted = document.getElementById('results-panel').classList.contains('show');
-                if (isSubmitted) explanationClass += ' show';
-
-                const card = document.createElement('div');
-                card.className = 'question-card';
-                card.innerHTML = `
-                    <div class="q-header">ข้อที่ ${index + 1} (ข้อสอบ ID: ${qObj.id})</div>
-                    <div class="q-text">${qData.question}</div>
-                    <div class="options-list">
-                        ${optionsHtml}
-                    </div>
-                    <div class="clue-box">${qData.clue}</div>
-                    <div class="${explanationClass}" id="exp-${qObj.id}">
-                        <div class="exp-title">เฉลยและคำอธิบายโดยติวเตอร์:</div>
-                        <div class="exp-section"><strong>วิธีทำแบบมาตรฐาน:</strong> ${qData.std}</div>
-                        <div class="exp-section"><strong>เทคนิควิธีลัด:</strong> ${qData.shortcut}</div>
-                        <div class="exp-section" style="margin-top: 0.75rem; background: #eff6ff; padding: 0.75rem; border-radius: 6px;">
-                            <strong>บทพูดสำหรับครู (Teacher Script):</strong> "${qData.script}"
-                        </div>
-                    </div>
-                `;
-                container.appendChild(card);
-            });
-        }
-
-        function selectOption(qId, optionIndex) {
-            let isSubmitted = document.getElementById('results-panel').classList.contains('show');
-            if (isSubmitted) return; // Cannot change after submit
-
-            userAnswers[qId] = optionIndex;
-            saveState();
-            renderExam();
-        }
-
-        function submitExam() {
-            let score = 0;
-            shuffledQuestions.forEach(qObj => {
-                const qData = qObj[currentLang];
-                if (userAnswers[qObj.id] === qData.correct) {
-                    score++;
-                }
-            });
-
-            // Show explanations
-            shuffledQuestions.forEach(qObj => {
-                const expBox = document.getElementById(`exp-${qObj.id}`);
-                if (expBox) expBox.classList.add('show');
-            });
-
-            // Display results
-            document.getElementById('score-displayterer') || ''; // dummy
-            document.getElementById('score-display').innerText = `${score} / ${shuffledQuestions.length}`;
-            
-            let comment = "";
-            if (score === 25) {
-                comment = "ยอดเยี่ยมมากครับ! คุณทำคะแนนเต็ม สมบูรณ์แบบในเรื่องเลขยกกำลังตรรกยะ";
-            } else if (score >= 20) {
-                comment = "ทำได้ดีมากๆ ครับ มีความเข้าใจเนื้อหาและเทคนิควิธีลัดในระดับสูง";
-            } else if (score >= 15) {
-                comment = "อยู่ในเกณฑ์ที่ดีครับ แต่ยังมีบางจุดที่ต้องระวังเรื่องการแปลงฐานและเศษส่วน";
-            } else {
-                comment = "ควรกลับไปทบทวนสรุปเนื้อหาและฝึกฝนกระบวนการคิดใหม่อีกรอบนะครับ สู้ๆ ครับ!";
-            }
-            document.getElementById('score-comment').innerText = comment;
-
-            document.getElementById('quiz-form').style.display = 'block'; // keep questions visible to view explanations
-            document.getElementById('results-panel').classList.add('show');
-            
-            window.scrollTo({ top: document.getElementById('results-panel').offsetTop - 50, behavior: 'smooth' });
-        }
-
-        // Whiteboard Logic
-        const canvas = document.getElementById('whiteboard');
-        const ctx = canvas.getContext('2d');
-        let isDrawing = false;
-        let currentTool = 'pen';
-
-        function resizeCanvas() {
-            const rect = canvas.getBoundingClientRect();
-            canvas.width = rect.width;
-            canvas.height = 500;
-            ctx.lineCap = 'round';
-            ctx.lineJoin = 'round';
-        }
-
-        window.addEventListener('resize', resizeCanvas);
-        window.addEventListener('load', () => {
-            resizeCanvas();
-            initExam();
-        });
-
-        function setWbTool(tool) {
-            currentTool = tool;
-            document.getElementById('pen-btn').classList.toggle('active', tool === 'pen');
-            document.getElementById('eraser-btn').classList.toggle('active', tool === 'eraser');
-        }
-
-        function clearWhiteboard() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-        }
-
-        function getPosition(e) {
-            const rect = canvas.getBoundingClientRect();
-            let clientX = e.clientX;
-            let clientY = e.clientY;
-            if (e.touches && e.touches.length > 0) {
-                clientX = e.touches[0].clientX;
-                clientY = e.touches[0].clientY;
-            }
-            return {
-                x: clientX - rect.left,
-                y: clientY - rect.top
-            };
-        }
-
-        canvas.addEventListener('mousedown', startDraw);
-        canvas.addEventListener('mousemove', draw);
-        canvas.addEventListener('mouseup', stopDraw);
-        canvas.addEventListener('mouseleave', stopDraw);
-
-        canvas.addEventListener('touchstart', startDraw);
-        canvas.addEventListener('touchmove', draw);
-        canvas.addEventListener('touchend', stopDraw);
-
-        function startDraw(e) {
-            isDrawing = true;
-            const pos = getPosition(e);
-            ctx.beginPath();
-            ctx.moveTo(pos.x, pos.y);
-            e.preventDefault();
-        }
-
-        function draw(e) {
-            if (!isDrawing) return;
-            const pos = getPosition(e);
-            if (currentTool === 'pen') {
-                ctx.strokeStyle = '#2563eb';
-                ctx.lineWidth = 3;
-            } else {
-                ctx.strokeStyle = '#ffffff';
-                ctx.lineWidth = 20;
-            }
-            ctx.lineTo(pos.x, pos.y);
-            ctx.stroke();
-            e.preventDefault();
-        }
-
-        function stopDraw() {
-            isDrawing = false;
-        }
-    </script>
+const links = rail.querySelectorAll('a');
+const sections = document.querySelectorAll('section.card');
+const io = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    const id = e.target.id;
+    const link = rail.querySelector(`a[href="#${id}"]`);
+    if (e.isIntersecting) {
+      links.forEach(l => l.classList.remove('active'));
+      if (link) link.classList.add('active');
+    }
+  });
+}, {rootMargin: "-40% 0px -50% 0px"});
+sections.forEach(s => io.observe(s));
+</script>
 </body>
 </html>
