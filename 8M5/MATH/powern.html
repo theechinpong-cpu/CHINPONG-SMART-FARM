@@ -1,0 +1,1222 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ข้อสอบแบบโต้ตอบ: รากที่ n ในระบบจำนวนจริง + Digital Whiteboard | พระจอมเกล้าติวเตอร์</title>
+    <style>
+        :root {
+            --primary: #1e3a8a;
+            --primary-light: #3b82f6;
+            --secondary: #0d9488;
+            --accent: #f59e0b;
+            --bg: #f1f5f9;
+            --card-bg: #ffffff;
+            --text: #1e293b;
+            --text-muted: #64748b;
+            --correct: #10b981;
+            --correct-bg: #ecfdf5;
+            --wrong: #ef4444;
+            --wrong-bg: #fef2f2;
+            --border: #cbd5e1;
+            --radius: 12px;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Sarabun', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            height: 100vh;
+            overflow: hidden; /* Lock viewport for split-screen */
+        }
+
+        /* Split Screen Main Layout */
+        .app-layout {
+            display: flex;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        /* Left Pane: Exam Content (70%) */
+        .left-pane {
+            width: 70%;
+            height: 100%;
+            overflow-y: auto;
+            padding: 20px;
+            border-right: 2px solid var(--border);
+        }
+
+        /* Right Pane: Pro Whiteboard (30%) */
+        .right-pane {
+            width: 30%;
+            height: 100%;
+            background: #ffffff;
+            display: flex;
+            flex-direction: column;
+            box-shadow: -2px 0 10px rgba(0,0,0,0.05);
+            position: relative;
+        }
+
+        /* Responsive Split Screen adjustment for small devices */
+        @media (max-width: 900px) {
+            .app-layout {
+                flex-direction: column;
+                overflow-y: auto;
+            }
+            body {
+                overflow: auto;
+            }
+            .left-pane {
+                width: 100%;
+                height: auto;
+                border-right: none;
+                border-bottom: 2px solid var(--border);
+            }
+            .right-pane {
+                width: 100%;
+                height: 500px;
+            }
+        }
+
+        /* Container Inside Left Pane */
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        /* Header & Navigation */
+        .header-card {
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: white;
+            padding: 25px 20px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            margin-bottom: 25px;
+            text-align: center;
+            position: relative;
+        }
+
+        .header-card h1 {
+            font-size: 1.6rem;
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+
+        .header-card p {
+            font-size: 0.95rem;
+            opacity: 0.9;
+        }
+
+        .lang-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            padding: 6px 14px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+
+        .lang-btn:hover {
+            background: rgba(255, 255, 255, 0.4);
+        }
+
+        /* Summary Section */
+        .summary-card {
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            margin-bottom: 30px;
+            border-left: 5px solid var(--secondary);
+        }
+
+        .summary-card h2 {
+            color: var(--primary);
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 8px;
+        }
+
+        .summary-card h3 {
+            color: var(--secondary);
+            font-size: 1.1rem;
+            margin: 15px 0 8px 0;
+        }
+
+        .summary-card p, .summary-card ul {
+            margin-bottom: 12px;
+            font-size: 0.95rem;
+        }
+
+        .summary-card ul {
+            padding-left: 20px;
+        }
+
+        .highlight-box {
+            background-color: #fffbe3;
+            border: 1px solid #fef3c7;
+            border-left: 4px solid var(--accent);
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+        }
+
+        .highlight-box h4 {
+            color: #d97706;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* Exam Controls */
+        .exam-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--card-bg);
+            padding: 15px 20px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        /* Question Cards */
+        .question-card {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            margin-bottom: 20px;
+            border: 1px solid var(--border);
+        }
+
+        .q-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            font-size: 1.05rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: var(--text);
+        }
+
+        .q-number {
+            background: var(--primary-light);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            white-space: nowrap;
+        }
+
+        .clue-box {
+            font-size: 0.85rem;
+            color: #b45309;
+            background: #fffbeb;
+            padding: 8px 12px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            display: inline-block;
+        }
+
+        /* Options */
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+        }
+
+        @media (min-width: 640px) {
+            .options-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        .option-btn {
+            background: #f8fafc;
+            border: 1px solid var(--border);
+            padding: 12px 15px;
+            border-radius: 8px;
+            text-align: left;
+            cursor: pointer;
+            font-size: 0.95rem;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+        }
+
+        .option-btn:hover:not(:disabled) {
+            background: #e2e8f0;
+            border-color: #cbd5e1;
+        }
+
+        .option-btn:disabled {
+            cursor: default;
+        }
+
+        .option-btn.correct {
+            background-color: var(--correct-bg) !important;
+            border-color: var(--correct) !important;
+            color: #065f46;
+            font-weight: bold;
+        }
+
+        .option-btn.wrong {
+            background-color: var(--wrong-bg) !important;
+            border-color: var(--wrong) !important;
+            color: #991b1b;
+        }
+
+        /* Detail Box */
+        .detail-box {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .detail-box.show {
+            display: block;
+        }
+
+        .detail-box.correct-detail {
+            background-color: var(--correct-bg);
+            border: 1px solid var(--correct);
+            color: #065f46;
+        }
+
+        .detail-box.wrong-detail {
+            background-color: var(--wrong-bg);
+            border: 1px solid var(--wrong);
+            color: #991b1b;
+        }
+
+        /* Action Buttons & Results */
+        .action-area {
+            text-align: center;
+            margin: 30px 0;
+        }
+
+        .submit-btn {
+            background: var(--secondary);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 30px;
+            cursor: pointer;
+            box-shadow: var(--shadow);
+            transition: all 0.2s;
+        }
+
+        .submit-btn:hover {
+            background: #0f766e;
+            transform: translateY(-2px);
+        }
+
+        .result-card {
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            text-align: center;
+            display: none;
+            margin-bottom: 30px;
+            border: 2px solid var(--primary-light);
+        }
+
+        .result-score {
+            font-size: 2.5rem;
+            color: var(--primary);
+            font-weight: bold;
+            margin: 15px 0;
+        }
+
+        .analysis-box {
+            text-align: left;
+            background: #f8fafc;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            border: 1px solid var(--border);
+        }
+
+        .footer {
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-top: 40px;
+            padding-bottom: 20px;
+        }
+
+        /* Whiteboard Styling (Right Pane) */
+        .wb-header {
+            background: #1e293b;
+            color: #ffffff;
+            padding: 12px 15px;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.95rem;
+        }
+
+        .wb-toolbar {
+            background: #f8fafc;
+            padding: 8px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            border-bottom: 1px solid var(--border);
+            align-items: center;
+        }
+
+        .wb-tool-btn {
+            background: #ffffff;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 6px 10px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--text);
+            transition: all 0.2s;
+        }
+
+        .wb-tool-btn:hover, .wb-tool-btn.active {
+            background: var(--primary-light);
+            color: white;
+            border-color: var(--primary-light);
+        }
+
+        .wb-color-picker {
+            width: 28px;
+            height: 28px;
+            border: none;
+            cursor: pointer;
+            border-radius: 50%;
+            padding: 0;
+            background: none;
+        }
+
+        .wb-size-slider {
+            width: 70px;
+        }
+
+        .wb-canvas-container {
+            flex: 1;
+            position: relative;
+            background: #ffffff;
+            cursor: crosshair;
+        }
+
+        #whiteboardCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            touch-action: none; /* Disables page drag on tablet write */
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-layout">
+    <!-- LEFT PANE: EXAM & LESSON CONTENT (70%) -->
+    <div class="left-pane">
+        <div class="container">
+            <!-- Header -->
+            <div class="header-card">
+                <button class="lang-btn" id="langToggleBtn" onclick="toggleLanguage()">TH / EN</button>
+                <h1 id="ui-title">แบบทดสอบ รากที่ n ในระบบจำนวนจริง</h1>
+                <p id="ui-subtitle">ระดับมัธยมศึกษาปีที่ 5 (ความยากปานกลาง) | อ้างอิงโรงเรียนกัลยาณีศรีธรรมราช</p>
+            </div>
+
+            <!-- Summary Section (Over 500 words content) -->
+            <div class="summary-card">
+                <h2 id="sum-title">สรุปเนื้อหาบทเรียน: รากที่ n ในระบบจำนวนจริง (Radicals)</h2>
+                
+                <p>บทเรียนเรื่องรากที่ n ในระบบจำนวนจริง เป็นพื้นฐานทางคณิตศาสตร์ที่สำคัญสำหรับนักเรียนชั้นมัธยมศึกษาปีที่ 5 เพื่อนำไปต่อยอดในการแก้สมการอตรรกยะ ฟังก์ชันกำลัง และแคลคูลัสในระดับสูง การเข้าใจนิยามและสมบัติของกรณฑ์อย่างถูกต้องจะช่วยให้สามารถแก้ปัญหาได้อย่างแม่นยำ</p>
+
+                <h3>1. นิยามของรากที่ n (Definition of nth Root)</h3>
+                <p>ให้ x และ y เป็นจำนวนจริง และ n เป็นจำนวนเต็มบวกที่มากกว่า 1 ถ้า yⁿ = x แล้ว จะเรียก y ว่าเป็น "รากที่ n ของ x"</p>
+                <ul>
+                    <li><strong>กรณี n เป็นจำนวนคู่:</strong> จำนวนจริงบวก x จะมีรากที่ n อยู่ 2 ค่าเสมอ คือ ค่าบวก และ ค่าลบ ตัวอย่างเช่น รากที่ 2 ของ 16 คือ 4 และ -4 เนื่องจาก (4)² = 16 และ (-4)² = 16 สำหรับจำนวนจริงลบ จะไม่มีรากที่ n เป็นจำนวนจริงเมื่อ n เป็นจำนวนคู่</li>
+                    <li><strong>กรณี n เป็นจำนวนคี่:</strong> จำนวนจริง x ใดๆ (ไม่ว่าบวก ลบ หรือศูนย์) จะมีรากที่ n เพียงค่าเดียวเท่านั้น และจะมีเครื่องหมายเดียวกับ x ตัวอย่างเช่น รากที่ 3 ของ 27 คือ 3 และ รากที่ 3 ของ -8 คือ -2</li>
+                </ul>
+
+                <div class="highlight-box">
+                    <h4>💡 เทคนิคการจำ / กระบวนการคิด: ราก vs ค่าหลัก</h4>
+                    <p><strong>รากที่ n (มีคำว่า "รากที่"):</strong> ถ้ายกกำลังคู่ ต้องตอบทั้งค่าบวกและค่าลบ เช่น รากที่ 4 ของ 81 ตอบ 3 และ -3</p>
+                    <p><strong>ค่าหลักของรากที่ n (เครื่องหมาย √):</strong> สัญลักษณ์ √[n]{x} หมายถึง "ค่าหลัก" เพียงค่าเดียวเท่านั้น! ถ้า n เป็นคู่ ผลลัพธ์จากการถอดสัญลักษณ์กรณฑ์จะต้องเป็นจำนวนจริงบวกหรือศูนย์เสมอ (ห้ามติดลบ)</p>
+                </div>
+
+                <h3>2. ค่าหลักของรากที่ n (Principal nth Root)</h3>
+                <p>เพื่อป้องกันความสับสนในสัญลักษณ์ นักคณิตศาสตร์ได้กำหนดให้สัญลักษณ์ √[n]{x} แทน "ค่าหลักของรากที่ n ของ x"</p>
+                <ul>
+                    <li>ถ้า n เป็นจำนวนคู่ และ x ≥ 0 ค่าหลัก √[n]{x} ต้อง ≥ 0 เสมอ เช่น √16 = 4 (ไม่ตอบ -4)</li>
+                    <li>ถ้า n เป็นจำนวนคี่ ค่าหลัก √[n]{x} จะมีเครื่องหมายตาม x เช่น √[3]{27} = 3 และ √[3]{-27} = -3</li>
+                </ul>
+
+                <h3>3. สมบัติสำคัญของกรณฑ์ที่ต้องระวัง</h3>
+                <p>ให้ a และ b เป็นจำนวนจริงที่มีรากที่ n และ n เป็นจำนวนเต็มบวกที่มากกว่า 1</p>
+                <ul>
+                    <li><strong>การคูณและการหาร:</strong> √[n]{ab} = √[n]{a} · √[n]{b} และ √[n]{a/b} = √[n]{a} / √[n]{b} (โดย b ≠ 0)</li>
+                    <li><strong>การถอดรากกำลังคู่:</strong> √[n]{aⁿ} = |a| เมื่อ n เป็นจำนวนคู่ <i>(สำคัญมาก: ต้องใส่ Absolute เสมอหากไม่ทราบค่าของตัวแปร เพื่อประกันว่าผลลัพธ์ไม่ติดลบ)</i></li>
+                    <li><strong>การถอดรากกำลังคี่:</strong> √[n]{aⁿ} = a เมื่อ n เป็นจำนวนคี่ (เครื่องหมายคงเดิมตาม a)</li>
+                    <li><strong>ยกกำลังนอกกรณฑ์:</strong> (√[n]{a})ⁿ = a (โดยที่ a ต้องอยู่ในโดเมนที่ทำให้ √[n]{a} เป็นจำนวนจริง)</li>
+                </ul>
+
+                <div class="highlight-box">
+                    <h4>⚠️ ข้อควรระวังและการทำตัวส่วนไม่ให้ติดกรณฑ์ (Rationalization)</h4>
+                    <p>1. <strong>ข้อห้ามยุบรวม:</strong> √(a + b) ≠ √a + √b และ √(a - b) ≠ √a - √b ห้ามกระจายหรือยุบรวมรากกับการบวกลบเด็ดขาด!</p>
+                    <p>2. <strong>การจัดรูปไม่ให้ตัวส่วนติดกรณฑ์:</strong>
+                        <br>- กรณีพจน์เดียว: คูณทั้งเศษและส่วนด้วยตัวส่วนนั้น เช่น a/√b = (a√b)/b
+                        <br>- กรณีสองพจน์บวกลบ: ใช้สังยุค (Conjugate) และสูตรผลต่างกำลังสอง (A-B)(A+B) = A² - B² เช่น c/(√a - √b) ให้คูณด้วย (√a + √b)/(√a + √b)
+                    </p>
+                </div>
+            </div>
+
+            <!-- Exam Status -->
+            <div class="exam-info">
+                <span id="ui-progress">ความคืบหน้า: 0 / 25 ข้อ</span>
+                <span id="ui-score-live">คะแนนปัจจุบัน: 0</span>
+            </div>
+
+            <!-- Questions Container -->
+            <div id="questions-container"></div>
+
+            <!-- Action Button -->
+            <div class="action-area">
+                <button class="submit-btn" id="ui-submit-btn" onclick="submitExam()">ส่งข้อสอบและดูผลการวิเคราะห์</button>
+            </div>
+
+            <!-- Result Card -->
+            <div class="result-card" id="result-card">
+                <h2 id="ui-result-title">ผลการสอบประเมินผล</h2>
+                <div class="result-score" id="result-score-text">0 / 25</div>
+                <p id="result-percentage-text"></p>
+                
+                <div class="analysis-box">
+                    <h3 id="ui-analysis-title" style="color: var(--primary); margin-bottom: 8px;">📊 การวิเคราะห์จุดแข็ง-จุดที่ต้องปรับปรุง</h3>
+                    <div id="analysis-content"></div>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="footer">
+                เขียนโดย พระจอมเกล้าติวเตอร์
+            </div>
+        </div>
+    </div>
+
+    <!-- RIGHT PANE: PRO WHITEBOARD (30%) -->
+    <div class="right-pane">
+        <div class="wb-header">
+            <span>📝 Whiteboard ทดเลข</span>
+            <span style="font-size: 0.75rem; color: #94a3b8;">พระจอมเกล้าติวเตอร์</span>
+        </div>
+        
+        <!-- Whiteboard Toolbar -->
+        <div class="wb-toolbar">
+            <button class="wb-tool-btn active" id="penBtn" onclick="setTool('pen')">✏️ ปากกา</button>
+            <button class="wb-tool-btn" id="eraserBtn" onclick="setTool('eraser')">🧹 ยางลบ</button>
+            <input type="color" class="wb-color-picker" id="colorPicker" value="#1e3a8a" onchange="changeColor(this.value)">
+            <input type="range" class="wb-size-slider" id="sizeSlider" min="1" max="20" value="3" onchange="changeSize(this.value)" title="ขนาดเส้น">
+            <button class="wb-tool-btn" onclick="undoCanvas()">↩️ ย้อนกลับ</button>
+            <button class="wb-tool-btn" style="background:#fee2e2; color:#991b1b; border-color:#fca5a5;" onclick="clearCanvas()">🗑️ ล้าง</button>
+        </div>
+
+        <!-- Canvas Container -->
+        <div class="wb-canvas-container" id="canvasContainer">
+            <canvas id="whiteboardCanvas"></canvas>
+        </div>
+    </div>
+</div>
+
+<script>
+// Master Data: 25 Questions Array
+const questionsRaw = [
+    {
+        id: 1,
+        q_th: "ข้อใดต่อไปนี้กล่าวเกี่ยวกับ 'รากที่ 4 ของ 81' ได้ถูกต้อง",
+        q_en: "Which of the following statements about 'the 4th root of 81' is correct?",
+        a_th: ["มีค่าเท่ากับ 3 เพียงค่าเดียว", "มีค่าเท่ากับ 3 และ -3", "มีค่าเท่ากับ -3 เพียงค่าเดียว", "หาค่าในระบบจำนวนจริงไม่ได้"],
+        a_en: ["Equals 3 only", "Equals 3 and -3", "Equals -3 only", "Undefined in real numbers"],
+        correct: 1,
+        th: "คำว่า 'รากที่ n' เมื่อ n เป็นคู่ ผลลัพธ์ต้องมีทั้งค่าบวกและค่าลบ",
+        en: "The term 'nth root' when n is even must yield both positive and negative values.",
+        detail_th: "เนื่องจาก n=4 เป็นจำนวนคู่ และ 3⁴ = 81 รวมถึง (-3)⁴ = 81 ดังนั้น 'รากที่ 4 ของ 81' จึงมี 2 ค่า คือ 3 และ -3 (แตกต่างจากคำว่า 'ค่าหลัก' ซึ่งจะมีค่าเป็น 3 เท่านั้น)",
+        detail_en: "Since n=4 is even, 3⁴ = 81 and (-3)⁴ = 81. Thus, the 4th roots of 81 are both 3 and -3."
+    },
+    {
+        id: 2,
+        q_th: "ค่าหลักของรากที่ 3 ของ -64 หรือ √[3]{-64} มีค่าเท่ากับเท่าใด",
+        q_en: "What is the principal 3rd root of -64, denoted as √[3]{-64}?",
+        a_th: ["-4", "4", "4 และ -4", "ไม่เป็นจำนวนจริง"],
+        a_en: ["-4", "4", "4 and -4", "Not a real number"],
+        correct: 0,
+        th: "รากอันดับคี่ ค่าหลักจะมีเครื่องหมายตามจำนวนภายในกรณฑ์เสมอ",
+        en: "Odd index roots always carry the same sign as the radicand.",
+        detail_th: "เนื่องจากอันดับของกรณฑ์ n=3 เป็นจำนวนคี่ และ (-4)³ = -64 ดังนั้น ค่าหลักของรากที่ 3 ของ -64 จึงเท่ากับ -4 เพียงค่าเดียว",
+        detail_en: "Since the root index n=3 is odd and (-4)³ = -64, √[3]{-64} equals -4."
+    },
+    {
+        id: 3,
+        q_th: "ค่าของ √{(-7)²} มีค่าตรงกับข้อใด",
+        q_en: "What is the value of √{(-7)²}?",
+        a_th: ["7", "-7", "±7", "49"],
+        a_en: ["7", "-7", "±7", "49"],
+        correct: 0,
+        th: "√[n]{aⁿ} = |a| เมื่อ n เป็นจำนวนคู่ ผลลัพธ์ห้ามติดลบ",
+        en: "√[n]{aⁿ} = |a| when n is even. The result cannot be negative.",
+        detail_th: "ใช้สมบัติ √[n]{aⁿ} = |a| เมื่อ n เป็นจำนวนคู่ จะได้ √{(-7)²} = |-7| = 7 (เนื่องจากเป็นสัญลักษณ์ค่าหลัก ผลลัพธ์ต้องไม่ติดลบ)",
+        detail_en: "Applying √[n]{aⁿ} = |a| for even n gives √{(-7)²} = |-7| = 7."
+    },
+    {
+        id: 4,
+        q_th: "จงหาค่าของ √[3]{(-5)³}",
+        q_en: "Find the value of √[3]{(-5)³}",
+        a_th: ["-5", "5", "±5", "25"],
+        a_en: ["-5", "5", "±5", "25"],
+        correct: 0,
+        th: "√[n]{aⁿ} = a เมื่อ n เป็นจำนวนคี่ เครื่องหมายถอดได้ตรงๆ",
+        en: "√[n]{aⁿ} = a when n is odd. Signs remain unchanged.",
+        detail_th: "ใช้สมบัติ √[n]{aⁿ} = a เมื่อ n เป็นจำนวนคี่ ดังนั้น √[3]{(-5)³} = -5 โดยไม่ต้องใส่ Absolute",
+        detail_en: "Applying √[n]{aⁿ} = a for odd n gives √[3]{(-5)³} = -5 without absolute values."
+    },
+    {
+        id: 5,
+        q_th: "ถ้า x เป็นจำนวนจริงใดๆ ข้อใดคือค่าของ √[4]{16x⁴}",
+        q_en: "If x is any real number, which expression equals √[4]{16x⁴}?",
+        a_th: ["2|x|", "2x", "4|x|", "4x"],
+        a_en: ["2|x|", "2x", "4|x|", "4x"],
+        correct: 0,
+        th: "การถอดรากกำลังคู่ของตัวแปรที่ไม่ทราบค่า ต้องคง Absolute ไว้เสมอ",
+        en: "Extracting even roots of unknown variables requires absolute value signs.",
+        detail_th: "√[4]{16x⁴} = √[4]{2⁴ · x⁴} = 2|x| ต้องใส่ Absolute ที่ x เพราะไม่ทราบว่า x เป็นบวกหรือลบ",
+        detail_en: "√[4]{16x⁴} = √[4]{2⁴ · x⁴} = 2|x|. Absolute value is required since x sign is unknown."
+    },
+    {
+        id: 6,
+        q_th: "ข้อใดคือรูปอย่างง่ายของ √72",
+        q_en: "Which of the following is the simplified form of √72?",
+        a_th: ["6√2", "2√6", "3√8", "12√2"],
+        a_en: ["6√2", "2√6", "3√8", "12√2"],
+        correct: 0,
+        th: "แยกตัวประกอบให้มีกำลังสองสมบูรณ์ที่มากที่สุด: 72 = 36 × 2",
+        en: "Factor out the largest perfect square: 72 = 36 × 2",
+        detail_th: "√72 = √(36 · 2) = √36 · √2 = 6√2",
+        detail_en: "√72 = √(36 · 2) = √36 · √2 = 6√2"
+    },
+    {
+        id: 7,
+        q_th: "ผลคูณของ √12 · √3 มีค่าเท่ากับเท่าใด",
+        q_en: "What is the product of √12 · √3?",
+        a_th: ["6", "36", "6√3", "3√2"],
+        a_en: ["6", "36", "6√3", "3√2"],
+        correct: 0,
+        th: "ใช้สมบัติการคูณกรณฑ์: √a · √b = √(a · b)",
+        en: "Use radical multiplication property: √a · √b = √(a · b)",
+        detail_th: "√12 · √3 = √(12 · 3) = √36 = 6",
+        detail_en: "√12 · √3 = √(12 · 3) = √36 = 6"
+    },
+    {
+        id: 8,
+        q_th: "ผลหารของ √[3]{54} / √[3]{2} มีค่าตรงกับข้อใด",
+        q_en: "What is the quotient of √[3]{54} / √[3]{2}?",
+        a_th: ["3", "27", "3√3", "9"],
+        a_en: ["3", "27", "3√3", "9"],
+        correct: 0,
+        th: "ใช้สมบัติการหารกรณฑ์: √[n]{a} / √[n]{b} = √[n]{a / b}",
+        en: "Use radical division property: √[n]{a} / √[n]{b} = √[n]{a / b}",
+        detail_th: "√[3]{54} / √[3]{2} = √[3]{54 / 2} = √[3]{27} = 3",
+        detail_en: "√[3]{54} / √[3]{2} = √[3]{54 / 2} = √[3]{27} = 3"
+    },
+    {
+        id: 9,
+        q_th: "จัดรูป 5 / √3 ให้ตัวส่วนไม่ติดกรณฑ์ ได้ตรงกับข้อใด",
+        q_en: "Rationalize the denominator of 5 / √3.",
+        a_th: ["(5√3) / 3", "(5√3) / 9", "5 / 3", "15 / √3"],
+        a_en: ["(5√3) / 3", "(5√3) / 9", "5 / 3", "15 / √3"],
+        correct: 0,
+        th: "คูณเศษและส่วนด้วย √3 เพื่อให้ตัวส่วนกลายเป็นจำนวนเต็ม",
+        en: "Multiply numerator and denominator by √3 to make the denominator an integer.",
+        detail_th: "(5 / √3) · (√3 / √3) = (5√3) / (√3)² = (5√3) / 3",
+        detail_en: "(5 / √3) · (√3 / √3) = (5√3) / (√3)² = (5√3) / 3"
+    },
+    {
+        id: 10,
+        q_th: "ทำ 2 / (√5 - 1) ให้ตัวส่วนไม่ติดกรณฑ์ ได้ผลลัพธ์ตรงกับข้อใด",
+        q_en: "Rationalize the denominator of 2 / (√5 - 1).",
+        a_th: ["(√5 + 1) / 2", "(√5 - 1) / 2", "√5 + 1", "2(√5 + 1)"],
+        a_en: ["(√5 + 1) / 2", "(√5 - 1) / 2", "√5 + 1", "2(√5 + 1)"],
+        correct: 0,
+        th: "คูณด้วยสังยุค (Conjugate) คือ (√5 + 1) ทั้งเศษและส่วน",
+        en: "Multiply by conjugate (√5 + 1) for both numerator and denominator.",
+        detail_th: "[2 / (√5 - 1)] · [(√5 + 1) / (√5 + 1)] = 2(√5 + 1) / [(√5)² - 1²] = 2(√5 + 1) / 4 = (√5 + 1) / 2",
+        detail_en: "[2 / (√5 - 1)] · [(√5 + 1) / (√5 + 1)] = 2(√5 + 1) / 4 = (√5 + 1) / 2"
+    },
+    {
+        id: 11,
+        q_th: "ข้อใดเป็นจริง เมื่อกำหนดให้ x < 0",
+        q_en: "Which statement is true given x < 0?",
+        a_th: ["√(x²) = -x", "√(x²) = x", "√(x²) = x²", "หาค่า √(x²) ไม่ได้"],
+        a_en: ["√(x²) = -x", "√(x²) = x", "√(x²) = x²", "√(x²) is undefined"],
+        correct: 0,
+        th: "ถ้า x < 0 จะได้ |x| = -x เพื่อเปลี่ยนค่าลบให้กลายเป็นบวก",
+        en: "If x < 0, then |x| = -x to turn the negative value positive.",
+        detail_th: "ตามนิยาม √(x²) = |x| เมื่อกำหนดให้ x < 0 ค่าถอดจาก Absolute ต้องเป็นบวกเสมอ ดังนั้น |x| = -x",
+        detail_en: "By definition, √(x²) = |x|. Since x < 0, |x| = -x to maintain a positive result."
+    },
+    {
+        id: 12,
+        q_th: "ผลลัพธ์ของ √45 - √20 + √5 มีค่าเท่ากับข้อใด",
+        q_en: "What is the simplified result of √45 - √20 + √5?",
+        a_th: ["2√5", "3√5", "√30", "0"],
+        a_en: ["2√5", "3√5", "√30", "0"],
+        correct: 0,
+        th: "จัดให้อยู่ในรูปอย่างง่ายก่อนบวกลบ: √45 = 3√5 และ √20 = 2√5",
+        en: "Simplify each radical before adding/subtracting: √45 = 3√5, √20 = 2√5",
+        detail_th: "√45 - √20 + √5 = 3√5 - 2√5 + √5 = (3 - 2 + 1)√5 = 2√5",
+        detail_en: "√45 - √20 + √5 = 3√5 - 2√5 + √5 = 2√5"
+    },
+    {
+        id: 13,
+        q_th: "ข้อใดต่อไปนี้ 'ไม่ถูกต้อง' ตามสมบัติของระบบจำนวนจริง",
+        q_en: "Which of the following statements is INCORRECT?",
+        a_th: ["√(a + b) = √a + √b", "√(a · b) = √a · √b (เมื่อ a,b ≥ 0)", "(√a)² = a (เมื่อ a ≥ 0)", "√[3]{a³) = a"],
+        a_en: ["√(a + b) = √a + √b", "√(a · b) = √a · √b (for a,b ≥ 0)", "(√a)² = a (for a ≥ 0)", "√[3]{a³) = a"],
+        correct: 0,
+        th: "กรณฑ์ไม่มีสมบัติการกระจายข้ามการบวกหรือการลบ",
+        en: "Radicals do NOT distribute over addition or subtraction.",
+        detail_th: "√(a + b) ≠ √a + √b เช่น √(9 + 16) = √25 = 5 แต่ √9 + √16 = 3 + 4 = 7 ซึ่งไม่เท่ากัน",
+        detail_en: "√(a + b) ≠ √a + √b. Example: √(9 + 16) = 5, but √9 + √16 = 7."
+    },
+    {
+        id: 14,
+        q_th: "จงหาค่าของ (√3 + √2)(√3 - √2)",
+        q_en: "Evaluate (√3 + √2)(√3 - √2).",
+        a_th: ["1", "5", "1 - 2√6", "1 + 2√6"],
+        a_en: ["1", "5", "1 - 2√6", "1 + 2√6"],
+        correct: 0,
+        th: "ใช้สูตรผลต่างกำลังสอง: (A + B)(A - B) = A² - B²",
+        en: "Use difference of squares formula: (A + B)(A - B) = A² - B²",
+        detail_th: "(√3 + √2)(√3 - √2) = (√3)² - (√2)² = 3 - 2 = 1",
+        detail_en: "(√3 + √2)(√3 - √2) = (√3)² - (√2)² = 3 - 2 = 1"
+    },
+    {
+        id: 15,
+        q_th: "ค่าของ √[3]{-125} + √[4]{256} มีค่าเท่ากับเท่าใด",
+        q_en: "What is the value of √[3]{-125} + √[4]{256}?",
+        a_th: ["-1", "9", "1", "-9"],
+        a_en: ["-1", "9", "1", "-9"],
+        correct: 0,
+        th: "ถอดรากแต่ละพจน์: √[3]{-125} = -5 และ √[4]{256} = 4",
+        en: "Evaluate terms individually: √[3]{-125} = -5 and √[4]{256} = 4",
+        detail_th: "√[3]{-125} = -5 และ √[4]{256} = 4 นำมาบวกกัน: (-5) + 4 = -1",
+        detail_en: "√[3]{-125} = -5 and √[4]{256} = 4. Sum = (-5) + 4 = -1."
+    },
+    {
+        id: 16,
+        q_th: "ข้อใดคือค่าของ (2√5)³",
+        q_en: "Find the value of (2√5)³.",
+        a_th: ["40√5", "20√5", "40", "200"],
+        a_en: ["40√5", "20√5", "40", "200"],
+        correct: 0,
+        th: "กระจายกำลังสาม: (2)³ · (√5)³ = 8 · (5√5)",
+        en: "Distribute power of 3: (2)³ · (√5)³ = 8 · (5√5)",
+        detail_th: "(2√5)³ = 2³ · (√5)³ = 8 · (5√5) = 40√5",
+        detail_en: "(2√5)³ = 2³ · (√5)³ = 8 · (5√5) = 40√5"
+    },
+    {
+        id: 17,
+        q_th: "พิจารณาข้อความต่อไปนี้: (ก) √[6]{x⁶} = x  (ข) √[5]{x⁵} = x ข้อใดถูกต้อง เมื่อ x เป็นจำนวนจริงใดๆ",
+        q_en: "Consider: (A) √[6]{x⁶} = x  (B) √[5]{x⁵} = x. Which is correct for any real x?",
+        a_th: ["(ข) ถูก เพียงข้อเดียว", "(ก) ถูก เพียงข้อเดียว", "ถูกทั้ง (ก) และ (ข)", "ผิดทั้ง (ก) และ (ข)"],
+        a_en: ["(B) is correct only", "(A) is correct only", "Both are correct", "Both are incorrect"],
+        correct: 0,
+        th: "กำลังคู่ต้องติด Absolute: √[6]{x⁶} = |x| ส่วนกำลังคี่ถอดได้เลย",
+        en: "Even roots require Absolute values: √[6]{x⁶} = |x|. Odd roots extract directly.",
+        detail_th: "(ก) ผิด เพราะ n=6 เป็นคู่ ต้องได้ |x| ส่วน (ข) ถูก เพราะ n=5 เป็นคี่ ได้ x เสมอ",
+        detail_en: "(A) is wrong because even index needs |x|. (B) is correct for odd index."
+    },
+    {
+        id: 18,
+        q_th: "จัดรูป 1 / (3 + √7) ให้ตัวส่วนไม่ติดกรณฑ์ ได้ตรงกับข้อใด",
+        q_en: "Rationalize the denominator of 1 / (3 + √7).",
+        a_th: ["(3 - √7) / 2", "(3 - √7) / 16", "(3 + √7) / 2", "3 - √7"],
+        a_en: ["(3 - √7) / 2", "(3 - √7) / 16", "(3 + √7) / 2", "3 - √7"],
+        correct: 0,
+        th: "คูณด้วยสังยุค (3 - √7) และใช้ผลต่างกำลังสอง: 3² - (√7)² = 9 - 7 = 2",
+        en: "Multiply by conjugate (3 - √7) and use difference of squares: 9 - 7 = 2",
+        detail_th: "[1 / (3 + √7)] · [(3 - √7) / (3 - √7)] = (3 - √7) / (3² - (√7)²) = (3 - √7) / (9 - 7) = (3 - √7) / 2",
+        detail_en: "[1 / (3 + √7)] · [(3 - √7) / (3 - √7)] = (3 - √7) / (9 - 7) = (3 - √7) / 2"
+    },
+    {
+        id: 19,
+        q_th: "ถ้า √x = 4 แล้ว x² มีค่าเท่ากับเท่าใด",
+        q_en: "If √x = 4, what is the value of x²?",
+        a_th: ["256", "16", "64", "2"],
+        a_en: ["256", "16", "64", "2"],
+        correct: 0,
+        th: "หาค่า x ก่อนโดยยกกำลังสอง: x = 16 จากนั้นหา x² = 16²",
+        en: "Solve for x first by squaring: x = 16. Then calculate x² = 16².",
+        detail_th: "จาก √x = 4 จะได้ x = 4² = 16 ดังนั้น x² = 16² = 256",
+        detail_en: "From √x = 4, x = 16. Therefore x² = 16² = 256."
+    },
+    {
+        id: 20,
+        q_th: "ข้อใดมีค่ามากที่สุด",
+        q_en: "Which of the following has the largest value?",
+        a_th: ["√[3]{64}", "√16", "√[4]{256}", "ทุกข้อมีค่าเท่ากัน"],
+        a_en: ["√[3]{64}", "√16", "√[4]{256}", "All have equal values"],
+        correct: 3,
+        th: "คำนวณค่าของทุกพจน์: 4, 4, 4",
+        en: "Calculate each term: 4, 4, 4",
+        detail_th: "√[3]{64} = 4, √16 = 4, √[4]{256} = 4 ทุกข้อมีค่าเท่ากับ 4 เท่ากันทั้งหมด",
+        detail_en: "√[3]{64} = 4, √16 = 4, √[4]{256} = 4. All expressions equal 4."
+    },
+    {
+        id: 21,
+        q_th: "จงทำ √[3]{a⁶b⁹} ให้อยู่ในรูปอย่างง่าย",
+        q_en: "Simplify √[3]{a⁶b⁹}.",
+        a_th: ["a²b³", "|a²b³|", "a³b³", "a²b⁶"],
+        a_en: ["a²b³", "|a²b³|", "a³b³", "a²b⁶"],
+        correct: 0,
+        th: "ถอดรากโดยนำดรรชนีกรณฑ์ไปหารเลขชี้กำลัง: 6/3 = 2 และ 9/3 = 3",
+        en: "Divide exponents by root index: 6/3 = 2 and 9/3 = 3",
+        detail_th: "√[3]{a⁶b⁹} = a^(6/3) · b^(9/3) = a²b³ (อันดับคี่ไม่ต้องใส่ Absolute)",
+        detail_en: "√[3]{a⁶b⁹} = a^(6/3) · b^(9/3) = a²b³"
+    },
+    {
+        id: 22,
+        q_th: "ค่าของ (√5 + 2)² มีค่าตรงกับข้อใด",
+        q_en: "Expand and simplify (√5 + 2)².",
+        a_th: ["9 + 4√5", "9 + 2√5", "7 + 4√5", "29"],
+        a_en: ["9 + 4√5", "9 + 2√5", "7 + 4√5", "29"],
+        correct: 0,
+        th: "ใช้สูตรกำลังสองสมบูรณ์: (A + B)² = A² + 2AB + B²",
+        en: "Use perfect square formula: (A + B)² = A² + 2AB + B²",
+        detail_th: "(√5 + 2)² = (√5)² + 2(√5)(2) + 2² = 5 + 4√5 + 4 = 9 + 4√5",
+        detail_en: "(√5 + 2)² = (√5)² + 2(√5)(2) + 2² = 5 + 4√5 + 4 = 9 + 4√5"
+    },
+    {
+        id: 23,
+        q_th: "จงหาค่าของ √(18) / √(2)",
+        q_en: "Evaluate √(18) / √(2).",
+        a_th: ["3", "9", "3√2", "√9 / 2"],
+        a_en: ["3", "9", "3√2", "√9 / 2"],
+        correct: 0,
+        th: "ยุบรวมรากก่อนหาร: √(18 / 2) = √9",
+        en: "Combine radicals before dividing: √(18 / 2) = √9",
+        detail_th: "√(18) / √(2) = √(18 / 2) = √9 = 3",
+        detail_en: "√(18) / √(2) = √(18 / 2) = √9 = 3"
+    },
+    {
+        id: 24,
+        q_th: "ถ้า √(x - 1) = 3 แล้ว x มีค่าเท่าใด",
+        q_en: "If √(x - 1) = 3, what is the value of x?",
+        a_th: ["10", "8", "7", "100"],
+        a_en: ["10", "8", "7", "100"],
+        correct: 0,
+        th: "ยกกำลังสองทั้งสองข้าง: x - 1 = 3²",
+        en: "Square both sides: x - 1 = 3²",
+        detail_th: "ยกกำลังสองทั้งสองข้างจะได้ x - 1 = 9 ดังนี้ x = 9 + 1 = 10",
+        detail_en: "Square both sides: x - 1 = 9 => x = 10."
+    },
+    {
+        id: 25,
+        q_th: "ข้อใดเป็นคำตอบของสมการ √[3]{2x + 1} = -3",
+        q_en: "Solve the equation √[3]{2x + 1} = -3.",
+        a_th: ["-14", "13", "-13", "ไม่มีคำตอบในระบบจำนวนจริง"],
+        a_en: ["-14", "13", "-13", "No real solution"],
+        correct: 0,
+        th: "ยกกำลังสามทั้งสองข้าง: 2x + 1 = (-3)³ = -27",
+        en: "Cube both sides: 2x + 1 = (-3)³ = -27",
+        detail_th: "ยกกำลังสามทั้งสองข้าง: 2x + 1 = -27 => 2x = -28 => x = -14",
+        detail_en: "Cube both sides: 2x + 1 = -27 => 2x = -28 => x = -14"
+    }
+];
+
+// App State
+let currentLang = 'TH'; // 'TH' or 'EN'
+let userAnswers = {}; // { qIndex: selectedOptionIndex }
+let randomizedQuestions = [];
+
+// Fisher-Yates Shuffle Algorithm
+function shuffleArray(array) {
+    let arr = [...array];
+    for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+}
+
+// Initialize Exam Data with Shuffled Options
+function initExamData() {
+    const savedState = localStorage.getItem('pjk_tutor_radicals_exam');
+    if (savedState) {
+        try {
+            const parsed = JSON.parse(savedState);
+            randomizedQuestions = parsed.randomizedQuestions;
+            userAnswers = parsed.userAnswers || {};
+            currentLang = parsed.currentLang || 'TH';
+            return;
+        } catch (e) {
+            console.error("Failed to load local storage", e);
+        }
+    }
+
+    // Advanced Randomization
+    randomizedQuestions = questionsRaw.map((q) => {
+        const optionIndices = [0, 1, 2, 3];
+        const shuffledIndices = shuffleArray(optionIndices);
+        
+        const newATh = shuffledIndices.map(i => q.a_th[i]);
+        const newAEn = shuffledIndices.map(i => q.a_en[i]);
+        const newCorrect = shuffledIndices.indexOf(q.correct);
+
+        return {
+            ...q,
+            a_th: newATh,
+            a_en: newAEn,
+            correct: newCorrect
+        };
+    });
+
+    saveStateToLocalStorage();
+}
+
+function saveStateToLocalStorage() {
+    const state = {
+        randomizedQuestions,
+        userAnswers,
+        currentLang
+    };
+    localStorage.setItem('pjk_tutor_radicals_exam', JSON.stringify(state));
+}
+
+// Render UI
+function renderUI() {
+    if (currentLang === 'TH') {
+        document.getElementById('ui-title').innerText = "แบบทดสอบ รากที่ n ในระบบจำนวนจริง";
+        document.getElementById('ui-subtitle').innerText = "ระดับมัธยมศึกษาปีที่ 5 (ความยากปานกลาง) | อ้างอิงโรงเรียนกัลยาณีศรีธรรมราช";
+        document.getElementById('ui-submit-btn').innerText = "ส่งข้อสอบและดูผลการวิเคราะห์";
+        document.getElementById('ui-result-title').innerText = "ผลการสอบประเมินผล";
+        document.getElementById('ui-analysis-title').innerText = "📊 การวิเคราะห์จุดแข็ง-จุดที่ต้องปรับปรุง";
+    } else {
+        document.getElementById('ui-title').innerText = "Interactive Exam: nth Roots in Real Numbers";
+        document.getElementById('ui-subtitle').innerText = "Grade 11 (Moderate Difficulty) | Kanlayanee Si Thammarat School";
+        document.getElementById('ui-submit-btn').innerText = "Submit Exam & View Analysis";
+        document.getElementById('ui-result-title').innerText = "Assessment Results";
+        document.getElementById('ui-analysis-title').innerText = "📊 Strengths & Weaknesses Analysis";
+    }
+
+    updateProgress();
+    renderQuestions();
+}
+
+function updateProgress() {
+    const answeredCount = Object.keys(userAnswers).length;
+    let score = 0;
+    Object.keys(userAnswers).forEach(idx => {
+        if (userAnswers[idx] === randomizedQuestions[idx].correct) {
+            score++;
+        }
+    });
+
+    if (currentLang === 'TH') {
+        document.getElementById('ui-progress').innerText = `ความคืบหน้า: ${answeredCount} / 25 ข้อ`;
+        document.getElementById('ui-score-live').innerText = `คะแนนปัจจุบัน: ${score}`;
+    } else {
+        document.getElementById('ui-progress').innerText = `Progress: ${answeredCount} / 25`;
+        document.getElementById('ui-score-live').innerText = `Current Score: ${score}`;
+    }
+}
+
+function renderQuestions() {
+    const container = document.getElementById('questions-container');
+    container.innerHTML = '';
+
+    randomizedQuestions.forEach((q, index) => {
+        const qCard = document.createElement('div');
+        qCard.className = 'question-card';
+        qCard.id = `q-card-${index}`;
+
+        const questionText = currentLang === 'TH' ? q.q_th : q.q_en;
+        const clueText = currentLang === 'TH' ? q.th : q.en;
+        const optionsList = currentLang === 'TH' ? q.a_th : q.a_en;
+
+        const isAnswered = userAnswers.hasOwnProperty(index);
+        const selectedOpt = userAnswers[index];
+
+        let optionsHTML = '';
+        optionsList.forEach((optText, optIdx) => {
+            let btnClass = 'option-btn';
+            if (isAnswered) {
+                if (optIdx === q.correct) {
+                    btnClass += ' correct';
+                } else if (optIdx === selectedOpt) {
+                    btnClass += ' wrong';
+                }
+            }
+
+            optionsHTML += `
+                <button class="${btnClass}" 
+                        ${isAnswered ? 'disabled' : ''} 
+                        onclick="selectOption(${index}, ${optIdx})">
+                    <span>${String.fromCharCode(65 + optIdx)}.</span>
+                    <span>${optText}</span>
+                </button>
+            `;
+        });
+
+        const detailText = currentLang === 'TH' ? q.detail_th : q.detail_en;
+        let detailBoxClass = 'detail-box';
+        if (isAnswered) {
+            detailBoxClass += ' show ' + (selectedOpt === q.correct ? 'correct-detail' : 'wrong-detail');
+        }
+
+        qCard.innerHTML = `
+            <div class="q-header">
+                <span class="q-number">ข้อที่ ${q.id}</span>
+                <div>${questionText}</div>
+            </div>
+            <div class="clue-box">💡 Tutor's Tip: ${clueText}</div>
+            <div class="options-grid">
+                ${optionsHTML}
+            </div>
+            <div class="${detailBoxClass}" id="detail-${index}">
+                <strong>เฉลยและคำอธิบาย:</strong> ${detailText}
+            </div>
+        `;
+
+        container.appendChild(qCard);
+    });
+}
+
+function selectOption(qIndex, optIndex) {
+    userAnswers[qIndex] = optIndex;
+    saveStateToLocalStorage();
+    updateProgress();
+    renderQuestions();
+}
+
+function toggleLanguage() {
+    currentLang = currentLang === 'TH' ? 'EN' : 'TH';
+    saveStateToLocalStorage();
+    renderUI();
+}
+
+function submitExam() {
+    const answeredCount = Object.keys(userAnswers).length;
+    if (answeredCount < 25) {
+        const confirmSubmit = confirm(
+            currentLang === 'TH'
+                ? `คุณตอบไปเพียง ${answeredCount} จาก 25 ข้อ ต้องการส่งข้อสอบเลยหรือไม่?`
+                : `You answered ${answeredCount} of 25 questions. Submit anyway?`
+        );
+        if (!confirmSubmit) return;
+    }
+
+    let totalScore = 0;
+    randomizedQuestions.forEach((q, idx) => {
+        if (userAnswers[idx] === q.correct) {
+            totalScore++;
+        }
+    });
+
+    const percentage = ((totalScore / 25) * 100).toFixed(1);
+
+    document.getElementById('result-card').style.display = 'block';
+    document.getElementById('result-score-text').innerText = `${totalScore} / 25`;
+    document.getElementById('result-percentage-text').innerText = `คิดเป็น ${percentage}%`;
+
+    // Strengths / Weaknesses Analysis
+    let analysisHTML = '';
+    if (totalScore >= 20) {
+        analysisHTML = `<p style="color: green; font-weight: bold;">🌟 ยอดเยี่ยมมาก! คุณมีความเข้าใจในเรื่องรากที่ n และกรณฑ์เป็นอย่างดี พร้อมสอบต่อยอดแล้ว</p>`;
+    } else if (totalScore >= 12) {
+        analysisHTML = `<p style="color: orange; font-weight: bold;">👍 ผ่านเกณฑ์ปานกลาง ควรทบทวนเรื่อง 'การใส่ Absolute เมื่อถอดรากกำลังคู่' และ 'การคูณสังยุค (Conjugate)' เพิ่มเติม</p>`;
+    } else {
+        analysisHTML = `<p style="color: red; font-weight: bold;">⚠️ ควรทบทวนเนื้อหาโดยด่วน! สรุปบทเรียนด้านบนช่วยให้คุณทำความเข้าใจนิยามค่าหลักและสมบัติการบวกลบกรณฑ์เพิ่มเติมได้</p>`;
+    }
+
+    document.getElementById('analysis-content').innerHTML = analysisHTML;
+    document.getElementById('result-card').scrollIntoView({ behavior: 'smooth' });
+
+    // Simulated Email Dispatch Alert
+    alert(
+        `[พระจอมเกล้าติวเตอร์ System]\nจำลองการส่งผลสอบของคุณ (${totalScore}/25 คะแนน) ไปยัง thee.chinpong@hmail.com เรียบร้อยแล้ว!`
+    );
+}
+
+/* WHITEBOARD ENGINE (PRO CANVAS) */
+let canvas, ctx;
+let isDrawing = false;
+let currentTool = 'pen'; // 'pen' or 'eraser'
+let currentColor = '#1e3a8a';
+let currentLineWidth = 3;
+let undoStack = [];
+
+function initWhiteboard() {
+    canvas = document.getElementById('whiteboardCanvas');
+    ctx = canvas.getContext('2d');
+    
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+
+    // Mouse Events
+    canvas.addEventListener('mousedown', startDrawing);
+    canvas.addEventListener('mousemove', draw);
+    canvas.addEventListener('mouseup', stopDrawing);
+    canvas.addEventListener('mouseleave', stopDrawing);
+
+    // Touch Events for Tablets/Mobile
+    canvas.addEventListener('touchstart', handleTouchStart, { passive: false });
+    canvas.addEventListener('touchmove', handleTouchMove, { passive: false });
+    canvas.addEventListener('touchend', stopDrawing);
+
+    saveCanvasState();
+}
+
+function resizeCanvas() {
+    const container = document.getElementById('canvasContainer');
+    // Save current content before resize
+    let tempCanvas = document.createElement('canvas');
+    tempCanvas.width = canvas.width;
+    tempCanvas.height = canvas.height;
+    let tempCtx = tempCanvas.getContext('2d');
+    tempCtx.drawImage(canvas, 0, 0);
+
+    canvas.width = container.clientWidth;
+    canvas.height = container.clientHeight;
+
+    // Restore content
+    ctx.drawImage(tempCanvas, 0, 0);
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+}
+
+function saveCanvasState() {
+    if (undoStack.length >= 10) undoStack.shift();
+    undoStack.push(ctx.getImageData(0, 0, canvas.width, canvas.height));
+}
+
+function undoCanvas() {
+    if (undoStack.length > 1) {
+        undoStack.pop(); // Remove current
+        let prevState = undoStack[undoStack.length - 1];
+        ctx.putImageData(prevState, 0, 0);
+    } else if (undoStack.length === 1) {
+        clearCanvas();
+    }
+}
+
+function getPos(e) {
+    const rect = canvas.getBoundingClientRect();
+    return {
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top
+    };
+}
+
+function startDrawing(e) {
+    isDrawing = true;
+    const pos = getPos(e);
+    ctx.beginPath();
+    ctx.moveTo(pos.x, pos.y);
+}
+
+function draw(e) {
+    if (!isDrawing) return;
+    const pos = getPos(e);
+
+    ctx.strokeStyle = currentTool === 'eraser' ? '#ffffff' : currentColor;
+    ctx.lineWidth = currentTool === 'eraser' ? currentLineWidth * 4 : currentLineWidth;
+
+    ctx.lineTo(pos.x, pos.y);
+    ctx.stroke();
+}
+
+function stopDrawing() {
+    if (isDrawing) {
+        ctx.closePath();
+        isDrawing = false;
+        saveCanvasState();
+    }
+}
+
+function handleTouchStart(e) {
+    e.preventDefault();
+    if (e.touches.length === 1) {
+        startDrawing(e.touches[0]);
+    }
+}
+
+function handleTouchMove(e) {
+    e.preventDefault();
+    if (e.touches.length === 1) {
+        draw(e.touches[0]);
+    }
+}
+
+function setTool(tool) {
+    currentTool = tool;
+    document.getElementById('penBtn').classList.toggle('active', tool === 'pen');
+    document.getElementById('eraserBtn').classList.toggle('active', tool === 'eraser');
+}
+
+function changeColor(color) {
+    currentColor = color;
+    setTool('pen');
+}
+
+function changeSize(size) {
+    currentLineWidth = size;
+}
+
+function clearCanvas() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    saveCanvasState();
+}
+
+// App Launch
+window.onload = function() {
+    initExamData();
+    renderUI();
+    initWhiteboard();
+};
+</script>
+</body>
+</html>
