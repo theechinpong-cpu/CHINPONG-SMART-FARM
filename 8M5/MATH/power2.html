@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rational Exponents Quiz - พระจอมเกล้าติวเตอร์</title>
+    <!-- MathJax for rendering LaTeX -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --primary: #1e3a8a;
+            --secondary: #3b82f6;
+            --success: #10b981;
+            --danger: #ef4444;
+            --bg-light: #f3f4f6;
+            --white: #ffffff;
+            --dark: #1f2937;
+        }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            background-color: var(--bg-light);
+            color: var(--dark);
+        }
+        .header {
+            background: var(--primary);
+            color: var(--white);
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        .btn-toggle { background: var(--secondary); color: white; }
+        .btn-reset { background: var(--danger); color: white; }
+        .btn:hover { opacity: 0.8; }
+        
+        .main-container {
+            display: flex;
+            height: calc(100vh - 60px);
+            flex-wrap: wrap;
+        }
+        /* Layout: 70% Left, 30% Right */
+        .whiteboard-panel {
+            flex: 0 0 70%;
+            background: var(--white);
+            border-right: 2px solid #e5e7eb;
+            position: relative;
+            height: 100%;
+        }
+        .quiz-panel {
+            flex: 0 0 30%;
+            height: 100%;
+            overflow-y: auto;
+            padding: 1rem;
+            background: var(--bg-light);
+        }
+        
+        /* Whiteboard Tools */
+        .wb-toolbar {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: white;
+            padding: 5px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            z-index: 10;
+        }
+        canvas {
+            cursor: crosshair;
+            display: block;
+        }
+
+        /* Quiz Styles */
+        .question-card {
+            background: var(--white);
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .q-number { font-weight: bold; color: var(--primary); margin-bottom: 0.5rem; }
+        .q-text { font-size: 1.1rem; margin-bottom: 1rem; }
+        .options { display: flex; flex-direction: column; gap: 0.5rem; }
+        .option-btn {
+            background: var(--bg-light);
+            border: 1px solid #d1d5db;
+            padding: 0.75rem;
+            border-radius: 4px;
+            text-align: left;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.2s;
+        }
+        .option-btn:hover:not(:disabled) { background: #e5e7eb; }
+        .option-btn:disabled { cursor: not-allowed; }
+        .option-btn.correct { background: var(--success); color: white; border-color: var(--success); }
+        .option-btn.incorrect { background: var(--danger); color: white; border-color: var(--danger); }
+        
+        .explanation {
+            margin-top: 1rem;
+            padding: 0.75rem;
+            background: #ecfeff;
+            border-left: 4px solid #06b6d4;
+            display: none;
+            font-size: 0.95rem;
+        }
+        .clue {
+            font-size: 0.85rem;
+            color: #6b7280;
+            margin-top: 0.5rem;
+            font-style: italic;
+        }
+
+        .result-panel {
+            display: none;
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .result-panel h2 { color: var(--primary); margin-bottom: 1rem; }
+
+        @media (max-width: 768px) {
+            .whiteboard-panel { flex: 0 0 100%; height: 40vh; }
+            .quiz-panel { flex: 0 0 100%; height: 60vh; }
+        }
+    </style>
+</head>
+<body>
+
+    <header class="header">
+        <h2>พระจอมเกล้าติวเตอร์ - Rational Exponents</h2>
+        <div>
+            <button class="btn btn-toggle" id="langToggle">TH / EN</button>
+            <button class="btn btn-reset" id="resetBtn">Reset</button>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <!-- Whiteboard Area -->
+        <div class="whiteboard-panel" id="wbContainer">
+            <div class="wb-toolbar">
+                <button class="btn" id="clearWb" style="background:#4b5563; color:white; padding:0.25rem 0.5rem; font-size:0.8rem;">Clear Board</button>
+                <input type="color" id="wbColor" value="#1e3a8a">
+                <input type="range" id="wbSize" min="1" max="10" value="2">
+            </div>
+            <canvas id="whiteboard"></canvas>
+        </div>
+
+        <!-- Quiz Area -->
+        <div class="quiz-panel" id="quizPanel">
+            <div id="questionsContainer"></div>
+            <button class="btn btn-toggle" id="submitBtn" style="width: 100%; margin: 1rem 0; padding: 1rem; display: none;">ส่งข้อสอบ / สรุปผล</button>
+            <div class="result-panel" id="resultPanel">
+                <h2 id="resTitle">ผลการวิเคราะห์</h2>
+                <h3 id="resScore">คะแนน: 0 / 25</h3>
+                <div id="resAnalysis" style="margin-top:1rem; line-height:1.6;"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 25 Questions Array
+        const rawQuestions = [
+            { q_th: "จงหาค่าของ $$16^{\\frac{1}{2}}$$", q_en: "Find the value of $$16^{\\frac{1}{2}}$$", c_th: "คำใบ้: จำนวนใดคูณตัวเองแล้วได้ 16", c_en: "Clue: What number squared equals 16?", ans: [ {t:"2",c:0}, {t:"4",c:1}, {t:"8",c:0}, {t:"16",c:0} ], e_th: "เฉลย: 4. วิธีลัด: $$16^{\\frac{1}{2}} = \\sqrt{16} = 4$$", e_en: "Exp: 4. Shortcut: $$16^{\\frac{1}{2}} = \\sqrt{16} = 4$$", type: "basic" },
+            { q_th: "จงหาค่าของ $$27^{\\frac{1}{3}}$$", q_en: "Find the value of $$27^{\\frac{1}{3}}$$", c_th: "คำใบ้: รากที่สามของ 27", c_en: "Clue: Cube root of 27", ans: [ {t:"9",c:0}, {t:"6",c:0}, {t:"3",c:1}, {t:"81",c:0} ], e_th: "เฉลย: 3. วิธีลัด: $$27^{\\frac{1}{3}} = \\sqrt[3]{27} = 3$$", e_en: "Exp: 3. Shortcut: $$27^{\\frac{1}{3}} = \\sqrt[3]{27} = 3$$", type: "basic" },
+            { q_th: "จงหาค่าของ $$8^{\\frac{2}{3}}$$", q_en: "Find the value of $$8^{\\frac{2}{3}}$$", c_th: "คำใบ้: ล่างคือราก บนคือยกกำลัง", c_en: "Clue: Bottom is root, top is power", ans: [ {t:"2",c:0}, {t:"4",c:1}, {t:"16",c:0}, {t:"64",c:0} ], e_th: "เฉลย: 4. วิธีลัด: $$(\\sqrt[3]{8})^2 = 2^2 = 4$$", e_en: "Exp: 4. Shortcut: $$(\\sqrt[3]{8})^2 = 2^2 = 4$$", type: "intermediate" },
+            { q_th: "จงหาค่าของ $$32^{\\frac{3}{5}}$$", q_en: "Find the value of $$32^{\\frac{3}{5}}$$", c_th: "คำใบ้: รากที่ห้าของ 32 คืออะไร", c_en: "Clue: What is the 5th root of 32?", ans: [ {t:"4",c:0}, {t:"16",c:0}, {t:"8",c:1}, {t:"24",c:0} ], e_th: "เฉลย: 8. วิธีลัด: $$(\\sqrt[5]{32})^3 = 2^3 = 8$$", e_en: "Exp: 8. Shortcut: $$(\\sqrt[5]{32})^3 = 2^3 = 8$$", type: "intermediate" },
+            { q_th: "จงหาค่าของ $$81^{\\frac{3}{4}}$$", q_en: "Find the value of $$81^{\\frac{3}{4}}$$", c_th: "คำใบ้: ถอดรากที่สี่ก่อนแล้วยกกำลังสาม", c_en: "Clue: 4th root first, then cube", ans: [ {t:"9",c:0}, {t:"27",c:1}, {t:"18",c:0}, {t:"36",c:0} ], e_th: "เฉลย: 27. วิธีลัด: $$(\\sqrt[4]{81})^3 = 3^3 = 27$$", e_en: "Exp: 27. Shortcut: $$(\\sqrt[4]{81})^3 = 3^3 = 27$$", type: "intermediate" },
+            { q_th: "จงหาค่าของ $$9^{-\\frac{1}{2}}$$", q_en: "Find the value of $$9^{-\\frac{1}{2}}$$", c_th: "คำใบ้: กำลังติดลบหมายถึงการกลับเศษเป็นส่วน", c_en: "Clue: Negative power means reciprocal", ans: [ {t:"-3",c:0}, {t:"1/3",c:1}, {t:"-1/3",c:0}, {t:"3",c:0} ], e_th: "เฉลย: 1/3. วิธีลัด: $$9^{-\\frac{1}{2}} = \\frac{1}{9^{\\frac{1}{2}}} = \\frac{1}{\\sqrt{9}} = \\frac{1}{3}$$", e_en: "Exp: 1/3. Shortcut: $$9^{-\\frac{1}{2}} = \\frac{1}{\\sqrt{9}} = \\frac{1}{3}$$", type: "negative" },
+            { q_th: "จงหาค่าของ $$125^{-\\frac{2}{3}}$$", q_en: "Find the value of $$125^{-\\frac{2}{3}}$$", c_th: "คำใบ้: ถอดราก ยกกำลัง แล้วตบลงล่าง", c_en: "Clue: Root, Power, Reciprocal", ans: [ {t:"1/25",c:1}, {t:"-25",c:0}, {t:"25",c:0}, {t:"-1/25",c:0} ], e_th: "เฉลย: 1/25. วิธีลัด: $$\\frac{1}{(\\sqrt[3]{125})^2} = \\frac{1}{5^2} = \\frac{1}{25}$$", e_en: "Exp: 1/25. Shortcut: $$\\frac{1}{5^2} = \\frac{1}{25}$$", type: "negative" },
+            { q_th: "ทำให้เป็นผลสำเร็จ: $$2^{\\frac{1}{2}} \\times 2^{\\frac{3}{2}}$$", q_en: "Simplify: $$2^{\\frac{1}{2}} \\times 2^{\\frac{3}{2}}$$", c_th: "คำใบ้: ฐานเหมือนกันคูณกัน นำเลขชี้กำลังมาบวกกัน", c_en: "Clue: Same base multiplied, add exponents", ans: [ {t:"2",c:0}, {t:"4",c:1}, {t:"8",c:0}, {t:"$$2^{\\frac{3}{4}}$$ ",c:0} ], e_th: "เฉลย: 4. วิธีลัด: $$2^{\\frac{1}{2}+\\frac{3}{2}} = 2^{\\frac{4}{2}} = 2^2 = 4$$", e_en: "Exp: 4. Shortcut: $$2^{\\frac{4}{2}} = 2^2 = 4$$", type: "property" },
+            { q_th: "ทำให้เป็นผลสำเร็จ: $$\\frac{5^{\\frac{5}{2}}}{5^{\\frac{1}{2}}}$$", q_en: "Simplify: $$\\frac{5^{\\frac{5}{2}}}{5^{\\frac{1}{2}}}$$", c_th: "คำใบ้: ฐานเหมือนกันหารกัน นำเลขชี้กำลังมาลบกัน", c_en: "Clue: Same base divided, subtract exponents", ans: [ {t:"5",c:0}, {t:"25",c:1}, {t:"$$5^{\\frac{5}{4}}$$ ",c:0}, {t:"125",c:0} ], e_th: "เฉลย: 25. วิธีลัด: $$5^{\\frac{5}{2}-\\frac{1}{2}} = 5^{\\frac{4}{2}} = 5^2 = 25$$", e_en: "Exp: 25. Shortcut: $$5^2 = 25$$", type: "property" },
+            { q_th: "จงหาค่าของ $$(-8)^{\\frac{1}{3}}$$", q_en: "Find the value of $$(-8)^{\\frac{1}{3}}$$", c_th: "คำใบ้: รากคี่ของจำนวนลบหาค่าได้", c_en: "Clue: Odd root of a negative number exists", ans: [ {t:"2",c:0}, {t:"-2",c:1}, {t:"หาค่าไม่ได้",c:0}, {t:"4",c:0} ], e_th: "เฉลย: -2. วิธีลัด: $$\\sqrt[3]{-8} = -2$$ เพราะ $$(-2)^3 = -8$$", e_en: "Exp: -2. Shortcut: $$\\sqrt[3]{-8} = -2$$", type: "basic" },
+            { q_th: "รูปอย่างง่ายของ $$\\sqrt[4]{x^8}$$ คือข้อใด", q_en: "Simplified form of $$\\sqrt[4]{x^8}$$", c_th: "คำใบ้: แปลงรากเป็นส่วน", c_en: "Clue: Convert root to denominator", ans: [ {t:"$$x$$",c:0}, {t:"$$x^2$$",c:1}, {t:"$$x^4$$",c:0}, {t:"$$x^{\\frac{1}{2}}$$ ",c:0} ], e_th: "เฉลย: $$x^2$$. วิธีลัด: $$x^{\\frac{8}{4}} = x^2$$", e_en: "Exp: $$x^2$$. Shortcut: $$x^{\\frac{8}{4}} = x^2$$", type: "variable" },
+            { q_th: "รูปอย่างง่ายของ $$(16x^4)^{\\frac{1}{2}}$$ คือข้อใด", q_en: "Simplified form of $$(16x^4)^{\\frac{1}{2}}$$", c_th: "คำใบ้: กระจายเลขชี้กำลังเข้าไปทุกตัว", c_en: "Clue: Distribute the exponent to all terms", ans: [ {t:"$$8x^2$$",c:0}, {t:"$$4x^2$$",c:1}, {t:"$$4x$$",c:0}, {t:"$$16x^2$$",c:0} ], e_th: "เฉลย: $$4x^2$$. วิธีลัด: $$16^{\\frac{1}{2}} \\cdot (x^4)^{\\frac{1}{2}} = 4x^2$$", e_en: "Exp: $$4x^2$$. Shortcut: $$16^{\\frac{1}{2}} \\cdot (x^4)^{\\frac{1}{2}} = 4x^2$$", type: "variable" },
+            { q_th: "จงหาค่าของ $$64^{\\frac{5}{6}}$$", q_en: "Find the value of $$64^{\\frac{5}{6}}$$", c_th: "คำใบ้: แปลง 64 เป็นเลขยกกำลังฐาน 2", c_en: "Clue: Convert 64 to base 2", ans: [ {t:"16",c:0}, {t:"32",c:1}, {t:"64",c:0}, {t:"128",c:0} ], e_th: "เฉลย: 32. วิธีลัด: $$64 = 2^6$$, จะได้ $$(2^6)^{\\frac{5}{6}} = 2^5 = 32$$", e_en: "Exp: 32. Shortcut: $$(2^6)^{\\frac{5}{6}} = 2^5 = 32$$", type: "intermediate" },
+            { q_th: "จงหาค่าของ $$10000^{\\frac{3}{4}}$$", q_en: "Find the value of $$10000^{\\frac{3}{4}}$$", c_th: "คำใบ้: 10000 คือ 10 ยกกำลังอะไร", c_en: "Clue: 10000 is 10 to what power?", ans: [ {t:"100",c:0}, {t:"1000",c:1}, {t:"10000",c:0}, {t:"10",c:0} ], e_th: "เฉลย: 1000. วิธีลัด: $$(10^4)^{\\frac{3}{4}} = 10^3 = 1000$$", e_en: "Exp: 1000. Shortcut: $$(10^4)^{\\frac{3}{4}} = 10^3 = 1000$$", type: "intermediate" },
+            { q_th: "ผลลัพธ์ของ $$x^{\\frac{2}{3}} \\cdot x^{\\frac{4}{3}}$$ คือข้อใด", q_en: "Result of $$x^{\\frac{2}{3}} \\cdot x^{\\frac{4}{3}}$$ is?", c_th: "คำใบ้: ฐานเหมือนกันคูณกัน นำกำลังบวกกัน", c_en: "Clue: Add exponents for same base multiplication", ans: [ {t:"$$x^2$$",c:1}, {t:"$$x^{\\frac{8}{9}}$$ ",c:0}, {t:"$$x^6$$",c:0}, {t:"$$x$$",c:0} ], e_th: "เฉลย: $$x^2$$. วิธีลัด: $$x^{\\frac{2+4}{3}} = x^{\\frac{6}{3}} = x^2$$", e_en: "Exp: $$x^2$$. Shortcut: $$x^{\\frac{6}{3}} = x^2$$", type: "variable" },
+            { q_th: "ผลลัพธ์ของ $$\\frac{x^{\\frac{3}{4}}}{x^{\\frac{1}{4}}}$$ คือข้อใด", q_en: "Result of $$\\frac{x^{\\frac{3}{4}}}{x^{\\frac{1}{4}}}$$ is?", c_th: "คำใบ้: จับเลขชี้กำลังลบกัน", c_en: "Clue: Subtract the exponents", ans: [ {t:"$$x$$",c:0}, {t:"$$\\sqrt{x}$$ ",c:1}, {t:"$$x^{\\frac{1}{4}}$$ ",c:0}, {t:"1",c:0} ], e_th: "เฉลย: $$\\sqrt{x}$$. วิธีลัด: $$x^{\\frac{3}{4}-\\frac{1}{4}} = x^{\\frac{2}{4}} = x^{\\frac{1}{2}} = \\sqrt{x}$$", e_en: "Exp: $$\\sqrt{x}$$. Shortcut: $$x^{\\frac{1}{2}} = \\sqrt{x}$$", type: "variable" },
+            { q_th: "ค่าของ $$(-32)^{\\frac{3}{5}}$$ คือข้อใด", q_en: "Value of $$(-32)^{\\frac{3}{5}}$$", c_th: "คำใบ้: รากที่ 5 ของลบได้ผลเป็นลบ", c_en: "Clue: 5th root of negative is negative", ans: [ {t:"8",c:0}, {t:"-8",c:1}, {t:"16",c:0}, {t:"-16",c:0} ], e_th: "เฉลย: -8. วิธีลัด: $$(\\sqrt[5]{-32})^3 = (-2)^3 = -8$$", e_en: "Exp: -8. Shortcut: $$(-2)^3 = -8$$", type: "intermediate" },
+            { q_th: "แปลง $$\\sqrt[3]{x^2}$$ ให้อยู่ในรูปเลขยกกำลัง", q_en: "Convert $$\\sqrt[3]{x^2}$$ to exponential form", c_th: "คำใบ้: ล่างคือราก บนคือกำลัง", c_en: "Clue: Root at bottom, power at top", ans: [ {t:"$$x^{\\frac{3}{2}}$$ ",c:0}, {t:"$$x^{\\frac{2}{3}}$$ ",c:1}, {t:"$$x^6$$",c:0}, {t:"$$x^5$$",c:0} ], e_th: "เฉลย: $$x^{\\frac{2}{3}}$$. วิธีลัด: รากคือ 3 ไปอยู่เป็นส่วน กำลังคือ 2 ไปอยู่เป็นเศษ", e_en: "Exp: $$x^{\\frac{2}{3}}$$.", type: "basic" },
+            { q_th: "รูปอย่างง่ายของ $$(81x^8)^{\\frac{1}{4}}$$ คือข้อใด", q_en: "Simplified form of $$(81x^8)^{\\frac{1}{4}}$$ is?", c_th: "คำใบ้: ถอดรากที่ 4 ของ 81 และ x^8", c_en: "Clue: 4th root of both 81 and x^8", ans: [ {t:"$$9x^2$$",c:0}, {t:"$$3x^2$$",c:1}, {t:"$$3x^4$$",c:0}, {t:"$$9x^4$$",c:0} ], e_th: "เฉลย: $$3x^2$$. วิธีลัด: $$81^{\\frac{1}{4}} \\cdot x^{\\frac{8}{4}} = 3x^2$$", e_en: "Exp: $$3x^2$$. Shortcut: $$81^{\\frac{1}{4}} \\cdot x^{\\frac{8}{4}} = 3x^2$$", type: "variable" },
+            { q_th: "จงหาค่าของ $$16^{\\frac{3}{4}}$$ ", q_en: "Find the value of $$16^{\\frac{3}{4}}$$", c_th: "คำใบ้: แปลง 16 เป็นฐาน 2", c_en: "Clue: Convert 16 to base 2", ans: [ {t:"4",c:0}, {t:"8",c:1}, {t:"12",c:0}, {t:"32",c:0} ], e_th: "เฉลย: 8. วิธีลัด: $$(2^4)^{\\frac{3}{4}} = 2^3 = 8$$", e_en: "Exp: 8. Shortcut: $$(2^4)^{\\frac{3}{4}} = 2^3 = 8$$", type: "intermediate" },
+            { q_th: "แปลง $$\\frac{1}{\\sqrt{x}}$$ ให้อยู่ในรูปเลขยกกำลัง", q_en: "Convert $$\\frac{1}{\\sqrt{x}}$$ to exponential form", c_th: "คำใบ้: ตบขึ้นบนกำลังจะติดลบ", c_en: "Clue: Bring it up, exponent becomes negative", ans: [ {t:"$$x^{\\frac{1}{2}}$$ ",c:0}, {t:"$$x^{-\\frac{1}{2}}$$ ",c:1}, {t:"$$x^{-2}$$",c:0}, {t:"$$x^2$$",c:0} ], e_th: "เฉลย: $$x^{-\\frac{1}{2}}$$. วิธีลัด: $$\\sqrt{x} = x^{\\frac{1}{2}}$$ เมื่อกลับเศษส่วนจะได้ติดลบ", e_en: "Exp: $$x^{-\\frac{1}{2}}$$.", type: "negative" },
+            { q_th: "ทำให้เป็นผลสำเร็จ: $$(x^{-\\frac{2}{3}})^{-3}$$", q_en: "Simplify: $$(x^{-\\frac{2}{3}})^{-3}$$", c_th: "คำใบ้: กำลังซ้อนกัน นำมาคูณกัน", c_en: "Clue: Power of a power, multiply them", ans: [ {t:"$$x^2$$",c:1}, {t:"$$x^{-2}$$",c:0}, {t:"$$x^{-9}$$",c:0}, {t:"$$x^{\\frac{2}{9}}$$ ",c:0} ], e_th: "เฉลย: $$x^2$$. วิธีลัด: $$(-\\frac{2}{3}) \\times (-3) = 2$$ จะได้ $$x^2$$", e_en: "Exp: $$x^2$$.", type: "variable" },
+            { q_th: "ค่าของ $$4^{1.5}$$ มีค่าเท่าใด", q_en: "Value of $$4^{1.5}$$ is?", c_th: "คำใบ้: แปลงทศนิยม 1.5 เป็นเศษส่วน 3/2", c_en: "Clue: Convert 1.5 to fraction 3/2", ans: [ {t:"6",c:0}, {t:"8",c:1}, {t:"16",c:0}, {t:"2.5",c:0} ], e_th: "เฉลย: 8. วิธีลัด: $$4^{\\frac{3}{2}} = (\\sqrt{4})^3 = 2^3 = 8$$", e_en: "Exp: 8. Shortcut: $$4^{\\frac{3}{2}} = 2^3 = 8$$", type: "intermediate" },
+            { q_th: "ทำให้เป็นผลสำเร็จ: $$\\sqrt[3]{-27x^6}$$", q_en: "Simplify: $$\\sqrt[3]{-27x^6}$$", c_th: "คำใบ้: แยกรากตัวเลขกับตัวแปรออกจากกัน", c_en: "Clue: Separate the root of number and variable", ans: [ {t:"$$3x^2$$",c:0}, {t:"$$-3x^2$$",c:1}, {t:"$$-9x^2$$",c:0}, {t:"$$-3x^3$$",c:0} ], e_th: "เฉลย: $$-3x^2$$. วิธีลัด: $$\\sqrt[3]{-27} = -3$$ และ $$x^{\\frac{6}{3}} = x^2$$", e_en: "Exp: $$-3x^2$$.", type: "variable" },
+            { q_th: "รูปอย่างง่ายของ $$\\frac{x^2 \\cdot x^{\\frac{1}{2}}}{x^{\\frac{3}{2}}}$$", q_en: "Simplified form of $$\\frac{x^2 \\cdot x^{\\frac{1}{2}}}{x^{\\frac{3}{2}}}$$", c_th: "คำใบ้: รวบเศษก่อน แล้วค่อยลบส่วน", c_en: "Clue: Combine numerator first, then subtract denominator", ans: [ {t:"$$x^{\\frac{1}{2}}$$ ",c:0}, {t:"$$x$$",c:1}, {t:"$$x^2$$",c:0}, {t:"1",c:0} ], e_th: "เฉลย: $$x$$. วิธีลัด: $$x^{2 + 0.5 - 1.5} = x^1 = x$$", e_en: "Exp: $$x$$.", type: "property" }
+        ];
+
+        // System State
+        let isThai = localStorage.getItem('quiz_lang') !== 'en';
+        let userAnswers = JSON.parse(localStorage.getItem('quiz_answers')) || {};
+        let score = 0;
+        let quizQuestions = [];
+
+        // Fisher-Yates Shuffle
+        function shuffle(array) {
+            let currentIndex = array.length, randomIndex;
+            while (currentIndex !== 0) {
+                randomIndex = Math.floor(Math.random() * currentIndex);
+                currentIndex--;
+                [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+            }
+            return array;
+        }
+
+        // Initialize Quiz
+        function initQuiz() {
+            // Load or shuffle questions
+            const savedState = localStorage.getItem('quiz_order');
+            if (savedState) {
+                quizQuestions = JSON.parse(savedState);
+            } else {
+                let tempQuestions = JSON.parse(JSON.stringify(rawQuestions));
+                tempQuestions = shuffle(tempQuestions).map((q, idx) => {
+                    q.id = idx;
+                    q.ans = shuffle(q.ans);
+                    return q;
+                });
+                quizQuestions = tempQuestions;
+                localStorage.setItem('quiz_order', JSON.stringify(quizQuestions));
+            }
+
+            renderQuestions();
+            updateLangUI();
+            checkCompletion();
+        }
+
+        // Render HTML
+        function renderQuestions() {
+            const container = document.getElementById('questionsContainer');
+            container.innerHTML = '';
+            
+            quizQuestions.forEach((q, idx) => {
+                const card = document.createElement('div');
+                card.className = 'question-card';
+                card.id = `q-${q.id}`;
+                
+                const qText = isThai ? q.q_th : q.q_en;
+                const clueText = isThai ? q.c_th : q.c_en;
+                const expText = isThai ? q.e_th : q.e_en;
+
+                let html = `
+                    <div class="q-number">ข้อที่ ${idx + 1}</div>
+                    <div class="q-text">${qText}</div>
+                    <div class="options">
+                `;
+
+                const answered = userAnswers[q.id] !== undefined;
+
+                q.ans.forEach((a, aIdx) => {
+                    const btnClass = answered 
+                        ? (a.c === 1 ? 'option-btn correct' : (userAnswers[q.id] === aIdx ? 'option-btn incorrect' : 'option-btn'))
+                        : 'option-btn';
+                    
+                    html += `<button class="${btnClass}" ${answered ? 'disabled' : ''} onclick="selectAnswer(${q.id}, ${aIdx}, ${a.c})">
+                                ${a.t}
+                             </button>`;
+                });
+
+                html += `</div>
+                         <div class="clue">${clueText}</div>
+                         <div class="explanation" style="display: ${answered ? 'block' : 'none'}">${expText}</div>`;
+                
+                card.innerHTML = html;
+                container.appendChild(card);
+            });
+
+            // Trigger MathJax re-render safely
+            if (window.MathJax) {
+                MathJax.typesetPromise();
+            }
+        }
+
+        // Answer Handling
+        window.selectAnswer = function(qId, aIdx, isCorrect) {
+            userAnswers[qId] = aIdx;
+            localStorage.setItem('quiz_answers', JSON.stringify(userAnswers));
+            renderQuestions(); // Re-render to show states
+            checkCompletion();
+        }
+
+        // Check Completion & Analysis
+        function checkCompletion() {
+            const totalAnswered = Object.keys(userAnswers).length;
+            if (totalAnswered === 25) {
+                document.getElementById('submitBtn').style.display = 'block';
+            }
+        }
+
+        document.getElementById('submitBtn').addEventListener('click', generateAnalysis);
+
+        function generateAnalysis() {
+            score = 0;
+            let weakAreas = { basic: 0, intermediate: 0, negative: 0, property: 0, variable: 0 };
+            let totalAreas = { basic: 0, intermediate: 0, negative: 0, property: 0, variable: 0 };
+
+            quizQuestions.forEach(q => {
+                totalAreas[q.type]++;
+                const selectedIdx = userAnswers[q.id];
+                if (q.ans[selectedIdx].c === 1) {
+                    score++;
+                } else {
+                    weakAreas[q.type]++;
+                }
+            });
+
+            document.getElementById('resultPanel').style.display = 'block';
+            document.getElementById('submitBtn').style.display = 'none';
+            document.getElementById('resScore').innerText = `คะแนนรวม: ${score} / 25`;
+
+            let analysisHtml = '<strong>จุดเด่น (Strengths):</strong><ul>';
+            let weaknessHtml = '<strong>จุดด้อยที่ควรทบทวน (Areas for Review):</strong><ul>';
+            let allPerfect = true;
+
+            const areaNames = {
+                basic: "พื้นฐานนิยามกรณฑ์และเลขชี้กำลัง",
+                intermediate: "การถอดรากเลขสองหลัก/สามหลัก",
+                negative: "เลขชี้กำลังติดลบ (ส่วนกลับ)",
+                property: "สมบัติของเลขยกกำลัง (คูณ/หาร)",
+                variable: "การจัดรูปตัวแปรพหุนามติดกรณฑ์"
+            };
+
+            for (let type in totalAreas) {
+                if (totalAreas[type] === 0) continue;
+                const errorRate = weakAreas[type] / totalAreas[type];
+                if (errorRate === 0) {
+                    analysisHtml += `<li style="color:var(--success)">ทำได้ดีมากในเรื่อง: ${areaNames[type]}</li>`;
+                } else {
+                    allPerfect = false;
+                    weaknessHtml += `<li style="color:var(--danger)">ควรทบทวนเรื่อง: ${areaNames[type]} (ผิดพลาด ${(errorRate*100).toFixed(0)}%)</li>`;
+                }
+            }
+            analysisHtml += '</ul><br>';
+            if(allPerfect) weaknessHtml += '<li style="color:var(--success)">ยอดเยี่ยมมาก! ไม่มีจุดอ่อนที่ชัดเจน</li>';
+            weaknessHtml += '</ul>';
+
+            document.getElementById('resAnalysis').innerHTML = analysisHtml + weaknessHtml;
+            // Scroll to top
+            document.getElementById('quizPanel').scrollTop = 0;
+        }
+
+        // UI Controls
+        document.getElementById('langToggle').addEventListener('click', () => {
+            isThai = !isThai;
+            localStorage.setItem('quiz_lang', isThai ? 'th' : 'en');
+            renderQuestions();
+        });
+
+        document.getElementById('resetBtn').addEventListener('click', () => {
+            if(confirm(isThai ? 'ต้องการลบข้อมูลทั้งหมดและเริ่มใหม่หรือไม่?' : 'Reset all data and start over?')) {
+                localStorage.removeItem('quiz_answers');
+                localStorage.removeItem('quiz_order');
+                location.reload();
+            }
+        });
+
+        function updateLangUI() {
+            document.getElementById('langToggle').innerText = isThai ? 'เปลี่ยนเป็น EN' : 'Switch to TH';
+        }
+
+        // ---------------- Whiteboard Logic ----------------
+        const canvas = document.getElementById('whiteboard');
+        const ctx = canvas.getContext('2d');
+        const wbContainer = document.getElementById('wbContainer');
+        
+        let painting = false;
+
+        function resizeCanvas() {
+            canvas.width = wbContainer.clientWidth;
+            canvas.height = wbContainer.clientHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        // Initial sizing delay for CSS to compute
+        setTimeout(resizeCanvas, 100);
+
+        function startPosition(e) {
+            painting = true;
+            draw(e);
+        }
+        function endPosition() {
+            painting = false;
+            ctx.beginPath();
+        }
+        function draw(e) {
+            if (!painting) return;
+            ctx.lineWidth = document.getElementById('wbSize').value;
+            ctx.lineCap = 'round';
+            ctx.strokeStyle = document.getElementById('wbColor').value;
+
+            // Handle touch or mouse
+            const rect = canvas.getBoundingClientRect();
+            const x = (e.clientX || e.touches[0].clientX) - rect.left;
+            const y = (e.clientY || e.touches[0].clientY) - rect.top;
+
+            ctx.lineTo(x, y);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+        }
+
+        // Mouse Events
+        canvas.addEventListener('mousedown', startPosition);
+        canvas.addEventListener('mouseup', endPosition);
+        canvas.addEventListener('mousemove', draw);
+        // Touch Events
+        canvas.addEventListener('touchstart', (e) => { e.preventDefault(); startPosition(e); }, {passive: false});
+        canvas.addEventListener('touchend', endPosition);
+        canvas.addEventListener('touchmove', (e) => { e.preventDefault(); draw(e); }, {passive: false});
+
+        document.getElementById('clearWb').addEventListener('click', () => {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        });
+
+        // Run
+        initQuiz();
+
+    </script>
+</body>
+</html>
