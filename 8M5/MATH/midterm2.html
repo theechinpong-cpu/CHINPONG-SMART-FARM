@@ -2,96 +2,529 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <title>ข้อสอบคณิตศาสตร์ ม.5 - ชุดที่ 2 (ระดับยากมาก)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rational Exponents Quiz - พระจอมเกล้าติวเตอร์</title>
     <style>
-        body { font-family: sans-serif; line-height: 1.6; max-width: 800px; margin: auto; padding: 20px; background: #f4f7f6; }
-        .summary { background: #fff; padding: 20px; border-radius: 8px; border-left: 5px solid #2c3e50; margin-bottom: 20px; }
-        .q-card { background: #fff; padding: 20px; margin-bottom: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        .hint { color: #e74c3c; font-style: italic; font-size: 0.9em; margin-bottom: 10px; display: block; font-weight: bold; }
-        .options { display: grid; gap: 10px; margin-top: 10px; }
-        button { padding: 10px; cursor: pointer; border: 1px solid #ddd; border-radius: 4px; background: #fff; transition: 0.3s; }
-        button:hover { background: #e0e0e0; }
-        .correct { background: #2ecc71 !important; color: white; }
-        .wrong { background: #e74c3c !important; color: white; }
-        .detail { margin-top: 10px; padding: 10px; background: #f9f9f9; border-left: 4px solid #3498db; display: none; }
+        :root {
+            --primary: #1e3a8a;
+            --secondary: #3b82f6;
+            --success: #10b981;
+            --danger: #ef4444;
+            --bg-light: #f3f4f6;
+            --white: #ffffff;
+            --dark: #1f2937;
+            --highlight: #fef08a;
+        }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            background-color: var(--bg-light);
+            color: var(--dark);
+        }
+        /* Header */
+        .header {
+            background: var(--primary);
+            color: var(--white);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        .btn-toggle { background: var(--secondary); color: white; }
+        .btn-reset { background: var(--danger); color: white; margin-left: 0.5rem; }
+        .btn:hover { opacity: 0.8; }
+        
+        /* Summary Section */
+        .summary-container {
+            background: var(--white);
+            margin: 1.5rem 2rem;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            line-height: 1.8;
+            font-size: 1.05rem;
+        }
+        .summary-container h2 {
+            color: var(--primary);
+            margin-bottom: 1rem;
+            border-bottom: 2px solid var(--secondary);
+            padding-bottom: 0.5rem;
+        }
+        .summary-container p { margin-bottom: 1rem; text-indent: 2rem; }
+        .memory-box {
+            background: #eff6ff;
+            border-left: 5px solid var(--secondary);
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            border-radius: 0 8px 8px 0;
+        }
+        .memory-box h3 { color: var(--primary); margin-bottom: 0.5rem; }
+        .memory-box ul { margin-left: 2rem; margin-bottom: 1rem; }
+        .author-sign {
+            text-align: right;
+            font-weight: bold;
+            color: var(--primary);
+            margin-top: 2rem;
+            font-style: italic;
+        }
+
+        /* Main Workspace Layout (70% Quiz Left / 30% Whiteboard Right) */
+        .workspace {
+            display: flex;
+            height: 85vh;
+            margin: 0 2rem 2rem 2rem;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        /* Left: 70% Quiz Panel */
+        .quiz-panel {
+            flex: 0 0 70%;
+            max-width: 70%;
+            background: var(--bg-light);
+            overflow-y: auto;
+            padding: 1.5rem;
+            border-right: 2px solid #e5e7eb;
+        }
+
+        /* Right: 30% Whiteboard Panel */
+        .whiteboard-panel {
+            flex: 0 0 30%;
+            max-width: 30%;
+            background: var(--white);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+        .wb-toolbar {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            right: 15px;
+            background: white;
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+            z-index: 10;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+        }
+        canvas {
+            cursor: crosshair;
+            display: block;
+            width: 100%;
+            height: 100%;
+            background-color: #ffffff;
+        }
+
+        /* Question Cards & Elements */
+        .question-card {
+            background: var(--white);
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .q-number { font-weight: bold; color: var(--primary); margin-bottom: 0.5rem; font-size: 1.1rem; }
+        .q-text { font-size: 1.2rem; margin-bottom: 1.2rem; }
+        .options { display: flex; flex-direction: column; gap: 0.75rem; }
+        .option-btn {
+            background: var(--bg-light);
+            border: 1px solid #d1d5db;
+            padding: 0.8rem 1rem;
+            border-radius: 6px;
+            text-align: left;
+            cursor: pointer;
+            font-size: 1.05rem;
+            transition: all 0.2s ease;
+        }
+        .option-btn:hover:not(:disabled) { background: #e5e7eb; border-color: #9ca3af; }
+        .option-btn:disabled { cursor: not-allowed; opacity: 0.9; }
+        .option-btn.correct { background: var(--success); color: white; border-color: var(--success); box-shadow: 0 0 8px rgba(16,185,129,0.4); }
+        .option-btn.incorrect { background: var(--danger); color: white; border-color: var(--danger); }
+        
+        .explanation {
+            margin-top: 1.2rem;
+            padding: 1rem;
+            background: #ecfeff;
+            border-left: 4px solid #06b6d4;
+            display: none;
+            font-size: 1rem;
+            border-radius: 0 4px 4px 0;
+        }
+        .clue {
+            font-size: 0.9rem;
+            color: #6b7280;
+            margin-top: 0.8rem;
+            font-style: italic;
+            display: block;
+        }
+
+        .result-panel {
+            display: none;
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .result-panel h2 { color: var(--primary); margin-bottom: 1rem; border-bottom: 2px solid var(--bg-light); padding-bottom: 0.5rem; }
+
+        /* Responsive Mobile Layout */
+        @media (max-width: 1024px) {
+            .workspace { flex-direction: column; height: auto; }
+            .quiz-panel { flex: 0 0 100%; max-width: 100%; border-right: none; }
+            .whiteboard-panel { flex: 0 0 100%; max-width: 100%; height: 50vh; border-top: 2px solid #e5e7eb; }
+            .header { flex-direction: column; gap: 1rem; text-align: center; }
+        }
     </style>
 </head>
 <body>
 
-<div class="summary">
-    <h2>ข้อสอบกลางภาค คณิต ม.5 - ชุดที่ 2 (ระดับยากมาก)</h2>
-    <p>วิชา: เลขยกกำลังและรากที่ n | จำนวน: 25 ข้อ</p>
-    <div style="background: #fff3cd; padding: 10px;"><b>เทคนิคติวเตอร์:</b> ข้อสอบชุดนี้เน้นการแก้สมการเลขยกกำลังและการจัดรูปรากที่ n ในรูปแบบที่ซับซ้อน ขอให้ตั้งสติและแปลงทุกอย่างเป็นฐานจำนวนเฉพาะก่อนเสมอ</div>
-</div>
+    <header class="header">
+        <h2 id="headerTitle">พระจอมเกล้าติวเตอร์ - Rational Exponents (เลขยกกำลังตรรกยะ)</h2>
+        <div>
+            <button class="btn btn-toggle" id="langToggle">TH / EN</button>
+            <button class="btn btn-reset" id="resetBtn">Reset Data</button>
+        </div>
+    </header>
 
-<div id="quiz-container"></div>
+    <!-- Summary Section (500+ Words) -->
+    <div class="summary-container" id="summarySection">
+        <h2>สรุปเนื้อหา: เลขยกกำลังที่มีเลขชี้กำลังเป็นจำนวนตรรกยะ</h2>
+        
+        <p>ในคณิตศาสตร์ระดับมัธยมศึกษาตอนปลาย หนึ่งในหัวข้อที่เป็นรากฐานสำคัญและถูกนำไปต่อยอดในวิชาแคลคูลัสและฟิสิกส์ขั้นสูงคือเรื่อง <b>"เลขยกกำลังที่มีเลขชี้กำลังเป็นจำนวนตรรกยะ" (Rational Exponents)</b> หลายคนอาจคุ้นเคยกับเลขยกกำลังที่เป็นจำนวนเต็มบวก เช่น 2<sup>3</sup> ซึ่งหมายถึง 2 คูณกัน 3 ตัว แต่เมื่อเลขชี้กำลังกลายเป็นเศษส่วน เช่น 2<sup>1/2</sup> หรือ 8<sup>2/3</sup> นักเรียนหลายคนมักจะเกิดความสับสน กระบวนการคิดที่ถูกต้องคือการทำความเข้าใจว่า "เลขยกกำลังที่เป็นเศษส่วน" คือการรวมกันของ 2 ปฏิบัติการทางคณิตศาสตร์ ได้แก่ "การยกกำลัง" (Power) และ "การถอดราก" (Root)</p>
+        
+        <p>นิยามหลักของเลขยกกำลังตรรกยะระบุไว้ว่า <b>a<sup>m/n</sup> = <sup>n</sup>&radic;(a<sup>m</sup>) = (<sup>n</sup>&radic;a)<sup>m</sup></b> นิยามนี้บอกเราว่า ตัวส่วน (n) ของเลขชี้กำลังทำหน้าที่เป็น "อันดับของราก" ในขณะที่ตัวเศษ (m) ทำหน้าที่เป็น "เลขยกกำลัง" ของฐานนั้น สิ่งสำคัญที่นักเรียนต้องจำให้ขึ้นใจคือ การถอดรากก่อนแล้วค่อยยกกำลัง จะทำให้ตัวเลขมีค่าน้อยลงก่อน คำนวณด้วยมือได้ง่ายขึ้น และลดโอกาสเกิดข้อผิดพลาดได้อย่างมหาศาล</p>
 
-<script>
-    // ฟังก์ชันช่วยสุ่มตัวเลือกและรักษาความสัมพันธ์ของคำตอบที่ถูก
-    function shuffleOptions(options, correctIndex) {
-        let items = options.map((opt, i) => ({ val: opt, isCorrect: (i === correctIndex) }));
-        for (let i = items.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [items[i], items[j]] = [items[j], items[i]];
-        }
-        return {
-            shuffled: items.map(item => item.val),
-            newCorrect: items.findIndex(item => item.isCorrect)
-        };
-    }
+        <div class="memory-box">
+            <h3>🧠 เทคนิคการจำ และ กระบวนการคิด (Thought Process)</h3>
+            <ul>
+                <li><b>เทคนิคที่ 1: "ล่างคือราก บนคือกำลัง"</b><br>จำง่ายๆ ว่าตัวเลขที่อยู่ด้านล่างของเศษส่วน (ตัวส่วน) จะต้องมุดลงใต้ดินกลายเป็น "ราก" (Root) ส่วนตัวที่อยู่ด้านบน (ตัวเศษ) จะชี้ขึ้นฟ้าเป็น "เลขยกกำลัง" เช่น 27<sup>2/3</sup> ล่างคือ 3 (รากที่สามของ 27 คือ 3) บนคือ 2 (นำ 3 มายกกำลังสองได้ 9)</li>
+                <li><b>เทคนิคที่ 2: "ตบลงล่าง กำลังเป็นบวก"</b><br>เมื่อเจอเลขชี้กำลังติดลบ ห้ามตกใจ! เครื่องหมายลบที่เลขชี้กำลังไม่ได้หมายความว่าค่านั้นติดลบ แต่หมายถึง "ส่วนกลับ" (Reciprocal) กฎคือ a<sup>-n</sup> = 1 / a<sup>n</sup> แค่สลับเศษเป็นส่วน เครื่องหมายลบที่ชี้กำลังก็จะหายไปทันที</li>
+                <li><b>เทคนิคที่ 3: "ฐานเหมือนกัน ยุบรวมกันได้"</b><br>คูณกันนำกำลังมาบวก หารกันนำกำลังมาลบ ยกกำลังซ้อนกันนำกำลังมาคูณกัน (แต่ระวัง: ห้ามนำไปใช้กับการบวกและลบฐานเด็ดขาด!)</li>
+            </ul>
+        </div>
 
-    const rawQuestions = [
-        { q: "ค่าของ (2<sup>3n+1</sup> * 4<sup>n</sup>) / 8<sup>n</sup> คือข้อใด", opt: ["2<sup>n</sup>", "2<sup>n+1</sup>", "4<sup>n</sup>", "2<sup>2n</sup>"], corr: 1, th: "แปลงทุกอย่างเป็นฐาน 2", det: "2<sup>3n+1</sup> * (2<sup>2</sup>)<sup>n</sup> / (2<sup>3</sup>)<sup>n</sup> = 2<sup>3n+1</sup> * 2<sup>2n</sup> / 2<sup>3n</sup> = 2<sup>3n+1+2n-3n</sup> = 2<sup>2n+1</sup>" },
-        { q: "ถ้า 3<sup>x+2</sup> - 3<sup>x</sup> = 216 แล้ว x มีค่าเท่าใด", opt: ["2", "3", "4", "5"], corr: 1, th: "ดึงตัวร่วม 3<sup>x</sup> ออกมา", det: "3<sup>x</sup>(3<sup>2</sup> - 1) = 216 => 3<sup>x</sup>(8) = 216 => 3<sup>x</sup> = 27 => x = 3" },
-        { q: "ค่าของ &radic;<sup>3</sup>( &radic; (64) ) คือข้อใด", opt: ["1", "2", "4", "8"], corr: 1, th: "ถอดรากทีละชั้นจากด้านใน", det: "&radic;<sup>3</sup>(8) = 2" },
-        { q: "ค่าของ (x<sup>-1/2</sup> * x<sup>2/3</sup>) / x<sup>1/6</sup>", opt: ["0", "1", "x", "x<sup>-1</sup>"], corr: 1, th: "นำเลขชี้กำลังบวกกันตามกฎฐานเดียวกัน", det: "x<sup>-1/2 + 2/3 - 1/6</sup> = x<sup>(-3+4-1)/6</sup> = x<sup>0</sup> = 1" },
-        { q: "จงหาค่าของ (27<sup>2/3</sup>) / (9<sup>1/2</sup> * 3<sup>0</sup>)", opt: ["3", "6", "9", "27"], corr: 2, th: "แปลงเป็นฐาน 3", det: "(3<sup>3</sup>)<sup>2/3</sup> / (3<sup>2</sup>)<sup>1/2</sup> * 1 = 3<sup>2</sup> / 3<sup>1</sup> = 3" },
-        { q: "ถ้า &radic;<sup>x</sup>(256) = 4 แล้ว x คือข้อใด", opt: ["2", "3", "4", "8"], corr: 2, th: "เขียน 256 เป็น 4 ยกกำลัง", det: "4<sup>4</sup> = 256 ดังนั้น x = 4" },
-        { q: "ผลลัพธ์ของ (a<sup>2</sup>)<sup>3</sup> / a<sup>2*3</sup> คือข้อใด", opt: ["1", "a", "a<sup>2</sup>", "a<sup>6</sup>"], corr: 0, th: "เทียบสมบัติเลขยกกำลังซ้อนและเลขยกกำลังคูณ", det: "a<sup>6</sup> / a<sup>6</sup> = 1" },
-        { q: "ค่าของ 8<sup>-2/3</sup> + 16<sup>-1/4</sup>", opt: ["1/4", "1/2", "3/4", "1"], corr: 2, th: "คำนวณแต่ละพจน์แยกกัน", det: "(1/2<sup>3</sup>)<sup>2/3</sup> + (1/2<sup>4</sup>)<sup>1/4</sup> = 1/4 + 1/2 = 3/4" },
-        { q: "ค่าของ (0.00032)<sup>1/5</sup>", opt: ["0.2", "0.02", "0.002", "2"], corr: 0, th: "เขียน 0.00032 = 32/100000", det: "(2/10)<sup>5</sup> ยกกำลัง 1/5 = 0.2" },
-        { q: "จงหาค่าของ (2<sup>n+3</sup> - 2<sup>n</sup>) / 7", opt: ["2<sup>n</sup>", "2<sup>n+1</sup>", "2<sup>n-1</sup>", "2<sup>2n</sup>"], corr: 0, th: "ดึงตัวร่วม 2<sup>n</sup>", det: "2<sup>n</sup>(8-1)/7 = 2<sup>n</sup>(7)/7 = 2<sup>n</sup>" },
-        { q: "ค่าของ (x<sup>a</sup> / x<sup>b</sup>)<sup>a+b</sup> * (x<sup>b</sup> / x<sup>c</sup>)<sup>b+c</sup> * (x<sup>c</sup> / x<sup>a</sup>)<sup>c+a</sup>", opt: ["0", "1", "x", "x<sup>abc</sup>"], corr: 1, th: "ใช้กฎ (x<sup>m</sup>)<sup>n</sup> = x<sup>mn</sup>", det: "x<sup>(a-b)(a+b)</sup> * x<sup>(b-c)(b+c)</sup> * x<sup>(c-a)(c+a)</sup> = x<sup>a^2-b^2+b^2-c^2+c^2-a^2</sup> = x<sup>0</sup> = 1" },
-        { q: "ค่าของ &radic;<sup>3</sup>(2 &radic;<sup>3</sup>(2 &radic;<sup>3</sup>(2)))", opt: ["2<sup>1/9</sup>", "2<sup>7/27</sup>", "2<sup>1/3</sup>", "2<sup>13/27</sup>"], corr: 3, th: "นำเลขชี้กำลังบวกเข้าด้วยกัน", det: "2<sup>1/3</sup> * 2<sup>1/9</sup> * 2<sup>1/27</sup> = 2<sup>(9+3+1)/27</sup> = 2<sup>13/27</sup>" },
-        { q: "ถ้า a<sup>x</sup> = b, b<sup>y</sup> = c, c<sup>z</sup> = a จงหาค่า xyz", opt: ["0", "1", "a", "abc"], corr: 1, th: "แทนค่าต่อเนื่อง", det: "(a<sup>x</sup>)<sup>yz</sup> = a => a<sup>xyz</sup> = a<sup>1</sup> => xyz = 1" },
-        { q: "ค่าของ (16<sup>0.75</sup> + 27<sup>2/3</sup>)", opt: ["15", "16", "17", "18"], corr: 2, th: "แปลงเป็นเลขฐาน", det: "(2<sup>4</sup>)<sup>3/4</sup> + (3<sup>3</sup>)<sup>2/3</sup> = 2<sup>3</sup> + 3<sup>2</sup> = 8 + 9 = 17" },
-        { q: "ค่าของ (5<sup>n</sup> * 25<sup>n-1</sup>) / 125<sup>n</sup>", opt: ["1/25", "1/5", "5", "25"], corr: 0, th: "แปลงทุกตัวเป็นฐาน 5", det: "5<sup>n</sup> * 5<sup>2n-2</sup> / 5<sup>3n</sup> = 5<sup>3n-2-3n</sup> = 5<sup>-2</sup> = 1/25" },
-        { q: "ค่าของ &radic; (x<sup>3</sup> &radic; (x<sup>3</sup> &radic; x))", opt: ["x<sup>13/8</sup>", "x<sup>15/8</sup>", "x<sup>7/4</sup>", "x<sup>2</sup>"], corr: 1, th: "ถอดรากจากข้างในออกมา", det: "x<sup>1/2</sup> * x<sup>3/2</sup> * x<sup>3/2</sup>... ไม่ใช่! (x<sup>3</sup>(x<sup>3</sup>*x<sup>1/2</sup>)<sup>1/2</sup>)<sup>1/2</sup> = x<sup>15/8</sup>" },
-        { q: "ถ้า 2<sup>x+1</sup> + 2<sup>x</sup> = 96 จงหาค่า x", opt: ["3", "4", "5", "6"], corr: 2, th: "ดึงตัวร่วม 2<sup>x</sup>", det: "2<sup>x</sup>(2+1) = 96 => 2<sup>x</sup> = 32 => x = 5" },
-        { q: "ค่าของ (3<sup>-1</sup> + 4<sup>-1</sup>)<sup>-1</sup>", opt: ["7/12", "12/7", "1", "7"], corr: 1, th: "บวกเศษส่วนก่อนแล้วกลับตัวตั้ง", det: "(1/3 + 1/4)<sup>-1</sup> = (7/12)<sup>-1</sup> = 12/7" },
-        { q: "ค่าของ &radic;<sup>3</sup>(54) + &radic;<sup>3</sup>(16) - &radic;<sup>3</sup>(2)", opt: ["2&radic;<sup>3</sup>(2)", "3&radic;<sup>3</sup>(2)", "4&radic;<sup>3</sup>(2)", "5&radic;<sup>3</sup>(2)"], corr: 0, th: "แยกตัวประกอบในราก", det: "3&radic;<sup>3</sup>(2) + 2&radic;<sup>3</sup>(2) - &radic;<sup>3</sup>(2) = 4&radic;<sup>3</sup>(2) - &radic;<sup>3</sup>(2) = 3&radic;<sup>3</sup>(2)" },
-        { q: "ค่าของ (1/3)<sup>-2</sup> * 2<sup>-3</sup>", opt: ["9/8", "1/9", "8/9", "18"], corr: 0, th: "คำนวณแยกตัว", det: "9 * 1/8 = 9/8" },
-        { q: "จงหาค่า x จาก (1/4)<sup>x</sup> = 64", opt: ["-3", "-2", "2", "3"], corr: 0, th: "ฐาน 4", det: "4<sup>-x</sup> = 4<sup>3</sup> => -x = 3 => x = -3" },
-        { q: "ค่าของ (2<sup>n</sup> + 2<sup>n+1</sup>) / 2<sup>n-1</sup>", opt: ["2", "4", "6", "8"], corr: 2, th: "ดึงตัวร่วม", det: "2<sup>n</sup>(1+2) / 2<sup>n</sup> * 2<sup>-1</sup> = 3 / 0.5 = 6" },
-        { q: "ค่าของ (x<sup>2</sup>y<sup>-1</sup>)<sup>3</sup> / (x<sup>-1</sup>y<sup>2</sup>)<sup>2</sup>", opt: ["x<sup>8</sup>y<sup>-7</sup>", "x<sup>6</sup>y<sup>-3</sup>", "x<sup>5</sup>y<sup>-4</sup>", "x<sup>7</sup>y<sup>-5</sup>"], corr: 0, th: "กระจายเลขชี้กำลัง", det: "x<sup>6</sup>y<sup>-3</sup> / x<sup>-2</sup>y<sup>4</sup> = x<sup>6-(-2)</sup>y<sup>-3-4</sup> = x<sup>8</sup>y<sup>-7</sup>" },
-        { q: "ค่าของ (125<sup>-1/3</sup>) * (25<sup>1/2</sup>)", opt: ["1", "5", "1/5", "25"], corr: 0, th: "ถอดราก", det: "1/5 * 5 = 1" },
-        { q: "ค่าของ 2<sup>x+2</sup> = 1/32 แล้ว x คือข้อใด", opt: ["-7", "-5", "-3", "0"], corr: 0, th: "ฐาน 2", det: "2<sup>x+2</sup> = 2<sup>-5</sup> => x+2 = -5 => x = -7" }
-    ];
+        <p><b>กระบวนการแก้โจทย์อย่างเป็นระบบ:</b> เมื่อนักเรียนเจอโจทย์เลขยกกำลังที่ซับซ้อน ให้เริ่มต้นด้วยการ <b>"แปลงฐานให้อยู่ในรูปจำนวนเฉพาะ"</b> เสมอ ตัวอย่างเช่น หากเจอตัวเลข 8, 16, 32 ให้รีบแปลงเป็น 2<sup>3</sup>, 2<sup>4</sup>, 2<sup>5</sup> ทันที หรือหากเจอ 9, 27, 81 ให้แปลงเป็นฐาน 3 การทำเช่นนี้จะช่วยให้เราสามารถนำเลขชี้กำลังมาคูณ ตัดทอน หรือยุบรวมกันได้ง่ายขึ้น นอกจากนี้ ในกรณีที่มีตัวแปรผสมอยู่ เช่น (16x<sup>4</sup>)<sup>1/2</sup> ให้ใช้กฎการกระจายเลขชี้กำลังเข้าไปในวงเล็บ (เฉพาะในกรณีที่เป็นการคูณหรือหารเท่านั้น) จะได้ 16<sup>1/2</sup> &middot; (x<sup>4</sup>)<sup>1/2</sup> ซึ่งก็คือ 4x<sup>2</sup> นั่นเอง</p>
 
-    const container = document.getElementById('quiz-container');
-    rawQuestions.forEach((item, index) => {
-        const shuffled = shuffleOptions(item.opt, item.corr);
-        const div = document.createElement('div');
-        div.className = 'q-card';
-        div.innerHTML = `
-            <p><b>ข้อ ${index + 1}:</b> ${item.q}</p>
-            <span class="hint">คำใบ้: ${item.th}</span>
-            <div class="options">
-                ${shuffled.shuffled.map((opt, i) => `<button onclick="check(this, ${i}, ${shuffled.newCorrect}, ${index})">${opt}</button>`).join('')}
+        <p><b>ข้อควรระวังที่พบบ่อย (Common Pitfalls):</b> ข้อผิดพลาดที่ร้ายแรงที่สุดที่มักพบในห้องสอบคือ การลืมเงื่อนไขของจำนวนลบและรากคู่ เราไม่สามารถหาค่าของรากที่สอง รากที่สี่ (รากคู่) ของจำนวนติดลบในระบบจำนวนจริงได้ เช่น (-4)<sup>1/2</sup> จะไม่มีคำตอบในระบบจำนวนจริง แต่ถ้าเป็นรากคี่ เช่น (-8)<sup>1/3</sup> จะสามารถหาคำตอบได้คือ -2 ขอให้นักเรียนมีสติก่อนการคำนวณและตรวจสอบเงื่อนไขของโจทย์ทุกครั้ง การฝึกฝนด้วยข้อสอบแบบโต้ตอบทั้ง 25 ข้อทางด้านซ้ายมือนี้ จะช่วยเจาะจุดบอดและสร้างความแม่นยำให้ผู้เรียนสามารถทำคะแนนได้สูงสุดอย่างแน่นอนครับ</p>
+        
+        <div class="author-sign">เขียนโดย พระจอมเกล้าติวเตอร์</div>
+    </div>
+
+    <!-- Main Workspace (Left 70% Quiz / Right 30% Whiteboard) -->
+    <div class="workspace">
+        <!-- Quiz Panel (70%) -->
+        <div class="quiz-panel" id="quizPanel">
+            <div id="questionsContainer"></div>
+            <button class="btn btn-toggle" id="submitBtn" style="width: 100%; margin: 1rem 0; padding: 1rem; display: none; font-size:1.1rem;">📝 ส่งข้อสอบ / ดูผลการวิเคราะห์</button>
+            <div class="result-panel" id="resultPanel">
+                <h2 id="resTitle">📊 ผลการวิเคราะห์ (Analysis)</h2>
+                <h3 id="resScore" style="color:var(--primary); font-size:1.5rem;">คะแนน: 0 / 25</h3>
+                <div id="resAnalysis" style="margin-top:1.5rem; line-height:1.8; font-size:1.05rem;"></div>
             </div>
-            <div id="detail-${index}" class="detail">${item.det}</div>
-        `;
-        container.appendChild(div);
-    });
+        </div>
 
-    function check(btn, selected, correct, idx) {
-        const buttons = btn.parentElement.querySelectorAll('button');
-        buttons.forEach(b => b.disabled = true);
-        if(selected === correct) btn.className = 'correct';
-        else { btn.className = 'wrong'; buttons[correct].className = 'correct'; }
-        document.getElementById(`detail-${idx}`).style.display = 'block';
-    }
-</script>
+        <!-- Whiteboard Panel (30%) -->
+        <div class="whiteboard-panel" id="wbContainer">
+            <div class="wb-toolbar">
+                <button class="btn" id="clearWb" style="background:#4b5563; color:white; font-size:0.85rem;">🧹 ล้างกระดาน</button>
+                <div style="display:flex; align-items:center; gap:5px;">
+                    <input type="color" id="wbColor" value="#1e3a8a" title="สีปากกา">
+                    <input type="range" id="wbSize" min="1" max="15" value="3" title="ขนาดเส้น" style="width:70px;">
+                </div>
+            </div>
+            <canvas id="whiteboard"></canvas>
+        </div>
+    </div>
 
+    <script>
+        // Questions Data Array (Unicode / HTML entities - NO LaTeX)
+        const rawQuestions = [
+            { q_th: "จงหาค่าของ 16<sup>1/2</sup>", q_en: "Find the value of 16<sup>1/2</sup>", c_th: "คำใบ้: จำนวนใดคูณตัวเองแล้วได้ 16", c_en: "Clue: What number squared equals 16?", ans: [ {t:"2",c:0}, {t:"4",c:1}, {t:"8",c:0}, {t:"16",c:0} ], e_th: "เฉลย: 4<br>วิธีลัด: 16<sup>1/2</sup> = &radic;16 = 4", e_en: "Exp: 4<br>Shortcut: 16<sup>1/2</sup> = &radic;16 = 4", type: "basic" },
+            { q_th: "จงหาค่าของ 27<sup>1/3</sup>", q_en: "Find the value of 27<sup>1/3</sup>", c_th: "คำใบ้: รากที่สามของ 27", c_en: "Clue: Cube root of 27", ans: [ {t:"9",c:0}, {t:"6",c:0}, {t:"3",c:1}, {t:"81",c:0} ], e_th: "เฉลย: 3<br>วิธีลัด: 27<sup>1/3</sup> = <sup>3</sup>&radic;27 = 3", e_en: "Exp: 3<br>Shortcut: 27<sup>1/3</sup> = <sup>3</sup>&radic;27 = 3", type: "basic" },
+            { q_th: "จงหาค่าของ 8<sup>2/3</sup>", q_en: "Find the value of 8<sup>2/3</sup>", c_th: "คำใบ้: ล่างคือราก บนคือยกกำลัง", c_en: "Clue: Bottom is root, top is power", ans: [ {t:"2",c:0}, {t:"4",c:1}, {t:"16",c:0}, {t:"64",c:0} ], e_th: "เฉลย: 4<br>วิธีลัด: (<sup>3</sup>&radic;8)<sup>2</sup> = 2<sup>2</sup> = 4", e_en: "Exp: 4<br>Shortcut: (<sup>3</sup>&radic;8)<sup>2</sup> = 2<sup>2</sup> = 4", type: "intermediate" },
+            { q_th: "จงหาค่าของ 32<sup>3/5</sup>", q_en: "Find the value of 32<sup>3/5</sup>", c_th: "คำใบ้: รากที่ห้าของ 32 คืออะไร", c_en: "Clue: What is the 5th root of 32?", ans: [ {t:"4",c:0}, {t:"16",c:0}, {t:"8",c:1}, {t:"24",c:0} ], e_th: "เฉลย: 8<br>วิธีลัด: (<sup>5</sup>&radic;32)<sup>3</sup> = 2<sup>3</sup> = 8", e_en: "Exp: 8<br>Shortcut: (<sup>5</sup>&radic;32)<sup>3</sup> = 2<sup>3</sup> = 8", type: "intermediate" },
+            { q_th: "จงหาค่าของ 81<sup>3/4</sup>", q_en: "Find the value of 81<sup>3/4</sup>", c_th: "คำใบ้: ถอดรากที่สี่ก่อนแล้วยกกำลังสาม", c_en: "Clue: 4th root first, then cube", ans: [ {t:"9",c:0}, {t:"27",c:1}, {t:"18",c:0}, {t:"36",c:0} ], e_th: "เฉลย: 27<br>วิธีลัด: (<sup>4</sup>&radic;81)<sup>3</sup> = 3<sup>3</sup> = 27", e_en: "Exp: 27<br>Shortcut: (<sup>4</sup>&radic;81)<sup>3</sup> = 3<sup>3</sup> = 27", type: "intermediate" },
+            { q_th: "จงหาค่าของ 9<sup>-1/2</sup>", q_en: "Find the value of 9<sup>-1/2</sup>", c_th: "คำใบ้: กำลังติดลบหมายถึงการกลับเศษเป็นส่วน", c_en: "Clue: Negative power means reciprocal", ans: [ {t:"-3",c:0}, {t:"1/3",c:1}, {t:"-1/3",c:0}, {t:"3",c:0} ], e_th: "เฉลย: 1/3<br>วิธีลัด: 9<sup>-1/2</sup> = 1 / 9<sup>1/2</sup> = 1 / &radic;9 = 1/3", e_en: "Exp: 1/3<br>Shortcut: 1 / &radic;9 = 1/3", type: "negative" },
+            { q_th: "จงหาค่าของ 125<sup>-2/3</sup>", q_en: "Find the value of 125<sup>-2/3</sup>", c_th: "คำใบ้: ถอดราก ยกกำลัง แล้วตบลงล่าง", c_en: "Clue: Root, Power, Reciprocal", ans: [ {t:"1/25",c:1}, {t:"-25",c:0}, {t:"25",c:0}, {t:"-1/25",c:0} ], e_th: "เฉลย: 1/25<br>วิธีลัด: 1 / (<sup>3</sup>&radic;125)<sup>2</sup> = 1 / 5<sup>2</sup> = 1/25", e_en: "Exp: 1/25<br>Shortcut: 1 / 5<sup>2</sup> = 1/25", type: "negative" },
+            { q_th: "ทำให้เป็นผลสำเร็จ: 2<sup>1/2</sup> &times; 2<sup>3/2</sup>", q_en: "Simplify: 2<sup>1/2</sup> &times; 2<sup>3/2</sup>", c_th: "คำใบ้: ฐานเหมือนกันคูณกัน นำเลขชี้กำลังมาบวกกัน", c_en: "Clue: Same base multiplied, add exponents", ans: [ {t:"2",c:0}, {t:"4",c:1}, {t:"8",c:0}, {t:"2<sup>3/4</sup>",c:0} ], e_th: "เฉลย: 4<br>วิธีลัด: 2<sup>(1/2 + 3/2)</sup> = 2<sup>4/2</sup> = 2<sup>2</sup> = 4", e_en: "Exp: 4<br>Shortcut: 2<sup>4/2</sup> = 2<sup>2</sup> = 4", type: "property" },
+            { q_th: "ทำให้เป็นผลสำเร็จ: 5<sup>5/2</sup> &divide; 5<sup>1/2</sup>", q_en: "Simplify: 5<sup>5/2</sup> &divide; 5<sup>1/2</sup>", c_th: "คำใบ้: ฐานเหมือนกันหารกัน นำเลขชี้กำลังมาลบกัน", c_en: "Clue: Same base divided, subtract exponents", ans: [ {t:"5",c:0}, {t:"25",c:1}, {t:"5<sup>5/4</sup>",c:0}, {t:"125",c:0} ], e_th: "เฉลย: 25<br>วิธีลัด: 5<sup>(5/2 - 1/2)</sup> = 5<sup>4/2</sup> = 5<sup>2</sup> = 25", e_en: "Exp: 25<br>Shortcut: 5<sup>2</sup> = 25", type: "property" },
+            { q_th: "จงหาค่าของ (-8)<sup>1/3</sup>", q_en: "Find the value of (-8)<sup>1/3</sup>", c_th: "คำใบ้: รากคี่ของจำนวนลบหาค่าได้", c_en: "Clue: Odd root of a negative number exists", ans: [ {t:"2",c:0}, {t:"-2",c:1}, {t:"หาค่าไม่ได้",c:0}, {t:"4",c:0} ], e_th: "เฉลย: -2<br>วิธีลัด: <sup>3</sup>&radic;(-8) = -2 เพราะ (-2)<sup>3</sup> = -8", e_en: "Exp: -2<br>Shortcut: <sup>3</sup>&radic;(-8) = -2", type: "basic" },
+            { q_th: "รูปอย่างง่ายของ <sup>4</sup>&radic;(x<sup>8</sup>) คือข้อใด", q_en: "Simplified form of <sup>4</sup>&radic;(x<sup>8</sup>)", c_th: "คำใบ้: แปลงรากเป็นส่วน", c_en: "Clue: Convert root to denominator", ans: [ {t:"x",c:0}, {t:"x<sup>2</sup>",c:1}, {t:"x<sup>4</sup>",c:0}, {t:"x<sup>1/2</sup>",c:0} ], e_th: "เฉลย: x<sup>2</sup><br>วิธีลัด: x<sup>8/4</sup> = x<sup>2</sup>", e_en: "Exp: x<sup>2</sup><br>Shortcut: x<sup>8/4</sup> = x<sup>2</sup>", type: "variable" },
+            { q_th: "รูปอย่างง่ายของ (16x<sup>4</sup>)<sup>1/2</sup> คือข้อใด", q_en: "Simplified form of (16x<sup>4</sup>)<sup>1/2</sup>", c_th: "คำใบ้: กระจายเลขชี้กำลังเข้าไปทุกตัว", c_en: "Clue: Distribute the exponent to all terms", ans: [ {t:"8x<sup>2</sup>",c:0}, {t:"4x<sup>2</sup>",c:1}, {t:"4x",c:0}, {t:"16x<sup>2</sup>",c:0} ], e_th: "เฉลย: 4x<sup>2</sup><br>วิธีลัด: 16<sup>1/2</sup> &middot; (x<sup>4</sup>)<sup>1/2</sup> = 4x<sup>2</sup>", e_en: "Exp: 4x<sup>2</sup><br>Shortcut: 16<sup>1/2</sup> &middot; x<sup>4/2</sup> = 4x<sup>2</sup>", type: "variable" },
+            { q_th: "จงหาค่าของ 64<sup>5/6</sup>", q_en: "Find the value of 64<sup>5/6</sup>", c_th: "คำใบ้: แปลง 64 เป็นเลขยกกำลังฐาน 2", c_en: "Clue: Convert 64 to base 2", ans: [ {t:"16",c:0}, {t:"32",c:1}, {t:"64",c:0}, {t:"128",c:0} ], e_th: "เฉลย: 32<br>วิธีลัด: 64 = 2<sup>6</sup>, จะได้ (2<sup>6</sup>)<sup>5/6</sup> = 2<sup>5</sup> = 32", e_en: "Exp: 32<br>Shortcut: (2<sup>6</sup>)<sup>5/6</sup> = 2<sup>5</sup> = 32", type: "intermediate" },
+            { q_th: "จงหาค่าของ 10000<sup>3/4</sup>", q_en: "Find the value of 10000<sup>3/4</sup>", c_th: "คำใบ้: 10000 คือ 10 ยกกำลังอะไร", c_en: "Clue: 10000 is 10 to what power?", ans: [ {t:"100",c:0}, {t:"1000",c:1}, {t:"10000",c:0}, {t:"10",c:0} ], e_th: "เฉลย: 1000<br>วิธีลัด: (10<sup>4</sup>)<sup>3/4</sup> = 10<sup>3</sup> = 1000", e_en: "Exp: 1000<br>Shortcut: (10<sup>4</sup>)<sup>3/4</sup> = 10<sup>3</sup> = 1000", type: "intermediate" },
+            { q_th: "ผลลัพธ์ของ x<sup>2/3</sup> &middot; x<sup>4/3</sup> คือข้อใด", q_en: "Result of x<sup>2/3</sup> &middot; x<sup>4/3</sup> is?", c_th: "คำใบ้: ฐานเหมือนกันคูณกัน นำกำลังบวกกัน", c_en: "Clue: Add exponents for same base multiplication", ans: [ {t:"x<sup>2</sup>",c:1}, {t:"x<sup>8/9</sup>",c:0}, {t:"x<sup>6</sup>",c:0}, {t:"x",c:0} ], e_th: "เฉลย: x<sup>2</sup><br>วิธีลัด: x<sup>(2+4)/3</sup> = x<sup>6/3</sup> = x<sup>2</sup>", e_en: "Exp: x<sup>2</sup><br>Shortcut: x<sup>6/3</sup> = x<sup>2</sup>", type: "variable" },
+            { q_th: "ผลลัพธ์ของ x<sup>3/4</sup> / x<sup>1/4</sup> คือข้อใด", q_en: "Result of x<sup>3/4</sup> / x<sup>1/4</sup> is?", c_th: "คำใบ้: จับเลขชี้กำลังลบกัน", c_en: "Clue: Subtract the exponents", ans: [ {t:"x",c:0}, {t:"&radic;x",c:1}, {t:"x<sup>1/4</sup>",c:0}, {t:"1",c:0} ], e_th: "เฉลย: &radic;x<br>วิธีลัด: x<sup>(3/4 - 1/4)</sup> = x<sup>2/4</sup> = x<sup>1/2</sup> = &radic;x", e_en: "Exp: &radic;x<br>Shortcut: x<sup>1/2</sup> = &radic;x", type: "variable" },
+            { q_th: "ค่าของ (-32)<sup>3/5</sup> คือข้อใด", q_en: "Value of (-32)<sup>3/5</sup>", c_th: "คำใบ้: รากที่ 5 ของลบได้ผลเป็นลบ", c_en: "Clue: 5th root of negative is negative", ans: [ {t:"8",c:0}, {t:"-8",c:1}, {t:"16",c:0}, {t:"-16",c:0} ], e_th: "เฉลย: -8<br>วิธีลัด: (<sup>5</sup>&radic;-32)<sup>3</sup> = (-2)<sup>3</sup> = -8", e_en: "Exp: -8<br>Shortcut: (-2)<sup>3</sup> = -8", type: "intermediate" },
+            { q_th: "แปลง <sup>3</sup>&radic;(x<sup>2</sup>) ให้อยู่ในรูปเลขยกกำลัง", q_en: "Convert <sup>3</sup>&radic;(x<sup>2</sup>) to exponential form", c_th: "คำใบ้: ล่างคือราก บนคือกำลัง", c_en: "Clue: Root at bottom, power at top", ans: [ {t:"x<sup>3/2</sup>",c:0}, {t:"x<sup>2/3</sup>",c:1}, {t:"x<sup>6</sup>",c:0}, {t:"x<sup>5</sup>",c:0} ], e_th: "เฉลย: x<sup>2/3</sup><br>วิธีลัด: รากคือ 3 ไปอยู่เป็นส่วน กำลังคือ 2 ไปอยู่เป็นเศษ", e_en: "Exp: x<sup>2/3</sup>", type: "basic" },
+            { q_th: "รูปอย่างง่ายของ (81x<sup>8</sup>)<sup>1/4</sup> คือข้อใด", q_en: "Simplified form of (81x<sup>8</sup>)<sup>1/4</sup> is?", c_th: "คำใบ้: ถอดรากที่ 4 ของ 81 และ xกำลัง8", c_en: "Clue: 4th root of both 81 and x^8", ans: [ {t:"9x<sup>2</sup>",c:0}, {t:"3x<sup>2</sup>",c:1}, {t:"3x<sup>4</sup>",c:0}, {t:"9x<sup>4</sup>",c:0} ], e_th: "เฉลย: 3x<sup>2</sup><br>วิธีลัด: 81<sup>1/4</sup> &middot; x<sup>8/4</sup> = 3x<sup>2</sup>", e_en: "Exp: 3x<sup>2</sup><br>Shortcut: 81<sup>1/4</sup> &middot; x<sup>8/4</sup> = 3x<sup>2</sup>", type: "variable" },
+            { q_th: "จงหาค่าของ 16<sup>3/4</sup>", q_en: "Find the value of 16<sup>3/4</sup>", c_th: "คำใบ้: แปลง 16 เป็นฐาน 2", c_en: "Clue: Convert 16 to base 2", ans: [ {t:"4",c:0}, {t:"8",c:1}, {t:"12",c:0}, {t:"32",c:0} ], e_th: "เฉลย: 8<br>วิธีลัด: (2<sup>4</sup>)<sup>3/4</sup> = 2<sup>3</sup> = 8", e_en: "Exp: 8<br>Shortcut: (2<sup>4</sup>)<sup>3/4</sup> = 2<sup>3</sup> = 8", type: "intermediate" },
+            { q_th: "แปลง 1 / &radic;x ให้อยู่ในรูปเลขยกกำลัง", q_en: "Convert 1 / &radic;x to exponential form", c_th: "คำใบ้: ตบขึ้นบนกำลังจะติดลบ", c_en: "Clue: Bring it up, exponent becomes negative", ans: [ {t:"x<sup>1/2</sup>",c:0}, {t:"x<sup>-1/2</sup>",c:1}, {t:"x<sup>-2</sup>",c:0}, {t:"x<sup>2</sup>",c:0} ], e_th: "เฉลย: x<sup>-1/2</sup><br>วิธีลัด: &radic;x = x<sup>1/2</sup> เมื่อกลับเศษส่วนจะได้ติดลบ", e_en: "Exp: x<sup>-1/2</sup>", type: "negative" },
+            { q_th: "ทำให้เป็นผลสำเร็จ: (x<sup>-2/3</sup>)<sup>-3</sup>", q_en: "Simplify: (x<sup>-2/3</sup>)<sup>-3</sup>", c_th: "คำใบ้: กำลังซ้อนกัน นำมาคูณกัน", c_en: "Clue: Power of a power, multiply them", ans: [ {t:"x<sup>2</sup>",c:1}, {t:"x<sup>-2</sup>",c:0}, {t:"x<sup>-9</sup>",c:0}, {t:"x<sup>2/9</sup>",c:0} ], e_th: "เฉลย: x<sup>2</sup><br>วิธีลัด: (-2/3) &times; (-3) = 2 จะได้ x<sup>2</sup>", e_en: "Exp: x<sup>2</sup>", type: "variable" },
+            { q_th: "ค่าของ 4<sup>1.5</sup> มีค่าเท่าใด", q_en: "Value of 4<sup>1.5</sup> is?", c_th: "คำใบ้: แปลงทศนิยม 1.5 เป็นเศษส่วน 3/2", c_en: "Clue: Convert 1.5 to fraction 3/2", ans: [ {t:"6",c:0}, {t:"8",c:1}, {t:"16",c:0}, {t:"2.5",c:0} ], e_th: "เฉลย: 8<br>วิธีลัด: 4<sup>3/2</sup> = (&radic;4)<sup>3</sup> = 2<sup>3</sup> = 8", e_en: "Exp: 8<br>Shortcut: 4<sup>3/2</sup> = 2<sup>3</sup> = 8", type: "intermediate" },
+            { q_th: "ทำให้เป็นผลสำเร็จ: <sup>3</sup>&radic;(-27x<sup>6</sup>)", q_en: "Simplify: <sup>3</sup>&radic;(-27x<sup>6</sup>)", c_th: "คำใบ้: แยกรากตัวเลขกับตัวแปรออกจากกัน", c_en: "Clue: Separate the root of number and variable", ans: [ {t:"3x<sup>2</sup>",c:0}, {t:"-3x<sup>2</sup>",c:1}, {t:"-9x<sup>2</sup>",c:0}, {t:"-3x<sup>3</sup>",c:0} ], e_th: "เฉลย: -3x<sup>2</sup><br>วิธีลัด: <sup>3</sup>&radic;-27 = -3 และ x<sup>6/3</sup> = x<sup>2</sup>", e_en: "Exp: -3x<sup>2</sup>", type: "variable" },
+            { q_th: "รูปอย่างง่ายของ (x<sup>2</sup> &middot; x<sup>1/2</sup>) / x<sup>3/2</sup>", q_en: "Simplified form of (x<sup>2</sup> &middot; x<sup>1/2</sup>) / x<sup>3/2</sup>", c_th: "คำใบ้: รวบเศษก่อน แล้วค่อยลบส่วน", c_en: "Clue: Combine numerator first, then subtract denominator", ans: [ {t:"x<sup>1/2</sup>",c:0}, {t:"x",c:1}, {t:"x<sup>2</sup>",c:0}, {t:"1",c:0} ], e_th: "เฉลย: x<br>วิธีลัด: x<sup>(2 + 0.5 - 1.5)</sup> = x<sup>1</sup> = x", e_en: "Exp: x", type: "property" }
+        ];
+
+        // System State
+        let isThai = localStorage.getItem('quiz_lang') !== 'en';
+        let userAnswers = JSON.parse(localStorage.getItem('quiz_answers')) || {};
+        let score = 0;
+        let quizQuestions = [];
+
+        // Fisher-Yates Shuffle Algorithm
+        function shuffle(array) {
+            let currentIndex = array.length, randomIndex;
+            while (currentIndex !== 0) {
+                randomIndex = Math.floor(Math.random() * currentIndex);
+                currentIndex--;
+                [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+            }
+            return array;
+        }
+
+        // Initialize Quiz
+        function initQuiz() {
+            const savedState = localStorage.getItem('quiz_order');
+            if (savedState) {
+                quizQuestions = JSON.parse(savedState);
+            } else {
+                let tempQuestions = JSON.parse(JSON.stringify(rawQuestions));
+                tempQuestions = shuffle(tempQuestions).map((q, idx) => {
+                    q.id = idx;
+                    q.ans = shuffle(q.ans); // Shuffle options
+                    return q;
+                });
+                quizQuestions = tempQuestions;
+                localStorage.setItem('quiz_order', JSON.stringify(quizQuestions));
+            }
+            renderQuestions();
+            checkCompletion();
+            setupWhiteboard();
+        }
+
+        // Render Questions
+        function renderQuestions() {
+            const container = document.getElementById('questionsContainer');
+            container.innerHTML = '';
+            
+            quizQuestions.forEach((q, idx) => {
+                const card = document.createElement('div');
+                card.className = 'question-card';
+                card.id = `q-${q.id}`;
+                
+                const qText = isThai ? q.q_th : q.q_en;
+                const clueText = isThai ? q.c_th : q.c_en;
+                const expText = isThai ? q.e_th : q.e_en;
+
+                let html = `
+                    <div class="q-number">${isThai ? 'ข้อที่' : 'Question'} ${idx + 1}</div>
+                    <div class="q-text">${qText}</div>
+                    <div class="options">
+                `;
+
+                const answered = userAnswers[q.id] !== undefined;
+
+                q.ans.forEach((a, aIdx) => {
+                    let btnClass = 'option-btn';
+                    if (answered) {
+                        if (a.c === 1) btnClass += ' correct';
+                        else if (userAnswers[q.id] === aIdx) btnClass += ' incorrect';
+                    }
+                    
+                    html += `<button class="${btnClass}" ${answered ? 'disabled' : ''} onclick="selectAnswer(${q.id}, ${aIdx})">
+                                ${a.t}
+                             </button>`;
+                });
+
+                html += `</div>
+                         <div class="clue">${clueText}</div>
+                         <div class="explanation" style="display: ${answered ? 'block' : 'none'}">${expText}</div>`;
+                
+                card.innerHTML = html;
+                container.appendChild(card);
+            });
+        }
+
+        // Handle Selecting Answer
+        window.selectAnswer = function(qId, aIdx) {
+            userAnswers[qId] = aIdx;
+            localStorage.setItem('quiz_answers', JSON.stringify(userAnswers));
+            renderQuestions();
+            checkCompletion();
+        }
+
+        // Check Completion (All 25 Answered)
+        function checkCompletion() {
+            const totalAnswered = Object.keys(userAnswers).length;
+            if (totalAnswered === 25) {
+                document.getElementById('submitBtn').style.display = 'block';
+            }
+        }
+
+        // Toggle TH/EN Language
+        document.getElementById('langToggle').addEventListener('click', () => {
+            isThai = !isThai;
+            localStorage.setItem('quiz_lang', isThai ? 'th' : 'en');
+            renderQuestions();
+            if (document.getElementById('resultPanel').style.display === 'block') {
+                generateAnalysis();
+            }
+        });
+
+        // Reset All Data & LocalStorage
+        document.getElementById('resetBtn').addEventListener('click', () => {
+            if (confirm(isThai ? "ต้องการล้างค่าข้อสอบทั้งหมดเพื่อเริ่มทำใหม่หรือไม่?" : "Reset all quiz data and restart?")) {
+                localStorage.removeItem('quiz_answers');
+                localStorage.removeItem('quiz_order');
+                userAnswers = {};
+                document.getElementById('submitBtn').style.display = 'none';
+                document.getElementById('resultPanel').style.display = 'none';
+                initQuiz();
+            }
+        });
+
+        document.getElementById('submitBtn').addEventListener('click', generateAnalysis);
+
+        // Result Analysis & Weak Area Pointing
+        function generateAnalysis() {
+            score = 0;
+            let categoryScores = { basic: 0, intermediate: 0, negative: 0, property: 0, variable: 0 };
+            let categoryTotals = { basic: 0, intermediate: 0, negative: 0, property: 0, variable: 0 };
+
+            quizQuestions.forEach(q => {
+                categoryTotals[q.type]++;
+                const selectedIdx = userAnswers[q.id];
+                if (selectedIdx !== undefined && q.ans[selectedIdx].c === 1) {
+                    score++;
+                    categoryScores[q.type]++;
+                }
+            });
+
+            const resPanel = document.getElementById('resultPanel');
+            const resScore = document.getElementById('resScore');
+            const resAnalysis = document.getElementById('resAnalysis');
+
+            resPanel.style.display = 'block';
+            resScore.innerHTML = isThai ? `คะแนนที่ได้: ${score} / 25` : `Score: ${score} / 25`;
+
+            let strongText = [];
+            let weakText = [];
+
+            const catNames = {
+                basic: { th: "นิยามพื้นฐานและการถอดราก", en: "Basic Definitions & Roots" },
+                intermediate: { th: "เลขยกกำลังตรรกยะระดับกลาง", en: "Intermediate Rational Exponents" },
+                negative: { th: "เลขชี้กำลังติดลบและส่วนกลับ", en: "Negative Exponents & Reciprocals" },
+                property: { th: "สมบัติการคูณและการหารเลขยกกำลัง", en: "Exponent Multiplication & Division Rules" },
+                variable: { th: "การจัดรูปพีชคณิตและตัวแปร", en: "Algebraic Expressions & Variables" }
+            };
+
+            for (let cat in categoryTotals) {
+                let total = categoryTotals[cat];
+                let sc = categoryScores[cat];
+                let pct = (sc / total) * 100;
+                let name = isThai ? catNames[cat].th : catNames[cat].en;
+
+                if (pct >= 80) {
+                    strongText.push(`- <b>${name}</b> (${sc}/${total})`);
+                } else if (pct < 60) {
+                    weakText.push(`- <b>${name}</b> (${sc}/${total})`);
+                }
+            }
+
+            let html = `<h4>${isThai ? '📌 สรุปผลการประเมินวิเคราะห์' : '📌 Assessment Summary'}</h4>`;
+            
+            if (strongText.length > 0) {
+                html += `<p style="color:var(--success); margin-top:0.8rem;"><b>${isThai ? '🌟 จุดเด่นที่ทำได้ดีมาก:' : '🌟 Strengths:'}</b><br>${strongText.join('<br>')}</p>`;
+            } else {
+                html += `<p style="color:var(--dark); margin-top:0.8rem;"><b>${isThai ? '🌟 จุดเด่น:' : '🌟 Strengths:'}</b> ${isThai ? 'ควรฝึกฝนเพิ่มในทุกหมวดหมู่เพื่อสร้างความชำนาญ' : 'Keep practicing across all categories.'}</p>`;
+            }
+
+            if (weakText.length > 0) {
+                html += `<p style="color:var(--danger); margin-top:1rem;"><b>${isThai ? '⚠️ จุดที่ควรกลับไปทบทวนและปรับปรุงเพิ่มเติม:' : '⚠️ Areas for Improvement:'}</b><br>${weakText.join('<br>')}</p>`;
+            } else {
+                html += `<p style="color:var(--success); margin-top:1rem;"><b>${isThai ? '🎉 ยอดเยี่ยมมาก!' : '🎉 Excellent!'}</b> ${isThai ? 'คุณเข้าใจเนื้อหาครบถ้วนทุกจุดบอดอย่างแม่นยำ' : 'You have mastered all topic areas.'}</p>`;
+            }
+
+            html += `<div style="margin-top:1.2rem; background:#f0f9ff; padding:1rem; border-radius:6px; border-left:4px solid var(--secondary);">
+                <b>${isThai ? '💡 คำแนะนำจาก พระจอมเกล้าติวเตอร์:' : '💡 Tutor Recommendation:'}</b><br>${isThai ? 'หมั่นทบทวนนิยามของเลขชี้กำลังที่เป็นเศษส่วนและระมัดระวังเรื่องเครื่องหมายลบ การใช้กระดานทดด้านข้างจะช่วยลดข้อผิดพลาดในการคิดคำนวณทีละขั้นตอนได้เป็นอย่างดี' : 'Review fraction exponent definitions carefully and use the whiteboard for step-by-step calculations.'}</div>`;
+
+            resAnalysis.innerHTML = html;
+        }
+
+        // Whiteboard Setup
+        function setupWhiteboard() {
+            const canvas = document.getElementById('whiteboard');
+            const ctx = canvas.getContext('2d');
+            let painting = false;
+
+            function resizeCanvas() {
+                const rect = canvas.parentElement.getBoundingClientRect();
+                canvas.width = rect.width;
+                canvas.height = rect.height - 50; // accounting for toolbar
+            }
+            window.addEventListener('resize', resizeCanvas);
+            resizeCanvas();
+
+            function startPosition(e) {
+                painting = true;
+                draw(e);
+            }
+            function finishedPosition() {
+                painting = false;
+                ctx.beginPath();
+            }
+            function draw(e) {
+                if (!painting) return;
+                ctx.lineWidth = document.getElementById('wbSize').value;
+                ctx.lineCap = 'round';
+                ctx.strokeStyle = document.getElementById('wbColor').value;
+
+                const rect = canvas.getBoundingClientRect();
+                const x = (e.clientX || e.touches[0].clientX) - rect.left;
+                const y = (e.clientY || e.touches[0].clientY) - rect.top;
+
+                ctx.lineTo(x, y);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(x, y);
+            }
+
+            canvas.addEventListener('mousedown', startPosition);
+            canvas.addEventListener('mouseup', finishedPosition);
+            canvas.addEventListener('mousemove', draw);
+
+            canvas.addEventListener('touchstart', startPosition);
+            canvas.addEventListener('touchend', finishedPosition);
+            canvas.addEventListener('touchmove', draw);
+
+            document.getElementById('clearWb').addEventListener('click', () => {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+            });
+        }
+
+        // Run on load
+        window.onload = initQuiz;
+    </script>
 </body>
 </html>
