@@ -81,27 +81,40 @@
             font-style: italic;
         }
 
-        /* Main Workspace Layout */
+        /* Main Workspace Layout (80% Quiz Left / 30% Whiteboard Right) */
         .workspace {
             display: flex;
-            height: 80vh;
+            height: 85vh;
             margin: 0 2rem 2rem 2rem;
             border-radius: 8px;
             overflow: hidden;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
         
-        /* 70% Whiteboard Panel */
+        /* Left: 80% Quiz Panel */
+        .quiz-panel {
+            flex: 0 0 80%;
+            max-width: 80%;
+            background: var(--bg-light);
+            overflow-y: auto;
+            padding: 1.5rem;
+            border-right: 2px solid #e5e7eb;
+        }
+
+        /* Right: 30% Whiteboard Panel */
         .whiteboard-panel {
-            flex: 0 0 70%;
+            flex: 0 0 30%;
+            max-width: 30%;
             background: var(--white);
             position: relative;
-            border-right: 2px solid #e5e7eb;
+            display: flex;
+            flex-direction: column;
         }
         .wb-toolbar {
             position: absolute;
             top: 15px;
             left: 15px;
+            right: 15px;
             background: white;
             padding: 10px;
             border-radius: 8px;
@@ -110,21 +123,18 @@
             display: flex;
             gap: 10px;
             align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
         }
         canvas {
             cursor: crosshair;
             display: block;
             width: 100%;
             height: 100%;
+            background-color: #ffffff;
         }
 
-        /* 30% Quiz Panel */
-        .quiz-panel {
-            flex: 0 0 30%;
-            background: var(--bg-light);
-            overflow-y: auto;
-            padding: 1.5rem;
-        }
+        /* Question Cards & Elements */
         .question-card {
             background: var(--white);
             padding: 1.5rem;
@@ -177,11 +187,11 @@
         }
         .result-panel h2 { color: var(--primary); margin-bottom: 1rem; border-bottom: 2px solid var(--bg-light); padding-bottom: 0.5rem; }
 
-        /* Responsive */
+        /* Responsive Mobile Layout */
         @media (max-width: 1024px) {
             .workspace { flex-direction: column; height: auto; }
-            .whiteboard-panel { flex: 0 0 100%; height: 50vh; border-right: none; border-bottom: 2px solid #e5e7eb; }
-            .quiz-panel { flex: 0 0 100%; height: auto; }
+            .quiz-panel { flex: 0 0 100%; max-width: 100%; border-right: none; }
+            .whiteboard-panel { flex: 0 0 100%; max-width: 100%; height: 50vh; border-top: 2px solid #e5e7eb; }
             .header { flex-direction: column; gap: 1rem; text-align: center; }
         }
     </style>
@@ -189,7 +199,7 @@
 <body>
 
     <header class="header">
-        <h2>พระจอมเกล้าติวเตอร์ - Rational Exponents (เลขยกกำลังตรรกยะ)</h2>
+        <h2 id="headerTitle">พระจอมเกล้าติวเตอร์ - Rational Exponents (เลขยกกำลังตรรกยะ)</h2>
         <div>
             <button class="btn btn-toggle" id="langToggle">TH / EN</button>
             <button class="btn btn-reset" id="resetBtn">Reset Data</button>
@@ -215,24 +225,14 @@
 
         <p><b>กระบวนการแก้โจทย์อย่างเป็นระบบ:</b> เมื่อนักเรียนเจอโจทย์เลขยกกำลังที่ซับซ้อน ให้เริ่มต้นด้วยการ <b>"แปลงฐานให้อยู่ในรูปจำนวนเฉพาะ"</b> เสมอ ตัวอย่างเช่น หากเจอตัวเลข 8, 16, 32 ให้รีบแปลงเป็น 2<sup>3</sup>, 2<sup>4</sup>, 2<sup>5</sup> ทันที หรือหากเจอ 9, 27, 81 ให้แปลงเป็นฐาน 3 การทำเช่นนี้จะช่วยให้เราสามารถนำเลขชี้กำลังมาคูณ ตัดทอน หรือยุบรวมกันได้ง่ายขึ้น นอกจากนี้ ในกรณีที่มีตัวแปรผสมอยู่ เช่น (16x<sup>4</sup>)<sup>1/2</sup> ให้ใช้กฎการกระจายเลขชี้กำลังเข้าไปในวงเล็บ (เฉพาะในกรณีที่เป็นการคูณหรือหารเท่านั้น) จะได้ 16<sup>1/2</sup> &middot; (x<sup>4</sup>)<sup>1/2</sup> ซึ่งก็คือ 4x<sup>2</sup> นั่นเอง</p>
 
-        <p><b>ข้อควรระวังที่พบบ่อย (Common Pitfalls):</b> ข้อผิดพลาดที่ร้ายแรงที่สุดที่มักพบในห้องสอบคือ การลืมเงื่อนไขของจำนวนลบและรากคู่ เราไม่สามารถหาค่าของรากที่สอง รากที่สี่ (รากคู่) ของจำนวนติดลบในระบบจำนวนจริงได้ เช่น (-4)<sup>1/2</sup> จะไม่มีคำตอบในระบบจำนวนจริง แต่ถ้าเป็นรากคี่ เช่น (-8)<sup>1/3</sup> จะสามารถหาคำตอบได้คือ -2 ขอให้นักเรียนมีสติก่อนการคำนวณและตรวจสอบเงื่อนไขของโจทย์ทุกครั้ง การฝึกฝนด้วยข้อสอบแบบโต้ตอบทั้ง 25 ข้อด้านขวามือนี้ จะช่วยเจาะจุดบอดและสร้างความแม่นยำให้ผู้เรียนสามารถทำคะแนนได้สูงสุดอย่างแน่นอนครับ</p>
+        <p><b>ข้อควรระวังที่พบบ่อย (Common Pitfalls):</b> ข้อผิดพลาดที่ร้ายแรงที่สุดที่มักพบในห้องสอบคือ การลืมเงื่อนไขของจำนวนลบและรากคู่ เราไม่สามารถหาค่าของรากที่สอง รากที่สี่ (รากคู่) ของจำนวนติดลบในระบบจำนวนจริงได้ เช่น (-4)<sup>1/2</sup> จะไม่มีคำตอบในระบบจำนวนจริง แต่ถ้าเป็นรากคี่ เช่น (-8)<sup>1/3</sup> จะสามารถหาคำตอบได้คือ -2 ขอให้นักเรียนมีสติก่อนการคำนวณและตรวจสอบเงื่อนไขของโจทย์ทุกครั้ง การฝึกฝนด้วยข้อสอบแบบโต้ตอบทั้ง 25 ข้อทางด้านซ้ายมือนี้ จะช่วยเจาะจุดบอดและสร้างความแม่นยำให้ผู้เรียนสามารถทำคะแนนได้สูงสุดอย่างแน่นอนครับ</p>
         
         <div class="author-sign">เขียนโดย พระจอมเกล้าติวเตอร์</div>
     </div>
 
-    <!-- Main Workspace -->
+    <!-- Main Workspace (Left 80% Quiz / Right 30% Whiteboard) -->
     <div class="workspace">
-        <!-- Whiteboard Panel (70%) -->
-        <div class="whiteboard-panel" id="wbContainer">
-            <div class="wb-toolbar">
-                <button class="btn" id="clearWb" style="background:#4b5563; color:white; font-size:0.9rem;">🧹 ล้างกระดาน</button>
-                <input type="color" id="wbColor" value="#1e3a8a" title="สีปากกา">
-                <input type="range" id="wbSize" min="1" max="15" value="3" title="ขนาดเส้น">
-            </div>
-            <canvas id="whiteboard"></canvas>
-        </div>
-
-        <!-- Quiz Panel (30%) -->
+        <!-- Quiz Panel (80%) -->
         <div class="quiz-panel" id="quizPanel">
             <div id="questionsContainer"></div>
             <button class="btn btn-toggle" id="submitBtn" style="width: 100%; margin: 1rem 0; padding: 1rem; display: none; font-size:1.1rem;">📝 ส่งข้อสอบ / ดูผลการวิเคราะห์</button>
@@ -242,10 +242,22 @@
                 <div id="resAnalysis" style="margin-top:1.5rem; line-height:1.8; font-size:1.05rem;"></div>
             </div>
         </div>
+
+        <!-- Whiteboard Panel (30%) -->
+        <div class="whiteboard-panel" id="wbContainer">
+            <div class="wb-toolbar">
+                <button class="btn" id="clearWb" style="background:#4b5563; color:white; font-size:0.85rem;">🧹 ล้างกระดาน</button>
+                <div style="display:flex; align-items:center; gap:5px;">
+                    <input type="color" id="wbColor" value="#1e3a8a" title="สีปากกา">
+                    <input type="range" id="wbSize" min="1" max="15" value="3" title="ขนาดเส้น" style="width:70px;">
+                </div>
+            </div>
+            <canvas id="whiteboard"></canvas>
+        </div>
     </div>
 
     <script>
-        // Data Array - Translated completely to HTML Entities/Unicode (No LaTeX)
+        // Questions Data Array (Unicode / HTML entities - NO LaTeX)
         const rawQuestions = [
             { q_th: "จงหาค่าของ 16<sup>1/2</sup>", q_en: "Find the value of 16<sup>1/2</sup>", c_th: "คำใบ้: จำนวนใดคูณตัวเองแล้วได้ 16", c_en: "Clue: What number squared equals 16?", ans: [ {t:"2",c:0}, {t:"4",c:1}, {t:"8",c:0}, {t:"16",c:0} ], e_th: "เฉลย: 4<br>วิธีลัด: 16<sup>1/2</sup> = &radic;16 = 4", e_en: "Exp: 4<br>Shortcut: 16<sup>1/2</sup> = &radic;16 = 4", type: "basic" },
             { q_th: "จงหาค่าของ 27<sup>1/3</sup>", q_en: "Find the value of 27<sup>1/3</sup>", c_th: "คำใบ้: รากที่สามของ 27", c_en: "Clue: Cube root of 27", ans: [ {t:"9",c:0}, {t:"6",c:0}, {t:"3",c:1}, {t:"81",c:0} ], e_th: "เฉลย: 3<br>วิธีลัด: 27<sup>1/3</sup> = <sup>3</sup>&radic;27 = 3", e_en: "Exp: 3<br>Shortcut: 27<sup>1/3</sup> = <sup>3</sup>&radic;27 = 3", type: "basic" },
@@ -280,7 +292,7 @@
         let score = 0;
         let quizQuestions = [];
 
-        // Fisher-Yates Shuffle
+        // Fisher-Yates Shuffle Algorithm
         function shuffle(array) {
             let currentIndex = array.length, randomIndex;
             while (currentIndex !== 0) {
@@ -307,11 +319,11 @@
                 localStorage.setItem('quiz_order', JSON.stringify(quizQuestions));
             }
             renderQuestions();
-            updateLangUI();
             checkCompletion();
+            setupWhiteboard();
         }
 
-        // Render HTML Questions
+        // Render Questions
         function renderQuestions() {
             const container = document.getElementById('questionsContainer');
             container.innerHTML = '';
@@ -326,7 +338,7 @@
                 const expText = isThai ? q.e_th : q.e_en;
 
                 let html = `
-                    <div class="q-number">ข้อที่ ${idx + 1}</div>
+                    <div class="q-number">${isThai ? 'ข้อที่' : 'Question'} ${idx + 1}</div>
                     <div class="q-text">${qText}</div>
                     <div class="options">
                 `;
@@ -354,7 +366,7 @@
             });
         }
 
-        // Answer Handling
+        // Handle Selecting Answer
         window.selectAnswer = function(qId, aIdx) {
             userAnswers[qId] = aIdx;
             localStorage.setItem('quiz_answers', JSON.stringify(userAnswers));
@@ -362,7 +374,7 @@
             checkCompletion();
         }
 
-        // Check Completion
+        // Check Completion (All 25 Answered)
         function checkCompletion() {
             const totalAnswered = Object.keys(userAnswers).length;
             if (totalAnswered === 25) {
@@ -370,145 +382,170 @@
             }
         }
 
-        document.getElementById('submitBtn').addEventListener('click', generateAnalysis);
-
-        // Result Analysis
-        function generateAnalysis() {
-            score = 0;
-            let weakAreas = { basic: 0, intermediate: 0, negative: 0, property: 0, variable: 0 };
-            let totalAreas = { basic: 0, intermediate: 0, negative: 0, property: 0, variable: 0 };
-
-            quizQuestions.forEach(q => {
-                totalAreas[q.type]++;
-                const selectedIdx = userAnswers[q.id];
-                if (q.ans[selectedIdx].c === 1) {
-                    score++;
-                } else {
-                    weakAreas[q.type]++;
-                }
-            });
-
-            document.getElementById('resultPanel').style.display = 'block';
-            document.getElementById('submitBtn').style.display = 'none';
-            document.getElementById('resScore').innerText = `คะแนนรวม: ${score} / 25`;
-
-            let analysisHtml = '<strong>จุดเด่นที่ทำได้ดี (Strengths):</strong><ul>';
-            let weaknessHtml = '<br><strong>จุดด้อยที่ควรกลับไปทบทวน (Areas for Review):</strong><ul>';
-            let allPerfect = true;
-
-            const areaNames = {
-                basic: "พื้นฐานนิยามกรณฑ์และเลขชี้กำลัง",
-                intermediate: "การถอดรากเลขสองหลักและสามหลัก",
-                negative: "เลขชี้กำลังติดลบ (การจัดรูปส่วนกลับ)",
-                property: "สมบัติของเลขยกกำลัง (การคูณและหารฐานเดียวกัน)",
-                variable: "การจัดรูปตัวแปรพหุนามและถอดรากตัวแปร"
-            };
-
-            for (let type in totalAreas) {
-                if (totalAreas[type] === 0) continue;
-                const errorRate = weakAreas[type] / totalAreas[type];
-                if (errorRate === 0) {
-                    analysisHtml += `<li style="color:var(--success)">ยอดเยี่ยมในเรื่อง: ${areaNames[type]}</li>`;
-                } else {
-                    allPerfect = false;
-                    weaknessHtml += `<li style="color:var(--danger)">ควรทบทวนเรื่อง: ${areaNames[type]} (ผิดพลาด ${(errorRate*100).toFixed(0)}%)</li>`;
-                }
-            }
-            analysisHtml += '</ul>';
-            if(allPerfect) weaknessHtml += '<li style="color:var(--success)">สมบูรณ์แบบ! ไม่มีจุดอ่อนที่ตรวจพบ</li>';
-            weaknessHtml += '</ul>';
-
-            document.getElementById('resAnalysis').innerHTML = analysisHtml + weaknessHtml;
-            // Scroll to result panel
-            document.getElementById('quizPanel').scrollTop = document.getElementById('quizPanel').scrollHeight;
-        }
-
-        // UI Controls
+        // Toggle TH/EN Language
         document.getElementById('langToggle').addEventListener('click', () => {
             isThai = !isThai;
             localStorage.setItem('quiz_lang', isThai ? 'th' : 'en');
             renderQuestions();
-            updateLangUI();
-        });
-
-        document.getElementById('resetBtn').addEventListener('click', () => {
-            if(confirm(isThai ? 'ต้องการลบข้อมูลทั้งหมดและเริ่มทำใหม่ใช่หรือไม่?' : 'Reset all data and start over?')) {
-                localStorage.removeItem('quiz_answers');
-                localStorage.removeItem('quiz_order');
-                location.reload();
+            if (document.getElementById('resultPanel').style.display === 'block') {
+                generateAnalysis();
             }
         });
 
-        function updateLangUI() {
-            document.getElementById('langToggle').innerText = isThai ? 'Switch to EN' : 'เปลี่ยนเป็น TH';
-        }
-
-        // ================= Whiteboard Logic (Fixed) =================
-        const canvas = document.getElementById('whiteboard');
-        const ctx = canvas.getContext('2d');
-        const wbContainer = document.getElementById('wbContainer');
-        
-        let painting = false;
-
-        function resizeCanvas() {
-            canvas.width = wbContainer.clientWidth;
-            canvas.height = wbContainer.clientHeight;
-        }
-        window.addEventListener('resize', resizeCanvas);
-        setTimeout(resizeCanvas, 100);
-
-        function getMousePos(evt) {
-            const rect = canvas.getBoundingClientRect();
-            // Handle both Mouse and Touch events
-            const clientX = evt.clientX || (evt.touches && evt.touches[0].clientX);
-            const clientY = evt.clientY || (evt.touches && evt.touches[0].clientY);
-            return {
-                x: clientX - rect.left,
-                y: clientY - rect.top
-            };
-        }
-
-        function startPosition(e) {
-            painting = true;
-            draw(e);
-        }
-
-        function endPosition() {
-            painting = false;
-            ctx.beginPath();
-        }
-
-        function draw(e) {
-            if (!painting) return;
-            
-            ctx.lineWidth = document.getElementById('wbSize').value;
-            ctx.lineCap = 'round';
-            ctx.strokeStyle = document.getElementById('wbColor').value;
-            
-            const pos = getMousePos(e);
-            
-            ctx.lineTo(pos.x, pos.y);
-            ctx.stroke();
-            ctx.beginPath();
-            ctx.moveTo(pos.x, pos.y);
-        }
-
-        // Mouse Events
-        canvas.addEventListener('mousedown', startPosition);
-        canvas.addEventListener('mouseup', endPosition);
-        canvas.addEventListener('mousemove', draw);
-        canvas.addEventListener('mouseout', endPosition);
-        
-        // Touch Events for Mobile/Tablet
-        canvas.addEventListener('touchstart', (e) => { e.preventDefault(); startPosition(e); }, {passive: false});
-        canvas.addEventListener('touchend', endPosition);
-        canvas.addEventListener('touchmove', (e) => { e.preventDefault(); draw(e); }, {passive: false});
-
-        document.getElementById('clearWb').addEventListener('click', () => {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        // Reset All Data & LocalStorage
+        document.getElementById('resetBtn').addEventListener('click', () => {
+            if (confirm(isThai ? "ต้องการล้างค่าข้อสอบทั้งหมดเพื่อเริ่มทำใหม่หรือไม่?" : "Reset all quiz data and restart?")) {
+                localStorage.removeItem('quiz_answers');
+                localStorage.removeItem('quiz_order');
+                userAnswers = {};
+                document.getElementById('submitBtn').style.display = 'none';
+                document.getElementById('resultPanel').style.display = 'none';
+                initQuiz();
+            }
         });
 
-        // Initialize App
+        document.getElementById('submitBtn').addEventListener('click', generateAnalysis);
+
+        // Result Analysis & Weak Area Pointing
+        function generateAnalysis() {
+            score = 0;
+            let categoryScores = { basic: 0, intermediate: 0, negative: 0, property: 0, variable: 0 };
+            let categoryTotals = { basic: 0, intermediate: 0, negative: 0, property: 0, variable: 0 };
+
+            quizQuestions.forEach(q => {
+                categoryTotals[q.type]++;
+                const selectedIdx = userAnswers[q.id];
+                if (selectedIdx !== undefined && q.ans[selectedIdx].c === 1) {
+                    score++;
+                    categoryScores[q.type]++;
+                }
+            });
+
+            const resPanel = document.getElementById('resultPanel');
+            const resScore = document.getElementById('resScore');
+            const resAnalysis = document.getElementById('resAnalysis');
+
+            resPanel.style.display = 'block';
+            resScore.innerHTML = isThai ? `คะแนนที่ได้: ${score} / 25` : `Score: ${score} / 25`;
+
+            let strongText = [];
+            let weakText = [];
+
+            const catNames = {
+                basic: { th: "นิยามพื้นฐานและการถอดราก", en: "Basic Definitions & Roots" },
+                intermediate: { th: "เลขยกกำลังตรรกยะระดับกลาง", en: "Intermediate Rational Exponents" },
+                negative: { th: "เลขชี้กำลังติดลบและส่วนกลับ", en: "Negative Exponents & Reciprocals" },
+                property: { th: "สมบัติการคูณและการหารเลขยกกำลัง", en: "Exponent Multiplication & Division Rules" },
+                variable: { th: "การจัดรูปพีชคณิตและตัวแปร", en: "Algebraic Expressions & Variables" }
+            };
+
+            for (let cat in categoryTotals) {
+                let total = categoryTotals[cat];
+                let sc = categoryScores[cat];
+                let pct = (sc / total) * 100;
+                let name = isThai ? catNames[cat].th : catNames[cat].en;
+
+                if (pct >= 80) {
+                    strongText.push(`- <b>${name}</b> (${sc}/${total})`);
+                } else if (pct < 60) {
+                    weakText.push(`- <b>${name}</b> (${sc}/${total})`);
+                }
+            }
+
+            let html = `<h4>${isThai ? '📌 สรุปผลการประเมินวิเคราะห์' : '📌 Assessment Summary'}</h4>`;
+            
+            if (strongText.length > 0) {
+                html += `<p style="color:var(--success); margin-top:0.8rem;"><b>${isThai ? '🌟 จุดเด่นที่ทำได้ดีมาก:' : '🌟 Strengths:'}</b><br>${strongText.join('<br>')}</p>`;
+            } else {
+                html += `<p style="color:var(--dark); margin-top:0.8rem;"><b>${isThai ? '🌟 จุดเด่น:' : '🌟 Strengths:'}</b> ${isThai ? 'ควรฝึกฝนเพิ่มในทุกหมวดหมู่เพื่อสร้างความชำนาญ' : 'Keep practicing across all categories.'}</p>`;
+            }
+
+            if (weakText.length > 0) {
+                html += `<p style="color:var(--danger); margin-top:1rem;"><b>${isThai ? '⚠️ จุดที่ควรกลับไปทบทวนและปรับปรุงเพิ่มเติม:' : '⚠️ Areas for Improvement:'}</b><br>${weakText.join('<br>')}</p>`;
+            } else {
+                html += `<p style="color:var(--success); margin-top:1rem;"><b>${isThai ? '🎉 ยอดเยี่ยมมาก!' : '🎉 Excellent!'}</b> ${isThai ? 'คุณเข้าใจเนื้อหาครบถ้วนทุกจุดบอดอย่างแม่นยำ' : 'You have mastered all topic areas.'}</p>`;
+            }
+
+            html += `<div style="margin-top:1.2rem; background:#f0f9ff; padding:1rem; border-radius:6px; border-left:4px solid var(--secondary);">
+                <b>${isThai ? '💡 คำแนะนำจาก พระจอมเกล้าติวเตอร์:' : '💡 Tutor Recommendation:'}</b><br>
+                ${score >= 20 
+                    ? (isThai ? 'คุณมีความแม่นยำสูงมาก พร้อมสำหรับทำข้อสอบแข่งขันแล้วครับ!' : 'Great job! You are fully prepared for competitive exams.') 
+                    : (isThai ? 'เน้นย้ำเรื่องการเปลี่ยนเลขชี้กำลังเศษส่วนเป็นราก และการกลับเศษเป็นส่วนเมื่อกำลังติดลบ แล้วลองกด Reset ทำอีกรอบนะครับ' : 'Focus on converting fractional exponents to roots and negative exponents to reciprocals, then click Reset to try again!')}
+            </div>`;
+
+            resAnalysis.innerHTML = html;
+            resPanel.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Whiteboard Canvas Professional System
+        function setupWhiteboard() {
+            const canvas = document.getElementById('whiteboard');
+            const ctx = canvas.getContext('2d');
+            const wbContainer = document.getElementById('wbContainer');
+
+            function resizeCanvas() {
+                canvas.width = wbContainer.clientWidth;
+                canvas.height = wbContainer.clientHeight;
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+            }
+            
+            window.addEventListener('resize', resizeCanvas);
+            setTimeout(resizeCanvas, 150);
+
+            let drawing = false;
+            let lastX = 0, lastY = 0;
+
+            function getPos(e) {
+                const rect = canvas.getBoundingClientRect();
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                return {
+                    x: clientX - rect.left,
+                    y: clientY - rect.top
+                };
+            }
+
+            function startDraw(e) {
+                drawing = true;
+                const pos = getPos(e);
+                lastX = pos.x;
+                lastY = pos.y;
+            }
+
+            function draw(e) {
+                if (!drawing) return;
+                e.preventDefault();
+                const pos = getPos(e);
+                ctx.beginPath();
+                ctx.moveTo(lastX, lastY);
+                ctx.lineTo(pos.x, pos.y);
+                ctx.strokeStyle = document.getElementById('wbColor').value;
+                ctx.lineWidth = document.getElementById('wbSize').value;
+                ctx.stroke();
+                lastX = pos.x;
+                lastY = pos.y;
+            }
+
+            function stopDraw() {
+                drawing = false;
+            }
+
+            canvas.addEventListener('mousedown', startDraw);
+            canvas.addEventListener('mousemove', draw);
+            canvas.addEventListener('mouseup', stopDraw);
+            canvas.addEventListener('mouseleave', stopDraw);
+
+            canvas.addEventListener('touchstart', startDraw, { passive: false });
+            canvas.addEventListener('touchmove', draw, { passive: false });
+            canvas.addEventListener('touchend', stopDraw);
+
+            document.getElementById('clearWb').addEventListener('click', () => {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+            });
+        }
+
+        // Initialize on Load
         window.onload = initQuiz;
     </script>
 </body>
