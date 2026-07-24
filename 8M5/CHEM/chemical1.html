@@ -4,121 +4,58 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ระบบข้อสอบ สอวน. เคมี - พระจอมเกล้าติวเตอร์</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        :root {
-            --primary-color: #2c3e50;
-            --secondary-color: #3498db;
-            --success-color: #2ecc71;
-            --error-color: #e74c3c;
-            --bg-color: #f8f9fa;
+        body { background-color: #f3f4f6; }
+        .workspace { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 20px; }
+        .exam-panel { flex: 0 0 100%; md:flex: 0 0 calc(80% - 16px); }
+        .whiteboard-panel { flex: 0 0 100%; md:flex: 0 0 calc(20% - 16px); position: sticky; top: 20px; }
+        
+        #whiteboard { 
+            width: 100%; 
+            height: 500px; 
+            touch-action: none; 
+            border: 2px solid #e5e7eb; 
+            background: #fff;
+            border-radius: 12px;
+            cursor: crosshair;
         }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        body { background-color: var(--bg-color); color: #333; line-height: 1.6; }
-        header { background: var(--primary-color); color: white; padding: 20px; text-align: center; }
-        .container { max-width: 1400px; margin: 20px auto; padding: 0 15px; }
-        .summary-section { background: white; padding: 25px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 20px; }
-        .summary-section h2 { color: var(--primary-color); margin-bottom: 15px; }
-        .summary-section p { margin-bottom: 10px; text-align: justify; }
-        .tag-image { background: #e9ecef; border: 2px dashed #cbd3da; padding: 15px; text-align: center; color: #6c757d; margin: 15px 0; border-radius: 6px; font-weight: bold; }
-        .memory-box { background: #e8f4fd; border-left: 5px solid var(--secondary-color); padding: 15px; margin: 15px 0; border-radius: 0 8px 8px 0; }
         
-        /* Layout หน้าจอคู่ 70% / 30% */
-        .workspace { display: flex; gap: 20px; margin-bottom: 30px; }
-        .exam-panel { flex: 0 0 70%; background: white; padding: 25px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        .whiteboard-panel { flex: 0 0 calc(30% - 20px); background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); display: flex; flex-direction: column; }
-        
-        #whiteboard { border: 2px solid #ccc; background: #fff; cursor: crosshair; width: 100%; height: 500px; border-radius: 4px; touch-action: none; }
-        .wb-controls { margin-top: 10px; display: flex; gap: 10px; }
-        
-        .controls-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid #eee; }
-        .btn { background: var(--secondary-color); color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; transition: background 0.2s; }
-        .btn:hover { background: #2980b9; }
-        .btn-danger { background: var(--error-color); }
-        .btn-danger:hover { background: #c0392b; }
-        
-        .question-card { margin-bottom: 25px; padding: 20px; background: #fff; border: 1px solid #e1e8ed; border-radius: 6px; }
-        .question-title { font-weight: bold; margin-bottom: 12px; color: var(--primary-color); }
-        .options-list { list-style: none; }
-        .option-item { margin: 8px 0; padding: 10px 15px; background: #f8f9fa; border: 1px solid #dcdde1; border-radius: 4px; cursor: pointer; transition: all 0.2s; }
-        .option-item:hover { background: #e1e8ed; }
-        .option-item.correct { background: #d4edda; border-color: var(--success-color); color: #155724; }
-        .option-item.incorrect { background: #f8d7da; border-color: var(--error-color); color: #721c24; }
-        
-        .clue-box { font-size: 0.9rem; color: #e67e22; margin-top: 10px; font-style: italic; }
-        .explanation { display: none; margin-top: 12px; padding: 12px; background: #f1f2f6; border-radius: 4px; font-size: 0.95rem; }
-        
-        #result-container { display: none; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-top: 20px; text-align: center; }
-        
-        @media (max-width: 900px) {
-            .workspace { flex-direction: column; }
-            .exam-panel, .whiteboard-panel { flex: 1 1 100%; }
+        @media (min-width: 768px) {
+            .exam-panel { flex: 0 0 calc(80% - 16px); }
+            .whiteboard-panel { flex: 0 0 calc(20% - 16px); }
         }
     </style>
 </head>
-<body>
+<body class="p-4 md:p-8">
 
-<header>
-    <h1>ระบบทดสอบและประเมินผล สอวน. เคมี</h1>
-    <p>พระจอมเกล้าติวเตอร์ - Expert Tutor AI & Interactive Developer</p>
-</header>
+    <header class="bg-slate-800 text-white p-6 rounded-xl shadow-lg mb-6">
+        <h1 class="text-2xl font-bold">ระบบทดสอบและประเมินผล สอวน. เคมี</h1>
+        <p class="opacity-80">พระจอมเกล้าติวเตอร์ - Professional Exam AI</p>
+    </header>
 
-<div class="container">
-    <!-- สรุปเนื้อหา -->
-    <section class="summary-section">
-        <h2>สรุปเนื้อหาเข้มข้น: ธาตุและสมบัติของธาตุ & พันธะเคมี</h2>
-        <p>พลังงานไอออไนเซชัน (IE) คือพลังงานน้อยที่สุดที่ใช้ดึงอิเล็กตรอนออกจากอะตอมในสถานะแก๊สให้กลายเป็นไอออนบวก ค่า IE จะบอกถึงความยากง่ายในการให้อิเล็กตรอนและความเสถียรของอะตอม โดยทั่วไปในคาบเดียวกัน เมื่อเลขอะตอมเพิ่มขึ้น ขนาดอะตอมจะเล็กลง แรงดึงดูดระหว่างนิวเคลียสกับเวเลนซ์อิเล็กตรอนมีมาก ส่งผลให้ค่า IE1 มีแนวโน้มเพิ่มขึ้น ยกเว้นข้อยกเว้นสำคัญในหมู่ IIA กับ IIIA และหมู่ VA กับ VIA เนื่องจากโครงสร้างย่อย ns<sup>2</sup> หรือ ns<sup>3</sup> มีความเสถียรสูง</p>
-        
-        <div class="tag-image"><img src="chem1.jpg" alt="Periodic Table Trends and Ionization Energy Graph"></div>
+    <div class="max-w-7xl mx-auto">
+        <section class="bg-white p-6 rounded-xl shadow-sm mb-6 border border-slate-200">
+            <h2 class="text-xl font-bold text-slate-800 mb-4">สรุปเนื้อหาเข้มข้น: ธาตุและพันธะเคมี</h2>
+            <p class="text-slate-600 mb-4 text-justify">พลังงานไอออไนเซชัน (IE) สัมพันธ์กับขนาดอะตอมและประจุในนิวเคลียส การท่องข้อยกเว้น "2 มากกว่า 3, 5 มากกว่า 6" คือกุญแจสำคัญ...</p>
+        </section>
 
-        <div class="memory-box">
-            <strong>เทคนิคช่วยจำ (Memory Tricks):</strong><br>
-            * ท่องข้อยกเว้น IE: "2 มากกว่า 3, 5 มากกว่า 6"<br>
-            * หลักการเสียอิเล็กตรอนของทรานซิชัน: "มาทีหลัง ออกก่อน"<br>
-            * การดูเลขหมู่จาก IE: "กระโดดที่ไหน หมู่เท่ากับตัวเลขก่อนกระโดด"
-        </div>
-    </section>
-
-    <!-- Workspace หน้าจอคู่ -->
-    <div class="workspace">
-        <!-- ฝั่งซ้าย: ข้อสอบ 70% -->
-        <div class="exam-panel">
-            <div class="controls-top">
-                <span id="progress-text">ชุดข้อสอบทั้งหมด 30 ข้อ</span>
-                <div>
-                    <button class="btn" onclick="toggleLanguage()">Switch TH/EN</button>
-                    <button class="btn btn-danger" onclick="resetExam()">Reset Exam</button>
-                </div>
+        <div class="workspace">
+            <div class="exam-panel bg-white p-6 rounded-xl shadow-sm border border-slate-200" id="questions-container">
+                <!-- JS will inject questions here -->
             </div>
 
-            <div id="questions-container">
-                <!-- รายการข้อสอบจะถูกเรนเดอร์ด้วย JavaScript -->
-            </div>
-
-            <button class="btn" style="width: 100%; padding: 12px; margin-top: 20px;" onclick="submitExam()">ส่งข้อสอบและประเมินผล</button>
-        </div>
-
-        <!-- ฝั่งขวา: Whiteboard 30% -->
-        <div class="whiteboard-panel">
-            <h3 style="margin-bottom: 10px; color: var(--primary-color);">กระดานทด (Whiteboard)</h3>
-            <canvas id="whiteboard"></canvas>
-            <div class="wb-controls">
-                <button class="btn btn-danger" onclick="clearWhiteboard()" style="flex: 1;">ล้างกระดาน</button>
+            <div class="whiteboard-panel bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+                <h3 class="font-bold text-slate-700 mb-2">กระดานทด</h3>
+                <canvas id="whiteboard"></canvas>
+                <button onclick="clearWhiteboard()" class="w-full mt-4 bg-red-500 text-white py-2 rounded-lg hover:bg-red-600">ล้างกระดาน</button>
             </div>
         </div>
     </div>
 
-    <!-- ส่วนสรุปผลวิเคราะห์ -->
-    <div id="result-container">
-        <h2>ผลการประเมินการทดสอบ</h2>
-        <p id="score-display" style="font-size: 1.5rem; font-weight: bold; margin: 15px 0;"></p>
-        <div id="analysis-content" style="text-align: left; margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 6px;"></div>
-    </div>
-</div>
-
-<script>
-    // ฐานข้อมูลข้อสอบ 30 ข้อ ปรับปรุงรูปแบบสัญลักษณ์ทางเคมีและคณิตศาสตร์ให้ถูกต้องสมบูรณ์
-    const questionsData = [
-        {
+    <script>
+        const questionsData = [
+{
             id: 1,
             question: "กำหนดให้ธาตุ X และ Z อยู่ในคาบที่ 3 ธาตุ X มี IE1 มากกว่า Z สารประกอบไอออนิกมีอัตราส่วนโมล X:Z = 1:2 ข้อใดถูกต้อง?",
             options: ["ธาตุ X อยู่หมู่ 16 และ Z อยู่หมู่ 1", "ธาตุ X อยู่หมู่ 16 และ Z อยู่หมู่ 2", "ธาตุ X อยู่หมู่ 17 และ Z อยู่หมู่ 16", "ธาตุ X อยู่หมู่ 2 และ Z อยู่หมู่ 17"],
@@ -334,20 +271,15 @@
             clue: "อะตอมกลางมีเวเลนซ์อิเล็กตรอนรอบตัวเกิน 8 ตัว (Expanded octet)",
             explanation: "PCl<sub>5</sub> ฟอสฟอรัสมีอิเล็กตรอนล้อมรอบถึง 10 ตัว จัดเป็นพวกเกินออกเตต (Hypervalent)"
         },
-        {
-    id: 28,
-    question: "ข้อใดเรียงลำดับจุดเดือดของสารประกอบไฮดริดของธาตุหมู่ 15 ได้ถูกต้องที่สุด?",
-    options: [
-        "PH3 < AsH3 < SbH3 < NH3", // ข้อนี้คือคำตอบที่ถูกต้องตามหลักการ
-        "NH3 < PH3 < AsH3 < SbH3",
-        "PH3 > AsH3 > SbH3 > NH3",
-        "NH3 > SbH3 > AsH3 > PH3"
-    ],
-    answer: 0, // ปรับให้เป็น index ของตัวเลือกแรก
-    clue: "จำไว้ว่า NH3 มีพันธะไฮโดรเจน ส่วนที่เหลือจุดเดือดจะเพิ่มขึ้นตามมวลโมเลกุล",
-    explanation: "NH3 มีพันธะไฮโดรเจนจึงมีจุดเดือดสูงสุด ส่วน PH3, AsH3, SbH3 จุดเดือดเพิ่มขึ้นตามมวลโมเลกุลที่มากขึ้นตามลำดับ"
-},
-        {
+            {
+                id: 28,
+                question: "ข้อใดเรียงลำดับจุดเดือดของสารประกอบไฮดริดของธาตุหมู่ 15 ได้ถูกต้องที่สุด?",
+                options: ["PH3 < AsH3 < SbH3 < NH3", "NH3 < PH3 < AsH3 < SbH3", "PH3 > AsH3 > SbH3 > NH3", "NH3 > SbH3 > AsH3 > PH3"],
+                answer: 0,
+                clue: "NH3 มีพันธะไฮโดรเจน ส่วนที่เหลือจุดเดือดเพิ่มตามมวลโมเลกุล",
+                explanation: "NH3 มีจุดเดือดสูงสุดจากพันธะไฮโดรเจน ที่เหลือจุดเดือดสูงขึ้นตามมวลโมเลกุล: PH3 < AsH3 < SbH3"
+            }
+            {
             id: 29,
             question: "ธาตุ X มีการจัดเรียงอิเล็กตรอนเป็น 2, 8, 8, 2 ธาตุนี้มีสมบัติทางเคมีคล้ายคลึงกับธาตุใดมากที่สุด?",
             options: ["Lithium", "Magnesium", "Fluorine", "Potassium"],
@@ -363,177 +295,32 @@
             clue: "พิจารณาประจุไอออนที่สูงขึ้นและขนาดไอออนที่เล็กที่สุดตามกฎของคูลอมบ์",
             explanation: "MgO มีไอออนประจุสูง (+2 และ -2) และขนาดไอออนเล็ก ทำให้แรงดึงดูดไฟฟ้าระหว่างไอออนสูงมาก พลังงานลิตทิสจึงสูงที่สุด"
         }
-    ];
+        ];
 
-    let currentLang = 'TH';
-    const userAnswers = {};
-
-    function renderQuestions() {
-        const container = document.getElementById('questions-container');
-        container.innerHTML = '';
+        const canvas = document.getElementById('whiteboard');
+        const ctx = canvas.getContext('2d');
         
-        // อัปเดตข้อความจำนวนข้อ
-        document.getElementById('progress-text').innerText = `ชุดข้อสอบทั้งหมด ${questionsData.length} ข้อ`;
-
-        questionsData.forEach((q, index) => {
-            const card = document.createElement('div');
-            card.className = 'question-card';
-            card.id = `q-card-${index}`;
-
-            let optionsHtml = '';
-            q.options.forEach((opt, optIndex) => {
-                optionsHtml += `<li class="option-item" id="opt-${index}-${optIndex}" onclick="selectOption(${index}, ${optIndex})">${opt}</li>`;
-            });
-
-            card.innerHTML = `
-                <div class="question-title">ข้อที่ ${index + 1}: ${q.question}</div>
-                <ul class="options-list">${optionsHtml}</ul>
-                <div class="clue-box">💡 คำใบ้: ${q.clue}</div>
-                <div class="explanation" id="exp-${index}"><strong>เฉลยและวิธีทำ:</strong> ${q.explanation}</div>
-            `;
-            container.appendChild(card);
-        });
-        loadLocalStorage();
-    }
-
-    function selectOption(qIndex, optIndex) {
-        userAnswers[qIndex] = optIndex;
-        const q = questionsData[qIndex];
-        
-        for (let i = 0; i < q.options.length; i++) {
-            const item = document.getElementById(`opt-${qIndex}-${i}`);
-            item.classList.remove('correct', 'incorrect');
-            if (i === q.answer) {
-                item.classList.add('correct');
-            } else if (i === optIndex && optIndex !== q.answer) {
-                item.classList.add('incorrect');
-            }
+        function initBoard() {
+            canvas.width = canvas.offsetWidth;
+            canvas.height = 500;
+            ctx.fillStyle = "#ffffff";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
         }
         
-        document.getElementById(`exp-${qIndex}`).style.display = 'block';
-        saveLocalStorage();
-    }
-
-    function toggleLanguage() {
-        currentLang = currentLang === 'TH' ? 'EN' : 'TH';
-        alert(`สลับภาษาเป็น: ${currentLang} (สถานะข้อสอบยังคงเดิม)`);
-        saveLocalStorage();
-    }
-
-    function resetExam() {
-        if (confirm('คุณต้องการรีเซ็ตคำตอบทั้งหมดและเริ่มทำใหม่ใช่หรือไม่?')) {
-            localStorage.removeItem('exam_answers');
-            Object.keys(userAnswers).forEach(key => delete userAnswers[key]);
-            renderQuestions();
-            document.getElementById('result-container').style.display = 'none';
-        }
-    }
-
-    function saveLocalStorage() {
-        const data = { answers: userAnswers, lang: currentLang };
-        localStorage.setItem('exam_answers', JSON.stringify(data));
-    }
-
-    function loadLocalStorage() {
-        const saved = localStorage.getItem('exam_answers');
-        if (saved) {
-            const data = JSON.parse(saved);
-            currentLang = data.lang || 'TH';
-            Object.assign(userAnswers, data.answers);
-            
-            for (let qIdx in userAnswers) {
-                selectOption(parseInt(qIdx), userAnswers[qIdx]);
-            }
-        }
-    }
-
-    function submitExam() {
-        let score = 0;
-        let total = questionsData.length;
+        window.addEventListener('resize', initBoard);
+        initBoard();
         
-        questionsData.forEach((q, index) => {
-            if (userAnswers[index] === q.answer) {
-                score++;
-            }
-        });
+        // Drawing logic...
+        let painting = false;
+        canvas.onmousedown = () => painting = true;
+        canvas.onmouseup = () => { painting = false; ctx.beginPath(); };
+        canvas.onmousemove = (e) => {
+            if(!painting) return;
+            ctx.lineTo(e.offsetX, e.offsetY);
+            ctx.stroke();
+        };
 
-        const resultContainer = document.getElementById('result-container');
-        const scoreDisplay = document.getElementById('score-display');
-        const analysisContent = document.getElementById('analysis-content');
-
-        scoreDisplay.innerText = `คุณทำคะแนนได้ ${score} / ${total} คะแนน`;
-        
-        let analysisHtml = `<strong>บทวิเคราะห์ผลการทดสอบ:</strong><br>`;
-        if (score >= 25) {
-            analysisHtml += `<p style="color: var(--success-color);">🌟 <strong>จุดเด่น:</strong> มีความเข้าใจในเนื้อหา สอวน. เคมี เรื่องธาตุ สมบัติของธาตุ และพันธะเคมีในระดับดีเยี่ยม สามารถวิเคราะห์โจทย์ประยุกต์และคำนวณขั้นสูงได้แม่นยำ</p>`;
-        } else if (score >= 15) {
-            analysisHtml += `<p style="color: #e67e22;">⚠️ <strong>จุดเด่นและจุดด้อย:</strong> พอมีความเข้าใจพื้นฐานในส่วนของตารางธาตุและแนวโน้ม IE แต่อาจต้องกลับไปทบทวนเพิ่มเติมในเรื่องข้อยกเว้นการจัดเรียงอิเล็กตรอน และสารประกอบเชิงซ้อนของโลหะทรานซิชัน</p>`;
-        } else {
-            analysisHtml += `<p style="color: var(--error-color);">❌ <strong>จุดด้อยที่ต้องปรับปรุง:</strong> ควรทบทวนเนื้อหาพื้นฐานตั้งแต่โครงสร้างอะตอม ระดับพลังงานย่อย แนวโน้มพลังงานไอออไนเซชัน และหลักการคำนวณเลขออกซิเดชันใหม่อีกครั้ง</p>`;
-        }
-
-        analysisContent.innerHTML = analysisHtml;
-        resultContainer.style.display = 'block';
-        resultContainer.scrollIntoView({ behavior: 'smooth' });
-    }
-
-    // Whiteboard Script (ระบบกระดานทด)
-    const canvas = document.getElementById('whiteboard');
-    const ctx = canvas.getContext('2d');
-    let painting = false;
-
-    function resizeCanvas() {
-        canvas.width = canvas.parentElement.clientWidth - 40;
-        canvas.height = 500;
-        ctx.fillStyle = "#ffffff";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-    }
-    
-    window.addEventListener('load', resizeCanvas);
-    window.addEventListener('resize', resizeCanvas);
-
-    function startPosition(e) {
-        painting = true;
-        draw(e);
-    }
-
-    function finishedPosition() {
-        painting = false;
-        ctx.beginPath();
-    }
-
-    function draw(e) {
-        if (!painting) return;
-        ctx.lineWidth = 3;
-        ctx.lineCap = 'round';
-        ctx.strokeStyle = '#2c3e50';
-
-        const rect = canvas.getBoundingClientRect();
-        const x = (e.clientX || e.touches[0].clientX) - rect.left;
-        const y = (e.clientY || e.touches[0].clientY) - rect.top;
-
-        ctx.lineTo(x, y);
-        ctx.stroke();
-        ctx.beginPath();
-        ctx.moveTo(x, y);
-    }
-
-    canvas.addEventListener('mousedown', startPosition);
-    canvas.addEventListener('mouseup', finishedPosition);
-    canvas.addEventListener('mousemove', draw);
-
-    canvas.addEventListener('touchstart', startPosition);
-    canvas.addEventListener('touchend', finishedPosition);
-    canvas.addEventListener('touchmove', draw);
-
-    function clearWhiteboard() {
-        ctx.fillStyle = "#ffffff";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-    }
-
-    // เริ่มต้นเรนเดอร์ข้อสอบทั้งหมด 30 ข้อ
-    renderQuestions();
-</script>
-
+        function clearWhiteboard() { initBoard(); }
+    </script>
 </body>
 </html>
