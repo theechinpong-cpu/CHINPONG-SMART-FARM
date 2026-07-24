@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>แบบทดสอบทฤษฎีเคมี ม.5 ฉบับเข้มข้น</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600&display=swap" rel="stylesheet">
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        body { font-family: 'Sarabun', sans-serif; background-color: #f0f4f8; }
+        .option-card:hover { transform: translateY(-2px); transition: all 0.2s; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <div class="max-w-3xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden">
+        <div class="bg-indigo-600 p-6 text-white text-center">
+            <h1 class="text-2xl font-bold">แบบทดสอบทฤษฎีเคมี ม.5</h1>
+            <p class="text-indigo-100 mt-2">บทที่ 1-3: ความปลอดภัย, อะตอม และพันธะเคมี</p>
+        </div>
+
+        <!-- Start Screen -->
+        <div id="start-screen" class="p-8 text-center">
+            <div class="mb-6 text-gray-600">
+                <p>จำนวนข้อสอบ: <strong>30 ข้อ</strong></p>
+                <p>ระดับความยาก: <strong>เข้มข้น (เน้นทฤษฎีบท)</strong></p>
+            </div>
+            <button onclick="startQuiz()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 rounded-full font-semibold text-lg transition">
+                เริ่มทำข้อสอบ
+            </button>
+        </div>
+
+        <!-- Quiz Screen -->
+        <div id="quiz-screen" class="hidden p-6">
+            <div class="flex justify-between items-center mb-6 text-sm text-gray-500 font-semibold">
+                <span id="progress-text">ข้อที่ 1/30</span>
+                <span id="score-text">คะแนน: 0</span>
+            </div>
+            
+            <div class="w-full bg-gray-200 h-2 rounded-full mb-8">
+                <div id="progress-bar" class="bg-indigo-500 h-2 rounded-full transition-all" style="width: 3.33%"></div>
+            </div>
+
+            <div id="question-container" class="mb-8">
+                <h2 id="question-text" class="text-xl font-semibold text-gray-800 leading-relaxed">กำลังโหลดคำถาม...</h2>
+            </div>
+
+            <div id="options-grid" class="grid grid-cols-1 gap-4">
+                <!-- Options will be injected here -->
+            </div>
+
+            <div id="feedback" class="mt-8 p-4 rounded-lg hidden">
+                <p id="feedback-text" class="font-medium"></p>
+                <p id="rationale-text" class="text-sm mt-2 text-gray-600 italic"></p>
+                <button onclick="nextQuestion()" class="mt-4 w-full bg-gray-800 text-white py-2 rounded-lg hover:bg-gray-900 transition">
+                    ข้อถัดไป
+                </button>
+            </div>
+        </div>
+
+        <!-- Result Screen -->
+        <div id="result-screen" class="hidden p-8 text-center">
+            <h2 class="text-3xl font-bold text-gray-800 mb-4">สรุปผลคะแนน</h2>
+            <div class="text-6xl font-bold text-indigo-600 mb-6" id="final-score">0/30</div>
+            <p id="evaluation" class="text-gray-600 mb-8"></p>
+            <button onclick="location.reload()" class="bg-indigo-600 text-white px-8 py-3 rounded-full font-semibold hover:bg-indigo-700 transition">
+                ทำใหม่อีกครั้ง
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const quizData = [
+            { q: "สัญลักษณ์เตือนภัยตามระบบ $GHS$ ของสารที่มีสมบัติกัดกร่อน (Corrosive) เน้นการเตือนภัยในด้านใดเป็นหลักตามทฤษฎี?", options: [{t:"การทำลายเนื้อเยื่อผิวหนังหรือพื้นผิวภาชนะ", c:true, r:"ตามคำนิยามระบบ GHS สารกัดกร่อนทำความเสียหายต่อเนื้อเยื่อหรือวัตถุอย่างถาวร"}, {t:"การระเบิดเมื่อได้รับความร้อนสูง", c:false, r:"นี่เป็นสมบัติของสารระเบิด"}, {t:"การติดไฟได้เองในอากาศปกติ", c:false, r:"นี่เป็นสมบัติของสารไวไฟ"}, {t:"การสะสมความเป็นพิษในสิ่งแวดล้อม", c:false, r:"นี่คือ Environmental Hazard"}]},
+            { q: "อุปกรณ์ในข้อใดจัดเป็นเครื่องมือวัดปริมาตรที่ให้ความแม่นยำสูง (High Precision) สำหรับเตรียมสารละลายมาตรฐาน?", options: [{t:"บีกเกอร์", c:false, r:"บีกเกอร์ใช้ผสมสาร ความแม่นยำต่ำ"}, {t:"ขวดกำหนดปริมาตร", c:true, r:"ออกแบบมาเพื่อวัดปริมาตรเดียวที่มีความแม่นยำสูงมาก"}, {t:"กระบอกตวง", c:false, r:"มีความแม่นยำระดับปานกลางเท่านั้น"}, {t:"ขวดรูปชมพู่", c:false, r:"ใช้สำหรับไทเทรต ไม่ใช้เตรียมความเข้มข้นแม่นยำสูง"}]},
+            { q: "ตามกฎของเลขนัยสำคัญ ผลลัพธ์ของการบวกหรือลบต้องยึดตามเกณฑ์ใด?", options: [{t:"จำนวนตัวเลขรวมที่น้อยที่สุด", c:false, r:"นี่ใช้กับการคูณและหาร"}, {t:"จำนวนตำแหน่งทศนิยมที่น้อยที่สุด", c:true, r:"การบวก/ลบจะรักษาความละเอียดตามตำแหน่งทศนิยมที่หยาบที่สุด"}, {t:"จำนวนเลขนัยสำคัญที่มากที่สุด", c:false, r:"ผิดหลักความละเอียดของเครื่องมือ"}, {t:"ค่าเฉลี่ยของจำนวนทศนิยม", c:false, r:"ไม่มีเกณฑ์นี้ในเลขนัยสำคัญ"}]},
+            { q: "เมื่อสารเคมีกระเด็นเข้าตา ขั้นตอนการปฐมพยาบาลเบื้องต้นที่ถูกต้องที่สุดคืออะไร?", options: [{t:"หยอดน้ำตาเทียมทันที", c:false, r:"ปริมาณไม่พอชะล้าง"}, {t:"ล้างด้วยน้ำสะอาดต่อเนื่องอย่างน้อย 15 นาที", c:true, r:"การเจือจางด้วยน้ำปริมาณมากดีที่สุดต่อเนื้อเยื่อตา"}, {t:"ใช้กระดาษชำระซับออกก่อน", c:false, r:"อาจทำลายกระจกตาเพิ่ม"}, {t:"ใช้น้ำส้มสายชูสะเทินหากเป็นเบส", c:false, r:"ห้ามทำปฏิกิริยาสะเทินบนเนื้อเยื่ออ่อน"}]},
+            { q: "แบบจำลองอะตอมของรัทฟอร์ดอธิบายลักษณะของนิวเคลียสไว้อย่างไร?", options: [{t:"มีประจุเป็นกลางกระจายทั่วอะตอม", c:false, r:"ขัดกับผลการยิงแอลฟา"}, {t:"มีขนาดเล็กมาก มีความหนาแน่นสูง และเป็นประจุบวก", c:true, r:"นิวเคลียสต้องเล็กและแน่นมากจึงจะสะท้อนอนุภาคแอลฟาได้"}, {t:"ประกอบด้วยอิเล็กตรอนฝังในเนื้อบวก", c:false, r:"นี่คือแบบจำลองของทอมสัน"}, {t:"เป็นวงโคจรพลังงานคงที่", c:false, r:"นี่คือแบบจำลองของโบร"}]},
+            { q: "เลขควอนตัมเชิงมุม ($l$) ของออร์บิทัล $d$ มีค่าเท่ากับเท่าใด?", options: [{t:"$0$", c:false, r:"ของออร์บิทัล s"}, {t:"$1$", c:false, r:"ของออร์บิทัล p"}, {t:"$2$", c:true, r:"ค่า l กำหนดโดย s=0, p=1, d=2, f=3"}, {t:"$3$", c:false, r:"ของออร์บิทัล f"}]},
+            { q: "หลักการของเอาฟบาว (Aufbau Principle) กำหนดลำดับอย่างไร?", options: [{t:"บรรจุในออร์บิทัลพลังงานต่ำสุดก่อน", c:true, r:"เพื่อให้ระบบเสถียรที่สุด"}, {t:"ห้ามเลขควอนตัมซ้ำกัน 4 ค่า", c:false, r:"นี่คือกีดกันพาวาลี"}, {t:"บรรจุเดี่ยวให้เต็มก่อนจับคู่", c:false, r:"นี่คือกฎของฮุนด์"}, {t:"บรรจุวงนอกก่อนเสมอ", c:false, r:"ขัดกับหลักความเสถียร"}]},
+            { q: "การบรรจุอิเล็กตรอนของ $\\text{Cr}$ ($Z=24$) มีลักษณะพิเศษเพื่อสิ่งใด?", options: [{t:"เพื่อให้เกิดการบรรจุครึ่งใน $d$-orbital", c:true, r:"$3d^5 4s^1$ เสถียรกว่าแบบปกติ"}, {t:"เพื่อลดจำนวนเวเลนซ์อิเล็กตรอน", c:false, r:"จำนวนรวมยังเท่าเดิม"}, {t:"เพื่อให้ขนาดอะตอมใหญ่ขึ้น", c:false, r:"ไม่เกี่ยวข้องกันโดยตรง"}, {t:"เพื่อให้เป็นแก๊สเฉื่อย", c:false, r:"โครเมียมเป็นโลหะแทรนซิชัน"}]},
+            { q: "ในคาบเดียวกัน ขนาดอะตอมลดลงเมื่อเลขอะตอมเพิ่มขึ้นเพราะสาเหตุใด?", options: [{t:"ระดับพลังงานเพิ่มขึ้น", c:false, r:"ในคาบระดับพลังงานเท่าเดิม"}, {t:"แรงผลักอิเล็กตรอนลดลง", c:false, r:"แรงผลักเพิ่มขึ้นเล็กน้อย"}, {t:"ประจุบวกในนิวเคลียสเพิ่มขึ้นดึงดูดแรงกว่า", c:true, r:"แรงดึงดูดจากนิวเคลียสเพิ่มขึ้นดึงกลุ่มหมอกเข้าหาตัว"}, {t:"การจัดเรียงเป็นกึ่งโลหะ", c:false, r:"ไม่เกี่ยวข้องกัน"}]},
+            { q: "พลังงานไอออไนเซชัน ($IE$) หมายถึงกิจกรรมใด?", options: [{t:"ดึงอิเล็กตรอนออกจากอะตอมในสถานะแก๊ส", c:true, r:"เป็นพลังงานขั้นต่ำในการทำให้เกิดไอออนบวก"}, {t:"รับอิเล็กตรอนในสถานะของแข็ง", c:false, r:"นี่คือ EA"}, {t:"สลายพันธะระหว่างโมเลกุล", c:false, r:"คือพลังงานพันธะ"}, {t:"ดึงโปรตอนออกจากนิวเคลียส", c:false, r:"คือพลังงานนิวเคลียร์"}]},
+            { q: "แนวโน้ม $EN$ เปลี่ยนแปลงอย่างไรจากซ้ายไปขวาและล่างขึ้นบน?", options: [{t:"มีค่าลดลง", c:false, r:"ผิดทิศทาง"}, {t:"มีค่าคงที่", c:false, r:"แปรผันตามขนาดและประจุ"}, {t:"มีค่าเพิ่มขึ้น", c:true, r:"อะตอมเล็กลงดึงดูดอิเล็กตรอนคู่ร่วมพันธะได้ดีขึ้น"}, {t:"เพิ่มขึ้นจากบนลงล่าง", c:false, r:"จากบนลงล่าง EN จะลดลง"}]},
+            { q: "ออกไซด์ของธาตุกลุ่มใดมีสมบัติเป็นแอมโฟเทอริก?", options: [{t:"โลหะหมู่ 1", c:false, r:"เป็นเบสแก่เท่านั้น"}, {t:"อโลหะหมู่ 7", c:false, r:"เป็นกรด"}, {t:"โลหะบางชนิดและกึ่งโลหะ", c:true, r:"เช่น Al, Zn ทำได้ทั้งกรดและเบส"}, {t:"แก๊สเฉื่อย", c:false, r:"ไม่เกิดสารประกอบปกติ"}]},
+            { q: "พันธะไอออนิกเกิดจากแรงยึดเหนี่ยวลักษณะใด?", options: [{t:"ใช้อิเล็กตรอนร่วมกัน", c:false, r:"นี่คือโคเวเลนต์"}, {t:"แรงดึงดูดทางไฟฟ้าสถิตระหว่างประจุต่างชนิด", c:true, r:"เกิดจากแรงดึงดูดของไอออนบวกและลบ"}, {t:"ทะเลอิเล็กตรอน", c:false, r:"นี่คือพันธะโลหะ"}, {t:"แรงลอนดอน", c:false, r:"เป็นแรงระหว่างโมเลกุล"}]},
+            { q: "ทำไมสารประกอบไอออนิกในสถานะของแข็งไม่นำไฟฟ้า?", options: [{t:"ไม่มีอิเล็กตรอน", c:false, r:"มีแต่ถูกล็อกไว้"}, {t:"ไอออนเคลื่อนที่ไม่ได้ในโครงผลึก", c:true, r:"การนำไฟฟ้าต้องมีประจุที่เคลื่อนที่ได้"}, {t:"จุดหลอมเหลวต่ำ", c:false, r:"ความจริงสูงมาก"}, {t:"ประจุหักล้างกัน", c:false, r:"ไม่เกี่ยวกับการไหลของประจุ"}]},
+            { q: "สารใดเป็นข้อยกเว้นกฎออกเตตโดยมีอิเล็กตรอนรอบอะตอมกลาง 'น้อยกว่า' 8?", options: [{t:"$\\text{CH}_4$", c:false, r:"ครบ 8 พอดี"}, {t:"$\\text{NH}_3$", c:false, r:"ครบ 8 พอดี"}, {t:"$\\text{BF}_3$", c:true, r:"โบรอนมีเพียง 6 อิเล็กตรอนรอบตัว"}, {t:"$\\text{SF}_6$", c:false, r:"เป็นแบบเกิน 8"}]},
+            { q: "ทฤษฎี $VSEPR$ ใช้เกณฑ์ใดทำนายรูปร่างโมเลกุล?", options: [{t:"แรงดึงดูดนิวเคลียส", c:false, r:"ไม่ใช่ปัจจัยหลัก"}, {t:"แรงผลักระหว่างกลุ่มอิเล็กตรอนรอบอะตอมกลาง", c:true, r:"กลุ่มอิเล็กตรอนจะอยู่ห่างกันที่สุดเพื่อลดแรงผลัก"}, {t:"พลังงานพันธะ", c:false, r:"บอกความแข็งแรงเท่านั้น"}, {t:"การละลายน้ำ", c:false, r:"เป็นสมบัติภายหลัง"}]},
+            { q: "ความเหนียว (Ductility) ของโลหะเกิดจากอะไร?", options: [{t:"อิเล็กตรอนถูกล็อก", c:false, r:"จะทำให้เปราะ"}, {t:"ไอออนบวกเลื่อนไถลได้โดยมีทะเลอิเล็กตรอนยึดไว้", c:true, r:"ทะเลอิเล็กตรอนทำหน้าที่เหมือนกาวที่ไหลได้"}, {t:"มีช่องว่างขนาดใหญ่", c:false, r:"โลหะจัดเรียงชิดกันมาก"}, {t:"พันธะโคเวเลนต์ใหม่", c:false, r:"โลหะไม่มีพันธะโคเวเลนต์"}]},
+            { q: "แรงแผ่กระจายลอนดอนเกิดจากกลไกใด?", options: [{t:"ขั้วชั่วคราวจากการเคลื่อนที่อิเล็กตรอน", c:true, r:"เกิดการเหนี่ยวนำขั้วในโมเลกุลไม่มีขั้ว"}, {t:"แรงถาวรบวก-ลบ", c:false, r:"นั่นคือ Dipole-dipole"}, {t:"ใช้อิเล็กตรอนร่วมกัน", c:false, r:"นั่นคือพันธะเคมี"}, {t:"ถ่ายโอนโปรตอน", c:false, r:"นั่นคือกรด-เบส"}]},
+            { q: "สารใดมีจุดเดือดสูงผิดปกติจากพันธะไฮโดรเจน?", options: [{t:"$\\text{CH}_4$", c:false, r:"ไม่มีขั้ว"}, {t:"$\\text{H}_2\\text{S}$", c:false, r:"EN ของ S ไม่สูงพอ"}, {t:"$\\text{CH}_3\\text{OH}$", c:true, r:"มีพันธะ O-H ที่เกิดแรงดึงดูดได้แรงมาก"}, {t:"$\\text{HCl}$", c:false, r:"ขนาด Cl ใหญ่เกินไป"}]},
+            { q: "ทำไมไอออนบวกเล็กกว่าอะตอมกลาง?", options: [{t:"โปรตอนเพิ่ม", c:false, r:"โปรตอนเท่าเดิม"}, {t:"เสียอิเล็กตรอนวงนอกสุดไป", c:true, r:"ทำให้ชั้นพลังงานลดลงหรือแรงดึงดูดนิวเคลียสต่ออิเล็กตรอนที่เหลือเพิ่ม"}, {t:"แรงผลักอิเล็กตรอนเพิ่ม", c:false, r:"นั่นทำให้ขนาดใหญ่ขึ้น"}, {t:"นิวตรอนถูกดึงออก", c:false, r:"นิวตรอนไม่เปลี่ยน"}]},
+            { q: "ตามกฎของฮุนด์ บรรจุอิเล็กตรอนในระดับพลังงานเท่ากันอย่างไร?", options: [{t:"บรรจุเดี่ยวทิศสปินเดียวกันให้มากที่สุด", c:true, r:"เพื่อลดแรงผลักและเพิ่มความเสถียร"}, {t:"จับคู่ให้เต็มทีละช่อง", c:false, r:"ผิดกฎฮุนด์"}, {t:"สปินตรงข้ามเสมอ", c:false, r:"ใช้ตอนจับคู่"}, {t:"เว้นออร์บิทัลแรก", c:false, r:"ผิดหลักพลังงาน"}]},
+            { q: "สมบัติเด่นของสารไอออนิกคือข้อใด?", options: [{t:"แข็งแต่เปราะ", c:true, r:"เกิดการผลักกันของประจุเมื่อโครงสร้างเลื่อน"}, {t:"จุดเดือดต่ำ", c:false, r:"ความจริงสูงมาก"}, {t:"นำไฟฟ้าดีในของแข็ง", c:false, r:"ไม่นำไฟฟ้า"}, {t:"เป็นของเหลวส่วนใหญ่", c:false, r:"เป็นของแข็ง"}]},
+            { q: "หลักกีดกันพาวาลีระบุอะไร?", options: [{t:"หนึ่งออร์บิทัลมีสูงสุด 2 อิเล็กตรอนสปินต่างกัน", c:true, r:"ห้ามเลขควอนตัมซ้ำกัน 4 ค่า"}, {t:"บรรจุได้ไม่จำกัด", c:false, r:"พื้นที่จำกัด"}, {t:"สปินเดียวกันเสถียรกว่า", c:false, r:"ห้ามเกิดในออร์บิทัลเดียวกัน"}, {t:"ตัวที่สองต้องพลังงานสูงกว่า", c:false, r:"อยู่ระดับเดียวกันได้"}]},
+            { q: "ทำไมโมเลกุลสมมาตรสูงที่มีพันธะมีขั้ว ถึงกลายเป็นโมเลกุลไม่มีขั้ว?", options: [{t:"ไม่มีคู่โดดเดี่ยว", c:false, r:"ไม่ใช่เหตุผลตรง"}, {t:"เวกเตอร์ขั้วหักล้างกันหมด", c:true, r:"สภาพขั้วดึงสวนทางกันจนสุทธิเป็นศูนย์"}, {t:"EN เท่ากัน", c:false, r:"ถ้าเท่าพันธะจะไม่มีขั้วแต่แรก"}, {t:"เคลื่อนที่เร็ว", c:false, r:"ไม่เกี่ยวข้องกัน"}]},
+            { q: "เลขควอนตัมแม่เหล็ก ($m_l$) ระบุสิ่งใด?", options: [{t:"ขนาดระดับพลังงาน", c:false, r:"คือ n"}, {t:"รูปร่างออร์บิทัล", c:false, r:"คือ l"}, {t:"ทิศทางออร์บิทัลใน 3 มิติ", c:true, r:"ระบุแกนที่ออร์บิทัลวางตัวอยู่"}, {t:"ความเร็วอิเล็กตรอน", c:false, r:"ระบุไม่ได้แน่นอน"}]},
+            { q: "เครื่องมือใดไม่ควรนำมาใช้วัดปริมาตรเพื่อความละเอียดสูง?", options: [{t:"ปิเปต", c:false, r:"แม่นยำมาก"}, {t:"บิวเรต", c:false, r:"แม่นยำมาก"}, {t:"บีกเกอร์", c:true, r:"ขีดบอกคร่าวๆ ความคลาดเคลื่อนสูง"}, {t:"ขวดกำหนดปริมาตร", c:false, r:"ใช้เตรียมมาตรฐาน"}]},
+            { q: "การจัดเรียงอิเล็กตรอนที่ถูกต้องของ $\\text{Cu}$ ($Z=29$)?", options: [{t:"$[Ar] 3d^9 4s^2$", c:false, r:"ไม่เสถียร"}, {t:"$[Ar] 3d^{10} 4s^1$", c:true, r:"บรรจุเต็มใน 3d เสถียรกว่า"}, {t:"$[Ar] 4s^2 4p^9$", c:false, r:"ผิดลำดับและจำนวน"}, {t:"$[Ar] 3d^{11}$", c:false, r:"d บรรจุได้สูงสุด 10"}]},
+            { q: "จุดเดือดไฮโดรคาร์บอนเพิ่มตามขนาดโมเลกุลเพราะแรงใด?", options: [{t:"พันธะไฮโดรเจน", c:false, r:"ไฮโดรคาร์บอนไม่มีพันธะ H"}, {t:"แรงระหว่างขั้ว", c:false, r:"สารไม่มีขั้ว"}, {t:"แรงลอนดอนเพิ่มตามขนาด", c:true, r:"กลุ่มหมอกอิเล็กตรอนใหญ่ขึ้นทำให้เหนี่ยวนำแรงขึ้น"}, {t:"แรงไอออนิก", c:false, r:"เป็นโคเวเลนต์"}]},
+            { q: "การนำไฟฟ้าของโลหะอธิบายด้วยอะไร?", options: [{t:"การสั่นไอออนลบ", c:false, r:"โลหะไม่มีไอออนลบ"}, {t:"อิเล็กตรอนเคลื่อนที่อิสระทั่วทั้งก้อน", c:true, r:"Delocalized electrons นำกระแสไฟฟ้าได้"}, {t:"ช่องว่างโมเลกุล", c:false, r:"จัดเรียงชิดกันมาก"}, {t:"พันธะไฮโดรเจน", c:false, r:"ไม่เกี่ยวข้อง"}]},
+            { q: "$\\text{SF}_6$ มีรูปร่างอย่างไร?", options: [{t:"ทรงสี่หน้า", c:false, r:"มีแค่ 4 อะตอมล้อม"}, {t:"พีระมิดฐานคู่สามเหลี่ยม", c:false, r:"มี 5 อะตอมล้อม"}, {t:"ทรงแปดหน้า (Octahedral)", c:true, r:"มี 6 อะตอมล้อมรอบอะตอมกลางอย่างสมมาตร"}, {t:"เส้นตรง", c:false, r:"มีแค่ 2 อะตอมล้อม"}]}
+        ];
+
+        let currentQuestion = 0;
+        let score = 0;
+        let answered = false;
+
+        function startQuiz() {
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('quiz-screen').classList.remove('hidden');
+            showQuestion();
+        }
+
+        function showQuestion() {
+            answered = false;
+            const q = quizData[currentQuestion];
+            document.getElementById('question-text').innerHTML = q.q;
+            document.getElementById('progress-text').innerText = `ข้อที่ ${currentQuestion + 1}/${quizData.length}`;
+            document.getElementById('progress-bar').style.width = `${((currentQuestion + 1) / quizData.length) * 100}%`;
+            
+            const optionsGrid = document.getElementById('options-grid');
+            optionsGrid.innerHTML = '';
+            
+            // Randomize options for each display
+            const shuffledOptions = [...q.options].sort(() => Math.random() - 0.5);
+            
+            shuffledOptions.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = "option-card text-left p-4 border-2 border-gray-100 rounded-xl hover:border-indigo-300 hover:bg-indigo-50 transition bg-white text-gray-700 font-medium";
+                btn.innerHTML = opt.t;
+                btn.onclick = () => checkAnswer(opt, btn, shuffledOptions);
+                optionsGrid.appendChild(btn);
+            });
+
+            document.getElementById('feedback').classList.add('hidden');
+            if (window.MathJax) MathJax.typeset();
+        }
+
+        function checkAnswer(opt, btn, allOpts) {
+            if (answered) return;
+            answered = true;
+
+            const feedback = document.getElementById('feedback');
+            const fText = document.getElementById('feedback-text');
+            const rText = document.getElementById('rationale-text');
+
+            if (opt.c) {
+                score++;
+                btn.classList.replace('border-gray-100', 'border-green-500');
+                btn.classList.add('bg-green-50');
+                fText.innerText = "ถูกต้อง!";
+                fText.className = "font-bold text-green-600";
+            } else {
+                btn.classList.replace('border-gray-100', 'border-red-500');
+                btn.classList.add('bg-red-50');
+                fText.innerText = "ยังไม่ถูก...";
+                fText.className = "font-bold text-red-600";
+            }
+
+            rText.innerHTML = opt.r;
+            document.getElementById('score-text').innerText = `คะแนน: ${score}`;
+            feedback.classList.remove('hidden');
+        }
+
+        function nextQuestion() {
+            currentQuestion++;
+            if (currentQuestion < quizData.length) {
+                showQuestion();
+            } else {
+                showResult();
+            }
+        }
+
+        function showResult() {
+            document.getElementById('quiz-screen').classList.add('hidden');
+            document.getElementById('result-screen').classList.remove('hidden');
+            document.getElementById('final-score').innerText = `${score}/${quizData.length}`;
+            
+            let eval = "";
+            const percent = (score / quizData.length) * 100;
+            if (percent >= 80) eval = "ยอดเยี่ยมมาก! คุณมีความแม่นยำในทฤษฎีบทเคมี ม.5 ระดับสูง";
+            else if (percent >= 50) eval = "ทำได้ดีครับ แต่ควรกลับไปทบทวนจุดที่ผิดเพื่อให้แม่นยำยิ่งขึ้น";
+            else eval = "ควรกลับไปอ่านทฤษฎีบทอีกรอบเพื่อสร้างพื้นฐานที่แข็งแรงกว่านี้ครับ";
+            
+            document.getElementById('evaluation').innerText = eval;
+        }
+    </script>
+</body>
+</html>
