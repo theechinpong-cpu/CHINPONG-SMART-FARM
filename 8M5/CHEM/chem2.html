@@ -3,647 +3,1146 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>แบบทดสอบทฤษฎีเคมี ม.5 - พระจอมเกล้าติวเตอร์</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <title>ระบบคลังข้อสอบเคมี ม.5 - พระจอมเกล้าติวเตอร์</title>
     <style>
-        body { font-family: 'Sarabun', sans-serif; background-color: #f8fafc; }
-        .canvas-container { touch-action: none; background: #ffffff; }
+        :root {
+            --primary: #1e3a8a;
+            --primary-light: #3b82f6;
+            --accent: #f59e0b;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --success: #10b981;
+            --error: #ef4444;
+            --border-color: #e2e8f0;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: white;
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+
+        header h1 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .lang-switch {
+            position: absolute;
+            top: 30px;
+            right: 30px;
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+
+        .lang-switch:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .summary-section {
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .summary-section h2 {
+            color: var(--primary);
+            margin-bottom: 15px;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 8px;
+        }
+
+        .summary-section p {
+            margin-bottom: 15px;
+            text-align: justify;
+        }
+
+        .tips-box {
+            background: #fffbeb;
+            border-left: 5px solid var(--accent);
+            padding: 20px;
+            border-radius: 0 8px 8px 0;
+            margin-top: 20px;
+        }
+
+        .tips-box h3 {
+            color: #b45309;
+            margin-bottom: 10px;
+        }
+
+        .main-layout {
+            display: grid;
+            grid-template-columns: 7fr 3fr;
+            gap: 25px;
+            align-items: start;
+        }
+
+        @media (max-width: 1024px) {
+            .main-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .exam-panel {
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .whiteboard-panel {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            position: sticky;
+            top: 20px;
+        }
+
+        .whiteboard-panel h3 {
+            margin-bottom: 15px;
+            color: var(--primary);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        #whiteboard {
+            width: 100%;
+            height: 400px;
+            border: 2px dashed var(--border-color);
+            border-radius: 8px;
+            cursor: crosshair;
+            background: #fff;
+            touch-action: none;
+        }
+
+        .wb-tools {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .wb-btn {
+            padding: 6px 12px;
+            background: var(--border-color);
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+
+        .wb-btn.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .question-card {
+            margin-bottom: 30px;
+            padding-bottom: 25px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .question-title {
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: var(--text-main);
+        }
+
+        .clue-box {
+            font-size: 0.9rem;
+            color: #d97706;
+            background: #fef3c7;
+            padding: 8px 12px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            display: none;
+        }
+
+        .clue-toggle {
+            font-size: 0.85rem;
+            color: var(--primary-light);
+            background: none;
+            border: none;
+            cursor: pointer;
+            margin-bottom: 10px;
+            text-decoration: underline;
+        }
+
+        .options-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .option-item {
+            padding: 12px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: #fff;
+        }
+
+        .option-item:hover {
+            background: #f1f5f9;
+            border-color: var(--primary-light);
+        }
+
+        .option-item.correct {
+            background: #d1fae5;
+            border-color: var(--success);
+            color: #065f46;
+            font-weight: bold;
+        }
+
+        .option-item.incorrect {
+            background: #fee2e2;
+            border-color: var(--error);
+            color: #991b1b;
+        }
+
+        .explanation-box {
+            margin-top: 15px;
+            padding: 15px;
+            background: #f8fafc;
+            border-left: 4px solid var(--primary-light);
+            border-radius: 0 8px 8px 0;
+            font-size: 0.95srem;
+            display: none;
+        }
+
+        .controls-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid var(--border-color);
+        }
+
+        .btn {
+            padding: 12px 24px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+
+        .btn:hover {
+            background: var(--primary-light);
+        }
+
+        .btn-reset {
+            background: #ef4444;
+        }
+
+        .btn-reset:hover {
+            background: #dc2626;
+        }
+
+        .results-section {
+            display: none;
+            background: var(--card-bg);
+            padding: 40px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-top: 25px;
+        }
+
+        .results-section h2 {
+            color: var(--primary);
+            margin-bottom: 20px;
+        }
+
+        .score-display {
+            font-size: 3rem;
+            font-weight: bold;
+            color: var(--primary-light);
+            margin-bottom: 20px;
+        }
+
+        .analysis-box {
+            text-align: left;
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8fafc;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        .analysis-box h4 {
+            color: var(--primary);
+            margin-bottom: 10px;
+            margin-top: 15px;
+        }
+
+        .analysis-box h4:first-child {
+            margin-top: 0;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            color: var(--text-muted);
+            font-weight: bold;
+        }
     </style>
 </head>
-<body class="bg-slate-100 min-h-screen text-slate-800 flex flex-col">
+<body>
+    <div class="container">
+        <header>
+            <button class="lang-switch" id="langSwitchBtn" onclick="toggleLanguage()">EN / TH</button>
+            <h1 id="headerTitle">คลังข้อสอบเคมี ม.5 ฉบับเข้มข้น (30 ข้อ)</h1>
+            <p id="headerSubtitle">ระบบทดสอบความแม่นยำทฤษฎีบทเคมี ม.5 พร้อมกระดานทดและระบบวิเคราะห์ผลอัจฉริยะ</p>
+        </header>
 
-    <!-- Header Section -->
-    <header class="bg-indigo-700 text-white shadow-md p-4 flex justify-between items-center">
-        <div>
-            <h1 class="text-xl font-bold">พระจอมเกล้าติวเตอร์: แบบทดสอบทฤษฎีเคมี ม.5</h1>
-            <p class="text-xs text-indigo-200">บทที่ 1-3 ความปลอดภัย, อะตอม และพันธะเคมี</p>
-        </div>
-        <div class="flex items-center gap-3">
-            <button onclick="toggleLanguage()" id="lang-btn" class="bg-indigo-600 hover:bg-indigo-500 px-3 py-1.5 rounded text-sm font-semibold transition border border-indigo-400">
-                Language: ไทย
-            </button>
-            <button onclick="resetExam()" class="bg-rose-600 hover:bg-rose-500 px-3 py-1.5 rounded text-sm font-semibold transition">
-                Reset
-            </button>
-        </div>
-    </header>
-
-    <!-- Main Summary Section -->
-    <section class="max-w-7xl mx-auto w-full p-4 md:p-6 bg-white my-4 rounded-xl shadow-sm border border-slate-200">
-        <div class="flex items-center gap-4 mb-4">
-            <img src="image11.jpg" alt="ภาพประกอบเนื้อหา" class="w-24 h-24 object-cover rounded-lg border border-slate-200 shadow-sm" onerror="this.src='https://via.placeholder.com/150?text=Kru+Tu'">
-            <div>
-                <h2 class="text-lg font-bold text-indigo-900 mb-1">สรุปเนื้อหาและทฤษฎีเคมี ม.5 ฉบับเข้มข้น (ความยาวมากกว่า 500 คำ)</h2>
-                <p class="text-xs text-indigo-600 font-semibold">เรียบเรียงและวิเคราะห์กระบวนการคิดโดย พระจอมเกล้าติวเตอร์</p>
+        <section class="summary-section">
+            <h2 id="summaryHeading">สรุปเนื้อหาและทฤษฎีเคมี ม.5 ฉบับเข้มข้น</h2>
+            <div id="summaryContent">
+                <p>การศึกษาเคมีในระดับชั้นมัธยมศึกษาปีที่ 5 เป็นสะพานเชื่อมโยงระหว่างความรู้พื้นฐานทางกายภาพสู่การประยุกต์ใช้ในระดับโมเลกุล โดยครอบคลุม 3 บทเรียนหลัก ได้แก่ ความปลอดภัยและทักษะในปฏิบัติการเคมี อะตอมและสมบัติของธาตุ และพันธะเคมี ซึ่งแต่ละบทมีแก่นสำคัญและทฤษฎีบทที่ต้องทำความเข้าใจอย่างลึกซึ้งดังนี้</p>
+                <p><strong>บทที่ 1: ความปลอดภัยและทักษะในปฏิบัติการเคมี</strong> เน้นย้ำถึงการตระหนักรู้ในระบบสัญลักษณ์สากล GHS (Globally Harmonized System) เพื่อจำแนกความเสี่ยงของสารเคมี เช่น สารไวไฟ สารกัดกร่อน และสารพิษ การเลือกใช้เครื่องมือวัดปริมาตรต้องสอดคล้องกับความต้องการความแม่นยำ โดยขวดกำหนดปริมาตร ปิเปต และบิวเรต จัดเป็นเครื่องมือวัดความแม่นยำสูง (High Precision) เหมาะสำหรับการเตรียมสารละลายมาตรฐาน ในขณะที่บีกเกอร์และขวดรูปชมพู่ใช้สำหรับงานทั่วไป นอกจากนี้การคำนวณเลขนัยสำคัญ (Significant Figures) เป็นทักษะคำนวณที่ต้องปฏิบัติอย่างเคร่งครัด โดยการบวก-ลบยึดทศนิยมที่น้อยที่สุด และการคูณ-หารยึดเลขนัยสำคัญที่น้อยที่สุด พร้อมทั้งการปฐมพยาบาลเบื้องต้นที่ถูกต้องตามหลักวิทยาศาสตร์</p>
+                <p><strong>บทที่ 2: อะตอมและสมบัติของธาตุ</strong> ทำความเข้าใจวิวัฒนาการของแบบจำลองอะตอมจนถึงแบบจำลองกลุ่มหมอกควอนตัมและการใช้เลขควอนตัม ($n, l, m_l, m_s$) ในการระบุตำแหน่งและพลังงานของอิเล็กตรอน การจัดเรียงอิเล็กตรอนย่อยต้องอาศัยหลักของเอาฟบาว หลักการกีดกันของพาวาลี และกฎของฮุนด์ พร้อมทั้งทำความเข้าใจข้อยกเว้นของธาตุแทรนซิชันคาบที่ 4 เช่น Cr และ Cu ที่มีการจัดเรียงอิเล็กตรอนแบบบรรจุครึ่งหรือบรรจุเต็มเพื่อความเสถียรสูงสุด แนวโน้มสมบัติของธาตุในตารางธาตุไม่ว่าจะเป็นขนาดอะตอม พลังงานไอออไนเซชัน ($IE$) และอิเล็กโทรเนกาติวิตี ($EN$) มีทิศทางที่สัมพันธ์กับโครงสร้างอิเล็กตรอนอย่างเป็นระบบ</p>
+                <p><strong>บทที่ 3: พันธะเคมี</strong> ศึกษาแรงยึดเหนี่ยวที่ทำให้ธาตุรวมตัวกันเป็นสารประกอบ แบ่งเป็นพันธะไอออนิก (แรงดึงดูดไฟฟ้าระหว่างไอออนบวกและไอออนลบ) พันธะโคเวเลนต์ (การใช้อิเล็กตรอนคู่ร่วมกัน การพิจารณารูปร่างโมเลกุลด้วยทฤษฎี VSEPR และสภาพขั้ว) พันธะโลหะ (ทะเลอิเล็กตรอน) และแรงยึดเหนี่ยวระหว่างโมเลกุล โดยเฉพาะพันธะไฮโดรเจนที่มีผลต่อจุดเดือดและจุดหลอมเหลวของสารอย่างมีนัยสำคัญ</p>
+                
+                <div class="tips-box">
+                    <h3 id="tipsHeading">เทคนิคการจำและกระบวนการคิดจากติวเตอร์</h3>
+                    <p id="tipsContent"><strong>เทคนิคที่ 1 (เครื่องมือวัดความแม่นยำสูง):</strong> ท่องว่า "ปิ-บิว-ขวด" (ปิเปต, บิวเรต, ขวดกำหนดปริมาตร) ใช้สำหรับงานวิเคราะห์ที่ต้องการความแม่นยำสูง ห้ามใช้บีกเกอร์เด็ดขาด<br>
+                    <strong>เทคนิคที่ 2 (ข้อยกเว้น Cr และ Cu):</strong> ธาตุแทรนซิชันคาบ 4 ลงท้ายด้วย $3d^4 4s^2$ และ $3d^9 4s^2$ ให้ดึงอิเล็กตรอนจาก $4s$ มาเติม $d$ ให้เต็มหรือครึ่งหนึ่งเสมอ เป็น $3d^5 4s^1$ และ $3d^{10} 4s^1$<br>
+                    <strong>เทคนิคที่ 3 (พันธะไฮโดรเจน):</strong> ท่อง "H-FON" คือไฮโดรเจนต้องสร้างพันธะกับ F, O หรือ N เท่านั้น จึงจะเกิดพันธะไฮโดรเจนที่แข็งแรง</p>
+                </div>
             </div>
-        </div>
-        
-        <div class="text-sm text-slate-600 space-y-3 leading-relaxed border-l-4 border-indigo-500 pl-4 bg-slate-50 py-3 rounded-r">
-            <p><strong>กระบวนการคิดและภาพรวมบทที่ 1: ความปลอดภัยและทักษะในปฏิบัติการเคมี</strong> การตระหนักถึงความปลอดภัยและการจำแนกสารเคมีอันตรายตามระบบ GHS ผ่านป้ายสัญลักษณ์สากล เช่น สารไวไฟ (Flammable), สารกัดกร่อน (Corrosive) และการอ่านเอกสารข้อมูลความปลอดภัย (SDS) การเลือกใช้อุปกรณ์วัดปริมาตรที่มีความแม่นยำสูง (High Precision) เช่น ปิเปต, บิวเรต, และขวดกำหนดปริมาตร ซึ่งมีความแตกต่างอย่างสิ้นเชิงกับอุปกรณ์ผสมคร่าวๆ เช่น บีกเกอร์และขวดรูปชมพู่ นอกจากนี้ยังต้องคำนึงถึงหลักเลขนัยสำคัญ (Significant Figures) ในการทดลอง โดยการบวกหรือลบจะยึดทศนิยมร่วมน้อยที่สุด ส่วนการคูณหรือหารจะยึดเลขนัยสำคัญน้อยที่สุด รวมถึงทักษะการปฐมพยาบาลเบื้องต้น เช่น สารเคมีเข้าตาต้องล้างด้วยน้ำสะอาดอย่างน้อย 15 นาที</p>
-            
-            <p><strong>กระบวนการคิดและภาพรวมบทที่ 2: อะตอมและสมบัติของธาตุ</strong> วิวัฒนาการแบบจำลองอะตอมเริ่มต้นจากดอลตัน (ทรงกลมตัน) ทอมสัน (พุดดิ้ง) รัทฟอร์ด (นิวเคลียสตรงกลาง) โบร (วงโคจรพลังงาน) สู่แบบจำลองกลุ่มหมอกควอนตัม การเข้าใจเลขควอนตัม 4 ชุด ($n, l, m_l, m_s$) หลักการจัดเรียงอิเล็กตรอนตามหลักเอาฟบาว (Aufbau) การกีดกันของพาวาลี และกฎของฮุนด์ รวมถึงข้อยกเว้นของธาตุแทรนซิชันคาบ 4 เช่น โครเมียม ($\text{Cr}$) และทองแดง ($\text{Cu}$) ที่เสถียรด้วยการบรรจุครึ่งและบรรจุเต็มใน $d$-orbital แนวโน้มตารางธาตุประกอบด้วยขนาดอะตอม, ขนาดไอออน (ไอออนบวกเล็กกว่าอะตอมกลาง, ไอออนลบใหญ่กว่า), พลังงานไอออไนเซชัน ($IE$), และอิเล็กโทรเนกาติวิตี ($EN$)</p>
-            
-            <p><strong>กระบวนการคิดและภาพรวมบทที่ 3: พันธะเคมี</strong> แรงยึดเหนี่ยวระหว่างอะตอมจำแนกเป็นพันธะไอออนิก (แรงดึงดูดไฟฟ้าสถิตระหว่างไอออนบวกและลบ), พันธะโคเวเลนต์ (ใช้อิเล็กตรอนคู่ร่วมกัน พร้อมข้อยกเว้นออกเตต เช่น ขาดออกเตตอย่าง $\text{BF}_3$ และเกินออกเตตอย่าง $\text{PCl}_5, \text{SF}_6$), ทฤษฎี VSEPR สำหรับทำนายรูปร่างโมเลกุลและสภาพขั้ว, พันธะโลหะ (ทะเลอิเล็กตรอนทำให้มีสมบัติเหนียวและนำไฟฟ้า), และแรงยึดเหนี่ยวระหว่างโมเลกุล เช่น แรงลอนดอน, แรงระหว่างขั้ว และพันธะไฮโดรเจน ระหว่างอะตอม H กับ F, O, N</p>
-        </div>
-        
-        <div class="mt-4 p-3 bg-indigo-50 border border-indigo-100 rounded-lg text-xs text-indigo-900 font-medium">
-            💡 <strong>เทคนิคการจำจากติวเตอร์:</strong> "ไอออนบวกหด-ลบขยาย | โลหะทะเลอิเล็กตรอนลื่นไหล | ออกเตตเกินเมื่อคาบสามขึ้นไป | F-O-N ผูกพันไฮโดรเจนเด่นชัด"
-        </div>
-    </section>
+        </section>
 
-    <!-- Content Workspace: 2 Frames Layout (70% Left / 30% Right) -->
-    <main class="max-w-7xl mx-auto w-full px-4 pb-8 flex-1 grid grid-cols-1 lg:grid-cols-10 gap-4">
-        
-        <!-- Left Frame: Quiz Panel (70% -> lg:col-span-7) -->
-        <div class="lg:col-span-7 bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex flex-col justify-between">
-            <div>
-                <div class="flex justify-between items-center mb-4 pb-2 border-b border-slate-100 text-sm font-semibold text-slate-500">
-                    <span id="progress-indicator">ข้อที่ 1 / 30</span>
-                    <span id="score-indicator">คะแนนสะสม: 0</span>
+        <div class="main-layout">
+            <div class="exam-panel">
+                <div id="examContainer"></div>
+                
+                <div class="controls-bar">
+                    <button class="btn btn-reset" id="resetBtn" onclick="resetExam()">เริ่มทำใหม่ (Reset)</button>
+                    <button class="btn" id="submitBtn" onclick="submitExam()">ส่งข้อสอบและดูผลวิเคราะห์</button>
                 </div>
 
-                <!-- Question Area -->
-                <div id="question-box" class="mb-6">
-                    <h3 id="question-text" class="text-lg font-bold text-slate-800 leading-snug">กำลังโหลดโจทย์...</h3>
-                    <div id="clue-container" class="mt-2 text-xs text-amber-700 bg-amber-50 p-2 rounded border border-amber-200 hidden">
-                        <strong>คำใบ้:</strong> <span id="clue-text"></span>
-                    </div>
-                </div>
-
-                <!-- Options Area (All 30 questions rendered statically/hardcoded structure via JS engine) -->
-                <div id="options-container" class="space-y-3">
-                    <!-- Dynamic Options -->
+                <div class="results-section" id="resultsSection">
+                    <h2>ผลการทดสอบของคุณ</h2>
+                    <div class="score-display" id="scoreDisplay">0 / 30</div>
+                    <div class="analysis-box" id="analysisContent"></div>
                 </div>
             </div>
 
-            <!-- Feedback & Navigation -->
-            <div class="mt-6 pt-4 border-t border-slate-100">
-                <div id="feedback-box" class="mb-4 hidden p-3 rounded-lg text-sm">
-                    <p id="feedback-title" class="font-bold"></p>
-                    <p id="feedback-explanation" class="mt-1 text-slate-600 text-xs leading-relaxed"></p>
-                </div>
-                <div class="flex justify-between items-center">
-                    <button onclick="toggleClue()" class="text-xs bg-amber-100 hover:bg-amber-200 text-amber-800 px-3 py-2 rounded font-semibold transition">
-                        แสดง/ซ่อน คำใบ้
-                    </button>
-                    <button id="next-btn" onclick="nextQuestion()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-2 rounded text-sm font-semibold transition hidden">
-                        ข้อถัดไป
-                    </button>
+            <div class="whiteboard-panel">
+                <h3>
+                    <span id="wbTitle">กระดานทด (Whiteboard)</span>
+                    <button class="wb-btn" onclick="clearWhiteboard()" id="wbClearBtn">ล้างกระดาน</button>
+                </h3>
+                <canvas id="whiteboard"></canvas>
+                <div class="wb-tools">
+                    <button class="wb-btn active" onclick="setTool('pen', this)" id="wbPenBtn">ปากกา</button>
+                    <button class="wb-btn" onclick="setTool.eraser ? setTool('eraser', this) : setTool('eraser', this)" id="wbEraserBtn">ยางลบ</button>
                 </div>
             </div>
         </div>
 
-        <!-- Right Frame: Whiteboard Panel (30% -> lg:col-span-3) -->
-        <div class="lg:col-span-3 bg-white rounded-xl shadow-sm border border-slate-200 p-4 flex flex-col">
-            <div class="flex justify-between items-center mb-2">
-                <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wide">กระดานทดข้อคิด (Whiteboard)</h4>
-                <button onclick="clearCanvas()" class="text-xs text-rose-600 hover:underline">ล้างกระดาน</button>
-            </div>
-            <div class="flex-1 border border-slate-200 rounded-lg overflow-hidden relative min-h-[300px] lg:min-h-[450px]">
-                <canvas id="whiteboard" class="w-full h-full canvas-container cursor-crosshair"></canvas>
-            </div>
-            <p class="text-[10px] text-slate-400 mt-2 text-center">ใช้เมาส์หรือนิ้วลากเพื่อทดเลขหรือเขียนโน้ตระหว่างทำข้อสอบ</p>
-        </div>
+        <footer id="footerText">เขียนโดย พระจอมเกล้าติวเตอร์</footer>
+    </div>
 
-    </main>
-
-    <!-- Script Application Logic -->
     <script>
-        const rawQuestions = [
+        let currentLang = 'TH';
+
+        const translations = {
+            TH: {
+                headerTitle: "คลังข้อสอบเคมี ม.5 ฉบับเข้มข้น (30 ข้อ)",
+                headerSubtitle: "ระบบทดสอบความแม่นยำทฤษฎีบทเคมี ม.5 พร้อมกระดานทดและระบบวิเคราะห์ผลอัจฉริยะ",
+                summaryHeading: "สรุปเนื้อหาและทฤษฎีเคมี ม.5 ฉบับเข้มข้น",
+                tipsHeading: "เทคนิคการจำและกระบวนการคิดจากติวเตอร์",
+                tipsContent: `<strong>เทคนิคที่ 1 (เครื่องมือวัดความแม่นยำสูง):</strong> ท่องว่า "ปิ-บิว-ขวด" (ปิเปต, บิวเรต, ขวดกำหนดปริมาตร) ใช้สำหรับงานวิเคราะห์ที่ต้องการความแม่นยำสูง ห้ามใช้บีกเกอร์เด็ดขาด<br><strong>เทคนิคที่ 2 (ข้อยกเว้น Cr และ Cu):</strong> ธาตุแทรนซิชันคาบ 4 ลงท้ายด้วย $3d^4 4s^2$ และ $3d^9 4s^2$ ให้ดึงอิเล็กตรอนจาก $4s$ มาเติม $d$ ให้เต็มหรือครึ่งหนึ่งเสมอ เป็น $3d^5 4s^1$ และ $3d^{10} 4s^1$<br><strong>เทคนิคที่ 3 (พันธะไฮโดรเจน):</strong> ท่อง "H-FON" คือไฮโดรเจนต้องสร้างพันธะกับ F, O หรือ N เท่านั้น จึงจะเกิดพันธะไฮโดรเจนที่แข็งแรง`,
+                resetBtn: "เริ่มทำใหม่ (Reset)",
+                submitBtn: "ส่งข้อสอบและดูผลวิเคราะห์",
+                wbTitle: "กระดานทด (Whiteboard)",
+                wbClearBtn: "ล้างกระดาน",
+                wbPenBtn: "ปากกา",
+                wbEraserBtn: "ยางลบ",
+                footerText: "เขียนโดย พระจอมเกล้าติวเตอร์"
+            },
+            EN: {
+                headerTitle: "Advanced Grade 11 Chemistry Exam Bank (30 Questions)",
+                headerSubtitle: "Interactive Chemistry Theory Testing System with Whiteboard & Intelligent Analysis",
+                summaryHeading: "Grade 11 Chemistry Comprehensive Summary & Theory",
+                tipsHeading: "Tutor Memory Tricks & Thought Processes",
+                tipsContent: `<strong>Trick 1 (High Precision Equipment):</strong> Remember "Pipette, Burette, Volumetric Flask" for high precision analytical work. Never use beakers for precise volume measurement.<br><strong>Trick 2 (Cr & Cu Exceptions):</strong> Period 4 transition elements with $3d^4 4s^2$ and $3d^9 4s^2$ promote one electron from $4s$ to $3d$, resulting in $3d^5 4s^1$ and $3d^{10} 4s^1$ for maximum stability.<br><strong>Trick 3 (Hydrogen Bonding):</strong> Remember "H-FON" — Hydrogen must bond directly with F, O, or N to form a strong hydrogen bond.`,
+                resetBtn: "Reset Exam",
+                submitBtn: "Submit & Analyze Results",
+                wbTitle: "Whiteboard",
+                wbClearBtn: "Clear",
+                wbPenBtn: "Pen",
+                wbEraserBtn: "Eraser",
+                footerText: "Written by Phra Chom Klao Tutor"
+            }
+        };
+
+        function toggleLanguage() {
+            currentLang = currentLang === 'TH' ? 'EN' : 'TH';
+            document.getElementById('headerTitle').innerText = translations[currentLang].headerTitle;
+            document.getElementById('headerSubtitle').innerText = translations[currentLang].headerSubtitle;
+            document.getElementById('summaryHeading').innerText = translations[currentLang].summaryHeading;
+            document.getElementById('tipsHeading').innerText = translations[currentLang].tipsHeading;
+            document.getElementById('tipsContent').innerHTML = translations[currentLang].tipsContent;
+            document.getElementById('resetBtn').innerText = translations[currentLang].resetBtn;
+            document.getElementById('submitBtn').innerText = translations[currentLang].submitBtn;
+            document.getElementById('wbTitle').childNodes[0].nodeName === '#text' ? (document.getElementById('wbTitle').innerHTML = translations[currentLang].wbTitle + ' <button class="wb-btn" onclick="clearWhiteboard()">' + translations[currentLang].wbClearBtn + '</button>') : null;
+            document.getElementById('wbClearBtn').innerText = translations[currentLang].wbClearBtn;
+            document.getElementById('wbPenBtn').innerText = translations[currentLang].wbPenBtn;
+            document.getElementById('wbEraserBtn').innerText = translations[currentLang].wbEraserBtn;
+            document.getElementById('footerText').innerText = translations[currentLang].footerText;
+            renderExam();
+        }
+
+        // Questions Data Bank (30 Questions)
+        const questionsData = [
             {
-                q_th: "สารเคมีอันตรายตามระบบ GHS ที่มีสัญลักษณ์รูปหลอดทดลองหยดกรดใส่แผ่นโลหะและผิวหนัง ตรงกับความเป็นอันตรายประเภทใด?",
-                q_en: "According to the GHS system, a pictogram showing a substance corroding metal and skin corresponds to which hazard class?",
-                options: [
-                    { t_th: "สารกัดกร่อน (Corrosive)", t_en: "Corrosive", correct: true, expl_th: "สารกัดกร่อนทำลายเนื้อเยื่อและวัสดุโครงสร้างอย่างถาวร", expl_en: "Corrosives permanently damage tissue and structural materials." },
-                    { t_th: "สารไวไฟสูง (Flammable)", t_en: "Flammable", correct: false, expl_th: "สารไวไฟใช้สัญลักษณ์เปลวไฟ", expl_en: "Flammables use a flame symbol." },
-                    { t_th: "สารกัมมันตรังสี", t_en: "Radioactive", correct: false, expl_th: "ใช้สัญลักษณ์แฉกสามแฉก", expl_en: "Uses a trefoil symbol." },
-                    { t_th: "สารก่อมะเร็ง", t_en: "Carcinogen", correct: false, expl_th: "ใช้สัญลักษณ์รูปคนมีดาวกระจายในอก", expl_en: "Uses a health hazard body silhouette." }
-                ],
-                clue: "นึกถึงกรดหรือด่างเข้มข้นที่กัดผิวหนัง"
+                id: 1,
+                category: "Lab Safety",
+                th: {
+                    q: "ข้อใดเป็นเครื่องมือวัดปริมาตรของเหลวที่มีความแม่นยำสูง (High Precision) เหมาะสำหรับการเตรียมสารละลายมาตรฐาน?",
+                    options: ["บีกเกอร์ (Beaker)", "ขวดรูปชมพู่ (Erlenmeyer Flask)", "ขวดกำหนดปริมาตร (Volumetric Flask)", "กระบอกตวงขนาดใหญ่ (Graduated Cylinder)"],
+                    clue: "คำใบ้: ท่องชุดอุปกรณ์ 'ปิ-บิว-ขวด'",
+                    explanation: "เฉลย: ขวดกำหนดปริมาตร (Volumetric Flask) เป็นเครื่องมือวัดปริมาตรความแม่นยำสูง ใช้สำหรับเตรียมสารละลายที่มีความเข้มข้นแน่นอน ส่วนบีกเกอร์และขวดรูปชมพู่ใช้สำหรับผสมหรือใส่สารคร่าวๆ เท่านั้น"
+                },
+                en: {
+                    q: "Which of the following is a high-precision liquid measuring tool suitable for preparing standard solutions?",
+                    options: ["Beaker", "Erlenmeyer Flask", "Volumetric Flask", "Large Graduated Cylinder"],
+                    clue: "Clue: Remember the high-precision set 'Pipette, Burette, Volumetric Flask'.",
+                    explanation: "Answer: Volumetric Flask is designed for precise volume measurement to prepare exact standard solutions. Beakers and flasks are for rough estimates."
+                },
+                answer: 2
             },
             {
-                q_th: "อุปกรณ์วัดปริมาตรในข้อใดให้ความแม่นยำสูงสุด (High Precision) สำหรับการเตรียมสารละลายมาตรฐาน?",
-                q_en: "Which volumetric measuring tool provides high precision for preparing standard solutions?",
-                options: [
-                    { t_th: "ขวดกำหนดปริมาตร (Volumetric Flask)", t_en: "Volumetric Flask", correct: true, expl_th: "ออกแบบมาเพื่อวัดปริมาตรเดี่ยวที่แม่นยำสูงมาก", expl_en: "Designed for a single, highly precise volume measurement." },
-                    { t_th: "บีกเกอร์ (Beaker)", t_en: "Beaker", correct: false, expl_th: "ใช้ผสมหรือใส่สารคร่าวๆ เท่านั้น", expl_en: "Used only for rough mixing." },
-                    { t_th: "ขวดรูปชมพู่ (Erlenmeyer Flask)", t_en: "Erlenmeyer Flask", correct: false, expl_th: "ใช้สำหรับการไทเทรต", expl_en: "Used for titrations." },
-                    { t_th: "กระบอกตวงขนาดใหญ่", t_en: "Large Graduated Cylinder", correct: false, expl_th: "มีความแม่นยำระดับปานกลาง", expl_en: "Moderate precision level." }
-                ],
-                clue: "มีคอขวดแคบและขีดบอกปริมาตรเพียงขีดเดียว"
+                id: 2,
+                category: "Lab Safety",
+                th: {
+                    q: "สัญลักษณ์เตือนภัยตามระบบ GHS รูปวงกลมมีเปลวไฟอยู่ด้านบน หมายถึงข้อใด?",
+                    options: ["สารกัดกร่อน (Corrosive)", "สารไวไฟ (Flammable)", "สารพิษเฉียบพลัน (Acute Toxicity)", "สารก๊าซภายใต้ความดัน (Gas Under Pressure)"],
+                    clue: "คำใบ้: สังเกตสัญลักษณ์เปลวไฟสื่อถึงการติดไฟ",
+                    explanation: "เฉลย: สารไวไฟ (Flammable) มีสัญลักษณ์รูปเปลวไฟ แสดงถึงความสามารถในการติดไฟได้ง่ายเมื่อได้รับความร้อนหรือประกายไฟ"
+                },
+                en: {
+                    q: "What does the GHS hazard symbol featuring a flame inside a circle indicate?",
+                    options: ["Corrosive", "Flammable", "Acute Toxicity", "Gas Under Pressure"],
+                    clue: "Clue: The flame symbol indicates combustion properties.",
+                    explanation: "Answer: Flammable. The flame symbol denotes substances that easily catch fire when exposed to heat or sparks."
+                },
+                answer: 1
             },
             {
-                q_th: "ผลลัพธ์จากการคำนวณเลขนัยสำคัญในการบวกหรือลบ 12.5 + 3.211 ควรมีจำนวนทศนิยมกี่ตำแหน่ง?",
-                q_en: "How many decimal places should the result of 12.5 + 3.211 have according to significant figures rules?",
-                options: [
-                    { t_th: "1 ตำแหน่ง", t_en: "1 decimal place", correct: true, expl_th: "ยึดทศนิยมที่น้อยที่สุดคือ 12.5 (1 ตำแหน่ง)", expl_en: "Based on the fewest decimal places (12.5 has 1)." },
-                    { t_th: "3 ตำแหน่ง", t_en: "3 decimal places", correct: false, expl_th: "ผิดกฎการบวกและลบ", expl_en: "Incorrect for addition/subtraction." },
-                    { t_th: "2 ตำแหน่ง", t_en: "2 decimal places", correct: false, expl_th: "ผิดหลักเลขนัยสำคัญ", expl_en: "Incorrect rule." },
-                    { t_th: "4 ตำแหน่ง", t_en: "4 decimal places", correct: false, expl_th: "เกินความจริง", expl_en: "Too precise." }
-                ],
-                clue: "ยึดตามตัวตั้งที่มีทศนิยมหยาบที่สุด"
+                id: 3,
+                category: "Lab Safety",
+                th: {
+                    q: "ผลลัพธ์จากเครื่องคำนวณแสดงค่าเป็น 12.345 แต่โจทย์กำหนดให้ใช้เลขนัยสำคัญ 3 ตัว ผลลัพธ์ที่ถูกต้องตามหลักการปัดเศษคือข้อใด?",
+                    options: ["12.3", "12.4", "12.35", "12.34"],
+                    clue: "คำใบ้: นับจากซ้ายไปขวาให้ครบ 3 ตำแหน่ง แล้วพิจารณาตัวเลขถัดไป",
+                    explanation: "เฉลย: 12.3 เนื่องจากเลขนัยสำคัญ 3 ตัวแรกคือ 1, 2 และ 3 ตัวเลขถัดไปคือ 4 ซึ่งน้อยกว่า 5 จึงปัดทิ้งเหลือ 12.3"
+                },
+                en: {
+                    q: "A calculator shows 12.345, but the result requires 3 significant figures. What is the correct rounded value?",
+                    options: ["12.3", "12.4", "12.35", "12.34"],
+                    clue: "Clue: Count 3 significant figures from left to right and evaluate the next digit.",
+                    explanation: "Answer: 12.3. The first three significant digits are 1, 2, and 3. Since the following digit (4) is less than 5, it is rounded down."
+                },
+                answer: 0
             },
             {
-                q_th: "เมื่อสารเคมีกระเด็นเข้าตาในห้องปฏิบัติการ ขั้นตอนการปฏิบัติที่ถูกต้องอันดับแรกคืออะไร?",
-                q_en: "What is the immediate correct first-aid step when chemicals splash into the eyes?",
-                options: [
-                    { t_th: "ล้างด้วยน้ำยาล้างตาหรือน้ำสะอาดปริมาณมากอย่างน้อย 15 นาที", t_en: "Flush with eyewash or plenty of clean water for at least 15 minutes", correct: true, expl_th: "การเจือจางด้วยน้ำปริมาณมากช่วยลดความเสียหายต่อเนื้อเยื่อ", expl_en: "Dilution with abundant water minimizes tissue damage." },
-                    { t_th: "ขยี้ตาแรงๆ เพื่อขับสารเคมีออก", t_en: "Rub eyes vigorously", correct: false, expl_th: "จะทำให้สารเคมีแผ่ขยายและทำลายกระจกตาเพิ่มขึ้น", expl_en: "Will spread chemicals and worsen corneal damage." },
-                    { t_th: "หยอดกรดหรือเบสเจือจางเพื่อสะเทินทันที", t_en: "Drop dilute acid/base to neutralize", correct: false, expl_th: "ปฏิกิริยาคายความร้อนจะทำลายตาซ้ำ", expl_en: "Exothermic reaction will cause further damage." },
-                    { t_th: "ใช้ผ้าแห้งเช็ดออกทันที", t_en: "Wipe with a dry cloth", correct: false, expl_th: "ทำลายเนื้อเยื่อตา", expl_en: "Damages eye tissue." }
-                ],
-                clue: "ต้องใช้น้ำปริมาณมากๆ ต่อเนื่อง"
+                id: 4,
+                category: "Lab Safety",
+                th: {
+                    q: "เมื่อเกิดอุบัติเหตุสารเคมีกระเด็นเข้าตาในห้องปฏิบัติการ ขั้นตอนแรกที่ต้องปฏิบัติคือข้อใด?",
+                    options: ["รีบพบแพทย์ทันทีโดยไม่ต้องล้างตา", "ล้างตาด้วยน้ำยาล้างตาหรือน้ำสะอาดปริมาณมากอย่างน้อย 15 นาที", "ใช้น้ำส้มสายชูเจือจางล้างตาเพื่อสะเทินฤทธิ์", "ขยี้ตาแรงๆ เพื่อขับสารเคมีออก"],
+                    clue: "คำใบ้: เจือจางและชะล้างด้วยน้ำสะอาดทันทีเป็นเวลานานพอสมควร",
+                    explanation: "เฉลย: ล้างตาด้วยน้ำยาล้างตาหรือน้ำสะอาดปริมาณมากอย่างน้อย 15 นาที เพื่อลดความเข้มข้นและความเสียหายต่อเนื้อเยื่อดวงตา"
+                },
+                en: {
+                    q: "What is the immediate first-aid action when chemicals splash into the eyes in the laboratory?",
+                    options: ["Rush to a doctor without washing", "Flush eyes with eyewash or copious clean water for at least 15 minutes", "Use dilute vinegar to neutralize", "Rub eyes vigorously"],
+                    clue: "Clue: Dilute and flush with clean water immediately for an extended period.",
+                    explanation: "Answer: Flush eyes with copious clean water or eyewash for at least 15 minutes to minimize tissue damage."
+                },
+                answer: 1
             },
             {
-                q_th: "แบบจำลองอะตอมของธาตุใดที่ค้นพบว่าอะตอมมีนิวเคลียสขนาดเล็ก มีประจุบวก และมีความหนาแน่นสูงตรงกลาง?",
-                q_en: "Which atomic model discovered that the atom has a small, dense, positively charged nucleus?",
-                options: [
-                    { t_th: "แบบจำลองอะตอมของรัทฟอร์ด", t_en: "Rutherford atomic model", correct: true, expl_th: "จากการทดลองยิงอนุภาคแอลฟาผ่านแผ่นทองคำบาง", expl_en: "From the gold foil alpha particle scattering experiment." },
-                    { t_th: "แบบจำลองอะตอมของทอมสัน", t_en: "Thomson atomic model", correct: false, expl_th: "เป็นแบบพุดดิ้ง ประจุบวกกระจายทั่ว", expl_en: "Plum pudding model with distributed positive charge." },
-                    { t_th: "แบบจำลองอะตอมของดอลตัน", t_en: "Dalton atomic model", correct: false, expl_th: "เป็นทรงกลมตันแบ่งแยกไม่ได้", expl_en: "Indivisible solid sphere." },
-                    { t_th: "แบบจำลองกลุ่มหมอกควอนตัม", t_en: "Quantum mechanical model", correct: false, expl_th: "อธิบายด้วยออร์บิทัลความน่าจะเป็น", expl_en: "Describes electron probability orbitals." }
-                ],
-                clue: "ใช้การยิงอนุภาคแอลฟาใส่แผ่นทองคำ"
+                id: 5,
+                category: "Atomic Structure",
+                th: {
+                    q: "นักวิทยาศาสตร์ท่านใดที่เป็นผู้ค้นพบอิเล็กตรอนผ่านการทดลองหลอดรังสีแคโทด?",
+                    options: ["จอห์น ดอลตัน", "เจ.เจ. ทอมสัน", "เซอร์ Ernest Rutherford", "นีลส์ โบร"],
+                    clue: "คำใบ้: เจ้าของแบบจำลองอะตอมพุดดิ้ง (Plum Pudding Model)",
+                    explanation: "เฉลย: เจ.เจ. ทอมสัน ค้นพบอิเล็กตรอนและเสนอแบบจำลองอะตอมว่าประกอบด้วยเนื้อทรงกลมประจุบวกและมีอิเล็กตรอนกระจายอยู่ภายใน"
+                },
+                en: {
+                    q: "Which scientist discovered the electron using cathode ray tube experiments?",
+                    options: ["John Dalton", "J.J. Thomson", "Ernest Rutherford", "Niels Bohr"],
+                    clue: "Clue: Creator of the 'Plum Pudding Model'.",
+                    explanation: "Answer: J.J. Thomson discovered the electron and proposed the plum pudding model of the atom."
+                },
+                answer: 1
             },
             {
-                q_th: "เลขควอนตัมเชิงมุม (l) ของออร์บิทัลชนิด p มีค่าเท่ากับเท่าใด?",
-                q_en: "What is the azimuthal quantum number (l) value for a p orbital?",
-                options: [
-                    { t_th: "1", t_en: "1", correct: true, expl_th: "ค่า l สำหรับ s=0, p=1, d=2, f=3", expl_en: "l values: s=0, p=1, d=2, f=3" },
-                    { t_th: "0", t_en: "0", correct: false, expl_th: "สำหรับออร์บิทัล s", expl_en: "For s orbital." },
-                    { t_th: "2", t_en: "2", correct: false, expl_th: "สำหรับออร์บิทัล d", expl_en: "For d orbital." },
-                    { t_th: "3", t_en: "3", correct: false, expl_th: "สำหรับออร์บิทัล f", expl_en: "For f orbital." }
-                ],
-                clue: "s มีค่า 0, p มีค่าถัดมา"
+                id: 6,
+                category: "Atomic Structure",
+                th: {
+                    q: "การทดลองยิงอนุภาคแอลฟาไปยังแผ่นทองคำบางๆ ของรัทฟอร์ด นำไปสู่ข้อสรุปสำคัญใดเกี่ยวกับโครงสร้างอะตอม?",
+                    options: ["อะตอมมีลักษณะเป็นทรงกลมตัน", "อิเล็กตรอนวิ่งวนรอบนิวเคลียสเป็นวงกลม", "อะตอมมีนิวเคลียสที่มีขนาดเล็กมากแต่มีความหนาแน่นสูงและมีประจุบวกอยู่ตรงกลาง", "อิเล็กตรอนอยู่ในระดับพลังงานที่แน่นอน"],
+                    clue: "คำใบ้: สังเกตว่าอนุภาคแอลฟาบางส่วนเบี่ยงเบนและสะท้อนกลับ",
+                    explanation: "เฉลย: อะตอมมีนิวเคลียสที่มีขนาดเล็กมากแต่มีความหนาแน่นสูงและมีประจุบวกอยู่ตรงกลาง เนื่องจากอนุภาคแอลฟาประจุบวกเกิดการสะท้อนเมื่อกระทบกับนิวเคลียส"
+                },
+                en: {
+                    q: "What major conclusion about atomic structure was derived from Rutherford's alpha particle scattering experiment?",
+                    options: ["Atoms are solid spheres", "Electrons orbit in fixed circles", "Atoms have a tiny, dense, positively charged nucleus at the center", "Electrons exist in definite energy levels"],
+                    clue: "Clue: Note why some alpha particles deflected or bounced back.",
+                    explanation: "Answer: Atoms contain a very small, dense, positively charged nucleus at the center, causing alpha particle repulsion."
+                },
+                answer: 2
             },
             {
-                q_th: "หลักการของเอาฟบาว (Aufbau Principle) กล่าวถึงเรื่องใดเป็นสำคัญ?",
-                q_en: "What is the primary rule stated by the Aufbau Principle?",
-                options: [
-                    { t_th: "บรรจุอิเล็กตรอนในออร์บิทัลที่มีพลังงานต่ำสุดก่อนเสมอ", t_en: "Always fill electrons in the lowest energy orbitals first", correct: true, expl_th: "เพื่อให้ระบบอะตอมเสถียรที่สุด", expl_en: "To maintain maximum stability." },
-                    { t_th: "ห้ามอิเล็กตรอนมีเลขควอนตัมซ้ำกัน 4 ค่า", t_en: "No two electrons can have identical 4 quantum numbers", correct: false, expl_th: "นี่คือหลักการกีดกันของพาวาลี", expl_en: "This is the Pauli Exclusion Principle." },
-                    { t_th: "บรรจุอิเล็กตรอนเดี่ยวให้มากที่สุดก่อนจับคู่", t_en: "Fill singly before pairing", correct: false, expl_th: "นี่คือกฎของฮุนด์", expl_en: "This is Hund's Rule." },
-                    { t_th: "อิเล็กตรอนวงนอกสุดต้องมี 8 ตัว", t_en: "Outermost shell must have 8 electrons", correct: false, expl_th: "นี่คือกฎออกเตต", expl_en: "This is the Octet Rule." }
-                ],
-                clue: "เรียงตามระดับพลังงานจากน้อยไปมาก"
+                id: 7,
+                category: "Atomic Structure",
+                th: {
+                    q: "เลขควอนตัมหลัก ($n$) ทำหน้าที่บอกสิ่งใดในโครงสร้างอะตอม?",
+                    options: ["รูปร่างของออร์บิทัลย่อย", "ระดับพลังงานหลักของอิเล็กตรอน", "ทิศทางออร์บิทัลในปริภูมิ", "ทิศทางการสปินของอิเล็กตรอน"],
+                    clue: "คำใบ้: มีค่าเป็นจำนวนเต็มบวก 1, 2, 3, ... สอดคล้องกับคาบในตารางธาตุ",
+                    explanation: "เฉลย: ระดับพลังงานหลักของอิเล็กตรอน (Principal quantum number) บ่งบอกขนาดและระดับพลังงานหลักของออร์บิทัล"
+                },
+                en: {
+                    q: "What does the principal quantum number ($n$) indicate in atomic structure?",
+                    options: ["Shape of suborbital", "Main energy level of the electron", "Orbital orientation in space", "Electron spin direction"],
+                    clue: "Clue: Takes positive integers 1, 2, 3, ... corresponding to periods in the periodic table.",
+                    explanation: "Answer: Main energy level of the electron. It designates the shell and relative size/energy of the orbital."
+                },
+                answer: 1
             },
             {
-                q_th: "การจัดเรียงอิเล็กตรอนในสถานะพื้นของโครเมียม (Cr, Z=24) ข้อใดถูกต้องตามข้อยกเว้นเสถียรภาพ?",
-                q_en: "What is the correct ground-state electron configuration of Chromium (Cr, Z=24) considering stability exceptions?",
-                options: [
-                    { t_th: "[Ar] 3d⁵ 4s¹", t_en: "[Ar] 3d⁵ 4s¹", correct: true, expl_th: "เกิดจากการบรรจุครึ่ง (Half-filled) ใน d-orbital ทำให้เสถียรสูง", expl_en: "Achieves stability through half-filled d-orbitals." },
-                    { t_th: "[Ar] 3d⁴ 4s²", t_en: "[Ar] 3d⁴ 4s²", correct: false, expl_th: "ไม่เสถียรเท่าแบบบรรจุครึ่ง", expl_en: "Less stable than half-filled." },
-                    { t_th: "[Ar] 3d⁶", t_en: "[Ar] 3d⁶", correct: false, expl_th: "จำนวนอิเล็กตรอนรวมไม่ถูกต้อง", expl_en: "Incorrect total electron count." },
-                    { t_th: "[Kr] 4s² 3d⁴", t_en: "[Kr] 4s² 3d⁴", correct: false, expl_th: "ใช้แก๊สเฉื่อยผิดและจัดเรียงผิด", expl_en: "Incorrect noble gas core." }
-                ],
-                clue: "d มี 5 อิเล็กตรอน (บรรจุครึ่ง)"
+                id: 8,
+                category: "Atomic Structure",
+                th: {
+                    q: "ออร์บิทัลย่อยชนิด $d$ มีค่าเลขควอนตัมเชิงมุม ($l$) เท่าใด และสามารถบรรจุอิเล็กตรอนได้สูงสุดกี่ตัว?",
+                    options: ["$l = 0$, บรรจุได้ 2 ตัว", "$l = 1$, บรรจุได้ 6 ตัว", "$l = 2$, บรรจุได้ 10 ตัว", "$l = 3$, บรรจุได้ 14 ตัว"],
+                    clue: "คำใบ้: $s=0, p=1, d=2, f=3$ และจำนวนอิเล็กตรอนสูงสุดเท่ากับ $2(2l+1)$",
+                    explanation: "เฉลย: $l = 2$ และบรรจุได้สูงสุด 10 ตัว (มี 5 ออร์บิทัลย่อย แต่ละออร์บิทัลจุได้ 2 ตัว)"
+                },
+                en: {
+                    q: "What is the azimuthal quantum number ($l$) for a $d$ suborbital, and what is its maximum electron capacity?",
+                    options: ["$l = 0$, max 2 electrons", "$l = 1$, max 6 electrons", "$l = 2$, max 10 electrons", "$l = 3$, max 14 electrons"],
+                    clue: "Clue: $s=0, p=1, d=2, f=3$ and max electrons = $2(2l+1)$",
+                    explanation: "Answer: $l = 2$ with a maximum of 10 electrons across 5 degenerate orbitals."
+                },
+                answer: 2
             },
             {
-                q_th: "ในคาบเดียวกันของตารางธาตุ เมื่อเลขอะตอมเพิ่มขึ้น ขนาดอะตอมจะมีแนวโน้มอย่างไรเพราะเหตุใด?",
-                q_en: "Across a period in the periodic table, as atomic number increases, atomic radius tends to:",
-                options: [
-                    { t_th: "ลดลง เพราะประจุบวกในนิวเคลียสเพิ่มขึ้นดึงดูดอิเล็กตรอนได้แรงกว่า", t_en: "Decrease, because increased nuclear charge pulls electrons closer", correct: true, expl_th: "แรงดึงดูดจากนิวเคลียสสูงขึ้นดึงกลุ่มหมอกเข้าหาตัว", expl_en: "Greater nuclear attraction pulls the electron cloud inward." },
-                    { t_th: "เพิ่มขึ้น เพราะมีจำนวนอิเล็กตรอนเพิ่มขึ้นมาก", t_en: "Increase, due to more electrons", correct: false, expl_th: "อิเล็กตรอนอยู่ในระดับพลังงานเดิม", expl_en: "Electrons are in the same shell level." },
-                    { t_th: "คงที่ตลอดทั้งคาบ", t_en: "Remain constant", correct: false, expl_th: "ขนาดเปลี่ยนแปลงอย่างเป็นระบบ", expl_en: "Size changes systematically." },
-                    { t_th: "เพิ่มขึ้นแล้วลดลงสลับกัน", t_en: "Increase then decrease alternately", correct: false, expl_th: "มีทิศทางลดลงอย่างชัดเจนจากซ้ายไปขวา", expl_en: "Consistently decreases left to right." }
-                ],
-                clue: "ซ้ายไปขวา ประจุบวกเพิ่มดึงดูดแน่นขึ้น"
+                id: 9,
+                category: "Atomic Structure",
+                th: {
+                    q: "ธาตุโครเมียม ($	ext{Cr}$, เลขอะตอม 24) มีการจัดเรียงอิเล็กตรอนในระดับพลังงานย่อยตามข้อใดที่ถูกต้องและเสถียรที่สุด?",
+                    options: ["$[	ext{Ar}] 3d^4 4s^2$", "$[	ext{Ar}] 3d^5 4s^1$", "$[	ext{Ar}] 3d^6 4s^0$", "$[	ext{Ar}] 3d^3 4s^3$"],
+                    clue: "คำใบ้: การจัดเรียงแบบบรรจุครึ่ง (Half-filled) ของ $d$-orbital มีความเสถียรสูง",
+                    explanation: "เฉลย: $[	ext{Ar}] 3d^5 4s^1$ เนื่องจากอิเล็กตรอน 1 ตัวจาก $4s$ ถูกย้ายมาเติมใน $3d$ ทำให้ $3d$ มี 5 อิเล็กตรอน (บรรจุครึ่งพอดี) ซึ่งเสถียรว่าแบบ $3d^4 4s^2$"
+                },
+                en: {
+                    q: "Which electron configuration is correct and most stable for Chromium ($	ext{Cr}$, atomic number 24)?",
+                    options: ["$[	ext{Ar}] 3d^4 4s^2$", "$[	ext{Ar}] 3d^5 4s^1$", "$[	ext{Ar}] 3d^6 4s^0$", "$[	ext{Ar}] 3d^3 4s^3$"],
+                    clue: "Clue: Half-filled $d$-orbital configurations provide exceptional stability.",
+                    explanation: "Answer: $[	ext{Ar}] 3d^5 4s^1$. One electron promotes from $4s$ to half-fill the $d$ suborbital ($3d^5$), maximizing exchange energy stability."
+                },
+                answer: 1
             },
             {
-                q_th: "พลังงานไอออไนเซชันลำดับที่หนึ่ง (IE1) หมายถึงกระบวนการใดทางเคมี?",
-                q_en: "What does the first ionization energy (IE1) represent?",
-                options: [
-                    { t_th: "พลังงานที่ใช้ดึงอิเล็กตรอนหลุดออกจากอะตอมในสถานะแก๊ส", t_en: "Energy required to remove an electron from a gaseous atom", correct: true, expl_th: "เป็นพลังงานขั้นต่ำในการทำให้เกิดไอออนบวกในสถานะแก๊ส", expl_en: "Minimum energy to form a gaseous cation." },
-                    { t_th: "พลังงานที่คายออกมาเมื่ออะตอมรับอิเล็กตรอน", t_en: "Energy released when an atom gains an electron", correct: false, expl_th: "นี่คือสัมพรรคภาพอิเล็กตรอน (EA)", expl_en: "This is Electron Affinity." },
-                    { t_th: "พลังงานสลายพันธะในโมเลกุลโคเวเลนต์", t_en: "Bond dissociation energy", correct: false, expl_th: "พลังงานพันธะเคมี", expl_en: "Chemical bond energy." },
-                    { t_th: "พลังงานรวมของอิเล็กตรอนในนิวเคลียส", t_en: "Total nuclear energy", correct: false, expl_th: "พลังงานนิวเคลียร์", expl_en: "Nuclear energy." }
-                ],
-                clue: "ดึงอิเล็กตรอนออกจากสถานะแก๊ส"
+                id: 10,
+                category: "Atomic Structure",
+                th: {
+                    q: "กฎของฮุนด์ (Hund's Rule) กล่าวถึงหลักการบรรจุอิเล็กตรอนในออร์บิทัลที่มีระดับพลังงานเท่ากันไว้อย่างไร?",
+                    options: ["ต้องบรรจุคู่กันในออร์บิทัลแรกให้เต็มก่อนเสมอ", "ต้องบรรจุเดี่ยวๆ ในออร์บิทัลย่อยแต่ละตัวให้มากที่สุดก่อนจึงจะจับคู่กัน และมีสปินขนานกัน", "ต้องมีทิศทางสปินตรงกันข้ามกันเสมอในออร์บิทัลเดียวกัน", "ต้องเติมอิเล็กตรอนในระดับพลังงานสูงก่อนเสมอ"],
+                    clue: "คำใบ้: เปรียบเสมือนการขึ้นรถเมล์ นั่งแยกคนละเบาะก่อน",
+                    explanation: "เฉลย: ต้องบรรจุเดี่ยวๆ ในออร์บิทัลย่อยแต่ละตัวให้มากที่สุดก่อนจึงจะจับคู่กัน เพื่อลดแรงผลักระหว่างอิเล็กตรอน"
+                },
+                en: {
+                    q: "What does Hund's Rule state regarding electron filling in degenerate orbitals?",
+                    options: ["Pair up electrons in the first orbital immediately", "Fill orbitals singly with parallel spins as much as possible before pairing", "Always have opposite spins in the same orbital", "Fill higher energy orbitals first"],
+                    clue: "Clue: Think of passengers boarding a bus—seating alone first.",
+                    explanation: "Answer: Electrons occupy degenerate orbitals singly with parallel spins before pairing up to minimize electrostatic repulsion."
+                },
+                answer: 1
             },
             {
-                q_th: "ค่าอิเล็กโทรเนกาติวิตี (EN) มีแนวโน้มอย่างไรในตารางธาตุ?",
-                q_en: "What is the periodic trend for electronegativity (EN)?",
-                options: [
-                    { t_th: "เพิ่มขึ้นจากซ้ายไปขวา และเพิ่มขึ้นจากล่างขึ้นบน", t_en: "Increases from left to right and bottom to top", correct: true, expl_th: "ธาตุฟลูออรีน (F) มีค่า EN สูงที่สุดในตารางธาตุ", expl_en: "Fluorine (F) has the highest EN." },
-                    { t_th: "เพิ่มขึ้นจากขวาไปซ้าย และจากบนลงล่าง", t_en: "Increases from right to left and top to bottom", correct: false, expl_th: "ตรงข้ามกับความเป็นจริง", expl_en: "Opposite of actual trend." },
-                    { t_th: "มีค่าเท่ากันทุกธาตุในหมู่เดียวกัน", t_en: "Constant within a group", correct: false, expl_th: "ลดลงจากบนลงล่าง", expl_en: "Decreases down a group." },
-                    { t_th: "ไม่มีแนวโน้มที่ชัดเจน", t_en: "No clear trend", correct: false, expl_th: "เป็นไปตามขนาดอะตอมและประจุ", expl_en: "Follows atomic size and charge." }
-                ],
-                clue: "พุ่งไปที่มุมขวาบนของตารางธาตุ"
+                id: 11,
+                category: "Periodic Trends",
+                th: {
+                    q: "ในคาบเดียวกันของตารางธาตุ เมื่อพิจารณาจากซ้ายไปขวา ขนาดอะตอมมีแนวโน้มเป็นอย่างไร และเพราะเหตุใด?",
+                    options: ["ใหญ่ขึ้น เนื่องจากมีจำนวนอิเล็กตรอนเพิ่มขึ้น", "เล็กลง เนื่องจากประจุในนิวเคลียสเพิ่มขึ้น ดึงดูดกลุ่มหมอกอิเล็กตรอนเข้าหาตัวได้แรงขึ้น", "ไม่เปลี่ยนแปลง เนื่องจากอยู่ในระดับพลังงานหลักเดียวกัน", "ใหญ่ขึ้นเนื่องจากแรงผลักระหว่างอิเล็กตรอนเพิ่มขึ้น"],
+                    clue: "คำใบ้: จำนวนโปรตอนในนิวเคลียสเพิ่มขึ้นแต่ระดับพลังงานหลักเท่าเดิม",
+                    explanation: "เฉลย: เล็กลง เนื่องจากประจุในนิวเคลียสเพิ่มขึ้นทำให้แรงดึงดูดระหว่างนิวเคลียสกับเวเลนซ์อิเล็กตรอนมีค่าสูงขึ้น ขนาดจึงถูกดึงให้หดตัวลง"
+                },
+                en: {
+                    q: "Across a period in the periodic table from left to right, how does atomic size change and why?",
+                    options: ["Increases due to more electrons", "Decreases due to increasing nuclear charge pulling electron cloud closer", "Remains constant within the same shell", "Increases due to electron-electron repulsion"],
+                    clue: "Clue: Nuclear charge increases while the principal energy level remains constant.",
+                    explanation: "Answer: Decreases. Higher nuclear charge pulls the electron cloud tighter toward the nucleus, reducing atomic radius."
+                },
+                answer: 1
             },
             {
-                q_th: "ออกไซด์ของธาตุในข้อใดที่มีสมบัติเป็นแอมโฟเทอริก (Amphoteric Oxide)?",
-                q_en: "Which oxide exhibits amphoteric properties?",
-                options: [
-                    { t_th: "อะลูมิเนียมออกไซด์ (Al2O3)", t_en: "Aluminum oxide (Al2O3)", correct: true, expl_th: "ทำปฏิกิริยาได้ทั้งกรดและเบส", expl_en: "Reacts with both acids and bases." },
-                    { t_th: "โซเดียมออกไซด์ (Na2O)", t_en: "Sodium oxide (Na2O)", correct: false, expl_th: "มีสมบัติเป็นเบสแก่", expl_en: "Strongly basic oxide." },
-                    { t_th: "คาร์บอนไดออกไซด์ (CO2)", t_en: "Carbon dioxide (CO2)", correct: false, expl_th: "มีสมบัติเป็นกรด", expl_en: "Acidic oxide." },
-                    { t_th: "โพแทสเซียมออกไซด์ (K2O)", t_en: "Potassium oxide (K2O)", correct: false, expl_th: "มีสมบัติเป็นเบส", expl_en: "Basic oxide." }
-                ],
-                clue: "แสดงสมบัติได้ทั้งกรดและเบส เช่นออกไซด์ของ Al หรือ Zn"
+                id: 12,
+                category: "Periodic Trends",
+                th: {
+                    q: "ไอออนบวก (Cation) มีขนาดอะตอมเปรียบเทียบกับอะตอมกลาง (Neutral Atom) ของธาตุชนิดเดียวกันอย่างไร?",
+                    options: ["ใหญ่กว่าเสมอ เพราะสูญเสียโปรตอนไป", "เล็กกว่าเสมอ เพราะเสียอิเล็กตรอนออกไป ทำให้แรงผลักระหว่างอิเล็กตรอนลดลงและแรงดึงดูดจากนิวเคลียสเด่นชัดขึ้น", "เท่ากัน เพราะจำนวนโปรตอนในนิวเคลียสเท่าเดิม", "ขึ้นอยู่กับชนิดของโลหะ"],
+                    clue: "คำใบ้: การเสียอิเล็กตรอนทำให้กลุ่มหมอกหดตัวลง",
+                    explanation: "เฉลย: เล็กกว่าเสมอ เนื่องจากสูญเสียอิเล็กตรอนออกไป 1 หรือหลายตัว ทำให้แรงผลักระหว่างอิเล็กตรอนลดลงและนิวเคลียสดึงดูดอิเล็กตรอนที่เหลือได้ดีขึ้น"
+                },
+                en: {
+                    q: "How does the size of a cation compare to its neutral parent atom?",
+                    options: ["Always larger because protons are lost", "Always smaller because losing electrons reduces repulsion and increases effective nuclear pull", "Equal because nuclear charge is unchanged", "Depends on the metal type"],
+                    clue: "Clue: Losing electrons shrinks the electron cloud.",
+                    explanation: "Answer: Always smaller. Loss of electrons decreases electron-electron repulsion, allowing the nucleus to pull remaining electrons closer."
+                },
+                answer: 1
             },
             {
-                q_th: "พันธะไอออนิกเกิดจากแรงยึดเหนี่ยวลักษณะใดระหว่างอะตอม?",
-                q_en: "An ionic bond is formed by which type of interaction between atoms?",
-                options: [
-                    { t_th: "แรงดึงดูดทางไฟฟ้าสถิตระหว่างไอออนบวกและไอออนลบ", t_en: "Electrostatic attraction between cations and anions", correct: true, expl_th: "เกิดจากการถ่ายโอนอิเล็กตรอนระหว่างโลหะและอโลหะ", expl_en: "Resulting from electron transfer between metal and nonmetal." },
-                    { t_th: "การใช้อิเล็กตรอนคู่ร่วมกัน", t_en: "Sharing electron pairs", correct: false, expl_th: "นี่คือพันธะโคเวเลนต์", expl_en: "This is a covalent bond." },
-                    { t_th: "ทะเลอิเล็กตรอนล้อมรอบไอออนบวก", t_en: "Sea of electrons surrounding positive ions", correct: false, expl_th: "นี่คือพันธะโลหะ", expl_en: "This is a metallic bond." },
-                    { t_th: "แรงยึดเหนี่ยวระหว่างโมเลกุลมีขั้ว", t_en: "Intermolecular polar attraction", correct: false, expl_th: "แรงระหว่างโมเลกุล", expl_en: "Intermolecular force." }
-                ],
-                clue: "แรงดึงดูดระหว่างประจุต่างชนิดกัน"
+                id: 13,
+                category: "Periodic Trends",
+                th: {
+                    q: "ค่าพลังงานไอออนไนเซชันลำดับที่ 1 ($IE_1$) ของธาตุในหมู่เดียวกัน มีแนวโน้มการเปลี่ยนแปลงอย่างไรเมื่อพิจารณาจากบนลงล่าง?",
+                    options: ["เพิ่มขึ้น เพราะขนาดอะตอมใหญ่ขึ้น", "ลดลง เพราะอิเล็กตรอนวงนอกสุดอยู่ห่างจากนิวเคลียสมากขึ้น ถูกดึงดูดน้อยลงและหลุดออกง่ายขึ้น", "ไม่เปลี่ยนแปลง เพราะเวเลนซ์อิเล็กตรอนเท่ากัน", "เพิ่มขึ้นตามมวลอะตอม"],
+                    clue: "คำใบ้: อะตอมขนาดใหญ่ขึ้น ดึงดูดอิเล็กตรอนไว้น้อยลง",
+                    explanation: "เฉลย: ลดลง เนื่องจากขนาดอะตอมใหญ่ขึ้นและมีระดับพลังงานหลักเพิ่มขึ้น ทำให้เวเลนซ์อิเล็กตรอนอยู่ห่างจากนิวเคลียสและหลุดออกได้ง่ายโดยใช้พลังงานน้อยลง"
+                },
+                en: {
+                    q: "How does the first ionization energy ($IE_1$) change down a group in the periodic table?",
+                    options: ["Increases due to larger atomic radius", "Decreases because outer electrons are farther from the nucleus and shielded, requiring less energy to remove", "Remains constant due to same valence electrons", "Increases with atomic mass"],
+                    clue: "Clue: Larger atoms hold outer electrons less tightly.",
+                    explanation: "Answer: Decreases. Increased atomic radius and shielding mean valence electrons are farther from the nucleus and easier to remove."
+                },
+                answer: 1
             },
             {
-                q_th: "ทำไมสารประกอบไอออนิกในสถานะของแข็งจึงไม่นำไฟฟ้า แต่เมื่อหลอมเหลวหรือละลายน้ำจึงนำไฟฟ้าได้ดี?",
-                q_en: "Why do ionic compounds not conduct electricity in solid state, but conduct well when molten or dissolved?",
-                options: [
-                    { t_th: "ในสถานะของแข็งไอออนถูกล็อกไว้ในโครงผลึกเคลื่อนที่ไม่ได้ แต่เมื่อหลอมเหลวไอออนเคลื่อนที่อิสระ", t_en: "Ions are locked in a rigid crystal lattice when solid, but move freely when molten/dissolved", correct: true, expl_th: "การนำไฟฟ้าต้องอาศัยการเคลื่อนที่ของประจุอิสระ", expl_en: "Electrical conduction requires mobile charged particles." },
-                    { t_th: "เพราะในของแข็งไม่มีอิเล็กตรอนอิสระเลย", t_en: "Because solids lack free electrons completely", correct: false, expl_th: "ไอออนมีอยู่แล้วแต่เคลื่อนที่ไม่ได้", expl_en: "Ions exist but cannot move." },
-                    { t_th: "เพราะพันธะไอออนิกสลายตัวกลายเป็นพันธะโลหะ", t_en: "Ionic bonds turn into metallic bonds", correct: false, expl_th: "ไม่ได้เปลี่ยนชนิดพันธะ", expl_en: "Bond type does not change." },
-                    { t_th: "อุณหภูมิทำให้เกิดการสร้างโปรตอนใหม่", t_en: "Temperature creates new protons", correct: false, expl_th: "ผิดหลักการทางฟิสิกส์เคมี", expl_en: "Physicochemical misconception." }
-                ],
-                clue: "พิจารณาการเคลื่อนที่ของไอออนในโครงผลึก"
+                id: 14,
+                category: "Periodic Trends",
+                th: {
+                    q: "การพิจารณาค่าพลังงานไอออนไนเซชันที่กระโดดสูงขึ้นอย่างก้าวกระโดด ($IE_n$ ไป $IE_{n+1}$) สามารถนำไปใช้ประโยชน์ในเรื่องใดได้แม่นยำที่สุด?",
+                    options: ["ระบุมวลอะตอมที่แน่นอน", "ระบุหมู่และจำนวนเวเลนซ์อิเล็กตรอนของธาตุ", "ทำนายจุดเดือดจุดหลอมเหลว", "ทำนายสภาพขั้วของสารละลาย"],
+                    clue: "คำใบ้: จุดที่กระโดดสูงขึ้นหมายถึงการดึงอิเล็กตรอนจากระดับพลังงานชั้นในสุดเสถียร",
+                    explanation: "เฉลย: ระบุหมู่และจำนวนเวเลนซ์อิเล็กตรอนของธาตุ การกระโดดเกิดขึ้นเมื่อดึงอิเล็กตรอนตัวถัดไปหลังจากดึงเวเลนซ์อิเล็กตรอนออกหมดแล้ว"
+                },
+                en: {
+                    q: "What is the most precise application of analyzing sudden jumps in successive ionization energies ($IE_n$ to $IE_{n+1}$)?",
+                    options: ["Determining precise atomic mass", "Identifying group number and valence electrons", "Predicting boiling and melting points", "Predicting solution polarity"],
+                    clue: "Clue: The jump occurs when removing an inner core electron after all valence electrons are gone.",
+                    explanation: "Answer: Identifying group number and valence electrons. A massive energy spike indicates reaching the inner core shell."
+                },
+                answer: 1
             },
             {
-                q_th: "โมเลกุลในข้อใดที่เป็นข้อยกเว้นกฎออกเตตโดยมีอิเล็กตรอนรอบอะตอมกลางน้อยกว่า 8 (Electron-deficient)?",
-                q_en: "Which molecule is an octet rule exception with fewer than 8 electrons around the central atom?",
-                options: [
-                    { t_th: "โบรอนไตรฟลูออไรด์ (BF3)", t_en: "Boron trifluoride (BF3)", correct: true, expl_th: "โบรอนมีอิเล็กตรอนรอบตัวเพียง 6 ตัว", expl_en: "Boron has only 6 valence electrons around it." },
-                    { t_th: "มีเทน (CH4)", t_en: "Methane (CH4)", correct: false, expl_th: "เป็นไปตามกฎออกเตตครบ 8", expl_en: "Follows octet rule with 8." },
-                    { t_th: "แอมโมเนีย (NH3)", t_en: "Ammonia (NH3)", correct: false, expl_th: "ครบ 8", expl_en: "Complete octet." },
-                    { t_th: "ซัลเฟอร์เฮกซะฟลูออไรด์ (SF6)", t_en: "Sulfur hexafluoride (SF6)", correct: false, expl_th: "เป็นแบบเกินออกเตต (Expanded octet)", expl_en: "Expanded octet." }
-                ],
-                clue: "ธาตุหมู่ 3A สร้างพันธะ 3 แขน รอบตัวมี 6"
+                id: 15,
+                category: "Periodic Trends",
+                th: {
+                    q: "ออกไซด์ของธาตุในข้อใดที่มีสมบัติเป็นเบส (Basic Oxide) ตามแนวโน้มตารางธาตุ?",
+                    options: ["$	ext{CO}_2$", "$	ext{SO}_3$", "$	ext{Na}_2	ext{O}$", "$	ext{P}_4	ext{O}_{10}$"],
+                    clue: "คำใบ้: ออกไซด์ของโลหะหมู่ 1 หรือ 2 มักแสดงสมบัติเป็นเบส",
+                    explanation: "เฉลย: $	ext{Na}_2	ext{O}$ (โซเดียมออกไซด์) เป็นออกไซด์ของโลหะหมู่ 1 มีสมบัติเป็นเบส เมื่อละลายน้ำจะให้สารละลายเบส ส่วนตัวเลือกอื่นเป็นออกไซด์อโลหะซึ่งเป็นกรด"
+                },
+                en: {
+                    q: "Which of the following element oxides exhibits basic properties?",
+                    options: ["$	ext{CO}_2$", "$	ext{SO}_3$", "$	ext{Na}_2	ext{O}$", "$	ext{P}_4	ext{O}_{10}$"],
+                    clue: "Clue: Group 1 or 2 metal oxides are typically basic.",
+                    explanation: "Answer: $	ext{Na}_2	ext{O}$ is a Group 1 metal oxide acting as a basic oxide that forms alkaline solutions in water."
+                },
+                answer: 2
             },
             {
-                q_th: "ทฤษฎีการผลักคู่อิเล็กตรอนในวงเวเลนซ์ (VSEPR) ใช้หลักการใดในการทำนายรูปร่างโมเลกุล?",
-                q_en: "What principle does VSEPR theory use to predict molecular geometry?",
-                options: [
-                    { t_th: "คู่อิเล็กตรอนรอบอะตอมกลางจะจัดตัวให้ห่างกันมากที่สุดเพื่อลดแรงผลัก", t_en: "Electron pairs around central atom arrange to maximize distance and minimize repulsion", correct: true, expl_th: "ลดแรงผลักระหว่างกลุ่มอิเล็กตรอนทั้งพันธะและโดดเดี่ยว", expl_en: "Minimizes repulsion between all electron groups." },
-                    { t_th: "อะตอมกลางพยายามดึงอิเล็กตรอนให้เข้าใกล้ตัวเองมากที่สุด", t_en: "Central atom pulls electrons closest to itself", correct: false, expl_th: "ไม่ใช่เกณฑ์ของ VSEPR", expl_en: "Not a VSEPR criterion." },
-                    { t_th: "ใช้ขนาดมวลโมเลกุลมาคำนวณทิศทางแรง", t_en: "Uses molecular mass", correct: false, expl_th: "ไม่เกี่ยวข้องกับมวล", expl_en: "Mass independent." },
-                    { t_th: "แรงดึงดูดระหว่างนิวเคลียสกับโปรตอนข้างเคียง", t_en: "Nucleus-proton attraction", correct: false, expl_th: "ไม่ใช่หลักการรูปร่างโมเลกุล", expl_en: "Irrelevant principle." }
-                ],
-                clue: "คู่อิเล็กตรอนผลักกันให้อยู่ห่างกันที่สุด"
+                id: 16,
+                category: "Chemical Bonding",
+                th: {
+                    q: "พันธะไอออนิกเกิดจากแรงยึดเหนี่ยวประเภทใดระหว่างอะตอม?",
+                    options: ["การใช้อิเล็กตรอนคู่ร่วมกัน", "แรงดึงดูดทางไฟฟ้าสถิตระหว่างไอออนบวกและไอออนลบ", "แรงดึงดูดระหว่างประจุบวกและทะเลอิเล็กตรอนอิสระ", "แรงแผ่กระจายลอนดอนระหว่างโมเลกุล"],
+                    clue: "คำใบ้: เกิดจากการถ่ายโอนอิเล็กตรอนทำให้เกิดประจุตรงข้ามกัน",
+                    explanation: "เฉลย: แรงดึงดูดทางไฟฟ้าสถิตระหว่างไอออนบวกและไอออนลบ เกิดจากการที่โลหะให้เวเลนซ์อิเล็กตรอนแก่อโลหะจนกลายเป็นไอออนที่เสถียร"
+                },
+                en: {
+                    q: "What type of force holds atoms together in an ionic bond?",
+                    options: ["Sharing of electron pairs", "Electrostatic attraction between cations and anions", "Attraction between positive ions and a sea of free electrons", "London dispersion forces"],
+                    clue: "Clue: Formed by electron transfer creating opposite charges.",
+                    explanation: "Answer: Electrostatic attraction between cations and anions resulting from complete electron transfer."
+                },
+                answer: 1
             },
             {
-                q_th: "สมบัติความเหนียว (Malleability and Ductility) ของโลหะ อธิบายได้ด้วยทฤษฎีใด?",
-                q_en: "The malleability and ductility of metals can be explained by which theory?",
-                options: [
-                    { t_th: "ทฤษฎีทะเลอิเล็กตรอน (Sea of Electrons)", t_en: "Sea of Electrons theory", correct: true, expl_th: "อิเล็กตรอนเคลื่อนที่อิสระยึดไอออนบวกให้ไถลผ่านกันได้โดยไม่แตกหัก", expl_en: "Delocalized electrons allow planes of ions to slide without fracturing." },
-                    { t_th: "ทฤษฎีพันธะไอออนิกแบบผลึก", t_en: "Ionic crystal lattice theory", correct: false, expl_th: "ทำให้สารเปราะ", expl_en: "Causes brittleness." },
-                    { t_th: "ทฤษฎีพันธะไฮโดรเจนระหว่างโมเลกุล", t_en: "Intermolecular hydrogen bonding", correct: false, expl_th: "พบในสารประกอบบางชนิด", expl_en: "Found in specific compounds." },
-                    { t_th: "ทฤษฎีออกเตตสมบูรณ์", t_en: "Complete octet theory", correct: false, expl_th: "เกี่ยวข้องกับการจัดเรียงอิเล็กตรอนทั่วไป", expl_en: "General configuration theory." }
-                ],
-                clue: "อิเล็กตรอนอิสระทำหน้าที่เสมือนกาวที่ยืดหยุ่น"
+                id: 17,
+                category: "Chemical Bonding",
+                th: {
+                    q: "ข้อใดกล่าวถึงสมบัติทางกายภาพของสารประกอบไอออนิกได้ถูกต้องที่สุด?",
+                    options: ["นำไฟฟ้าได้ดีเยี่ยมในสถานะของแข็ง", "จุดหลอมเหลวและจุดเดือดต่ำ แข็งแต่เปราะ", "มีจุดหลอมเหลวและจุดเดือดสูง ในสถานะของแข็งไม่นำไฟฟ้า แต่หลอมเหลวหรือละลายน้ำจะนำไฟฟ้า", "ไม่ละลายน้ำในทุกกรณี"],
+                    clue: "คำใบ้: พิจารณาการเคลื่อนที่ของไอออนในสถานะของแข็งและของเหลว",
+                    explanation: "เฉลย: มีจุดหลอมเหลวและจุดเดือดสูง ในสถานะของแข็งไม่นำไฟฟ้า แต่เมื่อหลอมเหลวหรือละลายน้ำจะนำไฟฟ้าได้ดีเนื่องจากไอออนเคลื่อนที่อย่างอิสระ"
+                },
+                en: {
+                    q: "Which statement best describes the physical properties of ionic compounds?",
+                    options: ["Excellent electrical conductors in solid state", "Low melting and boiling points, hard yet brittle", "High melting and boiling points, non-conductive as solids but conductive when molten or dissolved", "Insoluble in water under all conditions"],
+                    clue: "Clue: Consider ion mobility in solid vs. liquid states.",
+                    explanation: "Answer: High melting/boiling points; non-conductive as solids because ions are fixed, but highly conductive when molten or aqueous."
+                },
+                answer: 2
             },
             {
-                q_th: "แรงแผ่กระจายลอนดอน (London Dispersion Forces) เกิดขึ้นจากสาเหตุใดในโมเลกุล?",
-                q_en: "What causes London dispersion forces in molecules?",
-                options: [
-                    { t_th: "การเกิดขั้วชั่วคราวจากการเคลื่อนที่ของกลุ่มหมอกอิเล็กตรอนในโมเลกุลไม่มีขั้ว", t_en: "Temporary dipoles caused by fluctuating electron cloud distribution in nonpolar molecules", correct: true, expl_th: "เป็นแรงยึดเหนี่ยวอ่อนๆ ที่พบในโมเลกุลไม่มีขั้วทุกชนิด", expl_en: "Weak forces present in all nonpolar molecules." },
-                    { t_th: "แรงดึงดูดถาวรระหว่างขั้วบวกและขั้วลบ", t_en: "Permanent dipole-dipole attraction", correct: false, expl_th: "นี่คือแรงระหว่างขั้ว", expl_en: "This is dipole-dipole force." },
-                    { t_th: "พันธะเคมีระหว่างโลหะกับอโลหะ", t_en: "Metal-nonmetal chemical bond", correct: false, expl_th: "ไม่ใช่แรงระหว่างโมเลกุล", expl_en: "Not an intermolecular force." },
-                    { t_th: "การถ่ายโอนโปรตอนระหว่างกรดและเบส", t_en: "Proton transfer", correct: false, expl_th: "ปฏิกิริยาเคมี", expl_en: "Chemical reaction." }
-                ],
-                clue: "เกิดจากขั้วชั่วคราวในโมเลกุลไม่มีขั้ว"
+                id: 18,
+                category: "Chemical Bonding",
+                th: {
+                    q: "โมเลกุลในข้อใดที่เป็นข้อยกเว้นกฎออกเตต โดยมีอิเล็กตรอนรอบอะตอมกลางไม่ครบ 8 ตัว (Incomplete Octet)?",
+                    options: ["$	ext{H}_2	ext{O}$", "$	ext{BF}_3$", "$	ext{PCl}_5$", "$	ext{CH}_4$"],
+                    clue: "คำใบ้: โบรอนในสารประกอบนี้มีเวเลนซ์อิเล็กตรอนรอบตัวเพียง 6 ตัว",
+                    explanation: "เฉลย: $	ext{BF}_3$ (โบรอนไตรฟลูออไรด์) โบรอนมีเวเลนซ์อิเล็กตรอนรอบตัวเพียง 6 ตัว ไม่ครบ 8 ตัวตามกฎออกเตต"
+                },
+                en: {
+                    q: "Which molecule is an exception to the octet rule with an incomplete octet around the central atom?",
+                    options: ["$	ext{H}_2	ext{O}$", "$	ext{BF}_3$", "$	ext{PCl}_5$", "$	ext{CH}_4$"],
+                    clue: "Clue: Boron in this compound has only 6 valence electrons around it.",
+                    explanation: "Answer: $	ext{BF}_3$ (Boron trifluoride). Boron has only 6 surrounding electrons, forming an incomplete octet exception."
+                },
+                answer: 1
             },
             {
-                q_th: "สารในข้อใดที่มีจุดเดือดสูงผิดปกติเนื่องจากมีแรงยึดเหนี่ยวแบบพันธะไฮโดรเจน?",
-                q_en: "Which substance has an abnormally high boiling point due to hydrogen bonding?",
-                options: [
-                    { t_th: "น้ำ (H2O)", t_en: "Water (H2O)", correct: true, expl_th: "เกิดพันธะไฮโดรเจนระหว่างโมเลกุลน้ำที่มีความแข็งแรงสูง", expl_en: "Strong hydrogen bonding between water molecules." },
-                    { t_th: "มีเทน (CH4)", t_en: "Methane (CH4)", correct: false, expl_th: "ไม่มีขั้ว มีเฉพาะแรงลอนดอน", expl_en: "Nonpolar with only dispersion forces." },
-                    { t_th: "ไฮโดรเจนซัลไฟด์ (H2S)", t_en: "Hydrogen sulfide (H2S)", correct: false, expl_th: "EN ของ S ไม่สูงพอจะเกิดพันธะไฮโดรเจน", expl_en: "S doesn't have high enough EN." },
-                    { t_th: "ไฮโดรเจนคลอไรด์ (HCl)", t_en: "Hydrogen chloride (HCl)", correct: false, expl_th: "มีแรงระหว่างขั้วแต่ไม่มีพันธะไฮโดรเจน", expl_en: "Dipole-dipole but no hydrogen bond." }
-                ],
-                clue: "ธาตุ H สร้างพันธะกับ F, O หรือ N"
+                id: 19,
+                category: "Chemical Bonding",
+                th: {
+                    q: "ตามทฤษฎีการผลักคู่อิเล็กตรอนในวงเวเลนซ์ (VSEPR) โมเลกุล $	ext{NH}_3$ มีรูปร่างเรขาคณิตสามมิติเป็นอย่างไร?",
+                    options: ["ทรงสี่หน้า (Tetrahedral)", "พีระมิดฐานสามเหลี่ยม (Trigonal Pyramidal)", "มุมงอ (Bent)", "แบนราบสามเหลี่ยม (Trigonal Planar)"],
+                    clue: "คำใบ้: มีคู่อิเล็กตรอนโดดเดี่ยว 1 คู่และพันธะโคเวเลนต์ 3 คู่บนไนโตรเจน",
+                    explanation: "เฉลย: พีระมิดฐานสามเหลี่ยม (Trigonal Pyramidal) มีการจัดเรียงอิเล็กตรอน 4 ทิศทางแต่มีคู่อิเล็กตรอนโดดเดี่ยว 1 คู่กดทับมุมลงมาทำให้เป็นรูปพีระมิด"
+                },
+                en: {
+                    q: "According to VSEPR theory, what is the three-dimensional molecular geometry of $	ext{NH}_3$?",
+                    options: ["Tetrahedral", "Trigonal Pyramidal", "Bent", "Trigonal Planar"],
+                    clue: "Clue: Nitrogen has 1 lone pair and 3 bonding pairs.",
+                    explanation: "Answer: Trigonal Pyramidal. Four electron domains with one lone pair result in a pyramidal shape."
+                },
+                answer: 1
             },
             {
-                q_th: "ทำไมไอออนบวก (Cation) จึงมีขนาดเล็กกว่าอะตอมกลางที่เป็นกลางทางไฟฟ้า?",
-                q_en: "Why is a cation smaller than its neutral parent atom?",
-                options: [
-                    { t_th: "เพราะเสียอิเล็กตรอนวงนอกสุดไป ทำให้ระดับพลังงานลดลงหรือแรงดึงดูดนิวเคลียสกระชับขึ้น", t_en: "Loss of outer shell electrons reduces shell level and increases effective nuclear pull", correct: true, expl_th: "จำนวนโปรตอนมากกว่าอิเล็กตรอน แรงดึงดูดจึงดึงกลุ่มหมอกเข้าหาตัวได้มากกว่า", expl_en: "Protons outnumber electrons, pulling the cloud closer." },
-                    { t_th: "เพราะโปรตอนถูกดึงออกจากนิวเคลียสด้วย", t_en: "Protons are removed from the nucleus", correct: false, expl_th: "โปรตอนในนิวเคลียสไม่เปลี่ยนแปลง", expl_en: "Nuclear protons remain unchanged." },
-                    { t_th: "เพราะเกิดการผลักกันของอิเล็กตรอนเพิ่มขึ้น", t_en: "Increased electron-electron repulsion", correct: false, expl_th: "นี่คือสาเหตุที่ไอออนลบใหญ่ขึ้น", expl_en: "This causes anions to be larger." },
-                    { t_th: "เพราะมวลอะตอมเพิ่มขึ้นอย่างก้าวกระโดด", t_en: "Sudden atomic mass increase", correct: false, expl_th: "มวลแทบไม่เปลี่ยน", expl_en: "Mass essentially unchanged." }
-                ],
-                clue: "เสียอิเล็กตรอนชั้นนอกสุดออกไป"
+                id: 20,
+                category: "Chemical Bonding",
+                th: {
+                    q: "โมเลกุลในข้อใดจัดเป็นโมเลกุลมีขั้ว (Polar Molecule)?",
+                    options: ["$	ext{CO}_2$", "$	ext{CH}_4$", "$	ext{H}_2	ext{O}$", "$	ext{CCl}_4$"],
+                    clue: "คำใบ้: รูปร่างมุมงอและความสมมาตรที่ไม่หักล้างกันทำให้เกิดสภาพขั้วสุทธิ",
+                    explanation: "เฉลย: $	ext{H}_2	ext{O}$ เป็นโมเลกุลมีขั้ว เนื่องจากมีรูปร่างมุมงอและทิศทางของสภาพขั้วพันธะ O-H รวมกันแล้วไม่หักล้างเป็นศูนย์ ส่วนตัวเลือกอื่นไม่มีขั้วเพราะสมมาตร"
+                },
+                en: {
+                    q: "Which of the following is a polar molecule?",
+                    options: ["$	ext{CO}_2$", "$	ext{CH}_4$", "$	ext{H}_2	ext{O}$", "$	ext{CCl}_4$"],
+                    clue: "Clue: Bent shape and asymmetric dipole vector sum create a net dipole moment.",
+                    explanation: "Answer: $	ext{H}_2	ext{O}$ is polar due to its bent geometry where individual bond dipoles do not cancel out."
+                },
+                answer: 2
             },
             {
-                q_th: "กฎของฮุนด์ (Hund's Rule) กำหนดวิธีการบรรจุอิเล็กตรอนในออร์บิทัลระดับพลังงานเท่ากันไว้อย่างไร?",
-                q_en: "How does Hund's Rule dictate filling electrons in degenerate orbitals?",
-                options: [
-                    { t_th: "ต้องบรรจุอิเล็กตรอนเดี่ยวให้มากที่สุดในออร์บิทัลที่มีพลังงานเท่ากันก่อนจึงจะจับคู่", t_en: "Fill degenerate orbitals singly as much as possible before pairing", correct: true, expl_th: "และอิเล็กตรอนเดี่ยวเหล่านั้นต้องมีทิศทางสปินเดียวกัน", expl_en: "And these unpaired electrons must have parallel spins." },
-                    { t_th: "ต้องบรรจุให้เต็มคู่ในออร์บิทัลแรกก่อนแล้วจึงขยับไปออร์บิทัลถัดไป", t_en: "Fill pairs completely in the first orbital first", correct: false, expl_th: "ผิดหลักการของฮุนด์", expl_en: "Violates Hund's rule." },
-                    { t_th: "บรรจุสลับทิศทางสปินบวกและลบในออร์บิทัลเดียวกันทันที", t_en: "Alternate spins immediately", correct: false, expl_th: "เกิดแรงผลักสูงเกินไป", expl_en: "Causes excessive repulsion." },
-                    { t_th: "อิเล็กตรอนทุกตัวต้องมีสปินเหมือนกันทั้งหมดในทุกระดับพลังงาน", t_en: "All electrons must have identical spin everywhere", correct: false, expl_th: "ผิดหลักการพาวาลี", expl_en: "Violates Pauli's principle." }
-                ],
-                clue: "ห้องใครห้องมันก่อน แล้วค่อยอยู่ร่วมห้องเดียวกัน"
+                id: 21,
+                category: "Chemical Bonding",
+                th: {
+                    q: "พันธะโลหะอธิบายด้วยทฤษฎีใด และสมบัติเด่นของโลหะข้อใดที่สอดคล้องกับทฤษฎีนี้มากที่สุด?",
+                    options: ["ทฤษฎีออร์บิทัลเชิงโมเลกุล - จุดเดือดสูง", "ทฤษฎีทะเลอิเล็กตรอน - นำความร้อนและนำไฟฟ้าได้ดีเยี่ยม", "ทฤษฎีออกเตต - แข็งและเปราะ", "ทฤษฎี VSEPR - มีผิวมันวาว"],
+                    clue: "คำใบ้: อิเล็กตรอนเคลื่อนที่อิสระไปทั่วก้อนโลหะ",
+                    explanation: "เฉลย: ทฤษฎีทะเลอิเล็กตรอน - นำความร้อนและนำไฟฟ้าได้ดีเยี่ยม เนื่องจากเวเลนซ์อิเล็กตรอนหลุดเป็นอิสระและเคลื่อนที่พาความร้อนและกระแสไฟฟ้าผ่านไปได้"
+                },
+                en: {
+                    q: "Which theory explains metallic bonding, and which metallic property best aligns with it?",
+                    options: ["Molecular Orbital Theory - high boiling point", "Sea of Electrons Theory - excellent thermal and electrical conductivity", "Octet Rule - hard and brittle", "VSEPR Theory - shiny surface"],
+                    clue: "Clue: Electrons move freely throughout the metal lattice.",
+                    explanation: "Answer: Sea of Electrons Theory - excellent thermal and electrical conductivity due to mobile delocalized electrons."
+                },
+                answer: 1
             },
             {
-                q_th: "โมเลกุลในข้อใดที่มีรูปร่างโมเลกุลเป็นแบบ “ทรงสี่เหลี่ยมหน้าจั่วหรือพีระมิดคู่ฐานสามเหลี่ยม (Trigonal Bipyramidal)”?",
-                q_en: "Which molecule has a trigonal bipyramidal molecular geometry?",
-                options: [
-                    { t_th: "ฟอสฟอรัสเพนทาคลอไรด์ (PCl5)", t_en: "Phosphorus pentachloride (PCl5)", correct: true, expl_th: "มีคู่อิเล็กตรอนรอบอะตอมกลาง 5 กลุ่ม ไม่มีคู่อิเล็กตรอนโดดเดี่ยว", expl_en: "5 bonding pairs, 0 lone pairs around central atom." },
-                    { t_th: "มีเทน (CH4)", t_en: "Methane (CH4)", correct: false, expl_th: "มีรูปร่างทรงสี่เหลี่ยมหน้าจั่ว (Tetrahedral)", expl_en: "Tetrahedral geometry." },
-                    { t_th: "ซัลเฟอร์เฮกซะฟลูออไรด์ (SF6)", t_en: "Sulfur hexafluoride (SF6)", correct: false, expl_th: "ทรงแปดหน้า (Octahedral)", expl_en: "Octahedral geometry." },
-                    { t_th: "คาร์บอนไดออกไซด์ (CO2)", t_en: "Carbon dioxide (CO2)", correct: false, expl_th: "เส้นตรง (Linear)", expl_en: "Linear geometry." }
-                ],
-                clue: "รอบอะตอมกลางมี 5 แขนพอดี"
+                id: 22,
+                category: "Chemical Bonding",
+                th: {
+                    q: "แรงยึดเหนี่ยวระหว่างโมเลกุลชนิดใดที่มีความแข็งแรงสูงที่สุดและส่งผลให้สารมีจุดเดือดสูงผิดปกติ?",
+                    options: ["แรงแผ่กระจายลอนดอน (London Dispersion Forces)", "แรงระหว่างขั้ว (Dipole-Dipole Forces)", "พันธะไฮโดรเจน (Hydrogen Bond)", "แรงไอออน-ดิโพล (Ion-Dipole Forces)"],
+                    clue: "คำใบ้: เกิดเมื่อ H สร้างพันธะกับ F, O หรือ N เท่านั้น",
+                    explanation: "เฉลย: พันธะไฮโดรเจน เป็นแรงยึดเหนี่ยวระหว่างโมเลกุลที่มีขั้วสูงมาก เกิดจาก H สร้างพันธะกับ F, O หรือ N ทำให้จุดเดือดสูงกว่าสารโครงสร้างใกล้เคียงกัน"
+                },
+                en: {
+                    q: "Which type of intermolecular force is the strongest and causes anomalously high boiling points?",
+                    options: ["London Dispersion Forces", "Dipole-Dipole Forces", "Hydrogen Bond", "Ion-Dipole Forces"],
+                    clue: "Clue: Occurs exclusively when H bonds to F, O, or N.",
+                    explanation: "Answer: Hydrogen Bond. Strong dipole interactions when H is bonded to F, O, or N lead to unusually high boiling points."
+                },
+                answer: 2
             },
             {
-                q_th: "ธาตุ X มีเลขอะตอม 17 จะจัดอยู่ในหมู่และคาบใดในตารางธาตุ?",
-                q_en: "Element X has atomic number 17. Which group and period does it belong to?",
-                options: [
-                    { t_th: "หมู่ 7A, คาบ 3", t_en: "Group 7A, Period 3", correct: true, expl_th: "จัดเรียงเป็น 2, 8, 7 มีเวเลนซ์อิเล็กตรอน 7 อยู่ระดับพลังงานที่ 3", expl_en: "Configuration 2,8,7 means 7 valence electrons, 3 shells." },
-                    { t_th: "หมู่ 5A, คาบ 3", t_en: "Group 5A, Period 3", correct: false, expl_th: "จำนวนเวเลนซ์อิเล็กตรอนไม่ตรง", expl_en: "Incorrect valence count." },
-                    { t_th: "หมู่ 7A, คาบ 2", t_en: "Group 7A, Period 2", correct: false, expl_th: "คาบหมายถึงจำนวนระดับพลังงาน", expl_en: "Incorrect shell number." },
-                    { t_th: "หมู่ 8A, คาบ 3", t_en: "Group 8A, Period 3", correct: false, expl_th: "เป็นธาตุแก๊สมีตระกูลที่มี Z=18", expl_en: "Describes Z=18." }
-                ],
-                clue: "จัดเรียงแบบ 2, 8, 7"
+                id: 23,
+                category: "Chemical Bonding",
+                th: {
+                    q: "สารในข้อใดที่โมเลกุลยึดเหนี่ยวกันด้วย 'แรงแผ่กระจายลอนดอน' เพียงอย่างเดียว?",
+                    options: ["$	ext{H}_2	ext{O}$", "$	ext{NH}_3$", "$	ext{CH}_4$", "$	ext{HCl}$"],
+                    clue: "คำใบ้: พิจารณาโมเลกุลไม่มีขั้วทรงสมมาตร",
+                    explanation: "เฉลย: $	ext{CH}_4$ (มีเทน) เป็นโมเลกุลโคเวเลนต์ไม่มีขั้ว รูปร่างทรงสี่หน้าสมมาตร แรงยึดเหนี่ยวระหว่างโมเลกุลจึงเป็นแรงแผ่กระจายลอนดอนเท่านั้น"
+                },
+                en: {
+                    q: "Which substance's molecules are held together exclusively by London dispersion forces?",
+                    options: ["$	ext{H}_2	ext{O}$", "$	ext{NH}_3$", "$	ext{CH}_4$", "$	ext{HCl}$"],
+                    clue: "Clue: Identify the symmetric nonpolar molecule.",
+                    explanation: "Answer: $	ext{CH}_4$ (Methane) is a symmetrical nonpolar molecule, meaning London dispersion forces are its only intermolecular forces."
+                },
+                answer: 2
             },
             {
-                q_th: "พลังงานไอออไนเซชันลำดับที่เท่าใดของอะตอมโซเดียม (Na, Z=11) ที่คาดว่าจะสูงขึ้นอย่างก้าวกระโดดมากที่สุด?",
-                q_en: "Which ionization energy of Sodium (Na, Z=11) is expected to show a drastic jump?",
-                options: [
-                    { t_th: "IE2", t_en: "IE2", correct: true, expl_th: "เพราะอิเล็กตรอนตัวที่สองต้องดึงออกจากระดับพลังงานชั้นใน (Core electrons) ที่เสถียรมาก", expl_en: "The second electron is removed from a stable inner noble gas core." },
-                    { t_th: "IE1", t_en: "IE1", correct: false, expl_th: "ดึงเวเลนซ์อิเล็กตรอนตัวแรกออกง่าย", expl_en: "First electron is easily removed." },
-                    { t_th: "IE5", t_en: "IE5", correct: false, expl_th: "อยู่ลึกเกินไป ไม่ใช่จุดเปลี่ยนชั้นพลังงานหลัก", expl_en: "Incorrect shell boundary." },
-                    { t_th: "IE11", t_en: "IE11", correct: false, expl_th: "เป็นการดึงอิเล็กตรอนตัวสุดท้าย", expl_en: "Removing the last core electron." }
-                ],
-                clue: "โซเดียมมีเวเลนซ์อิเล็กตรอน 1 ตัว เมื่อดึงตัวที่ 2 จะเจอชั้นในสุด"
+                id: 24,
+                category: "Atomic Structure",
+                th: {
+                    q: "เลขควอนตัมแม่เหล็ก ($m_l$) ทำหน้าที่บ่งบอกสิ่งใดของอิเล็กตรอนในออร์บิทัล?",
+                    options: ["ระดับพลังงานหลัก", "รูปร่างเรขาคณิตของออร์บิทัลย่อย", "ทิศทางออร์บิทัลในปริภูมิสามมิติ", "ทิศทางการหมุนรอบตัวเองของอิเล็กตรอน"],
+                    clue: "คำใบ้: มีค่าตั้งแต่ $-l$ ถึง $+l$ รวมถึง 0",
+                    explanation: "เฉลย: ทิศทางออร์บิทัลในปริภูมิสามมิติ บ่งบอกว่าอิเล็กตรอนอยู่ในออร์บิทัลย่อยทิศทางใด (เช่น บนแกน x, y หรือ z)"
+                },
+                en: {
+                    q: "What does the magnetic quantum number ($m_l$) specify regarding an electron orbital?",
+                    options: ["Main energy level", "Geometric shape of subshell", "Orbital orientation in three-dimensional space", "Electron spin direction"],
+                    clue: "Clue: Ranges from $-l$ to $+l$ including 0.",
+                    explanation: "Answer: Orbital orientation in three-dimensional space, designating specific spatial orientations for subshell orbitals."
+                },
+                answer: 2
             },
             {
-                q_th: "สารประกอบในข้อใดที่มีพันธะทั้งไอออนิกและโคเวเลนต์อยู่ในโมเลกุลเดียวกัน?",
-                q_en: "Which compound contains both ionic and covalent bonds within its structure?",
-                options: [
-                    { t_th: "แอมโมเนียมคลอไรด์ (NH4Cl)", t_en: "Ammonium chloride (NH4Cl)", correct: true, expl_th: "ไอออนแอมโมเนียม ($\text{NH}_4^+$) ยึดกับคลอไรด์ไอออน ($\text{Cl}^-$) ด้วยพันธะไอออนิก แต่ภายในไอออนแอมโมเนียมเป็นพันธะโคเวเลนต์", expl_en: "Ionic bond between NH4+ and Cl-, with covalent N-H bonds inside." },
-                    { t_th: "โซเดียมคลอไรด์ (NaCl)", t_en: "Sodium chloride (NaCl)", correct: false, expl_th: "มีเฉพาะพันธะไอออนิก", expl_en: "Purely ionic." },
-                    { t_th: "คาร์บอนไดออกไซด์ (CO2)", t_en: "Carbon dioxide (CO2)", correct: false, expl_th: "มีเฉพาะพันธะโคเวเลนต์", expl_en: "Purely covalent." },
-                    { t_th: "น้ำ (H2O)", t_en: "Water (H2O)", correct: false, expl_th: "มีเฉพาะพันธะโคเวเลนต์", expl_en: "Purely covalent." }
-                ],
-                clue: "มองหาเกลือที่มีกลุ่มไอออน polyatomic เช่น แอมโมเนียมหรือไนเตรต"
+                id: 25,
+                category: "Periodic Trends",
+                th: {
+                    q: "ค่าอิเล็กโทรเนกาติวิตี ($EN$) ของธาตุมีแนวโน้มอย่างไรเมื่อเคลื่อนที่จากซ้ายไปขวาในคาบเดียวกัน และจากล่างขึ้นบนในหมู่เดียวกัน?",
+                    options: ["ลดลงทั้งสองทิศทาง", "เพิ่มขึ้นเมื่อไปทางขวา และเพิ่มขึ้นเมื่อขึ้นด้านบน", "เพิ่มขึ้นเมื่อไปทางขวา แต่ลดลงเมื่อขึ้นด้านบน", "ลดลงเมื่อไปทางขวา แต่เพิ่มขึ้นเมื่อขึ้นด้านบน"],
+                    clue: "คำใบ้: ฟลูออรีน (F) อยู่ขวาบนสุดเป็นธาตุที่มีค่า EN สูงที่สุด",
+                    explanation: "เฉลย: เพิ่มขึ้นเมื่อไปทางขวา และเพิ่มขึ้นเมื่อขึ้นด้านบน เนื่องจากขนาดอะตอมเล็กลงและประจุในนิวเคลียสมีอำนาจดึงดูดอิเล็กตรอนคู่ร่วมพันธะสูงขึ้น"
+                },
+                en: {
+                    q: "What is the trend for electronegativity ($EN$) across a period from left to right and up a group?",
+                    options: ["Decreases in both directions", "Increases to the right and increases upwards", "Increases to the right, decreases upwards", "Decreases to the right, increases upwards"],
+                    clue: "Clue: Fluorine (F) at the top right has the highest EN.",
+                    explanation: "Answer: Increases to the right and increases upwards as atomic radii decrease and effective nuclear attraction for bonding electrons strengthens."
+                },
+                answer: 1
             },
             {
-                q_th: "โมเลกุลของน้ำ ($\text{H}_2\text{O}$) มีมุมพันธะประมาณเท่าใด และเพราะเหตุใดจึงแคบกว่ามุมทรงสี่เหลี่ยมหน้าจั่วปกติ (109.5°)?",
-                q_en: "What is the approximate bond angle of water ($\text{H}_2\text{O}$), and why is it smaller than 109.5°?",
-                options: [
-                    { t_th: "104.5° เพราะมีคู่อิเล็กตรอนโดดเดี่ยว 2 คู่ที่ออกแรงผลักกันมากกว่าคู่อิเล็กตรอนร่วมพันธะ", t_en: "104.5° due to strong repulsion from 2 lone pairs", correct: true, expl_th: "แรงผลักของ Lone pair-Lone pair > Lone pair-Bonding pair > Bonding pair-Bonding pair", expl_en: "Lone pairs exert greater repulsion, compressing the bond angle." },
-                    { t_th: "180.0° เพราะเป็นเส้นตรง", t_en: "180.0° because it's linear", correct: false, expl_th: "น้ำไม่ได้มีรูปร่างเส้นตรง", expl_en: "Water is not linear." },
-                    { t_th: "120.0° เพราะมี 3 กลุ่มอิเล็กตรอน", t_en: "120.0° due to 3 groups", correct: false, expl_th: "มี 4 กลุ่มอิเล็กตรอนรอบออกซิเจน", expl_en: "Has 4 electron groups." },
-                    { t_th: "109.5° เท่ากับมีเทนพอดี", t_en: "109.5° equal to methane", correct: false, expl_th: "ถูกแรงผลักของอิเล็กตรอนโดดเดี่ยวบีบลง", expl_en: "Compressed by lone pairs." }
-                ],
-                clue: "มีคู่อิเล็กตรอนอิสระบนออกซิเจน 2 คู่บีบมุมลงมาเหลือ 104.5°"
+                id: 26,
+                category: "Lab Safety",
+                th: {
+                    q: "ในการคำนวณเลขนัยสำคัญ เมื่อนำตัวเลขสองจำนวนมาคูณหรือหารกัน ผลลัพธ์สุดท้ายควรมีเลขนัยสำคัญตามข้อใด?",
+                    options: ["เท่ากับจำนวนตำแหน่งทศนิยมที่น้อยที่สุด", "เท่ากับจำนวนเลขนัยสำคัญที่มีค่าน้อยที่สุดในข้อมูลตั้งต้น", "เท่ากับจำนวนเลขนัยสำคัญที่มีค่ามากที่สุด", "ปัดเป็นจำนวนเต็มเสมอ"],
+                    clue: "คำใบ้: การคูณหารยึด 'จำนวนตัวเลขรวม' ที่น้อยที่สุด",
+                    explanation: "เฉลย: เท่ากับจำนวนเลขนัยสำคัญที่มีค่าน้อยที่สุดในข้อมูลตั้งต้น เช่น $2.5 	imes 1.23 = 3.1$ (ตอบเลขนัยสำคัญ 2 ตัวตาม 2.5)"
+                },
+                en: {
+                    q: "When multiplying or dividing measured values, how many significant figures should the final result contain?",
+                    options: ["Equal to the fewest decimal places", "Equal to the fewest significant figures among the measured values", "Equal to the greatest significant figures", "Always rounded to the nearest integer"],
+                    clue: "Clue: Multiplication/division follows the 'least total count' rule.",
+                    explanation: "Answer: Equal to the fewest significant figures among the given data values."
+                },
+                answer: 1
             },
             {
-                q_th: "พลังงานพันธะ (Bond Energy) และความยาวพันธะมีความสัมพันธ์กันอย่างไรในทางเคมี?",
-                q_en: "What is the relationship between bond energy and bond length?",
-                options: [
-                    { t_th: "พันธะสั้นจะมีพลังงานพันธะสูงและมีความแข็งแรงมาก", t_en: "Shorter bonds have higher bond energy and greater strength", correct: true, expl_th: "ระยะห่างน้อยทำให้แรงดึงดูดระหว่างนิวเคลียสกับอิเล็กตรอนคู่ร่วมพันธะสูงมาก", expl_en: "Shorter distance means stronger electrostatic attraction." },
-                    { t_th: "พันธะยาวจะมีพลังงานพันธะสูงกว่า", t_en: "Longer bonds have higher energy", correct: false, expl_th: "ตรงข้ามกับความเป็นจริง", expl_en: "Opposite of actual trend." },
-                    { t_th: "ความยาวพันธะไม่ส่งผลต่อพลังงานพันธะ", t_en: "Length does not affect energy", correct: false, expl_th: "มีความสัมพันธ์โดยตรง", expl_en: "Directly correlated." },
-                    { t_th: "พันธะสามจะยาวที่สุดและอ่อนที่สุด", t_en: "Triple bonds are longest and weakest", correct: false, expl_th: "พันธะสามสั้นและแข็งแรงที่สุด", expl_en: "Triple bonds are shortest and strongest." }
-                ],
-                clue: "ยิ่งสั้น ยิ่งแน่น ยิ่งต้องใช้พลังงานมากในการทำลาย"
+                id: 27,
+                category: "Chemical Bonding",
+                th: {
+                    q: "สารประกอบในข้อใดที่มีพันธะไอออนิกและพันธะโคเวเลนต์อยู่ในโมเลกุลเดียวกัน?",
+                    options: ["$	ext{NaCl}$", "$	ext{NH}_4	ext{Cl}$", "$	ext{CO}_2$", "$	ext{H}_2	ext{SO}_4$"],
+                    clue: "คำใบ้: สังเกตไอออนบวก polyatomic ion ที่ยึดกับไอออนลบด้วยพันธะไอออนิก แต่ภายในไอออนเป็นพันธะโคเวเลนต์",
+                    explanation: "เฉลย: $	ext{NH}_4	ext{Cl}$ (แอมโมเนียมคลอไรด์) ประกอบด้วยไอออนแอมโมเนียม ($	ext{NH}_4^+$) ซึ่งอะตอมยึดกันด้วยพันธะโคเวเลนต์ และไอออนบวกนี้ยึดกับคลอไรด์ไอออน ($	ext{Cl}^-$) ด้วยพันธะไอออนิก"
+                },
+                en: {
+                    q: "Which compound contains both ionic and covalent bonds within its structure?",
+                    options: ["$	ext{NaCl}$", "$	ext{NH}_4	ext{Cl}$", "$	ext{CO}_2$", "$	ext{H}_2	ext{SO}_4$"],
+                    clue: "Clue: Look for a polyatomic ion held by covalent bonds attached ionically to a counter-ion.",
+                    explanation: "Answer: $	ext{NH}_4	ext{Cl}$ (Ammonium chloride). The ammonium ion features internal covalent bonds, while $	ext{NH}_4^+$ and $	ext{Cl}^-$ interact via ionic bonding."
+                },
+                answer: 1
             },
             {
-                q_th: "สารประกอบในข้อใดที่มีจุดเดือดต่ำที่สุดเนื่องจากยึดเหนี่ยวกันด้วยแรงลอนดอนเท่านั้น?",
-                q_en: "Which substance has the lowest boiling point due solely to London dispersion forces?",
-                options: [
-                    { t_th: "มีเทน ($\text{CH}_4$)", t_en: "Methane ($\text{CH}_4$)", correct: true, expl_th: "เป็นโมเลกุลไม่มีขั้วขนาดเล็ก มีแรงลอนดอนอ่อนมาก", expl_en: "Small nonpolar molecule with weak dispersion forces." },
-                    { t_th: "น้ำ ($\text{H}_2\text{O}$)", t_en: "Water ($\text{H}_2\text{O}$)", correct: false, expl_th: "มีพันธะไฮโดรเจน จุดเดือดสูง", expl_en: "Has hydrogen bonding." },
-                    { t_th: "แอมโมเนีย ($\text{NH}_3$)", t_en: "Ammonia ($\text{NH}_3$)", correct: false, expl_th: "มีพันธะไฮโดรเจน", expl_en: "Has hydrogen bonding." },
-                    { t_th: "ไฮโดรเจนฟลูออไรด์ ($\text{HF}$)", t_en: "Hydrogen fluoride ($\text{HF}$)", correct: false, expl_th: "มีพันธะไฮโดรเจนแรงสูง", expl_en: "Strong hydrogen bonding." }
-                ],
-                clue: "มองหาไฮโดรคาร์บอนโมเลกุลเล็กไม่มีขั้ว"
+                id: 28,
+                category: "Atomic Structure",
+                th: {
+                    q: "เลขควอนตัมสปิน ($m_s$) มีค่าที่เป็นไปได้กี่ค่า และบอกข้อมูลสำคัญใด?",
+                    options: ["1 ค่า คือ $+1$", "2 ค่า คือ $+rac{1}{2}$ และ $-rac{1}{2}$ บอกทิศทางการหมุนรอบตัวเองของอิเล็กตรอน", "3 ค่า คือ $-1, 0, +1$", "4 ค่า คือ $0, 1, 2, 3$"],
+                    clue: "คำใบ้: สปินขึ้นหรือสปินลงในหนึ่งออร์บิทัล",
+                    explanation: "เฉลย: 2 ค่า คือ $+rac{1}{2}$ และ $-rac{1}{2}$ บอกทิศทางการหมุนรอบตัวเองของอิเล็กตรอนในแต่ละออร์บิทัลตามหลักการกีดกันของพาวาลี"
+                },
+                en: {
+                    q: "How many possible values does the spin quantum number ($m_s$) have, and what does it indicate?",
+                    options: ["1 value (+1)", "2 values ($+rac{1}{2}$ and $-rac{1}{2}$), indicating electron spin direction", "3 values ($-1, 0, +1$)", "4 values ($0, 1, 2, 3$)"],
+                    clue: "Clue: Spin-up or spin-down in a single orbital.",
+                    explanation: "Answer: 2 values ($+rac{1}{2}$ and $-rac{1}{2}$), indicating the intrinsic spin angular momentum direction of the electron."
+                },
+                answer: 1
             },
             {
-                q_th: "ข้อใดกล่าวถึงสมบัติของสารประกอบไอออนิกได้ถูกต้องสมบูรณ์ที่สุด?",
-                q_en: "Which statement correctly describes the properties of ionic compounds?",
-                options: [
-                    { t_th: "มีจุดหลอมเหลวและจุดเดือดสูง แข็งแต่เปราะ", t_en: "High melting/boiling points, hard yet brittle", correct: true, expl_th: "แรงยึดเหนี่ยวไฟฟ้าสถิตระหว่างไอออนแข็งแรงมาก เมื่อถูกแรงกระแทกไอออนประจุเดียวกันจะผลักกันทำให้ผลึกแตก", expl_en: "Strong electrostatic forces cause high melting points; like charges repel upon impact causing fracture." },
-                    { t_th: "นำไฟฟ้าได้ดีเยี่ยมในสถานะของแข็ง", t_en: "Conducts electricity very well in solid state", correct: false, expl_th: "ของแข็งไม่นำไฟฟ้า", expl_en: "Solids do not conduct." },
-                    { t_th: "มีสถานะเป็นแก๊สที่อุณหภูมิห้องทุกชนิด", t_en: "Gaseous at room temperature", correct: false, expl_th: "ส่วนใหญ่เป็นของแข็งผลึก", expl_en: "Mostly crystalline solids." },
-                    { t_th: "ละลายในตัวทำละลายไม่มีขั้วได้ดีเยี่ยม", t_en: "Dissolves well in nonpolar solvents", correct: false, expl_th: "ละลายในตัวทำละลายมีขั้วเช่นน้ำ", expl_en: "Dissolves in polar solvents like water." }
-                ],
-                clue: "นึกถึงเกลือแกงที่มีลักษณะแข็งแต่ทุบให้แตกหักง่าย"
+                id: 29,
+                category: "Periodic Trends",
+                th: {
+                    q: "ไอออนลบ (Anion) มีขนาดอะตอมเปรียบเทียบกับอะตอมกลาง (Neutral Atom) ของธาตุเดียวกันอย่างไร และเพราะเหตุใด?",
+                    options: ["เล็กกว่า เพราะจำนวนโปรตอนเพิ่มขึ้น", "ใหญ่กว่า เพราะมีการรับอิเล็กตรอนเพิ่มเข้ามา ทำให้เกิดแรงผลักระหว่างอิเล็กตรอนมากขึ้น ขยายกลุ่มหมอกให้ใหญ่ขึ้น", "เท่ากัน เพราะระดับพลังงานหลักไม่เปลี่ยน", "เล็กกว่าเพราะประจุสุทธิเป็นลบ"],
+                    clue: "คำใบ้: การรับอิเล็กตรอนเพิ่มทำให้แรงผลักในกลุ่มหมอกสูงขึ้น",
+                    explanation: "เฉลย: ใหญ่กว่า เนื่องจากมีการรับอิเล็กตรอนเพิ่มเข้ามาทำให้เกิดแรงผลักระหว่างอิเล็กตรอนมากขึ้น กลุ่มหมอกอิเล็กตรอนจึงขยายตัวกว้างขึ้นกว่าเดิม"
+                },
+                en: {
+                    q: "How does the size of an anion compare to its neutral parent atom, and why?",
+                    options: ["Smaller due to increased protons", "Larger because added electrons increase repulsion, expanding the electron cloud", "Equal because the principal shell is constant", "Smaller because net charge is negative"],
+                    clue: "Clue: Adding electrons increases internal repulsion within the cloud.",
+                    explanation: "Answer: Larger. Gaining electrons increases electron-electron repulsion, expanding the overall size of the electron cloud."
+                },
+                answer: 1
+            },
+            {
+                id: 30,
+                category: "Chemical Bonding",
+                th: {
+                    q: "โมเลกุลในข้อใดมีรูปร่างเรขาคณิตเป็นแบบ 'เส้นตรง' (Linear)?",
+                    options: ["$	ext{H}_2	ext{O}$", "$	ext{NH}_3$", "$	ext{CO}_2$", "$	ext{SO}_2$"],
+                    clue: "คำใบ้: อะตอมกลางไม่มีคู่อิเล็กตรอนโดดเดี่ยวและสร้างพันธะคู่สองด้านสมมาตร",
+                    explanation: "เฉลย: $	ext{CO}_2$ (คาร์บอนไดออกไซด์) อะตอมกลางคาร์บอนสร้างพันธะคู่กับออกซิเจนทั้งสองข้าง ไม่มีคู่อิเล็กตรอนโดดเดี่ยว รูปร่างจึงเป็นเส้นตรงมุม 180 องศา"
+                },
+                en: {
+                    q: "Which molecule has a linear molecular geometry?",
+                    options: ["$	ext{H}_2	ext{O}$", "$	ext{NH}_3$", "$	ext{CO}_2$", "$	ext{SO}_2$"],
+                    clue: "Clue: Central atom has no lone pairs and forms symmetric double bonds on both sides.",
+                    explanation: "Answer: $	ext{CO}_2$ (Carbon dioxide). Carbon has no lone pairs and forms two symmetrical double bonds with oxygen, creating a 180-degree linear shape."
+                },
+                answer: 2
             }
         ];
 
-        let questions = [];
-        let currentIdx = 0;
-        let score = 0;
-        let userAnswers = [];
-        let isThai = true;
-        let showClueFlag = false;
+        let userAnswers = {};
+        let shuffledQuestions = [];
 
-        // Fisher-Yates Shuffle Algorithm
-        function shuffleArray(array) {
-            let currentIndex = array.length, randomIndex;
-            while (currentIndex !== 0) {
-                randomIndex = Math.floor(Math.random() * currentIndex);
-                currentIndex--;
-                [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
-            }
-            return array;
-        }
-
+        // Fisher-Yates Shuffle Algorithm for Questions and Options
         function initExam() {
-            // Load state from localStorage if exists, else initialize
-            const savedState = localStorage.getItem('pc_exam_state');
-            if (savedState) {
-                try {
-                    const data = JSON.parse(savedState);
-                    questions = data.questions;
-                    currentIdx = data.currentIdx;
-                    score = data.score;
-                    userAnswers = data.userAnswers;
-                    isThai = data.isThai;
-                } catch (e) {
-                    setupNewExam();
-                }
-            } else {
-                setupNewExam();
-            }
-            renderQuestion();
-        }
+            // Shuffle questions order
+            shuffledQuestions = [...questionsData];
+            shuffleArray(shuffledQuestions);
 
-        function setupNewExam() {
-            // Deep clone and shuffle questions and options
-            questions = JSON.parse(JSON.stringify(rawQuestions));
-            shuffleArray(questions);
-            questions.forEach(q => {
-                shuffleArray(q.options);
-            });
-            currentIdx = 0;
-            score = 0;
-            userAnswers = new Array(questions.length).fill(null);
-            isThai = true;
-            saveState();
-        }
-
-        function saveState() {
-            const state = {
-                questions,
-                currentIdx,
-                score,
-                userAnswers,
-                isThai
-            };
-            localStorage.setItem('pc_exam_state', JSON.stringify(state));
-        }
-
-        function toggleLanguage() {
-            isThai = !isThai;
-            const btn = document.getElementById('lang-btn');
-            btn.innerText = isThai ? "Language: ไทย" : "Language: EN";
-            saveState();
-            renderQuestion();
-        }
-
-        function toggleClue() {
-            const clueContainer = document.getElementById('clue-container');
-            showClueFlag = !showClueFlag;
-            if (showClueFlag) {
-                clueContainer.classList.remove('hidden');
-                document.getElementById('clue-text').innerText = questions[currentIdx].clue;
-            } else {
-                clueContainer.classList.add('hidden');
-            }
-        }
-
-        function renderQuestion() {
-            if (currentIdx >= questions.length) {
-                renderResultSummary();
-                return;
-            }
-
-            const q = questions[currentIdx];
-            document.getElementById('progress-indicator').innerText = `ข้อที่ ${currentIdx + 1} / ${questions.length}`;
-            document.getElementById('score-indicator').innerText = `คะแนนสะสม: ${score}`;
-            document.getElementById('question-text').innerText = `${currentIdx + 1}. ${isThai ? q.q_th : q.q_en}`;
-
-            // Reset clue view
-            showClueFlag = false;
-            document.getElementById('clue-container').classList.add('hidden');
-            document.getElementById('feedback-box').classList.add('hidden');
-            document.getElementById('next-btn').classList.add('hidden');
-
-            const optionsContainer = document.getElementById('options-container');
-            optionsContainer.innerHTML = '';
-
-            q.options.forEach((opt, idx) => {
-                const btn = document.createElement('button');
-                btn.className = "w-full text-left p-3 rounded-lg border border-slate-200 hover:border-indigo-500 hover:bg-indigo-50/50 transition text-sm font-medium flex items-center justify-between group";
-                btn.innerHTML = `<span><strong class="mr-2 text-indigo-600">${String.fromCharCode(65 + idx)}.</strong> ${isThai ? opt.t_th : opt.t_en}</span>`;
+            // Shuffle options for each question while keeping track of correct answer index
+            shuffledQuestions.forEach(q => {
+                let optionsLang = currentLang === 'TH' ? q.th.options : q.en.options;
+                let originalCorrectText = optionsLang[q.answer];
                 
-                // If already answered in this session
-                if (userAnswers[currentIdx] !== null) {
-                    btn.disabled = true;
-                    if (opt.correct) {
-                        btn.className = "w-full text-left p-3 rounded-lg border border-emerald-500 bg-emerald-50 text-emerald-900 text-sm font-medium flex items-center justify-between";
-                    } else if (userAnswers[currentIdx] === idx) {
-                        btn.className = "w-full text-left p-3 rounded-lg border border-rose-500 bg-rose-50 text-rose-900 text-sm font-medium flex items-center justify-between";
-                    }
-                } else {
-                    btn.onclick = () => selectAnswer(idx);
-                }
-                optionsContainer.appendChild(btn);
+                // Create index array and shuffle
+                let indices = [0, 1, 2, 3];
+                shuffleArray(indices);
+                
+                let newOptions = indices.map(i => optionsLang[i]);
+                let newCorrectIndex = indices.indexOf(q.answer);
+
+                q.shuffledOptions = newOptions;
+                q.newAnswer = newCorrectIndex;
             });
 
-            if (userAnswers[currentIdx] !== null) {
-                showFeedback(userAnswers[currentIdx]);
+            renderExam();
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                let j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
             }
         }
 
-        function selectAnswer(selectedOptIdx) {
-            const q = questions[currentIdx];
-            userAnswers[currentIdx] = selectedOptIdx;
-            const isCorrect = q.options[selectedOptIdx].correct;
-            if (isCorrect) {
-                score++;
-            }
-            saveState();
-            renderQuestion();
+        function renderExam() {
+            const container = document.getElementById('examContainer');
+            container.innerHTML = '';
+
+            shuffledQuestions.forEach((q, index) => {
+                let qText = currentLang === 'TH' ? q.th.q : q.en.q;
+                let clueText = currentLang === 'TH' ? q.th.clue : q.en.clue;
+
+                let card = document.createElement('div');
+                card.className = 'question-card';
+                card.id = `q-card-${q.id}`;
+
+                let optionsHTML = '';
+                q.shuffledOptions.forEach((opt, optIdx) => {
+                    let isSelected = userAnswers[q.id] === optIdx;
+                    optionsHTML += `
+                        <div class="option-item ${isSelected ? 'selected' : ''}" 
+                             id="opt-${q.id}-${optIdx}" 
+                             onclick="selectOption(${q.id}, ${optIdx})">
+                            ${String.fromCharCode(65 + optIdx)}. ${opt}
+                        </div>
+                    `;
+                });
+
+                card.innerHTML = `
+                    <div class="question-title">ข้อที่ ${index + 1}: ${qText}</div>
+                    <button class="clue-toggle" onclick="toggleClue(${q.id})">${currentLang === 'TH' ? '💡 แสดง/ซ่อนคำใบ้' : '💡 Toggle Clue'}</button>
+                    <div class="clue-box" id="clue-${q.id}">${clueText}</div>
+                    <div class="options-list">${optionsHTML}</div>
+                    <div class="explanation-box" id="exp-${q.id}"></div>
+                `;
+                container.appendChild(card);
+            });
         }
 
-        function showFeedback(selectedOptIdx) {
-            const q = questions[currentIdx];
-            const opt = q.options[selectedOptIdx];
-            const feedbackBox = document.getElementById('feedback-box');
-            const feedbackTitle = document.getElementById('feedback-title');
-            const feedbackExplanation = document.getElementById('feedback-explanation');
-
-            feedbackBox.classList.remove('hidden');
-            document.getElementById('next-btn').classList.remove('hidden');
-
-            if (opt.correct) {
-                feedbackBox.className = "mb-4 p-3 rounded-lg text-sm bg-emerald-50 border border-emerald-200 text-emerald-900";
-                feedbackTitle.innerText = "🎉 ถูกต้องยอดเยี่ยม!";
-            } else {
-                feedbackBox.className = "mb-4 p-3 rounded-lg text-sm bg-rose-50 border border-rose-200 text-rose-900";
-                feedbackTitle.innerText = "❌ ยังไม่ถูกต้อง!";
-            }
-
-            feedbackExplanation.innerText = isThai ? opt.expl_th : opt.expl_en;
+        function toggleClue(qId) {
+            let box = document.getElementById(`clue-${qId}`);
+            box.style.display = box.style.display === 'block' ? 'none' : 'block';
         }
 
-        function nextQuestion() {
-            currentIdx++;
-            saveState();
-            renderQuestion();
-        }
-
-        function renderResultSummary() {
-            const leftFrame = document.querySelector('.lg\\:col-span-7');
-            const percentage = Math.round((score / questions.length) * 100);
+        function selectOption(qId, optIdx) {
+            userAnswers[qId] = optIdx;
             
-            let weaknessAnalysis = "";
-            if (percentage >= 80) {
-                weaknessAnalysis = "คุณมีความเข้าใจในเนื้อหาทฤษฎีเคมี ม.5 อย่างยอดเยี่ยม ทั้งส่วนความปลอดภัย อะตอม และพันธะเคมี สามารถต่อยอดโจทย์แข่งขันระดับสูงได้ทันที";
-            } else if (percentage >= 50) {
-                weaknessAnalysis = "คุณมีความเข้าใจในระดับปานกลาง จุดที่ควรกลับไปทบทวนเพิ่มเติมคือ ข้อยกเว้นการจัดเรียงอิเล็กตรอน (เช่น Cr, Cu), พลังงานไอออไนเซชัน ($IE$) และรูปร่างโมเลกุลตามทฤษฎี VSEPR";
-            } else {
-                weaknessAnalysis = "ควรกลับไปทบทวนพื้นฐานตั้งแต่โครงสร้างอะตอม เลขควอนตัม กฎออกเตต และแรงยึดเหนี่ยวระหว่างโมเลกุลอย่างละเอียดอีกครั้งเพื่อความแม่นยำในการสอบจริง";
+            // Update UI selection state
+            let qObj = shuffledQuestions.find(q => q.id === qId);
+            qObj.shuffledOptions.forEach((_, idx) => {
+                let optEl = document.getElementById(`opt-${qId}-${idx}`);
+                if (optEl) {
+                    optEl.style.background = idx === optIdx ? '#e0f2fe' : '#fff';
+                    optEl.style.borderColor = idx === optIdx ? '#3b82f6' : '#e2e8f0';
+                }
+            });
+
+            // Save to LocalStorage
+            localStorage.setItem('chemistry_exam_answers', JSON.stringify(userAnswers));
+        }
+
+        function submitExam() {
+            let score = 0;
+            let weakAreas = { "Lab Safety": 0, "Atomic Structure": 0, "Periodic Trends": 0, "Chemical Bonding": 0 };
+            let totalAreas = { "Lab Safety": 0, "Atomic Structure": 0, "Periodic Trends": 0, "Chemical Bonding": 0 };
+
+            shuffledQuestions.forEach((q) => {
+                totalAreas[q.category]++;
+                let userAns = userAnswers[q.id];
+                let expBox = document.getElementById(`exp-${q.id}`);
+                let explanationText = currentLang === 'TH' ? q.th.explanation : q.en.explanation;
+
+                expBox.style.display = 'block';
+
+                // Highlight correct and incorrect options
+                q.shuffledOptions.forEach((_, optIdx) => {
+                    let optEl = document.getElementById(`opt-${q.id}-${optIdx}`);
+                    if (optIdx === q.newAnswer) {
+                        optEl.className = 'option-item correct';
+                    } else if (optIdx === userAns && userAns !== q.newAnswer) {
+                        optEl.className = 'option-item incorrect';
+                    }
+                });
+
+                if (userAns === q.newAnswer) {
+                    score++;
+                    weakAreas[q.category]++;
+                }
+
+                expBox.innerHTML = `<strong>${currentLang === 'TH' ? 'เฉลยและคำอธิบาย' : 'Explanation'}:</strong> ${explanationText}`;
+            });
+
+            // Display results
+            document.getElementById('resultsSection').style.display = 'block';
+            document.getElementById('scoreDisplay').innerText = `${score} / 30`;
+
+            let analysisHTML = `
+                <h4>${currentLang === 'TH' ? '📊 สรุปผลการวิเคราะห์สมรรถนะรายหมวดหมู่' : '📊 Performance Analysis by Category'}</h4>
+            `;
+
+            for (let cat in totalAreas) {
+                let correctCount = weakAreas[cat];
+                let totalCount = totalAreas[cat];
+                let percentage = Math.round((correctCount / totalCount) * 100);
+                let statusColor = percentage >= 70 ? 'var(--success)' : 'var(--error)';
+                let statusText = percentage >= 70 ? (currentLang === 'TH' ? 'ดีเยี่ยม (Strong)' : 'Strong') : (currentLang === 'TH' ? 'ควรทบทวนเพิ่มเติม (Needs Improvement)' : 'Needs Improvement');
+
+                analysisHTML += `
+                    <p><strong>${cat}:</strong> ทำได้ ${correctCount}/${totalCount} (${percentage}%) - <span style="color: ${statusColor}; font-weight: bold;">${statusText}</span></p>
+                `;
             }
 
-            leftFrame.innerHTML = `
-                <div class="text-center py-8 space-y-6">
-                    <div class="inline-flex items-center justify-center w-20 h-20 bg-indigo-100 text-indigo-700 rounded-full text-2xl font-bold shadow-inner">
-                        ${score}/${questions.length}
-                    </div>
-                    <div>
-                        <h2 class="text-2xl font-bold text-slate-800">สรุปผลการประเมินการทดสอบ</h2>
-                        <p class="text-slate-600 text-sm mt-1">คะแนนที่คุณทำได้คิดเป็น <span class="font-bold text-indigo-600">${percentage}%</span></p>
-                    </div>
-                    
-                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 text-left space-y-3">
-                        <h4 class="font-bold text-slate-700 text-sm">📊 บทวิเคราะห์ผลลัพธ์โดย พระจอมเกล้าติวเตอร์:</h4>
-                        <p class="text-xs text-slate-600 leading-relaxed"><strong>จุดเด่น:</strong> มีความตั้งใจและสามารถทำแบบทดสอบเชิงวิเคราะห์ครบทั้ง 30 ข้อตามมาตรฐานหลักสูตรแกนกลาง</p>
-                        <p class="text-xs text-slate-600 leading-relaxed"><strong>จุดด้อยและข้อเสนอแนะ:</strong> ${weaknessAnalysis}</p>
-                    </div>
+            let strengths = [];
+            let weaknesses = [];
+            for (let cat in totalAreas) {
+                let percentage = (weakAreas[cat] / totalAreas[cat]) * 100;
+                if (percentage >= 70) strengths.push(cat);
+                else weaknesses.push(cat);
+            }
 
-                    <div class="pt-4">
-                        <button onclick="resetExam()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-8 py-2.5 rounded-lg font-semibold text-sm transition shadow">
-                            ทำแบบทดสอบใหม่อีกครั้ง
-                        </button>
-                    </div>
-                </div>
+            analysisHTML += `
+                <h4>${currentLang === 'TH' ? '🌟 จุดเด่น (Strengths)' : '🌟 Strengths'}</h4>
+                <p>${strengths.length > 0 ? (currentLang === 'TH' ? `คุณมีความเข้าใจเป็นอย่างดีในหมวดหมู่: ${strengths.join(', ')} มีทักษะการวิเคราะห์ทฤษฎีที่แม่นยำ` : `Strong understanding in: ${strengths.join(', ')}`) : (currentLang === 'TH' ? 'ต้องพยายามฝึกฝนเพิ่มเติมในทุกหมวดหมู่' : 'Needs further practice across all categories')}</p>
+                
+                <h4>${currentLang === 'TH' ? '🎯 จุดด้อยและคำแนะนำในการปรับปรุง (Weaknesses & Recommendations)' : '🎯 Weaknesses & Recommendations'}</h4>
+                <p>${weaknesses.length > 0 ? (currentLang === 'TH' ? `ควรกลับไปทบทวนเนื้อหาและทฤษฎีบทในหมวดหมู่: ${weaknesses.join(', ')} โดยเน้นการทำความเข้าใจกลไกและฝึกฝนโจทย์เพิ่มเติม` : `Review theory and concepts in: ${weaknesses.join(', ')} with additional practice problems.`) : (currentLang === 'TH' ? 'ยอดเยี่ยม! คุณทำคะแนนได้ดีเยี่ยมในทุกหมวดหมู่' : 'Excellent! Outstanding performance across all categories.')}</p>
             `;
+
+            document.getElementById('analysisContent').innerHTML = analysisHTML;
+            window.scrollTo({ top: document.getElementById('resultsSection').offsetTop, behavior: 'smooth' });
         }
 
         function resetExam() {
-            localStorage.removeItem('pc_exam_state');
-            setupNewExam();
-            location.reload();
+            userAnswers = {};
+            localStorage.removeItem('chemistry_exam_answers');
+            document.getElementById('resultsSection').style.display = 'none';
+            initExam();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        // Whiteboard Drawing Logic
+        // Whiteboard Implementation
         const canvas = document.getElementById('whiteboard');
         const ctx = canvas.getContext('2d');
         let painting = false;
+        let currentTool = 'pen';
+
+        function resizeCanvas() {
+            canvas.width = canvas.parentElement.clientWidth - 40;
+            canvas.height = 400;
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+
+        window.addEventListener('load', resizeCanvas);
+        window.addEventListener('resize', resizeCanvas);
 
         function startPosition(e) {
             painting = true;
@@ -657,45 +1156,51 @@
 
         function draw(e) {
             if (!painting) return;
-            ctx.lineWidth = 2;
+            ctx.lineWidth = currentTool === 'eraser' ? 20 : 3;
             ctx.lineCap = 'round';
-            ctx.strokeStyle = '#4338ca';
+            ctx.strokeStyle = currentTool === 'eraser' ? '#ffffff' : '#1e3a8a';
 
-            const rect = canvas.getBoundingClientRect();
-            const clientX = e.clientX || (e.touches && e.touches[0].clientX);
-            const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+            let rect = canvas.getBoundingClientRect();
+            let x = (e.clientX || e.touches[0].clientX) - rect.left;
+            let y = (e.clientY || e.touches[0].clientY) - rect.top;
 
-            ctx.lineTo(clientX - rect.left, clientY - rect.top);
+            ctx.lineTo(x, y);
             ctx.stroke();
             ctx.beginPath();
-            ctx.moveTo(clientX - rect.left, clientY - rect.top);
+            ctx.moveTo(x, y);
         }
 
-        function clearCanvas() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        function clearWhiteboard() {
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
         }
 
-        // Resize canvas correctly
-        function resizeCanvas() {
-            const container = canvas.parentElement;
-            canvas.width = container.clientWidth;
-            canvas.height = container.clientHeight;
+        function setTool(tool, btn) {
+            currentTool = tool;
+            document.querySelectorAll('.wb-tools .wb-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
         }
 
-        window.addEventListener('resize', resizeCanvas);
         canvas.addEventListener('mousedown', startPosition);
         canvas.addEventListener('mouseup', endPosition);
         canvas.addEventListener('mousemove', draw);
+
         canvas.addEventListener('touchstart', startPosition);
         canvas.addEventListener('touchend', endPosition);
         canvas.addEventListener('touchmove', draw);
 
-        // Initialize on load
-        window.onload = () => {
-            resizeCanvas();
+        // Load saved answers from LocalStorage on startup
+        window.addEventListener('DOMContentLoaded', () => {
+            let saved = localStorage.getItem('chemistry_exam_answers');
+            if (saved) {
+                try {
+                    userAnswers = JSON.parse(saved);
+                } catch(e) {
+                    userAnswers = {};
+                }
+            }
             initExam();
-        };
+        });
     </script>
 </body>
 </html>
-เขียนโดย พระจอมเกล้าติวเตอร์
