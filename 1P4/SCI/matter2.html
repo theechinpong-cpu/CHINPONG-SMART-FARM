@@ -1,0 +1,1153 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบสอบออนไลน์ - วัสดุและสสาร | พระจอมเกล้าติวเตอร์</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #34495e;
+            --accent: #3498db;
+            --success: #27ae60;
+            --danger: #c0392b;
+            --warning: #f39c12;
+            --light: #f8f9fa;
+            --dark: #2c3e50;
+            --border: #dcdde1;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #f0f2f5; color: #333; line-height: 1.6; }
+        
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        header h1 { font-size: 1.8rem; margin-bottom: 5px; }
+        header p { font-size: 0.95rem; opacity: 0.9; }
+
+        .container {
+            max-width: 1400px;
+            margin: 20px auto;
+            padding: 0 15px;
+        }
+
+        /* Summary Section */
+        .summary-card {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        .summary-card h2 { color: var(--primary); margin-bottom: 15px; border-bottom: 2px solid var(--accent); padding-bottom: 8px; font-size: 1.4rem; }
+        .summary-card p { margin-bottom: 12px; text-align: justify; }
+        .memory-box {
+            background: #e8f4fd;
+            border-left: 5px solid var(--accent);
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 0 8px 8px 0;
+        }
+        .memory-box h3 { color: var(--accent); margin-bottom: 8px; font-size: 1.1rem; }
+
+        /* Main App Layout (70% exam, 30% whiteboard) */
+        .app-layout {
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
+        }
+        .exam-panel {
+            flex: 0 0 70%;
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        .whiteboard-panel {
+            flex: 0 0 calc(30% - 20px);
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            position: sticky;
+            top: 20px;
+        }
+
+        /* Controls / Navbar inside exam */
+        .exam-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border);
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .btn {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+        .btn:hover { background: #2980b9; }
+        .btn-danger { background: var(--danger); }
+        .btn-danger:hover { background: #a93226; }
+        .btn-success { background: var(--success); }
+        .btn-success:hover { background: #229954; }
+
+        /* Question Item */
+        .question-card {
+            background: #fafbfc;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .question-title {
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: var(--dark);
+            margin-bottom: 12px;
+        }
+        .options-list {
+            list-style: none;
+            margin-bottom: 15px;
+        }
+        .option-item {
+            background: white;
+            border: 1px solid var(--border);
+            padding: 10px 15px;
+            margin-bottom: 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .option-item:hover {
+            background: #f1f2f6;
+            border-color: var(--accent);
+        }
+        .option-item.selected {
+            background: #ebf5fb;
+            border-color: var(--accent);
+            font-weight: 600;
+        }
+        .option-item.correct {
+            background: #d4efdf !important;
+            border-color: var(--success) !important;
+            color: #145a32;
+        }
+        .option-item.incorrect {
+            background: #fadbd8 !important;
+            border-color: var(--danger) !important;
+            color: #78281f;
+        }
+
+        .clue-btn {
+            background: #f39c12;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            margin-top: 5px;
+        }
+        .clue-box {
+            background: #fef9e7;
+            border: 1px dashed #f39c12;
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            display: none;
+        }
+        .explanation-box {
+            background: #eaf2f8;
+            border-left: 4px solid var(--accent);
+            padding: 12px;
+            margin-top: 12px;
+            border-radius: 0 6px 6px 0;
+            font-size: 0.95rem;
+            display: none;
+        }
+
+        /* Whiteboard */
+        .whiteboard-panel h3 { font-size: 1.1rem; color: var(--primary); margin-bottom: 10px; }
+        #whiteboard {
+            width: 100%;
+            height: 350px;
+            border: 2px dashed var(--border);
+            border-radius: 6px;
+            background: #fff;
+            cursor: crosshair;
+            touch-action: none;
+        }
+        .wb-tools {
+            display: flex;
+            gap: 5px;
+            margin-top: 10px;
+        }
+
+        /* Results Modal / Section */
+        #result-section {
+            display: none;
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            text-align: center;
+            margin-top: 20px;
+        }
+        #result-section h2 { color: var(--primary); margin-bottom: 15px; }
+        .score-display {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--accent);
+            margin: 15px 0;
+        }
+        .analysis-box {
+            text-align: left;
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        .analysis-box h4 { color: var(--primary); margin-bottom: 10px; }
+        .analysis-box ul { padding-left: 20px; }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: #7f8c8d;
+            font-size: 0.9rem;
+            margin-top: 30px;
+            border-top: 1px solid var(--border);
+        }
+
+        @media (max-width: 900px) {
+            .app-layout { flex-direction: column; }
+            .exam-panel, .whiteboard-panel { flex: 1 1 100%; width: 100%; }
+            .whiteboard-panel { position: static; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>ระบบทดสอบออนไลน์: หน่วยการเรียนรู้ที่ 4 วัสดุและสสาร</h1>
+        <p>สร้างกระบวนการคิดวิเคราะห์ตามมาตรฐานการเรียนรู้ระดับมัธยมศึกษา</p>
+    </header>
+
+    <div class="container">
+        <!-- สรุปเนื้อหา 500 คำขึ้นไป พร้อมเทคนิคการจำ -->
+        <div class="summary-card">
+            <h2>สรุปสาระสำคัญ: วัสดุและสสารในชีวิตประจำวัน</h2>
+            <p>ในชีวิตประจำวันของเราเต็มไปด้วยสิ่งของเครื่องใช้ที่ทำมาจากวัสดุที่หลากหลาย ซึ่งวัสดุเหล่านี้ (Materials) คือสสารหรือวัตถุที่นำมาใช้ทำสิ่งของต่างๆ โดยเราสามารถจำแนกประเภทของวัสดุออกตามแหล่งที่มาได้เป็น วัสดุธรรมชาติ เช่น ไม้ ฝ้าย หนังสัตว์ และวัสดุสังเคราะห์ เช่น พลาสติก ยางสังเคราะห์ เส้นใยสังเคราะห์ ซึ่งวัสดุแต่ละชนิดจะมีสมบัติทางกายภาพที่แตกต่างกันอย่างสิ้นเชิง ได้แก่ ความแข็ง ความยืดหยุ่น ความเหนียว ความยืดหยุ่น การนำความร้อน การนำไฟฟ้า และความหนาแน่น การเข้าใจสมบัติเหล่านี้ช่วยให้มนุษย์สามารถเลือกใช้วัสดุได้อย่างเหมาะสมกับวัตถุประสงค์การใช้งานในงานวิศวกรรมและชีวิตประจำวัน</p>
+            <p>นอกจากเรื่องประเภทและสมบัติของวัสดุแล้ว อีกหนึ่งองค์ประกอบสำคัญคือ "สถานะของสสาร" (States of Matter) ซึ่งสสารรอบตัวเราโดยทั่วไปจะดำรงอยู่ 3 สถานะหลัก ได้แก่ ของแข็ง (Solid) มีอนุภาคเรียงชิดติดกันอย่างเป็นระเบียบ แรงยึดเหนี่ยวระหว่างอนุภาคสูงมาก มีรูปร่างและปริมาตรคงที่ ของเหลว (Liquid) อนุภาคอยู่ห่างกันมากกว่าของแข็ง แรงยึดเหนี่ยวต่ำกว่า มีปริมาตรคงที่แต่รูปร่างเปลี่ยนไปตามภาชนะที่บรรจุ และแก๊ส (Gas) อนุภาคกระจายตัวห่างกันมากเคลื่อนที่ได้อย่างอิสระ แรงยึดเหนี่ยวระหว่างอนุภาคน้อยที่สุด รูปร่างและปริมาตรไม่คงที่เปลี่ยนแปลงไปตามภาชนะที่บรรจุ การเปลี่ยนสถานะของสสารยังเกี่ยวข้องกับการรับหรือคายพลังงานความร้อน เช่น การหลอมเหลว การกลายเป็นไอ การควบแน่น การแข็งตัว และการระเหิด ซึ่งกระบวนการเหล่านี้ล้วนเป็นพื้นฐานสำคัญทางวิทยาศาสตร์ที่ต้องอาศัยการคิดวิเคราะห์เชิงเหตุผลมากกว่าการท่องจำ</p>
+            
+            <div class="memory-box">
+                <h3>เทคนิคการจำและกระบวนการคิด (Memory Tricks & Thought Process)</h3>
+                <p><strong>1. เทคนิคจำสถานะสสาร "ชิด-ห่าง-อิสระ":</strong> ของแข็ง "ชิด" (อนุภาคอัดแน่น), ของเหลว "ห่าง" (ไหลกลิ้งไปมา), แก๊ส "อิสระ" (ฟุ้งกระจายไร้ขอบเขต)</p>
+                <p><strong>2. เทคนิคแยกแยะสมบัติทางกายภาพ:</strong> ให้ใช้หลักการทดสอบเชิงประจักษ์ เช่น ความแข็งใช้วิธีขูดขีด, ความเหนียวใช้การรับน้ำหนักดึงยืด, การนำไฟฟ้าใช้การต่อวงจรหลอดไฟ การคิดวิเคราะห์โจทย์ประเภทนี้ต้องมองย้อนกลับไปที่ "โครงสร้างภายใน" ของวัสดุและแรงยึดเหนี่ยวระหว่างอนุภาคเสมอ</p>
+            </div>
+        </div>
+
+        <div class="app-layout">
+            <!-- ฝั่งซ้าย: ข้อสอบ 70% -->
+            <div class="exam-panel">
+                <div class="exam-controls">
+                    <div>
+                        <span id="progress-indicator">ทำแล้ว: 0 / 30 ข้อ</span> | 
+                        <span id="score-indicator">คะแนน: 0 คะแนน</span>
+                    </div>
+                    <div>
+                        <button class="btn" id="lang-btn" onclick="toggleLanguage()">English / ไทย</button>
+                        <button class="btn btn-danger" onclick="resetExam()">Reset ข้อสอบ</button>
+                    </div>
+                </div>
+
+                <div id="questions-container">
+                    <!-- ข้อสอบจะถูก Render ผ่าน JavaScript ทั้ง 30 ข้อ -->
+                </div>
+
+                <div style="text-align: center; margin-top: 20px;">
+                    <button class="btn btn-success" style="font-size: 1.1rem; padding: 12px 30px;" onclick="submitExam()">ส่งข้อสอบและดูผลวิเคราะห์</button>
+                </div>
+            </div>
+
+            <!-- ฝั่งขวา: Whiteboard 30% -->
+            <div class="whiteboard-panel">
+                <h3>กระดานทดความคิด (Whiteboard)</h3>
+                <canvas id="whiteboard"></canvas>
+                <div class="wb-tools">
+                    <button class="btn" style="flex:1; background: #e74c3c;" onclick="clearWhiteboard()">ลบกระดาน</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ส่วนแสดงผลลัพธ์และวิเคราะห์ -->
+        <div id="result-section">
+            <h2>ผลการประเมินความรู้</h2>
+            <div class="score-display" id="final-score-text">0 / 30</div>
+            <p id="grade-comment" style="font-size: 1.1rem; font-weight: 600; margin-bottom: 15px;"></p>
+            <div class="analysis-box">
+                <h4>บทวิเคราะห์และข้อเสนอแนะจากติวเตอร์</h4>
+                <div id="analysis-content"></div>
+            </div>
+            <button class="btn" style="margin-top: 20px;" onclick="resetExam()">ทำข้อสอบใหม่อีกครั้ง</button>
+        </div>
+    </div>
+
+    <footer>
+        เขียนโดย พระจอมเกล้าติวเตอร์
+    </footer>
+
+    <script>
+        // ข้อมูลข้อสอบ 30 ข้อ สมบูรณ์แบบ
+        const questionsData = [
+            {
+                id: 1,
+                th: {
+                    q: "ข้อใดจัดเป็นวัสดุสังเคราะห์ทั้งหมดตามหลักวิทยาศาสตร์",
+                    options: [
+                        "พลาสติก ยางสังเคราะห์ เส้นใยโพลีเอสเตอร์",
+                        "ไม้ ฝ้าย ใยแก้วธรรมชาติ",
+                        "ยางธรรมชาติ ขนสัตว์ เส้นใยไนลอน",
+                        "กระดาษ ไหม ทองแดงบริสุทธิ์"
+                    ],
+                    clue: "สังเกตวัสดุที่มนุษย์สังเคราะห์ขึ้นมาจากกระบวนการทางเคมีปิโตรเลียม",
+                    explanation: "พลาสติก ยางสังเคราะห์ และเส้นใยโพลีเอสเตอร์ ล้วนเป็นผลิตภัณฑ์ที่สังเคราะห์ขึ้นมาจากปิโตรเคมีโดยฝีืมือมนุษย์ ไม่ได้พบในธรรมชาติโดยตรง"
+                },
+                en: {
+                    q: "Which of the following are classified entirely as synthetic materials?",
+                    options: [
+                        "Plastic, Synthetic Rubber, Polyester Fiber",
+                        "Wood, Cotton, Natural Glass Fiber",
+                        "Natural Rubber, Wool, Nylon Fiber",
+                        "Paper, Silk, Pure Copper"
+                    ],
+                    clue: "Look for materials chemically manufactured by humans from petroleum.",
+                    explanation: "Plastics, synthetic rubbers, and polyester fibers are all petrochemical synthetics created by humans."
+                },
+                answer: 0
+            },
+            {
+                id: 2,
+                th: {
+                    q: "สมบัติทางกายภาพข้อใดอธิบายความสามารถของวัสดุในการทนทานต่อการขูดขีด",
+                    options: ["ความแข็ง (Hardness)", "ความเหนียว (Toughness)", "ความยืดหยุ่น (Elasticity)", "ความยืดหยุ่นตัว (Flexibility)"],
+                    clue: "เกี่ยวข้องกับการถูกวัตถุอื่นมากดหรือขูดแล้วไม่เกิดรอย",
+                    explanation: "ความแข็ง (Hardness) คือสมบัติของวัสดุในการต้านทานต่อการขูดขีดหรือการกดให้เป็นรอย"
+                },
+                en: {
+                    q: "Which physical property describes a material's ability to resist scratching?",
+                    options: ["Hardness", "Toughness", "Elasticity", "Flexibility"],
+                    clue: "Related to resisting surface indentation or scratching.",
+                    explanation: "Hardness refers to a material's resistance to being scratched or indented by another object."
+                },
+                answer: 0
+            },
+            {
+                id: 3,
+                th: {
+                    q: "เมื่อนำโลหะทองแดงมาทำเป็นสายไฟ สมบัติทางกายภาพข้อใดถูกนำมาใช้มากที่สุด",
+                    options: ["การนำไฟฟ้าและการดึงเป็นเส้น", "ความหนาแน่นต่ำและจุดหลอมเหลวสูง", "ความยืดหยุ่นสูงและนำความร้อนต่ำ", "ความเปราะและทนทานต่อกรด"],
+                    clue: "พิจารณาหน้าที่ของสายไฟในการส่งกระแสไฟฟ้า",
+                    explanation: "ทองแดงมีความสามารถในการนำไฟฟ้าที่ดีเยี่ยม และมีความเหนียวสูงสามารถดึงเป็นเส้นลวดได้ง่าย"
+                },
+                en: {
+                    q: "When copper is used to make electrical wires, which physical property is primarily utilized?",
+                    options: ["Electrical conductivity and ductility", "Low density and high melting point", "High elasticity and low thermal conductivity", "Brittleness and acid resistance"],
+                    clue: "Consider the wire's function in transmitting electric current.",
+                    explanation: "Copper exhibits excellent electrical conductivity and high ductility, allowing it to be drawn into thin wires."
+                },
+                answer: 0
+            },
+            {
+                id: 4,
+                th: {
+                    q: "วัสดุในข้อใดมีสมบัติ 'ความเหนียว' สูงสุด เหมาะสำหรับทำเชือกนิรภัยหรือร่มชูชีพ",
+                    options: ["ไนลอน (Nylon)", "แก้ว (Glass)", "เซรามิก (Ceramic)", "เหล็กหล่อ (Cast Iron)"],
+                    clue: "เส้นใยสังเคราะห์ที่มีความทนทานต่อแรงดึงสูงมาก",
+                    explanation: "ไนลอนเป็นเส้นใยสังเคราะห์ที่มีความเหนียวและทนทานต่อแรงดึงสูงมาก จึงนิยมใช้ทำเชือกนิรภัยและร่มชูชีพ"
+                },
+                en: {
+                    q: "Which material possesses the highest 'toughness' suitable for safety ropes or parachutes?",
+                    options: ["Nylon", "Glass", "Ceramic", "Cast Iron"],
+                    clue: "A synthetic fiber with extremely high tensile strength.",
+                    explanation: "Nylon is a synthetic fiber known for its high toughness and exceptional tensile strength."
+                },
+                answer: 0
+            },
+            {
+                id: 5,
+                th: {
+                    q: "ข้อใดกล่าวถูกต้องเกี่ยวกับสถานะ 'ของแข็ง' (Solid)",
+                    options: [
+                        "อนุภาคเรียงชิดกันแน่น มีรูปร่างและปริมาตรคงที่",
+                        "อนุภาคอยู่ห่างกัน รูปร่างเปลี่ยนตามภาชนะ",
+                        "อนุภาคเคลื่อนที่อิสระ ปริมาตรไม่คงที่",
+                        "แรงยึดเหนี่ยวระหว่างอนุภาคต่ำมาก"
+                    ],
+                    clue: "นึกถึงก้อนหินหรือแท่งเหล็กที่รูปร่างไม่เปลี่ยนแปลงเอง",
+                    explanation: "ของแข็งมีแรงยึดเหนี่ยวระหว่างอนุภาคสูงมาก ทำให้อณูเรียงชิดติดกัน ส่งผลให้มีรูปร่างและปริมาตรคงที่แน่นอน"
+                },
+                en: {
+                    q: "Which statement is correct regarding the 'solid' state?",
+                    options: [
+                        "Particles are closely packed with fixed shape and volume",
+                        "Particles are separated; shape changes with container",
+                        "Particles move freely; volume is variable",
+                        "Intermolecular forces are extremely low"
+                    ],
+                    clue: "Think of a rock or iron bar whose shape does not spontaneously change.",
+                    explanation: "Solids have very strong intermolecular forces, keeping particles closely packed with fixed shape and volume."
+                },
+                answer: 0
+            },
+            {
+                id: 6,
+                th: {
+                    q: "กระบวนการที่สสารเปลี่ยนสถานะจาก 'ของเหลว' เป็น 'แก๊ส' เรียกว่าอะไร",
+                    options: ["การกลายเป็นไอ (Vaporization)", "การควบแน่น (Condensation)", "การแข็งตัว (Freezing)", "การระเหิด (Sublimation)"],
+                    clue: "ความร้อนทำให้ของเหลวเดือดกลายเป็นไอ",
+                    explanation: "การกลายเป็นไอเป็นกระบวนการดูดความร้อนที่เปลี่ยนสสารจากสถานะของเหลวไปเป็นแก๊ส"
+                },
+                en: {
+                    q: "What is the phase change process from 'liquid' to 'gas' called?",
+                    options: ["Vaporization", "Condensation", "Freezing", "Sublimation"],
+                    clue: "Heat causes a liquid to boil and turn into vapor.",
+                    explanation: "Vaporization is an endothermic process where a substance transitions from a liquid state to a gas state."
+                },
+                answer: 0
+            },
+            {
+                id: 7,
+                th: {
+                    q: "ลูกเหม็นที่วางทิ้งไว้ในตู้เสื้อผ้าแล้วมีขนาดเล็กลงเรื่อยๆ เกิดจากกระบวนการใด",
+                    options: ["การระเหิด (Sublimation)", "การหลอมเหลว (Melting)", "การระเหย (Evaporation)", "การกลายเป็นไอ (Vaporization)"],
+                    clue: "เปลี่ยนจากของแข็งกลายเป็นแก๊สโดยไม่ผ่านสถานะของเหลว",
+                    explanation: "ลูกเหม็นเป็นสารระเหิดได้ง่าย ซึ่งจะเปลี่ยนสถานะจากของแข็งกลายเป็นไอระเหยสู่บรรยากาศโดยตรง"
+                },
+                en: {
+                    q: "Mothballs left in a wardrobe gradually decrease in size due to which process?",
+                    options: ["Sublimation", "Melting", "Evaporation", "Vaporization"],
+                    clue: "Changing directly from solid to gas without entering the liquid phase.",
+                    explanation: "Mothballs sublime, transitioning directly from a solid state into vapor in the air."
+                },
+                answer: 0
+            },
+            {
+                id: 8,
+                th: {
+                    q: "หากต้องการเลือกวัสดุมาทำภาชนะหุงต้มอาหาร ควรเน้นสมบัติทางกายภาพข้อใดเป็นหลัก",
+                    options: ["นำความร้อนได้ดีและทนความร้อนสูง", "นำไฟฟ้าดีและมีความยืดหยุ่นสูง", "มีความหนาแน่นต่ำและเปราะ", "ละลายน้ำได้ง่ายและโปร่งใส"],
+                    clue: "หม้อหรือกระทะต้องส่งผ่านความร้อนจากเตาไปยังอาหารได้อย่างรวดเร็ว",
+                    explanation: "ภาชนะหุงต้มต้องทำจากวัสดุที่นำความร้อนได้ดี (เช่น อลูมิเนียม สเตนเลส) และทนความร้อนสูงไม่หลอมเหลวเสียหายง่าย"
+                },
+                en: {
+                    q: "If choosing a material for cooking utensils, which physical property should be prioritized?",
+                    options: ["High thermal conductivity and high heat resistance", "High electrical conductivity and high flexibility", "Low density and brittle", "Easily water-soluble and transparent"],
+                    clue: "Pots and pans must quickly transfer heat from the stove to food.",
+                    explanation: "Cookware requires high thermal conductivity and high heat resistance."
+                },
+                answer: 0
+            },
+            {
+                id: 9,
+                th: {
+                    q: "ข้อใดอธิบายพฤติกรรมของอนุภาคในสถานะ 'แก๊ส' ได้ถูกต้องที่สุด",
+                    options: [
+                        "อนุภาคอยู่ห่างกันมากเคลื่อนที่ด้วยความเร็วสูงในทุกทิศทาง",
+                        "อนุภาคสั่นอยู่กับที่ในตำแหน่งคงที่",
+                        "อนุภาคไหลกลิ้งทับกันแต่รักษาระยะห่างคงที่",
+                        "อนุภาคยึดติดกันเป็นกลุ่มก้อนแต่ไม่มีรูปร่างแน่นอน"
+                    ],
+                    clue: "แก๊สสามารถฟุ้งกระจายเต็มพื้นที่ห้องได้เพราะเหตุใด",
+                    explanation: "แก๊สมีอนุภาคอยู่ห่างกันมาก แรงยึดเหนี่ยวน้อยมาก ทำให้เคลื่อนที่ได้อย่างอิสระด้วยความเร็วสูงในทุกทิศทาง"
+                },
+                en: {
+                    q: "Which description best explains particle behavior in the 'gas' state?",
+                    options: [
+                        "Particles are far apart and move at high speeds in all directions",
+                        "Particles vibrate in fixed positions",
+                        "Particles slide over each other maintaining fixed distance",
+                        "Particles cluster together without a fixed shape"
+                    ],
+                    clue: "Why can gas diffuse to fill an entire room?",
+                    explanation: "Gas particles have very weak intermolecular forces, allowing them to move freely and rapidly in all directions."
+                },
+                answer: 0
+            },
+            {
+                id: 10,
+                th: {
+                    q: "น้ำแข็งแห้ง (คาร์บอนไดออกไซด์สถานะของแข็ง) เมื่อตั้งทิ้งไว้ในอุณหภูมิห้องจะเปลี่ยนเป็นไอแก๊ส เรียกว่าการเปลี่ยนแปลงประเภทใด",
+                    options: ["การระเหิด (Sublimation)", "การหลอมเหลว (Melting)", "การเดือด (Boiling)", "การละลาย (Dissolution)"],
+                    clue: "เปลี่ยนจากของแข็งเป็นแก๊สโดยไม่ทิ้งคราบของเหลวไว้",
+                    explanation: "น้ำแข็งแห้งระเหิดกลายเป็นก๊าซคาร์บอนไดออกไซด์โดยตรงโดยไม่ผ่านสถานะของเหลว"
+                },
+                en: {
+                    q: "Dry ice (solid carbon dioxide) left at room temperature turns into gas. What type of phase change is this?",
+                    options: ["Sublimation", "Melting", "Boiling", "Dissolution"],
+                    clue: "Changing from solid to gas without leaving liquid residue.",
+                    explanation: "Dry ice sublimes directly into carbon dioxide gas."
+                },
+                answer: 0
+            },
+            {
+                id: 11,
+                th: {
+                    q: "เซรามิกส์ (Ceramics) มีสมบัติเด่นทางกายภาพข้อใดที่ทำให้เหมาะทำถ้วยชาม",
+                    options: ["ทนความร้อนสูงและแข็งแต่เปราะ", "นำไฟฟ้าดีและมีความเหนียวสูง", "ยืดหยุ่นสูงและเบามาก", "อ่อนนุ่มและหลอมเหลวที่อุณหภูมิต่ำ"],
+                    clue: "ลองนึกถึงเวลาทำจานกระเบื้องตกแตก",
+                    explanation: "เซรามิกส์ทนความร้อนสูง แข็งแต่เปราะง่ายเมื่อได้รับแรงกระแทก"
+                },
+                en: {
+                    q: "What prominent physical property makes ceramics suitable for dishware?",
+                    options: ["High heat resistance and hardness, but brittle", "Good electrical conductivity and high toughness", "High elasticity and very lightweight", "Soft and low melting point"],
+                    clue: "Think about what happens when a ceramic plate drops.",
+                    explanation: "Ceramics are heat resistant, hard, but brittle under impact."
+                },
+                answer: 0
+            },
+            {
+                id: 12,
+                th: {
+                    q: "ปรากฏการณ์น้ำค้างบนยอดหญ้าในยามเช้า เกิดจากการเปลี่ยนสถานะของสสารในข้อใด",
+                    options: ["การควบแน่น (Condensation)", "การระเหย (Evaporation)", "การแข็งตัว (Freezing)", "การหลอมเหลว (Melting)"],
+                    clue: "ไอน้ำในอากาศกระทบความเย็นกลายเป็นหยดน้ำ",
+                    explanation: "ไอน้ำในอากาศควบแน่นกลายเป็นหยดน้ำค้างเมื่อสัมผัสกับความเย็นของยอดหญ้าในตอนเช้า"
+                },
+                en: {
+                    q: "Morning dew on grass blades is caused by which phase change?",
+                    options: ["Condensation", "Evaporation", "Freezing", "Melting"],
+                    clue: "Water vapor in the air encounters cold and turns into water droplets.",
+                    explanation: "Water vapor in the air condenses into liquid water droplets upon contacting cold grass."
+                },
+                answer: 0
+            },
+            {
+                id: 13,
+                th: {
+                    q: "วัสดุในข้อใดจัดอยู่ในประเภท 'พอลิเมอร์ธรรมชาติ'",
+                    options: ["ยางธรรมชาติและเซลลูโลส", "พลาสติกและไนลอน", "แก้วและเซรามิก", "ทองแดงและอะลูมิเนส"],
+                    clue: "พบได้เองตามธรรมชาติและมีโมเลกุลขนาดใหญ่",
+                    explanation: "ยางธรรมชาติและเซลลูโลสเป็นพอลิเมอร์ที่เกิดขึ้นเองตามธรรมชาติ ไม่ได้สังเคราะห์ขึ้นในห้องปฏิบัติการ"
+                },
+                en: {
+                    q: "Which materials are classified as 'natural polymers'?",
+                    options: ["Natural rubber and cellulose", "Plastic and nylon", "Glass and ceramic", "Copper and alumina"],
+                    clue: "Found naturally with large molecular structures.",
+                    explanation: "Natural rubber and cellulose are macromolecules synthesized naturally by organisms."
+                },
+                answer: 0
+            },
+            {
+                id: 14,
+                th: {
+                    q: "เมื่อให้ความร้อนแก่ของเหลวสม่ำจนกระทั่งเปลี่ยนเป็นไอทั่วทั้งมวลของเหลว เรียกว่ากระบวนการใด",
+                    options: ["การเดือด (Boiling)", "การระเหย (Evaporation)", "การละลาย (Melting)", "การควบแน่น (Condensation)"],
+                    clue: "เกิดขึ้นที่อุณหภูมิเฉพาะตัว เรียกว่าจุดเดือด",
+                    explanation: "การเดือดคือกระบวนการกลายเป็นไอที่เกิดขึ้นทั่วทั้งมวลของเหลว ณ อุณหภูมิคงที่ที่เรียกว่าจุดเดือด"
+                },
+                en: {
+                    q: "When liquid is heated uniformly until vapor forms throughout the entire volume, what is this process called?",
+                    options: ["Boiling", "Evaporation", "Melting", "Condensation"],
+                    clue: "Occurs at a specific temperature known as the boiling point.",
+                    explanation: "Boiling is vaporization occurring throughout the entire liquid mass at its boiling point."
+                },
+                answer: 0
+            },
+            {
+                id: 15,
+                th: {
+                    q: "ข้อใดอธิบายความแตกต่างระหว่าง 'การระเหย' กับ 'การเดือด' ได้ถูกต้องที่สุด",
+                    options: [
+                        "การระเหยเกิดขึ้นที่ผิวหน้าทุกอุณหภูมิ แต่การเดือดเกิดขึ้นทั่วทั้งมวลที่จุดเดือด",
+                        "การระเหยใช้ความร้อนสูงกว่าการเดือดมาก",
+                        "การเดือดเกิดขึ้นเฉพาะของเหลวใสเท่านั้น",
+                        "การระเหยต้องอาศัยความดันภายนอกเสมอ"
+                    ],
+                    clue: "พิจารณาตำแหน่งและอุณหภูมิที่เกิดปรากฏการณ์",
+                    explanation: "การระเหยเกิดขึ้นที่ผิวหน้าของของเหลวได้ทุกอุณหภูมิ แต่การเดือดเกิดขึ้นตลอดมวลสาร ณ อุณหภูมิเดือด"
+                },
+                en: {
+                    q: "Which statement correctly distinguishes 'evaporation' from 'boiling'?",
+                    options: [
+                        "Evaporation occurs at the surface at any temperature, while boiling occurs throughout at the boiling point",
+                        "Evaporation requires higher heat than boiling",
+                        "Boiling occurs only in transparent liquids",
+                        "Evaporation always requires external pressure"
+                    ],
+                    clue: "Consider the location and temperature where each occurs.",
+                    explanation: "Evaporation happens at the liquid surface at any temperature, whereas boiling occurs throughout the liquid at its boiling point."
+                },
+                answer: 0
+            },
+            {
+                id: 16,
+                th: {
+                    q: "เพราะเหตุใด 'ยางรถยนต์' จึงต้องทำจากยางวัลคาไนซ์ (ผสมกำมะถันและผ่านความร้อน) แทนยางดิบ",
+                    options: [
+                        "เพื่อให้ทนความร้อนและความยืดหยุ่นคงทนไม่เหนียวติดมือเมื่ออากาศร้อน",
+                        "เพื่อให้ยางมีน้ำหนักเบาและนำไฟฟ้าได้ดีขึ้น",
+                        "เพื่อให้ยางละลายน้ำได้ง่ายเวลาฝนตก",
+                        "เพื่อให้ยางมีความเปราะสูงขึ้นเมื่อขับขี่"
+                    ],
+                    clue: "ยางดิบธรรมชาติจะเหนียวเมื่อร้อนและแข็งเปราะเมื่อเย็น จึงต้องปรับปรุงสมบัติ",
+                    explanation: "การวัลคาไนซ์ช่วยเพิ่มความแข็งแรง ความยืดหยุ่น และความทนทานต่อความร้อน ไม่ให้ยางอ่อนตัวง่ายเมื่อใช้งานจริง"
+                },
+                en: {
+                    q: "Why are car tires made from vulcanized rubber rather than raw rubber?",
+                    options: [
+                        "To withstand heat and maintain durability without becoming sticky in hot weather",
+                        "To make the tires lightweight and conductive",
+                        "To allow tires to dissolve easily in rain",
+                        "To increase brittleness during driving"
+                    ],
+                    clue: "Raw rubber is sticky when hot and brittle when cold, requiring property enhancement.",
+                    explanation: "Vulcanization improves strength, elasticity, and heat resistance, preventing tires from softening easily."
+                },
+                answer: 0
+            },
+            {
+                id: 17,
+                th: {
+                    q: "สมบัติทางกายภาพข้อใดของ 'ทองคำ' ที่ทำให้ช่างทองสามารถตีแผ่เป็นแผ่นบางๆ ได้มากที่สุด",
+                    options: ["ความเหนียวและสามารถตีแผ่เป็นแผ่น (Malleability & Ductility)", "ความหนาแน่นต่ำและจุดหลอมเหลวสูง", "การนำความร้อนต่ำและความเปราะ", "ความเป็นแม่เหล็กไฟฟ้าสูง"],
+                    clue: "สมบัติที่ยอมให้ทุบตีเป็นแผ่นบางโดยไม่แตกหัก",
+                    explanation: "ทองคำมีความเหนียวและสามารถตีแผ่เป็นแผ่นบางได้ดีเยี่ยม (Malleability) มากที่สุดในบรรดาโลหะทั้งหมด"
+                },
+                en: {
+                    q: "Which physical property of gold allows goldsmiths to beat it into extremely thin sheets?",
+                    options: ["Malleability and ductility", "Low density and high melting point", "Low thermal conductivity and brittleness", "High electromagnetism"],
+                    clue: "The property allowing a metal to be hammered into sheets without breaking.",
+                    explanation: "Gold possesses exceptionally high malleability and ductility, allowing it to be hammered into micro-thin sheets."
+                },
+                answer: 0
+            },
+            {
+                id: 18,
+                th: {
+                    q: "กราฟการเปลี่ยนแปลงอุณหภูมิของสสารขณะได้รับความร้อน ช่วงที่สสารกำลังเปลี่ยนสถานะ (เช่น หลอมเหลวหรือเดือด) อุณหภูมิจะมีลักษณะอย่างไร",
+                    options: ["คงที่ตลอดช่วงการเปลี่ยนสถานะ", "เพิ่มขึ้นอย่างรวดเร็วต่อเนื่อง", "ลดลงอย่างฉับพลัน", "ผัน 0 องศาเซลเซียสเสมอ"],
+                    clue: "พลังงานความร้อนที่ใส่เข้าไปถูกใช้ไปทำอะไรในช่วงเปลี่ยนสถานะ",
+                    explanation: "ในช่วงเปลี่ยนสถานะ พลังงานความร้อนที่เพิ่มเข้าไปจะถูกใช้เพื่อทำลายแรงยึดเหนี่ยวระหว่างอนุภาค ทำให้อุณหภูมิคงที่"
+                },
+                en: {
+                    q: "During a phase change (e.g., melting or boiling), what happens to the temperature of a substance as it receives heat?",
+                    options: ["Remains constant throughout the phase change", "Increases rapidly and continuously", "Drops suddenly", "Always fluctuates around 0 degrees Celsius"],
+                    clue: "What is added thermal energy used for during a phase change?",
+                    explanation: "During phase changes, added heat is consumed to overcome intermolecular forces, keeping the temperature constant."
+                },
+                answer: 0
+            },
+            {
+                id: 19,
+                th: {
+                    q: "วัสดุประเภท 'คอมโพสิต' (Composite Materials) เกิดจากการผสมผสานวัสดุตั้งแต่ 2 ชนิดขึ้นไป ข้อใดคือตัวอย่างของคอมโพสิต",
+                    options: ["คอนกรีตเสริมเหล็กและไฟเบอร์กลาส", "ทองแดงบริสุทธิ์และอลูมิเนียม", "น้ำตาลทรายละลายในน้ำ", "แก้วโซดาไลม์"],
+                    clue: "วัสดุผสมที่นำจุดเด่นของวัสดุหลายชนิดมารวมกัน เช่น ปูนกับเหล็กเส้น",
+                    explanation: "คอนกรีตเสริมเหล็กและไฟเบอร์กลาสเป็นวัสดุคอมโพสิตที่ผสานสมบัติเด่นของวัสดุต่างประเภทเข้าด้วยกัน"
+                },
+                en: {
+                    q: "Composite materials are formed by combining two or more different materials. Which is an example of a composite?",
+                    options: ["Reinforced concrete and fiberglass", "Pure copper and aluminum", "Sugar dissolved in water", "Soda-lime glass"],
+                    clue: "Combined materials merging strengths, like concrete and steel rebar.",
+                    explanation: "Reinforced concrete and fiberglass are classic composite materials combining different material strengths."
+                },
+                answer: 0
+            },
+            {
+                id: 20,
+                th: {
+                    q: "เมื่อนำแท่งเหล็กกล้ามาทดสอบความยืดหยุ่นเปรียบเทียบกับยางรัดของ ข้อสรุปใดถูกต้องที่สุด",
+                    options: [
+                        "ยางรัดของยืดหยุ่นได้มากกว่าในแง่ระยะการคืนตัวเมื่อดึง",
+                        "แท่งเหล็กกล้ามีความยืดหยุ่นมากกว่ายางรัดของในทุกกรณี",
+                        "ทั้งสองชนิดไม่มีสมบัติความยืดหยุ่นเลย",
+                        "เหล็กกล้าจะหดตัวถาวรเมื่อออกแรงดึงเล็กน้อย"
+                    ],
+                    clue: "พิจารณารยะการยืดและคืนรูปของยางเทียบกับเหล็กในชีวิตประจำวัน",
+                    explanation: "ยางรัดของยืดและคืนตัวได้ระยะทางมากกว่าเมื่อเทียบแรงดึง แม้เหล็กกล้าจะมีความยืดหยุ่นภายใต้ขีดจำกัดยืดหยุ่นสูงแต่ยืดได้น้อยกว่ามาก"
+                },
+                en: {
+                    q: "When comparing the elasticity of a steel bar and a rubber band, which conclusion is most accurate?",
+                    options: [
+                        "Rubber band has greater recoverable elongation when stretched",
+                        "Steel bar has greater elasticity than rubber in all cases",
+                        "Neither material possesses elasticity",
+                        "Steel permanently deforms under slight tension"
+                    ],
+                    clue: "Consider the stretch and recovery distance of rubber versus steel in daily life.",
+                    explanation: "A rubber band stretches and recovers over a much larger distance than steel under normal tensile forces."
+                },
+                answer: 0
+            },
+            {
+                id: 21,
+                th: {
+                    q: "กิจกรรม Active Learning: หากนักเรียนได้รับมอบหมายให้ตรวจสอบความหนาแน่นของก้อนหิน 3 ชนิดโดยไม่ใช้สูตรคำนวณซับซ้อน วิธีการที่เหมาะสมที่สุดคืออะไร",
+                    options: [
+                        "นำก้อนหินไปหย่อนลงในน้ำแล้วสังเกตการจมหรือเปรียบเทียบมวลต่อขนาด",
+                        "นำก้อนหินไปเผาไฟแล้วดูสีของเปลวไฟ",
+                        "นำก้อนหินมาต่อวงจรไฟฟ้าเพื่อวัดกระแส",
+                        "นำก้อนหินไปแช่ช่องฟรีซดูการเปลี่ยนสถานะ"
+                    ],
+                    clue: "ความหนาแน่นเกี่ยวข้องกับมวลและปริมาตร การจมน้ำเปรียบเทียบกับน้ำ",
+                    explanation: "การสังเกตการจมการลอยและการเปรียบเทียบมวลต่อปริมาตรเบื้องต้นเป็นวิธีปฏิบัติจริงที่สอดคล้องกับ Active Learning"
+                },
+                en: {
+                    q: "Active Learning Activity: If assigned to check the density of 3 rocks without complex formulas, what is the best approach?",
+                    options: [
+                        "Drop rocks in water to observe sinking or compare mass relative to size",
+                        "Burn the rocks and observe flame color",
+                        "Connect rocks to an electric circuit to measure current",
+                        "Place rocks in a freezer to observe phase change"
+                    ],
+                    clue: "Density relates mass and volume; sinking in water provides a relative comparison.",
+                    explanation: "Observing sinking/floating and comparing mass-to-volume visually is a practical active learning method."
+                },
+                answer: 0
+            },
+            {
+                id: 22,
+                th: {
+                    q: "ข้อใดคือเกณฑ์หลักในการจำแนก 'สถานะของสสาร' ตามหลักฟิสิกส์มหภาค",
+                    options: [
+                        "พลังงานจลน์ของอนุภาคและแรงยึดเหนี่ยวระหว่างอนุภาค",
+                        "สีและจุดเดือดของสารนั้นๆ",
+                        "น้ำหนักโมเลกุลและความเป็นกรด-เบส",
+                        "การนำไฟฟ้าและความสามารถในการละลายน้ำ"
+                    ],
+                    clue: "ดูว่าอะไรเป็นตัวกำหนดว่าสสารจะอยู่สถานะของแข็ง ของเหลว หรือแก๊ส",
+                    explanation: "สถานะของสสารถูกกำหนดโดยสมดุลระหว่างแรงยึดเหนี่ยวระหว่างอนุภาคกับพลังงานจลน์ในการเคลื่อนที่ของอนุภาค"
+                },
+                en: {
+                    q: "What is the primary macroscopic criterion for classifying the 'states of matter'?",
+                    options: [
+                        "Particle kinetic energy and intermolecular forces",
+                        "Color and boiling point",
+                        "Molecular weight and pH level",
+                        "Electrical conductivity and water solubility"
+                    ],
+                    clue: "What determines whether a substance is solid, liquid, or gas?",
+                    explanation: "States of matter are determined by the balance between intermolecular forces and particle kinetic energy."
+                },
+                answer: 0
+            },
+            {
+                id: 23,
+                th: {
+                    q: "แก๊สออกซิเจนในถังดับเพลิงอัดแน่นด้วยความดันสูง เมื่อปล่อยออกมาจะเปลี่ยนเป็นละอองเย็นจัด เกิดจากการเปลี่ยนแปลงพลังงานความร้อนในลักษณะใด",
+                    options: [
+                        "การขยายตัวแบบฉับพลันทำให้เกิดการดูดความร้อนรอบข้าง",
+                        "การคายความร้อนอย่างรุนแรงเพื่อเผาไหม้",
+                        "เกิดปฏิกิริยาเคมีกับไนโตรเจนในอากาศ",
+                        "อุณหภูมิไม่เปลี่ยนแปลงแต่ความดันเพิ่มขึ้น"
+                    ],
+                    clue: "แก๊สขยายตัวอย่างรวดเร็วจะดึงความร้อนรอบข้างทำให้เย็นลง",
+                    explanation: "เมื่อแก๊สความดันสูงขยายตัวอย่างฉับพลัน จะเกิดการลดลงของอุณหภูมิเนื่องจากพลังงานถูกใช้ในการขยายตัว (การดูดความร้อน)"
+                },
+                en: {
+                    q: "Oxygen gas compressed in a fire extinguisher expands rapidly when released, creating a cold mist. What thermodynamic process occurs?",
+                    options: [
+                        "Rapid expansion causes heat absorption from surroundings",
+                        "Intense exothermic combustion",
+                        "Chemical reaction with nitrogen",
+                        "Temperature remains constant while pressure increases"
+                    ],
+                    clue: "Rapidly expanding gas absorbs surrounding heat, lowering temperature.",
+                    explanation: "Rapid gas expansion consumes thermal energy, leading to a noticeable temperature drop."
+                },
+                answer: 0
+            },
+            {
+                id: 24,
+                th: {
+                    q: "นักเรียนต้องการทดสอบการนำความร้อนของวัสดุ 4 ชนิด (ไม้ พลาสติก ทองแดง อลูมิเนียม) วิธีทดสอบใดถูกต้องและปลอดภัยที่สุด",
+                    options: [
+                        "จุ่มปลายวัสดุทั้งสี่ลงในน้ำร้อนพร้อมกัน แล้วแตะปลายด้านบนเพื่อเปรียบเทียบความรู้สึกร้อน",
+                        "นำวัสดุไปเผาไฟตรงๆ ด้วยมือเปล่าแล้วจับเวลา",
+                        "ใช้มิเตอร์วัดกระแสไฟฟ้าผ่านวัสดุ",
+                        "นำวัสดุไปแช่น้ำแข็งแล้ววัดการละลายของน้ำแข็ง"
+                    ],
+                    clue: "ทดสอบการนำความร้อนต้องให้ความร้อนที่ปลายด้านหนึ่งแล้วสังเกตการถ่ายเท",
+                    explanation: "การจุ่มลงในน้ำร้อนแล้วสัมผัสปลายด้านบนหรือใช้ขี้ผึ้งติดหมุดที่ปลายไม้/โลหะ เป็นวิธีทดสอบการนำความร้อนที่ปลอดภัยและเห็นผลชัดเจน"
+                },
+                en: {
+                    q: "A student wants to test thermal conductivity of 4 materials (wood, plastic, copper, aluminum). Which safe method is correct?",
+                    options: [
+                        "Immerse one end of all four in hot water and touch the upper ends to compare heat sensation",
+                        "Heat materials directly over fire with bare hands and time it",
+                        "Use an ammeter to measure current through materials",
+                        "Place materials in ice and measure ice melting"
+                    ],
+                    clue: "Testing thermal conductivity requires heating one end and observing heat transfer.",
+                    explanation: "Immersing one end in hot water safely demonstrates and compares thermal conductivity among materials."
+                },
+                answer: 0
+            },
+            {
+                id: 25,
+                th: {
+                    q: "ข้อใดเรียงลำดับ 'ความหนาแน่น' ของสสารในสถานะต่างๆ จากมากไปน้อยได้ถูกต้องที่สุด (ยกเว้นสารบางชนิดเช่นน้ำ)",
+                    options: ["ของแข็ง > ของเหลว > แก๊ส", "แก๊ส > ของเหลว > ของแข็ง", "ของเหลว > ของแข็ง > แก๊ส", "แก๊ส > ของแข็ง > ของเหลว"],
+                    clue: "อนุภาคของสถานะใดอัดแน่นชิดกันมากที่สุด",
+                    explanation: "โดยทั่วไปของแข็งมีอนุภาคเรียงชิดกันแน่นที่สุดจึงมีความหนาแน่นสูงสุด รองลงมาคือของเหลว และแก๊สมีความหนาแน่นน้อยที่สุด"
+                },
+                en: {
+                    q: "Which sequence correctly orders the 'density' of states of matter from highest to lowest (excluding anomalies like water)?",
+                    options: ["Solid > Liquid > Gas", "Gas > Liquid > Solid", "Liquid > Solid > Gas", "Gas > Solid > Liquid"],
+                    clue: "Which state has particles packed the tightest?",
+                    explanation: "Generally, solids are densest due to tightly packed particles, followed by liquids, with gases being the least dense."
+                },
+                answer: 0
+            },
+            {
+                id: 26,
+                th: {
+                    q: "หากต้องการทำฉนวนกันความร้อนติดผนังบ้าน ควรเลือกใช้วัสดุที่มีสมบัติทางกายภาพข้อใด",
+                    options: ["การนำความร้อนต่ำและมีช่องอากาศพรุน", "การนำความร้อนสูงและมีความหนาแน่นมาก", "การนำไฟฟ้าสูงและผิวเป็นมันเงา", "ความยืดหยุ่นสูงและหลอมเหลวต่ำ"],
+                    clue: "ฉนวนกันความร้อนต้องไม่ยอมให้ความร้อนผ่านเข้ามาได้ง่าย",
+                    explanation: "ฉนวนกันความร้อนที่ดีต้องมีค่าการนำความร้อนต่ำ มักมีโครงสร้างพรุนกักเก็บอากาศไว้ภายในเพื่อขัดขวางการถ่ายเทความร้อน"
+                },
+                en: {
+                    q: "If installing thermal insulation on house walls, which physical property should the material possess?",
+                    options: ["Low thermal conductivity with porous air pockets", "High thermal conductivity and high density", "High electrical conductivity and glossy surface", "High elasticity and low melting point"],
+                    clue: "Thermal insulation must prevent heat from passing through easily.",
+                    explanation: "Good thermal insulation requires low thermal conductivity and porous structures trapping stagnant air."
+                },
+                answer: 0
+            },
+            {
+                id: 27,
+                th: {
+                    q: "สสารในธรรมชาติสามารถเปลี่ยนสถานะกลับไปกลับมาได้ การเปลี่ยนแปลงในข้อใดเป็นการ 'คายความร้อน'",
+                    options: ["การควบแน่นและการแข็งตัว", "การหลอมเหลวและการระเหิด", "การกลายเป็นไอและการระเหย", "การหลอมเหลวและการเดือด"],
+                    clue: "กระบวนการที่ทำให้สิ่งรอบข้างอุ่นขึ้นหรือปล่อยความร้อนออกมา",
+                    explanation: "การควบแน่นและการแข็งตัวเป็นกระบวนการที่สสารคายความร้อนออกมาสู่สิ่งแวดล้อมเพื่อให้อนุภาคจัดเรียงตัวชิดกันมากขึ้น"
+                },
+                en: {
+                    q: "Natural matter can undergo reversible phase changes. Which pair of changes are 'exothermic' (releasing heat)?",
+                    options: ["Condensation and freezing", "Melting and sublimation", "Vaporization and evaporation", "Melting and boiling"],
+                    clue: "Processes that release heat into the surroundings.",
+                    explanation: "Condensation and freezing release heat as particles transition to more ordered, closer states."
+                },
+                answer: 0
+            },
+            {
+                id: 28,
+                th: {
+                    q: "ข้อใดคือประโยชน์หลักของการนำความรู้เรื่อง 'สมบัติของวัสดุ' มาประยุกต์ใช้ในอุตสาหกรรมอากาศยาน",
+                    options: [
+                        "เลือกใช้วัสดุน้ำหนักเบาแต่มีความแข็งแรงสูงทนความร้อนเยี่ยม",
+                        "เลือกใช้วัสดุที่มีน้ำหนักมากเพื่อเพิ่มความสมดุล",
+                        "เลือกใช้วัสดุที่เปราะและละลายน้ำได้ง่าย",
+                        "เลือกใช้วัสดุที่มีราคาถูกที่สุดโดยไม่คำนึงถึงความปลอดภัย"
+                    ],
+                    clue: "เครื่องบินต้องบินขึ้นฟ้า น้ำหนักต้องเบาแต่โครงสร้างต้องแข็งแกร่ง",
+                    explanation: "อุตสาหกรรมอากาศยานต้องการวัสดุน้ำหนักเบา เช่น อลูมิเนียมอัลลอยด์และวัสดุคอมโพสิต ที่มีความแข็งแรงสูงและทนทาน"
+                },
+                en: {
+                    q: "What is the primary benefit of applying knowledge of 'material properties' in the aerospace industry?",
+                    options: [
+                        "Selecting lightweight, high-strength, heat-resistant materials",
+                        "Selecting heavy materials for balance",
+                        "Selecting brittle and water-soluble materials",
+                        "Selecting cheapest materials ignoring safety"
+                    ],
+                    clue: "Airplanes need to fly; materials must be lightweight yet robust.",
+                    explanation: "Aerospace engineering demands lightweight, high-strength, and heat-resistant alloys and composites."
+                },
+                answer: 0
+            },
+            {
+                id: 29,
+                th: {
+                    q: "นักเรียนทำการทดลองต้มน้ำจนเดือด แล้วนำฝาหม้อมาปิดไว้ จะพบคราบหยดน้ำใต้ฝาหม้อ ปรากฏการณ์นี้อธิบายวัฏจักรธรรมชาติในข้อใด",
+                    options: ["การเกิดฝนหรือวัฏจักรน้ำในธรรมชาติ", "การเกิดแผ่นดินไหว", "การเกิดลมมรสุมเขตร้อน", "การเกิดภูเขาไฟระเบิด"],
+                    clue: "ไอน้ำกลายเป็นหยดน้ำจำลองกระบวนการเกิดฝนบนท้องฟ้า",
+                    explanation: "การต้มน้ำกลายเป็นไอแล้วควบแน่นเป็นหยดน้ำใต้ฝาหม้อ เป็นแบบจำลองย่อส่วนของการเกิดฝนในวัฏจักรน้ำธรรมชาติ"
+                },
+                en: {
+                    q: "A student boils water and covers the pot with a lid, observing water droplets underneath. What natural cycle does this model?",
+                    options: ["Rain formation or the natural water cycle", "Earthquake occurrence", "Monsoon winds", "Volcanic eruption"],
+                    clue: "Vapor turning into water droplets simulates rainfall.",
+                    explanation: "Boiling water vapor condensing under a lid simulates cloud and rain formation in the water cycle."
+                },
+                answer: 0
+            },
+            {
+                id: 30,
+                th: {
+                    q: "ข้อใดสรุปความสัมพันธ์ระหว่าง 'โครงสร้างภายใน' กับ 'สมบัติของวัสดุ' ได้แม่นยำที่สุด",
+                    options: [
+                        "โครงสร้างและแรงยึดเหนี่ยวระดับอนุภาคเป็นตัวกำหนดสมบัติมหภาคของวัสดุ",
+                        "สมบัติของวัสดุขึ้นอยู่กับสีภายนอกเท่านั้น",
+                        "อุณหภูมิห้องเป็นตัวกำหนดสมบัติถาวรของวัสดุทุกชนิด",
+                        "ขนาดรูปร่างของวัตถุเปลี่ยนสมบัติเคมีภายในได้เสมอ"
+                    ],
+                    clue: "ทุกสิ่งเริ่มต้นจากระดับจุลภาค (อนุภาค) ส่งผลต่อมหภาค (ที่เรามองเห็นและใช้งาน)",
+                    explanation: "สมบัติทางกายภาพและเคมีของวัสดุในระดับมหภาค (ที่เราใช้งาน) ถูกกำหนดโดยตรงจากโครงสร้างภายในและแรงยึดเหนี่ยวระดับอนุภาค"
+                },
+                en: {
+                    q: "Which statement accurately summarizes the relationship between 'internal structure' and 'material properties'?",
+                    options: [
+                        "Microscopic structure and intermolecular forces determine macroscopic material properties",
+                        "Material properties depend solely on external color",
+                        "Room temperature permanently dictates all material properties",
+                        "Object shape always alters internal chemical properties"
+                    ],
+                    clue: "Everything starts at the microscopic level, dictating macroscopic behavior.",
+                    explanation: "Macroscopic physical and chemical properties of materials are directly dictated by their internal molecular structure and bonding."
+                },
+                answer: 0
+            }
+        ];
+
+        let currentLang = 'th';
+        let userAnswers = {};
+        let score = 0;
+
+        // Fisher-Yates Shuffle Algorithm for randomizing questions & options
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        // Initialize LocalStorage state or shuffle fresh
+        let shuffledQuestions = [];
+        function initExam() {
+            const savedState = localStorage.getItem('pj_exam_state');
+            if (savedState) {
+                try {
+                    const parsed = JSON.parse(savedState);
+                    shuffledQuestions = parsed.questions;
+                    userAnswers = parsed.userAnswers || {};
+                    currentLang = parsed.currentLang || 'th';
+                } catch(e) {
+                    loadFreshQuestions();
+                }
+            } else {
+                loadFreshQuestions();
+            }
+            renderQuestions();
+            updateStats();
+        }
+
+        function loadFreshQuestions() {
+            // Clone and shuffle options while keeping track of correct answer index
+            shuffledQuestions = questionsData.map(item => {
+                let optionsWithIndex = item.th.options.map((opt, idx) => ({ th: opt, en: item.en.options[idx], originalIdx: idx }));
+                shuffleArray(optionsWithIndex);
+                let newCorrectIdx = optionsWithIndex.findIndex(o => o.originalIdx === item.answer);
+                return {
+                    id: item.id,
+                    th: { q: item.th.q, options: optionsWithIndex.map(o => o.th), clue: item.th.clue, explanation: item.th.explanation },
+                    en: { q: item.en.q, options: optionsWithIndex.map(o => o.en), clue: item.en.clue, explanation: item.en.explanation },
+                    answer: newCorrectIdx
+                };
+            });
+            // Shuffle question order
+            shuffleArray(shuffledQuestions);
+            saveState();
+        }
+
+        function saveState() {
+            const state = {
+                questions: shuffledQuestions,
+                userAnswers: userAnswers,
+                currentLang: currentLang
+            };
+            localStorage.setItem('pj_exam_state', JSON.stringify(state));
+        }
+
+        function toggleLanguage() {
+            currentLang = currentLang === 'th' ? 'en' : 'th';
+            saveState();
+            renderQuestions();
+        }
+
+        function resetExam() {
+            localStorage.removeItem('pj_exam_state');
+            userAnswers = {};
+            score = 0;
+            document.getElementById('result-section').style.display = 'none';
+            loadFreshQuestions();
+            renderQuestions();
+            updateStats();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function renderQuestions() {
+            const container = document.getElementById('questions-container');
+            container.innerHTML = '';
+
+            shuffledQuestions.forEach((q, index) => {
+                const qContent = q[currentLang];
+                const card = document.createElement('div');
+                card.className = 'question-card';
+                card.id = `q-card-${index}`;
+
+                let optionsHTML = '';
+                qContent.options.forEach((opt, optIdx) => {
+                    let selectedClass = '';
+                    if (userAnswers[index] !== undefined) {
+                        if (userAnswers[index] === optIdx) {
+                            selectedClass = 'selected';
+                        }
+                        if (optIdx === q.answer) {
+                            selectedClass += ' correct';
+                        } else if (userAnswers[index] === optIdx && optIdx !== q.answer) {
+                            selectedClass = 'incorrect';
+                        }
+                    }
+
+                    optionsHTML += `
+                        <li class="option-item ${selectedClass}" onclick="selectOption(${index}, ${optIdx})">
+                            <strong>${String.fromCharCode(65 + optIdx)}.</strong> ${opt}
+                        </li>
+                    `;
+                });
+
+                card.innerHTML = `
+                    <div class="question-title">ข้อที่ ${index + 1} (ข้อสอบชุดที่ ${q.id}): ${qContent.q}</div>
+                    <ul class="options-list">${optionsHTML}</ul>
+                    <button class="clue-btn" onclick="toggleClue(${index})">${currentLang === 'th' ? '💡 ดูคำใบ้ (Clue)' : '💡 View Clue'}</button>
+                    <div class="clue-box" id="clue-${index}"><strong>${currentLang === 'th' ? 'คำใบ้:' : 'Clue:'}</strong> ${qContent.clue}</div>
+                    <div class="explanation-box" id="exp-${index}" style="display: ${userAnswers[index] !== undefined ? 'block' : 'none'};">
+                        <strong>${currentLang === 'th' ? 'เฉลยและวิธีคิดโดยติวเตอร์:' : 'Explanation & Tutor Insight:'}</strong> ${qContent.explanation}
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function selectOption(qIdx, optIdx) {
+            if (userAnswers[qIdx] !== undefined) return; // ทำแล้วเปลี่ยนไม่ได้ ให้ตรวจทันที
+            userAnswers[qIdx] = optIdx;
+            saveState();
+            renderQuestions();
+            updateStats();
+        }
+
+        function toggleClue(qIdx) {
+            const clueBox = document.getElementById(`clue-${qIdx}`);
+            clueBox.style.display = clueBox.style.display === 'block' ? 'none' : 'block';
+        }
+
+        function updateStats() {
+            const answeredCount = Object.keys(userAnswers).length;
+            let currentScore = 0;
+            Object.keys(userAnswers).forEach(qIdx => {
+                if (userAnswers[qIdx] === shuffledQuestions[qIdx].answer) {
+                    currentScore++;
+                }
+            });
+            score = currentScore;
+            document.getElementById('progress-indicator').innerText = currentLang === 'th' ? `ทำแล้ว: ${answeredCount} / 30 ข้อ` : `Answered: ${answeredCount} / 30 Qs`;
+            document.getElementById('score-indicator').innerText = currentLang === 'th' ? `คะแนนปัจจุบัน: ${score} คะแนน` : `Current Score: ${score} pts`;
+        }
+
+        function submitExam() {
+            const answeredCount = Object.keys(userAnswers).length;
+            if (answeredCount < 30) {
+                if (!confirm(currentLang === 'th' ? 'คุณยังทำข้อสอบไม่ครบ 30 ข้อ ต้องการส่งข้อสอบเลยหรือไม่?' : 'You have not answered all 30 questions. Submit anyway?')) {
+                    return;
+                }
+            }
+
+            document.getElementById('result-section').style.display = 'block';
+            document.getElementById('final-score-text').innerText = `${score} / 30`;
+
+            let comment = '';
+            let analysisHTML = '';
+
+            if (score >= 25) {
+                comment = "ยอดเยี่ยมมาก! คุณมีความเข้าใจในเรื่องวัสดุและสสารอย่างลึกซึ้ง พร้อมสอบแข่งขันในทุกสนาม";
+                analysisHTML += `<ul><li><strong>จุดเด่น:</strong> มีกระบวนการคิดวิเคราะห์สมบัติของวัสดุและสถานะสสารได้อย่างแม่นยำ แม่นยำเรื่องการเปลี่ยนสถานะและการใช้เหตุผลเชิงวิทยาศาสตร์</li><li><strong>จุดพัฒนาเพิ่มเติม:</strong> รักษามาตรฐานการคิดวิเคราะห์นี้ไว้ และลองฝึกโจทย์ประยุกต์เชิงวิศวกรรมระดับสูงขึ้น</li></ul>`;
+            } else if (score >= 18) {
+                comment = "ทำได้ดีเยี่ยม! ผ่านเกณฑ์มาตรฐาน แต่อาจยังมีจุดที่สับสนเล็กน้อยในบางหัวข้อ";
+                analysisHTML += `<ul><li><strong>จุดเด่น:</strong> เข้าใจประเภทของวัสดุและสมบัติทางกายภาพพื้นฐานได้ดี</li><li><strong>จุดด้อย / จุดที่ควรทบทวน:</strong> ควรทบทวนเรื่อง 'ความร้อนแฝงในการเปลี่ยนสถานะสสาร' และ 'ความแตกต่างระหว่างการระเหยกับการเดือด' เพิ่มเติม</li></ul>`;
+            } else {
+                comment = "ต้องพยายามทบทวนบทเรียนเพิ่มเติมอีกนิด สู้ๆ ครับ พระจอมเกล้าติวเตอร์เป็นกำลังใจให้!";
+                analysisHTML += `<ul><li><strong>จุดเด่น:</strong>มีความตั้งใจในการเรียนรู้และทำข้อสอบจนครบถ้วน</li><li><strong>จุดด้อย / จุดที่ควรทบทวน:</strong> แนะนำให้กลับไปทบทวนเนื้อหาในส่วน 'สมบัติทางกายภาพของวัสดุ' (ความแข็ง ความเหนียว ความยืดหยุ่น) และ 'พฤติกรรมอนุภาคในสถานะต่างๆ' ให้ละเอียดอีกรอบ</li></ul>`;
+            }
+
+            document.getElementById('grade-comment').innerText = comment;
+            document.getElementById('analysis-content').innerHTML = analysisHTML;
+
+            window.scrollTo({ top: document.getElementById('result-section').offsetTop, behavior: 'smooth' });
+        }
+
+        // Whiteboard Implementation
+        const canvas = document.getElementById('whiteboard');
+        const ctx = canvas.getContext('2d');
+        let painting = false;
+
+        function resizeCanvas() {
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width;
+            canvas.height = 350;
+            ctx.strokeStyle = '#2c3e50';
+            ctx.lineWidth = 2;
+            ctx.lineCap = 'round';
+        }
+
+        window.addEventListener('load', () => {
+            resizeCanvas();
+            initExam();
+        });
+        window.addEventListener('resize', resizeCanvas);
+
+        function startPosition(e) {
+            painting = true;
+            draw(e);
+        }
+
+        function endedPosition() {
+            painting = false;
+            ctx.beginPath();
+        }
+
+        function draw(e) {
+            if (!painting) return;
+            e.preventDefault();
+            const rect = canvas.getBoundingClientRect();
+            let clientX = e.clientX || (e.touches && e.touches[0].clientX);
+            let clientY = e.clientY || (e.touches && e.touches[0].clientY);
+            
+            ctx.lineTo(clientX - rect.left, clientY - rect.top);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(clientX - rect.left, clientY - rect.top);
+        }
+
+        function clearWhiteboard() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        canvas.addEventListener('mousedown', startPosition);
+        canvas.addEventListener('mouseup', endedPosition);
+        canvas.addEventListener('mousemove', draw);
+
+        canvas.addEventListener('touchstart', startPosition);
+        canvas.addEventListener('touchend', endedPosition);
+        canvas.addEventListener('touchmove', draw);
+    </script>
+</body>
+</html>
