@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>คณิตศาสตร์ ม.1 - ระบบจำนวนเต็ม เศษส่วน และทศนิยม โดย พระจอมเกล้าติวเตอร์</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --secondary: #64748b;
+            --success: #22c55e;
+            --danger: #ef4444;
+            --bg: #f8fafc;
+            --white: #ffffff;
+        }
+
+        body {
+            font-family: 'Sarabun', sans-serif;
+            background-color: var(--bg);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* Summary Header */
+        .summary-section {
+            background: var(--white);
+            padding: 20px;
+            border-bottom: 2px solid #e2e8f0;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .highlight-box {
+            background: #eff6ff;
+            border-left: 5px solid var(--primary);
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+
+        /* Main Layout */
+        .main-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* Quiz Frame (70%) */
+        .quiz-frame {
+            width: 70%;
+            padding: 30px;
+            overflow-y: auto;
+            border-right: 2px solid #e2e8f0;
+            box-sizing: border-box;
+        }
+
+        /* Whiteboard Frame (30%) */
+        .whiteboard-frame {
+            width: 30%;
+            background: #334155;
+            display: flex;
+            flex-direction: column;
+            padding: 10px;
+            box-sizing: border-box;
+            color: white;
+        }
+
+        canvas {
+            background: white;
+            cursor: crosshair;
+            border-radius: 8px;
+            width: 100%;
+            height: 100%;
+            flex-grow: 1;
+            touch-action: none;
+        }
+
+        .wb-controls {
+            margin-bottom: 10px;
+            display: flex;
+            gap: 10px;
+            justify-content: space-between;
+        }
+
+        /* Components */
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-reset { background: var(--secondary); color: white; }
+
+        .question-card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .option-btn {
+            display: block;
+            width: 100%;
+            text-align: left;
+            padding: 15px;
+            margin: 10px 0;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.2s;
+        }
+
+        .option-btn:hover { background: #f1f5f9; border-color: var(--primary); }
+        .option-btn.correct { background: #dcfce7; border-color: var(--success); color: #166534; }
+        .option-btn.wrong { background: #fee2e2; border-color: var(--danger); color: #991b1b; }
+
+        .clue {
+            font-size: 0.9em;
+            color: #64748b;
+            font-style: italic;
+            margin-top: 15px;
+        }
+
+        .rationale {
+            margin-top: 15px;
+            padding: 15px;
+            background: #f8fafc;
+            border-radius: 8px;
+            display: none;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .main-container { flex-direction: column; }
+            .quiz-frame, .whiteboard-frame { width: 100%; height: auto; }
+            .whiteboard-frame { height: 300px; }
+        }
+
+        /* Result Overlay */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            max-width: 600px;
+            width: 90%;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    <section class="summary-section">
+        <div id="lang-toggle" style="float: right;">
+            <button class="btn btn-reset" onclick="toggleLanguage()">TH / EN</button>
+        </div>
+        <h1 id="title-text">พระจอมเกล้าติวเตอร์: ระบบจำนวนเต็ม เศษส่วน และทศนิยม</h1>
+        <div id="summary-content">
+            <p><strong>สรุปเนื้อหาสำคัญ:</strong> บทเรียนนี้เน้นความเข้าใจเรื่องพื้นฐานของจำนวน 3 ประเภทที่เป็นหัวใจของคณิตศาสตร์ ม.1</p>
+            <ul>
+                <li><strong>จำนวนเต็ม (Integers):</strong> การดำเนินการบวก ลบ คูณ หาร และกฎของเครื่องหมาย</li>
+                <li><strong>เศษส่วน (Fractions):</strong> การหา ค.ร.น. การดำเนินการ และการแปลงเป็นเศษส่วนอย่างต่ำ</li>
+                <li><strong>ทศนิยม (Decimals):</strong> ค่าประจำหลัก การตั้งจุดให้ตรง และความสัมพันธ์กับเศษส่วน</li>
+            </ul>
+            <div class="highlight-box">
+                <strong>เทคนิคจากติวเตอร์:</strong> "ลบเจอลบเป็นบวก", "คูณเศษส่วนไม่ต้องทำส่วนให้เท่ากัน", "บวกลบทศนิยมต้องตั้งจุดให้ตรง"
+            </div>
+        </div>
+    </section>
+
+    <main class="main-container">
+        <div class="quiz-frame" id="quiz-container">
+            <!-- Question will be injected here -->
+        </div>
+
+        <aside class="whiteboard-frame">
+            <div class="wb-controls">
+                <span>กระดานทดเลข (Whiteboard)</span>
+                <button class="btn btn-danger" onclick="clearCanvas()">ล้างจอ</button>
+            </div>
+            <canvas id="whiteboard"></canvas>
+        </aside>
+    </main>
+
+    <div id="resultModal" class="modal">
+        <div class="modal-content">
+            <h2 id="result-title">วิเคราะห์ผลการเรียน</h2>
+            <div id="score-display" style="font-size: 2em; color: var(--primary); margin: 20px 0;"></div>
+            <div id="analysis-content" style="text-align: left; margin-bottom: 20px;"></div>
+            <button class="btn btn-primary" onclick="resetQuiz()">ทำใหม่อีกครั้ง</button>
+            <p style="margin-top:20px; font-size:0.8em; color:gray;">เขียนโดย พระจอมเกล้าติวเตอร์</p>
+        </div>
+    </div>
+
+    <script>
+        // Data Structure
+        const questionsDB = [
+            { id: 1, type: 'integers', th: "ผลลัพธ์ของ (-15) + (-8) - (-12) คือข้อใด?", en: "What is the result of (-15) + (-8) - (-12)?", options: ["-11", "-35", "5", "-15"], answer: 0, clue: "ลบเจอลบเป็นบวกนะจ๊ะ", rationale: "(-15) + (-8) = -23, จากนั้น -23 - (-12) = -23 + 12 = -11" },
+            { id: 2, type: 'fractions', th: "1/2 + 1/3 มีค่าเท่ากับเท่าใด?", en: "What is 1/2 + 1/3?", options: ["2/5", "5/6", "1/6", "2/6"], answer: 1, clue: "หา ค.ร.น. ของ 2 และ 3", rationale: "ค.ร.น. คือ 6 จะได้ 3/6 + 2/6 = 5/6" },
+            { id: 3, type: 'decimals', th: "0.5 × 0.12 มีค่าเท่าใด?", en: "What is 0.5 × 0.12?", options: ["0.6", "0.06", "0.006", "6.0"], answer: 1, clue: "นับตำแหน่งทศนิยมรวมกัน", rationale: "5 × 12 = 60 ทศนิยมรวม 3 ตำแหน่ง ได้ 0.060" },
+            { id: 4, type: 'integers', th: "(-4) × (-5) × (-2) คือข้อใด?", en: "What is (-4) × (-5) × (-2)?", options: ["40", "-40", "20", "-20"], answer: 1, clue: "ลบคูณลบคูณลบ ได้ลบหรือบวก?", rationale: "(-4) × (-5) = 20, จากนั้น 20 × (-2) = -40" },
+            { id: 5, type: 'fractions', th: "3/4 ÷ 1/2 มีค่าเท่ากับเท่าใด?", en: "What is 3/4 ÷ 1/2?", options: ["3/8", "1.5", "2/3", "3/2"], answer: 1, clue: "เปลี่ยนหารเป็นคูณ กลับเศษเป็นส่วน", rationale: "3/4 × 2/1 = 6/4 = 3/2 หรือ 1.5" },
+            { id: 6, type: 'decimals', th: "12.5 - 3.25 มีค่าเท่ากับเท่าใด?", en: "What is 12.5 - 3.25?", options: ["9.25", "9.75", "10.25", "8.25"], answer: 0, clue: "เติม 0 หลัง 12.5 ให้ตำแหน่งเท่ากัน", rationale: "12.50 - 3.25 = 9.25" },
+            { id: 7, type: 'mixed', th: "ข้อใดมีค่าน้อยที่สุด?", en: "Which value is the smallest?", options: ["-5", "0.1", "-1/2", "-10"], answer: 3, clue: "บนเส้นจำนวน ยิ่งไปทางซ้ายยิ่งน้อย", rationale: "-10 อยู่ซ้ายสุดของเส้นจำนวน มีค่าน้อยที่สุด" },
+            { id: 8, type: 'integers', th: "ค่าสัมบูรณ์ของ -25 มีค่าเท่าใด?", en: "What is the absolute value of -25?", options: ["-25", "25", "0", "1/25"], answer: 1, clue: "ระยะห่างจากศูนย์เป็นบวกเสมอ", rationale: "|-25| = 25" },
+            { id: 9, type: 'fractions', th: "เปลี่ยน 2 1/4 เป็นเศษเกินได้เท่าใด?", en: "Convert 2 1/4 to an improper fraction.", options: ["9/4", "7/4", "3/4", "8/4"], answer: 0, clue: "(หน้า × ล่าง) + บน", rationale: "(2 × 4) + 1 = 9 ตัวส่วนคงเดิมคือ 4" },
+            { id: 10, type: 'decimals', th: "0.75 เขียนเป็นเศษส่วนอย่างต่ำได้คือข้อใด?", en: "What is 0.75 in simplest fraction form?", options: ["75/100", "3/4", "1/4", "3/5"], answer: 1, clue: "เอา 25 มาตัดทอน", rationale: "0.75 = 75/100 ตัดทอนด้วย 25 ได้ 3/4" },
+            // Adding more to reach 30
+            { id: 11, type: 'integers', th: "(-100) ÷ 25 คือข้อใด?", en: "-100 ÷ 25 is?", options: ["-4", "4", "-5", "5"], answer: 0, clue: "เครื่องหมายต่างกัน ผลหารติดลบ", rationale: "-100 หาร 25 ได้ 4 ใส่เครื่องหมายลบเป็น -4" },
+            { id: 12, type: 'mixed', th: "(2 + 3) × 4 - 5 คือเท่าใด?", en: "(2 + 3) × 4 - 5 is?", options: ["15", "17", "9", "25"], answer: 0, clue: "ทำในวงเล็บก่อน", rationale: 5 × 4 - 5 = 20 - 5 = 15 },
+            { id: 13, type: 'decimals', th: "10 ÷ 0.1 มีค่าเท่าใด?", en: "What is 10 ÷ 0.1?", options: ["1", "10", "100", "0.1"], answer: 2, clue: "เลื่อนจุดไปข้างหลังหนึ่งตำแหน่ง", rationale: "100 / 1 = 100" },
+            { id: 14, type: 'fractions', th: "ข้อใดคือเศษส่วนที่มีค่าเท่ากับ 2/3?", en: "Which fraction is equivalent to 2/3?", options: ["4/9", "6/9", "2/6", "4/3"], answer: 1, clue: "คูณ 3 ทั้งเศษและส่วน", rationale: "2×3 / 3×3 = 6/9" },
+            { id: 15, type: 'integers', th: "ผลบวกของจำนวนตรงข้ามของ -8 กับ 10 คือ?", en: "Sum of opposite of -8 and 10?", options: ["2", "18", "-18", "-2"], answer: 1, clue: "จำนวนตรงข้ามของ -8 คือ 8", rationale: "8 + 10 = 18" },
+            { id: 16, type: 'integers', th: "(-1) ยกกำลัง 100 มีค่าเท่าใด?", en: "(-1) to the power of 100?", options: ["-1", "1", "100", "-100"], answer: 1, clue: "ลบคูณกันจำนวนคู่ครั้งเป็นบวก", rationale: "เลขชี้กำลังคู่ ผลลัพธ์เป็นบวก" },
+            { id: 17, type: 'decimals', th: "3.4 + 0.06 คือข้อใด?", en: "3.4 + 0.06 is?", options: ["3.46", "3.10", "4.0", "3.406"], answer: 0, clue: "ตั้งจุดให้ตรง 3.40 + 0.06", rationale: "บวกตามหลักทศนิยมได้ 3.46" },
+            { id: 18, type: 'fractions', th: "ครึ่งหนึ่งของ 1/2 คือข้อใด?", en: "Half of 1/2 is?", options: ["1", "1/4", "1/2", "0"], answer: 1, clue: "1/2 คูณ 1/2", rationale: "แบ่งครึ่งของครึ่งคือหนึ่งในสี่" },
+            { id: 19, type: 'mixed', th: "25% ของ 80 มีค่าเท่าใด?", en: "What is 25% of 80?", options: ["20", "40", "15", "25"], answer: 0, clue: "25/100 คูณ 80", rationale: "1/4 ของ 80 คือ 20" },
+            { id: 20, type: 'integers', th: "x + (-5) = 10 แล้ว x คือ?", en: "If x + (-5) = 10, then x is?", options: ["5", "15", "-5", "-15"], answer: 1, clue: "ย้าย -5 ไปบวก", rationale: "x = 10 + 5 = 15" },
+            { id: 21, type: 'decimals', th: "0.1 × 0.1 × 0.1 คือ?", en: "0.1 × 0.1 × 0.1 is?", options: ["0.3", "0.1", "0.01", "0.001"], answer: 3, clue: "นับตำแหน่งทศนิยมรวมกัน", rationale: "รวมเป็น 3 ตำแหน่ง" },
+            { id: 22, type: 'fractions', th: "เศษส่วนใดมีค่ามากที่สุด?", en: "Which fraction is the largest?", options: ["1/2", "2/3", "3/4", "4/5"], answer: 3, clue: "ลองแปลงเป็นทศนิยมดูนะ", rationale: "4/5 = 0.8 ซึ่งมากที่สุดในกลุ่ม" },
+            { id: 23, type: 'integers', th: "(-12) - 8 มีค่าเท่าใด?", en: "(-12) - 8 is?", options: ["-4", "4", "-20", "20"], answer: 2, clue: "มีหนี้ 12 เป็นหนี้เพิ่มอีก 8", rationale: "-12 + (-8) = -20" },
+            { id: 24, type: 'decimals', th: "5 ÷ 2 เขียนเป็นทศนิยมได้เท่าใด?", en: "5 ÷ 2 as a decimal is?", options: ["2.1", "2.5", "2.05", "5.2"], answer: 1, clue: "ครึ่งหนึ่งของ 5 คือ?", rationale: "5 หาร 2 ได้ 2.5" },
+            { id: 25, type: 'mixed', th: "(-3)² มีค่าเท่ากับข้อใด?", en: "(-3)² is equal to?", options: ["-9", "9", "-6", "6"], answer: 1, clue: "(-3) คูณ (-3)", rationale: "ลบคูณลบเป็นบวก" },
+            { id: 26, type: 'fractions', th: "ผลคูณของ 2/5 และ 5/2 คือ?", en: "Product of 2/5 and 5/2 is?", options: ["1", "4/25", "25/4", "10/10"], answer: 0, clue: "ตัดทอนกันได้หมดเลย", rationale: "ได้ 10/10 ซึ่งเท่ากับ 1" },
+            { id: 27, type: 'integers', th: "0 หารด้วย 10 มีค่าเท่าใด?", en: "0 divided by 10 is?", options: ["0", "10", "1", "ไม่มีคำตอบ"], answer: 0, clue: "0 เป็นตัวตั้ง ผลลัพธ์คือ?", rationale: "0 หารด้วยจำนวนใดๆ (ที่ไม่ใช่ 0) ได้ 0" },
+            { id: 28, type: 'decimals', th: "1.1 × 1.1 คือ?", en: "1.1 × 1.1 is?", options: ["1.21", "12.1", "2.2", "1.11"], answer: 0, clue: "11 × 11 = 121", rationale: "ทศนิยม 2 ตำแหน่ง" },
+            { id: 29, type: 'integers', th: "-(-(-2)) มีค่าเท่าใด?", en: "What is -(-(-2))?", options: ["2", "-2", "0", "-6"], answer: 1, clue: "นับจำนวนเครื่องหมายลบ", rationale: "ลบ 3 ตัว ผลลัพธ์เป็นลบ" },
+            { id: 30, type: 'mixed', th: "สมบัติการสลับที่การบวกคือข้อใด?", en: "Commutative property of addition is?", options: ["a+b = b+a", "a(b+c) = ab+ac", "(a+b)+c = a+(b+c)", "a+0 = a"], answer: 0, clue: "สลับที่กันแล้วผลลัพธ์เท่าเดิม", rationale: "การสลับที่ตัวตั้งและตัวบวก" }
+        ];
+
+        let currentLang = 'th';
+        let userAnswers = {};
+        let shuffledQuestions = [];
+
+        // Fisher-Yates Shuffle
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        // Initialize Quiz
+        function initQuiz() {
+            const savedData = localStorage.getItem('kg_tutor_quiz');
+            if (savedData) {
+                const data = JSON.parse(savedData);
+                userAnswers = data.answers || {};
+                currentLang = data.lang || 'th';
+            }
+            
+            shuffledQuestions = shuffle([...questionsDB]);
+            renderQuestions();
+        }
+
+        function renderQuestions() {
+            const container = document.getElementById('quiz-container');
+            container.innerHTML = '';
+
+            shuffledQuestions.forEach((q, index) => {
+                const card = document.createElement('div');
+                card.className = 'question-card';
+                card.innerHTML = `
+                    <h3>ข้อที่ ${index + 1}: ${q[currentLang]}</h3>
+                    <div id="options-${q.id}">
+                        ${q.options.map((opt, i) => `
+                            <button class="option-btn ${userAnswers[q.id] !== undefined ? (i === q.answer ? 'correct' : (i === userAnswers[q.id] ? 'wrong' : '')) : ''}" 
+                                onclick="checkAnswer(${q.id}, ${i}, ${q.answer})"
+                                ${userAnswers[q.id] !== undefined ? 'disabled' : ''}>
+                                ${opt}
+                            </button>
+                        `).join('')}
+                    </div>
+                    <div class="clue">💡 Clue: ${q.clue}</div>
+                    <div class="rationale" id="rationale-${q.id}" style="${userAnswers[q.id] !== undefined ? 'display:block' : ''}">
+                        <strong>เฉลยละเอียด:</strong> ${q.rationale}
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+
+            // Add Finish Button
+            const finishBtn = document.createElement('button');
+            finishBtn.className = 'btn btn-primary';
+            finishBtn.style.width = '100%';
+            finishBtn.innerText = 'ตรวจคะแนนและวิเคราะห์ผล';
+            finishBtn.onclick = showAnalysis;
+            container.appendChild(finishBtn);
+        }
+
+        function checkAnswer(qId, selectedIdx, correctIdx) {
+            userAnswers[qId] = selectedIdx;
+            saveState();
+            renderQuestions();
+        }
+
+        function saveState() {
+            localStorage.setItem('kg_tutor_quiz', JSON.stringify({
+                answers: userAnswers,
+                lang: currentLang
+            }));
+        }
+
+        function toggleLanguage() {
+            currentLang = currentLang === 'th' ? 'en' : 'th';
+            saveState();
+            renderQuestions();
+        }
+
+        function resetQuiz() {
+            localStorage.removeItem('kg_tutor_quiz');
+            userAnswers = {};
+            document.getElementById('resultModal').style.display = 'none';
+            initQuiz();
+        }
+
+        function showAnalysis() {
+            const total = shuffledQuestions.length;
+            let score = 0;
+            let analysis = { integers: 0, fractions: 0, decimals: 0, mixed: 0 };
+            let totalType = { integers: 0, fractions: 0, decimals: 0, mixed: 0 };
+
+            shuffledQuestions.forEach(q => {
+                totalType[q.type]++;
+                if (userAnswers[q.id] === q.answer) {
+                    score++;
+                    analysis[q.type]++;
+                }
+            });
+
+            const scorePercent = (score / total) * 100;
+            document.getElementById('score-display').innerText = `${score} / ${total}`;
+            
+            let report = "<h4>จุดเด่นของคุณ:</h4>";
+            let weaknesses = "<h4>จุดที่ควรพัฒนา:</h4>";
+            
+            Object.keys(analysis).forEach(type => {
+                const p = (analysis[type] / totalType[type]) * 100;
+                const typeName = type === 'integers' ? 'จำนวนเต็ม' : type === 'fractions' ? 'เศษส่วน' : type === 'decimals' ? 'ทศนิยม' : 'การคำนวณระคน';
+                if (p >= 80) report += `<p>✅ ${typeName}: ทำได้ยอดเยี่ยมมาก!</p>`;
+                else if (p < 50) weaknesses += `<p>❌ ${typeName}: ควรกลับไปทบทวนเนื้อหาและทำโจทย์เพิ่ม</p>`;
+            });
+
+            document.getElementById('analysis-content').innerHTML = report + weaknesses;
+            document.getElementById('resultModal').style.display = 'flex';
+        }
+
+        // Whiteboard Logic
+        const canvas = document.getElementById('whiteboard');
+        const ctx = canvas.getContext('2d');
+        let painting = false;
+
+        function resizeCanvas() {
+            canvas.width = canvas.parentElement.clientWidth - 20;
+            canvas.height = canvas.parentElement.clientHeight - 80;
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        function startPosition(e) {
+            painting = true;
+            draw(e);
+        }
+
+        function finishedPosition() {
+            painting = false;
+            ctx.beginPath();
+        }
+
+        function draw(e) {
+            if (!painting) return;
+            ctx.lineWidth = 2;
+            ctx.lineCap = 'round';
+            ctx.strokeStyle = '#000';
+
+            const rect = canvas.getBoundingClientRect();
+            const x = (e.clientX || e.touches[0].clientX) - rect.left;
+            const y = (e.clientY || e.touches[0].clientY) - rect.top;
+
+            ctx.lineTo(x, y);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+        }
+
+        canvas.addEventListener('mousedown', startPosition);
+        canvas.addEventListener('mouseup', finishedPosition);
+        canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('touchstart', (e) => { e.preventDefault(); startPosition(e); });
+        canvas.addEventListener('touchend', finishedPosition);
+        canvas.addEventListener('touchmove', (e) => { e.preventDefault(); draw(e); });
+
+        function clearCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        // Run
+        initQuiz();
+    </script>
+</body>
+</html>
+```eof
+
+หวังว่าแบบทดสอบและสรุปเนื้อหานี้จะช่วยให้คุณเข้าใจเรื่องระบบจำนวนเต็ม เศษส่วน และทศนิยมได้ดียิ่งขึ้นนะครับ หากมีข้อสงสัยสามารถใช้กระดาน Whiteboard ทดเลขและพิจารณาเฉลยละเอียดได้ทันทีครับ
+
+เขียนโดย พระจอมเกล้าติวเตอร์
