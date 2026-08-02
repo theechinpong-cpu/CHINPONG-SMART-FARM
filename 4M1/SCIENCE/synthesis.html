@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>พระจอมเกล้าติวเตอร์ - การสังเคราะห์ด้วยแสงและการลำเลียงของพืช (ชุดที่ 5)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: sans-serif; background-color: #f8fafc; }
+        .correct-ans { background-color: #bbf7d0 !important; border-color: #16a34a !important; }
+        .wrong-ans { background-color: #fecaca !important; border-color: #dc2626 !important; }
+    </style>
+</head>
+<body class="p-4">
+    <header class="max-w-6xl mx-auto mb-6 text-center">
+        <h1 class="text-3xl font-bold text-green-800">ชุดติวเข้มวิทยาศาสตร์ ม.1: การสังเคราะห์ด้วยแสงและระบบลำเลียง (ชุดที่ 5)</h1>
+        <p class="text-green-700">ระดับความยาก: ยาก (สุ่มตำแหน่งคำตอบและข้อคำถาม)</p>
+    </header>
+
+    <main class="max-w-6xl mx-auto bg-white rounded-xl shadow-lg border p-6">
+        <div class="flex flex-col md:flex-row gap-6">
+            <div class="flex-1">
+                <div class="mb-4">ข้อที่ <span id="q-num">1</span>/30</div>
+                <div id="question" class="text-xl font-bold mb-4"></div>
+                <div id="options" class="space-y-3"></div>
+                <div id="feedback" class="mt-4 p-4 rounded bg-gray-50 border hidden"></div>
+                <div class="mt-6 flex justify-between">
+                    <button onclick="nav(-1)" class="px-6 py-2 bg-gray-200 rounded">ก่อนหน้า</button>
+                    <button onclick="nav(1)" class="px-6 py-2 bg-green-600 text-white rounded">ถัดไป</button>
+                </div>
+            </div>
+            <div class="w-full md:w-80 border-l pl-4">
+                <h3 class="font-bold mb-2">กระดานทด</h3>
+                <canvas id="wb" class="w-full h-96 border rounded bg-gray-50"></canvas>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const RAW_DATA = [
+            { q: "ผลผลิตหลักที่พืชได้รับจากการสังเคราะห์ด้วยแสงคืออะไร?", options: ["น้ำตาลกลูโคส", "คาร์บอนไดออกไซด์", "แร่ธาตุ", "โปรตีน"], correct: "น้ำตาลกลูโคส" },
+            { q: "พืชลำเลียงน้ำและแร่ธาตุผ่านท่อชนิดใด?", options: ["ไซเลม", "โฟลเอ็ม", "ท่อลำเลียงอาหาร", "เซลล์คุม"], correct: "ไซเลม" },
+            { q: "ท่อลำเลียงที่ทำหน้าที่ขนส่งน้ำตาลจากใบไปส่วนต่างๆ คือ?", options: ["โฟลเอ็ม", "ไซเลม", "ท่อลำเลียงน้ำ", "ปากใบ"], correct: "โฟลเอ็ม" },
+            { q: "ปัจจัยใดไม่เกี่ยวข้องโดยตรงกับการสังเคราะห์ด้วยแสง?", options: ["ออกซิเจน", "แสงแดด", "น้ำ", "คาร์บอนไดออกไซด์"], correct: "ออกซิเจน" },
+            { q: "การทดสอบแป้งในใบพืชใช้สารละลายใด?", options: ["สารละลายไอโอดีน", "สารละลายเบเนดิกต์", "น้ำปูนใส", "แอลกอฮอล์"], correct: "สารละลายไอโอดีน" },
+            { q: "การคายน้ำของพืชเกิดขึ้นที่ส่วนใดมากที่สุด?", options: ["ปากใบ", "ลำต้น", "ราก", "รากฝอย"], correct: "ปากใบ" },
+            { q: "ทิศทางการลำเลียงน้ำของไซเลมเป็นอย่างไร?", options: ["จากรากขึ้นสู่ยอด", "จากยอดลงสู่ราก", "ขึ้นและลง", "กระจายรอบทิศ"], correct: "จากรากขึ้นสู่ยอด" },
+            { q: "ทำไมต้องต้มใบพืชในแอลกอฮอล์ก่อนทดสอบแป้ง?", options: ["เพื่อละลายคลอโรฟิลล์ออก", "เพื่อทำให้ใบสุก", "เพื่อฆ่าเชื้อรา", "เพื่อเพิ่มความหนาของแป้ง"], correct: "เพื่อละลายคลอโรฟิลล์ออก" },
+            { q: "เมื่อความชื้นในอากาศสูง อัตราการคายน้ำจะเป็นอย่างไร?", options: ["ลดลง", "เพิ่มขึ้น", "เท่าเดิม", "หยุดสนิท"], correct: "ลดลง" },
+            { q: "การคายน้ำมีผลดีอย่างไรต่อพืช?", options: ["ช่วยดึงน้ำจากรากขึ้นสู่ยอด", "ช่วยสร้างอาหาร", "ช่วยป้องกันแมลง", "ช่วยสร้างคลอโรฟิลล์"], correct: "ช่วยดึงน้ำจากรากขึ้นสู่ยอด" },
+            { q: "หากพืชขาดแสงแดด สิ่งใดจะเกิดขึ้น?", options: ["กระบวนการสร้างน้ำตาลหยุดลง", "พืชจะดูดน้ำเร็วขึ้น", "ใบพืชจะเปลี่ยนเป็นสีแดง", "พืชจะหยุดดูดน้ำ"], correct: "กระบวนการสร้างน้ำตาลหยุดลง" },
+            { q: "การเปลี่ยนแป้งเป็นน้ำตาลเกิดขึ้นในส่วนใดของพืช?", options: ["ใบพืช", "ราก", "ลำต้น", "ดอก"], correct: "ใบพืช" },
+            { q: "แก๊สใดที่พืชปล่อยออกมาระหว่างสังเคราะห์ด้วยแสง?", options: ["ออกซิเจน", "คาร์บอนไดออกไซด์", "ไนโตรเจน", "ไฮโดรเจน"], correct: "ออกซิเจน" },
+            { q: "สารสีเขียวในใบพืชคืออะไร?", options: ["คลอโรฟิลล์", "คลอโรพลาสต์", "กลูโคส", "แป้ง"], correct: "คลอโรฟิลล์" },
+            { q: "เมื่ออุณหภูมิสูง อัตราการคายน้ำของพืชจะมีแนวโน้มเป็นอย่างไร?", options: ["เพิ่มขึ้น", "ลดลง", "คงที่", "ไม่เปลี่ยน"], correct: "เพิ่มขึ้น" },
+            { q: "การที่พืชมีปากใบมากด้านล่างของใบช่วยเรื่องอะไร?", options: ["ลดการสูญเสียน้ำ", "เพิ่มการรับแสง", "ช่วยในการสังเคราะห์แสง", "ช่วยให้ใบสวยงาม"], correct: "ลดการสูญเสียน้ำ" },
+            { q: "พืชเปลี่ยนน้ำตาลที่สร้างได้ไปสะสมในรูปใด?", options: ["แป้ง", "โปรตีน", "ไขมัน", "น้ำมัน"], correct: "แป้ง" },
+            { q: "ถ้าลอกท่อลำเลียงอาหารรอบต้นไม้ออก จะเกิดอะไรขึ้น?", options: ["พืชขาดอาหารจนตาย", "พืชขาดน้ำจนตาย", "พืชจะโตเร็วขึ้น", "ไม่มีผลกระทบ"], correct: "พืชขาดอาหารจนตาย" },
+            { q: "ปัจจัยใดทำให้อัตราการคายน้ำเพิ่มขึ้นมากที่สุด?", options: ["ลมแรง", "ความชื้นสูง", "อากาศนิ่ง", "แสงน้อย"], correct: "ลมแรง" },
+            { q: "คลอโรพลาสต์ทำหน้าที่อะไร?", options: ["แหล่งสังเคราะห์ด้วยแสง", "ลำเลียงน้ำ", "ลำเลียงอาหาร", "เก็บสะสมแป้ง"], correct: "แหล่งสังเคราะห์ด้วยแสง" },
+            { q: "แก๊สชนิดใดที่พืชใช้ในการสังเคราะห์ด้วยแสง?", options: ["คาร์บอนไดออกไซด์", "ออกซิเจน", "ไฮโดรเจน", "มีเทน"], correct: "คาร์บอนไดออกไซด์" },
+            { q: "ลำต้นส่วนใดทำหน้าที่ลำเลียงอาหาร?", options: ["โฟลเอ็ม", "ไซเลม", "เปลือกไม้", "แก่นไม้"], correct: "โฟลเอ็ม" },
+            { q: "พืชใช้อะไรในการดักจับพลังงานแสง?", options: ["คลอโรฟิลล์", "น้ำตาล", "แป้ง", "น้ำ"], correct: "คลอโรฟิลล์" },
+            { q: "การสังเคราะห์ด้วยแสงเกิดขึ้นในช่วงเวลาใดเป็นหลัก?", options: ["กลางวัน", "กลางคืน", "ทั้งวันทั้งคืน", "ช่วงเย็น"], correct: "กลางวัน" },
+            { q: "ท่อลำเลียงน้ำประกอบด้วยเซลล์ชนิดใด?", options: ["ไซเลม", "โฟลเอ็ม", "ปากใบ", "เซลล์คุม"], correct: "ไซเลม" },
+            { q: "สารละลายไอโอดีนเปลี่ยนสีอย่างไรเมื่อเจอแป้ง?", options: ["น้ำเงินเข้ม", "แดง", "ขาว", "เหลือง"], correct: "น้ำเงินเข้ม" },
+            { q: "หากพืชไม่มีปากใบ จะส่งผลอย่างไร?", options: ["คายน้ำไม่ได้", "สังเคราะห์แสงไม่ได้", "ดูดน้ำไม่ได้", "เติบโตไม่ได้"], correct: "คายน้ำไม่ได้" },
+            { q: "การลำเลียงในโฟลเอ็มลำเลียงในทิศทางใด?", options: ["ขึ้นและลง", "ขึ้นอย่างเดียว", "ลงอย่างเดียว", "ไม่เคลื่อนที่"], correct: "ขึ้นและลง" },
+            { q: "ถ้าพืชขาดน้ำ กระบวนการสังเคราะห์ด้วยแสงจะเป็นอย่างไร?", options: ["ช้าลง", "เร็วขึ้น", "หยุดชะงัก", "คงที่"], correct: "ช้าลง" },
+            { q: "การคายน้ำมีความสำคัญอย่างไรต่อพืช?", options: ["รักษาอุณหภูมิและลำเลียงน้ำ", "สร้างอาหาร", "ทำให้ใบสีเขียว", "ช่วยขยายพันธุ์"], correct: "รักษาอุณหภูมิและลำเลียงน้ำ" }
+        ];
+
+        let QUESTIONS = RAW_DATA.map(q => {
+            let options = [...q.options];
+            let correct = q.correct;
+            for (let i = options.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [options[i], options[j]] = [options[j], options[i]];
+            }
+            return { q: q.q, options: options, ans: options.indexOf(correct), exp: "เฉลย: " + correct };
+        });
+
+        let idx = 0;
+        function nav(d) {
+            idx = Math.max(0, Math.min(29, idx + d));
+            render();
+        }
+
+        function render() {
+            document.getElementById('q-num').innerText = idx + 1;
+            document.getElementById('question').innerText = QUESTIONS[idx].q;
+            const optDiv = document.getElementById('options');
+            optDiv.innerHTML = '';
+            QUESTIONS[idx].options.forEach((o, i) => {
+                const b = document.createElement('button');
+                b.className = "w-full text-left p-3 border rounded hover:bg-green-50 transition-all";
+                b.innerText = o;
+                b.onclick = () => {
+                    const isCorrect = i === QUESTIONS[idx].ans;
+                    b.className += isCorrect ? " correct-ans" : " wrong-ans";
+                    document.getElementById('feedback').classList.remove('hidden');
+                    document.getElementById('feedback').innerText = QUESTIONS[idx].exp;
+                    Array.from(optDiv.children).forEach(btn => btn.disabled = true);
+                };
+                optDiv.appendChild(b);
+            });
+            document.getElementById('feedback').classList.add('hidden');
+        }
+
+        const canvas = document.getElementById('wb');
+        const ctx = canvas.getContext('2d');
+        let painting = false;
+        canvas.onmousedown = () => painting = true;
+        canvas.onmouseup = () => painting = false;
+        canvas.onmousemove = (e) => {
+            if(!painting) return;
+            const rect = canvas.getBoundingClientRect();
+            ctx.lineWidth = 2;
+            ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
+        };
+        window.onload = render;
+    </script>
+</body>
+</html>
