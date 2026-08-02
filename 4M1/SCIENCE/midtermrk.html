@@ -221,6 +221,7 @@
             background: #d4edda !important;
             border-color: var(--success-color) !important;
             color: #155724;
+            font-weight: bold;
         }
 
         .option-item.incorrect {
@@ -346,7 +347,7 @@
                 <h3 id="tech-title">💡 เทคนิคการจำและกระบวนการคิด (Memory Tricks & Thought Process)</h3>
                 <p id="tech-content">
                 - **พืช vs สัตว์:** ท่องจำว่า <q>พืชมีกำแพง (Wall) และแผงโซลาร์เซลล์ (Chloroplast)</q> เพื่อจำผนังเซลล์และคลอพลาสต์ที่เซลล์สัตว์ไม่มี<br>
-                - **สูตรกลกำลังขยายรวม:** <q>ใกล้คูณวัตถุ</q> (เลนส์ใกล้ตา × เลนส์ใกล้วัตถุ)<br>
+                - **สูตรกำลังขยายรวม:** <q>ใกล้คูณวัตถุ</q> (เลนส์ใกล้ตา × เลนส์ใกล้วัตถุ)<br>
                 - **การออสโมซิส:** น้ำเดินตามความเข้มข้นสูง (<q>น้ำน้อยไปน้ำมาก</q> หรือ <q>เกลือดูดน้ำ</q> สารละลายเข้มข้นสูงน้ำจะวิ่งเข้าหา)<br>
                 - **ท่อลำเลียงพืช:** <q>Xylem ลำเลียงน้ำขึ้น (X ขึ้น), Phloem ลำเลียงอาหารทั่ว (Phlow อาหารไหล)</q>
                 </p>
@@ -770,238 +771,184 @@
                 ],
                 answer: 0,
                 clue: "สารกึ่งเหลวภายในเยื่อหุ้มเซลล์",
-                explanation: "เฉลย: Cytoplasm (ไซโตพลาสซึม) เป็นของเหลวภายในเซลล์ที่มีออร์แกเนลล์ต่างๆ แขวนลอยอยู่"
+                explanation: "เฉลย: Cytoplasm (ไซโตพลาสซึม) เป็นของเหลวภายในเซลล์ที่หล่อเลี้ยงออร์แกเนลล์ต่างๆ"
             },
             {
                 id: 30,
-                question: "ข้อใดสรุปความสัมพันธ์ระหว่างขนาดของเซลล์กับอัตราการแลกเปลี่ยนสารได้ถูกต้องสมบูรณ์ที่สุด",
+                question: "หากเปรียบเทียบเซลล์เป็นโรงงานออร์แกเนลล์ใดทำหน้าที่เปรียบเสมือน 'แผนกแพ็คและส่งออกสินค้า' (Packaging & Export)",
                 options: [
-                    "เซลล์ขนาดใหญ่มีอัตราการแลกเปลี่ยนสารได้ดีกว่าเซลล์ขนาดเล็กมาก",
-                    "เซลล์ขนาดเล็กมีอัตราส่วนพื้นที่ผิวต่อปริมาตรสูง ทำให้แลกเปลี่ยนสารกับสิ่งแวดล้อมได้รวดเร็วและมีประสิทธิภาพ",
-                    "ขนาดเซลล์ไม่มีผลต่อการแลกเปลี่ยนสารผ่านเยื่อหุ้มเซลล์",
-                    "เซลล์พืชขนาดใหญ่ต้องใช้พลังงานจำนวนมากในการแพร่สารเข้าสู่ใจกลางเซลล์"
+                    "Golgi body (กอลบีบอดี้)",
+                    "Ribosome",
+                    "Lysosome",
+                    "Endoplasmic reticulum"
                 ],
-                answer: 1,
-                clue: "ยิ่งเล็ก พื้นที่ผิวสัมผัสเทียบกับปริมาตรยิ่งมาก",
-                explanation: "เฉลย: เซลล์ขนาดเล็กมีอัตราส่วนพื้นที่ผิวต่อปริมาตรสูง ทำให้แลกเปลี่ยนสารกับสิ่งแวดล้อมได้รวดเร็วและมีประสิทธิภาพ"
+                answer: 0,
+                clue: "เกี่ยวข้องกับการตกแต่งและส่งออกโปรตีนนอกเซลล์",
+                explanation: "เฉลย: Golgi body (กอลบีบอดี้) ทำหน้าที่รับ แต่ง เติม และแพ็คโปรตีนหรือสารต่างๆ เพื่อส่งออกไปใช้นอกเซลล์"
             }
         ];
 
+        // ตัวแปรเก็บสถานะคำตอบของผู้ใช้
         let userAnswers = {};
-        let isSubmitted = false;
 
-        // สุ่มลำดับข้อสอบและตัวเลือกด้วย Fisher-Yates Algorithm เพื่อป้องกันการเดาตำแหน่ง
-        function shuffleArray(array) {
-            for (let i = array.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [array[i], array[j]] = [array[j], array[i]];
-            }
-            return array;
-        }
-
-        let shuffledQuestions = [];
-
-        function initExam() {
-            // โหลดสถานะจาก LocalStorage ถ้ามี
-            const savedAnswers = localStorage.getItem('bio_exam_answers');
-            if (savedAnswers) {
-                try {
-                    userAnswers = JSON.parse(savedAnswers);
-                } catch(e) {
-                    userAnswers = {};
-                }
-            }
-
-            // สุ่มข้อสอบ 30 ข้อ
-            const savedOrder = localStorage.getItem('bio_exam_order');
-            if (savedOrder) {
-                try {
-                    const orderIndices = JSON.parse(savedOrder);
-                    shuffledQuestions = orderIndices.map(i => questionsData[i]);
-                } catch(e) {
-                    generateNewOrder();
-                }
-            } else {
-                generateNewOrder();
-            }
-
-            renderExam();
-        }
-
-        function generateNewOrder() {
-            let indices = questionsData.map((_, index) => index);
-            shuffleArray(indices);
-            localStorage.setItem('bio_exam_order', JSON.stringify(indices));
-            shuffledQuestions = indices.map(i => questionsData[i]);
-        }
-
+        // ฟังก์ชันสร้างข้อสอบลงใน DOM
         function renderExam() {
             const container = document.getElementById('exam-container');
-            container.innerHTML = '';
+            let html = '';
 
-            shuffledQuestions.forEach((q, index) => {
-                const card = document.createElement('div');
-                card.className = 'question-card';
-                card.id = `q-card-${q.id}`;
+            questionsData.forEach((q, index) => {
+                html += `
+                    <div class="question-card" id="q-card-${index}">
+                        <div class="question-title">ข้อที่ ${index + 1}: ${q.question}</div>
+                        <div class="clue-box">💡 คำใบ้: ${q.clue}</div>
+                        <ul class="options-list">
+                `;
 
-                let optionsHtml = '';
-                q.options.forEach((opt, optIdx) => {
-                    let selectedClass = '';
-                    if (userAnswers[q.id] !== undefined && userAnswers[q.id].selected === optIdx) {
-                        selectedClass = 'style="background: #e2e8f0; border-color: var(--secondary-color);"';
-                    }
-                    optionsHtml += `
-                        <li class="option-item" id="opt-${q.id}-${optIdx}" ${selectedClass} onclick="selectOption(${q.id}, ${optIdx})">
-                            ${String.fromCharCode(65 + optIdx)}. ${opt}
+                q.options.forEach((opt, optIndex) => {
+                    html += `
+                        <li class="option-item" id="opt-${index}-${optIndex}" onclick="selectOption(${index}, ${optIndex})">
+                            ${String.fromCharCode(65 + curLetter(optIndex))}. ${opt}
                         </li>
                     `;
                 });
 
-                card.innerHTML = `
-                    <div class="question-title">ข้อที่ ${index + 1}: ${q.question}</div>
-                    <div class="clue-box">🔍 คำใบ้: ${q.clue}</div>
-                    <ul class="options-list">
-                        ${optionsHtml}
-                    </ul>
-                    <div class="explanation" id="exp-${q.id}">
-                        <strong>คำอธิบาย/วิธีลัดจากติวเตอร์:</strong> ${q.explanation}
+                html += `
+                        </ul>
+                        <div class="explanation" id="exp-${index}">${q.explanation}</div>
                     </div>
                 `;
-                container.appendChild(card);
             });
 
-            // ถ้าเคยส่งข้อสอบแล้ว ให้โชว์ผลเฉลยค้างไว้
-            if (isSubmitted || localStorage.getItem('bio_exam_submitted') === 'true') {
-                isSubmitted = true;
-                showResultsUI(false);
-            }
+            container.innerHTML = html;
         }
 
-        function selectOption(qId, optIdx) {
-            if (isSubmitted) return; // ถ้าส่งแล้ว ห้ามเปลี่ยนคำตอบ
+        function curLetter(i) {
+            return i;
+        }
 
-            userAnswers[qId] = { selected: optIdx };
-            localStorage.setItem('bio_exam_answers', JSON.stringify(userAnswers));
+        // ฟังก์ชันเมื่อผู้ใช้เลือกตัวเลือก
+        function selectOption(qIndex, optIndex) {
+            userAnswers[qIndex] = optIndex;
 
-            // อัปเดต UI ไฮไลต์ตัวเลือกที่กด
-            const qObj = shuffledQuestions.find(q => q.id === qId);
-            qObj.options.forEach((_, i) => {
-                const optElem = document.getElementById(`opt-${qId}-${i}`);
-                if (i === optIdx) {
-                    optElem.style.background = '#e2e8f0';
-                    optElem.style.borderColor = 'var(--secondary-color)';
-                } else {
-                    optElem.style.background = '#f8f9fa';
-                    optElem.style.borderColor = 'var(--border-color)';
-                }
+            // เปลี่ยนสีปุ่มที่เลือกในข้อนั้นๆ
+            const q = questionsData[qIndex];
+            q.options.forEach((_, i) => {
+                const item = document.getElementById(`opt-${qIndex}-${i}`);
+                item.style.background = '#f8f9fa';
+                item.style.borderColor = 'var(--border-color)';
+                item.style.color = 'var(--text-color)';
             });
+
+            const selectedItem = document.getElementById(`opt-${qIndex}-${optIndex}`);
+            selectedItem.style.background = '#edf2f7';
+            selectedItem.style.borderColor = 'var(--secondary-color)';
         }
 
+        // ฟังก์ชันส่งข้อสอบ ตรวจคำตอบ และวิเคราะห์จุดอ่อน
         function submitExam() {
-            isSubmitted = true;
-            localStorage.setItem('bio_exam_submitted', 'true');
-
             let score = 0;
             let weakAreas = {
-                "โครงสร้างเซลล์ (Cell Structure)": 0,
-                "กล้องจุลทรรศน์และการคำนวณ (Microscope & Calculations)": 0,
-                "การแพร่และการออสโมซิส (Diffusion & Osmosis)": 0,
-                "การสังเคราะห์ด้วยแสงและการลำเลียงในพืช (Photosynthesis & Plant Transport)": 0
+                cellStructure: { total: 0, wrong: 0, name: "โครงสร้างและออร์แกเนลล์เซลล์" },
+                microscope: { total: 0, wrong: 0, name: "กล้องจุลทรรศน์และการคำนวณ" },
+                transport: { total: 0, wrong: 0, name: "การแพร่ ออสโมซิส และการลำเลียงสาร" },
+                photosynthesis: { total: 0, wrong: 0, name: "การสังเคราะห์ด้วยแสงและพืช" }
             };
 
-            shuffledQuestions.forEach((q) => {
-                const userAns = userAnswers[q.id] ? userAnswers[q.id].selected : null;
+            questionsData.forEach((q, index) => {
+                // จัดหมวดหมู่ข้อสอบคร่าวๆ
+                let cat = 'cellStructure';
+                if([2, 11, 18, 26, 27].includes(index)) cat = 'microscope';
+                else if([4, 5, 6, 7, 12, 13, 15, 20, 21, 23].includes(index)) cat = 'transport';
+                else if([8, 9, 10, 16, 22, 24].includes(index)) cat = 'photosynthesis';
+
+                weakAreas[cat].total++;
+
                 const correctAns = q.answer;
-                
-                // จัดหมวดหมู่จุดอ่อนตามข้อสอบ
-                let category = "";
-                if ([1, 2, 4, 15, 20, 23, 26, 29].includes(q.id)) category = "โครงสร้างเซลล์ (Cell Structure)";
-                else if ([3, 12, 19, 27].includes(q.id)) category = "กล้องจุลทรรศน์และการคำนวณ (Microscope & Calculations)";
-                else if ([5, 6, 7, 8, 13, 14, 16, 18, 21, 24].includes(q.id)) category = "การแพร่และการออสโมซิส (Diffusion & Osmosis)";
-                else category = "การสังเคราะห์ด้วยแสงและการลำเลียงในพืช (Photosynthesis & Plant Transport)";
+                const userAns = userAnswers[index];
 
-                const expDiv = document.getElementById(`exp-${q.id}`);
-                expDiv.style.display = 'block';
+                // แสดงเฉลย
+                const expBox = document.getElementById(`exp-${index}`);
+                expBox.style.display = 'block';
 
-                if (userAns !== null) {
-                    const selectedOptElem = document.getElementById(`opt-${q.id}-${userAns}`);
-                    if (userAns === correctAns) {
-                        score++;
-                        selectedOptElem.className = 'option-item correct';
-                    } else {
-                        selectedOptElem.className = 'option-item incorrect';
-                        document.getElementById(`opt-${q.id}-${correctAns}`).className = 'option-item correct';
-                        weakAreas[category]++;
+                q.options.forEach((_, optIndex) => {
+                    const optItem = document.getElementById(`opt-${index}-${optIndex}`);
+                    if(optIndex === correctAns) {
+                        optItem.className = 'option-item correct';
+                    } else if(optIndex === userAns && userAns !== correctAns) {
+                        optItem.className = 'option-item incorrect';
                     }
+                });
+
+                if(userAns === correctAns) {
+                    score++;
                 } else {
-                    // ไม่ได้ตอบ
-                    document.getElementById(`opt-${q.id}-${correctAns}`).className = 'option-item correct';
-                    weakAreas[category]++;
+                    weakAreas[cat].wrong++;
                 }
             });
 
-            showResultsUI(true, score, weakAreas);
-        }
+            // แสดงผลสรุปคะแนน
+            const resultContainer = document.getElementById('resultContainer');
+            const scoreSummary = document.getElementById('scoreSummary');
+            const analysisContent = document.getElementById('analysisContent');
 
-        function showResultsUI(scrollToResult = true, customScore = null, customWeak = null) {
-            const container = document.getElementById('resultContainer');
-            container.style.display = 'block';
+            resultContainer.style.display = 'block';
+            scoreSummary.innerHTML = `คุณทำคะแนนได้ ${score} จาก ${questionsData.length} คะแนน (${((score/questionsData.length)*100).toFixed(2)}%)`;
 
-            let score = customScore;
-            if (score === null) {
-                score = 0;
-                shuffledQuestions.forEach(q => {
-                    if (userAnswers[q.id] && userAnswers[q.id].selected === q.answer) score++;
-                });
+            let analysisHtml = `<h4>📋 วิเคราะห์สมรรถนะรายด้าน:</h4><ul>`;
+            let hasWeakness = false;
+
+            for(let key in weakAreas) {
+                let area = weakAreas[key];
+                if(area.wrong > 0) {
+                    hasWeakness = true;
+                    analysisHtml += `<li><b>${area.name}:</b> ตอบผิด ${area.wrong} ข้อจากทั้งหมด ${area.total} ข้อ ควรทบทวนเนื้อหาส่วนนี้เพิ่มเติม</li>`;
+                } else if(area.total > 0) {
+                    analysisHtml += `<li><b>${area.name}:</b> ทำได้ดีเยี่ยม เข้าใจเนื้อหาในส่วนนี้ครบถ้วน</li>`;
+                }
             }
 
-            document.getElementById('scoreSummary').innerHTML = `คุณทำคะแนนได้: <span style="color: var(--secondary-color);">${score}</span> / 30 คะแนน (${((score/30)*100).toFixed(2)}%)`;
-
-            // วิเคราะห์จุดเด่นจุดด้อย
-            let analysisHtml = `<h4>📌 บทวิเคราะห์สมรรถนะรายหมวดหมู่</h4><p>จากการประเมินผลการทำข้อสอบวิชาวิทยาศาสตร์ ม.1 ของท่าน พระจอมเกล้าติวเตอร์ สรุปผลวิเคราะห์ได้ดังนี้:</p><ul style="margin-left: 1.5rem; margin-top: 0.5rem; margin-bottom: 1rem;">`;
-            
-            // ประเมินแบบจำลอง
-            analysisHtml += `<li><strong>จุดเด่น (Strengths):</strong> ผู้เรียนมีความเข้าใจในภาพรวมของเนื้อหาชีววิทยาเบื้องต้น สามารถแยกแยะโครงสร้างพื้นฐานและกระบวนการทางชีวภาพได้ดีในระดับที่น่าพอใจ</li>`;
-            analysisHtml += `<li><strong>จุดด้อยที่ควรปรับปรุง (Weak Areas):</strong> ควรทบทวนเพิ่มเติมในส่วนของความแตกต่างของสารละลายที่มีผลต่อเซลล์ (Hypotonic / Hypertonic) รวมถึงการคำนวณกำลังขยายกล้องจุลทรรศน์และทิศทางการเคลื่อนที่ของสไลด์ภายใต้เลนส์</li>`;
-            analysisHtml += `</ul><p style="font-size: 0.9rem; color: #555;">ระบบได้บันทึกสถานะการทำข้อสอบและคะแนนของคุณเรียบร้อยแล้ว จำลองการส่งข้อมูลไปยังฐานข้อมูลสำเร็จ</p>`;
-
-            document.getElementById('analysisContent').innerHTML = analysisHtml;
-
-            if (scrollToResult) {
-                container.scrollIntoView({ behavior: 'smooth' });
+            if(!hasWeakness) {
+                analysisHtml += `<li>ยอดเยี่ยมมาก! คุณทำคะแนนเต็มและมีความเข้าใจในเนื้อหาชีววิทยา ม.1 ครบทุกหัวข้ออย่างสมบูรณ์</li>`;
             }
+
+            analysisHtml += `</ul>`;
+            analysisContent.innerHTML = analysisHtml;
+
+            // เลื่อนหน้าจอลงมาดูผลลัพธ์
+            resultContainer.scrollIntoView({ behavior: 'smooth' });
         }
 
+        // ฟังก์ชันรีเซ็ตค่า
         function resetExam() {
-            if (confirm("คุณต้องการล้างข้อมูลคำตอบทั้งหมดและเริ่มทำข้อสอบชุดใหม่ใช่หรือไม่?")) {
-                localStorage.removeItem('bio_exam_answers');
-                localStorage.removeItem('bio_exam_submitted');
-                localStorage.removeItem('bio_exam_order');
-                userAnswers = {};
-                isSubmitted = false;
-                document.getElementById('resultContainer').style.display = 'none';
-                generateNewOrder();
-                renderExam();
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            }
+            userAnswers = {};
+            document.getElementById('resultContainer').style.display = 'none';
+            renderExam();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        // ระบบ Whiteboard 30% ทางขวา
+        // ฟังก์ชันสลับภาษา (ตัวอย่างจำลอง)
+        function toggleLanguage() {
+            alert('ฟังก์ชันสลับภาษาอังกฤษ / ไทย (สามารถเพิ่มข้อมูลแปลเพิ่มเติมได้ในอนาคต)');
+        }
+
+        // ระบบ Whiteboard ใช้งานบน Canvas
         const canvas = document.getElementById('whiteboard');
         const ctx = canvas.getContext('2d');
         let isDrawing = false;
         let currentTool = 'pen';
 
         function resizeCanvas() {
-            const rect = canvas.getBoundingClientRect();
+            const rect = canvas.parentElement.getBoundingClientRect();
             canvas.width = rect.width;
             canvas.height = rect.height;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
         }
 
         window.addEventListener('resize', resizeCanvas);
         window.addEventListener('load', () => {
             resizeCanvas();
-            initExam();
+            renderExam();
         });
 
         function setWbTool(tool) {
@@ -1014,32 +961,11 @@
             ctx.clearRect(0, 0, canvas.width, canvas.height);
         }
 
-        function startDrawing(e) {
-            isDrawing = true;
-            ctx.beginPath();
-            const pos = getPos(e);
-            ctx.moveTo(pos.x, pos.y);
-        }
-
-        function draw(e) {
-            if (!isDrawing) return;
-            const pos = getPos(e);
-            ctx.lineWidth = currentTool === 'eraser' ? 20 : 2;
-            ctx.lineCap = 'round';
-            ctx.strokeStyle = currentTool === 'eraser' ? '#ffffff' : '#2c3e50';
-            ctx.lineTo(pos.x, pos.y);
-            ctx.stroke();
-        }
-
-        function stopDrawing() {
-            isDrawing = false;
-        }
-
-        function getPos(e) {
+        function getMousePos(e) {
             const rect = canvas.getBoundingClientRect();
             let clientX = e.clientX;
             let clientY = e.clientY;
-            if (e.touches && e.touches.length > 0) {
+            if(e.touches && e.touches.length > 0) {
                 clientX = e.touches[0].clientX;
                 clientY = e.touches[0].clientY;
             }
@@ -1049,32 +975,42 @@
             };
         }
 
-        canvas.addEventListener('mousedown', startDrawing);
+        canvas.addEventListener('mousedown', startDraw);
         canvas.addEventListener('mousemove', draw);
-        canvas.addEventListener('mouseup', stopDrawing);
-        canvas.addEventListener('mouseleave', stopDrawing);
+        canvas.addEventListener('mouseup', stopDraw);
+        canvas.addEventListener('mouseleave', stopDraw);
 
-        canvas.addEventListener('touchstart', startDrawing);
+        canvas.addEventListener('touchstart', startDraw);
         canvas.addEventListener('touchmove', draw);
-        canvas.addEventListener('touchend', stopDrawing);
+        canvas.addEventListener('touchend', stopDraw);
 
-        // ปุ่มสลับภาษา (จำลองการสลับภาษา UI เป็นอังกฤษ/ไทยตามต้องการ)
-        let currentLang = 'th';
-        function toggleLanguage() {
-            currentLang = currentLang === 'th' ? 'en' : 'th';
-            if (currentLang === 'en') {
-                document.getElementById('header-title').innerText = "Biology Grade 7 Exam: Cell, Microscope & Plant Transport";
-                document.getElementById('sum-title').innerText = "Summary and Thought Process for Grade 7";
-                document.getElementById('wb-title').innerText = "Scratchpad Whiteboard";
-                document.getElementById('submitBtn').innerText = "Submit & Analyze";
-                document.getElementById('resetBtn').innerText = "Reset Exam";
-            } else {
-                document.getElementById('header-title').innerText = "คลังข้อสอบชีววิทยา ม.1: เซลล์ กล้องจุลทรรศน์ การลำเลียงสาร และการสังเคราะห์ด้วยแสง";
-                document.getElementById('sum-title').innerText = "สรุปเนื้อหาสำคัญและกระบวนการคิดสำหรับมัธยมศึกษาปีที่ 1";
-                document.getElementById('wb-title').innerText = "กระดานทดข้อสอบ (Whiteboard)";
-                document.getElementById('submitBtn').innerText = "ส่งข้อสอบและดูผลวิเคราะห์";
-                document.getElementById('resetBtn').innerText = "ล้างค่าและทำใหม่ (Reset)";
+        function startDraw(e) {
+            isDrawing = true;
+            const pos = getMousePos(e);
+            ctx.beginPath();
+            ctx.moveTo(pos.x, pos.y);
+            e.preventDefault();
+        }
+
+        function draw(e) {
+            if (!isDrawing) return;
+            const pos = getMousePos(e);
+            if (currentTool === 'pen') {
+                ctx.strokeStyle = '#2c3e50';
+                ctx.lineWidth = 2;
+                ctx.lineTo(pos.x, pos.y);
+                ctx.stroke();
+            } else if (currentTool === 'eraser') {
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 15;
+                ctx.lineTo(pos.x, pos.y);
+                ctx.stroke();
             }
+            e.preventDefault();
+        }
+
+        function stopDraw() {
+            isDrawing = false;
         }
     </script>
 </body>
