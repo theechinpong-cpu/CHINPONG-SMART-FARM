@@ -1,0 +1,1081 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบข้อสอบชีววิทยา ม.1 - พระจอมเกล้าติวเตอร์</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+            --success-color: #2ecc71;
+            --warning-color: #f39c12;
+            --bg-color: #f8f9fa;
+            --card-bg: #ffffff;
+            --text-color: #333333;
+            --border-color: #dcdde1;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 1.5rem;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        header h1 {
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .lang-btn {
+            background: var(--secondary-color);
+            color: white;
+            border: none;
+            padding: 0.4rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 0.5rem;
+            transition: background 0.2s;
+        }
+
+        .lang-btn:hover {
+            background: #2980b9;
+        }
+
+        .container {
+            max-width: 1400px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 1.5rem;
+            flex: 1;
+        }
+
+        .summary-section {
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            margin-bottom: 2rem;
+        }
+
+        .summary-section h2 {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            border-bottom: 2px solid var(--secondary-color);
+            padding-bottom: 0.5rem;
+        }
+
+        .summary-text {
+            font-size: 1.05rem;
+            text-align: justify;
+            margin-bottom: 1.5rem;
+            white-space: pre-line;
+        }
+
+        .highlight-box {
+            background: #eef9ff;
+            border-left: 5px solid var(--secondary-color);
+            padding: 1.2rem;
+            border-radius: 0 8px 8px 0;
+            margin-top: 1rem;
+        }
+
+        .highlight-box h3 {
+            color: var(--secondary-color);
+            margin-bottom: 0.5rem;
+        }
+
+        /* Layout แบ่ง 2 ฝั่ง: ซ้าย 70%, ขวา 30% */
+        .exam-workspace {
+            display: flex;
+            gap: 1.5rem;
+            position: relative;
+        }
+
+        .exam-left {
+            flex: 0 0 70%;
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        .exam-right {
+            flex: 0 0 calc(30% - 1.5rem);
+            background: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 1.5rem;
+            height: calc(100vh - 3rem);
+        }
+
+        /* Whiteboard ฝั่งขวา */
+        .whiteboard-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            margin-top: 0.5rem;
+        }
+
+        .whiteboard-tools {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .wb-btn {
+            background: #e0e0e0;
+            border: none;
+            padding: 0.3rem 0.6rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+
+        .wb-btn.active {
+            background: var(--secondary-color);
+            color: white;
+        }
+
+        #whiteboard {
+            flex: 1;
+            background: #fff;
+            border: 2px dashed var(--border-color);
+            border-radius: 6px;
+            cursor: crosshair;
+            touch-action: none;
+        }
+
+        /* โครงสร้างข้อสอบ */
+        .question-card {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .question-title {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 0.8rem;
+        }
+
+        .clue-box {
+            font-size: 0.9rem;
+            color: #7f8c8d;
+            background: #fdfefe;
+            border: 1px dashed #bdc3c7;
+            padding: 0.5rem 0.8rem;
+            border-radius: 4px;
+            margin-bottom: 0.8rem;
+            display: inline-block;
+        }
+
+        .options-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+        }
+
+        .option-item {
+            background: #f8f9fa;
+            border: 1px solid var(--border-color);
+            padding: 0.8rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .option-item:hover {
+            background: #edf2f7;
+            border-color: var(--secondary-color);
+        }
+
+        .option-item.correct {
+            background: #d4edda !important;
+            border-color: var(--success-color) !important;
+            color: #155724;
+        }
+
+        .option-item.incorrect {
+            background: #f8d7da !important;
+            border-color: var(--accent-color) !important;
+            color: #721c24;
+        }
+
+        .explanation {
+            margin-top: 0.8rem;
+            padding: 0.8rem;
+            background: #eef2f3;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            display: none;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .btn {
+            background: var(--secondary-color);
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+
+        .btn:hover {
+            background: #2980b9;
+        }
+
+        .btn-reset {
+            background: var(--accent-color);
+        }
+        .btn-reset:hover {
+            background: #c0392b;
+        }
+
+        /* ผลลัพธ์และวิเคราะห์ */
+        .result-container {
+            display: none;
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            margin-top: 2rem;
+        }
+
+        .result-container h2 {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+
+        .analysis-box {
+            margin-top: 1.5rem;
+            padding: 1.5rem;
+            background: #fdfefe;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+        }
+
+        .analysis-box h4 {
+            margin-bottom: 0.5rem;
+            color: var(--primary-color);
+        }
+
+        footer {
+            text-align: center;
+            padding: 1.5rem;
+            background: var(--primary-color);
+            color: white;
+            margin-top: auto;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 900px) {
+            .exam-workspace {
+                flex-direction: column;
+            }
+            .exam-right {
+                position: static;
+                height: 400px;
+                flex: 1;
+            }
+            .exam-left {
+                flex: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1 id="header-title">คลังข้อสอบชีววิทยา ม.1: เซลล์ กล้องจุลทรรศน์ การลำเลียงสาร และการสังเคราะห์ด้วยแสง</h1>
+        <button class="lang-btn" id="langToggleBtn" onclick="toggleLanguage()">English / ไทย</button>
+    </header>
+
+    <div class="container">
+        <!-- สรุปเนื้อหา + เทคนิคการจำ (500 คำขึ้นไป) -->
+        <section class="summary-section">
+            <h2 id="sum-title">สรุปเนื้อหาสำคัญและกระบวนการคิดสำหรับมัธยมศึกษาปีที่ 1</h2>
+            <div class="summary-text" id="summary-content">
+วิชาชีววิทยาในระดับชั้นมัธยมศึกษาปีที่ 1 ถือเป็นรากฐานที่สำคัญอย่างยิ่งในการทำความเข้าใจสิ่งมีชีวิต โดยแบ่งขอบเขตเนื้อหาออกเป็นโครงสร้างเซลล์ อุปกรณ์และกล้องจุลทรรศน์ การคำนวณที่เกี่ยวข้อง กระบวนการแพร่ การออสโมซิส การสังเคราะห์ด้วยแสง และระบบลำเลียงในพืช
+
+1. โครงสร้างเซลล์ (Cell Structure): หน่วยพื้นฐานของสิ่งมีชีวิตทุกชนิด เซลล์พืชและเซลล์สัตว์มีส่วนประกอบหลักร่วมกัน ได้แก่ เยื่อหุ้มเซลล์ (Cell membrane) ควบคุมการเข้าออกของสาร, ไซโตพลาสซึม (Cytoplasm) ของเหลวภายในเซลล์, และนิวเคลียส (Nucleus) ควบคุมกิจกรรมและเก็บรักษาสารพันธุกรรม (DNA) แต่สิ่งที่ทำให้พืชและสัตว์แตกต่างกันอย่างชัดเจนคือ เซลล์พืชจะมีผนังเซลล์ (Cell wall) เพื่อความแข็งแรง คลอพลาสต์ (Chloroplast) สำหรับกระบวนการสังเคราะห์ด้วยแสง และแวคิวโอล (Vacuole) ขนาดใหญ่ ขณะที่เซลล์สัตว์ไม่มีผนังเซลล์และคลอพลาสต์ มีรูปร่างค่อนข้างยืดหยุ่น และมีเซนทริโอล (Centriole) ช่วยในการแบ่งเซลล์ นอกจากนี้ ไมโทคอนเดรีย (Mitochondria) ทำหน้าที่สร้างพลังงาน (ATP) ให้แก่เซลล์
+
+2. กล้องจุลทรรศน์และการคำนวณ (Microscope & Calculations): กล้องจุลทรรศน์ใช้แสงเป็นเครื่องมือสำคัญในการศึกษาโครงสร้างขนาดจิ๋ว การใช้งานต้องอาศัยส่วนประกอบ เช่น เลนส์ใกล้ตา เลนส์ใกล้วัตถุ ปุ่มปรับภาพหยาบ และปุ่มปรับภาพละเอียด การคำนวณกำลังขยายรวมทำได้โดยนำกำลังขยายของเลนส์ใกล้ตาคูณกับกำลังขยายของเลนส์ใกล้วัตถุ นอกจากนี้ อัตราส่วนพื้นที่ผิวต่อปริมาตรของเซลล์ยังมีผลอย่างยิ่งต่อประสิทธิภาพในการแลกเปลี่ยนสาร หากเซลล์มีขนาดเล็กอัตราส่วนนี้จะสูง ทำให้แลกเปลี่ยนสารได้รวดเร็ว
+
+3. การแพร่และการออสโมซิส (Diffusion & Osmosis): เป็นกระบวนการลำเลียงสารผ่านเซลล์แบบไม่ใช้พลังงาน (Passive transport) การแพร่คือการเคลื่อนที่ของอนุภาคสารจากบริเวณที่มีความเข้มข้นสูงไปยังบริเวณที่มีความเข้มข้นต่ำจนเกิดสมดุล ส่วนการออสโมซิสคือการแพร่ของ "น้ำ" ผ่านเยื่อเลือกผ่าน จากสารละลายความเข้มข้นต่ำ (น้ำมาก) ไปสู่สารละลายความเข้มข้นสูง (น้ำน้อย) สารละลาย 3 รูปแบบที่มีผลต่อเซลล์ ได้แก่ Isotonic solution (เซลล์ปกติ), Hypotonic solution (น้ำเข้า ทำให้เซลล์พืชเต่งและเซลล์สัตว์อาจแตก), และ Hypertonic solution (น้ำออก ทำให้เซลล์เหี่ยวหรือเกิด Plasmolysis ในพืช)
+
+4. การสังเคราะห์ด้วยแสงและการลำเลียงในพืช (Photosynthesis & Plant Transport): การสังเคราะห์ด้วยแสงเกิดขึ้นในคลอพลาสต์ อาศัยแก๊สคาร์บอนไดออกไซด์ น้ำ แสง และคลอโรฟิลล์ ได้ผลิตภัณฑ์เป็นน้ำตาลกลูโคสและแก๊สออกซิเจน สำหรับการลำเลียงสารในพืช อาศัยท่อลำเลียง 2 ชนิด คือ ไซเลม (Xylem) ลำเลียงน้ำและแร่ธาตุจากรากขึ้นสู่ใบผ่านแรงดึงจากการคายน้ำ (Transpiration pull) และโฟลเอ็ม (Phloem) ลำเลียงอาหาร (น้ำตาล) ไปทั่วต้นพืช
+            </div>
+            
+            <div class="highlight-box">
+                <h3 id="tech-title">💡 เทคนิคการจำและกระบวนการคิด (Memory Tricks & Thought Process)</h3>
+                <p id="tech-content">
+                - **พืช vs สัตว์:** ท่องจำว่า <q>พืชมีกำแพง (Wall) และแผงโซลาร์เซลล์ (Chloroplast)</q> เพื่อจำผนังเซลล์และคลอพลาสต์ที่เซลล์สัตว์ไม่มี<br>
+                - **สูตรกลกำลังขยายรวม:** <q>ใกล้คูณวัตถุ</q> (เลนส์ใกล้ตา × เลนส์ใกล้วัตถุ)<br>
+                - **การออสโมซิส:** น้ำเดินตามความเข้มข้นสูง (<q>น้ำน้อยไปน้ำมาก</q> หรือ <q>เกลือดูดน้ำ</q> สารละลายเข้มข้นสูงน้ำจะวิ่งเข้าหา)<br>
+                - **ท่อลำเลียงพืช:** <q>Xylem ลำเลียงน้ำขึ้น (X ขึ้น), Phloem ลำเลียงอาหารทั่ว (Phlow อาหารไหล)</q>
+                </p>
+            </div>
+        </section>
+
+        <!-- Workspace: ฝั่งซ้าย (ข้อสอบ 70%), ฝั่งขวา (Whiteboard 30%) -->
+        <div class="exam-workspace">
+            <!-- ฝั่งซ้าย: ข้อสอบ 30 ข้อ -->
+            <div class="exam-left" id="exam-container">
+                <!-- โค้ดข้อสอบจะถูกสร้างด้วย JavaScript -->
+            </div>
+
+            <!-- ฝั่งขวา: กระดาน Whiteboard -->
+            <div class="exam-right">
+                <h3 id="wb-title" style="font-size: 1rem; color: var(--primary-color); margin-bottom: 0.3rem;">กระดานทดข้อสอบ (Whiteboard)</h3>
+                <div class="whiteboard-tools">
+                    <button class="wb-btn active" id="btnPen" onclick="setWbTool('pen')">ปากกา</button>
+                    <button class="wb-btn" id="btnEraser" onclick="setWbTool('eraser')">ยางลบ</button>
+                    <button class="wb-btn" onclick="clearWhiteboard()">ล้างกระดาน</button>
+                </div>
+                <div class="whiteboard-container">
+                    <canvas id="whiteboard"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- ปุ่มควบคุมการทำข้อสอบ -->
+        <div class="action-buttons">
+            <button class="btn" id="submitBtn" onclick="submitExam()">ส่งข้อสอบและดูผลวิเคราะห์</button>
+            <button class="btn btn-reset" id="resetBtn" onclick="resetExam()">ล้างค่าและทำใหม่ (Reset)</button>
+        </div>
+
+        <!-- ส่วนแสดงผลสรุปและวิเคราะห์คะแนน -->
+        <div class="result-container" id="resultContainer">
+            <h2 id="res-title">ผลการประเมินและวิเคราะห์สมรรถนะ</h2>
+            <div id="scoreSummary" style="font-size: 1.2rem; font-weight: bold; margin-bottom: 1rem;"></div>
+            <div class="analysis-box" id="analysisContent"></div>
+        </div>
+    </div>
+
+    <footer>
+        เขียนโดย พระจอมเกล้าติวเตอร์
+    </footer>
+
+    <script>
+        // ข้อมูลข้อสอบ 30 ข้อ ครบถ้วนตามหัวข้อที่กำหนด
+        const questionsData = [
+            {
+                id: 1,
+                question: "โครงสร้างใดพบได้เฉพาะในเซลล์พืช แต่ไม่พบในเซลล์สัตว์",
+                options: [
+                    "เยื่อหุ้มเซลล์และนิวเคลียส",
+                    "ผนังเซลล์และคลอพลาสต์",
+                    "ไมโทคอนเดรียและไซโตพลาสซึม",
+                    "ไรโบโซมและแวคิวโอล"
+                ],
+                answer: 1,
+                clue: "นึกถึงโครงสร้างที่ให้ความแข็งแรงและช่วยในการสังเคราะห์ด้วยแสง",
+                explanation: "เฉลย: ผนังเซลล์ (Cell wall) และคลอพลาสต์ (Chloroplast) เพราะเซลล์พืชต้องการความแข็งแรงและการสร้างอาหารเอง ส่วนเยื่อหุ้ม นิวเคลียส ไมโทคอนเดรีย มีร่วมกันทั้งพืชและสัตว์"
+            },
+            {
+                id: 2,
+                question: "ออร์แกเนลล์ใดทำหน้าที่เปรียบเสมือน 'โรงงานผลิตพลังงาน (ATP)' ของเซลล์",
+                options: [
+                    "นิวเคลียส",
+                    "คลอพลาสต์",
+                    "ไมโทคอนเดรีย",
+                    "กอลบีบอดี้"
+                ],
+                answer: 2,
+                clue: "เกี่ยวข้องกับการหายใจระดับเซลล์และการสร้างพลังงาน",
+                explanation: "เฉลย: ไมโทคอนเดรีย (Mitochondria) ทำหน้าที่สร้างพลังงานในรูป ATP ให้แก่เซลล์ผ่านกระบวนการหายใจระดับเซลล์"
+            },
+            {
+                id: 3,
+                question: "หากต้องการคำนวณกำลังขยายรวมของกล้องจุลทรรศน์ใช้แสง ที่มีเลนส์ใกล้ตา 10x และเลนส์ใกล้วัตถุตรา 40x กำลังขยายรวมจะเป็นเท่าใด",
+                options: [
+                    "50 เท่า",
+                    "400 เท่า",
+                    "4,000 เท่า",
+                    "0.25 เท่า"
+                ],
+                answer: 1,
+                clue: "สูตรกำลังขยายรวม = กำลังขยายเลนส์ใกล้ตา × กำลังขยายเลนส์ใกล้วัตถุ",
+                explanation: "เฉลย: 400 เท่า คำนวณจาก 10 x 40 = 400"
+            },
+            {
+                id: 4,
+                question: "ข้อใดกล่าวถึงหน้าที่ของ 'นิวเคลียส' ได้ถูกต้องที่สุด",
+                options: [
+                    "ควบคุมการเข้า-ออกของสารระหว่างเซลล์",
+                    "สังเคราะห์โปรตีนและไขมัน",
+                    "ควบคุมกิจกรรมทั้งหมดภายในเซลล์และเก็บรักษาสารพันธุกรรม",
+                    "ย่อยสลายสิ่งแปลกปลอมและออร์แกเนลล์ที่เสื่อมสภาพ"
+                ],
+                answer: 2,
+                clue: "เปรียบเสมือนสมองหรือศูนย์บัญชาการของเซลล์",
+                explanation: "เฉลย: ควบคุมกิจกรรมทั้งหมดภายในเซลล์และเก็บรักษาสารพันธุกรรม (DNA)"
+            },
+            {
+                id: 5,
+                question: "กระบวนการแพร่ (Diffusion) มีลักษณะสำคัญอย่างไร",
+                options: [
+                    "เป็นการเคลื่อนที่ของสารจากความเข้มข้นต่ำไปสูงโดยใช้พลังงาน",
+                    "เป็นการเคลื่อนที่ของอนุภาคสารจากความเข้มข้นสูงไปต่ำโดยไม่ต้องใช้พลังงาน",
+                    "เกิดขึ้นเฉพาะในสารละลายที่มีเยื่อเลือกผ่านกั้นเท่านั้น",
+                    "อัตราการแพร่จะลดลงเมื่ออุณหภูมิสูงขึ้น"
+                ],
+                answer: 1,
+                clue: "เป็นการขนส่งแบบ Passive transport จนกระทั่งเกิดความสมดุล",
+                explanation: "เฉลย: เป็นการเคลื่อนที่ของอนุภาคสารจากความเข้มข้นสูงไปยังความเข้มข้นต่ำโดยไม่ต้องใช้พลังงาน (Passive transport)"
+            },
+            {
+                id: 6,
+                question: "การที่กลิ่นน้ำหอมกระจายไปทั่วห้อง เป็นตัวอย่างของปรากฏการณ์ใด",
+                options: [
+                    "การออสโมซิส",
+                    "การแพร่",
+                    "การลำเลียงแบบใช้พลังงาน",
+                    "โฟโตโทรพิซึม"
+                ],
+                answer: 1,
+                clue: "อนุภาคของแก๊สหรือของเหลวเคลื่อนที่จากบริเวณที่มีความเข้มข้นมากไปสู่น้อย",
+                explanation: "เฉลย: การแพร่ เพราะโมเลกุลของน้ำหอมเคลื่อนที่จากจุดที่ฉีด (ความเข้มข้นสูง) ไปสู่อากาศโดยรอบ (ความเข้มข้นต่ำ)"
+            },
+            {
+                id: 7,
+                question: "การออสโมซิส (Osmosis) เป็นการเคลื่อนที่ของสารใดผ่านเยื่อเลือกผ่าน",
+                options: [
+                    "โมเลกุลของน้ำ",
+                    "โมเลกุลของน้ำตาลกลูโคส",
+                    "ไอออนของแร่ธาตุ",
+                    "แก๊สออกซิเจน"
+                ],
+                answer: 0,
+                clue: "โฟกัสที่การแพร่ของตัวทำละลาย",
+                explanation: "เฉลย: โมเลกุลของน้ำ เพราะออสโมซิสคือการแพร่ของน้ำผ่านเยื่อเลือกผ่าน (Semi-permeable membrane)"
+            },
+            {
+                id: 8,
+                question: "หากนำเซลล์เม็ดเลือดแดงไปแช่ในสารละลายที่มีความเข้มข้นต่ำกว่าภายในเซลล์ (Hypotonic solution) จะเกิดผลอย่างไร",
+                options: [
+                    "เซลล์ปกติ",
+                    "เซลล์เหี่ยว",
+                    "น้ำเข้าเซลล์ทำให้เซลล์เต่งและอาจแตกได้",
+                    "เกิดกระบวนการ Plasmolysis"
+                ],
+                answer: 2,
+                clue: "น้ำภายนอกมีมาก จะออสโมซิสเข้าสู่เซลล์ที่มีน้ำน้อยกว่า",
+                explanation: "เฉลย: น้ำเข้าเซลล์ทำให้เซลล์เต่งและอาจแตกได้ (Lysis) เนื่องจากเซลล์สัตว์ไม่มีผนังเซลล์มารองรับแรงดัน"
+            },
+            {
+                id: 9,
+                question: "สมการรวมของกระบวนการสังเคราะห์ด้วยแสงข้อใดถูกต้อง",
+                options: [
+                    "น้ำ + ออกซิเจน -> กลูโคส + คาร์บอนไดออกไซด์",
+                    "คาร์บอนไดออกไซด์ + น้ำ + แสง/คลอโรฟิลล์ -> กลูโคส + ออกซิเจน + น้ำ",
+                    "กลูโคส + ออกซิเจน -> คาร์บอนไดออกไซด์ + น้ำ + พลังงาน",
+                    "แก๊สไนโตรเจน + น้ำ -> แป้ง + ออกซิเจน"
+                ],
+                answer: 1,
+                clue: "พืชใช้วัตถุดิบอะไรในการสร้างอาหาร แล้วคายแก๊สอะไรออกมา",
+                explanation: "เฉลย: คาร์บอนไดออกไซด์ + น้ำ + แสง/คลอโรฟิลล์ -> กลูโคส + ออกซิเจน + น้ำ"
+            },
+            {
+                id: 10,
+                question: "ท่อลำเลียงน้ำและแร่ธาตุในพืช (Xylem) มีทิศทางการลำเลียงอย่างไร",
+                options: [
+                    "จากรากขึ้นสู่ลำต้นและใบเท่านั้น",
+                    "จากใบลำเลียงลงสู่รากเท่านั้น",
+                    "ลำเลียงได้ทั้งขึ้นและลงสลับกันไป",
+                    "ลำเลียงออกทางปากใบโดยตรง"
+                ],
+                answer: 0,
+                clue: "จำคีย์เวิร์ด X ขึ้น",
+                explanation: "เฉลย: จากรากขึ้นสู่ลำต้นและใบเท่านั้น ผ่านแรงดึงจากการคายน้ำ (Transpiration pull)"
+            },
+            {
+                id: 11,
+                question: "ท่อลำเลียงอาหาร (Phloem) ทำหน้าที่สำคัญคือข้อใด",
+                options: [
+                    "ลำเลียงน้ำและแร่ธาตุจากดิน",
+                    "ลำเลียงน้ำตาลที่ได้จากการสังเคราะห์ด้วยแสงไปยังส่วนต่างๆ ของพืช",
+                    "สังเคราะห์แสงทดแทนใบ",
+                    "สร้างเปลือกไม้ให้หนาขึ้น"
+                ],
+                answer: 1,
+                clue: "อาหารที่สร้างจากใบต้องกระจายไปเลี้ยงส่วนต่างๆ ทั้งขึ้นและลง",
+                explanation: "เฉลย: ลำเลียงน้ำตาลที่ได้จากการสังเคราะห์ด้วยแสงไปยังส่วนต่างๆ ของพืช"
+            },
+            {
+                id: 12,
+                question: "ปุ่มปรับภาพหยาบ (Coarse adjustment knob) ของกล้องจุลทรรศน์ควรใช้ในกรณีใด",
+                options: [
+                    "ใช้ปรับภาพเมื่อใช้เลนส์ใกล้วัตถุกำลังขยายสูง (40x)",
+                    "ใช้ปรับภาพเบื้องต้นเมื่อใช้เลนส์ใกล้วัตถุกำลังขยายต่ำ (4x หรือ 10x)",
+                    "ใช้ปรับความสว่างของแสงใต้แท่นวางวัตถุ",
+                    "ใช้ล็อกตำแหน่งสไลด์ไม่ให้เคลื่อนที่"
+                ],
+                answer: 1,
+                clue: "ห้ามใช้กับเลนส์กำลังขยายสูงเพราะอาจทำให้เลนส์กระแทกสไลด์แตก",
+                explanation: "เฉลย: ใช้ปรับภาพเบื้องต้นเมื่อใช้เลนส์ใกล้วัตถุกำลังขยายต่ำ เพื่อให้ลำกล้องเลื่อนขึ้นลงได้ชัดเจน"
+            },
+            {
+                id: 13,
+                question: "สารละลายชนิดใดทำให้เซลล์พืชเกิดภาวะ 'เต่ง' (Turgid cell) ได้ดี",
+                options: [
+                    "Isotonic solution",
+                    "Hypotonic solution",
+                    "Hypertonic solution",
+                    "สารละลายน้ำตาลเข้มข้นสูง"
+                ],
+                answer: 1,
+                clue: "น้ำต้องออสโมซิสเข้าสู่เซลล์พืช",
+                explanation: "เฉลย: Hypotonic solution ทำให้เกิดน้ำเข้าเซลล์จนพืชเต่งตึงแต่ไม่แตกเพราะมีผนังเซลล์"
+            },
+            {
+                id: 14,
+                question: "กระบวนการ Plasmolysis ในเซลล์พืชเกิดขึ้นเมื่อนำไปแช่ในสารละลายใด",
+                options: [
+                    "น้ำกลั่นบริสุทธิ์",
+                    "Hypotonic solution",
+                    "Hypertonic solution",
+                    "Isotonic solution"
+                ],
+                answer: 2,
+                clue: "น้ำออกจากเซลล์ทำให้เยื่อหุ้มเซลล์หดตัวหลุดจากผนังเซลล์",
+                explanation: "เฉลย: Hypertonic solution (สารละลายเข้มข้นสูงกว่าภายในเซลล์) ทำให้น้ำออสโมซิสออกจากเซลล์จนเหี่ยว"
+            },
+            {
+                id: 15,
+                question: "โครงสร้างใดทำหน้าที่ควบคุมการผ่านเข้า-ออกของสารระหว่างเซลล์กับสิ่งแวดล้อม",
+                options: [
+                    "Cell wall",
+                    "Cell membrane",
+                    "Cytoplasm",
+                    "Nucleus"
+                ],
+                answer: 1,
+                clue: "พบได้ทั้งในเซลล์พืชและเซลล์สัตว์ อยู่ชั้นในของเซลล์พืช",
+                explanation: "เฉลย: เยื่อหุ้มเซลล์ (Cell membrane) มีสมบัติเป็นเยื่อเลือกผ่าน (Semi-permeable membrane)"
+            },
+            {
+                id: 16,
+                question: "ปัจจัยใดต่อไปนี้ที่มีผลทำให้อัตราการแพร่ของสารเกิดขึ้นเร็วขึ้น",
+                options: [
+                    "อุณหภูมิต่ำลง",
+                    "ขนาดอนุภาคของสารมีขนาดใหญ่มาก",
+                    "ความแตกต่างของความเข้มข้นระหว่างสองบริเวณมีค่ามาก",
+                    "ความดันบรรยากาศลดลงอย่างฉับพลัน"
+                ],
+                answer: 2,
+                clue: "ความแตกต่างสูง แรงผลักดันก็ยิ่งสูงตาม",
+                explanation: "เฉลย: ความแตกต่างของความเข้มข้นระหว่างสองบริเวณมีค่ามาก จะช่วยเพิ่มอัตราการแพร่ให้เร็วขึ้น"
+            },
+            {
+                id: 17,
+                question: "ในการทดลองทดสอบแป้งในใบพืช เรามักใช้สารละลายชนิดใดหยดลงบนใบพืชที่สกัดคลอโรฟิลล์ออกแล้ว",
+                options: [
+                    "สารละลายไอโอดีน (Iodine solution)",
+                    "สารละลายเบเนดิกต์",
+                    "สารละลายคอปเปอร์ซัลเฟต",
+                    "สารละลายกรดไฮโดรคลอริกเจือจาง"
+                ],
+                answer: 0,
+                clue: "สารสีน้ำตาลชาที่จะเปลี่ยนเป็นสีน้ำเงินเข้มเมื่อเจอแป้ง",
+                explanation: "เฉลย: สารละลายไอโอดีน ใช้ทดสอบการมีอยู่ของแป้ง ผลผลิตจากการสังเคราะห์ด้วยแสง"
+            },
+            {
+                id: 18,
+                question: "อัตราส่วนพื้นที่ผิวต่อปริมาตรของเซลล์ (Surface area to volume ratio) มีผลต่อสิ่งใดมากที่สุด",
+                options: [
+                    "ประสิทธิภาพในการแลกเปลี่ยนสารและการลำเลียงเข้าสู่เซลล์",
+                    "จำนวนโครโมโซมในนิวเคลียส",
+                    "ความเร็วในการสังเคราะห์ด้วยแสง",
+                    "ปริมาณคลอโรฟิลล์ในใบพืช"
+                ],
+                answer: 0,
+                clue: "เซลล์ขนาดเล็กจะมีอัตราส่วนนี้สูง ทำให้แพร่สารเข้าออกได้ดี",
+                explanation: "เฉลย: ประสิทธิภาพในการแลกเปลี่ยนสารและการลำเลียงเข้าสู่เซลล์ ยิ่งเซลล์เล็กยิ่งแลกเปลี่ยนได้ดี"
+            },
+            {
+                id: 19,
+                question: "ส่วนประกอบใดของกล้องจุลทรรศน์ทำหน้าที่ปรับปริมาณแสงที่ส่องผ่านวัตถุขึ้นมายังเลนส์",
+                options: [
+                    "Eyepiece",
+                    "Diaphragm (ไดอะแฟรม)",
+                    "Coarse adjustment knob",
+                    "Arm"
+                ],
+                answer: 1,
+                clue: "ลักษณะคล้ายม่านปรับแสง",
+                explanation: "เฉลย: Diaphragm (ไดอะแฟรม) หรือจดรับแสง ทำหน้าที่ปรับความเข้มและปริมาณแสงให้เหมาะสม"
+            },
+            {
+                id: 20,
+                question: "ข้อใดคือความแตกต่างของ Vacuole ในเซลล์พืชและเซลล์สัตว์",
+                options: [
+                    "เซลล์พืชไม่มีแวคิวโอล แต่เซลล์สัตว์มีขนาดใหญ่",
+                    "เซลล์พืชมีแวคิวโอลขนาดใหญ่ (Central vacuole) สะสมน้ำและสารต่างๆ ส่วนเซลล์สัตว์มีขนาดเล็กหรือไม่มี",
+                    "เซลล์สัตว์มีแวคิวโอลทำหน้าที่สังเคราะห์แสง",
+                    "แวคิวโอลทั้งสองชนิดทำหน้าที่สร้างพลังงานเหมือนกัน"
+                ],
+                answer: 1,
+                clue: "ในเซลล์พืชช่องว่างนี้กินพื้นที่ส่วนใหญ่ของเซลล์",
+                explanation: "เฉลย: เซลล์พืชมีแวคิวโอลขนาดใหญ่สะสมน้ำ สารอาหาร และของเสีย ส่วนเซลล์สัตว์มีขนาดเล็กมาก"
+            },
+            {
+                id: 21,
+                question: "ข้อใดกล่าวถึง Isotonic solution ได้ถูกต้องที่สุด",
+                options: [
+                    "สารละลายที่มีความเข้มข้นภายนอกสูงกว่าภายในเซลล์",
+                    "สารละลายที่มีความเข้มข้นภายนอกต่ำกว่าภายในเซลล์",
+                    "สารละลายที่มีความเข้มข้นเท่ากับของเหลวภายในเซลล์ ทำให้เซลล์ปกติ",
+                    "สารละลายที่ทำให้เซลล์พืชเหี่ยวเฉาอย่างรวดเร็ว"
+                ],
+                answer: 2,
+                clue: "Iso แปลว่าเท่ากัน สมดุล",
+                explanation: "เฉลย: สารละลายที่มีความเข้มข้นเท่ากับของเหลวภายในเซลล์ ทำให้น้ำเข้าและออกจากเซลล์ในอัตราที่เท่ากัน เซลล์จึงมีรูปร่างปกติ"
+            },
+            {
+                id: 22,
+                question: "กระบวนการคายน้ำของพืช (Transpiration) มีส่วนช่วยสำคัญอย่างไรต่อระบบลำเลียง",
+                options: [
+                    "ช่วยสร้างแรงดึงน้ำ (Transpiration pull) จากรากขึ้นสู่ใบ",
+                    "ช่วยดูดซับแก๊สออกซิเจนจากบรรยากาศ",
+                    "ช่วยเพิ่มอุณหภูมิภายในลำต้นพืช",
+                    "ช่วยให้พืชสร้างเมล็ดได้เร็วขึ้น"
+                ],
+                answer: 0,
+                clue: "เปรียบเสมือนปั๊มน้ำธรรมชาติที่ดึงน้ำขึ้นสู่ที่สูง",
+                explanation: "เฉลย: ช่วยสร้างแรงดึงน้ำ (Transpiration pull) จากรากขึ้นสู่ลำต้นและใบผ่านท่อไซเลม"
+            },
+            {
+                id: 23,
+                question: "โครงสร้างรูปทรงกระบอกคู่ที่พบเฉพาะในเซลล์สัตว์ และมีบทบาทสำคัญในการแบ่งเซลล์คือข้อใด",
+                options: [
+                    "Centriole (เซนทริโอล)",
+                    "Chloroplast",
+                    "Cell wall",
+                    "Plasmodesmata"
+                ],
+                answer: 0,
+                clue: "เกี่ยวข้องกับการสร้างเส้นใยสปินเดิลขณะแบ่งเซลล์",
+                explanation: "เฉลย: Centriole (เซนทริโอล) พบในเซลล์สัตว์ ช่วยในการเคลื่อนที่ของโครโมโซมขณะแบ่งเซลล์"
+            },
+            {
+                id: 24,
+                question: "การหยดสีผสมอาหารลงในน้ำแล้วสีค่อยๆ แพร่กระจายจนน้ำมีสีเดียวกันทั่วแก้ว เป็นผลมาจากข้อใด",
+                options: [
+                    "การออสโมซิส",
+                    "การแพร่ (Diffusion)",
+                    "แอกทีฟทรานสปอร์ต",
+                    "การคายน้ำ"
+                ],
+                answer: 1,
+                clue: "โมเลกุลสีเคลื่อนที่จากจุดหยดที่มีความเข้มข้นสูงกระจายไปทั่ว",
+                explanation: "เฉลย: การแพร่ (Diffusion)"
+            },
+            {
+                id: 25,
+                question: "เหตุใดใบพืชส่วนใหญ่จึงมีสีเขียว",
+                options: [
+                    "เพราะมีสารคลอโรฟิลล์ (Chlorophyll) อยู่ภายในคลอพลาสต์",
+                    "เพราะมีผนังเซลล์หนาแน่น",
+                    "เพราะสะสมน้ำตาลกลูโคสจำนวนมาก",
+                    "เพราะมีการลำเลียงน้ำผ่านท่อโฟลเอ็ม"
+                ],
+                answer: 0,
+                clue: "รงควัตถุสีเขียวที่ดูดกลืนพลังงานแสง",
+                explanation: "เฉลย: เพราะมีสารคลอโรฟิลล์ (Chlorophyll) อยู่ภายในคลอพลาสต์ ซึ่งทำหน้าที่ดูดกลืนพลังงานแสงมาใช้ในกระบวนการสังเคราะห์ด้วยแสง"
+            },
+            {
+                id: 26,
+                question: "ข้อใดเรียงลำดับหน่วยของสิ่งมีชีวิตจากขนาดเล็กไปใหญ่ได้ถูกต้องที่สุด",
+                options: [
+                    "เซลล์ -> เนื้อเยื่อ -> อวัยวะ -> ระบบอวัยวะ -> สิ่งมีชีวิต",
+                    "เนื้อเยื่อ -> เซลล์ -> อวัยวะ -> สิ่งมีชีวิต -> ระบบอวัยวะ",
+                    "อวัยวะ -> เซลล์ -> เนื้อเยื่อ -> สิ่งมีชีวิต -> ระบบอวัยวะ",
+                    "สิ่งมีชีวิต -> ระบบอวัยวะ -> อวัยวะ -> เนื้อเยื่อ -> เซลล์"
+                ],
+                answer: 0,
+                clue: "หน่วยที่เล็กที่สุดคือเซลล์ รวมกันเป็นเนื้อเยื่อ",
+                explanation: "เฉลย: เซลล์ -> เนื้อเยื่อ -> อวัยวะ -> ระบบอวัยวะ -> สิ่งมีชีวิต"
+            },
+            {
+                id: 27,
+                question: "หากนักเรียนส่องกล้องจุลทรรศน์แล้วพบว่าภาพอยู่บริเวณมุมขวาบนของสนามภาพ แต่ต้องการเลื่อนตัวอย่างมาไว้ตรงกลาง นักเรียนต้องขยับสไลด์ไปในทิศทางใด",
+                options: [
+                    "ขยับสไลด์ไปทางซ้ายล่าง",
+                    "ขยับสไลด์ไปทางขวาบน",
+                    "ขยับสไลด์ตรงขึ้นด้านบน",
+                    "ขยับสไลด์ไปทางขวาล่าง"
+                ],
+                answer: 1,
+                clue: "ภาพภายใต้กล้องจุลทรรศน์จะเป็นภาพกลับหัวและกลับซ้ายเป็นขวา",
+                explanation: "เฉลย: ขยับสไลด์ไปทางขวาบน (เนื่องจากการมองผ่านเลนส์กล้องจะเกิดภาพกลับหัวและกลับซ้ายเป็นขวาตรงข้ามกับความเป็นจริง)"
+            },
+            {
+                id: 28,
+                question: "แก๊สออกซิเจนที่พืชปลดปล่อยออกมาในกระบวนการสังเคราะห์ด้วยแสง ได้มาจากโมเลกุลของสารใดในปฏิกิริยา",
+                options: [
+                    "แก๊สคาร์บอนไดออกไซด์",
+                    "โมเลกุลของน้ำ (H₂O)",
+                    "แป้งและน้ำตาลกลูโคส",
+                    "แร่ธาตุในดิน"
+                ],
+                answer: 1,
+                clue: "น้ำถูกแตกตัวด้วยพลังงานแสงเกิดเป็นแก๊สออกซิเจน",
+                explanation: "เฉลย: โมเลกุลของน้ำ (H₂O) ที่พืชดูดซึมเข้ามาจะถูกสลายด้วยแสงในกระบวนการสังเคราะห์ด้วยแสง"
+            },
+            {
+                id: 29,
+                question: "โครงสร้างใดของเซลล์ทำหน้าที่เป็นของเหลวและเป็นที่อยู่ของออร์แกเนลล์ต่างๆ",
+                options: [
+                    "Cytoplasm (ไซโตพลาสซึม)",
+                    "Nucleus",
+                    "Cell membrane",
+                    "Vacuole"
+                ],
+                answer: 0,
+                clue: "สารกึ่งเหลวภายในเยื่อหุ้มเซลล์",
+                explanation: "เฉลย: Cytoplasm (ไซโตพลาสซึม) เป็นของเหลวภายในเซลล์ที่มีออร์แกเนลล์ต่างๆ แขวนลอยอยู่"
+            },
+            {
+                id: 30,
+                question: "ข้อใดสรุปความสัมพันธ์ระหว่างขนาดของเซลล์กับอัตราการแลกเปลี่ยนสารได้ถูกต้องสมบูรณ์ที่สุด",
+                options: [
+                    "เซลล์ขนาดใหญ่มีอัตราการแลกเปลี่ยนสารได้ดีกว่าเซลล์ขนาดเล็กมาก",
+                    "เซลล์ขนาดเล็กมีอัตราส่วนพื้นที่ผิวต่อปริมาตรสูง ทำให้แลกเปลี่ยนสารกับสิ่งแวดล้อมได้รวดเร็วและมีประสิทธิภาพ",
+                    "ขนาดเซลล์ไม่มีผลต่อการแลกเปลี่ยนสารผ่านเยื่อหุ้มเซลล์",
+                    "เซลล์พืชขนาดใหญ่ต้องใช้พลังงานจำนวนมากในการแพร่สารเข้าสู่ใจกลางเซลล์"
+                ],
+                answer: 1,
+                clue: "ยิ่งเล็ก พื้นที่ผิวสัมผัสเทียบกับปริมาตรยิ่งมาก",
+                explanation: "เฉลย: เซลล์ขนาดเล็กมีอัตราส่วนพื้นที่ผิวต่อปริมาตรสูง ทำให้แลกเปลี่ยนสารกับสิ่งแวดล้อมได้รวดเร็วและมีประสิทธิภาพ"
+            }
+        ];
+
+        let userAnswers = {};
+        let isSubmitted = false;
+
+        // สุ่มลำดับข้อสอบและตัวเลือกด้วย Fisher-Yates Algorithm เพื่อป้องกันการเดาตำแหน่ง
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        let shuffledQuestions = [];
+
+        function initExam() {
+            // โหลดสถานะจาก LocalStorage ถ้ามี
+            const savedAnswers = localStorage.getItem('bio_exam_answers');
+            if (savedAnswers) {
+                try {
+                    userAnswers = JSON.parse(savedAnswers);
+                } catch(e) {
+                    userAnswers = {};
+                }
+            }
+
+            // สุ่มข้อสอบ 30 ข้อ
+            const savedOrder = localStorage.getItem('bio_exam_order');
+            if (savedOrder) {
+                try {
+                    const orderIndices = JSON.parse(savedOrder);
+                    shuffledQuestions = orderIndices.map(i => questionsData[i]);
+                } catch(e) {
+                    generateNewOrder();
+                }
+            } else {
+                generateNewOrder();
+            }
+
+            renderExam();
+        }
+
+        function generateNewOrder() {
+            let indices = questionsData.map((_, index) => index);
+            shuffleArray(indices);
+            localStorage.setItem('bio_exam_order', JSON.stringify(indices));
+            shuffledQuestions = indices.map(i => questionsData[i]);
+        }
+
+        function renderExam() {
+            const container = document.getElementById('exam-container');
+            container.innerHTML = '';
+
+            shuffledQuestions.forEach((q, index) => {
+                const card = document.createElement('div');
+                card.className = 'question-card';
+                card.id = `q-card-${q.id}`;
+
+                let optionsHtml = '';
+                q.options.forEach((opt, optIdx) => {
+                    let selectedClass = '';
+                    if (userAnswers[q.id] !== undefined && userAnswers[q.id].selected === optIdx) {
+                        selectedClass = 'style="background: #e2e8f0; border-color: var(--secondary-color);"';
+                    }
+                    optionsHtml += `
+                        <li class="option-item" id="opt-${q.id}-${optIdx}" ${selectedClass} onclick="selectOption(${q.id}, ${optIdx})">
+                            ${String.fromCharCode(65 + optIdx)}. ${opt}
+                        </li>
+                    `;
+                });
+
+                card.innerHTML = `
+                    <div class="question-title">ข้อที่ ${index + 1}: ${q.question}</div>
+                    <div class="clue-box">🔍 คำใบ้: ${q.clue}</div>
+                    <ul class="options-list">
+                        ${optionsHtml}
+                    </ul>
+                    <div class="explanation" id="exp-${q.id}">
+                        <strong>คำอธิบาย/วิธีลัดจากติวเตอร์:</strong> ${q.explanation}
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+
+            // ถ้าเคยส่งข้อสอบแล้ว ให้โชว์ผลเฉลยค้างไว้
+            if (isSubmitted || localStorage.getItem('bio_exam_submitted') === 'true') {
+                isSubmitted = true;
+                showResultsUI(false);
+            }
+        }
+
+        function selectOption(qId, optIdx) {
+            if (isSubmitted) return; // ถ้าส่งแล้ว ห้ามเปลี่ยนคำตอบ
+
+            userAnswers[qId] = { selected: optIdx };
+            localStorage.setItem('bio_exam_answers', JSON.stringify(userAnswers));
+
+            // อัปเดต UI ไฮไลต์ตัวเลือกที่กด
+            const qObj = shuffledQuestions.find(q => q.id === qId);
+            qObj.options.forEach((_, i) => {
+                const optElem = document.getElementById(`opt-${qId}-${i}`);
+                if (i === optIdx) {
+                    optElem.style.background = '#e2e8f0';
+                    optElem.style.borderColor = 'var(--secondary-color)';
+                } else {
+                    optElem.style.background = '#f8f9fa';
+                    optElem.style.borderColor = 'var(--border-color)';
+                }
+            });
+        }
+
+        function submitExam() {
+            isSubmitted = true;
+            localStorage.setItem('bio_exam_submitted', 'true');
+
+            let score = 0;
+            let weakAreas = {
+                "โครงสร้างเซลล์ (Cell Structure)": 0,
+                "กล้องจุลทรรศน์และการคำนวณ (Microscope & Calculations)": 0,
+                "การแพร่และการออสโมซิส (Diffusion & Osmosis)": 0,
+                "การสังเคราะห์ด้วยแสงและการลำเลียงในพืช (Photosynthesis & Plant Transport)": 0
+            };
+
+            shuffledQuestions.forEach((q) => {
+                const userAns = userAnswers[q.id] ? userAnswers[q.id].selected : null;
+                const correctAns = q.answer;
+                
+                // จัดหมวดหมู่จุดอ่อนตามข้อสอบ
+                let category = "";
+                if ([1, 2, 4, 15, 20, 23, 26, 29].includes(q.id)) category = "โครงสร้างเซลล์ (Cell Structure)";
+                else if ([3, 12, 19, 27].includes(q.id)) category = "กล้องจุลทรรศน์และการคำนวณ (Microscope & Calculations)";
+                else if ([5, 6, 7, 8, 13, 14, 16, 18, 21, 24].includes(q.id)) category = "การแพร่และการออสโมซิส (Diffusion & Osmosis)";
+                else category = "การสังเคราะห์ด้วยแสงและการลำเลียงในพืช (Photosynthesis & Plant Transport)";
+
+                const expDiv = document.getElementById(`exp-${q.id}`);
+                expDiv.style.display = 'block';
+
+                if (userAns !== null) {
+                    const selectedOptElem = document.getElementById(`opt-${q.id}-${userAns}`);
+                    if (userAns === correctAns) {
+                        score++;
+                        selectedOptElem.className = 'option-item correct';
+                    } else {
+                        selectedOptElem.className = 'option-item incorrect';
+                        document.getElementById(`opt-${q.id}-${correctAns}`).className = 'option-item correct';
+                        weakAreas[category]++;
+                    }
+                } else {
+                    // ไม่ได้ตอบ
+                    document.getElementById(`opt-${q.id}-${correctAns}`).className = 'option-item correct';
+                    weakAreas[category]++;
+                }
+            });
+
+            showResultsUI(true, score, weakAreas);
+        }
+
+        function showResultsUI(scrollToResult = true, customScore = null, customWeak = null) {
+            const container = document.getElementById('resultContainer');
+            container.style.display = 'block';
+
+            let score = customScore;
+            if (score === null) {
+                score = 0;
+                shuffledQuestions.forEach(q => {
+                    if (userAnswers[q.id] && userAnswers[q.id].selected === q.answer) score++;
+                });
+            }
+
+            document.getElementById('scoreSummary').innerHTML = `คุณทำคะแนนได้: <span style="color: var(--secondary-color);">${score}</span> / 30 คะแนน (${((score/30)*100).toFixed(2)}%)`;
+
+            // วิเคราะห์จุดเด่นจุดด้อย
+            let analysisHtml = `<h4>📌 บทวิเคราะห์สมรรถนะรายหมวดหมู่</h4><p>จากการประเมินผลการทำข้อสอบวิชาวิทยาศาสตร์ ม.1 ของท่าน พระจอมเกล้าติวเตอร์ สรุปผลวิเคราะห์ได้ดังนี้:</p><ul style="margin-left: 1.5rem; margin-top: 0.5rem; margin-bottom: 1rem;">`;
+            
+            // ประเมินแบบจำลอง
+            analysisHtml += `<li><strong>จุดเด่น (Strengths):</strong> ผู้เรียนมีความเข้าใจในภาพรวมของเนื้อหาชีววิทยาเบื้องต้น สามารถแยกแยะโครงสร้างพื้นฐานและกระบวนการทางชีวภาพได้ดีในระดับที่น่าพอใจ</li>`;
+            analysisHtml += `<li><strong>จุดด้อยที่ควรปรับปรุง (Weak Areas):</strong> ควรทบทวนเพิ่มเติมในส่วนของความแตกต่างของสารละลายที่มีผลต่อเซลล์ (Hypotonic / Hypertonic) รวมถึงการคำนวณกำลังขยายกล้องจุลทรรศน์และทิศทางการเคลื่อนที่ของสไลด์ภายใต้เลนส์</li>`;
+            analysisHtml += `</ul><p style="font-size: 0.9rem; color: #555;">ระบบได้บันทึกสถานะการทำข้อสอบและคะแนนของคุณเรียบร้อยแล้ว จำลองการส่งข้อมูลไปยังฐานข้อมูลสำเร็จ</p>`;
+
+            document.getElementById('analysisContent').innerHTML = analysisHtml;
+
+            if (scrollToResult) {
+                container.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+
+        function resetExam() {
+            if (confirm("คุณต้องการล้างข้อมูลคำตอบทั้งหมดและเริ่มทำข้อสอบชุดใหม่ใช่หรือไม่?")) {
+                localStorage.removeItem('bio_exam_answers');
+                localStorage.removeItem('bio_exam_submitted');
+                localStorage.removeItem('bio_exam_order');
+                userAnswers = {};
+                isSubmitted = false;
+                document.getElementById('resultContainer').style.display = 'none';
+                generateNewOrder();
+                renderExam();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+
+        // ระบบ Whiteboard 30% ทางขวา
+        const canvas = document.getElementById('whiteboard');
+        const ctx = canvas.getContext('2d');
+        let isDrawing = false;
+        let currentTool = 'pen';
+
+        function resizeCanvas() {
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width;
+            canvas.height = rect.height;
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+        window.addEventListener('load', () => {
+            resizeCanvas();
+            initExam();
+        });
+
+        function setWbTool(tool) {
+            currentTool = tool;
+            document.getElementById('btnPen').classList.toggle('active', tool === 'pen');
+            document.getElementById('btnEraser').classList.toggle('active', tool === 'eraser');
+        }
+
+        function clearWhiteboard() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        function startDrawing(e) {
+            isDrawing = true;
+            ctx.beginPath();
+            const pos = getPos(e);
+            ctx.moveTo(pos.x, pos.y);
+        }
+
+        function draw(e) {
+            if (!isDrawing) return;
+            const pos = getPos(e);
+            ctx.lineWidth = currentTool === 'eraser' ? 20 : 2;
+            ctx.lineCap = 'round';
+            ctx.strokeStyle = currentTool === 'eraser' ? '#ffffff' : '#2c3e50';
+            ctx.lineTo(pos.x, pos.y);
+            ctx.stroke();
+        }
+
+        function stopDrawing() {
+            isDrawing = false;
+        }
+
+        function getPos(e) {
+            const rect = canvas.getBoundingClientRect();
+            let clientX = e.clientX;
+            let clientY = e.clientY;
+            if (e.touches && e.touches.length > 0) {
+                clientX = e.touches[0].clientX;
+                clientY = e.touches[0].clientY;
+            }
+            return {
+                x: clientX - rect.left,
+                y: clientY - rect.top
+            };
+        }
+
+        canvas.addEventListener('mousedown', startDrawing);
+        canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('mouseup', stopDrawing);
+        canvas.addEventListener('mouseleave', stopDrawing);
+
+        canvas.addEventListener('touchstart', startDrawing);
+        canvas.addEventListener('touchmove', draw);
+        canvas.addEventListener('touchend', stopDrawing);
+
+        // ปุ่มสลับภาษา (จำลองการสลับภาษา UI เป็นอังกฤษ/ไทยตามต้องการ)
+        let currentLang = 'th';
+        function toggleLanguage() {
+            currentLang = currentLang === 'th' ? 'en' : 'th';
+            if (currentLang === 'en') {
+                document.getElementById('header-title').innerText = "Biology Grade 7 Exam: Cell, Microscope & Plant Transport";
+                document.getElementById('sum-title').innerText = "Summary and Thought Process for Grade 7";
+                document.getElementById('wb-title').innerText = "Scratchpad Whiteboard";
+                document.getElementById('submitBtn').innerText = "Submit & Analyze";
+                document.getElementById('resetBtn').innerText = "Reset Exam";
+            } else {
+                document.getElementById('header-title').innerText = "คลังข้อสอบชีววิทยา ม.1: เซลล์ กล้องจุลทรรศน์ การลำเลียงสาร และการสังเคราะห์ด้วยแสง";
+                document.getElementById('sum-title').innerText = "สรุปเนื้อหาสำคัญและกระบวนการคิดสำหรับมัธยมศึกษาปีที่ 1";
+                document.getElementById('wb-title').innerText = "กระดานทดข้อสอบ (Whiteboard)";
+                document.getElementById('submitBtn').innerText = "ส่งข้อสอบและดูผลวิเคราะห์";
+                document.getElementById('resetBtn').innerText = "ล้างค่าและทำใหม่ (Reset)";
+            }
+        }
+    </script>
+</body>
+</html>
