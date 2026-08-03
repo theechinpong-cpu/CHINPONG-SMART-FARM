@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบข้อสอบออนไลน์ - พระจอมเกล้าติวเตอร์</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #f4f7f6; color: #333; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+        header { background: #2c3e50; color: white; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; }
+        .main-container { display: flex; flex: 1; height: calc(100vh - 50px); overflow: hidden; }
+        .exam-frame { width: 70%; background: white; padding: 20px; overflow-y: auto; border-right: 2px solid #ddd; }
+        .whiteboard-frame { width: 30%; background: #fffbe6; display: flex; flex-direction: column; position: relative; }
+        .wb-header { background: #ffe58f; padding: 10px; font-weight: bold; text-align: center; border-bottom: 1px solid #ffd666; }
+        #canvas { flex: 1; cursor: crosshair; background: #fff; }
+        .wb-tools { padding: 10px; display: flex; gap: 5px; justify-content: center; background: #fffbe6; border-top: 1px solid #ffd666; }
+        button { padding: 8px 15px; border: none; background: #3498db; color: white; border-radius: 4px; cursor: pointer; transition: 0.2s; }
+        button:hover { background: #2980b9; }
+        .question-card { background: #fafafa; border: 1px solid #e0e0e0; padding: 15px; border-radius: 8px; margin-bottom: 15px; }
+        .options label { display: block; padding: 8px 10px; margin: 5px 0; background: #fff; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; }
+        .options label:hover { background: #f1f1f1; }
+        .correct { background-color: #d4edda !important; border-color: #c3e6cb !important; color: #155724; }
+        .incorrect { background-color: #f8d7da !important; border-color: #f5c6cb !important; color: #721c24; }
+        .clue { font-size: 0.9em; color: #e67e22; margin-top: 8px; font-style: italic; }
+        .explanation { font-size: 0.9em; color: #27ae60; margin-top: 5px; font-weight: bold; display: none; }
+        #summary-screen { display: none; padding: 30px; text-align: center; overflow-y: auto; height: 100%; width: 100%; background: white; position: absolute; top: 0; left: 0; z-index: 10; }
+    </style>
+</head>
+<body>
+    <header>
+        <h2>พระจอมเกล้าติวเตอร์ - ข้อสอบวิชาภูมิศาสตร์ทวีปออสเตรเลียและโอเชียเนีย</h2>
+        <div>
+            <button onclick="toggleLanguage()">TH / EN</button>
+            <button onclick="resetExam()" style="background: #e74c3c;">Reset</button>
+        </div>
+    </header>
+    <div class="main-container">
+        <div class="exam-frame" id="examFrame">
+            <div id="questionContainer"></div>
+            <button onclick="submitExam()" style="width: 100%; padding: 12px; background: #27ae60; font-size: 1.1em; margin-top: 20px;">ส่งคำตอบและวิเคราะห์ผล</button>
+        </div>
+        <div class="whiteboard-frame">
+            <div class="wb-header">กระดานทดข้อสอบ (Whiteboard)</div>
+            <canvas id="canvas"></canvas>
+            <div class="wb-tools">
+                <button onclick="clearCanvas()" style="background: #e74c3c;">ล้างกระดาน</button>
+            </div>
+        </div>
+    </div>
+    <div id="summary-screen">
+        <h2>ผลการประเมินการทดสอบ</h2>
+        <div id="scoreDisplay" style="font-size: 1.5em; margin: 20px 0;"></div>
+        <div id="analysisResult" style="text-align: left; max-width: 800px; margin: 0 auto; line-height: 1.6;"></div>
+        <button onclick="resetExam()" style="margin-top: 20px;">ทำข้อสอบอีกครั้ง</button>
+    </div>
+
+<script>
+    let currentLang = 'TH';
+    const questions = [
+        {
+            q: "1. ข้อใดกล่าวถึงลักษณะภูมิประเทศของเขตที่สูงภาคตะวันออกของทวีปออสเตรเลียได้ถูกต้องที่สุด?",
+            options: ["มีเทือกเขาแอนดีสทอดยาวขนานชายฝั่ง", "มีเทือกเขาเกรตดิไวดิงเป็นอุปสรรคขวางกั้นความชื้น", "เป็นที่ราบสูงหินชนวนเก่าแก่แห้งแล้งที่สุด", "เป็นที่ราบลุ่มแม่น้ำขนาดใหญ่ที่มีประชากรหนาแน่นที่สุด"],
+            answer: 1,
+            clue: "คำใบ้: เทือกเขาสำคัญที่ทอดยาวทางตะวันออกและกั้นฝน",
+            exp: "เฉลย: มีเทือกเขาเกรตดิไวดิงขวางกั้นความชื้น ทำให้เกิดเขตเงาฝนทางตะวันตก"
+        },
+        {
+            q: "2. ทวีปออสเตรเลียและโอเชียเนียประกอบด้วยกลุ่มเกาะในมหาสมุทรแปซิฟิกยกเว้นข้อใด?",
+            options: ["ไมโครนีเซีย", "เมลานีเซีย", "โพลีนีเซีย", "อินโดจีน"],
+            answer: 3,
+            clue: "คำใบ้: อินโดจีนเป็นคาบสมุทรในทวีปเอเชีย",
+            exp: "เฉลย: อินโดจีนไม่ใช่กลุ่มเกาะในมหาสมุทรแปซิฟิกแต่เป็นส่วนหนึ่งของเอเชียตะวันออกเฉียงใต้"
+        },
+        {
+            q: "3. ลักษณะเด่นทางชีวภาพของออสเตรเลียคือข้อใดเนื่องจากการแยกตัวทางธรณีวิทยา?",
+            options: ["มีสัตว์กินเนื้อขนาดใหญ่จำนวนมาก", "มีสัตว์มีกระเป๋าหน้าท้องที่เป็นเอกลักษณ์เฉพาะตัว", "มีสัตว์เลื้อยคลานมีพิษน้อยที่สุดในโลก", "มีป่าดงดิบชื้นขนาดใหญ่ที่สุดในซีกโลกใต้"],
+            answer: 1,
+            clue: "คำใบ้: สัตว์ที่มีถุงหน้าท้อง เช่น จิงโจ้ โคอาลา",
+            exp: "เฉลย: การแยกตัวทางธรณีวิทยาทำให้เกิดวิวัฒนาการของสัตว์มีกระเป๋าหน้าท้องเฉพาะถิ่น"
+        },
+        {
+            q: "4. แม่น้ำสายสำคัญที่สุดในเขตที่ราบลุ่มแม่น้ำกลางของประเทศออสเตรเลียคือข้อใด?",
+            options: ["แม่น้ำดาร์ลิงและแม่น้ำเมอร์รีย์", "แม่น้ำโขงและแม่น้ำสาละวิน", "แม่น้ำไนล์และแม่น้ำคองโก", "แม่น้ำมิสซิสซิปปีและแม่น้ำมิสซูรี"],
+            answer: 0,
+            clue: "คำใบ้: ชื่อแม่น้ำขึ้นต้นด้วยสระเอและมีความยาวมากในพื้นที่ภายใน",
+            exp: "เฉลย: แม่น้ำเมอร์รีย์และดาร์ลิงเป็นแม่น้ำสายหลักในเขตที่ราบลุ่มภายในแผ่นดิน"
+        },
+        {
+            q: "5. ทะเลสาบขนาดใหญ่ที่สุดในประเทศออสเตรเลียที่มักแห้งขอดในฤดูแล้งคือทะเลสาบใด?",
+            options: ["ทะเลสาบไอร์", "ทะเลสาบสุพีเรีย", "ทะเลสาบไบคาล", "ทะเลสาบวิกตอเรีย"],
+            answer: 0,
+            clue: "คำใบ้: ตั้งอยู่บริเวณเขตที่ราบต่ำใจกลางทวีป มีชื่อสั้นๆ",
+            exp: "เฉลย: ทะเลสาบไอร์ (Lake Eyre) ตั้งอยู่ในจุดที่ต่ำที่สุดของแผ่นดิน"
+        },
+        {
+            q: "6. ดินแดนหรือเกาะใดในภูมิภาคโอเชียเนียที่มีภูเขาไฟสูงที่สุดและมีธารน้ำแข็ง?",
+            options: ["เกาะเหนือและเกาะใต้ของประเทศนิวซีแลนด์", "เกาะแทสเมเนีย", "เกาะปาปัวนิวกินี", "เกาะฮาวาย"],
+            answer: 2,
+            clue: "คำใบ้: มีภูเขาไฟสูงและยอดเขาคุก หรือเกาะที่มีพื้นที่สูงใกล้เส้นศูนย์สูตร",
+            exp: "เฉลย: ปาปัวนิวกินีมีภูเขาไฟสูงและมียอดเขาสูงที่มีธารน้ำแข็งในเขตเส้นศูนย์สูตร"
+        },
+        {
+            q: "7. ภูมิอากาศบริเวณภาคเหนือของประเทศออสเตรเลียได้รับอิทธิพลจากลมชนิดใด?",
+            options: ["ลมมรสุมและลมสินค้า", "ลมพายุเฮอร์ริเคน", "ลมเวสเทอร์ลีส์", "ลมประจำเวลาภูเขา"],
+            answer: 0,
+            clue: "คำใบ้: มีฤดูฝนและฤดูแล้งสลับกันชัดเจนตามแนวเส้นศูนย์สูตร",
+            exp: "เฉลย: ภาคเหนือของออสเตรเลียได้รับอิทธิพลจากลมมรสุมทำให้มีฤดูฝนและแล้งสลับกัน"
+        },
+        {
+            q: "8. ข้อใดคือลักษณะของพื้นที่ส่วนใหญ่ในเขตที่ราบสูงตะวันตกของออสเตรเลีย?",
+            options: ["ป่าฝนเขตร้อนชื้นตลอดปี", "ทะเลสาบน้ำจืดขนาดใหญ่", "ทะเลทรายและกึ่งทะเลทรายที่แห้งแล้ง", "ที่ราบดินตะกอนน้ำพاที่อุดมสมบูรณ์"],
+            answer: 2,
+            clue: "คำใบ้: พื้นที่ภายในประเทศฝั่งตะวันตกมีความแห้งแล้งสูง",
+            exp: "เฉลย: ที่ราบสูงตะวันตกส่วนใหญ่เป็นทะเลทรายและกึ่งทะเลทราย เช่น เกรตวิกตอเรีย"
+        },
+        {
+            q: "9. พืชพรรณธรรมชาติส่วนใหญ่ในเขตแห้งแล้งของออสเตรเลียคือข้อใด?",
+            options: ["ป่าสนไทกา", "ป่าผลัดใบเขตอบอุ่น", "พืชประเภททนแล้ง เช่น ยูคาลิปตัสและหญ้าสั้น", "ทุ่งหญ้าแพร์รี"],
+            answer: 2,
+            clue: "คำใบ้: ต้นไม้ที่มีน้ำมันหอมระเหยและทนความร้อนสูง",
+            exp: "เฉลย: ต้นยูคาลิปตัสและพืชทนแล้งเป็นพืชเด่นที่ปรับตัวเข้ากับความแห้งแล้งได้ดี"
+        },
+        {
+            q: "10. ประเทศนิวซีแลนด์มีลักษณะภูมิประเทศแบบฟยอร์ด (Fjord) บริเวณใด?",
+            options: ["ชายฝั่งตะวันตกของเกาะใต้", "ชายฝั่งตะวันออกของเกาะเหนือ", "บริเวณหมู่เกาะโพลีนีเซีย", "ตอนกลางของเกาะเหนือ"],
+            answer: 0,
+            clue: "คำใบ้: เว้าแหว่งเกิดจากการกัดเซาะของธารน้ำแข็งทางเกาะใต้",
+            exp: "เฉลย: ชายฝั่งตะวันตกของเกาะใต้นิวซีแลนด์มีลักษณะฟยอร์ดที่เกิดจากธารน้ำแข็ง"
+        },
+        {
+            q: "11. ลักษณะประชากรส่วนใหญ่ของประเทศออสเตรเลียตั้งถิ่นฐานหนาแน่นบริเวณใด?",
+            options: ["เขตทะเลทรายภายในแผ่นดิน", "ชายฝั่งทะเลภาคตะวันออกและตะวันออกเฉียงใต้", "เขตที่ราบสูงตะวันตก", "เกาะทางเหนือสุดใกล้เส้นศูนย์สูตร"],
+            answer: 1,
+            clue: "คำใบ้: บริเวณที่มีเมืองใหญ่อย่างซิดนีย์และเมลเบิร์นตั้งอยู่",
+            exp: "เฉลย: ประชากรส่วนใหญ่อาศัยอยู่บริเวณชายฝั่งตะวันออกและตะวันออกเฉียงใต้เพราะอากาศดี"
+        },
+        {
+            q: "12. อาชีพเศรษฐกิจหลักที่สำคัญมากในเขตชนบทของออสเตรเลียคือข้อใด?",
+            options: ["การทำนาข้าวเจ้า", "การเลี้ยงแกะเพื่อตัดขนและการทำปศุสัตว์", "การปลูกยางพาราและปาล์มน้ำมัน", "การทำเหมืองแร่ถ่านหินใต้ดินลึก"],
+            answer: 1,
+            clue: "คำใบ้: สัตว์ที่ให้ขนหนานุ่มและเนื้อเป็นสินค้าส่งออกสำคัญ",
+            exp: "เฉลย: ออสเตรเลียเป็นผู้ส่งออกขนแกะรายใหญ่ของโลกเนื่องจากมีทุ่งหญ้ากว้างขวาง"
+        },
+        {
+            q: "13. ข้อใดคือความหมายที่ถูกต้องของคำว่า 'โอเชียเนีย' (Oceania)?",
+            options: ["ทวีปที่มีพื้นที่แผ่นดินใหญ่ใหญ่ที่สุดในโลก", "กลุ่มเกาะและดินแดนในมหาสมุทรแปซิฟิก", "อาณาเขตทะเลทรายรอบมหาสมุทรอินเดีย", "หมู่เกาะภูเขาไฟในทะเลทรายซาฮารา"],
+            answer: 1,
+            clue: "คำใบ้: รวมภูมิภาคเกาะต่างๆ ในมหาสมุทรแปซิฟิกเข้าด้วยกัน",
+            exp: "เฉลย: โอเชียเนียคือดินแดนที่ประกอบด้วยออสเตรเลียและหมู่เกาะในมหาสมุทรแปซิฟิก"
+        },
+        {
+            q: "14. แหล่งปะการังที่ใหญ่ที่สุดในโลก (Great Barrier Reef) ตั้งอยู่บริเวณใดของออสเตรเลีย?",
+            options: ["ชายฝั่งตะวันออกเฉียงเหนือ", "ชายฝั่งตะวันตกเฉียงใต้", "อ่าวเกรตออสเตรเลีย", "ตอนกลางของประเทศใกล้ทะเลทราย"],
+            answer: 0,
+            clue: "คำใบ้: ทะเลคอรัลทางตะวันออกเฉียงเหนือ",
+            exp: "เฉลย: เกรตแบร์ริเออร์รีฟตั้งอยู่นอกชายฝั่งตะวันออกเฉียงเหนือในเขตทะเลคอรัล"
+        },
+        {
+            q: "15. ชนพื้นเมืองเดิมดั้งเดิมของประเทศออสเตรเลียคือชนชาติใด?",
+            options: ["ชาวเมารี", "ชาวอะบอริจิน (Aborigines)", "ชาวอินเดียนแดง", "ชาวเอสกيمو"],
+            answer: 1,
+            clue: "คำใบ้: ชนพื้นเมืองผิวดำที่มีศิลปะการวาดภาพและเครื่องดนตรีดิดเจอริดู",
+            exp: "เฉลย: ชาวอะบอริจินคือชนพื้นเมืองดั้งเดิมของออสเตรเลีย"
+        },
+        {
+            q: "16. ชนพื้นเมืองเดิมดั้งเดิมของประเทศนิวซีแลนด์คือชนชาติใด?",
+            options: ["ชาวอะบอริจิน", "ชาวเมารี (Maori)", "ชาวโพลีนีเซียพื้นเมืองฮาวาย", "ชาวปาปัว"],
+            answer: 1,
+            clue: "คำใบ้: มีการแสดงรำฮากา (Haka) ก่อนแข่งขันรักบี้",
+            exp: "เฉลย: ชาวเมารีคือชนพื้นเมืองดั้งเดิมของนิวซีแลนด์"
+        },
+        {
+            q: "17. ลักษณะภูมิอากาศของประเทศนิวซีแลนด์ส่วนใหญ่จัดอยู่ในเขตใด?",
+            options: ["ภูมิอากาศแบบอบอุ่นชื้นภาคพื้นสมุทร", "ภูมิอากาศแบบทะเลทรายเขตร้อน", "ภูมิอากาศแบบทุนดรา", "ภูมิอากาศแบบสะวันนา"],
+            answer: 0,
+            clue: "คำใบ้: ได้รับอิทธิพลจากมหาสมุทร ทำให้อากาศไม่ร้อนจัดหรือหนาวจัดจนเกินไป",
+            exp: "เฉลย: นิวซีแลนด์มีภูมิอากาศแบบอบอุ่นชื้นภาคพื้นสมุทรเนื่องจากมีทะเลล้อมรอบ"
+        },
+        {
+            q: "18. ข้อใดไม่ใช่ชื่อกลุ่มเกาะหลักในภูมิภาคโอเชียเนีย?",
+            options: ["ไมโครนีเซีย", "เมลานีเซีย", "โพลีนีเซีย", "การ์ลาโกส"],
+            answer: 3,
+            clue: "คำใบ้: หมู่เกาะการ์ลาโกสอยู่ในเอกวาดอร์ ทวีปอเมริกาใต้",
+            exp: "เฉลย: หมู่เกาะการ์ลาโกสไม่ได้อยู่ในภูมิภาคโอเชียเนีย"
+        },
+        {
+            q: "19. ลักษณะภูมิประเทศของเกาะปะการัง (Atoll) มักพบได้ทั่วไปในกลุ่มเกาะใด?",
+            options: ["หมู่เกาะในมหาสมุทรแปซิฟิก", "เทือกเขาสูงนิวซีแลนด์", "เขตที่สูงภาคตะวันออกออสเตรเลีย", "เกาะแทสเมเนีย"],
+            answer: 0,
+            clue: "คำใบ้: เกาะวงแหวนที่เกิดจากหินปูนปะการังในมหาสมุทร",
+            exp: "เฉลย: อะทอลล์หรือเกาะปะการังวงแหวนพบมากในมหาสมุทรแปซิฟิก"
+        },
+        {
+            q: "20. เมืองหลวงของประเทศออสเตรเลียคือเมืองใด?",
+            options: ["ซิดนีย์", "เมลเบิร์น", "แคนเบอร์รา", "เพิร์ท"],
+            answer: 2,
+            clue: "คำใบ้: ไม่ใช่เมืองท่าชายฝั่งขนาดใหญ่ แต่สร้างขึ้นเป็นเมืองหลวงโดยเฉพาะ",
+            exp: "เฉลย: แคนเบอร์ราเป็นเมืองหลวงของประเทศออสเตรเลีย"
+        },
+        {
+            q: "21. เมืองหลวงของประเทศนิวซีแลนด์คือเมืองใด?",
+            options: ["โอ๊คแลนด์", "เวลลิงตัน", "ไครสต์เชิร์ช", "ควีนส์ทาวน์"],
+            answer: 1,
+            clue: "คำใบ้: ตั้งอยู่บริเวณตอนใต้ของเกาะเหนือ",
+            exp: "เฉลย: เวลลิงตันเป็นเมืองหลวงของนิวซีแลนด์"
+        },
+        {
+            q: "22. แร่ธาตุสำคัญและสินค้าส่งออกรายได้สูงของประเทศออสเตรเลียได้แก่ข้อใด?",
+            options: ["ถ่านหิน เหล็ก และทองคำ", "น้ำมันดิบและก๊าซธรรมชาติจากป่าดิบชื้น", "เพชรจากเหมืองในเกาะเหนือ", "แร่ยูเรเนียมจากภูเขาไฟน้ำแข็ง"],
+            answer: 0,
+            clue: "คำใบ้: ออสเตรเลียส่งออกแร่ธาตุอุตสาหกรรมหนักจำนวนมาก",
+            exp: "เฉลย: ถ่านหิน เหล็ก และทองคำ เป็นแร่ส่งออกหลักของออสเตรเลีย"
+        },
+        {
+            q: "23. กระแสน้ำอุ่นในมหาสมุทรแปซิฟิกที่ไหลผ่านชายฝั่งตะวันออกของออสเตรเลียคือกระแสน้ำใด?",
+            options: ["กระแสน้ำอุ่นอีสต์ออสเตรเลีย", "กระแสน้ำอุ่นกัลฟ์สตรีม", "กระแสน้ำอุ่นคุโรชิโอ", "กระแสน้ำอุ่นบราซิล"],
+            answer: 0,
+            clue: "คำใบ้: มีชื่อสอดคล้องกับทิศตะวันออกของประเทศออสเตรเลีย",
+            exp: "เฉลย: กระแสน้ำอุ่นอีสต์ออสเตรเลียไหลผ่านชายฝั่งตะวันออกส่งผลต่อภูมิอากาศ"
+        },
+        {
+            q: "24. ลักษณะของพืชพรรณในเขตอบอุ่นของนิวซีแลนด์ส่วนใหญ่เป็นประเภทใด?",
+            options: ["ป่าดิบชื้นหนาแน่นตลอดปี", "ป่าผสมระหว่างป่าไม้ผลัดใบและป่าสน", "ทุ่งหญ้าสะวันนาแห้งแล้ง", "ป่าชายเลนขนาดใหญ่"],
+            answer: 1,
+            clue: "คำใบ้: มีต้นไม้เขียวชะอุ่มและป่าสนผสม",
+            exp: "เฉลย: นิวซีแลนด์มีป่าไม้ผลัดใบและป่าสนในเขตอุณหภูมิอบอุ่นชื้น"
+        },
+        {
+            q: "25. ข้อใดคือปัญหาสำคัญทางสิ่งแวดล้อมของประเทศออสเตรเลียในปัจจุบัน?",
+            options: ["ภัยแล้งและไฟป่ารุนแรง", "การเกิดแผ่นดินไหวใต้ทะเลสึนามิทุกวัน", "ภูเขาไฟระเบิดขนาดใหญ่ใจกลางเมืองหลวง", "การรุกรานของธารน้ำแข็งขั้วโลกใต้"],
+            answer: 0,
+            clue: "คำใบ้: เกิดขึ้นบ่อยในฤดูร้อนเนื่องจากความแห้งแล้งและต้นยูคาลิปตัส",
+            exp: "เฉลย: ภัยแล้งและไฟป่าเป็นปัญหาใหญ่ของออสเตรเลียเนื่องจากภูมิอากาศแห้งแล้ง"
+        },
+        {
+            q: "26. เกาะขนาดใหญ่ทางตอนใต้ของประเทศออสเตรเลียที่มีอากาศเย็นสบายคือเกาะใด?",
+            options: ["เกาะแทสเมเนีย (Tasmania)", "เกาะสจ๊วต", "เกาะฟิจี", "เกาะโซโลมอน"],
+            answer: 0,
+            clue: "คำใบ้: แยกจากแผ่นดินใหญ่ทางช่องแคบเบสส์",
+            exp: "เฉลย: เกาะแทสเมเนียเป็นรัฐเกาะทางใต้สุดของออสเตรเลียที่มีอากาศหนาวเย็นกว่า"
+        },
+        {
+            q: "27. ประชากรในภูมิภาคโอเชียเนียส่วนใหญ่ประกอบอาชีพใดเป็นหลัก?",
+            options: ["เกษตรกรรม ปศุสัตว์ และการประมง", "อุตสาหกรรมยานยนต์และอากาศยานหนัก", "อุตสาหกรรมเทคโนโลยีสารสนเทศขั้นสูง", "การทำเหมืองแร่นิวเคลียร์ใต้ดิน"],
+            answer: 0,
+            clue: "คำใบ้: เกี่ยวข้องกับผลผลิตจากดิน น้ำ และการเลี้ยงสัตว์",
+            exp: "เฉลย: เกษตรกรรม ปศุสัตว์ และประมง เป็นอาชีพหลักของประชากรในภูมิภาคนี้"
+        },
+        {
+            q: "28. ดินแดนอาณานิคมหรือประเทศในโอเชียเนียส่วนใหญ่เคยตกเป็นอาณานิคมของประเทศใด?",
+            options: ["สหราชอาณาจักร (อังกฤษ)", "สเปนและโปรตุเกส", "รัสเซียและจีน", "ญี่ปุ่นและเกาหลี"],
+            answer: 0,
+            clue: "คำใบ้: จักรวรรดิที่เคยแผ่อำนาจไปทั่วโลกและใช้ภาษาอังกฤษเป็นภาษาราชการ",
+            exp: "เฉลย: ส่วนใหญ่เคยเป็นอาณานิคมของสหราชอาณาจักรและมีความสัมพันธ์เครือจักรภพ"
+        },
+        {
+            q: "29. ข้อใดอธิบายถึงลักษณะภูมิอากาศแบบทะเลทรายในออสเตรเลียได้ถูกต้อง?",
+            options: ["มีฝนตกชุกตลอดทั้งปีไม่มีฤดูแล้ง", "มีปริมาณน้ำฝนน้อยมากและอุณหภูมิกลางวันกับกลางคืนแตกต่างกันมาก", "มีอากาศหนาวจัดมีหิมะปกคลุมหนาแน่น", "มีพายุฝนฟ้าคะนองทุกบ่ายวัน"],
+            answer: 1,
+            clue: "คำใบ้: กลางวันร้อนจัด กลางคืนหนาวจัด น้ำฝนน้อย",
+            exp: "เฉลย: ทะเลทรายมีฝนน้อยมาก และอุณหภูมิเปลี่ยนแปลงระหว่างวันและคืนสูงมาก"
+        },
+        {
+            q: "30. เพราะเหตุใดพื้นที่ภายในทวีปออสเตรเลียจึงมีประชากรอาศัยอยู่เบาบางมาก?",
+            options: ["เป็นเขตภูเขาไฟคุกรุ่นและแผ่นดินไหวตลอดเวลา", "เป็นเขตทุรกันดาร แห้งแล้ง และเป็นทะเลทราย", "รัฐบาลไม่อนุญาตให้เข้าไปอยู่อาศัยเด็ดขาด", "ไม่มีเส้นทางคมนาคมทางอากาศเข้าถึงเลย"],
+            answer: 1,
+            clue: "คำใบ้: ความแห้งแล้งและขาดแคลนแหล่งน้ำจืด",
+            exp: "เฉลย: พื้นที่ภายในเป็นทะเลทรายและแห้งแล้ง จึงไม่เอื้อต่อการตั้งถิ่นฐานขนาดใหญ่"
+        }
+    ];
+
+    let userAnswers = {};
+
+    function renderQuestions() {
+        const container = document.getElementById('questionContainer');
+        let html = '';
+        questions.forEach((item, index) => {
+            html += `<div class="question-card" id="qcard_${index}">
+                <p style="font-weight: bold; margin-bottom: 8px;">${item.q}</p>
+                <div class="options">`;
+            item.options.forEach((opt, optIndex) => {
+                html += `<label onclick="selectOption(${index}, ${optIndex})">
+                    <input type="radio" name="q_${index}" value="${optIndex}"> ${opt}
+                </label>`;
+            });
+            html += `</div>
+                <div class="clue">${item.clue}</div>
+                <div class="explanation" id="exp_${index}">${item.exp}</div>
+            </div>`;
+        });
+        container.innerHTML = html;
+        loadFromLocalStorage();
+    }
+
+    function selectOption(qIndex, optIndex) {
+        userAnswers[qIndex] = optIndex;
+        saveToLocalStorage();
+        
+        const card = document.getElementById(`qcard_${qIndex}`);
+        const labels = card.querySelectorAll('label');
+        labels.forEach((lbl, idx) => {
+            lbl.classList.remove('correct', 'incorrect');
+            if(idx === questions[qIndex].answer) {
+                lbl.classList.add('correct');
+            } else if(idx === optIndex) {
+                lbl.classList.add('incorrect');
+            }
+        });
+        document.getElementById(`exp_${qIndex}`).style.display = 'block';
+    }
+
+    function saveToLocalStorage() {
+        localStorage.setItem('userAnswers', JSON.stringify(userAnswers));
+        localStorage.setItem('currentLang', currentLang);
+    }
+
+    function loadFromLocalStorage() {
+        const savedAns = localStorage.getItem('userAnswers');
+        if(savedAns) {
+            userAnswers = JSON.parse(savedAns);
+            for(let qIndex in userAnswers) {
+                let optIndex = userAnswers[qIndex];
+                const card = document.getElementById(`qcard_${qIndex}`);
+                if(card) {
+                    const radio = card.querySelectorAll('input')[optIndex];
+                    if(radio) radio.checked = true;
+                    selectOption(parseInt(qIndex), optIndex);
+                }
+            }
+        }
+    }
+
+    function resetExam() {
+        localStorage.removeItem('userAnswers');
+        userAnswers = {};
+        document.getElementById('summary-screen').style.display = 'none';
+        renderQuestions();
+    }
+
+    function toggleLanguage() {
+        currentLang = currentLang === 'TH' ? 'EN' : 'TH';
+        alert("สลับสถานะภาษาเรียบร้อย (Current: " + currentLang + ")");
+    }
+
+    function submitExam() {
+        let score = 0;
+        let total = questions.length;
+        for(let i=0; i<total; i++) {
+            if(userAnswers[i] === questions[i].answer) {
+                score++;
+            }
+        }
+
+        const summaryScreen = document.getElementById('summary-screen');
+        const scoreDisplay = document.getElementById('scoreDisplay');
+        const analysisResult = document.getElementById('analysisResult');
+
+        scoreDisplay.innerHTML = `คุณทำคะแนนได้ <b>${score}</b> จาก <b>${total}</b> คะแนน`;
+
+        let analysisHTML = `<h3>บทวิเคราะห์ผลการทดสอบโดยติวเตอร์</h3>`;
+        if(score >= 25) {
+            analysisHTML += `<p style="color: green; margin-top: 10px;"><b>จุดเด่น:</b> ผู้เรียนมีความเข้าใจเนื้อหาภูมิประเทศ ภูมิอากาศ และลักษณะทางกายภาพของทวีปออสเตรเลียและโอเชียเนียเป็นอย่างดีเยี่ยม สามารถวิเคราะห์ความสัมพันธ์ระหว่างเทือกเขาเกรตดิไวดิงและเขตเงาฝนได้อย่างแม่นยำ</p>`;
+        } else {
+            analysisHTML += `<p style="color: orange; margin-top: 10px;"><b>จุดเด่น:</b> มีความเข้าใจในโครงสร้างพื้นฐานของทวีปและกลุ่มเกาะหลักในระดับปานกลาง</p>`;
+        }
+
+        analysisHTML += `<p style="color: #c0392b; margin-top: 10px;"><b>จุดด้อย / ข้อควรปรับปรุง:</b> ควรกลับไปทบทวนเนื้อหาในส่วนของรายละเอียดเกาะแก่งในมหาสมุทรแปซิฟิก (ไมโครนีเซีย เมลานีเซีย โพลีนีเซีย) รวมถึงลักษณะภูมิประเทศแบบฟยอร์ดและตำแหน่งที่ตั้งเมืองหลวงของประเทศในแถบโอเชียเนียเพิ่มเติมเพื่อความแม่นยำสูงสุด</p>`;
+
+        analysisResult.innerHTML = analysisHTML;
+        summaryScreen.style.display = 'block';
+    }
+
+    // Whiteboard Scripting
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    let painting = false;
+
+    function resizeCanvas() {
+        canvas.width = canvas.parentElement.clientWidth;
+        canvas.height = canvas.parentElement.clientHeight - 80;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    canvas.addEventListener('mousedown', startPosition);
+    canvas.addEventListener('mouseup', finishedPosition);
+    canvas.addEventListener('mousemove', draw);
+
+    canvas.addEventListener('touchstart', (e) => {
+        let touch = e.touches[0];
+        let mouseEvent = new MouseEvent('mousedown', {
+            clientX: touch.clientX,
+            clientY: touch.clientY
+        });
+        canvas.dispatchEvent(mouseEvent);
+    }, {passive: true});
+
+    canvas.addEventListener('touchend', () => {
+        let mouseEvent = new MouseEvent('mouseup', {});
+        canvas.dispatchEvent(mouseEvent);
+    }, {passive: true});
+
+    canvas.addEventListener('touchmove', (e) => {
+        let touch = e.touches[0];
+        let mouseEvent = new MouseEvent('mousemove', {
+            clientX: touch.clientX,
+            clientY: touch.clientY
+        });
+        canvas.dispatchEvent(mouseEvent);
+    }, {passive: true});
+
+    function startPosition(e) {
+        painting = true;
+        draw(e);
+    }
+
+    function finishedPosition() {
+        painting = false;
+        ctx.beginPath();
+    }
+
+    function draw(e) {
+        if(!painting) return;
+        ctx.lineWidth = 3;
+        ctx.lineCap = 'round';
+        ctx.strokeStyle = '#e74c3c';
+
+        const rect = canvas.getBoundingClientRect();
+        ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
+    }
+
+    function clearCanvas() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+
+    window.onload = function() {
+        renderQuestions();
+    }
+</script>
+</body>
+</html>
