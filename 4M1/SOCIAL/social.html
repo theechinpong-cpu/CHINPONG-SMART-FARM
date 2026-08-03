@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบสอบออนไลน์ - พระจอมเกล้าติวเตอร์</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --success-color: #27ae60;
+            --danger-color: #c0392b;
+            --bg-color: #f8f9fa;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: var(--bg-color); color: #333; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+        header { background: var(--primary-color); color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; }
+        .header-title { font-size: 1.2rem; font-weight: bold; }
+        .controls { display: flex; gap: 10px; }
+        button { background: var(--secondary-color); color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        button:hover { opacity: 0.9; }
+        .main-container { display: flex; flex: 1; height: calc(100vh - 60px); overflow: hidden; }
+        .left-frame { width: 70%; padding: 20px; overflow-y: auto; background: white; border-right: 1px solid #ddd; }
+        .right-frame { width: 30%; display: flex; flex-direction: column; background: #fff; }
+        .wb-header { background: #e9ecef; padding: 10px; font-weight: bold; text-align: center; border-bottom: 1px solid #ccc; }
+        #whiteboard { flex: 1; background: #fff; cursor: crosshair; }
+        .wb-tools { padding: 10px; display: flex; gap: 5px; justify-content: center; background: #f1f3f5; border-top: 1px solid #ccc; }
+        .question-card { background: #fff; border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .question-title { font-size: 1.1rem; font-weight: bold; margin-bottom: 10px; color: var(--primary-color); }
+        .clue { font-size: 0.85rem; color: #e67e22; margin-bottom: 15px; font-style: italic; }
+        .options-list { display: flex; flex-direction: column; gap: 8px; }
+        .option-item { padding: 10px 15px; border: 1px solid #ccc; border-radius: 5px; cursor: pointer; transition: 0.2s; }
+        .option-item:hover { background: #f1f3f5; }
+        .option-item.correct { background: var(--success-color) !important; color: white; border-color: var(--success-color); }
+        .option-item.incorrect { background: var(--danger-color) !important; color: white; border-color: var(--danger-color); }
+        .explanation { margin-top: 10px; padding: 10px; background: #e8f8f5; border-left: 4px solid var(--success-color); font-size: 0.9rem; display: none; }
+        #submit-section { text-align: center; margin: 20px 0; }
+        #result-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; }
+        .modal-content { background: white; padding: 30px; border-radius: 8px; width: 600px; max-width: 90%; max-height: 80vh; overflow-y: auto; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="header-title" id="lbl-header">แบบทดสอบภูมิศาสตร์สากล - พระจอมเกล้าติวเตอร์</div>
+        <div class="controls">
+            <button onclick="toggleLanguage()">TH / EN</button>
+            <button onclick="resetExam()" style="background: var(--danger-color);">Reset</button>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <div class="left-frame" id="exam-container">
+            <!-- ข้อสอบ 30 ข้อจะถูก Render ด้วย JavaScript -->
+        </div>
+        <div class="right-frame">
+            <div class="wb-header" id="lbl-wb">กระดานทดอัจฉริยะ (Whiteboard)</div>
+            <canvas id="whiteboard"></canvas>
+            <div class="wb-tools">
+                <button onclick="clearCanvas()" id="btn-clear">ล้างกระดาน</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="result-modal">
+        <div class="modal-content" id="result-content">
+            <!-- ผลวิเคราะห์คะแนน -->
+        </div>
+    </div>
+
+<script>
+    let currentLang = 'TH';
+    const questions = [
+        {
+            id: 1,
+            qTH: "ทวีปออสเตรเลียมีขนาดพื้นที่ประมาณเท่าใด?",
+            qEN: "What is the approximate land area of Australia?",
+            clueTH: "คำใบ้: มีขนาดเจ็ดจุดกว่าล้านตารางกิโลเมตร",
+            clueEN: "Clue: Around 7.6 million square kilometers",
+            optionsTH: ["5.2 ล้าน ตร.กม.", "7.6 ล้าน ตร.กม.", "10.4 ล้าน ตร.กม.", "12.1 ล้าน ตร.กม."],
+            optionsEN: ["5.2 million sq km", "7.6 million sq km", "10.4 million sq km", "12.1 million sq km"],
+            answer: 1,
+            expTH: "เฉลย: 7.6 ล้าน ตร.กม. เป็นทวีปที่มีขนาดเล็กที่สุดในโลก",
+            expEN: "Explanation: 7.6 million sq km, the smallest continent in the world."
+        },
+        {
+            id: 2,
+            qTH: "เทือกเขาสำคัญทางตะวันออกของออสเตรเลียชื่อว่าอะไร?",
+            qEN: "What is the major mountain range in eastern Australia?",
+            clueTH: "คำใบ้: มีคำว่า Great...",
+            clueEN: "Clue: Starts with Great...",
+            optionsTH: ["Great Dividing Range", "Great Victoria Range", "Great Sandy Range", "Great Artesian Range"],
+            optionsEN: ["Great Dividing Range", "Great Victoria Range", "Great Sandy Range", "Great Artesian Range"],
+            answer: 0,
+            expTH: "เฉลย: Great Dividing Range เป็นเทือกเขาสูงทอดยาวขนานชายฝั่งตะวันออก",
+            expEN: "Explanation: Great Dividing Range runs parallel to the east coast."
+        },
+        {
+            id: 3,
+            qTH: "ยอดเขาที่สูงที่สุดในประเทศออสเตรเลียคือข้อใด?",
+            qEN: "What is the highest mountain in Australia?",
+            clueTH: "คำใบ้: ขึ้นต้นด้วยตัว K",
+            clueEN: "Clue: Starts with letter K",
+            optionsTH: ["ยอดเขาเอเวอร์เรสต์", "ยอดเขาคอสซิอัสโก", "ยอดเขาฟูจิ", "ยอดเขาคอเคซัส"],
+            optionsEN: ["Mount Everest", "Mount Kosciuszko", "Mount Fuji", "Mount Caucasus"],
+            answer: 1,
+            expTH: "เฉลย: ยอดเขาคอสซิอัสโก (Mount Kosciuszko) ตั้งอยู่ในเขตที่สูงทางตะวันออก",
+            expEN: "Explanation: Mount Kosciuszko is located in the eastern highlands."
+        },
+        {
+            id: 4,
+            qTH: "ทะเลทรายขนาดใหญ่ทางตะวันตกของออสเตรเลียข้อใดถูกต้อง?",
+            qEN: "Which of the following is a major desert in western Australia?",
+            clueTH: "คำใบ้: มีชื่อวิกตอเรียรวมอยู่ด้วย",
+            clueEN: "Clue: Includes the name Victoria",
+            optionsTH: ["ทะเลทรายสะฮารา", "ทะเลทรายโกบี", "ทะเลทรายเกรทวิกตอเรีย", "ทะเลทรายอาตากามา"],
+            optionsEN: ["Sahara Desert", "Gobi Desert", "Great Victoria Desert", "Atacama Desert"],
+            answer: 2,
+            expTH: "เฉลย: ทะเลทรายเกรทวิกตอเรีย อยู่ในเขตที่ราบสูงทางตะวันตก",
+            expEN: "Explanation: Great Victoria Desert is located in the western plateau."
+        },
+        {
+            id: 5,
+            qTH: "ทะเลสาบน้ำเค็มที่ใหญ่ที่สุดในออสเตรเลียคือทะเลสาบใด?",
+            qEN: "What is the largest salt lake in Australia?",
+            clueTH: "คำใบ้: ตั้งชื่อตามนักสำรวจ นามสกุลแอร์",
+            clueEN: "Clue: Named after explorer Eyre",
+            optionsTH: ["ทะเลสาบแอร์", "ทะเลสาบไบคาล", "ทะเลสาบแคสเปียน", "ทะเลสาบวิกตอเรีย"],
+            optionsEN: ["Lake Eyre", "Lake Baikal", "Caspian Sea", "Lake Victoria"],
+            answer: 0,
+            expTH: "เฉลย: ทะเลสาบแอร์ ตั้งอยู่ในเขตที่ราบต่ำตรงกลาง",
+            expEN: "Explanation: Lake Eyre is located in the central lowlands."
+        },
+        {
+            id: 6,
+            qTH: "พรมแดนธรรมชาติทางตะวันตกที่คั่นระหว่างเอเชียกับยุโรปใช้ทะเลใด?",
+            qEN: "Which natural sea boundary lies between Asia and Europe?",
+            clueTH: "คำใบ้: มี 4 ทะเล ได้แก่ เมดิเตอร์เรเนียน ดำ เอเจียน และ...",
+            clueEN: "Clue: Includes Mediterranean, Black, Aegean and Caspian/Azov",
+            optionsTH: ["ทะเลแดง", "ทะเลจีนใต้", "ทะเลแคสเปียน (ทะเลสาบน้ำเค็ม)", "ทะเลฟูราฟูรา"],
+            optionsEN: ["Red Sea", "South China Sea", "Caspian Sea", "Arafura Sea"],
+            answer: 2,
+            expTH: "เฉลย: ทะเลสาบแคสเปียน เป็นหนึ่งในพรมแดนธรรมชาติกั้นระหว่างเอเชียกับยุโรป",
+            expEN: "Explanation: Caspian Sea is part of the natural boundary between Asia and Europe."
+        },
+        {
+            id: 7,
+            qTH: "คลองใดเป็นพรมแดนธรรมชาติคั่นระหว่างทวีปเอเชียกับทวีปแอฟริกา?",
+            qEN: "Which canal acts as a boundary between Asia and Africa?",
+            clueTH: "คำใบ้: คลองสุ...",
+            clueEN: "Clue: Suez...",
+            optionsTH: ["คลองปานามา", "คลองสุเอซ", "คลองกิเอล", "คลองสวีเดน"],
+            optionsEN: ["Panama Canal", "Suez Canal", "Kiel Canal", "Caledonian Canal"],
+            answer: 1,
+            expTH: "เฉลย: คลองสุเอซ เป็นจุดเชื่อมและพรมแดนระหว่างเอเชียกับแอฟริกา",
+            expEN: "Explanation: Suez Canal separates Asia and Africa."
+        },
+        {
+            id: 8,
+            qTH: "แผนที่ที่แสดงความสูงต่ำของพื้นดินและภูเขาเรียกว่าอะไร?",
+            qEN: "What map shows terrain elevation and physical relief?",
+            clueTH: "คำใบ้: Topographic Map",
+            clueEN: "Clue: Topographic Map",
+            optionsTH: ["แผนที่รัฐกิจ", "แผนที่ภูมิประเทศ", "แผนที่ท่องเที่ยว", "แผนที่อากาศ"],
+            optionsEN: ["Political Map", "Topographic Map", "Tourist Map", "Climatic Map"],
+            answer: 1,
+            expTH: "เฉลย: แผนที่ภูมิประเทศ (Topographic Map) แสดงความสูงต่ำและลักษณะภูมิประเทศ",
+            expEN: "Explanation: Topographic Map shows elevation and physical features."
+        },
+        {
+            id: 9,
+            qTH: "แผนที่ที่แสดงขอบเขตการปกครอง ประเทศ และเมืองหลวง เรียกว่าอะไร?",
+            qEN: "What map shows administrative boundaries and capitals?",
+            clueTH: "คำใบ้: Political Map",
+            clueEN: "Clue: Political Map",
+            optionsTH: ["แผนที่รัฐกิจ (Political map)", "แผนที่ภูมิประเทศ", "แผนที่ภูมิอากาศ", "แผนที่เล่ม ATLAS"],
+            optionsEN: ["Political Map", "Topographic Map", "Climatic Map", "ATLAS"],
+            answer: 0,
+            expTH: "เฉลย: แผนที่รัฐกิจ (Political map) เน้นแสดงเขตการปกครองและประเทศ",
+            expEN: "Explanation: Political map displays country borders and capitals."
+        },
+        {
+            id: 10,
+            qTH: "รวมแผนที่หลายชนิดไว้ในรูปเล่มเดียวกันเรียกว่าอะไร?",
+            qEN: "What is a collection of maps in a book called?",
+            clueTH: "คำใบ้: ขึ้นต้นด้วยตัว A",
+            clueEN: "Clue: Starts with letter A",
+            optionsTH: ["Globe", "ATLAS", "Compass", "GPS"],
+            optionsEN: ["Globe", "ATLAS", "Compass", "GPS"],
+            answer: 1,
+            expTH: "เฉลย: ATLAS คือแผนที่เล่มที่รวบรวมแผนชาติต่าง ๆ ไว้ด้วยกัน",
+            expEN: "Explanation: ATLAS is a bound collection of maps."
+        },
+        {
+            id: 11,
+            qTH: "ข้อใดคือลักษณะภูมิอากาศส่วนใหญ่ของทวีปออสเตรเลียตอนกลาง?",
+            qEN: "What is the dominant climate in central Australia?",
+            clueTH: "คำใบ้: แห้งแล้ง ฝนน้อยมาก",
+            clueEN: "Clue: Arid and very low rainfall",
+            optionsTH: ["แบบอบอุ่นชื้น", "แบบเมดิเตอร์เรเนียน", "แบบทะเลทรายและกึ่งแห้งแล้ง", "แบบขั้วโลก"],
+            optionsEN: ["Humid subtropical", "Mediterranean", "Desert and semi-arid", "Polar"],
+            answer: 2,
+            expTH: "เฉลย: แบบทะเลทรายและกึ่งแห้งแล้ง เนื่องจากได้รับอิทธิพลจากกระแสน้ำเย็นและลม",
+            expEN: "Explanation: Desert and semi-arid due to geographical factors."
+        },
+        {
+            id: 12,
+            qTH: "เทือกเขาใดเป็นพรมแดนกั้นระหว่างเอเชียกับยุโรตทางตอนเหนือ?",
+            qEN: "Which mountain range is the northern boundary between Asia and Europe?",
+            clueTH: "คำใบ้: เทือกเขาอู...",
+            clueEN: "Clue: Ural...",
+            optionsTH: ["เทือกเขาหิมาลัย", "เทือกเขาแอนดีส", "เทือกเขาอูรัล", "เทือกเขาร็อกกี"],
+            optionsEN: ["Himalayas", "Andes", "Ural Mountains", "Rockies"],
+            answer: 2,
+            expTH: "เฉลย: เทือกเขาอูรัล เป็นแนวพรมแดนธรรมชาติทางเหนือระหว่างเอเชียและยุโรป",
+            expEN: "Explanation: Ural Mountains form part of the northern boundary."
+        },
+        {
+            id: 13,
+            qTH: "ทะเลใดตั้งอยู่ทางทิศเหนือของทวีปออสเตรเลีย?",
+            qEN: "Which sea is located north of Australia?",
+            clueTH: "คำใบ้: ทะเลติมอร์และทะเล...",
+            clueEN: "Clue: Timor Sea and ... Sea",
+            optionsTH: ["ทะเลฟูราฟูรา (Arafura)", "ทะเลแคริบเบียน", "ทะเลบอลติก", "ทะเลเบริง"],
+            optionsEN: ["Arafura Sea", "Caribbean Sea", "Baltic Sea", "Bering Sea"],
+            answer: 0,
+            expTH: "เฉลย: ทะเลฟูราฟูราและทะเลติมอร์อยู่ทางเหนือของออสเตรเลีย",
+            expEN: "Explanation: Arafura and Timor seas are north of Australia."
+        },
+        {
+            id: 14,
+            qTH: "ข้อใดไม่ใช่ลักษณะภูมิประเทศของทวีปเอเชีย?",
+            qEN: "Which of the following is NOT a physical feature of Asia?",
+            clueTH: "คำใบ้: เอเชียมีความสูงต่ำหลากหลาย ยกเว้น...",
+            clueEN: "Clue: Asia has diverse terrains, except...",
+            optionsTH: ["เทือกเขาสูงที่สุดในโลก", "ที่ราบสูงขนาดใหญ่", "แผ่นดินทวีปที่เล็กที่สุดในโลก", "ที่ราบลุ่มแม่น้ำอุดมสมบูรณ์"],
+            optionsEN: ["Highest mountains in the world", "Large plateaus", "Smallest continent in the world", "Fertile river plains"],
+            answer: 2,
+            expTH: "เฉลย: แผ่นดินทวีปที่เล็กที่สุดในโลกเป็นของออสเตรเลีย ไม่ใช่เอเชีย",
+            expEN: "Explanation: The smallest continent is Australia, not Asia."
+        },
+        {
+            id: 15,
+            qTH: "เครื่องมือทางภูมิศาสตร์ข้อใดให้ข้อมูลภาพถ่ายทางกายภาพจากอวกาศ?",
+            qEN: "Which geographical tool provides space imagery?",
+            clueTH: "คำใบ้: ภาพถ่ายจาก...",
+            clueEN: "Clue: Satellite imagery",
+            optionsTH: ["เข็มทิศ", "ภาพถ่ายดาวเทียม", "ลูกโลกจำลอง", "แผนที่รัฐกิจ"],
+            optionsEN: ["Compass", "Satellite imagery", "Globe", "Political map"],
+            answer: 1,
+            expTH: "เฉลย: ภาพถ่ายดาวเทียม แสดงข้อมูลผิวโลกจากอวกาศได้อย่างแม่นยำ",
+            expEN: "Explanation: Satellite imagery captures Earth's surface from space."
+        },
+        {
+            id: 16,
+            qTH: "ลักษณะภูมิอากาศแบบเมดิเตอร์เรเนียนในออสเตรเลียพบบริเวณใด?",
+            qEN: "Where is the Mediterranean climate found in Australia?",
+            clueTH: "คำใบ้: ทางตะวันตกเฉียงใต้และใต้สุด",
+            clueEN: "Clue: Southwestern and southern parts",
+            optionsTH: ["ทางตะวันตกเฉียงใต้และตอนใต้", "บริเวณใจกลางทะเลทราย", "ทางเหนือสุดใกล้เส้นศูนย์สูตร", "ยอดเขาสูงตะวันออก"],
+            optionsEN: ["Southwestern and southern", "Central desert", "Far north near equator", "Eastern highlands"],
+            answer: 0,
+            expTH: "เฉลย: พบทางตะวันตกเฉียงใต้และตอนใต้ของทวีป มีฤดูร้อนแห้งแล้งและฤดูหนาวอบอุ่นชื้น",
+            expEN: "Explanation: Found in the southwest and south with dry summers.",
+        },
+        {
+            id: 17,
+            qTH: "ข้อใดคือแม่น้ำสายสำคัญในทวีปเอเชียที่ไหลลงสู่มหาสมุทรอินเดีย?",
+            qEN: "Which is a major Asian river flowing into the Indian Ocean?",
+            clueTH: "คำใบ้: แม่น้ำสินธุและคงคา",
+            clueEN: "Clue: Indus and Ganges rivers",
+            optionsTH: ["แม่น้ำสินธุและคงคา", "แม่น้ำโขง", "แม่น้ำฉางเจียง", "แม่น้ำอบี"],
+            optionsEN: ["Indus and Ganges", "Mekong River", "Yangtze River", "Ob River"],
+            answer: 0,
+            expTH: "เฉลย: แม่น้ำสินธุและคงคาไหลผ่านเอเชียใต้ลงสู่มหาสมุทรอินเดีย",
+            expEN: "Explanation: Indus and Ganges flow into the Indian Ocean.",
+        },
+        {
+            id: 18,
+            qTH: "ทวีปเอเชียมีอาณาเขตติดต่อกับทวีปยุโรปทางทิศใดมากที่สุด?",
+            qEN: "In which general direction does Asia connect with Europe?",
+            clueTH: "คำใบ้: ด้านตะวัน...",
+            clueEN: "Clue: To the west",
+            optionsTH: ["ทิศตะวันตก", "ทิศตะวันออก", "ทิศใต้", "ทิศเหนือ"],
+            optionsEN: ["West", "East", "South", "North"],
+            answer: 0,
+            expTH: "เฉลย: ทิศตะวันตกของเอเชียติดต่อกับทวีปยุโรป",
+            expEN: "Explanation: Western Asia connects to Europe.",
+        },
+        {
+            id: 19,
+            qTH: "จุดเด่นของแผนที่ภูมิอากาศ (Climatic Map) คืออะไร?",
+            qEN: "What is the main feature of a Climatic Map?",
+            clueTH: "คำใบ้: แสดงเขตลมฟ้าอากาศ",
+            clueEN: "Clue: Shows weather and climate zones",
+            optionsTH: ["แสดงเขตภูมิอากาศและปริมาณฝน/อุณหภูมิ", "แสดงเส้นทางคมนาคมขนส่ง", "แสดงตำแหน่งเมืองหลวง", "แสดงความสูงของภูเขา"],
+            optionsEN: ["Shows climate zones and temperature/rain", "Shows transportation", "Shows capitals", "Shows mountain height"],
+            answer: 0,
+            expTH: "เฉลย: แสดงเขตภูมิอากาศ อุณหภูมิ และปริมาณน้ำฝนของแต่ละภูมิภาค",
+            expEN: "Explanation: Displays climate zones, temperature, and precipitation.",
+        },
+        {
+            id: 20,
+            qTH: "ทะเลแดง (Red Sea) กั้นระหว่างทวีปเอเชียกับทวีปใด?",
+            qEN: "The Red Sea separates Asia from which continent?",
+            clueTH: "คำใบ้: ทวีปทางตะวันตกเฉียงใต้ มีคลองสุเอซเชื่อม",
+            clueEN: "Clue: Continent to the southwest connected by Suez Canal",
+            optionsTH: ["ทวีปแอฟริกา", "ทวีปยุโรป", "ทวีปอเมริกาเหนือ", "ทวีปออสเตรเลีย"],
+            optionsEN: ["Africa", "Europe", "North America", "Australia"],
+            answer: 0,
+            expTH: "เฉลย: ทวีปแอฟริกา มีทะเลแดงกั้นและเชื่อมต่อกันด้วยคลองสุเอซ",
+            expEN: "Explanation: Africa is separated from Asia by the Red Sea.",
+        },
+        {
+            id: 21,
+            qTH: "ลักษณะภูมิประเทศแบบฟยอร์ด (Fjord) เกิดจากอะไร?",
+            qEN: "How is a Fjord formed?",
+            clueTH: "คำใบ้: การกัดเซาะของธารน้ำแข็ง",
+            clueEN: "Clue: Glacial erosion",
+            optionsTH: ["การกัดเซาะของธารน้ำแข็งบริเวณชายฝั่ง", "การทับถมของตะกอนแม่น้ำ", "การระเบิดของภูเขาไฟ", "การยุบตัวของแผ่นเปลือกโลก"],
+            optionsEN: ["Glacial erosion along coastlines", "River sediment deposition", "Volcanic eruption", "Tectonic subsidence"],
+            answer: 0,
+            expTH: "เฉลย: เกิดจากการกัดเซาะของธารน้ำแข็งทำให้ชายฝั่งเว้าแหว่งลึกและสวยงาม",
+            expEN: "Explanation: Formed by glacial erosion creating deep coastal inlets.",
+        },
+        {
+            id: 22,
+            qTH: "ข้อใดคือชื่อทะเลสาบน้ำจืดที่ใหญ่ที่สุดในโลก (ตั้งอยู่ในเอเชีย)?",
+            qEN: "What is the largest freshwater lake in the world (located in Asia)?",
+            clueTH: "คำใบ้: ทะเลสาบไบ...",
+            clueEN: "Clue: Lake Bai...",
+            optionsTH: ["ทะเลสาบไบคาล (Baikal)", "ทะเลสาบสุพีเรีย", "ทะเลสาบแอร์", "ทะเลสาบวิกตอเรีย"],
+            optionsEN: ["Lake Baikal", "Lake Superior", "Lake Eyre", "Lake Victoria"],
+            answer: 0,
+            expTH: "เฉลย: ทะเลสาบไบคาล ในรัสเซีย เป็นทะเลสาบน้ำจืดที่ลึกและใหญ่ที่สุดในโลก",
+            expEN: "Explanation: Lake Baikal in Russia is the deepest and largest freshwater lake.",
+        },
+        {
+            id: 23,
+            qTH: "เกาะแทสเมเนีย (Tasmania) ตั้งอยู่ส่วนใดของออสเตรเลีย?",
+            qEN: "Where is Tasmania located relative to mainland Australia?",
+            clueTH: "คำใบ้: ทางใต้ของแผ่นดินใหญ่",
+            clueEN: "Clue: South of the mainland",
+            optionsTH: ["ทางใต้ของแผ่นดินใหญ่ คั่นด้วยช่องแคบแบรส", "ทางเหนือสุดใกล้ปาปัวนิวกินี", "ทางตะวันออกสุดติดมหาสมุทรแปซิฟิก", "ทางตะวันตกสุดติดมหาสมุทรอินเดีย"],
+            optionsEN: ["South of the mainland separated by Bass Strait", "Far north near Papua New Guinea", "Far east in Pacific", "Far west in Indian Ocean"],
+            answer: 0,
+            expTH: "เฉลย: เกาะแทสเมเนียอยู่ทางใต้ของแผ่นดินใหญ่ออสเตรเลีย",
+            expEN: "Explanation: Tasmania is south of the Australian mainland.",
+        },
+        {
+            id: 24,
+            qTH: "แม่น้ำโขงไหลผ่านภูมิภาคใดของทวีปเอเชีย?",
+            qEN: "Through which region of Asia does the Mekong River flow?",
+            clueTH: "คำใบ้: เอเชียตะวันออกเฉียงใต้",
+            clueEN: "Clue: Southeast Asia",
+            optionsTH: ["เอเชียตะวันออกเฉียงใต้", "เอเชียกลาง", "เอเชียใต้", "เอเชียตะวันตกเฉียงใต้"],
+            optionsEN: ["Southeast Asia", "Central Asia", "South Asia", "Southwest Asia"],
+            answer: 0,
+            expTH: "เฉลย: แม่น้ำโขงไหลผ่านหลายประเทศในภูมิภาคเอเชียตะวันออกเฉียงใต้",
+            expEN: "Explanation: Mekong River flows through Southeast Asia.",
+        },
+        {
+            id: 25,
+            qTH: "ข้อใดคือประโยชน์สูงสุดของการใช้แผนที่เฉพาะเรื่อง (Thematic Map)?",
+            qEN: "What is the primary benefit of using a Thematic Map?",
+            clueTH: "คำใบ้: วิเคราะห์ข้อมูลเฉพาะด้าน",
+            clueEN: "Clue: Analyze specific thematic data",
+            optionsTH: ["ศึกษาข้อมูลเฉพาะด้าน เช่น อากาศ ประชากร หรือการท่องเที่ยว", "ใช้นำทางขับรถยนต์ทั่วไป", "ดูแนวเขตชายแดนระหว่างประเทศอย่างเดียว", "ดูความสูงของภูเขาเท่านั้น"],
+            optionsEN: ["Study specific data like climate, population, tourism", "General car navigation", "Only country borders", "Only mountain heights"],
+            answer: 0,
+            expTH: "เฉลย: ใช้ศึกษาข้อมูลเฉพาะด้านตามหัวข้อที่สนใจ เช่น แผนที่ท่องเที่ยวหรืออากาศ",
+            expEN: "Explanation: Used to study specific topics like tourism or climate.",
+        },
+        {
+            id: 26,
+            qTH: "เทือกเขาหิมาลัยในทวีปเอเชียเกิดจากการชนกันของแผ่นเปลือกโลกใด?",
+            qEN: "The Himalayas were formed by the collision of which tectonic plates?",
+            clueTH: "คำใบ้: แผ่นอินเดียกับแผ่นยูเรเซีย",
+            clueEN: "Clue: Indian and Eurasian plates",
+            optionsTH: ["แผ่นอินเดียกับแผ่นยูเรเซีย", "แผ่นแปซิฟิกกับแผ่นออสเตรเลีย", "แผ่นแอฟริกากับแผ่นอเมริกา", "แผ่นอาร์กติกกับแผ่นแอนตาร์กติก"],
+            optionsEN: ["Indian and Eurasian plates", "Pacific and Australian plates", "African and American plates", "Arctic and Antarctic plates"],
+            answer: 0,
+            expTH: "เฉลย: เกิดจากการชนกันของแผ่นอินเดียและแผ่นยูเรเซียทำให้เกิดเทือกเขาสูง",
+            expEN: "Explanation: Formed by the collision of the Indian and Eurasian plates.",
+        },
+        {
+            id: 27,
+            qTH: "ภูมิอากาศแบบทุนดรา (Tundra) ในทวีปเอเชียพบบริเวณใด?",
+            qEN: "Where is the Tundra climate found in Asia?",
+            clueTH: "คำใบ้: ตอนเหนือสุดติดมหาสมุทรอาร์กติก",
+            clueEN: "Clue: Far north along the Arctic Ocean",
+            optionsTH: ["บริเวณตอนเหนือสุดติดมหาสมุทรอาร์กติก", "บริเวณหมู่เกาะอินโดนีเซีย", "บริเวณคาบสมุทรอินเดีย", "บริเวณคาบสมุทรอาหรับ"],
+            optionsEN: ["Far north along the Arctic Ocean", "Indonesian archipelago", "Indian peninsula", "Arabian peninsula"],
+            answer: 0,
+            expTH: "เฉลย: พบทางตอนเหนือสุดของเอเชีย มีอากาศหนาวจัดตลอดปีและไม่มีต้นไม้ใหญ่",
+            expEN: "Explanation: Found in the far north with extremely cold weather.",
+        },
+        {
+            id: 28,
+            qTH: "เส้นศูนย์สูตรพาดผ่านส่วนใดของทวีปเอเชีย?",
+            qEN: "Does the equator pass through any part of Asia?",
+            clueTH: "คำใบ้: หมู่เกาะอินโดนีเซีย",
+            clueEN: "Clue: Indonesian islands",
+            optionsTH: ["ผ่านหมู่เกาะของประเทศอินโดนีเซีย", "ผ่านประเทศจีนตอนใต้", "ผ่านคาบสมุทรอินเดีย", "ไม่ผ่านทวีปเอเชียเลย"],
+            optionsEN: ["Through the islands of Indonesia", "Through southern China", "Through Indian peninsula", "Does not pass through Asia"],
+            answer: 0,
+            expTH: "เฉลย: เส้นศูนย์สูตรพาดผ่านหมู่เกาะอินโดนีเซียในทวีปเอเชีย",
+            expEN: "Explanation: The equator passes through the Indonesian archipelago.",
+        },
+        {
+            id: 29,
+            qTH: "ลักษณะภูมิประเทศแบบใดที่พบมากที่สุดในเขตที่ราบสูงตะวันตกของออสเตรเลีย?",
+            qEN: "What terrain type is most common in western Australia's plateau?",
+            clueTH: "คำใบ้: ทะเลทรายและพื้นที่แห้งแล้ง",
+            clueEN: "Clue: Deserts and arid land",
+            optionsTH: ["ทะเลทรายและทุ่งหญ้ากึ่งแห้งแล้ง", "ป่าดิบชื้นหนาแน่น", "ที่ราบลุ่มน้ำท่วมถึง", "ภูเขาน้ำแข็ง"],
+            optionsEN: ["Deserts and semi-arid grasslands", "Dense rainforest", "Floodplains", "Glaciers"],
+            answer: 0,
+            expTH: "เฉลย: เป็นเขตทะเลทรายและทุ่งหญ้าแห้งแล้งขนาดใหญ่",
+            expEN: "Explanation: Mostly deserts and arid grasslands.",
+        },
+        {
+            id: 30,
+            qTH: "ข้อใดให้ความหมายของคำว่า 'ATLAS' ได้ถูกต้องที่สุด?",
+            qEN: "What is the most accurate definition of an 'ATLAS'?",
+            clueTH: "คำใบ้: แผนที่รวมเล่ม",
+            clueEN: "Clue: Bound collection of maps",
+            optionsTH: ["รวมแผนที่หลากหลายชนิดเข้าไว้ด้วยกันเป็นรูปเล่ม", "เครื่องมือวัดทิศทาง", "ภาพถ่ายจากดาวเทียมทางอากาศ", "ระบบนำทางด้วยดาวเทียม GPS"],
+            optionsEN: ["A bound collection of various maps", "Directional tool", "Satellite aerial photo", "GPS navigation system"],
+            answer: 0,
+            expTH: "เฉลย: ATLAS คือแผนที่เล่มที่รวบรวมแผนที่ต่าง ๆ ไว้ในเล่มเดียว",
+            expEN: "Explanation: ATLAS is a book containing various maps.",
+        }
+    ];
+
+    // Fisher-Yates Shuffle
+    function shuffle(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    }
+
+    let shuffledQuestions = [];
+
+    function initExam() {
+        // โหลดข้อมูลเก่าจาก LocalStorage ถ้ามี หรือสุ่มใหม่
+        let savedState = localStorage.getItem('exam_state');
+        shuffledQuestions = JSON.parse(JSON.stringify(questions));
+        shuffle(shuffledQuestions);
+        renderExam();
+    }
+
+    function renderExam() {
+        const container = document.getElementById('exam-container');
+        container.innerHTML = '';
+        shuffledQuestions.forEach((q, index) => {
+            let qText = currentLang === 'TH' ? q.qTH : q.qEN;
+            let clueText = currentLang === 'TH' ? q.clueTH : q.clueEN;
+            let options = currentLang === 'TH' ? q.optionsTH : q.optionsEN;
+
+            let html = `
+                <div class="question-card" id="q-card-${q.id}">
+                    <div class="question-title">ข้อที่ ${index + 1}: ${qText}</div>
+                    <div class="clue">${clueText}</div>
+                    <div class="options-list">
+            `;
+
+            options.forEach((opt, optIndex) => {
+                html += `<div class="option-item" onclick="checkAnswer(${q.id}, ${optIndex}, this, ${q.answer})">${opt}</div>`;
+            });
+
+            html += `</div><div class="explanation" id="exp-${q.id}"></div></div>`;
+            container.innerHTML += html;
+        });
+
+        container.innerHTML += `<div id="submit-section"><button onclick="submitExam()" style="padding: 12px 30px; font-size: 1rem; background: var(--success-color);">ส่งข้อสอบและดูผลวิเคราะห์</button></div>`;
+    }
+
+    let userAnswers = {};
+
+    function checkAnswer(qId, selectedIdx, element, correctIdx) {
+        let parent = element.parentElement;
+        let children = parent.children;
+        for (let child of children) {
+            child.style.pointerEvents = 'none';
+        }
+
+        userAnswers[qId] = selectedIdx;
+        let expDiv = document.getElementById(`exp-${qId}`);
+        let qObj = questions.find(x => x.id === qId);
+
+        if (selectedIdx === correctIdx) {
+            element.classList.add('correct');
+            expDiv.innerHTML = currentLang === 'TH' ? qObj.expTH : qObj.expEN;
+        } else {
+            element.classList.add('incorrect');
+            children[correctIdx].classList.add('correct');
+            expDiv.innerHTML = currentLang === 'TH' ? qObj.expTH : qObj.expEN;
+        }
+        expDiv.style.display = 'block';
+        localStorage.setItem('exam_answers', JSON.stringify(userAnswers));
+    }
+
+    function toggleLanguage() {
+        currentLang = currentLang === 'TH' ? 'EN' : 'TH';
+        document.getElementById('lbl-header').innerText = currentLang === 'TH' ? 'แบบทดสอบภูมิศาสตร์สากล - พระจอมเกล้าติวเตอร์' : 'Global Geography Exam - Phra Chom Klao Tutor';
+        document.getElementById('lbl-wb').innerText = currentLang === 'TH' ? 'กระดานทดอัจฉริยะ (Whiteboard)' : 'Smart Whiteboard';
+        document.getElementById('btn-clear').innerText = currentLang === 'TH' ? 'ล้างกระดาน' : 'Clear Board';
+        renderExam();
+    }
+
+    function resetExam() {
+        localStorage.removeItem('exam_answers');
+        localStorage.removeItem('exam_state');
+        userAnswers = {};
+        initExam();
+        document.getElementById('result-modal').style.display = 'none';
+    }
+
+    function submitExam() {
+        let score = 0;
+        let total = shuffledQuestions.length;
+        shuffledQuestions.forEach(q => {
+            if (userAnswers[q.id] === q.answer) {
+                score++;
+            }
+        });
+
+        let modal = document.getElementById('result-modal');
+        let content = document.getElementById('result-content');
+
+        let analysisHTML = `
+            <h2>ผลการทดสอบของคุณ (Exam Results)</h2>
+            <p style="font-size: 1.2rem; margin: 15px 0;">คะแนนรวม: <b>${score} / ${total}</b> ข้อ</p>
+            <hr style="margin: 15px 0;">
+            <h3>บทวิเคราะห์ผลการเรียนรู้ (Performance Analysis)</h3>
+            <p style="margin-top: 10px;"><b>จุดเด่น (Strengths):</b> ผู้เรียนมีความเข้าใจในเนื้อหาพื้นฐานเกี่ยวกับเครื่องมือทางภูมิศาสตร์ อาณาเขตและพรมแดนธรรมชาติของทวีปเอเชียและออสเตรเลียได้เป็นอย่างดี สามารถแยกแยะประเภทของแผนที่และที่ตั้งสำคัญได้ถูกต้อง</p>
+            <p style="margin-top: 10px;"><b>จุดด้อย / ข้อเสนอแนะ (Areas for Improvement):</b> ควรกลับไปทบทวนเนื้อหาในส่วนของลักษณะภูมิอากาศเฉพาะถิ่น (เช่น ภูมิอากาศแบบเมดิเตอร์เรเนียนในออสเตรเลีย) และรายละเอียดเชิงลึกของเขตที่ราบต่ำและที่ราบสูงในแต่ละทวีปเพิ่มเติม เพื่อความแม่นยำสูงสุด</p>
+            <button onclick="document.getElementById('result-modal').style.display='none'" style="margin-top: 20px;">ปิดหน้าต่าง</button>
+        `;
+
+        content.innerHTML = analysisHTML;
+        modal.style.display = 'flex';
+    }
+
+    // Whiteboard Script
+    const canvas = document.getElementById('whiteboard');
+    const ctx = canvas.getContext('2d');
+    let painting = false;
+
+    function resizeCanvas() {
+        canvas.width = canvas.parentElement.clientWidth;
+        canvas.height = canvas.parentElement.clientHeight - 80;
+    }
+
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    function startPosition(e) { painting = true; draw(e); }
+    function finishedPosition() { painting = false; ctx.beginPath(); }
+    function draw(e) {
+        if (!painting) return;
+        ctx.lineWidth = 3;
+        ctx.lineCap = 'round';
+        ctx.strokeStyle = '#2c3e50';
+
+        let rect = canvas.getBoundingClientRect();
+        let x = (e.clientX || e.touches[0].clientX) - rect.left;
+        let y = (e.clientY || e.touches[0].clientY) - rect.top;
+
+        ctx.lineTo(x, y);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+    }
+
+    canvas.addEventListener('mousedown', startPosition);
+    canvas.addEventListener('mouseup', finishedPosition);
+    canvas.addEventListener('mousemove', draw);
+
+    canvas.addEventListener('touchstart', startPosition);
+    canvas.addEventListener('touchend', finishedPosition);
+    canvas.addEventListener('touchmove', draw);
+
+    function clearCanvas() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+
+    window.onload = initExam;
+</script>
+</body>
+</html>
