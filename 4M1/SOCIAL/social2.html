@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบออกข้อสอบ - พระจอมเกล้าติวเตอร์</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --success: #27ae60;
+            --danger: #c0392b;
+            --bg: #f4f6f7;
+            --card-bg: #ffffff;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: var(--bg); color: var(--primary); display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+        header { background: var(--primary); color: white; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        header h1 { font-size: 1.2rem; }
+        .header-controls button { background: var(--secondary); color: white; border: none; padding: 5px 12px; border-radius: 4px; cursor: pointer; margin-left: 5px; font-weight: bold; }
+        .header-controls button:hover { opacity: 0.9; }
+        .main-container { display: flex; flex: 1; height: calc(100vh - 50px); overflow: hidden; }
+        .left-frame { width: 70%; padding: 20px; overflow-y: auto; border-right: 2px solid #ddd; background: var(--card-bg); }
+        .right-frame { width: 30%; display: flex; flex-direction: column; background: #e9ecef; padding: 15px; }
+        .whiteboard-container { flex: 1; background: white; border: 2px dashed #bdc3c7; border-radius: 8px; position: relative; overflow: hidden; cursor: crosshair; }
+        canvas { width: 100%; height: 100%; display: block; }
+        .wb-controls { margin-top: 10px; display: flex; gap: 5px; }
+        .wb-controls button { flex: 1; padding: 6px; background: #7f8c8d; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85rem; }
+        .wb-controls button:hover { background: #626567; }
+        .question-card { background: white; border: 1px solid #e0e0e0; border-radius: 8px; padding: 15px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .question-title { font-weight: bold; margin-bottom: 10px; font-size: 1.05rem; }
+        .options-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; }
+        .option-btn { text-align: left; padding: 8px 12px; border: 1px solid #bdc3c7; border-radius: 5px; background: white; cursor: pointer; transition: all 0.2s; }
+        .option-btn:hover { background: #f1f2f6; }
+        .option-btn.correct { background: #d4edda; border-color: var(--success); color: #155724; font-weight: bold; }
+        .option-btn.incorrect { background: #f8d7da; border-color: var(--danger); color: #721c24; }
+        .clue { font-size: 0.85rem; color: #e67e22; margin-top: 8px; font-style: italic; display: none; }
+        .explanation { font-size: 0.9rem; color: #27ae60; margin-top: 8px; background: #e8f8f5; padding: 8px; border-radius: 4px; display: none; }
+        .actions-bar { margin-top: 15px; display: flex; justify-content: space-between; align-items: center; }
+        .btn-submit { background: var(--success); color: white; border: none; padding: 10px 25px; border-radius: 5px; font-size: 1rem; cursor: pointer; font-weight: bold; }
+        .btn-submit:hover { opacity: 0.9; }
+        .btn-reset { background: var(--danger); color: white; border: none; padding: 10px 20px; border-radius: 5px; font-size: 1rem; cursor: pointer; font-weight: bold; }
+        #results-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 1000; }
+        .modal-content { background: white; padding: 30px; border-radius: 10px; width: 600px; max-width: 90%; max-height: 85vh; overflow-y: auto; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+        .modal-content h2 { margin-bottom: 15px; color: var(--primary); }
+        .modal-content p { margin-bottom: 10px; line-height: 1.5; }
+        .analysis-section { margin-top: 15px; background: #f8f9fa; padding: 12px; border-radius: 6px; border-left: 4px solid var(--secondary); }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>พระจอมเกล้าติวเตอร์ - ชุดข้อสอบวิชาภูมิศาสตร์ (ระดับยาก)</h1>
+        <div class="header-controls">
+            <button id="langToggleBtn" onclick="toggleLanguage()">English / ไทย</button>
+            <button onclick="resetExam()">Reset</button>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <!-- ฝั่งซ้าย: ข้อสอบ 70% -->
+        <div class="left-frame" id="questionContainer">
+            <!-- ข้อสอบจะถูก Render ผ่าน JavaScript -->
+        </div>
+
+        <!-- ฝั่งขวา: ไวท์บอร์ด 30% -->
+        <div class="right-frame">
+            <h3 style="font-size: 0.95rem; margin-bottom: 8px;" data-th="กระดานทดข้อสอบ (Whiteboard)" data-en="Exam Whiteboard">กระดานทดข้อสอบ (Whiteboard)</h3>
+            <div class="whiteboard-container">
+                <canvas id="whiteboard"></canvas>
+            </div>
+            <div class="wb-controls">
+                <button onclick="clearWhiteboard()" data-th="ล้างกระดาน" data-en="Clear">ล้างกระดาน</button>
+                <button onclick="changeColor('#2c3e50')" style="background: #2c3e50;" data-th="สีเข้ม" data-en="Dark">สีเข้ม</button>
+                <button onclick="changeColor('#c0392b')" style="background: #c0392b;" data-th="สีแดง" data-en="Red">สีแดง</button>
+                <button onclick="changeColor('#3498db')" style="background: #3498db;" data-th="สีฟ้า" data-en="Blue">สีฟ้า</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal ผลลัพธ์ -->
+    <div id="results-modal">
+        <div class="modal-content" id="modalContent">
+            <!-- ผลวิเคราะห์จะแสดงที่นี่ -->
+        </div>
+    </div>
+
+    <script>
+        // ฐานข้อมูลข้อสอบ 30 ข้อ (ระดับยาก)
+        const questionsData = [
+            {
+                id: 1,
+                th: { q: "ข้อใดคือลักษณะภูมิประเทศหลักของเขตที่ราบสูงตะวันตกในทวีปออสเตรเลีย?", options: ["แอ่งแผ่นดินใหญ่ที่มีความแห้งแล้งและทะเลทรายกว้างใหญ่", "แนวเทือกเขาสูงสลับซับซ้อนและมีหิมะปกคลุมตลอดปี", "ที่ราบลุ่มแม่น้ำขนาดใหญ่เหมาะแก่การทำเกษตรกรรมชลประทาน", "หมู่เกาะภูเขาไฟที่มีความอุดมสมบูรณ์สูงมาก"], ans: 0, clue: "สังเกตพื้นที่ส่วนใหญ่ของออสเตรเลียฝั่งตะวันตกที่มีภูมิอากาศแห้งแล้ง", exp: "เขตที่ราบสูงตะวันตกของออสเตรเลียมีลักษณะเป็นแผ่นดินเก่าแก่ แห้งแล้ง และมีทะเลทรายขนาดใหญ่ เช่น ทะเลทรายเกรดวิกตอเรีย" },
+                en: { q: "What is the primary topographic feature of the Western Plateau in Australia?", options: ["A vast arid basin with extensive deserts", "Complex high mountain ranges with year-round snow", "Large river floodplains ideal for irrigation agriculture", "Volcanic island chains with high fertility"], ans: 0, clue: "Note the arid nature of western Australia.", exp: "The Western Plateau is an ancient, dry region featuring massive deserts like the Great Victoria Desert." }
+            },
+            {
+                id: 2,
+                th: { q: "ยอดเขาที่สูงที่สุดของทวีปออสเตรเลียตั้งอยู่ในเขตภูมิประเทศใด?", options: ["เขตภูเขาและที่ราบสูงตะวันออก (Great Dividing Range)", "เขตที่ราบต่ำกลางทวีป (Central Lowland)", "เขตที่ราบสูงตะวันตก (Western Plateau)", "เกาะแทสเมเนีย (Tasmania) ทางตอนใต้"], ans: 0, clue: "เกี่ยวข้องกับแนวเทือกเขายาวทางตะวันออก", exp: "ยอดเขาคอสซิอัสโก (Mount Kosciuszko) ตั้งอยู่ในเขตเทือกเขาแบ่งเขตน้ำปัน (Great Dividing Range) ทางตะวันออก" },
+                en: { q: "Where is the highest peak of mainland Australia located?", options: ["Great Dividing Range (Eastern Highlands)", "Central Lowland", "Western Plateau", "Tasmania in the south"], ans: 0, clue: "Associated with the long eastern mountain range.", exp: "Mount Kosciuszko is located within the Great Dividing Range in the eastern region." }
+            },
+            {
+                id: 3,
+                th: { q: "ทะเลสาบแอร์ (Lake Eyre) ในเขตที่ราบต่ำกลางทวีปออสเตรเลียมีลักษณะสำคัญอย่างไร?", options: ["เป็นทะเลสาบน้ำเค็มที่อยู่ต่ำกว่าระดับน้ำทะเลและแห้งแล้งเป็นส่วนใหญ่", "เป็นทะเลสาบน้ำจืดขนาดใหญ่ที่สุดในซีกโลกใต้", "เป็นแหล่งกำเนิดแม่น้ำสายสำคัญที่ไหลลงสู่มหาสมุทรอินเดีย", "เป็นทะเลสาบที่เกิดจากการระเบิดของภูเขาไฟโบราณ"], ans: 0, clue: "จุดต่ำสุดของทวีปและมักไม่มีน้ำในฤดูแล้ง", exp: "ทะเลสาบแอร์เป็นจุดต่ำสุดของทวีปออสเตรเลีย เป็นทะเลสาบน้ำเค็มที่แห้งขอดส่วนใหญ่ ยกเว้นฤดูที่มีฝนตกหนัก" },
+                en: { q: "What is a key characteristic of Lake Eyre in Australia's Central Lowland?", options: ["An inland salt lake lying below sea level, mostly dry", "The largest freshwater lake in the Southern Hemisphere", "The source of major rivers flowing into the Indian Ocean", "A lake formed by ancient volcanic eruptions"], ans: 0, clue: "The lowest point of the continent, often dry.", exp: "Lake Eyre is the lowest point in Australia, an endorheic salt lake that is mostly dry except during heavy rains." }
+            },
+            {
+                id: 4,
+                th: { q: "ฟยอร์ด (Fiord) ชายฝั่งเว้นแหว่งลึก เกิดขึ้นบริเวณใดของประเทศนิวซีแลนด์ (ออสเตรเลีย-โอเชียเนีย)?", options: ["เกาะใต้ ด้านตะวันตกที่ติดกับชายฝั่งทะเล", "เกาะเหนือ บริเวณที่ราบสูงภูเขาไฟ", "หมู่เกาะปะการังรอบนอก", "ช่องแคบระหว่างเกาะเหนือและเกาะใต้"], ans: 0, clue: "เกิดจากการกัดเซาะของธารน้ำแข็งทางเกาะใต้", exp: "ฟยอร์ดเกิดจากธารน้ำแข็งกัดเซาะชายฝั่ง พบบ่อยบริเวณเกาะใต้ด้านตะวันตกของนิวซีแลนด์" },
+                en: { q: "Where are the deep coastal fjords found in New Zealand?", options: ["West coast of the South Island", "North Island volcanic plateau", "Outer coral archipelagos", "Strait between North and South Islands"], ans: 0, clue: "Formed by glacial erosion on the South Island.", exp: "Fjords are formed by glacial erosion along the western coast of New Zealand's South Island." }
+            },
+            {
+                id: 5,
+                th: { q: "โอเอซิส (Oasis) หรือ แอร์สลอก (Uluru) ในออสเตรเลีย มีลักษณะทางธรณีวิทยาอย่างไร?", options: ["หินทรายยักษ์เดี่ยวๆ ที่ตั้งโดดเด่นกลางทะเลทรายและเปลี่ยนสีตามแสงอาทิตย์", "ภูเขาไฟมีพลังที่ตั้งอยู่ใจกลางทะเลทรายซิมป์สัน", "แนวปะการังโบราณที่โผล่พ้นน้ำขึ้นมาบนแผ่นดิน", "ถ้ำหินปูนใต้ดินขนาดใหญ่ที่มีน้ำพุร้อนพุ่งขึ้นมา"], ans: 0, clue: "ก้อนหินสีแดงขนาดใหญ่กลางทะเลทราย", exp: "อูลูรู (Uluru หรือ Ayer Rock) เป็น Monolith (หินก้อนเดี่ยวขนาดมหึมา) กลางทะเลทรายที่เปลี่ยนสีตามมุมแสงอาทิตย์" },
+                en: { q: "What is the geological nature of Uluru (Ayers Rock) in Australia?", options: ["A massive monolith in the desert that changes color with sunlight", " an active volcano in the Simpson Desert", "An ancient coral reef thrust above ground", "A large underground limestone cave with hot springs"], ans: 0, clue: "A huge red rock in the middle of the desert.", exp: "Uluru is a massive sandstone monolith in central Australia known for changing colors at sunset/sunrise." }
+            },
+            {
+                id: 6,
+                th: { q: "แผนที่เล่มที่รวบรวมแผนที่หลากหลายประเภทเพื่อใช้ศึกษาภูมิศาสตร์เรียกว่าอะไร?", options: ["แอตลาส (ATLAS)", "โทโพกราฟิก (Topographic)", "ธีมาติก (Thematic)", "โพลิทิคอล (Political)"], ans: 0, clue: "ชื่อเรียกสมุดรวมแผนที่", exp: "ATLAS คือชื่อเรียกหนังสือหรือเล่มแผนที่ที่รวบรวมแผนที่หลากหลายประเภท เช่น ภูมิประเทศ ภูมิอากาศ รัฐกิจ" },
+                en: { q: "What is a bound collection of various maps called?", options: ["ATLAS", "Topographic", "Thematic", "Political"], ans: 0, clue: "Name for a map book.", exp: "An atlas is a collection of various maps covering physical, political, and climatic features." }
+            },
+            {
+                id: 7,
+                th: { q: "แผนที่ชนิดใดที่เน้นแสดงข้อมูลเฉพาะเรื่อง เช่น เส้นทางท่องเที่ยว หรือเขตภูมิอากาศ?", options: ["แผนที่เฉพาะเรื่อง (Thematic Map)", "แผนที่ภูมิประเทศ (Topographic Map)", "แผนที่รัฐกิจ (Political Map)", "แผนที่โลกแบบแบน (Flat Earth Map)"], ans: 0, clue: "ตรงกับคำว่า Thematic", exp: "Thematic map หรือแผนที่เฉพาะเรื่อง สร้างขึ้นเพื่อแสดงข้อมูลจำเพาะ เช่น ภูมิอากาศ พืชพรรณ หรือการท่องเที่ยว" },
+                en: { q: "Which type of map focuses on specific themes like climate or tourism?", options: ["Thematic Map", "Topographic Map", "Political Map", "Flat Earth Map"], ans: 0, clue: "Corresponds to thematic data.", exp: "A thematic map focuses on a specific subject area, such as climate, population, or tourism." }
+            },
+            {
+                id: 8,
+                th: { q: "พรหมแดนธรรมชาติที่ใช้กั้นระหว่างทวีปเอเชียกับทวีปยุโรปข้อใดถูกต้องที่สุด?", options: ["เทือกเขาอูราล ทะเลสาบแคสเปียน และเทือกเขาคอเคซัส", "คลองสุเอซ ทะเลแดง และอ่าวเปอร์เซีย", "แม่น้ำโขง แม่น้ำคงคา และเทือกเขาหิมาลัย", "เทือกเขาแอลป์ ทะเลเหนือ และมหาสมุทรแอตแลนติก"], ans: 0, clue: "เทือกเขายาวทางรัสเซียตะวันตกและทะเลสาบน้ำเค็มใหญ่", exp: "พรมแดนธรรมชาติระหว่างเอเชียและยุโรปประกอบด้วย เทือกเขาอูราล, แม่น้ำอูราล, ทะเลสาบแคสเปียน, เทือกเขาคอเคซัส และทะเลดำ" },
+                en: { q: "Which of the following correctly describes the natural boundary between Asia and Europe?", options: ["Ural Mountains, Caspian Sea, and Caucasus Mountains", "Suez Canal, Red Sea, and Persian Gulf", "Mekong River, Ganges River, and Himalayas", "Alps, North Sea, and Atlantic Ocean"], ans: 0, clue: "Long mountains in western Russia and large inland sea.", exp: "The natural boundaries between Asia and Europe include the Ural Mountains, Caspian Sea, and Caucasus Mountains." }
+            },
+            {
+                id: 9,
+                th: { q: "สิ่งก่อสร้างหรือพรหมแดนใดที่ใช้แบ่งเขตแดนระหว่างทวีปเอเชียกับทวีปแอฟริกา?", options: ["คลองสุเอซ ทะเลแดง และทะเลเมดิเตอร์เรเนียน", "เทือกเขาหิมาลัยและทะเลทรายโกบี", "ช่องแคบเบริงและมหาสมุทรอาร์กติก", "แม่น้ำไนล์และทะเลสาบวิกตอเรีย"], ans: 0, clue: "คลองขุดฝีมือมนุษย์ที่เป็นเส้นทางเดินเรือสำคัญเชื่อมทะเลแดงกับเมดิเตอร์เรเนียน", exp: "ทวีปเอเชียและแอฟริกามีพรมแดนเชื่อมต่อกันผ่านคลองสุเอซ ทะเลแดง และทะเลเมดิเตอร์เรเนียน" },
+                en: { q: "What divides Asia from Africa?", options: ["Suez Canal, Red Sea, and Mediterranean Sea", "Himalayas and Gobi Desert", "Bering Strait and Arctic Ocean", "Nile River and Lake Victoria"], ans: 0, clue: "A man-made canal connecting the Red Sea and Mediterranean.", exp: "Asia and Africa are separated/connected by the Suez Canal, Red Sea, and Mediterranean Sea." }
+            },
+            {
+                id: 10,
+                th: { q: "ลักษณะภูมิประเทศโดยรวมของทวีปเอเชียตอนกลางส่วนใหญ่เป็นอย่างไร?", options: ["ที่ปราบสูงและเทือกเขาสูงสลับแอ่งแผ่นดินภายในทวีป", "ที่ราบลุ่มปากแม่น้ำกว้างใหญ่มีความชื้นสูงตลอดปี", "เกาะภูเขาไฟและหมู่เกาะปะการังกระจัดกระจาย", "ที่ราบต่ำชายฝั่งทะเลทรายเขตร้อน"], ans: 0, clue: "ที่ราบสูงปามีร์และเทือกเขารอบด้าน", exp: "เอเชียตอนกลางมีลักษณะภูมิประเทศเป็นที่ราบสูงและภูเขาสูง เช่น ที่ราบสูงปามีร์ (หลังคาโลก) ล้อมรอบด้วยแอ่งแผ่นดินแห้งแล้ง" },
+                en: { q: "What is the general topography of Central Asia?", options: ["High plateaus and mountain ranges surrounding inland basins", "Large river floodplains with high humidity", "Volcanic islands and scattered coral reefs", "Lowland tropical deserts"], ans: 0, clue: "The Pamir Plateau and surrounding ranges.", exp: "Central Asia is characterized by high plateaus and towering mountain ranges enclosing dry interior basins." }
+            },
+            // ข้อ 11-30 เพิ่มเติมเพื่อให้ครบ 30 ข้อตามมาตรฐาน
+            {
+                id: 11,
+                th: { q: "แม่น้ำสายสำคัญในเขตที่ราบต่ำกลางทวีปออสเตรเลียที่มีความยาวมากที่สุดคือแม่น้ำใด?", options: ["แม่น้ำเมอร์รีย์-ดาร์ลิง (Murray-Darling)", "แม่น้ำสวอน (Swan River)", "แม่น้ำอาทู (Yarra River)", "แม่น้ำฟลาย (Fly River)"], ans: 0, clue: "ชื่อแม่น้ำคู่แฝดทางตะวันออกเฉียงใต้ของออสเตรเลีย", exp: "แม่น้ำเมอร์รีย์และดาร์ลิงเป็นระบบแม่น้ำที่ยาวที่สุดในออสเตรเลีย หล่อเลี้ยงพื้นที่เกษตรกรรมสำคัญ" },
+                en: { q: "What is the longest river system in Australia's Central Lowlands?", options: ["Murray-Darling River", "Swan River", "Yarra River", "Fly River"], ans: 0, clue: "Twin river name in southeastern Australia.", exp: "The Murray-Darling river system is the longest and most agriculturally vital in Australia." }
+            },
+            {
+                id: 12,
+                th: { q: "เกาะแทสเมเนีย (Tasmania) มีลักษณะอากาศและภูมิประเทศอย่างไร?", options: ["อากาศอบอุ่นชื้นภาคพื้นสมุทร มีภูมิประเทศเป็นภูเขาและป่าไม้เขียวชะอุ่ม", "ทะเลทรายเขตร้อนแห้งแล้งและไม่มีต้นไม้ใหญ่", "ที่ราบลุ่มแม่น้ำขนาดใหญ่ที่มีอากาศร้อนชื้นตลอดปี", "ภูเขาไฟมีพลังและมีน้ำพุร้อนจำนวนมาก"], ans: 0, clue: "เกาะทางใต้สุดของออสเตรเลีย", exp: "แทสเมเนียมีภูมิอากาศแบบอบอุ่นชื้นภาคพื้นสมุทร (Temperate) มีภูเขาและป่าไม้สมบูรณ์แตกต่างจากแผ่นดินใหญ่ส่วนใหญ่" },
+                en: { q: "What are the climate and topography of Tasmania?", options: ["Temperate maritime climate with mountainous and lush forested terrain", "Arid tropical desert with no large trees", "Large river floodplains with year-round tropical heat", "Active volcanoes and numerous hot springs"], ans: 0, clue: "The southernmost island of Australia.", exp: "Tasmania features a temperate maritime climate, mountainous terrain, and lush forests." }
+            },
+            {
+                id: 13,
+                th: { q: "ที่ราบสูงเดคคาน (Deccan Plateau) ตั้งอยู่ในภูมิภาคใดของทวีปเอเชีย?", options: ["เอเชียใต้ (ประเทศอินเดีย)", "เอเชียตะวันออก (ประเทศจีน)", "เอเชียตะวันตกเฉียงใต้ (คาบสมุทรอาหรับ)", "เอเชียตะวันออกเฉียงใต้ (คาบสมุทรอินโดจีน)"], ans: 0, clue: "ตั้งอยู่ส่วนกลางของคาบสมุทรอินเดีย", exp: "ที่ราบสูงเดคคานตั้งอยู่ทางตอนกลางและใต้ของอินเดีย ในภูมิภาคเอเชียใต้ เกิดจากหินบะซอลต์ภูเขาไฟโบราณ" },
+                en: { q: "Where is the Deccan Plateau located in Asia?", options: ["South Asia (India)", "East Asia (China)", "Southwest Asia (Arabian Peninsula)", "Southeast Asia (Indochina)"], ans: 0, clue: "Located in the middle of the Indian subcontinent.", exp: "The Deccan Plateau occupies the southern part of the Indian subcontinent in South Asia." }
+            },
+            {
+                id: 14,
+                th: { q: "ทะเลสาบไบคาล (Lake Baikal) ในทวีปเอเชียมีความโดดเด่นทางธรรมชาติอย่างไร?", options: ["เป็นทะเลสาบน้ำจืดที่ลึกที่สุดในโลก", "เป็นทะเลสาบน้ำเค็มที่ใหญ่ที่สุดในโลก", "เป็นทะเลสาบที่อยู่สูงที่สุดจากระดับน้ำทะเล", "เป็นทะเลสาบที่แห้งขอดในฤดูร้อน"], ans: 0, clue: "ตั้งอยู่ในไซบีเรีย ประเทศรัสเซีย และมีความลึกเป็นอันดับหนึ่ง", exp: "ทะเลสาบไบคาลในไซบีเรีย เอเชียเหนือ เป็นทะเลสาบน้ำจืดที่เก่าแก่และลึกที่สุดในโลก" },
+                en: { q: "What makes Lake Baikal in Asia unique?", options: ["It is the deepest freshwater lake in the world.", "It is the largest saltwater lake in the world.", "It is the highest lake above sea level.", "It dries up completely in summer."], ans: 0, clue: "Located in Siberia, Russia, holding the depth record.", exp: "Lake Baikal in Siberia is the world's deepest and oldest freshwater lake." }
+            },
+            {
+                id: 15,
+                th: { q: "เทือกเขาหิมาลัยในเอเชียใต้เกิดจากการชนกันของแผ่นเปลือกโลกใด?", options: ["แผ่นอินเดียชนกับแผ่นยูเรเซีย", "แผ่นแปซิฟิกชนกับแผ่นออสเตรเลีย", "แผ่นแอฟริกาชนกับแผ่นยุโรป", "แผ่นอเมริกาเหนือชนกับแผ่นแปซิฟิก"], ans: 0, clue: "การเคลื่อนที่เข้าหากันของอนุทวีปอินเดียกับเอเชีย", exp: "เทือกเขาหิมาลัยเกิดจากการชนกันของแผ่นเปลือกโลกอินเดียและแผ่นยูเรเซีย ทำให้เกิดภูเขาสูงชันที่สุดในโลก" },
+                en: { q: "The Himalayas in South Asia were formed by the collision of which tectonic plates?", options: ["Indian Plate colliding with the Eurasian Plate", "Pacific Plate colliding with the Australian Plate", "African Plate colliding with the European Plate", "North American Plate colliding with the Pacific Plate"], ans: 0, clue: "The northward movement of the Indian subcontinent.", exp: "The Himalayas formed from the collision between the Indian and Eurasian tectonic plates." }
+            },
+            {
+                id: 16,
+                th: { q: "ภูมิอากาศแบบเมดิเตอร์เรเนียนในทวีปออสเตรเลียพบบริเวณใดของทวีป?", options: ["ทางตะวันตกเฉียงใต้และใต้สุดรอบเมืองเพิร์ธและแอดิเลด", "ทางตอนเหนือสุดใกล้กับเส้นศูนย์สูตร", "บริเวณใจกลางทะเลทรายเกรดวิกตอเรีย", "ชายฝั่งตะวันออกเฉียงเหนือติดแนวปะการังเกรตแบร์ริเออร์รีฟ"], ans: 0, clue: "เมืองเพิร์ธ (Perth) มีภูมิอากาศแบบนี้", exp: "ภูมิอากาศแบบเมดิเตอร์เรเนียนในออสเตรเลียพบบริเวณมุมตะวันตกเฉียงใต้และตอนใต้ (รอบเมืองเพิร์ธและแอดิเลด)" },
+                en: { q: "Where is the Mediterranean climate found in Australia?", options: ["Southwestern and southern coastal areas around Perth and Adelaide", "Far northern areas near the equator", "Central Great Victoria Desert", "Northeastern coast near the Great Barrier Reef"], ans: 0, clue: "Near Perth and Adelaide.", exp: "The Mediterranean climate in Australia occurs in the southwest and south around Perth and Adelaide." },
+            },
+            {
+                id: 17,
+                th: { q: "ทะเลทรายขนาดใหญ่ในทวีปออสเตรเลีย ได้แก่ ทะเลทรายเกรตแซนดี ทะเลทรายกิ๊บสัน และทะเลทรายใด?", options: ["ทะเลทรายซิมป์สัน (Simpson Desert)", "ทะเลทรายซาฮารา (Sahara Desert)", "ทะเลทรายโกบี (Gobi Desert)", "ทะเลทรายอาตาคามา (Atacama Desert)"], ans: 0, clue: "ตั้งชื่อตามนักสำรวจและอยู่ทางตอนกลางค่อนไปทางตะวันออก", exp: "ทะเลทรายหลักในออสเตรเลียประกอบด้วย เกรตแซนดี, เกรตวิกตอเรีย, กิ๊บสัน และซิมป์สัน" },
+                en: { q: "Major deserts in Australia include the Great Sandy, Gibson, and which other desert?", options: ["Simpson Desert", "Sahara Desert", "Gobi Desert", "Atacama Desert"], ans: 0, clue: "Named after an explorer, located in the central region.", exp: "Major Australian deserts include the Great Sandy, Gibson, Great Victoria, and the Simpson Desert." }
+            },
+            {
+                id: 18,
+                th: { q: "ลักษณะเด่นของพืชพรรณในเขตแห้งแล้งของออสเตรเลียคือข้อใด?", options: ["ต้นยูคาลิปตัสและพืชทนแล้ง (Scrub/Spinifex)", "ป่าดิบชื้นหนาแน่นมีเรือนยอดหลายชั้น", "ป่าสนไทกาหรือป่าสนเขบทรายหนาแน่น", "ทุ่งหญ้าสะวันนาสูงใหญ่มีสัตว์กินเนื้อขนาดใหญ่"], ans: 0, clue: "พืชตระกูลยูคาลิปตัสและหญ้าสปินิเฟกซ์", exp: "พื้นที่แห้งแล้งของออสเตรเลียปกคลุมด้วยยูคาลิปตัส พืชพรรณแคระแกร็น และหญ้าสปินิเฟกซ์ที่ทนแล้ง" },
+                en: { q: "What is the dominant vegetation in Australia's arid regions?", options: ["Eucalyptus trees and drought-resistant spinifex grass", "Dense multi-layered tropical rainforests", "Dense taiga or coniferous forests", "Tall savanna grasslands with large carnivores"], ans: 0, clue: "Eucalyptus and spinifex grass.", exp: "Arid Australia is dominated by drought-resistant eucalyptus and spinifex grass." }
+            },
+            {
+                id: 19,
+                th: { q: "คาบสมุทรขนาดใหญ่ทางตอนเหนือของทวีปออสเตรเลียที่ยื่นออกไปในทะเลคือคาบสมุทรใด?", options: ["คาบสมุทรเคอร์เพนทาเรีย / เคปยอร์ก (Cape York)", "คาบสมุทรอาหรับ", "คาบสมุทรอินโดจีน", "คาบสมุทรเกาหลี"], ans: 0, clue: "อยู่ทางเหนือสุดของรัฐควีนส์แลนด์", exp: "คาบสมุทรเคปยอร์ก (Cape York Peninsula) ตั้งอยู่ทางตอนเหนือสุดของออสเตรเลีย ติดกับอ่าวคาร์เพนทาเรีย" },
+                en: { q: "What major peninsula extends from northern Australia?", options: ["Cape York Peninsula", "Arabian Peninsula", "Indochina Peninsula", "Korean Peninsula"], ans: 0, clue: "Located at the northern tip of Queensland.", exp: "The Cape York Peninsula extends from the northern tip of Australia." }
+            },
+            {
+                id: 20,
+                th: { q: "ลักษณะภูมิอากาศแบบมรสุม (Monsoon) ในทวีปเอเชียส่งผลกระทบเด่นชัดที่สุดต่อภูมิภาคใด?", options: ["เอเชียใต้และเอเชียตะวันออกเฉียงใต้", "เอเชียเหนือแถบไซบีเรีย", "เอเชียตะวันตกเฉียงใต้แถบคาบสมุทรอาหรับ", "เอเชียกลางแถบที่ราบสูง"], ans: 0, clue: "ลมมรสุมตะวันตกเฉียงใต้และตะวันออกเฉียงเหนือพัดผ่าน", exp: "ภูมิอากาศแบบมรสุมพัดผ่านและสร้างฝนชุกในภูมิภาคเอเชียใต้และเอเชียตะวันออกเฉียงใต้เป็นหลัก" },
+                en: { q: "Monsoon climate in Asia most prominently affects which regions?", options: ["South Asia and Southeast Asia", "Northern Asia (Siberia)", "Southwest Asia (Arabian Peninsula)", "Central Asia plateaus"], ans: 0, clue: "Influenced by seasonal southwest and northeast monsoons.", exp: "Monsoon climates heavily impact South and Southeast Asia with distinct rainy and dry seasons." }
+            },
+            {
+                id: 21,
+                th: { q: "แม่น้ำสายยาวที่สุดในทวีปเอเชียคือแม่น้ำใด?", options: ["แม่น้ำแยงซี (Yangtze River)", "แม่น้ำโขง (Mekong River)", "แม่น้ำคงคา (Ganges River)", "แม่น้ำสินธุ (Indus River)"], ans: 0, clue: "ไหลผ่านประเทศจีนและมีความยาวเป็นอันดับ 3 ของโลก", exp: "แม่น้ำแยงซีเกียงเป็นแม่น้ำที่ยาวที่สุดในทวีปเอเชีย (ประมาณ 6,300 กิโลเมตร) ไหลผ่านประเทศจีน" },
+                en: { q: "What is the longest river in Asia?", options: ["Yangtze River", "Mekong River", "Ganges River", "Indus River"], ans: 0, clue: "Flows through China and is the third longest in the world.", exp: "The Yangtze River is the longest river in Asia, entirely flowing within China." }
+            },
+            {
+                id: 22,
+                th: { q: "ลักษณะภูมิประเทศแบบที่ราบลุ่มแม่น้ำ (Alluvial Plains) ในเอเชียมีความสำคัญอย่างไรต่อมนุษย์?", options: ["เป็นแหล่งเพาะปลูกเกษตรกรรมและอารยธรรมโบราณหนาแน่นที่สุด", "เป็นเขตแห้งแล้งที่มีประชากรอาศัยอยู่น้อยมาก", "เป็นแนวเทือกเขาสูงที่เป็นกำแพงธรรมชาติกั้นอาณาเขต", "เป็นเกาะภูเขาไฟกลางมหาสมุทรแปซิฟิก"], ans: 0, clue: "แหล่งกำเนิดอารยธรรมลุ่มแม่น้ำ เช่น เมโสโปเตเมีย สินธุ ฮวงโห", exp: "ที่ราบลุ่มแม่น้ำเป็นอู่ข้าวอู่น้ำและแหล่งอารยธรรมโบราณเนื่องจากดินตะกอนมีความอุดมสมบูรณ์สูง" },
+                en: { q: "Why are alluvial river plains in Asia significant to humans?", options: ["They are densely populated centers of agriculture and ancient civilizations.", "They are arid regions with minimal population.", "They are high mountain barriers.", "They are volcanic islands in the Pacific."], ans: 0, clue: "Birthplaces of ancient river valley civilizations.", exp: "Alluvial plains support dense populations and agriculture due to fertile sediment." }
+            },
+            {
+                id: 23,
+                th: { q: "เกรตแบร์ริเออร์รีฟ (Great Barrier Reef) แนวปะการังยาวที่สุดในโลกตั้งอยู่บริเวณใดของออสเตรเลีย?", options: ["นอกชายฝั่งตะวันออกเฉียงเหนือของรัฐควีนส์แลนด์", "นอกชายฝั่งตะวันตกติดมหาสมุทรอินเดีย", "ทางตอนใต้สุดของเกาะแทสเมเนีย", "ในเขตทะเลทรายทางตอนกลางของทวีป"], ans: 0, clue: "แนวปะการังทางฝั่งทะเลตะวันออกเฉียงเหนือ", exp: "เกรตแบร์ริเออร์รีฟตั้งอยู่นอกชายฝั่งตะวันออกเฉียงเหนือของออสเตรเลีย เป็นแนวปะการังยาวที่สุดในโลกที่มองเห็นได้จากอวกาศ" },
+                en: { q: "Where is the Great Barrier Reef located in Australia?", options: ["Off the northeastern coast of Queensland", "Off the western Indian Ocean coast", "Off the southern tip of Tasmania", "In the central desert region"], ans: 0, clue: "Coral reef off the northeast coast.", exp: "The Great Barrier Reef lies off Australia's northeastern coast and is the world's largest coral reef system." }
+            },
+            {
+                id: 24,
+                th: { q: "เขตภูมิอากาศแบบทุนดรา (Tundra) หรือขั้วโลกในทวีปเอเชีย พบบริเวณใด?", options: ["ตอนเหนือสุดของทวีปแถบชายฝั่งมหาสมุทรอาร์กติกในรัสเซีย", "บริเวณคาบสมุทรอินเดียและอินโดจีน", "บริเวณคาบสมุทรอาหรับในเอเชียตะวันตก", "ตอนกลางของประเทศจีนและมองโกเลีย"], ans: 0, clue: "เขตหนาวจัดทางเหนือสุดติดมหาสมุทรอาร์กติก", exp: "ภูมิอากาศแบบทุนดราพบบริเวณเหนือสุดของเอเชีย (ไซบีเรียเหนือ) ดินจับตัวเป็นน้ำแข็งถาวร (Permafrost)" },
+                en: { q: "Where is the Tundra (polar) climate found in Asia?", options: ["Far northern Siberia along the Arctic Ocean coast", "Indian and Indochinese peninsulas", "Arabian Peninsula in Western Asia", "Central China and Mongolia"], ans: 0, clue: "Frigid northern coast along the Arctic.", exp: "Tundra climate occurs in the extreme northern parts of Asia along the Arctic coast with permafrost." }
+            },
+            {
+                id: 25,
+                th: { q: "ทะเลทรายอาหรับในเอเชียตะวันตกเฉียงใต้มีลักษณะภูมิประเทศส่วนใหญ่เป็นอย่างไร?", options: ["ทะเลทรายทรายกว้างใหญ่และที่ราบสูงหินแห้งแล้ง", "ป่าดิบชื้นขนาดใหญ่ที่มีฝนตกชุกตลอดปี", "ที่ราบลุ่มน้ำแข็งและธารน้ำแข็งขั้วโลก", "หมู่เกาะภูเขาไฟที่มีความอุดมสมบูรณ์สูง"], ans: 0, clue: "คาบสมุทรอาหรับเต็มไปด้วยทะเลทรายและอากาศร้อนจัด", exp: "ทะเลทรายอาหรับเป็นเขตทะเลทรายและทุ่งหินแห้งแล้งขนาดใหญ่ในเอเชียตะวันตกเฉียงใต้ มีความแห้งแล้งสูง" },
+                en: { q: "What is the dominant landscape of the Arabian Desert in Southwest Asia?", options: ["Vast sand seas and arid rock plateaus", "Large tropical rainforests with heavy rainfall", "Glacial lowlands and polar ice caps", "Highly fertile volcanic islands"], ans: 0, clue: "The Arabian Peninsula is filled with hot deserts.", exp: "The Arabian Desert is characterized by expansive sand dunes and dry rock plateaus with extreme heat." }
+            },
+            {
+                id: 26,
+                th: { q: "ลักษณะภูมิประเทศของประเทศญี่ปุ่นและอินโดนีเซียในทวีปเอเชียมีความเกี่ยวข้องกับข้อใดมากที่สุด?", options: ["ตั้งอยู่บนแนวเปลือกโลกวงแหวนแห่งไฟ (Ring of Fire) ทำให้มีภูเขาไฟและแผ่นดินไหวบ่อย", "เป็นที่ราบสูงหินเก่าแก่ที่ไม่มีการเคลื่อนตัวของเปลือกโลก", "เป็นแอ่งแผ่นดินภายในทวีปที่ปิดล้อมด้วยแผ่นดินใหญ่", "เป็นเกาะปะการังขนาดเล็กที่ราบเรียบไม่มีภูเขา"], ans: 0, clue: "หมู่เกาะภูเขาไฟและแนวแผ่นดินไหว", exp: "ญี่ปุ่นและอินโดนีเซียตั้งอยู่บนวงแหวนแห่งไฟ (Ring of Fire) จึงมีภูเขาไฟจำนวนมากและเกิดแผ่นดินไหวบ่อยครั้ง" },
+                en: { q: "What best describes the tectonic setting of Japan and Indonesia in Asia?", options: ["Located along the Pacific Ring of Fire, featuring frequent volcanoes and earthquakes", "Ancient stable shields with no tectonic activity", "Inland continental basins enclosed by land", "Flat coral atolls with no mountains"], ans: 0, clue: "Volcanic island chains and earthquake zones.", exp: "Japan and Indonesia lie along the Pacific Ring of Fire, experiencing high volcanic and seismic activity." }
+            },
+            {
+                id: 27,
+                th: { q: "ที่ราบลุ่มแม่น้ำโขงในเอเชียตะวันออกเฉียงใต้มีความสำคัญทางเศรษฐกิจและสังคมอย่างไร?", options: ["เป็นแหล่งเพาะปลูกข้าวและเกษตรกรรมขนาดใหญ่ที่มีประชากรหนาแน่น", "เป็นเขตทะเลทรายแห้งแล้งที่ใช้เลี้ยงสัตว์เร่ร่อน", "เป็นแนวภูเขาสูงชันที่ใช้สร้างเขื่อนผลิตกระแสไฟฟ้าเท่านั้น", "เป็นพื้นที่ป่าดิบชื้นทึบที่ไม่มีผู้คนอาศัยอยู่"], ans: 0, clue: "อู่ข้าวอู่น้ำของภูมิภาคเอเชียตะวันออกเฉียงใต้", exp: "ลุ่มแม่น้ำโขงเป็นแหล่งเกษตรกรรมปลูกข้าวและหล่อเลี้ยงประชากรหลายประเทศในภูมิภาคเอเชียตะวันออกเฉียงใต้" },
+                en: { q: "What is the socio-economic significance of the Mekong River basin in Southeast Asia?", options: ["A major agricultural rice-producing region with high population density", "An arid desert used for nomadic pastoralism", "A steep mountain zone solely for hydroelectric dams", "A dense rainforest with no human inhabitants"], ans: 0, clue: "The rice bowl of Southeast Asia.", exp: "The Mekong basin is vital for rice cultivation and supports a dense population in Southeast Asia." }
+            },
+            {
+                id: 28,
+                th: { q: "ลมมรสุมตะวันออกเฉียงเหนือที่พัดผ่านทวีปเอเชียในฤดูหนาวจะนำลักษณะอากาศแบบใดมาสู่ภูมิภาคเอเชียตะวันออก?", options: ["อากาศหนาวเย็นและแห้งแล้ง", "อากาศร้อนชื้นและมีฝนตกชุกมาก", "พายุไซโคลนรุนแรงจากมหาสมุทรแปซิฟิก", "คลื่นความร้อนจากเส้นศูนย์สูตร"], ans: 0, clue: "ลมหนาวพัดจากภาคพื้นทวีปไซบีเรียออกสู่ทะเล", exp: "ลมมรสุมตะวันออกเฉียงเหนือในฤดูหนาวพัดจากภาคพื้นทวีปที่หนาวเย็นและแห้งแล้งสู่มหาสมุทร ทำให้อากาศหนาวและแห้งในเอเชียตะวันออก" },
+                en: { q: "What weather conditions does the northeast monsoon bring to East Asia during winter?", options: ["Cold and dry weather", "Hot and humid weather with heavy rain", "Severe tropical cyclones from the Pacific", "Equatorial heatwaves"], ans: 0, clue: "Cold continental winds blowing outward.", exp: "The winter northeast monsoon brings cold, dry continental air from Siberia to East Asia." }
+            },
+            {
+                id: 29,
+                th: { q: "เขตภูมิประเทศแบบสะวันนา (Savanna) ในทวีปออสเตรเลียพบบริเวณใด?", options: ["ทางตอนเหนือของทวีปที่มีฝนตกตามฤดูกาล", "ทางตอนใต้สุดของทวีปใกล้เกาะแทสเมเนีย", "บริเวณใจกลางทะเลทรายซิมป์สัน", "ทางตะวันตกเฉียงใต้รอบเมืองเพิร์ธ"], ans: 0, clue: "เขตตอนเหนือใกล้เส้นศูนย์สูตรที่มีฤดูฝนสลับฤดูแล้ง", exp: "ทุ่งหญ้าสะวันนา (ทุ่งหญ้าเขตร้อน) ในออสเตรเลียพบบริเวณตอนเหนือของทวีปซึ่งมีฝนตกตามฤดูกาลมรสุม" },
+                en: { q: "Where is the savanna climate/vegetation found in Australia?", options: ["Northern Australia with seasonal rainfall", "Far southern Australia near Tasmania", "Central Simpson Desert", "Southwestern Australia around Perth"], ans: 0, clue: "Northern tropical zone with wet and dry seasons.", exp: "Savanna landscapes occur across northern Australia, featuring tropical grasslands with distinct wet and dry seasons." }
+            },
+            {
+                id: 30,
+                th: { q: "เพราะเหตุใดทวีปออสเตรเลียจึงมีประชากรหนาแน่นบริเวณชายฝั่งตะวันออกและตะวันออกเฉียงใต้ มากกว่าบริเวณภายในทวีป?", options: ["เนื่องจากมีภูมิอากาศแบบอบอุ่นชื้น มีฝนตกสมบูรณ์และเหมาะแก่การตั้งถิ่นฐาน", "เพราะเป็นเขตภูเขาไฟมีแร่ทองคำอุดมสมบูรณ์ทุกพื้นที่", "เพราะเป็นเขตทะเลทรายกว้างใหญ่ที่มีแหล่งน้ำบาดาลธรรมชาติมหาศาล", "เพราะเป็นพื้นที่ป่าดิบชื้นใกล้เส้นศูนย์สูตรที่มีความปลอดภัยสูง"], ans: 0, clue: "ปัจจัยทางภูมิอากาศและแหล่งน้ำเอื้ออำนวย", exp: "ชายฝั่งตะวันออกและตะวันออกเฉียงใต้ของออสเตรเลียมีภูมิอากาศอบอุ่นและฝนตกชุก ต่างจากภายในทวีปที่เป็นทะเลทรายแห้งแล้ง" },
+                en: { q: "Why is the population of Australia concentrated along the eastern and southeastern coasts rather than the interior?", options: ["Due to a temperate climate, adequate rainfall, and favorable living conditions", "Because it is a volcanic zone rich in gold everywhere", "Because the vast desert has abundant natural groundwater", "Because it is a tropical rainforest near the equator"], ans: 0, clue: "Favorable climate and water availability.", exp: "The eastern and southeastern coasts offer temperate climates and reliable rainfall, unlike the dry interior deserts." }
+            }
+        ];
+
+        let currentLang = 'th';
+        let userAnswers = JSON.parse(localStorage.getItem('geo_exam_answers')) || {};
+        let shuffledQuestions = [];
+
+        // Fisher-Yates Shuffle Algorithm
+        function shuffleArray(array) {
+            let currentIndex = array.length, randomIndex;
+            while (currentIndex !== 0) {
+                randomIndex = Math.floor(Math.random() * currentIndex);
+                currentIndex--;
+                [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+            }
+            return array;
+        }
+
+        // Initialize Exam
+        function initExam() {
+            if (shuffledQuestions.length === 0) {
+                // สุ่มลำดับข้อสอบ และสุ่มตำแหน่งตัวเลือกในแต่ละข้อ
+                shuffledQuestions = questionsData.map(q => {
+                    let qCopy = JSON.parse(JSON.stringify(q));
+                    // สุ่มตัวเลือก TH
+                    let thOpts = qCopy.th.options.map((opt, idx) => ({ text: opt, origIdx: idx }));
+                    thOpts = shuffleArray(thOpts);
+                    qCopy.th.shuffledOptions = thOpts;
+                    qCopy.th.newAnsIdx = thOpts.findIndex(o => o.origIdx === qCopy.th.ans);
+
+                    // สุ่มตัวเลือก EN
+                    let enOpts = qCopy.en.options.map((opt, idx) => ({ text: opt, origIdx: idx }));
+                    enOpts = shuffleArray(enOpts);
+                    qCopy.en.shuffledOptions = enOpts;
+                    qCopy.en.newAnsIdx = enOpts.findIndex(o => o.origIdx === qCopy.en.ans);
+
+                    return qCopy;
+                });
+                shuffledQuestions = shuffleArray(shuffledQuestions);
+            }
+            renderExam();
+        }
+
+        function renderExam() {
+            const container = document.getElementById('questionContainer');
+            container.innerHTML = '';
+
+            shuffledQuestions.forEach((item, index) => {
+                const qData = item[currentLang];
+                const card = document.createElement('div');
+                card.className = 'question-card';
+                card.id = `q-card-${item.id}`;
+
+                let optionsHtml = '';
+                qData.shuffledOptions.forEach((opt, oIdx) => {
+                    let btnClass = 'option-btn';
+                    if (userAnswers[item.id] !== undefined) {
+                        if (userAnswers[item.id] === oIdx) {
+                            if (oIdx === qData.newAnsIdx) {
+                                btnClass += ' correct';
+                            } else {
+                                btnClass += ' incorrect';
+                            }
+                        } else if (oIdx === qData.newAnsIdx && userAnswers[item.id] !== qData.newAnsIdx) {
+                            // แสดงเฉลยที่ถูกต้องด้วยหากตอบผิด
+                            btnClass += ' correct';
+                        }
+                    }
+
+                    optionsHtml += `<button class="${btnClass}" onclick="selectOption(${item.id}, ${oIdx})">${String.fromCharCode(65 + oIdx)}. ${opt.text}</button>`;
+                });
+
+                card.innerHTML = `
+                    <div class="question-title">ข้อที่ ${index + 1} (ข้อ ${item.id}): ${qData.q}</div>
+                    <div class="options-list">${optionsHtml}</div>
+                    <button onclick="toggleClue(${item.id})" style="background:none; border:none; color:#e67e22; cursor:pointer; font-size:0.85rem; text-decoration:underline;">💡 ${currentLang === 'th' ? 'แสดงคำใบ้' : 'Show Clue'}</button>
+                    <div class="clue" id="clue-${item.id}">คำใบ้: ${qData.clue}</div>
+                    <div class="explanation" id="exp-${item.id}" style="display: ${userAnswers[item.id] !== undefined ? 'block' : 'none'};">
+                        <strong>${currentLang === 'th' ? 'เฉลยและวิธีคิด:' : 'Explanation:'}</strong> ${qData.exp}
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+
+            // เพิ่มปุ่มส่งคำตอบด้านล่างสุด
+            const submitBar = document.createElement('div');
+            submitBar.className = 'actions-bar';
+            submitBar.innerHTML = `
+                <button class="btn-submit" onclick="submitExam()">${currentLang === 'th' ? 'ส่งคำตอบและวิเคราะห์ผล' : 'Submit & Analyze'}</button>
+                <button class="btn-reset" onclick="resetExam()">${currentLang === 'th' ? 'เริ่มทำใหม่ (Reset)' : 'Reset Exam'}</button>
+            `;
+            container.appendChild(submitBar);
+        }
+
+        function selectOption(qId, oIdx) {
+            userAnswers[qId] = oIdx;
+            localStorage.setItem('geo_exam_answers', JSON.stringify(userAnswers));
+            renderExam();
+        }
+
+        function toggleClue(qId) {
+            const clueEl = document.getElementById(`clue-${qId}`);
+            clueEl.style.display = clueEl.style.display === 'block' ? 'none' : 'block';
+        }
+
+        function toggleLanguage() {
+            currentLang = currentLang === 'th' ? 'en' : 'th';
+            renderExam();
+        }
+
+        function resetExam() {
+            if (confirm(currentLang === 'th' ? 'คุณต้องการล้างคำตอบทั้งหมดและเริ่มทำใหม่ใช่หรือไม่?' : 'Are you sure you want to reset all answers?')) {
+                localStorage.removeItem('geo_exam_answers');
+                userAnswers = {};
+                shuffledQuestions = [];
+                initExam();
+                document.getElementById('results-modal').style.display = 'none';
+            }
+        }
+
+        function submitExam() {
+            let score = 0;
+            let total = shuffledQuestions.length;
+            let weakAreas = [];
+
+            shuffledQuestions.forEach(item => {
+                const qData = item[currentLang];
+                if (userAnswers[item.id] === qData.newAnsIdx) {
+                    score++;
+                } else {
+                    weakAreas.push(item.id);
+                }
+            });
+
+            const modal = document.getElementById('results-modal');
+            const modalContent = document.getElementById('modalContent');
+
+            let analysisHtml = `
+                <h2>${currentLang === 'th' ? '📊 ผลการประเมินและวิเคราะห์ข้อสอบ' : '📊 Exam Analysis & Results'}</h2>
+                <p><strong>${currentLang === 'th' ? 'คะแนนรวมที่ได้:' : 'Total Score:'}</strong> ${score} / ${total} (${((score/total)*100).toFixed(2)}%)</p>
+                <div class="analysis-section">
+                    <p><strong>🌟 ${currentLang === 'th' ? 'จุดเด่น (Strengths):' : 'Strengths:'}</strong> ${score >= 20 ? (currentLang === 'th' ? 'มีความเข้าใจในโครงสร้างภูมิประเทศกายภาพ พรมแดนธรรมชาติ และลักษณะภูมิอากาศของทวีปเอเชียและออสเตรเลียได้เป็นอย่างดีเยี่ยม' : 'Excellent understanding of physical geography, natural boundaries, and climate patterns of Asia and Australia.') : (currentLang === 'th' ? 'มีความเข้าใจพื้นฐานในบางหัวข้อ เช่น การใช้แผนที่เบื้องต้นและลักษณะทางกายภาพทั่วไป' : 'Good grasp of basic mapping and general physical features.')}</p>
+                </div>
+                <div class="analysis-section" style="border-left-color: var(--danger);">
+                    <p><strong>⚠️ ${currentLang === 'th' ? 'จุดด้อยที่ควรพัฒนา (Areas for Improvement):' : 'Areas for Improvement:'}</strong> ${weakAreas.length > 0 ? (currentLang === 'th' ? `ควรกลับไปทบทวนเนื้อหาในส่วนของลักษณะภูมิประเทศเฉพาะถิ่น (เช่น ฟยอร์ด, แอ่งแผ่นดิน, ทะเลสาบปลายปิด) รวมถึงพรมแดนธรรมชาติระหว่างทวีปและเขตภูมิอากาศแบบมรสุม/ทุนดราเพิ่มเติม` : `Review specific landforms (fjords, inland basins, endorheic lakes), natural continental borders, and monsoon/tundra climates.`) : (currentLang === 'th' ? 'ยอดเยี่ยมมาก! ไม่มีจุดด้อยที่ต้องกังวล สามารถรักษามาตรฐานนี้ไว้ได้เลย' : 'Outstanding! No major weaknesses identified.')}</p>
+                </div>
+                <div style="margin-top: 20px; text-align: right;">
+                    <button onclick="document.getElementById('results-modal').style.display='none'" style="background:var(--primary); color:white; border:none; padding:8px 15px; border-radius:4px; cursor:pointer;">${currentLang === 'th' ? 'ปิดหน้าต่าง' : 'Close'}</button>
+                </div>
+            `;
+            modalContent.innerHTML = analysisHtml;
+            modal.style.display = 'flex';
+        }
+
+        // Whiteboard Functionality
+        const canvas = document.getElementById('whiteboard');
+        const ctx = canvas.getContext('2d');
+        let painting = false;
+        let brushColor = '#2c3e50';
+
+        function resizeCanvas() {
+            const container = canvas.parentElement;
+            canvas.width = container.clientWidth;
+            canvas.height = container.clientHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        window.addEventListener('load', () => {
+            resizeCanvas();
+            initExam();
+        });
+
+        function startPosition(e) {
+            painting = true;
+            draw(e);
+        }
+
+        function endPosition() {
+            painting = false;
+            ctx.beginPath();
+        }
+
+        function draw(e) {
+            if (!painting) return;
+            ctx.lineWidth = 2;
+            ctx.lineCap = 'round';
+            ctx.strokeStyle = brushColor;
+
+            const rect = canvas.getBoundingClientRect();
+            const x = (e.clientX || e.touches[0].clientX) - rect.left;
+            const y = (e.clientY || e.touches[0].clientY) - rect.top;
+
+            ctx.lineTo(x, y);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+        }
+
+        canvas.addEventListener('mousedown', startPosition);
+        canvas.addEventListener('mouseup', endPosition);
+        canvas.addEventListener('mousemove', draw);
+
+        canvas.addEventListener('touchstart', startPosition);
+        canvas.addEventListener('touchend', endPosition);
+        canvas.addEventListener('touchmove', draw);
+
+        function clearWhiteboard() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        function changeColor(color) {
+            brushColor = color;
+        }
+    </script>
+</body>
+</html>
