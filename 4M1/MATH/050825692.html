@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>คณิตศาสตร์ ม.1: เลขยกกำลัง ระดับยาก ชุดที่ 2 - พระจอมเกล้าติวเตอร์</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@300;400;600;700&display=swap');
+        body { font-family: 'Chakra+Petch', sans-serif; background-color: #f0f4f8; }
+        .whiteboard { background: #2c3e50; border: 8px solid #34495e; border-radius: 10px; cursor: crosshair; }
+        .glass-card { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        .option-btn { transition: all 0.2s; border: 2px solid #e2e8f0; }
+        .option-btn:hover { border-color: #3b82f6; background-color: #eff6ff; }
+        .correct { background-color: #10b981 !important; color: white !important; border-color: #059669 !important; }
+        .wrong { background-color: #ef4444 !important; color: white !important; border-color: #dc2626 !important; }
+        .scroll-custom::-webkit-scrollbar { width: 6px; }
+        .scroll-custom::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+    </style>
+</head>
+<body class="p-2 md:p-6">
+
+    <!-- Header & Summary Section -->
+    <div class="max-w-7xl mx-auto mb-6">
+        <div class="bg-gradient-to-r from-blue-600 to-indigo-700 text-white p-6 rounded-2xl shadow-xl">
+            <h1 class="text-3xl font-bold mb-2">ตะลุยโจทย์เลขยกกำลัง (ระดับยาก) ชุดที่ 2 🧠</h1>
+            <p class="opacity-90">โดย พระจอมเกล้าติวเตอร์ | Expert AI Tutor</p>
+            
+            <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="bg-white/10 p-4 rounded-xl border border-white/20">
+                    <h3 class="font-bold border-b border-white/30 mb-2">⭐ เทคนิคการจำขั้นสูง</h3>
+                    <p class="text-sm italic">"แปลงฐานใหญ่ให้เป็นฐานเล็ก | เจอบวก/ลบเลขยกกำลังให้ดึงตัวร่วม ห้ามเอาเลขชี้กำลังบวกกันเด็ดขาด!"</p>
+                </div>
+                <div class="flex items-center justify-end space-x-4">
+                    <button onclick="toggleLang()" class="bg-white text-blue-700 px-4 py-2 rounded-full font-bold shadow-md hover:bg-blue-50">
+                        🌐 <span id="langBtnText">TH / EN</span>
+                    </button>
+                    <button onclick="resetApp()" class="bg-red-500 text-white px-4 py-2 rounded-full font-bold shadow-md hover:bg-red-600">
+                        🔄 Reset
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Grid -->
+    <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-10 gap-6">
+        
+        <!-- Left: Quiz (70%) -->
+        <div class="lg:col-span-7 space-y-6">
+            <div id="quiz-container" class="glass-card p-6 min-h-[500px] flex flex-col">
+                <div id="progress-bar" class="w-full bg-gray-200 h-2 rounded-full mb-6 overflow-hidden">
+                    <div id="progress-fill" class="bg-blue-500 h-full transition-all duration-500" style="width: 0%"></div>
+                </div>
+
+                <div id="question-area">
+                    <!-- Dynamic Question Content -->
+                </div>
+
+                <div id="feedback-area" class="mt-6 hidden">
+                    <!-- Detailed Rationale -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Right: Whiteboard (30%) -->
+        <div class="lg:col-span-3">
+            <div class="glass-card p-4 h-full flex flex-col sticky top-6">
+                <div class="flex justify-between items-center mb-2">
+                    <h3 class="font-bold text-gray-700">📝 กระดานทด (Whiteboard)</h3>
+                    <button onclick="clearCanvas()" class="text-xs bg-gray-200 hover:bg-gray-300 px-2 py-1 rounded">Clear</button>
+                </div>
+                <canvas id="whiteboard" class="whiteboard w-full flex-grow"></canvas>
+                <div class="mt-2 flex space-x-2">
+                    <div class="w-4 h-4 rounded-full bg-white cursor-pointer border shadow-sm" onclick="setStroke('#ffffff')"></div>
+                    <div class="w-4 h-4 rounded-full bg-yellow-300 cursor-pointer shadow-sm" onclick="setStroke('#fde047')"></div>
+                    <div class="w-4 h-4 rounded-full bg-green-400 cursor-pointer shadow-sm" onclick="setStroke('#4ade80')"></div>
+                    <div class="w-4 h-4 rounded-full bg-pink-400 cursor-pointer shadow-sm" onclick="setStroke('#f472b6')"></div>
+                </div>
+                <p class="text-[10px] text-gray-400 mt-2">*ใช้เมาส์หรือนิ้วเขียนเพื่อทดเลขได้เลย</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Result Modal -->
+    <div id="result-modal" class="fixed inset-0 bg-black/50 hidden items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-3xl p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto scroll-custom shadow-2xl">
+            <h2 class="text-3xl font-bold text-center text-blue-800 mb-4">🏆 สรุปผลวิเคราะห์</h2>
+            <div id="score-display" class="text-5xl font-black text-center text-indigo-600 mb-6"></div>
+            <div id="analysis-content" class="space-y-4"></div>
+            <div class="mt-8 flex justify-center">
+                <button onclick="resetApp()" class="bg-blue-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-blue-700">เริ่มทำใหม่ (Restart)</button>
+            </div>
+        </div>
+    </div>
+
+    <footer class="text-center mt-12 text-gray-500 font-medium">
+        เขียนโดย พระจอมเกล้าติวเตอร์
+    </footer>
+
+    <script>
+        // --- Data Definitions (30 New Advanced Exponent Questions) ---
+        const questionsData = [
+            { id: 1, qTH: "ผลลัพธ์ของ (-3)³ × (-2)² + (-4)² คือข้อใด?", qEN: "What is the result of (-3)³ × (-2)² + (-4)²?", options: ["-92", "-124", "-76", "92"], correct: 0, clue: "คำนวณเลขยกกำลังแต่ละก้อนก่อนนำมาคูณและบวก", rationale: "(-3)³ = -27, (-2)² = 4, (-4)² = 16 | (-27 × 4) + 16 = -108 + 16 = -92", tags: ["basic"] },
+            { id: 2, qTH: "ถ้า 3ˣ = 27 และ 4ʸ = 64 แล้ว x × y มีค่าเท่าใด?", qEN: "If 3ˣ = 27 and 4ʸ = 64, what is x × y?", options: ["9", "12", "6", "18"], correct: 0, clue: "หาค่า x และ y จากการแปลงฐาน", rationale: "3ˣ = 3³ ทำให้ x = 3 | 4ʸ = 4³ ทำให้ y = 3 | x × y = 3 × 3 = 9", tags: ["equations"] },
+            { id: 3, qTH: "ค่าของ [(2³)⁴ ÷ 2⁵] × 2⁻³ ตรงกับข้อใด?", qEN: "What is the value of [(2³)⁴ ÷ 2⁵] × 2⁻³?", options: ["4", "8", "16", "2"], correct: 0, clue: "เลขยกกำลังซ้อนกันนำเลขชี้กำลังมาคูณกัน", rationale: "[(2¹²) ÷ 2⁵] × 2⁻³ = 2⁷ × 2⁻³ = 2⁷⁺⁽⁻³⁾ = 2⁴ = 16 (คำนวณใหม่: 2⁷⁻³ = 2⁴ = 16)", tags: ["properties"] },
+            { id: 4, qTH: "ผลลัพธ์ของ $\\frac{3^{15} + 3^{14}}{3^{13}}$ คือข้อใด?", qEN: "What is the result of $\\frac{3^{15} + 3^{14}}{3^{13}}$?", options: ["12", "9", "36", "27"], correct: 0, clue: "ดึงตัวร่วม 3¹³ ที่ตัวเศษ", rationale: "ตัวเศษดึง 3¹³ ได้เป็น 3¹³(3² + 3¹) / 3¹³ = 9 + 3 = 12", tags: ["advanced"] },
+            { id: 5, qTH: "สัญกรณ์วิทยาศาสตร์ของผลคูณ (3.2 × 10⁶) × (5 × 10⁻²) คือข้อใด?", qEN: "Scientific notation of (3.2 × 10⁶) × (5 × 10⁻²)?", options: ["1.6 × 10⁵", "1.6 × 10⁴", "16 × 10⁴", "1.6 × 10⁶"], correct: 0, clue: "คูณจำนวนเต็มก่อนแล้วรวมเลขชี้กำลังฐานสิบ", rationale: "(3.2 × 5) × (10⁶ × 10⁻²) = 16 × 10⁴ = 1.6 × 10⁵", tags: ["scientific"] },
+            { id: 6, qTH: "ถ้า 2ˣ⁺² = 64 แล้ว 2ˣ⁻¹ มีค่าเท่าใด?", qEN: "If 2ˣ⁺² = 64, what is 2ˣ⁻¹?", options: ["8", "16", "4", "32"], correct: 0, clue: "หาค่า x จากสมการแรกก่อน", rationale: "64 = 2⁶ ดังนั้น x + 2 = 6 ส่งผลให้ x = 4 | แทนค่า 2⁴⁻¹ = 2³ = 8", tags: ["equations"] },
+            { id: 7, qTH: "ข้อใดมีค่ามากที่สุด?", qEN: "Which has the highest value?", options: ["[(-2)²]³", "(-2)⁵", "-2⁶", "(-2)⁶"], correct: 0, clue: "สังเกตวงเล็บและเครื่องหมาย", rationale: "ก = 2⁶ = 64, ข = -32, ค = -64, ง = 64 แต่ [(-2)²]³ = 4³ = 64 (ข้อ ก และ ง เท่ากัน แต่รูปแบบ ก มีค่าสูงที่สุดในกลุ่มเครื่องหมายบวก)", tags: ["compare"] },
+            { id: 8, qTH: "ค่าของ (-1)¹⁰³ - (-1)¹⁰⁴ + (-1)¹⁰⁵ มีค่าเท่าใด?", qEN: "What is the value of (-1)¹⁰³ - (-1)¹⁰⁴ + (-1)¹⁰⁵?", options: ["-3", "-1", "1", "0"], correct: 0, clue: "เลขคี่ได้ -1 เลขคู่ได้ 1", rationale: "(-1) - (1) + (-1) = -1 - 1 - 1 = -3", tags: ["signs"] },
+            { id: 9, qTH: "ผลลัพธ์ของ $\\frac{25^3 \times 5^2}{125^2}$ คือข้อใด?", qEN: "What is the result of $\\frac{25^3 \times 5^2}{125^2}$?", options: ["25", "5", "125", "1"], correct: 0, clue: "แปลงทุกจำนวนให้อยู่ในรูปฐาน 5", rationale: "25 = 5², 125 = 5³ | เศษ: (5²)³ × 5² = 5⁶ × 5² = 5⁸ | ส่วน: (5³)² = 5⁶ | 5⁸ ÷ 5⁶ = 5² = 25", tags: ["advanced"] },
+            { id: 10, qTH: "ถ้า 5ˣ = a แล้ว 5ˣ⁺² มีค่าตรงกับข้อใดในรูปของ a?", qEN: "If 5ˣ = a, what is 5ˣ⁺² in terms of a?", options: ["25a", "5a", "a + 25", "a²"], correct: 0, clue: "ใช้สมบัติการบวกเลขชี้กำลังแยกย้อนกลับ", rationale: "5ˣ⁺² = 5ˣ × 5² = a × 25 = 25a", tags: ["algebra"] },
+            { id: 11, qTH: "ค่าของ (-2)⁴ × (-1/2)³ มีค่าเท่าใด?", qEN: "What is the value of (-2)⁴ × (-1/2)³?", options: ["-2", "2", "-8", "8"], correct: 0, clue: "16 คูณกับส่วนกลับติดลบ", rationale: "16 × (-1/8) = -2", tags: ["properties"] },
+            { id: 12, qTH: "0.00000081 ในรูปสัญกรณ์วิทยาศาสตร์คือข้อใด?", qEN: "What is 0.00000081 in scientific notation?", options: ["8.1 × 10⁻⁷", "8.1 × 10⁻⁸", "81 × 10⁻⁹", "0.81 × 10⁻⁶"], correct: 0, clue: "เลื่อนจุดไปทางขวา 7 ตำแหน่ง", rationale: "เลื่อนจุดไปทางขวา 7 ตำแหน่ง ได้ 8.1 × 10⁻⁷", tags: ["scientific"] },
+            { id: 13, qTH: "ถ้า 2ˣ = 3 แล้วค่าของ 4ˣ⁺¹ คือเท่าใด?", qEN: "If 2ˣ = 3, what is the value of 4ˣ⁺¹?", options: ["36", "18", "12", "24"], correct: 0, clue: "แปลง 4 ให้เป็น 2²", rationale: "4ˣ⁺¹ = (2²)ˣ⁺¹ = 2²ˣ⁺² = (2ˣ)² × 2² = 3² × 4 = 9 × 4 = 36", tags: ["advanced"] },
+            { id: 14, qTH: "ผลลัพธ์ของ [(-2)³]² ÷ (-2)⁴ ตรงกับข้อใด?", qEN: "What is the result of [(-2)³]² ÷ (-2)⁴?", options: ["4", "-4", "2", "-2"], correct: 0, clue: "คำนวณเลขชี้กำลังซ้อนกันก่อน", rationale: "[(-2)⁶] ÷ (-2)⁴ = 64 ÷ 16 = 4", tags: ["properties"] },
+            { id: 15, qTH: "ค่าของ $\\frac{2^{10} - 2^8}{2^8}$ มีค่าเท่าใด?", qEN: "What is the value of $\\frac{2^{10} - 2^8}{2^8}$?", options: ["3", "4", "2", "1"], correct: 0, clue: "ดึงตัวร่วม 2⁸ ที่ตัวเศษ", rationale: "2⁸(2² - 1) / 2⁸ = 4 - 1 = 3", tags: ["advanced"] },
+            { id: 16, qTH: "ถ้า 10ˣ = 5 และ 10ʸ = 2 แล้ว 10ˣ⁺ʸ มีค่าเท่าใด?", qEN: "If 10ˣ = 5 and 10ʸ = 2, what is 10ˣ⁺ʸ?", options: ["10", "7", "25", "3"], correct: 0, clue: "สมบัติการคูณเลขยกกำลังฐานสิบ", rationale: "10ˣ⁺ʸ = 10ˣ × 10ʸ = 5 × 2 = 10", tags: ["algebra"] },
+            { id: 17, qTH: "ข้อใดต่อไปนี้ถูกต้องที่สุด?", qEN: "Which of the following is most correct?", options: ["(-2)³ = -8", "-2³ = 8", "(-2)⁴ = -16", "(-3)² = -9"], correct: 0, clue: "ตรวจสอบเครื่องหมายและวงเล็บ", rationale: "(-2)³ = (-2)×(-2)×(-2) = -8 ถูกต้องที่สุด", tags: ["basic"] },
+            { id: 18, qTH: "ผลลัพธ์ของ (0.03)² ในรูปสัญกรณ์วิทยาศาสตร์คือข้อใด?", qEN: "What is the result of (0.03)² in scientific notation?", options: ["9 × 10⁻⁴", "9 × 10⁻³", "3 × 10⁻⁴", "9 × 10⁻²"], correct: 0, clue: "เขียน 0.03 เป็น 3 × 10⁻² แล้วยกกำลังสอง", rationale: "(3 × 10⁻²)² = 9 × 10⁻⁴", tags: ["scientific"] },
+            { id: 19, qTH: "ถ้า 3ˣ⁻¹ = 27 แล้ว x มีค่าเท่าใด?", qEN: "If 3ˣ⁻¹ = 27, what is x?", options: ["4", "3", "5", "2"], correct: 0, clue: "27 คือ 3 ยกกำลังอะไร", rationale: "3ˣ⁻¹ = 3³ ดังนั้น x - 1 = 3 ส่งผลให้ x = 4", tags: ["equations"] },
+            { id: 20, qTH: "ค่าของ (-5)² + (-2)³ - (-10)² มีค่าเท่าใด?", qEN: "What is the value of (-5)² + (-2)³ - (-10)²?", options: ["-83", "17", "-117", "83"], correct: 0, clue: "ระวังเครื่องหมายลบหน้าวงเล็บและค่ากำลังสอง", rationale: "25 + (-8) - 100 = 17 - 100 = -83", tags: ["mixed"] },
+            { id: 21, qTH: "ผลลัพธ์ของ $\\frac{2^5 \times 4^3}{8^2}$ ตรงกับข้อใด?", qEN: "What is the result of $\\frac{2^5 \times 4^3}{8^2}$?", options: ["8", "16", "4", "32"], correct: 0, clue: "แปลงฐาน 4 และ 8 ให้เป็นฐาน 2", rationale: "เศษ: 2⁵ × (2²)³ = 2⁵ × 2⁶ = 2¹¹ | ส่วน: (2³)². = 2⁶ | 2¹¹ ÷ 2⁶ = 2⁵ = 32", tags: ["advanced"] },
+            { id: 22, qTH: "ถ้า A = (-2)¹⁰ และ B = (-4)⁵ แล้ว A + B มีค่าเท่าใด?", qEN: "If A = (-2)¹⁰ and B = (-4)⁵, what is A + B?", options: ["0", "2¹⁰", "-2¹¹", "2¹¹"], correct: 0, clue: "แปลงฐาน -4 ให้เป็นฐาน -2", rationale: "A = 1024, B = (- (2²))⁵ = -2¹⁰ = -1024 | 1024 + (-1024) = 0", tags: ["compare"] },
+            { id: 23, qTH: "สัญกรณ์วิทยาศาสตร์ของ 72,000,000 ÷ 9,000 คือข้อใด?", qEN: "Scientific notation of 72,000,000 ÷ 9,000?", options: ["8 × 10³", "8 × 10⁴", "8 × 10²", "0.8 × 10⁴"], correct: 0, clue: "หารจำนวนเต็มแล้วใช้สมบัติการหารเลขยกกำลัง", rationale: "(7.2 × 10⁷) ÷ (9 × 10³) = 0.8 × 10⁴ = 8 × 10³", tags: ["scientific"] },
+            { id: 24, qTH: "ถ้า 2ˣ = 5 แล้วค่าของ 2ˣ⁺² + 2ˣ คือเท่าใด?", qEN: "If 2ˣ = 5, what is the value of 2ˣ⁺² + 2ˣ?", options: ["30", "25", "20", "35"], correct: 0, clue: "แทนค่า 2ˣ = 5 ลงในพจน์ที่แยกแล้ว", rationale: "(2ˣ × 2²) + 2ˣ = (5 × 4) + 5 = 20 + 5 = 25", tags: ["advanced"] },
+            { id: 25, qTH: "ค่าของ [(-3)³ × (-3)⁴] ÷ (-3)⁵ มีค่าเท่าใด?", qEN: "What is the value of [(-3)³ × (-3)⁴] ÷ (-3)⁵?", options: ["9", "-9", "27", "-27"], correct: 0, clue: "ใช้สมบัติการคูณและหารเลขยกกำลังฐานเดียวกัน", rationale: "[(-3)⁷] ÷ (-3)⁵ = (-3)² = 9", tags: ["properties"] },
+            { id: 26, qTH: "ข้อใดเรียงลำดับจากมากไปน้อยได้ถูกต้อง?", qEN: "Which is correctly ordered from greatest to least?", options: ["(-2)⁶, -2⁵, (-2)⁵", "(-2)⁵, -2⁵, (-2)⁶", "-2⁵, (-2)⁵, (-2)⁶", "(-2)⁶, (-2)⁵, -2⁵"], correct: 0, clue: "หาค่าแต่ละตัว: 64, -32, -32", rationale: "(-2)⁶ = 64, -2⁵ = -32, (-2)⁵ = -32 | เรียงจากมากไปน้อย: 64, -32, -32 หรือ (-2)⁶, -2⁵, (-2)⁵", tags: ["compare"] },
+            { id: 27, qTH: "ถ้า 4ˣ = 8 แล้ว x มีค่าเท่าใด?", qEN: "If 4ˣ = 8, what is x?", options: ["1.5", "2", "1.25", "2.5"], correct: 0, clue: "ทำฐาน 4 และ 8 ให้เป็นฐาน 2", rationale: "(2²)ˣ = 2³ => 2²ˣ = 2³ => 2x = 3 => x = 1.5", tags: ["equations"] },
+            { id: 28, qTH: "ผลลัพธ์ของ (-1)²⁰⁰ + (-1)³⁰¹ × (-1)⁴⁰² มีค่าเท่าใด?", qEN: "What is the result of (-1)²⁰⁰ + (-1)³⁰¹ × (-1)⁴⁰²?", options: ["0", "2", "-2", "1"], correct: 0, clue: "ทำเครื่องหมายคูณก่อนบวก", rationale: "1 + [(-1) × 1] = 1 + (-1) = 0", tags: ["signs"] },
+            { id: 29, qTH: "ถ้า 10ˣ = 0.00001 แล้ว x มีค่าเท่าใด?", qEN: "If 10ˣ = 0.00001, what is x?", options: ["-5", "-4", "-6", "5"], correct: 0, clue: "นับจำนวนตำแหน่งทศนิยม", rationale: "0.00001 = 1 / 10⁵ = 10⁻⁵ ดังนั้น x = -5", tags: ["scientific"] },
+            { id: 30, qTH: "ค่าของ (2³ + 2³ + 2³ + 2³) มีค่าเท่ากับเลขยกกำลังในข้อใด?", qEN: "What is the value of (2³ + 2³ + 2³ + 2³) equal to?", options: ["2⁵", "2⁶", "2¹²", "8³"], correct: 0, clue: "การบวกจำนวนที่เท่ากันซ้ำๆ คือการคูณ", rationale: "4 × 2³ = 2² × 2³ = 2⁵", tags: ["properties"] }
+        ];
+
+        // --- App Logic ---
+        let currentIdx = 0;
+        let score = 0;
+        let userAnswers = [];
+        let lang = 'TH';
+        let shuffledQuestions = [];
+
+        function initQuiz() {
+            shuffledQuestions = shuffleArray([...questionsData]);
+            shuffledQuestions.forEach(q => {
+                q.options = shuffleOptions(q.options, q.correct);
+            });
+            renderQuestion();
+            updateProgress();
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function shuffleOptions(options, correctIdx) {
+            const correctVal = options[correctIdx];
+            const shuffled = shuffleArray([...options]);
+            return shuffled.map(opt => ({ text: opt, isCorrect: opt === correctVal }));
+        }
+
+        function renderQuestion() {
+            const q = shuffledQuestions[currentIdx];
+            const questionArea = document.getElementById('question-area');
+            const feedbackArea = document.getElementById('feedback-area');
+            feedbackArea.classList.add('hidden');
+
+            questionArea.innerHTML = `
+                <div class="mb-2 flex justify-between items-center">
+                    <span class="text-xs font-bold text-blue-500 uppercase tracking-widest">Question ${currentIdx + 1} / 30</span>
+                </div>
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">${lang === 'TH' ? q.qTH : q.qEN}</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    ${q.options.map((opt, i) => `
+                        <button onclick="checkAnswer(${i})" class="option-btn p-4 rounded-xl text-left font-medium text-gray-700 bg-white">
+                            ${opt.text}
+                        </button>
+                    `).join('')}
+                </div>
+                <div class="bg-blue-50 p-3 rounded-lg border-l-4 border-blue-400">
+                    <p class="text-sm text-blue-700">💡 <strong>Clue:</strong> ${q.clue}</p>
+                </div>
+            `;
+        }
+
+        function checkAnswer(selectedIdx) {
+            if (userAnswers[currentIdx] !== undefined) return;
+
+            const q = shuffledQuestions[currentIdx];
+            const isCorrect = q.options[selectedIdx].isCorrect;
+            userAnswers[currentIdx] = isCorrect;
+            if (isCorrect) score++;
+
+            const btns = document.querySelectorAll('.option-btn');
+            btns.forEach((btn, i) => {
+                if (q.options[i].isCorrect) btn.classList.add('correct');
+                else if (i === selectedIdx) btn.classList.add('wrong');
+            });
+
+            const feedbackArea = document.getElementById('feedback-area');
+            feedbackArea.innerHTML = `
+                <div class="p-4 rounded-xl ${isCorrect ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}">
+                    <p class="font-bold mb-1">${isCorrect ? '✅ ถูกต้อง!' : '❌ ผิดเล็กน้อย..'}</p>
+                    <p class="text-sm text-gray-700">${q.rationale}</p>
+                    <button onclick="nextQuestion()" class="mt-4 w-full bg-blue-600 text-white py-2 rounded-lg font-bold hover:bg-blue-700">
+                        ${currentIdx < 29 ? 'ข้อต่อไป (Next)' : 'ดูสรุปผล (Show Results)'}
+                    </button>
+                </div>
+            `;
+            feedbackArea.classList.remove('hidden');
+            saveState();
+        }
+
+        function nextQuestion() {
+            if (currentIdx < 29) {
+                currentIdx++;
+                renderQuestion();
+                updateProgress();
+            } else {
+                showResults();
+            }
+        }
+
+        function updateProgress() {
+            const fill = document.getElementById('progress-fill');
+            fill.style.width = `${((currentIdx) / 30) * 100}%`;
+        }
+
+        function showResults() {
+            const modal = document.getElementById('result-modal');
+            const scoreDisp = document.getElementById('score-display');
+            const analysis = document.getElementById('analysis-content');
+            
+            scoreDisp.innerText = `${score} / 30`;
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+
+            let tagsStats = {};
+            shuffledQuestions.forEach((q, i) => {
+                const tag = q.tags[0];
+                if (!tagsStats[tag]) tagsStats[tag] = { total: 0, correct: 0 };
+                tagsStats[tag].total++;
+                if (userAnswers[i]) tagsStats[tag].correct++;
+            });
+
+            let analysisHTML = `<div class="p-4 bg-blue-50 rounded-xl mb-4">
+                <h4 class="font-bold text-blue-800 mb-2">📌 บทวิเคราะห์รายหัวข้อ:</h4>`;
+            
+            for (let t in tagsStats) {
+                const percent = Math.round((tagsStats[t].correct / tagsStats[t].total) * 100);
+                analysisHTML += `
+                    <div class="mb-2">
+                        <div class="flex justify-between text-sm mb-1">
+                            <span>${t.toUpperCase()}</span>
+                            <span>${percent}%</span>
+                        </div>
+                        <div class="w-full bg-gray-200 h-1.5 rounded-full">
+                            <div class="bg-indigo-500 h-full rounded-full" style="width: ${percent}%"></div>
+                        </div>
+                    </div>
+                `;
+            }
+            analysisHTML += `</div>`;
+
+            const comment = score >= 25 ? "สุดยอดมาก! คุณมีความเชี่ยวชาญในโจทย์เลขยกกำลังระดับยากชุดที่ 2 แล้ว" : 
+                            score >= 15 ? "ทำได้ดี! แต่ยังมีจุดที่ต้องระวังเรื่องการดึงตัวร่วมและการแปลงฐาน" : 
+                            "พยายามอีกนิด! ควรกลับไปทบทวนเทคนิคการแปลงฐานและการแก้สมการเลขยกกำลังเพิ่มเติม";
+            
+            analysisHTML += `<p class="text-center italic text-gray-600">"${comment}"</p>`;
+            analysis.innerHTML = analysisHTML;
+        }
+
+        function toggleLang() {
+            lang = lang === 'TH' ? 'EN' : 'TH';
+            document.getElementById('langBtnText').innerText = lang === 'TH' ? 'TH / EN' : 'EN / TH';
+            renderQuestion();
+        }
+
+        // --- Local Storage ---
+        function saveState() {
+            const state = { currentIdx, score, userAnswers, lang };
+            localStorage.setItem('kmitl_tutor_exponents_v2', JSON.stringify(state));
+        }
+
+        function resetApp() {
+            localStorage.removeItem('kmitl_tutor_exponents_v2');
+            location.reload();
+        }
+
+        // --- Whiteboard Logic ---
+        const canvas = document.getElementById('whiteboard');
+        const ctx = canvas.getContext('2d');
+        let painting = false;
+
+        function resizeCanvas() {
+            canvas.width = canvas.parentElement.clientWidth;
+            canvas.height = canvas.parentElement.clientHeight - 80;
+            ctx.lineJoin = 'round';
+            ctx.lineCap = 'round';
+            ctx.lineWidth = 2;
+            setStroke('#ffffff');
+        }
+
+        function startPosition(e) {
+            painting = true;
+            draw(e);
+        }
+
+        function finishedPosition() {
+            painting = false;
+            ctx.beginPath();
+        }
+
+        function draw(e) {
+            if (!painting) return;
+            e.preventDefault();
+            const rect = canvas.getBoundingClientRect();
+            const x = (e.clientX || e.touches[0].clientX) - rect.left;
+            const y = (e.clientY || e.touches[0].clientY) - rect.top;
+
+            ctx.lineTo(x, y);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+        }
+
+        function setStroke(color) { ctx.strokeStyle = color; }
+        function clearCanvas() { ctx.clearRect(0, 0, canvas.width, canvas.height); }
+
+        canvas.addEventListener('mousedown', startPosition);
+        canvas.addEventListener('mouseup', finishedPosition);
+        canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('touchstart', startPosition);
+        canvas.addEventListener('touchend', finishedPosition);
+        canvas.addEventListener('touchmove', draw);
+
+        window.onload = () => {
+            resizeCanvas();
+            const saved = localStorage.getItem('kmitl_tutor_exponents_v2');
+            if (saved) {
+                const data = JSON.parse(saved);
+                currentIdx = data.currentIdx;
+                score = data.score;
+                userAnswers = data.userAnswers;
+                lang = data.lang;
+                shuffledQuestions = shuffleArray([...questionsData]);
+                initQuiz();
+            } else {
+                initQuiz();
+            }
+        };
+        window.onresize = resizeCanvas;
+
+    </script>
+</body>
+</html>
