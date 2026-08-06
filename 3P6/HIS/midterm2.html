@@ -1,0 +1,1300 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบสอบออนไลน์ - วิชาประวัติศาสตร์ ป.6 ชุดที่ 2 (ระดับยากมาก)</title>
+    <style>
+        :root {
+            --primary: #1b2631;
+            --secondary: #27ae60;
+            --accent: #c0392b;
+            --bg-color: #f8f9fa;
+            --card-bg: #ffffff;
+            --text-color: #2c3e50;
+            --border-color: #bdc3c7;
+        }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        header {
+            background-color: var(--primary);
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            border-bottom: 4px solid var(--secondary);
+        }
+        header h1 {
+            font-size: 1.2rem;
+        }
+        .header-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        button {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+        .btn-primary {
+            background-color: var(--secondary);
+            color: white;
+        }
+        .btn-primary:hover {
+            background-color: #219653;
+        }
+        .btn-danger {
+            background-color: var(--accent);
+            color: white;
+        }
+        .btn-danger:hover {
+            background-color: #a93226;
+        }
+        .main-container {
+            display: flex;
+            flex: 1;
+            height: calc(100vh - 60px);
+            overflow: hidden;
+        }
+        @media (max-width: 768px) {
+            .main-container {
+                flex-direction: column;
+                height: auto;
+                overflow: auto;
+            }
+        }
+        .left-frame {
+            flex: 0 0 70%;
+            background-color: var(--card-bg);
+            border-right: 1px solid var(--border-color);
+            overflow-y: auto;
+            padding: 20px;
+        }
+        @media (max-width: 768px) {
+            .left-frame {
+                flex: 1;
+                border-right: none;
+                border-bottom: 1px solid var(--border-color);
+            }
+        }
+        .right-frame {
+            flex: 0 0 30%;
+            background-color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            padding: 15px;
+        }
+        @media (max-width: 768px) {
+            .right-frame {
+                height: 400px;
+            }
+        }
+        .whiteboard-header {
+            font-weight: bold;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        #whiteboard {
+            flex: 1;
+            border: 2px dashed var(--border-color);
+            border-radius: 6px;
+            background-color: #fff;
+            cursor: crosshair;
+            touch-action: none;
+        }
+        .question-card {
+            margin-bottom: 25px;
+            padding: 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background: #fafbfc;
+        }
+        .question-title {
+            font-size: 1.05rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .clue {
+            font-size: 0.85rem;
+            color: #7f8c8d;
+            font-style: italic;
+            margin-bottom: 10px;
+            background: #ecf0f1;
+            padding: 5px 10px;
+            border-radius: 4px;
+            display: inline-block;
+        }
+        .options-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .option-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            cursor: pointer;
+            background: white;
+            transition: background 0.1s;
+        }
+        .option-item:hover {
+            background: #f1f2f6;
+        }
+        .explanation {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 0.9rem;
+            display: none;
+        }
+        .explanation.correct {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            display: block;
+        }
+        .explanation.incorrect {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            display: block;
+        }
+        #result-section {
+            display: none;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            margin-top: 20px;
+        }
+        .analysis-box {
+            margin-top: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-left: 4px solid var(--secondary);
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1 id="header-title">แบบทดสอบประวัติศาสตร์ ป.6 ชุดที่ 2 (ระดับยากมาก - วิเคราะห์เชิงลึก)</h1>
+        <div class="header-controls">
+            <button class="btn-primary" id="lang-btn" onclick="toggleLanguage()">EN / TH</button>
+            <button class="btn-danger" onclick="resetExam()">Reset</button>
+            <button class="btn-primary" onclick="submitExam()">ส่งข้อสอบ</button>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <!-- Left Frame: Questions (70%) -->
+        <div class="left-frame" id="left-frame-content">
+            <div id="quiz-container"></div>
+            <div id="result-section">
+                <h2>ผลการทดสอบของคุณ</h2>
+                <p id="score-display" style="font-size: 1.2rem; font-weight: bold; margin: 10px 0;"></p>
+                <div class="analysis-box" id="analysis-content"></div>
+            </div>
+        </div>
+
+        <!-- Right Frame: Whiteboard (30%) -->
+        <div class="right-frame">
+            <div class="whiteboard-header">
+                <span>กระดานทด (Whiteboard)</span>
+                <button class="btn-danger" style="padding: 2px 8px; font-size: 0.75rem;" onclick="clearWhiteboard()">ล้างกระดาน</button>
+            </div>
+            <canvas id="whiteboard"></canvas>
+        </div>
+    </div>
+
+    <script>
+        // ชุดข้อสอบ 30 ข้อ ระดับยากมาก (ป้องกันการเดาลอจิกและความยาวข้อ)
+        const rawQuestions = [
+            {
+                id: 1,
+                th: {
+                    q: "หากนักประวัติศาสตร์พบศิลาจารึกหลักใหม่ที่มีอักษรขอมโบราณ แต่เนื้อหากล่าวถึงเหตุการณ์สวรรคตของพระมหากษัตริย์อยุธยาพระองค์หนึ่งอย่างละเอียดโดยใช้สำนวนภาษาแบบกวีรัตนโกสินทร์ ข้อใดคือกระบวนการตรวจสอบที่ถูกต้องที่สุดตามหลักวิธีทางประวัติศาสตร์",
+                    clue: "ตรวจสอบความสอดคล้องระหว่างสภาพกายภาพกับสำนวนภาษาเนื้อหา",
+                    options: [
+                        "สรุปทันทีว่าเป็นหลักฐานชั้นต้นเพราะใช้อักษรขอมโบราณสลักบนหินศิลาแท้",
+                        "นำไปทำวิพากษ์ภายนอกเพื่อดูเนื้อหาสาระก่อน แล้วค่อยตัดสินใจว่าเป็นของจริง",
+                        "ทำการวิพากษ์ภายนอกตรวจสอบอายุหินและตัวอักษร ควบคู่กับการวิพากษ์ภายในตรวจสอบสำนวนภาษา พบความขัดแย้งทางยุคสมัยจึงต้องสงสัยว่าเป็นของทำเทียมขึ้นภายหลัง",
+                        "ยกเลิกการศึกษาหลักฐานนี้เพราะขัดแย้งกับพงศาวดารฉบับหลวง"
+                    ],
+                    answer: 2,
+                    exp: "ต้องใช้ทั้งวิพากษ์ภายนอกและภายในร่วมกัน หากกายภาพอาจเก่าแต่สำนวนภาษารัตนโกสินทร์โผล่ในยุคอยุธยาตอนต้น จะบ่งบอกถึงความผิดปกติทางประวัติศาสตร์ทันที"
+                },
+                en: {
+                    q: "If a historian finds a new stone inscription with ancient Khmer script detailing an Ayutthaya king's death using Rattanakosin poetic phrasing, what is the correct verification process?",
+                    clue: "Verify the consistency between physical traits and literary phrasing.",
+                    options: [
+                        "Instantly conclude it is a primary source because it uses ancient Khmer script on real stone.",
+                        "Perform external criticism to examine content first before deciding.",
+                        "Conduct external criticism on stone/script age alongside internal criticism on literary style; contradictions indicate potential forgery.",
+                        "Discard the study because it contradicts the royal chronicle."
+                    ],
+                    answer: 2,
+                    exp: "Both external and internal criticism are needed; modern poetic phrasing in an ancient script signals forgery or anomaly."
+                }
+            },
+            {
+                id: 2,
+                th: {
+                    q: "ข้อใดวิเคราะห์ความแตกต่างระหว่าง 'การวิพากษ์ภายนอก' และ 'การวิพากษ์ภายใน' ได้ถูกต้องตามหลักการวิพากษ์วิธีทางประวัติศาสตร์มากที่สุด",
+                    clue: "แยกแยะระหว่างโครงสร้างทางกายภาพกับเนื้อหาความน่าเชื่อถือ",
+                    options: [
+                        "วิพากษ์ภายนอกทำโดยผู้เชี่ยวชาญด้านภาษา ส่วนวิพากษ์ทำโดยนักโบราณคดี",
+                        "วิพากษ์ภายนอกตรวจสอบความแท้จริงของวัตถุและสภาพแวดล้อมทางกายภาพ ส่วนวิพากษ์ภายในตรวจสอบความน่าเชื่อถือของเนื้อหาและเจตนาผู้สร้าง",
+                        "วิพากษ์ภายในใช้เฉพาะกับหลักฐานลายลักษณ์อักษรเท่านั้น ส่วนภายนอกใช้กับโบราณสถาน",
+                        "ไม่มีข้อแตกต่าง ทั้งสองคำมีความหมายเดียวกันในทางปฏิบัติ"
+                    ],
+                    answer: 1,
+                    exp: "การวิพากษ์ภายนอกมุ่งดูวัตถุกายภาพ (เช่น ชนิดหมึก อายุวัสดุ) ส่วนภายในมุ่งดูเนื้อหา อคติ และความสมเหตุสมผลของผู้บันทึก"
+                },
+                en: {
+                    q: "Which option correctly analyzes the difference between 'external criticism' and 'internal criticism'?",
+                    clue: "Distinguish between physical structure and content reliability.",
+                    options: [
+                        "External criticism is done by linguists, internal by archaeologists.",
+                        "External criticism examines material authenticity and physical environment; internal criticism examines content reliability and author intention.",
+                        "Internal criticism applies only to written evidence, external to ruins.",
+                        "There is no difference; both are practically identical."
+                    ],
+                    answer: 1,
+                    exp: "External criticism targets physical traits (ink, material age), while internal criticism targets text contents, bias, and logic."
+                }
+            },
+            {
+                id: 3,
+                th: {
+                    q: "บันทึกความทรงจำของทหารฝรั่งเศสที่เข้ามาในอยุธยาและเขียนรายงานส่งกลับประเทศตนในสมัยสมเด็จพระนารายณ์มหาราช มีความเสี่ยงทางประวัติศาสตร์ในข้อใดมากที่สุดเมื่อนักเรียนนำมาศึกษา",
+                    clue: "มุมมองทางวัฒนธรรมและอคติของชาวต่างชาติ",
+                    options: [
+                        "หลักฐานชิ้นนี้ไม่ใช่ลายลักษณ์อักษรจึงตรวจสอบยาก",
+                        "ผู้บันทึกอาจมีมุมมองแบบยูโรเซนทริก (Eurocentric) หรือมีความเข้าใจคลาดเคลื่อนเกี่ยวกับราชสำนักสยามเนื่องจากวัฒนธรรมที่แตกต่าง",
+                        "ข้อมูลทุกบรรทัดมีความเท็จเนื่องจากเป็นสายลับทั้งหมด",
+                        "ขาดการลงลายมือชื่ออย่างเป็นทางการตามกฎหมายสยาม"
+                    ],
+                    answer: 1,
+                    exp: "หลักฐานชาวต่างชาติมักมีอคติทางวัฒนธรรม (Cultural Bias) หรือความเข้าใจผิดเกี่ยวกับโครงสร้างอำนาจภายใน จึงต้องระมัดระวังในการตีความ"
+                },
+                en: {
+                    q: "What is the greatest historical risk when studying memoirs written by a French soldier in Ayutthaya during King Narai's reign?",
+                    clue: "Cultural perspective and foreign bias.",
+                    options: [
+                        "The evidence is non-written and hard to verify.",
+                        "The author may possess a Eurocentric perspective or misunderstand Siamese court culture due to cultural differences.",
+                        "Every line is false because they were all spies.",
+                        "Lack of official signatures under Siamese law."
+                    ],
+                    answer: 1,
+                    exp: "Foreign accounts often carry cultural biases or misunderstand internal political structures, requiring careful interpretation."
+                }
+            },
+            {
+                id: 4,
+                th: {
+                    q: "พงศาวดารกรุงศรีอยุธยาฉบับต่างๆ มักมีตัวเลขจำนวนกองทัพข้าศึกหรือความเสียหายที่สูงเกินจริง เหตุผลทางประวัติศาสตร์ข้อใดอธิบายเรื่องนี้ได้สมเหตุสมผลที่สุด",
+                    clue: "วัตถุประสงค์ในการแต่งและค่านิยมเพื่อเชิดชูพระเกียรติ",
+                    options: [
+                        "ในอดีตมีการใช้เครื่องมือวัดจำนวนทหารที่แม่นยำแต่สูญหายไป",
+                        "เป็นการบันทึกเพื่อรายงานต่อองค์การระหว่างประเทศในยุคโบราณ",
+                        "เป็นการเขียนเพื่อยกย่องพระเกียรติยศของพระมหากษัตริย์และสร้างขวัญกำลังใจแก่คนในชาติ สะท้อนค่านิยมเชิงวรรณศิลป์มากกว่าสถิติเชิงประจักษ์",
+                        "เกิดจากความผิดพลาดในการพิมพ์ซ้ำในยุคโรงพิมพ์สมัยใหม่"
+                    ],
+                    answer: 2,
+                    exp: "พงศาวดารโบราณมีลักษณะการแต่งเพื่อเฉลิมพระเกียรติและสร้างความยิ่งใหญ่เชิงวรรณศิลป์ ตัวเลขจึงมักเป็นสัญลักษณ์เชิงนามธรรมมากกว่าตัวเลขสถิติจริง"
+                },
+                en: {
+                    q: "Ayutthaya chronicles often record exaggerated enemy army numbers or damage. Which historical reason best explains this?",
+                    clue: "Purpose of composition and values of glorifying sovereignty.",
+                    options: [
+                        "Accurate military counting tools existed then but were lost.",
+                        "Records were made for international organizations back then.",
+                        "Written to honor the monarch and boost national morale, reflecting literary values rather than empirical statistics.",
+                        "Caused by reprint errors in modern printing presses."
+                    ],
+                    answer: 2,
+                    exp: "Traditional chronicles were written for royal glorification and literary grandeur, so numbers were symbolic rather than literal statistics."
+                }
+            },
+            {
+                id: 5,
+                th: {
+                    q: "เหตุใดจดหมายเหตุรายวัน (Diaries or Logbooks) ของกัปตันเรือสินค้าชาวตะวันตกที่เข้ามาค้าขายในสมัยรัตนโกสินทร์ตอนต้น จึงมักได้รับการยอมรับว่ามีความน่าเชื่อถือสูงในแง่ของ 'ข้อมูลเชิงประจักษ์ด้านเศรษฐกิจ'",
+                    clue: "บันทึกจากเหตุการณ์จริงเพื่อผลประโยชน์ทางธุรกิจโดยตรง",
+                    options: [
+                        "เพราะเขียนด้วยภาษาอังกฤษซึ่งเป็นภาษาสากล",
+                        "เพราะผู้บันทึกไม่มีผลประโยชน์ทับซ้อนและรักประเทศไทยมาก",
+                        "เพราะเป็นการบันทึกเหตุการณ์และตัวเลขการค้าตามความเป็นจริงเพื่อผลประโยชน์ทางธุรกิจและการเดินเรือในแต่ละวันโดยไม่มีเจตนาบิดเบือนการเมืองภายใน",
+                        "เพราะได้รับการตรวจสอบจากกระทรวงการต่างประเทศสยามทุกฉบับ"
+                    ],
+                    answer: 2,
+                    exp: "จดหมายเหตุการค้าส่วนตัวมักบันทึกตัวเลขสินค้าและภาษีตามจริงเพื่อประโยชน์ทางการค้าของตนเอง จึงมีอคติทางการเมืองน้อยกว่าเอกสารราชการบางประเภท"
+                },
+                en: {
+                    q: "Why are daily logbooks of Western merchant ship captains in early Rattanakosin considered highly reliable regarding 'economic empirical data'?",
+                    clue: "Recorded from actual events for direct business utility.",
+                    options: [
+                        "Because they were written in English as a universal language.",
+                        "Because the authors had no conflict of interest and loved Thailand.",
+                        "Because they recorded actual events and trade figures for daily business and navigation utility without internal political distortion.",
+                        "Because they were inspected by the Siamese Ministry of Foreign Affairs."
+                    ],
+                    answer: 2,
+                    exp: "Private merchant logs recorded real cargo and tax figures for business utility, carrying less political bias than official state documents."
+                }
+            },
+            {
+                id: 6,
+                th: {
+                    q: "การศึกษาประวัติศาสตร์ท้องถิ่นโดยใช้หลักฐานประเภท 'เครื่องมือเครื่องใช้จักสานพื้นบ้าน' จัดเป็นการศึกษาผ่านหลักฐานประเภทใด และสะท้อนมิติใดเด่นชัดที่สุด",
+                    clue: "หลักฐานไม่เป็นลายลักษณ์อักษร + ภูมิปัญญาการดำรงชีวิต",
+                    options: [
+                        "หลักฐานชั้นต้นที่เป็นลายลักษณ์อักษร - สะท้อนการเมืองการปกครอง",
+                        "หลักฐานไม่เป็นลายลักษณ์อักษร - สะท้อนวิถีชีวิต ภูมิปัญญา และการปรับตัวต่อสภาพแวดล้อมทางธรรมชาติ",
+                        "หลักฐานชั้นรอง - สะท้อนระบบเศรษฐกิจทุนนิยมสมัยใหม่",
+                        "ไม่ใช่หลักฐานทางประวัติศาสตร์เนื่องจากไม่มีตัวอักษรบันทึก"
+                    ],
+                    answer: 1,
+                    exp: "เครื่องมือเครื่องใช้เป็นหลักฐานไม่เป็นลายลักษณ์อักษร (ประเภทโบราณวัตถุ/ข้าวของเครื่องใช้) ที่บอกเล่าภูมิปัญญาและวิถีชีวิต"
+                },
+                en: {
+                    q: "Studying local history through 'folk woven tools' is classified as what type of evidence and reflects which dimension best?",
+                    clue: "Non-written evidence + survival wisdom.",
+                    options: [
+                        "Primary written evidence - reflects politics and governance.",
+                        "Non-written evidence - reflects lifestyle, wisdom, and environmental adaptation.",
+                        "Secondary evidence - reflects modern capitalist economics.",
+                        "Not historical evidence due to lack of written text."
+                    ],
+                    answer: 1,
+                    exp: "Tools are non-written artifacts revealing practical wisdom and daily lifestyle adaptation."
+                }
+            },
+            {
+                id: 7,
+                th: {
+                    q: "ข้อใดเรียงลำดับขั้นตอนของวิธีการทางประวัติศาสตร์ที่ถูกต้อง เมื่อนักเรียนต้องการทำโครงงานประวัติศาสตร์ท้องถิ่นเกี่ยวกับ 'เส้นทางสายสินแร่ดีบุกในภาคใต้'",
+                    clue: "ตั้งคำถาม -> หาหลักฐาน -> ตรวจสอบ -> วิเคราะห์ -> เรียบเรียง",
+                    options: [
+                        "รวบรวมหลักฐานจากเหมืองแร่ -> เขียนรายงาน -> ตั้งคำถาม -> ตรวจสอบของแท้",
+                        "กำหนดประเด็นคำถามและเป้าหมาย -> รวบรวมหลักฐานทั้งลายลักษณ์และไม่เป็นลายลักษณ์ -> ประเมินคุณค่าหลักฐาน (วิพากษ์) -> วิเคราะห์ สังเคราะห์ข้อมูล -> เรียบเรียงและนำเสนอ",
+                        "วิเคราะห์ข้อมูลในอินเทอร์เน็ต -> ตั้งชื่อเรื่อง -> สัมภาษณ์คนในพื้นที่ -> สรุปผล",
+                        "ประเมินคุณค่าหลักฐาน -> เรียบเรียงรายงาน -> รวบรวมหลักฐาน -> ตั้งคำถาม"
+                    ],
+                    answer: 1,
+                    exp: "ลำดับสากล 5 ขั้นตอน: กำหนดเป้าหมาย -> รวบรวมหลักฐาน -> ประเมินคุณค่า -> วิเคราะห์สังเคราะห์ -> เรียบเรียงนำเสนอ"
+                },
+                en: {
+                    q: "Which sequence of the historical method is correct for a local history project on 'Tin Mining Routes in Southern Thailand'?",
+                    clue: "Question -> Gather -> Verify -> Analyze -> Compile.",
+                    options: [
+                        "Gather evidence -> Write report -> Set question -> Verify authenticity",
+                        "Set questions and goals -> Gather written and non-written evidence -> Evaluate evidence (criticism) -> Analyze & synthesize data -> Compile and present",
+                        "Analyze internet data -> Name project -> Interview locals -> Conclude",
+                        "Evaluate evidence -> Write report -> Gather evidence -> Set question"
+                    ],
+                    answer: 1,
+                    exp: "The 5 universal steps: Set goal -> Gather -> Evaluate -> Analyze/Synthesize -> Compile/Present."
+                }
+            },
+            {
+                id: 8,
+                th: {
+                    q: "หากนักเรียนพบจดหมายส่วนตัวของแม่ทัพท่านหนึ่งในช่วงสงครามเก้าทัพ ที่เขียนระบายความกังวลเรื่องเสบียงอาหารขาดแคลนให้กับภรรยาฟัง หลักฐานชิ้นนี้จัดอยู่ในประเภทใด และมีจุดเด่นในการให้ข้อมูลอย่างไร",
+                    clue: "หลักฐานชั้นต้นประเภทลายลักษณ์อักษรที่ไม่ใช่ทางการ แต่มีความจริงใจสูง",
+                    options: [
+                        "หลักฐานชั้นรอง เพราะเป็นจดหมายส่วนตัวไม่มีผลทางกฎหมายแผ่นดิน",
+                        "หลักฐานชั้นต้นที่เป็นลายลักษณ์อักษร - มีจุดเด่นคือสะท้อนสถานการณ์จริงและความรู้สึกที่แท้จริงโดยปราศจากการแต่งเติมเพื่อรายงานทางการ",
+                        "หลักฐานไม่เป็นลายลักษณ์อักษรประเภทบอกเล่า",
+                        "ไม่ใช่หลักฐานทางประวัติศาสตร์เพราะเป็นเรื่องส่วนตัว"
+                    ],
+                    answer: 1,
+                    exp: "จดหมายส่วนตัวที่เขียนร่วมสมัยขณะเกิดเหตุการณ์ถือเป็นหลักฐานชั้นต้นที่มีความน่าเชื่อถือสูงในแง่ความรู้สึกและสภาพความเป็นจริงหน้างานเพราะไม่มีเจตนาบิดเบือนเพื่อรายงานทางการ"
+                },
+                en: {
+                    q: "If a student finds a personal letter from a general during the Nine Armies' War venting about food shortages to his wife, what type of evidence is it and what is its strength?",
+                    clue: "Primary written non-official source with high sincerity.",
+                    options: [
+                        "Secondary source because it's private and has no legal state weight.",
+                        "Primary written source - highlights real situations and sincere feelings without official fabrication.",
+                        "Non-written oral evidence.",
+                        "Not historical evidence because it's personal."
+                    ],
+                    answer: 1,
+                    exp: "Personal contemporary letters are high-value primary sources reflecting genuine field realities without official bias."
+                }
+            },
+            {
+                id: 9,
+                th: {
+                    q: "ข้อใดคือ 'ความเสี่ยงสำคัญที่สุด' หากนักเรียนละเลยขั้นตอนการประเมินคุณค่าของหลักฐาน (Historical Criticism) ในวิธีการทางประวัติศาสตร์",
+                    clue: "การนำข้อมูลปลอมหรือข้อมูลบิดเบือนไปอ้างอิงเป็นความจริง",
+                    options: [
+                        "ทำให้รายงานมีความยาวไม่ถึงกำหนดตามที่ครูสั่ง",
+                        "ทำให้การจัดหน้ากระดาษและรูปแบบอักษรไม่สวยงาม",
+                        "อาจนำข้อมูลที่เป็นเท็จ เอกสารปลอมแปลง หรือข้อมูลที่มีอคติสูงมาตีความว่าเป็นความจริงทางประวัติศาสตร์ ทำให้ผลการศึกษาผิดเพี้ยนไป",
+                        "ทำให้หาหนังสือในห้องสมุดไม่พบ"
+                    ],
+                    answer: 2,
+                    exp: "หากไม่วิพากษ์หลักฐาน นักเรียนอาจนำหลักฐานปลอมหรือข้อมูลที่แต่งเติมอคติมาใช้อ้างอิง ทำให้งานศึกษาความจริงทางประวัติศาสตร์ล้มเหลว"
+                },
+                en: {
+                    q: "What is the 'greatest risk' if a student skips the historical criticism step in the historical method?",
+                    clue: "Using fake or distorted data as factual truth.",
+                    options: [
+                        "The report will not meet the teacher's length requirement.",
+                        "Paper formatting and fonts will look messy.",
+                        "False info, forged documents, or highly biased data might be interpreted as historical fact, distorting study outcomes.",
+                        "Library books become harder to locate."
+                    ],
+                    answer: 2,
+                    exp: "Skipping criticism risks using forged or biased sources, ruining historical accuracy."
+                }
+            },
+            {
+                id: 10,
+                th: {
+                    q: "การสถาปนากรุงรัตนโกสินทร์ใน พ.ศ. 2325 พระบาทสมเด็จพระพุทธยอดฟ้าจุฬาโลกมหาราชทรงเลือกย้ายราชธานีมายังฝั่งตะวันออก (ฝั่งพระนครปัจจุบัน) ด้วยเหตุผลเชิงยุทธศาสตร์ทางทหารข้อใดเด่นชัดที่สุด",
+                    clue: "ชัยภูมิแม่น้ำเจ้าพระยาโค้งเป็นคูเมืองธรรมชาติและป้องกันง่าย",
+                    options: [
+                        "เพราะพื้นที่ฝั่งธนบุรีมีขนาดเล็กเกินไปสำหรับการสร้างพระราชวังขนาดใหญ่",
+                        "เพราะฝั่งพระนครมีแม่น้ำเจ้าพระยาไหลผ่านโค้งโอบล้อมเป็นคูเมืองธรรมชาติ ช่วยป้องกันการโจมตีจากข้าศึกได้ดีกว่าฝั่งเดิม",
+                        "เพราะดินฝั่งพระนครเหมาะแก่การเพาะปลูกพืชเศรษฐกิจส่งออก",
+                        "เพราะได้รับคำแนะนำจากพ่อค้าชาติตะวันตก"
+                    ],
+                    answer: 1,
+                    exp: "ชัยภูมิฝั่งพระนครมีแม่น้ำเจ้าพระยาโค้งโอบล้อมรอบด้านเป็นคูเมืองธรรมชาติ ช่วยป้องกันข้าศึกได้ดีกว่าฝั่งธนบุรีที่ติดท้องคุ้งน้ำเซาะเซาะตลิ่งง่าย"
+                },
+                en: {
+                    q: "When founding Rattanakosin in 1782, why did King Rama I choose to relocate the capital to the east bank (current Bangkok) for military strategic reasons?",
+                    clue: "Chao Phraya river bend acts as a natural moat for defense.",
+                    options: [
+                        "Because Thonburi was too small for a large palace.",
+                        "Because the east bank has a curving Chao Phraya river bend acting as a natural moat, offering better defense against enemies.",
+                        "Because east bank soil was ideal for export crops.",
+                        "Because of Western merchant advice."
+                    ],
+                    answer: 1,
+                    exp: "The river bend on the east bank provided a natural moat defense superior to Thonburi's layout."
+                }
+            },
+            {
+                id: 11,
+                th: {
+                    q: "สนธิสัญญาเบาว์ริง (พ.ศ. 2398) ในรัชสมัยพระบาทสมเด็จพระจอมเกล้าเจ้าอยู่หัว ส่งผลกระทบเชิงโครงสร้างต่อระบบเศรษฐกิจของสยามอย่างไรลึกซึ้งที่สุด",
+                    clue: "การเปลี่ยนจากเศรษฐกิจพึ่งพาตนเองสู่การผลิตเพื่อส่งออก (ข้าวและสินค้าเกษตร)",
+                    options: [
+                        "สยามต้องยกเลิกกองทัพบกและกองทัพเรือทั้งหมด",
+                        "สยามเปลี่ยนผ่านจากระบบเศรษฐกิจแบบพึ่งพาตนเองในครัวเรือนและผูกขาดสินค้า มาสู่ระบบเศรษฐกิจการค้าเสรีและการผลิตสินค้าเพื่อการส่งออก (โดยเฉพาะข้าวและน้ำตาล)",
+                        "สยามกลายเป็นเมืองขึ้นของจักรวรรดิอังกฤษอย่างสมบูรณ์",
+                        "เกิดระบบเงินตราสกุลเดียวกับทวีปยุโรปทันที"
+                    ],
+                    answer: 1,
+                    exp: "สนธิสัญญาเบาว์ริงเปลี่ยนสยามสู่การค้าเสรี เกิดการทำนาเพื่อส่งออกข้าวเป็นสินค้าหลัก และยกเลิกการผูกขาดของพระคลังสินค้า"
+                },
+                en: {
+                    q: "How did the Bowring Treaty (1855) in Rama IV's reign structurally impact Siam's economy?",
+                    clue: "Transition from self-sufficiency to export-driven production (rice/crops).",
+                    options: [
+                        "Siam had to abolish all army and navy forces.",
+                        "Siam transitioned from a self-sufficient, monopolized economy to a free-trade and export-driven economy (especially rice and sugar).",
+                        "Siam completely became a British colony.",
+                        "A unified European currency was instantly adopted."
+                    ],
+                    answer: 1,
+                    exp: "The Bowring Treaty shifted Siam into free trade, paddy export expansion, and the end of royal trade monopolies."
+                }
+            },
+            {
+                id: 12,
+                th: {
+                    q: "การปฏิรูปการปกครองส่วนภูมิภาคในสมัยรัชกาลที่ 5 เป็น 'ระบบมณฑลเทศาภิบาล' มีผลกระทบโดยตรงต่อสถานะของ 'เจ้าเมืองเดิม (เจ้าประเทศราชหรือหัวเมืองประเทศราช)' อย่างไร",
+                    clue: "ลดอำนาจบริหารท้องถิ่นและรวมศูนย์อำนาจเข้าสู่ส่วนกลาง",
+                    options: [
+                        "เพิ่มอำนาจให้เจ้าเมืองเดิมปกครองตนเองได้มากขึ้นโดยไม่ต้องส่งส่วย",
+                        "ยกเลิกอำนาจการปกครองแบบเบ็ดเสร็จของเจ้าเมืองเดิม โดยโอนอำนาจบริหารและการจัดเก็บภาษีมารวมศูนย์ที่กรุงเทพฯ ผ่านข้าราชการส่วนภูมิภาค",
+                        "แต่งตั้งให้เจ้าเมืองเดิมดำรงตำแหน่งนายกรัฐมนตรีคนแรก",
+                        "ให้เจ้าเมืองเดิมเปลี่ยนอาชีพไปทำเกษตรกรรมตามนโยบายรัฐ"
+                    ],
+                    answer: 1,
+                    exp: "ระบบมณฑลเทศาภิบาลดึงอำนาจการปกครองและคลังภาษีกลับสู่กรุงเทพฯ ยกเลิกอำนาจสิทธิ์ขาดเดิมของเจ้าเมืองท้องถิ่นเพื่อความเป็นอันหนึ่งอันเดียวกัน"
+                },
+                en: {
+                    q: "How did the Monthon Thesaphiban provincial reform under Rama V directly impact traditional regional rulers (Chao Mueang)?",
+                    clue: "Reduced local autonomy and centralized administrative power.",
+                    options: [
+                        "Increased local rulers' autonomy without tribute requirements.",
+                        "Abolished absolute local rulers' authority, centralizing administration and tax collection in Bangkok via regional officials.",
+                        "Appointed traditional rulers as the first prime ministers.",
+                        "Required traditional rulers to switch to farming."
+                    ],
+                    answer: 1,
+                    exp: "Monthon Thesaphiban centralized governance and taxes to Bangkok, removing local lords' absolute local rule."
+                }
+            },
+            {
+                id: 13,
+                th: {
+                    q: "เหตุการณ์เปลี่ยนแปลงการปกครอง พ.ศ. 2475 มีปัจจัยผลักดันเชิงโครงสร้างสังคมและเศรษฐกิจที่สำคัญยิ่งข้อใด นอกเหนือจากปัจจัยทางการเมือง",
+                    clue: "วิกฤตเศรษฐกิจตกต่ำทั่วโลกและผลกระทบจากงบประมาณราชการ",
+                    options: [
+                        "การค้นพบน้ำมันดิบครั้งแรกในอ่าวไทย",
+                        "วิกฤตเศรษฐกิจตกต่ำทั่วโลก (Great Depression) หลังสงครามโลกครั้งที่ 1 ซึ่งส่งผลกระทบต่อเศรษฐกิจสยามและการตัดลดงบประมาณข้าราชการและทหาร",
+                        "การประท้วงครั้งใหญ่ของเกษตรกรผู้ปลูกชาในภาคเหนือ",
+                        "การประกาศสงครามของประเทศเพื่อนบ้าน"
+                    ],
+                    answer: 1,
+                    exp: "วิกฤตเศรษฐกิจตกต่ำหลังสงครามโลกและการตัดลดเงินเดือนข้าราชการ/ทหาร เป็นชนวนเศรษฐกิจสำคัญที่ผลักดันให้เกิดคณะราษฎรในการเปลี่ยนแปลงการปกครอง"
+                },
+                en: {
+                    q: "Besides political factors, what major socio-economic structural pressure drove the 1932 Siamese revolution?",
+                    clue: "Global economic depression and budget cuts.",
+                    options: [
+                        "The first discovery of crude oil in the Gulf of Thailand.",
+                        "The Great Depression following WWI, impacting Siam's economy and leading to salary and budget cuts for officials and military.",
+                        "Large-scale tea farmer protests in the north.",
+                        "Neighboring country war declarations."
+                    ],
+                    answer: 1,
+                    exp: "The post-WWI economic depression and civil/military budget cuts served as key economic catalysts for the 1932 revolution."
+                }
+            },
+            {
+                id: 14,
+                th: {
+                    q: "พระบาทสมเด็จพระพุทธเลิศหล้านภาลัย (รัชกาลที่ 2) ทรงได้รับการยกย่องให้เป็นกวีเอกและบุคคลสำคัญของโลกจากยูเนสโก ผลงานพระราชนิพนธ์ชิ้นเอกประเภทใดที่แสดงถึงอัจฉริยภาพด้านวรรณศิลป์อย่างเด่นชัดที่สุด",
+                    clue: "บทละครนอก เช่น คาวี ไกรทอง สังข์ทอง",
+                    options: [
+                        "กฎหมายตราสามดวง",
+                        "บทละครนอก (เช่น คาวี ไกรทอง สังข์ทอง และอิเหนาบางตอน) ที่ใช้แสดงและขับร้องอย่างแพร่หลาย",
+                        "ตำราการแพทย์แผนโบราณวัดโพธิ์",
+                        "นิราศลอนดอน"
+                    ],
+                    answer: 1,
+                    exp: "รัชกาลที่ 2 ทรงโดดเด่นด้านบทละครนอกและบทละครรำ เช่น อิเหนา (ละครใน) และสังข์ทอง คาวี ไกรทอง (ละครนอก) ซึ่งมีความไพเราะและสมบูรณ์ทางวรรณศิลป์"
+                },
+                en: {
+                    q: "King Rama II was honored by UNESCO as a world figure. Which master literary works best showcase his poetic genius?",
+                    clue: "Out-of-court drama plays (Bot Lakhon Nok) like Sang Thong.",
+                    options: [
+                        "The Three Seals Law",
+                        "Out-of-court drama plays (e.g., Kawi, Krai Thong, Sang Thong) widely performed and sung.",
+                        "Wat Pho traditional medical texts",
+                        "Nirat London"
+                    ],
+                    answer: 1,
+                    exp: "King Rama II excelled in royal drama plays (Lakhon Nai/Nok) like Sang Thong and Inao, showcasing supreme literary mastery."
+                }
+            },
+            {
+                id: 15,
+                th: {
+                    q: "สมเด็จพระมหิตลาธิเบศร อดุลยเดชวิกรม พระบรมราชชนก ทรงได้รับการเทิดพระเกียรติเป็น 'พระบิดาแห่งการแพทย์แผนปัจจุบันของไทย' เนื่องจากผลงานสำคัญข้อใด",
+                    clue: "การปฏิรูประบบการศึกษาแพทย์ ทุนการศึกษา และการยกระดับโรงพยาบาลศิริราช",
+                    options: [
+                        "ทรงเป็นผู้ค้นพบสมุนไพรไทยรักษาโรคมะเร็ง",
+                        "ทรงปฏิรูปการศึกษาแพทย์ จัดหาทุนหลวงส่งนักเรียนไปเรียนแพทย์ต่างประเทศ และทรงพัฒนาระบบโรงพยาบาลและการสาธารณสุขไทยให้ทัดเทียมสากล",
+                        "ทรงสร้างโรงพยาบาลแห่งแรกในสมัยอยุธยา",
+                        "ทรงแปลตำราแพทย์แผนจีนเป็นภาษาไทย"
+                    ],
+                    answer: 1,
+                    exp: "พระบรมราชชนกทรงวางรากฐานการศึกษาแพทย์แผนปัจจุบัน ทรงสนับสนุนทุนการศึกษา ทรงอุทิศพระองค์พัฒนาโรงพยาบาลศิริราชและการสาธารณสุขไทย"
+                },
+                en: {
+                    q: "Prince Mahidol Adulyadej is honored as the 'Father of Modern Thai Medicine' due to which major contribution?",
+                    clue: "Medical education reform, scholarships, and Siriraj hospital upgrading.",
+                    options: [
+                        "Discovering Thai herbs that cure cancer.",
+                        "Reforming medical education, providing royal scholarships abroad, and upgrading hospitals and public health to international standards.",
+                        "Building the first hospital in Ayutthaya.",
+                        "Translating Chinese medical texts into Thai."
+                    ],
+                    answer: 1,
+                    exp: "Prince Mahidol laid modern medical education foundations, funded scholars, and modernized Siriraj and public health systems."
+                }
+            },
+            {
+                id: 16,
+                th: {
+                    q: "การชำระกฎหมายตราสามดวงในสมัยรัชกาลที่ 1 มีวัตถุประสงค์หลักทางสังคมและการเมืองข้อใด มิใช่เพียงแค่การรวบรวมตัวบทกฎหมาย",
+                    clue: "สร้างความยุติธรรมและสร้างความน่าเชื่อถือให้กับราชสำนักใหม่หลังการสถาปนากรุง",
+                    options: [
+                        "เพื่อยกเลิกกฎหมายทั้งหมดและใช้กฎหมายสากลจากยุโรปแทน",
+                        "เพื่อสร้างบรรทัดฐานความยุติธรรม ขจัดความอยุติธรรมที่ข้าราชการฉ้อฉลใช้หาประโยชน์ และสร้างความน่าเชื่อถือมั่นคงให้กับราชสำนักใหม่",
+                        "เพื่อแจกจ่ายกฎหมายให้ประชาชนอ่านฟรีทุกบ้าน",
+                        "เพื่อใช้เป็นตำราเรียนในโรงเรียนสามัญทั่วประเทศ"
+                    ],
+                    answer: 1,
+                    exp: "การชำระกฎหมายตราสามดวงทำขึ้นเพื่อขจัดข้อบกพร่องของกฎหมายเก่าที่ถูกบิดเบือนโดยข้าราชการฉ้อฉล สร้างความยุติธรรมและเสริมเสถียรภาพรัฐบาลใหม่"
+                },
+                en: {
+                    q: "What was the primary socio-political objective of revising the Three Seals Law under Rama I, beyond merely collecting laws?",
+                    clue: "Establishing justice and legitimacy for the new royal court.",
+                    options: [
+                        "To abolish all laws and adopt European international law.",
+                        "To establish justice, eliminate corrupt official exploitation, and build stability and legitimacy for the new royal court.",
+                        "To distribute free law books to every household.",
+                        "To serve as a general school textbook nationwide."
+                    ],
+                    answer: 1,
+                    exp: "Revising the Three Seals Law corrected corrupt legal flaws, secured justice, and legitimized the new dynasty."
+                }
+            },
+            {
+                id: 17,
+                th: {
+                    q: "ภูมิปัญญาไทยในการจัดการน้ำด้วยการ 'ขุดคลองลัด' ในสมัยรัตนโกสินทร์ตอนต้น (เช่น คลองมหานาค คลองบางกอกน้อย) นอกจากประโยชน์ด้านคมนาคมแล้ว ยังส่งผลดีทางยุทธศาสตร์และสิ่งแวดล้อมอย่างไร",
+                    clue: "ย่นระยะทาง ระบายน้ำหลาก และเป็นเส้นทางป้องกันพระนคร",
+                    options: [
+                        "ทำให้เรือกลไฟขนาดใหญ่จากยุโรปเข้ามาจอดหน้าพระบรมมหาราชวังได้",
+                        "ช่วยย่นระยะเวลาการเดินทาง คมนาคมขนส่งสินค้าเกษตร ระบายน้ำหลากในฤดูน้ำหลาก และใช้เป็นแนวป้องกันข้าศึก",
+                        "ใช้เป็นแหล่งเพาะพันธุ์ปลาทะเลน้ำลึก",
+                        "ทำให้ระดับน้ำทะเลลดลงถาวร"
+                    ],
+                    answer: 1,
+                    exp: "คลองลัดช่วยระบายน้ำหลาก ป้องกันน้ำท่วมพระนคร ขนส่งสินค้าเกษตร และเป็นเส้นทางยุทธศาสตร์ทางทหาร"
+                },
+                en: {
+                    q: "Besides transport, how did Thai wisdom in 'digging shortcut canals' in early Rattanakosin benefit strategy and environment?",
+                    clue: "Shortening travel, draining floodwaters, and defending the capital.",
+                    options: [
+                        "Allowed large European steamships to dock in front of the Grand Palace.",
+                        "Shortened travel times, facilitated agricultural transport, drained seasonal floods, and served as military defensive lines.",
+                        "Served as deep-sea fish breeding grounds.",
+                        "Permanently lowered sea levels."
+                    ],
+                    answer: 1,
+                    exp: "Shortcut canals improved flood drainage, crop distribution, and military defense."
+                }
+            },
+            {
+                id: 18,
+                th: {
+                    q: "สุนทรภู่ กวีเอกแห่งรัตนโกสินทร์ ได้สร้างสรรค์ผลงานประเภท 'นิราศ' ซึ่งมีเอกลักษณ์ทางวรรณศิลป์และภูมิปัญญาในการบันทึกประวัติศาสตร์สังคมอย่างไร",
+                    clue: "การบันทึกสภาพบ้านเมือง เส้นทางคมนาคม และความรู้สึกนึกคิดสามัญชนผ่านกลอน",
+                    options: [
+                        "บันทึกรายชื่อขุนนางและอัตราเงินเดือนประจำปี",
+                        "สะท้อนสภาพเส้นทางคมนาคม สภาพธรรมชาติ สังคม และวิถีชีวิตผู้คนสองฝั่งคลอง พร้อมสอดแทรกความรู้สึกส่วนตัวผ่านวรรณศิลป์อันงดงาม",
+                        "แต่งขึ้นเพื่อใช้สวดมนต์ในพิธีหลวงเท่านั้น",
+                        "บันทึกยุทธวิธีทางทหารในการรบกับพม่า"
+                    ],
+                    answer: 1,
+                    exp: "นิราศของสุนทรภู่ไม่เพียงแต่แสดงอารมณ์ความรักความพลัดพราก แต่ยังบันทึกภาพภูมิประเทศ สังคม วิถีชีวิต และการเดินทางในยุคนั้นได้อย่างแม่นยำ"
+                },
+                en: {
+                    q: "How did Sunthon Phu's 'Nirat' poetry uniquely reflect artistic and social historical wisdom?",
+                    clue: "Recording landscapes, transport routes, and commoner sentiments through verse.",
+                    options: [
+                        "Recording noble names and annual salaries.",
+                        "Reflecting travel routes, nature, society, and people's lifestyles along canals, intertwined with personal emotions and poetic beauty.",
+                        "Composed solely for chanting in royal ceremonies.",
+                        "Recording Burmese warfare tactics."
+                    ],
+                    answer: 1,
+                    exp: "Sunthon Phu's Nirat poems captured contemporary landscapes, social life, and travel realities through exquisite poetry."
+                }
+            },
+            {
+                id: 19,
+                th: {
+                    q: "ระบบ 'ไพร่' และ 'ทาส' ในสังคมไทยโบราณ หากมองในมุมมองการพัฒนาโครงสร้างรัฐ จัดเป็นกลไกการบริหารจัดการทรัพยากรมนุษย์ลักษณะใด",
+                    clue: "การควบคุมแรงงานเพื่อการพัฒนาโครงสร้างพื้นฐานและความมั่นคง",
+                    options: [
+                        "ระบบเศรษฐกิจทุนนิยมเสรีแบบตะวันตก",
+                        "กลไกการเกณฑ์และควบคุมกำลังแรงงานของรัฐ เพื่อใช้ในการก่อสร้างสาธารณูปโภค ขุดคูเมือง ทำนาหลวง และทำสงครามป้องกันประเทศในยามศึก",
+                        "ระบบการศึกษาภาคบังคับสำหรับเด็กทุกคน",
+                        "ระบบการประกันสุขภาพถ้วนหน้าโบราณ"
+                    ],
+                    answer: 1,
+                    exp: "ระบบไพร่และทาสเป็นกลไกควบคุมแรงงานของรัฐศักดินา เพื่อใช้แรงงานในการพัฒนาโครงสร้างพื้นฐานและป้องกันประเทศก่อนยุคเลิกทาส"
+                },
+                en: {
+                    q: "From a state structural development view, how did the 'Phrai' and slave systems function in past Thai society?",
+                    clue: "Labor control for infrastructure and security development.",
+                    options: [
+                        "Western free-market capitalist system.",
+                        "State labor mobilization and control mechanism for public infrastructure, canal digging, royal farming, and war defense.",
+                        "Compulsory education system for all children.",
+                        "Ancient universal health insurance system."
+                    ],
+                    answer: 1,
+                    exp: "Phrai and slave systems controlled state manpower for public works and national defense prior to abolition."
+                }
+            },
+            {
+                id: 20,
+                th: {
+                    q: "วัดพระเชตุพนวิมลมหาราชาราม (วัดโพธิ์) ได้รับการจารึกสรรพวิชาความรู้ลงบนแผ่นศิลาจนได้รับการยกย่องเป็นมหาวิทยาลัยเปิดแห่งแรก ข้อใดสรุปหมวดหมู่ความรู้บนแผ่นศิลาเหล่านั้นได้ครบถ้วนที่สุด",
+                    clue: "ตำรายา ฤาษีดัดตน ประวัติศาสตร์ วรรณกรรม และโคลงกลอนต่างๆ",
+                    options: [
+                        "เฉพาะกฎหมายอาญาแผ่นดินและวิธีพิจารณาความ",
+                        "ตำรายาแผนโบราณ ภาพฤาษีดัดตน ตำนานการสร้างวัด วรรณกรรม โคลงสุภาษิต และประวัติศาสตร์ภูมิปัญญาไทย",
+                        "แผนที่การเดินเรือไปทวีปยุโรปและอเมริกา",
+                        "บัญชีรายชื่อทรัพย์สินของพระมหากษัตริย์"
+                    ],
+                    answer: 1,
+                    exp: "แผ่นศิลาจารึกที่วัดโพธิ์รวบรวมสรรพวิชาทั้งตำรายา ฤาษีดัดตน วรรณกรรม ประวัติศาสตร์ และโคลงสุภาษิต เพื่อให้ประชาชนศึกษาหาความรู้"
+                },
+                en: {
+                    q: "Wat Pho was inscribed with knowledge on stone slabs, praised as the first open university. Which category of knowledge is most comprehensive?",
+                    clue: "Medical formulas, hermit gymnastics, history, literature, and poems.",
+                    options: [
+                        "Only criminal laws and procedural law.",
+                        "Traditional medical texts, hermit gymnastics diagrams, temple chronicles, literature, proverbs, and Thai wisdom history.",
+                        "European and American navigation maps.",
+                        "Royal asset inventory lists."
+                    ],
+                    answer: 1,
+                    exp: "Wat Pho stone inscriptions compile medicine, hermit gymnastics, literature, and history for public education."
+                }
+            },
+            {
+                id: 21,
+                th: {
+                    q: "หากนักเรียนต้องการศึกษาประวัติศาสตร์เศรษฐกิจไทยในสมัยรัชกาลที่ 3 หลักฐานชั้นต้นประเภทใดมีความน่าเชื่อถือและสะท้อนภาพเศรษฐกิจการค้าสำเภากับจีนได้ดีที่สุด",
+                    clue: "จดหมายเหตุการค้าสำเภาและบัญชีสินค้าพระคลังสินค้า",
+                    options: [
+                        "หนังสือพิมพ์รายวันภาษาอังกฤษยุคปัจจุบัน",
+                        "จดหมายเหตุความจำของกรมพระราชวังบวรฯ และบัญชีสินค้าเรือสำเภาหลวง/สำเภาจีน",
+                        "นวนิยายอิงประวัติศาสตร์กรุงศรีอยุธยา",
+                        "แผนที่ท่องเที่ยวเกาะรัตนโกสินทร์ปัจจุบัน"
+                    ],
+                    answer: 1,
+                    exp: "เศรษฐกิจยุค ร.3 ผูกพันกับการค้าสำเภา หลักฐานชั้นต้นที่ดีคือบัญชีสินค้าและจดหมายเหตุร่วมสมัยการค้าสำเภาหลวง"
+                },
+                en: {
+                    q: "If studying Thai economic history in Rama III's reign, which primary source best reflects junk trade with China?",
+                    clue: "Junk trade records and royal warehouse cargo accounts.",
+                    options: [
+                        "Modern English daily newspapers.",
+                        "Royal palace memoirs and official junk trade cargo/merchant accounts.",
+                        "Historical fiction novels about Ayutthaya.",
+                        "Current Rattanakosin tourist maps."
+                    ],
+                    answer: 1,
+                    exp: "Rama III's economy relied on junk trade; primary sources include contemporary cargo records and trade logs."
+                }
+            },
+            {
+                id: 22,
+                th: {
+                    q: "ข้อใดวิเคราะห์ผลกระทบระยะยาวของ 'การเลิกทาส' แบบค่อยเป็นค่อยไปในสมัยรัชกาลที่ 5 ต่อโครงสร้างสังคมไทยได้อย่างแม่นยำที่สุด",
+                    clue: "การเปลี่ยนผ่านสู่การเป็นแรงงานเสรีและการจ้างงานในระบบเศรษฐกิจใหม่",
+                    options: [
+                        "ทำให้เกิดสงครามกลางเมืองครั้งใหญ่ระหว่างนายทาสและทาสทันที",
+                        "ทำให้โครงสร้างแรงงานเปลี่ยนผ่านจากระบบทาสไปสู่ระบบแรงงานเสรี ประชาชนมีอิสระในการประกอบอาชีพ และลดความรุนแรงทางสังคม",
+                        "ทำให้ประเทศไทยสูญเสียเอกราชให้แก่ฝรั่งเศส",
+                        "ทำให้ระบบเศรษฐกิจการเกษตรหยุดชะงักถาวร"
+                    ],
+                    answer: 1,
+                    exp: "การค่อยๆ ลดค่าตัวและทยอยเลิกทาสช่วยให้สังคมไทยเปลี่ยนผ่านสู่ระบบแรงงานเสรีโดยปราศจากความรุนแรงหรือสงครามกลางเมืองแบบประเทศตะวันตกบางแห่ง"
+                },
+                en: {
+                    q: "Which option most accurately analyzes the long-term impact of gradual slave abolition under Rama V on Thai social structure?",
+                    clue: "Transitioning to free labor and employment in the new economy.",
+                    options: [
+                        "Caused an immediate massive civil war between masters and slaves.",
+                        "Shifted labor structure from slavery to free labor, granting citizens career freedom and minimizing social violence.",
+                        "Caused Thailand to lose independence to France.",
+                        "Permanently halted the agricultural economy."
+                    ],
+                    answer: 1,
+                    exp: "Gradual abolition smoothly transitioned society to free labor without bloody civil wars."
+                }
+            },
+            {
+                id: 23,
+                th: {
+                    q: "ในกระบวนการประเมินคุณค่าหลักฐานทางประวัติศาสตร์ (Historical Criticism) หากนักเรียนพบว่า 'หลักฐานชั้นต้น' สองชิ้นให้ข้อมูลที่ขัดแย้งกันอย่างสิ้นเชิง นักเรียนควรใช้กระบวนการคิดวิเคราะห์อย่างไรต่อไป",
+                    clue: "ตรวจสอบบริบท เจตนา อคติ และเทียบเคียงกับหลักฐานชิ้นที่สาม",
+                    options: [
+                        "เลือกเชื่อชิ้นที่เก่าแก่กว่าและทำลายอีกชิ้นทิ้ง",
+                        "ตรวจสอบบริบทการสร้าง เจตนา อคติของผู้บันทึก และนำไปเทียบเคียงกับหลักฐานชิ้นอื่นๆ เพื่อหาข้อเท็จจริงที่สมเหตุสมผลที่สุด",
+                        "ถือว่าประวัติศาสตร์เป็นเรื่องโกหกและไม่ต้องทำรายงานต่อ",
+                        "ผสมผสานเรื่องราวทั้งสองเข้าด้วยกันโดยไม่สนหลักตรรกะ"
+                    ],
+                    answer: 1,
+                    exp: "เมื่อหลักฐานขัดแย้งกัน นักเรียนต้องวิเคราะห์บริบท อคติ และสอบทานกับหลักฐานแวดล้อมอื่นๆ (Corroboration)"
+                },
+                en: {
+                    q: "During historical criticism, if two 'primary sources' completely contradict each other, how should a student analyze it?",
+                    clue: "Examine context, intent, bias, and cross-reference with a third source.",
+                    options: [
+                        "Choose the older one and destroy the other.",
+                        "Examine creation context, author bias, and cross-reference with other sources to find the most logical truth.",
+                        "Assume history is fake and stop the report.",
+                        "Blend both stories illogically together."
+                    ],
+                    answer: 1,
+                    exp: "Contradictory sources require analyzing context, bias, and cross-validation with corroborating evidence."
+                }
+            },
+            {
+                id: 24,
+                th: {
+                    q: "ข้อใดคือลักษณะเด่นทางสถาปัตยกรรมของพระอุโบสถวัดเบญจมบพิตรดุสิตวนาราม ซึ่งสะท้อนภูมิปัญญาการผสมผสานศิลปะไทยและตะวันตกในสมัยรัตนโกสินทร์ตอนปลาย (รัชกาลที่ 5)",
+                    clue: "การใช้หินอ่อนจากอิตาลีผสมผสานกับหลังคาประดับศิลปะไทย",
+                    options: [
+                        "สร้างด้วยไม้สักทองทั้งหลังตามแบบศิลปะอยุธยาแท้",
+                        "ใช้หินอ่อนจากประเทศอิตาลีมาก่อสร้างตัวพระอุโบสถ ผสมผสานกับงานหลังคาประดับหน้าบันตามศิลปะประเพณีไทยอย่างกลมกลืน",
+                        "สร้างเป็นอาคารคอนกรีตสูง 10 ชั้นแบบตึกสมัยใหม่",
+                        "จำลองแบบมาจากโบสถ์โกธิกในกรุงลอนดอนโดยไม่มีศิลปะไทย"
+                    ],
+                    answer: 1,
+                    exp: "วัดเบญจมบพิตรโดดเด่นด้วยการใช้หินอ่อนคาร์ลาร่าจากอิตาลีผสมผสานสถาปัตยกรรมไทยประเพณีได้อย่างงดงามสมAบูรณ์"
+                },
+                en: {
+                    q: "What architectural feature of Wat Benchamabophit reflects the fusion of Thai and Western art in late Rattanakosin (Rama V)?",
+                    clue: "Italian marble combined with traditional Thai roof art.",
+                    options: [
+                        "Built entirely of golden teak in pure Ayutthaya style.",
+                        "Constructed using Italian marble for the ubosot, harmoniously blended with traditional Thai gable roof art.",
+                        "Built as a 10-story modern concrete building.",
+                        "Modeled after a London Gothic church without Thai art."
+                    ],
+                    answer: 1,
+                    exp: "Wat Benchamabophit famously blends Italian Carrara marble with classical Thai temple architecture."
+                }
+            },
+            {
+                id: 25,
+                th: {
+                    q: "การศึกษาประวัติศาสตร์ท้องถิ่นในอำเภอหรือจังหวัดของตนเอง มีคุณประโยชน์สำคัญที่สุดต่อนักเรียนตามหลักการศึกษาประวัติศาสตร์อย่างไร",
+                    clue: "เข้าใจรากเหง้าชุมชนและเชื่อมโยงประวัติศาสตร์ใหญ่สู่ชีวิตจริง",
+                    options: [
+                        "ทำให้ไม่ต้องสอบวิชาประวัติศาสตร์ชาติไทย",
+                        "ช่วยให้เข้าใจรากเหง้าความเป็นมาของชุมชน ตระหนักถึงความสำคัญของมรดกทางวัฒนธรรม และเชื่อมโยงเหตุการณ์ท้องถิ่นเข้ากับภาพใหญ่ของประวัติศาสตร์ชาติ",
+                        "ทำให้สามารถค้าขายของที่ระลึกในท้องถิ่นได้กำไรสูง",
+                        "ช่วยให้จดจำชื่อขุนนางโบราณได้ครบทุกคน"
+                    ],
+                    answer: 1,
+                    exp: "ประวัติศาสตร์ท้องถิ่นช่วยให้ผู้เรียนเข้าใจรากเหง้าชุมชน เห็นคุณค่ามรดกวัฒนธรรม และเชื่อมโยงกับบริบทประวัติศาสตร์ชาติได้ลึกซึ้งยิ่งขึ้น"
+                },
+                en: {
+                    q: "What is the primary value of studying local history to students according to historical study principles?",
+                    clue: "Understanding community roots and connecting macro-history to real life.",
+                    options: [
+                        "Exempts students from national history exams.",
+                        "Helps understand community roots, appreciate cultural heritage, and connect local events to national history frameworks.",
+                        "Enables high profits selling local souvenirs.",
+                        "Helps memorize all ancient noble names."
+                    ],
+                    answer: 1,
+                    exp: "Local history grounds students in their heritage and links community evolution to national history."
+                }
+            },
+            {
+                id: 26,
+                th: {
+                    q: "ข้อใดอธิบายความหมายของคำว่า 'ความเที่ยงธรรมทางประวัติศาสตร์' (Historical Objectivity) ได้ถูกต้องแม่นยำที่สุด",
+                    clue: "การตีความและบันทึกตามข้อเท็จจริงหลักฐานโดยปราศจากอคติส่วนตัว",
+                    options: [
+                        "การบันทึกประวัติศาสตร์โดยให้ทุกประเทศมีความสุขเท่ากัน",
+                        "การศึกษาและตีความหลักฐานด้วยความซื่อสัตย์ ยึดมั่นตามข้อเท็จจริงที่พิสูจน์ได้จากหลักฐาน โดยปราศจากอคติหรือความลำเอียงส่วนตัว",
+                        "การเขียนประวัติศาสตร์ตามคำสั่งของผู้มีอำนาจในยุคนั้นๆ",
+                        "การใช้ความรู้สึกส่วนตัวตัดสินว่าเหตุการณ์ใดถูกหรือผิด"
+                    ],
+                    answer: 1,
+                    exp: "ความเที่ยงธรรมคือการยึดหลักฐานและความจริงอันปราศจากอคติส่วนตัวหรืออิทธิพลการเมืองครอบงำ"
+                },
+                en: {
+                    q: "Which option most accurately explains 'historical objectivity'?",
+                    clue: "Interpreting and recording based on factual evidence without personal bias.",
+                    options: [
+                        "Recording history so every country is equally happy.",
+                        "Studying and interpreting evidence honestly, adhering to verifiable facts without personal bias or prejudice.",
+                        "Writing history per ruling authorities' orders.",
+                        "Using personal feelings to judge right or wrong events."
+                    ],
+                    answer: 1,
+                    exp: "Objectivity requires honest, evidence-based interpretation free from personal bias or political pressure."
+                }
+            },
+            {
+                id: 27,
+                th: {
+                    q: "หากนักเรียนต้องตรวจสอบว่า 'ภาพถ่ายเก่า' ของกรุงเทพฯ ในสมัยรัชกาลที่ 5 เป็นภาพจริงหรือไม่ ข้อใดคือวิธีทำ 'วิพากษ์ภายนอก' ที่ถูกต้อง",
+                    clue: "ตรวจสอบชนิดฟิล์ม กระดาษอัดภาพ ร่องรอยเคมี และสภาพวัสดุ",
+                    options: [
+                        "อ่านคำบรรยายใต้ภาพว่าเขียนด้วยลายมือใคร",
+                        "ตรวจสอบชนิดของฟิล์มกระจก กระดาษอัดภาพโบราณ ร่องรอยทางเคมี และสภาพวัสดุทางกายภาพว่าตรงกับเทคโนโลยีการถ่ายภาพในยุคนั้นหรือไม่",
+                        "สอบถามเพื่อนในห้องว่าเคยเห็นภาพนี้ในอินเทอร์เน็ตหรือไม่",
+                        "นำภาพไปวาดซ้ำใหม่ให้สวยงามกว่าเดิม"
+                    ],
+                    answer: 1,
+                    exp: "การวิพากษ์ภายนอกของภาพถ่ายคือการตรวจชนิดฟิล์มกระจก กระดาษ และสารเคมีว่าตรงกับยุคสมัยที่อ้างอิงจริงหรือไม่"
+                },
+                en: {
+                    q: "To verify if an old photo of Bangkok in Rama V's reign is authentic, what is the correct 'external criticism' method?",
+                    clue: "Examine film type, photographic paper, chemical traces, and material state.",
+                    options: [
+                        "Read who wrote the caption underneath.",
+                        "Examine glass plate negative types, vintage photo paper, chemical traces, and physical material alignment with era photography technology.",
+                        "Ask classmates if they saw it online.",
+                        "Redraw the image more beautifully."
+                    ],
+                    answer: 1,
+                    exp: "External criticism of photos inspects physical glass negatives, paper types, and chemical processes for era authenticity."
+                }
+            },
+            {
+                id: 28,
+                th: {
+                    q: "ข้อใดคือคุณค่าสูงสุดของการเรียนรู้วิธีการทางประวัติศาสตร์และการวิพากษ์หลักฐาน ที่สามารถนำไปใช้ในชีวิตประจำวันของยุคดิจิทัลได้ดีที่สุด",
+                    clue: "ทักษะการรู้เท่าทันสื่อและการตรวจสอบข่าวปลอม (Fake News)",
+                    options: [
+                        "ทำให้สามารถท่องจำปี พ.ศ. ของเหตุการณ์โลกได้แม่นยำ",
+                        "ฝึกทักษะการคิดวิเคราะห์อย่างมีวิจารณญาณ รู้จักตรวจสอบแหล่งที่มาของข้อมูล ข่าวสาร และสื่อออนไลน์ก่อนเชื่อ เพื่อป้องกันการตกเป็นเหยื่อของข่าวปลอม (Fake News)",
+                        "ช่วยให้สอบผ่านวิชาสังคมศึกษาได้คะแนนเต็มทุกครั้ง",
+                        "ทำให้สามารถค้นหาคลิปวิดีโอในอินเทอร์เน็ตได้เร็วขึ้น"
+                    ],
+                    answer: 1,
+                    exp: "ทักษะวิธีทางประวัติศาสตร์และการวิพากษ์หลักฐานฝึกให้ผู้เรียนเป็นคนคิดวิเคราะห์ ตรวจสอบข้อมูลรอบด้าน ซึ่งตรงกับทักษะรู้เท่าทันสื่อในยุคดิจิทัล"
+                },
+                en: {
+                    q: "What is the ultimate value of historical methods and source criticism for daily life in the digital age?",
+                    clue: "Media literacy and fake news verification skills.",
+                    options: [
+                        "Enables precise memorization of world event years.",
+                        "Trains critical thinking, source verification, and media evaluation before believing, preventing fake news victimhood.",
+                        "Guarantees full scores on social studies exams.",
+                        "Speeds up online video searching."
+                    ],
+                    answer: 1,
+                    exp: "Historical criticism skills directly cultivate digital age media literacy and critical source verification."
+                }
+            },
+            {
+                id: 29,
+                th: {
+                    q: "ในการวิเคราะห์เหตุการณ์เสียดินแดนของสยามให้แก่มหาอำนาจตะวันตกในสมัยรัชกาลที่ 5 นักเรียนควรใช้กรอบแนวคิดทางประวัติศาสตร์ข้อใดพิจารณาจึงจะรอบด้านที่สุด",
+                    clue: "บริบทการล่าอาณานิคมระดับโลก ความจำเป็นในการรักษาเอกราชส่วนใหญ่ และทรัพยากรจำกัด",
+                    options: [
+                        "โทษว่าเป็นความผิดของพระมหากษัตริย์เพียงพระองค์เดียว",
+                        "วิเคราะห์บริบทการล่าอาณานิคมระดับโลก (Imperialism) ความจำเป็นในการยอมเสียดินแดนส่วนน้อยเพื่อรักษาเอกราชส่วนใหญ่ของประเทศ และข้อจำกัดทางกำลังพลและยุทโธปกรณ์ในเวลานั้น",
+                        "ถือว่าเป็นการสละดินแดนเพื่อแลกกับเงินทองจำนวนมาก",
+                        "มองว่าเป็นเรื่องราวความบังเอิญที่ไม่มีเหตุผลรองรับ"
+                    ],
+                    answer: 1,
+                    exp: "การเสียดินแดนต้องวิเคราะห์ผ่านบริบทการล่าอาณานิคมระดับโลกและกลยุทธ์การยอมเสียส่วนน้อยเพื่อปกป้องเอกราชส่วนใหญ่ของสยาม"
+                },
+                en: {
+                    q: "When analyzing Siam's territorial cessions to Western powers under Rama V, which historical framework provides the most comprehensive view?",
+                    clue: "Global imperialism context, necessity to preserve core independence, and limited resources.",
+                    options: [
+                        "Blame solely the monarch.",
+                        "Analyze global imperialism context, the strategy of ceding peripheral territory to preserve national independence, and military resource limits.",
+                        "Assume it was traded for massive wealth.",
+                        "View it as an arbitrary coincidence without rationale."
+                    ],
+                    answer: 1,
+                    exp: "Territorial cessions must be analyzed through global imperialism contexts and the tactical preservation of core national sovereignty."
+                }
+            },
+            {
+                id: 30,
+                th: {
+                    q: "ข้อใดสรุปสาระสำคัญของหลักสูตรประวัติศาสตร์ ป.6 ทั้ง 2 หน่วยการเรียนรู้ (วิธีการทางประวัติศาสตร์ และสมัยรัตนโกสินทร์) ได้อย่างทรงพลังและถูกต้องที่สุด",
+                    clue: "การบูรณาการทักษะสืบค้นตรวจสอบกับความเข้าใจพัฒนาการชาติไทยเพื่อการรู้เท่าทันปัจจุบัน",
+                    options: [
+                        "การจดจำรายชื่อพระมหากษัตริย์ทุกพระองค์และวันเดือนปีเกิดให้ได้ทั้งหมด",
+                        "การบูรณาการทักษะการสืบค้นและตรวจสอบหลักฐานอย่างมีระบบ เพื่อทำความเข้าใจรากเหง้าพัฒนาการของชาติไทยในสมัยรัตนโกสินทร์ และนำภูมิปัญญามาปรับใช้ในชีวิตประจำวัน",
+                        "การเรียนรู้เรื่องกฎหมายโบราณเพื่อนำไปประกอบอาชีพทนายความ",
+                        "การศึกษาเรื่องราวในอดีตเพื่อความบันเทิงยามว่าง"
+                    ],
+                    answer: 1,
+                    exp: "สาระสำคัญสูงสุดคือการบูรณาการทักษะคิดวิเคราะห์ (วิธีทางประวัติศาสตร์) เข้ากับความเข้าใจพัฒนาการของชาติไทย เพื่อสร้างภูมิคุ้มกันและความรู้เท่าทันในปัจจุบัน"
+                },
+                en: {
+                    q: "Which option most powerfully and accurately summarizes both Grade 6 history units (historical methods & Rattanakosin)?",
+                    clue: "Integrating investigative verification skills with national development understanding for modern awareness.",
+                    options: [
+                        "Memorizing all king names and birth dates.",
+                        "Integrating systematic source investigation skills to understand Rattanakosin national development roots and applying past wisdom to daily life.",
+                        "Studying ancient laws to become a lawyer.",
+                        "Studying past events purely for leisure entertainment."
+                    ],
+                    answer: 1,
+                    exp: "The core essence is integrating critical investigative skills with national historical understanding for modern empowerment."
+                }
+            }
+        ];
+
+        let currentLang = 'th';
+        let userAnswers = {};
+        let shuffledQuestions = [];
+
+        // Fisher-Yates Shuffle Algorithm
+        function shuffleArray(array) {
+            let currentIndex = array.length, randomIndex;
+            while (currentIndex !== 0) {
+                randomIndex = Math.floor(Math.random() * currentIndex);
+                currentIndex--;
+                [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+            }
+            return array;
+        }
+
+        function initExam() {
+            const savedAnswers = localStorage.getItem('hist_p6_exam_set2_answers');
+            const savedLang = localStorage.getItem('hist_p6_exam_set2_lang');
+            if (savedLang) currentLang = savedLang;
+            if (savedAnswers) {
+                try { userAnswers = JSON.parse(savedAnswers); } catch(e) { userAnswers = {}; }
+            }
+
+            shuffledQuestions = JSON.parse(JSON.stringify(rawQuestions));
+            shuffleArray(shuffledQuestions);
+
+            shuffledQuestions.forEach(item => {
+                let qData = item[currentLang];
+                let optionsWithIndex = qData.options.map((opt, idx) => ({ text: opt, originalIndex: idx }));
+                shuffleArray(optionsWithIndex);
+                qData.shuffledOptions = optionsWithIndex;
+            });
+
+            renderQuiz();
+            updateHeaderTexts();
+        }
+
+        function toggleLanguage() {
+            currentLang = currentLang === 'th' ? 'en' : 'th';
+            localStorage.setItem('hist_p6_exam_set2_lang', currentLang);
+            
+            shuffledQuestions.forEach(item => {
+                let qData = item[currentLang];
+                let optionsWithIndex = qData.options.map((opt, idx) => ({ text: opt, originalIndex: idx }));
+                shuffleArray(optionsWithIndex);
+                qData.shuffledOptions = optionsWithIndex;
+            });
+
+            renderQuiz();
+            updateHeaderTexts();
+        }
+
+        function updateHeaderTexts() {
+            const titleEl = document.getElementById('header-title');
+            if (currentLang === 'th') {
+                titleEl.innerText = "แบบทดสอบประวัติศาสตร์ ป.6 ชุดที่ 2 (ระดับยากมาก - วิเคราะห์เชิงลึก)";
+            } else {
+                titleEl.innerText = "Grade 6 History Exam Set 2 (Deep Analytical Level)";
+            }
+        }
+
+        function renderQuiz() {
+            const container = document.getElementById('quiz-container');
+            container.innerHTML = '';
+            document.getElementById('result-section').style.display = 'none';
+
+            shuffledQuestions.forEach((item, index) => {
+                const qData = item[currentLang];
+                const card = document.createElement('div');
+                card.className = 'question-card';
+                card.id = `q-card-${item.id}`;
+
+                let optionsHTML = '';
+                qData.shuffledOptions.forEach((optObj, optIndex) => {
+                    const isChecked = userAnswers[item.id] !== undefined && userAnswers[item.id].selectedShuffledIndex === optIndex;
+                    optionsHTML += `
+                        <label class="option-item" style="${isChecked ? 'background: #e8f8f5; border-color: var(--secondary);' : ''}">
+                            <input type="radio" name="question_${item.id}" value="${optIndex}" ${isChecked ? 'checked' : ''} onclick="selectAnswer(${item.id}, ${optIndex}, ${optObj.originalIndex})">
+                            <span>${optObj.text}</span>
+                        </label>
+                    `;
+                });
+
+                let explanationClass = 'explanation';
+                let explanationText = '';
+                if (userAnswers[item.id] !== undefined) {
+                    if (userAnswers[item.id].isCorrect) {
+                        explanationClass = 'explanation correct';
+                        explanationText = currentLang === 'th' ? `ถูกต้อง! เฉลย: ${qData.exp}` : `Correct! Explanation: ${qData.exp}`;
+                    } else {
+                        explanationClass = 'explanation incorrect';
+                        explanationText = currentLang === 'th' ? `ยังไม่ถูกต้อง! เฉลย: ${qData.exp}` : `Incorrect! Explanation: ${qData.exp}`;
+                    }
+                }
+
+                card.innerHTML = `
+                    <div class="question-title">ข้อที่ ${index + 1}. ${qData.q}</div>
+                    <div class="clue">💡 คำใบ้: ${qData.clue}</div>
+                    <div class="options-list">${optionsHTML}</div>
+                    <div class="${explanationClass}" id="exp_${item.id}">${explanationText}</div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function selectAnswer(questionId, shuffledIndex, originalIndex) {
+            const item = shuffledQuestions.find(q => q.id === questionId);
+            const qData = item[currentLang];
+            const isCorrect = originalIndex === qData.answer;
+
+            userAnswers[questionId] = {
+                selectedShuffledIndex: shuffledIndex,
+                selectedOriginalIndex: originalIndex,
+                isCorrect: isCorrect
+            };
+
+            localStorage.setItem('hist_p6_exam_set2_answers', JSON.stringify(userAnswers));
+
+            const expDiv = document.getElementById(`exp_${questionId}`);
+            expDiv.className = isCorrect ? 'explanation correct' : 'explanation incorrect';
+            expDiv.innerText = currentLang === 'th' ? 
+                (isCorrect ? `ถูกต้อง! เฉลย: ${qData.exp}` : `ยังไม่ถูกต้อง! เฉลย: ${qData.exp}`) : 
+                (isCorrect ? `Correct! Explanation: ${qData.exp}` : `Incorrect! Explanation: ${qData.exp}`);
+
+            const card = document.getElementById(`q-card-${questionId}`);
+            const labels = card.querySelectorAll('.option-item');
+            labels.forEach((lbl, idx) => {
+                if (idx === shuffledIndex) {
+                    lbl.style.background = '#e8f8f5';
+                    lbl.style.borderColor = 'var(--secondary)';
+                } else {
+                    lbl.style.background = 'white';
+                    lbl.style.borderColor = 'var(--border-color)';
+                }
+            });
+        }
+
+        function submitExam() {
+            let score = 0;
+            let answeredCount = Object.keys(userAnswers).length;
+            
+            shuffledQuestions.forEach(item => {
+                if (userAnswers[item.id] && userAnswers[item.id].isCorrect) {
+                    score++;
+                }
+            });
+
+            const resultSection = document.getElementById('result-section');
+            const scoreDisplay = document.getElementById('score-display');
+            const analysisContent = document.getElementById('analysis-content');
+
+            resultSection.style.display = 'block';
+            
+            if (currentLang === 'th') {
+                scoreDisplay.innerText = `คุณทำคะแนนได้ ${score} จาก ${shuffledQuestions.length} คะแนน (ตอบแล้ว ${answeredCount} ข้อ)`;
+                
+                let analysisHTML = `<h3>📊 บทวิเคราะห์ผลการทดสอบ (ระดับยากมาก - ชุดที่ 2)</h3><br>`;
+                if (score >= 25) {
+                    analysisHTML += `<b>จุดเด่น:</b> คุณมีความสามารถในการคิดวิเคราะห์เชิงลึก แยกแยะความแตกต่างระหว่างหลักฐานชั้นต้น/ชั้นรอง และเข้าใจกระบวนการวิพากษ์วิธีทางประวัติศาสตร์ได้อย่างยอดเยี่ยมเยี่ยมยอด พร้อมสอบแข่งขันสนามใหญ่ระดับประเทศ<br>`;
+                    analysisHTML += `<b>ข้อเสนอแนะเพิ่มเติม:</b> รักษามาตรฐานการวิเคราะห์เหตุการณ์อย่างมีตรรกะและรอบด้านเช่นนี้ต่อไป`;
+                } else if (score >= 16) {
+                    analysisHTML += `<b>จุดเด่น:</b> มีความเข้าใจพื้นฐานประวัติศาสตร์และพัฒนาการสมัยรัตนโกสินทร์ในเกณฑ์ดีพอสมควร<br>`;
+                    analysisHTML += `<b>จุดด้อย / ควรทบทวน:</b> ควรทบทวนกระบวนการวิพากษ์หลักฐานเชิงลึก (การวิพากษ์ภายนอกและภายใน) และบริบทการเปลี่ยนแปลงโครงสร้างเศรษฐกิจสังคมสมัยรัตนโกสินทร์ตอนกลางถึงปลาย`;
+                } else {
+                    analysisHTML += `<b>จุดเด่น:</b> ได้ฝึกฝนทักษะการเผชิญหน้ากับข้อสอบวิเคราะห์ระดับสูง<br>`;
+                    analysisHTML += `<b>จุดด้อย / ควรทบทวน:</b> แนะนำให้อ่านทบทวนสรุปเนื้อหาและทำความเข้าใจตรรกะเบื้องหลังการประเมินคุณค่าหลักฐานทางประวัติศาสตร์ใหม่อีกครั้ง`;
+                }
+                analysisContent.innerHTML = analysisHTML;
+            } else {
+                scoreDisplay.innerText = `Your Score: ${score} / ${shuffledQuestions.length} (Answered ${answeredCount} items)`;
+                let analysisHTML = `<h3>📊 Test Analysis Report (Set 2 - Deep Analytical Level)</h3><br>`;
+                if (score >= 25) {
+                    analysisHTML += `<b>Strengths:</b> Exceptional deep analytical thinking, mastery of source criticism, and comprehensive understanding of Rattanakosin development.<br>`;
+                    analysisHTML += `<b>Recommendations:</b> Fully prepared for top-tier competitive entrance exams.`;
+                } else {
+                    analysisHTML += `<b>Strengths:</b> Good familiarity with challenging history exam structures.<br>`;
+                    analysisHTML += `<b>Areas for Improvement:</b> Review historical source criticism (external/internal) and socio-economic contexts of mid-to-late Rattanakosin.`;
+                }
+                analysisContent.innerHTML = analysisHTML;
+            }
+
+            resultSection.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function resetExam() {
+            localStorage.removeItem('hist_p6_exam_set2_answers');
+            userAnswers = {};
+            initExam();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Whiteboard Drawing Implementation
+        const canvas = document.getElementById('whiteboard');
+        const ctx = canvas.getContext('2d');
+        let isDrawing = false;
+
+        function resizeCanvas() {
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width;
+            canvas.height = rect.height;
+            ctx.strokeStyle = '#1b2631';
+            ctx.lineWidth = 2;
+            ctx.lineCap = 'round';
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+        window.addEventListener('load', () => {
+            resizeCanvas();
+            initExam();
+        });
+
+        function getMousePos(e) {
+            const rect = canvas.getBoundingClientRect();
+            return {
+                x: (e.clientX || e.touches[0].clientX) - rect.left,
+                y: (e.clientY || e.touches[0].clientY) - rect.top
+            };
+        }
+
+        canvas.addEventListener('mousedown', startDraw);
+        canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('mouseup', stopDraw);
+        canvas.addEventListener('mouseleave', stopDraw);
+
+        canvas.addEventListener('touchstart', (e) => { startDraw(e); e.preventDefault(); });
+        canvas.addEventListener('touchmove', (e) => { draw(e); e.preventDefault(); });
+        canvas.addEventListener('touchend', stopDraw);
+
+        function startDraw(e) {
+            isDrawing = true;
+            const pos = getMousePos(e);
+            ctx.beginPath();
+            ctx.moveTo(pos.x, pos.y);
+        }
+
+        function draw(e) {
+            if (!isDrawing) return;
+            const pos = getMousePos(e);
+            ctx.lineTo(pos.x, pos.y);
+            ctx.stroke();
+        }
+
+        function stopDraw() {
+            isDrawing = false;
+        }
+
+        function clearWhiteboard() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+    </script>
+</body>
+</html>
