@@ -1,0 +1,596 @@
+html_content = """<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ข้อสอบ เลขยกกำลัง ม.1 - การคูณและการหาร</title>
+    <!-- ใช้ MathJax ตามกฎ Priority Override สำหรับการแสดงผล LaTeX -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --primary: #4F46E5;
+            --primary-hover: #4338CA;
+            --success: #10B981;
+            --danger: #EF4444;
+            --bg-light: #F9FAFB;
+            --text-main: #1F2937;
+            --border: #E5E7EB;
+        }
+        * { box-sizing: border-box; font-family: 'Sarabun', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { margin: 0; padding: 0; background-color: var(--bg-light); color: var(--text-main); }
+        
+        .header-section {
+            background: white;
+            padding: 2rem 10%;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 1rem;
+        }
+        .header-section h1 { color: var(--primary); text-align: center; }
+        
+        /* Layout 70/30 */
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            width: 100%;
+            height: 100vh;
+            padding: 1rem;
+            gap: 1rem;
+        }
+        .exam-panel {
+            flex: 0 0 calc(70% - 0.5rem);
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            overflow-y: auto;
+            height: calc(100vh - 4rem);
+            padding: 2rem;
+        }
+        .whiteboard-panel {
+            flex: 0 0 calc(30% - 0.5rem);
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 4rem);
+        }
+        
+        @media (max-width: 1024px) {
+            .exam-panel, .whiteboard-panel { flex: 0 0 100%; height: auto; min-height: 50vh; }
+            .container { height: auto; }
+        }
+
+        .summary-box {
+            background-color: #EEF2FF;
+            padding: 1.5rem;
+            border-left: 5px solid var(--primary);
+            border-radius: 0 8px 8px 0;
+            line-height: 1.8;
+            margin-bottom: 2rem;
+        }
+        .memory-trick {
+            background-color: #FEF3C7;
+            padding: 1rem;
+            border-radius: 8px;
+            font-weight: bold;
+            color: #92400E;
+            margin: 1rem 0;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+            position: sticky;
+            top: 0;
+            background: white;
+            padding: 1rem 0;
+            border-bottom: 1px solid var(--border);
+            z-index: 10;
+        }
+        button {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+        .btn-toggle { background: var(--primary); color: white; }
+        .btn-toggle:hover { background: var(--primary-hover); }
+        .btn-reset { background: var(--danger); color: white; }
+        
+        .question-card {
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            transition: 0.3s;
+        }
+        .question-title { font-size: 1.2rem; font-weight: bold; margin-bottom: 1rem; }
+        .options { display: grid; grid-template-columns: 1fr; gap: 0.5rem; }
+        .option-btn {
+            background: white;
+            border: 2px solid var(--border);
+            padding: 0.75rem;
+            border-radius: 6px;
+            text-align: left;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+        }
+        .option-btn:hover:not(:disabled) { border-color: var(--primary); background: #EEF2FF; }
+        .option-btn.correct { border-color: var(--success); background: #D1FAE5; color: #065F46; }
+        .option-btn.wrong { border-color: var(--danger); background: #FEE2E2; color: #991B1B; }
+        .option-btn:disabled { cursor: not-allowed; }
+        
+        .clue, .explanation { margin-top: 1rem; padding: 1rem; border-radius: 6px; display: none; }
+        .clue { background: #E0F2FE; color: #0369A1; font-size: 0.9rem; }
+        .explanation { background: #ECFDF5; color: #065F46; border-left: 4px solid var(--success); }
+        
+        .show-clue-btn { background: #bae6fd; color: #0284c7; padding: 0.25rem 0.5rem; font-size: 0.8rem; margin-top: 0.5rem; }
+
+        /* Whiteboard styling */
+        .wb-toolbar {
+            padding: 1rem;
+            background: #F3F4F6;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            gap: 0.5rem;
+            border-radius: 12px 12px 0 0;
+        }
+        canvas { flex: 1; cursor: crosshair; touch-action: none; border-radius: 0 0 12px 12px; }
+        
+        #results-panel {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            text-align: center;
+            margin-top: 2rem;
+            display: none;
+            border: 2px solid var(--primary);
+        }
+    </style>
+</head>
+<body>
+
+<div class="header-section">
+    <h1>สรุปเนื้อหาคณิตศาสตร์: เลขยกกำลัง ม.1</h1>
+    
+    <div class="summary-box">
+        <h3>บทนำ: เข้าใจพื้นฐานเลขยกกำลัง</h3>
+        <p>ในวิชาคณิตศาสตร์ "เลขยกกำลัง" เป็นสัญลักษณ์ที่ใช้แทนการคูณจำนวนเดียวกันซ้ำๆ หลายๆ ครั้ง การเขียนในรูปเลขยกกำลังช่วยให้การคำนวณและการแสดงผลตัวเลขที่มีค่ามากๆ หรือน้อยมากๆ ทำได้ง่ายขึ้น โครงสร้างของเลขยกกำลังประกอบด้วย 2 ส่วนหลักคือ <strong>"ฐาน" (Base)</strong> และ <strong>"เลขชี้กำลัง" (Exponent)</strong> รูปแบบทั่วไปคือ \( a^n \) หมายถึง \( a \) คูณกัน \( n \) ตัว เช่น \( 2^5 = 2 \times 2 \times 2 \times 2 \times 2 = 32 \)</p>
+        
+        <h3>สมบัติสำคัญของการคูณและการหารเลขยกกำลัง</h3>
+        <p>หัวใจสำคัญของบทเรียนนี้คือการจัดการกับเลขยกกำลังที่มีฐานเหมือนกัน เมื่อเรานำเลขยกกำลังมาคูณหรือหารกัน เราไม่จำเป็นต้องกระจายตัวเลขออกมาคูณกันให้เหนื่อย แต่เราสามารถใช้ "สมบัติของเลขยกกำลัง" เพื่อหาคำตอบได้อย่างรวดเร็ว</p>
+        
+        <p><strong>1. การคูณเลขยกกำลัง (Product Rule):</strong><br>
+        สมบัติ: \( a^m \times a^n = a^{m+n} \)<br>
+        อธิบาย: เมื่อเลขยกกำลังที่มี <strong>ฐานเดียวกัน</strong> คูณกัน ให้นำเลขชี้กำลังมาบวกกัน 
+        ตัวอย่างเช่น \( 3^4 \times 3^2 = 3^{4+2} = 3^6 \)</p>
+        
+        <p><strong>2. การหารเลขยกกำลัง (Quotient Rule):</strong><br>
+        สมบัติ: \( a^m \div a^n = a^{m-n} \) (โดยที่ \( a \neq 0 \))<br>
+        อธิบาย: เมื่อเลขยกกำลังที่มี <strong>ฐานเดียวกัน</strong> หารกัน ให้นำเลขชี้กำลังมาลบกัน (ตัวตั้งลบด้วยตัวหาร)
+        ตัวอย่างเช่น \( 5^7 \div 5^3 = 5^{7-3} = 5^4 \)</p>
+        
+        <p><strong>3. เลขยกกำลังซ้อนกัน (Power of a Power):</strong><br>
+        สมบัติ: \( (a^m)^n = a^{m \times n} \)<br>
+        อธิบาย: เมื่อมีวงเล็บคั่นระหว่างเลขชี้กำลัง ให้นำเลขชี้กำลังมาคูณกัน
+        ตัวอย่างเช่น \( (2^3)^4 = 2^{12} \)</p>
+
+        <p><strong>4. เลขชี้กำลังเป็นศูนย์และจำนวนลบ:</strong><br>
+        - \( a^0 = 1 \) (จำนวนใดๆ ที่ไม่เท่ากับ 0 เมื่อยกกำลัง 0 จะมีค่าเท่ากับ 1 เสมอ)<br>
+        - \( a^{-n} = \frac{1}{a^n} \) (หากเลขชี้กำลังติดลบ ให้ตบลงไปเป็นส่วนเพื่อทำให้เลขชี้กำลังเป็นบวก)</p>
+        
+        <div class="memory-trick">
+            💡 <strong>เทคนิคการจำ (Memory Trick) จากติวเตอร์:</strong><br>
+            "คูณกัน ฐานเหมือน เอาเลขมา <strong>บวก</strong>"<br>
+            "หารกัน ฐานเหมือน เอาเลขมา <strong>ลบ</strong>"<br>
+            "วงเล็บซ้อนทับ จับเลขมา <strong>คูณ</strong>"<br>
+            "กำลังติดลบ ตบลงข้างล่าง"<br>
+            "อะไรก็ตาม (ที่ไม่ใช่ศูนย์) ยกกำลังศูนย์ ได้ <strong>หนึ่ง</strong> เสมอ!"
+        </div>
+        
+        <h3>กระบวนการคิดและข้อควรระวัง</h3>
+        <p>ความผิดพลาดที่พบบ่อยที่สุดของนักเรียนคือ การนำสมบัติไปใช้กับตัวเลขที่มี "ฐานไม่เหมือนกัน" เช่น นักเรียนบางคนเห็น \( 2^3 \times 3^2 \) แล้วพยายามเอาเลขชี้กำลังมาบวกกัน ซึ่งเป็นสิ่งที่<strong>ผิดกฎอย่างร้ายแรง</strong> ก่อนที่จะใช้สมบัติการบวกหรือลบเลขชี้กำลัง <strong>ต้องตรวจสอบเสมอว่าฐานเหมือนกันหรือไม่</strong> หากฐานยังไม่เหมือนกัน ให้พยายามแปลงฐานให้เท่ากันก่อน (ตัวอย่างเช่น เปลี่ยน 4 ให้เป็น \( 2^2 \), เปลี่ยน 8 ให้เป็น \( 2^3 \), หรือเปลี่ยน 9 ให้เป็น \( 3^2 \)) การจัดรูปให้อยู่ในฐานจำนวนเฉพาะ (Prime Base) จะช่วยให้การคำนวณง่ายที่สุด</p>
+        <p>เนื้อหาทั้งหมดนี้เป็นรากฐานสำคัญสำหรับการเรียนคณิตศาสตร์ในระดับสูง ทั้งในเรื่องพหุนาม ฟังก์ชันเอกซ์โพเนนเชียล และแคลคูลัส ดังนั้นการทำความเข้าใจอย่างถ่องแท้และไม่ท่องจำแบบผิดๆ จึงมีความสำคัญอย่างยิ่ง</p>
+    </div>
+</div>
+
+<div class="container">
+    <!-- ฝั่งซ้าย: ข้อสอบ 70% -->
+    <div class="exam-panel">
+        <div class="controls">
+            <button class="btn-toggle" onclick="toggleLanguage()">🌐 เปลี่ยนภาษา (TH/EN)</button>
+            <button class="btn-reset" onclick="resetExam()">🔄 เริ่มทำใหม่ (Reset)</button>
+        </div>
+        
+        <div id="exam-container"></div>
+        
+        <div id="results-panel">
+            <h2 style="color: var(--primary);">สรุปผลการประเมินของคุณ</h2>
+            <h1 id="final-score" style="font-size: 4rem; margin: 1rem 0; color: var(--success);">0/10</h1>
+            <div id="analysis" style="text-align: left; font-size: 1.1rem; line-height: 1.6; margin-top: 1.5rem; background: #F9FAFB; padding: 1.5rem; border-radius: 8px;"></div>
+        </div>
+    </div>
+    
+    <!-- ฝั่งขวา: Whiteboard 30% -->
+    <div class="whiteboard-panel">
+        <div class="wb-toolbar">
+            <input type="color" id="colorPicker" value="#000000" title="เลือกสี">
+            <input type="range" id="brushSize" min="1" max="10" value="2" title="ขนาดหัวปากกา">
+            <button onclick="clearCanvas()" style="background: #E5E7EB; color: #374151; padding: 0.2rem 0.5rem;">🗑️ ล้างกระดาน</button>
+        </div>
+        <canvas id="whiteboard"></canvas>
+    </div>
+</div>
+
+<script>
+    const examData = [
+        {
+            id: 1,
+            q_th: "ผลลัพธ์ของ \\( 2^4 \\times 2^5 \\) ตรงกับข้อใด?",
+            q_en: "What is the result of \\( 2^4 \\times 2^5 \\)?",
+            options: ["\\( 2^{20} \\)", "\\( 2^9 \\)", "\\( 4^9 \\)", "\\( 4^{20} \\)"],
+            correct: 1,
+            clue_th: "คูณกัน ฐานเหมือน เอาเลขมาบวก",
+            clue_en: "Same base multiplication: add the exponents.",
+            exp_th: "เนื่องจากฐานคือ 2 เหมือนกัน นำเลขชี้กำลังมาบวกกัน: \\( 2^{4+5} = 2^9 \\)",
+            tags: ["basic_multiplication"]
+        },
+        {
+            id: 2,
+            q_th: "ผลลัพธ์ของ \\( \\frac{a^{12}}{a^4} \\) เมื่อ \\( a \\neq 0 \\) ตรงกับข้อใด?",
+            q_en: "What is the result of \\( \\frac{a^{12}}{a^4} \\) where \\( a \\neq 0 \\)?",
+            options: ["\\( a^3 \\)", "\\( a^8 \\)", "\\( 1^{12} \\)", "\\( a^{16} \\)"],
+            correct: 1,
+            clue_th: "หารกัน ฐานเหมือน เอาเลขมาลบ",
+            clue_en: "Same base division: subtract the exponents.",
+            exp_th: "เนื่องจากฐานคือ a เหมือนกัน นำเลขชี้กำลังมาลบกัน: \\( a^{12-4} = a^8 \\)",
+            tags: ["basic_division"]
+        },
+        {
+            id: 3,
+            q_th: "ค่าของ \\( (3^2)^4 \\) มีค่าเท่ากับข้อใด?",
+            q_en: "What is the value of \\( (3^2)^4 \\)?",
+            options: ["\\( 3^6 \\)", "\\( 9^4 \\)", "\\( 3^8 \\)", "\\( 6^4 \\)"],
+            correct: 2,
+            clue_th: "วงเล็บซ้อนทับ จับเลขมาคูณกัน",
+            clue_en: "Power of a power: multiply the exponents.",
+            exp_th: "ตามสมบัติ \\( (a^m)^n = a^{mn} \\) จะได้ \\( 3^{2 \\times 4} = 3^8 \\) (หรือถ้ากระจายเป็น \\( (9)^4 = (3^2)^4 = 3^8 \\))",
+            tags: ["power_of_power"]
+        },
+        {
+            id: 4,
+            q_th: "จงหาผลลัพธ์ของ \\( 5^3 \\times 5^{-2} \\)",
+            q_en: "Find the result of \\( 5^3 \\times 5^{-2} \\)",
+            options: ["\\( 5^{-6} \\)", "\\( 5^1 \\) หรือ 5", "\\( 5^5 \\)", "\\( 25^1 \\)"],
+            correct: 1,
+            clue_th: "ถึงจะเป็นเลขลบ ก็นำมาบวกกันตามปกติได้เลย",
+            clue_en: "Even if negative, just add them up.",
+            exp_th: "ใช้สมบัติการคูณ: \\( 5^{3 + (-2)} = 5^{3-2} = 5^1 = 5 \\)",
+            tags: ["negative_exponent"]
+        },
+        {
+            id: 5,
+            q_th: "ค่าของ \\( \\frac{7^5 \\times 7^3}{7^8} \\) มีค่าเท่าใด?",
+            q_en: "What is the value of \\( \\frac{7^5 \\times 7^3}{7^8} \\)?",
+            options: ["\\( 7 \\)", "\\( 1 \\)", "\\( 0 \\)", "\\( 7^{16} \\)"],
+            correct: 1,
+            clue_th: "ทำด้านบนให้เสร็จก่อน แล้วค่อยหารด้านล่าง อย่าลืมว่าอะไรยกกำลัง 0 ได้เท่าไหร่",
+            clue_en: "Simplify numerator first, then denominator. Remember the zero power rule.",
+            exp_th: "ตัวเศษ: \\( 7^{5+3} = 7^8 \\). หารด้วยตัวส่วน: \\( \\frac{7^8}{7^8} = 7^{8-8} = 7^0 = 1 \\)",
+            tags: ["mixed_operations", "zero_exponent"]
+        },
+        {
+            id: 6,
+            q_th: "แปลงฐานให้เหมือนกันก่อนหาคำตอบ: \\( 4^2 \\times 2^3 \\)",
+            q_en: "Convert to the same base before calculating: \\( 4^2 \\times 2^3 \\)",
+            options: ["\\( 8^5 \\)", "\\( 2^7 \\)", "\\( 2^5 \\)", "\\( 4^5 \\)"],
+            correct: 1,
+            clue_th: "เปลี่ยนเลข 4 ให้เป็น 2 ยกกำลังอะไรสักอย่างก่อน",
+            clue_en: "Change 4 to base 2 first.",
+            exp_th: "แปลงฐาน: \\( 4 = 2^2 \\). ดังนั้น \\( (2^2)^2 \\times 2^3 = 2^4 \\times 2^3 = 2^{4+3} = 2^7 \\)",
+            tags: ["base_conversion"]
+        },
+        {
+            id: 7,
+            q_th: "ผลลัพธ์ของ \\( (2x^3)(5x^4) \\) คือข้อใด?",
+            q_en: "What is the result of \\( (2x^3)(5x^4) \\)?",
+            options: ["\\( 10x^{12} \\)", "\\( 7x^7 \\)", "\\( 10x^7 \\)", "\\( 7x^{12} \\)"],
+            correct: 2,
+            clue_th: "แยกคิดระหว่างตัวเลข (สัมประสิทธิ์) กับตัวแปร",
+            clue_en: "Separate coefficients and variables.",
+            exp_th: "นำตัวเลขคูณกัน: \\( 2 \\times 5 = 10 \\). นำตัวแปรคูณกัน: \\( x^3 \\times x^4 = x^{3+4} = x^7 \\). รวมกันได้ \\( 10x^7 \\)",
+            tags: ["algebraic_multiplication"]
+        },
+        {
+            id: 8,
+            q_th: "ผลลัพธ์ของ \\( \\frac{20y^6}{4y^2} \\) เมื่อ \\( y \\neq 0 \\) คือข้อใด?",
+            q_en: "What is the result of \\( \\frac{20y^6}{4y^2} \\) where \\( y \\neq 0 \\)?",
+            options: ["\\( 5y^3 \\)", "\\( 16y^4 \\)", "\\( 5y^4 \\)", "\\( 16y^3 \\)"],
+            correct: 2,
+            clue_th: "ตัวเลขหารตัวเลข ตัวแปรหารตัวแปร",
+            clue_en: "Number divides number, variable divides variable.",
+            exp_th: "ตัวเลข: \\( 20 \\div 4 = 5 \\). ตัวแปร: \\( y^6 \\div y^2 = y^{6-2} = y^4 \\). รวมกันได้ \\( 5y^4 \\)",
+            tags: ["algebraic_division"]
+        },
+        {
+            id: 9,
+            q_th: "จงทำให้เป็นรูปอย่างง่าย: \\( (xy^2)^3 \\)",
+            q_en: "Simplify: \\( (xy^2)^3 \\)",
+            options: ["\\( xy^6 \\)", "\\( x^3y^6 \\)", "\\( x^3y^5 \\)", "\\( xy^5 \\)"],
+            correct: 1,
+            clue_th: "กระจายเลขชี้กำลัง 3 เข้าไปให้ครบทุกตัวในวงเล็บ",
+            clue_en: "Distribute the power of 3 to every term inside the parentheses.",
+            exp_th: "กระจายกำลัง 3 เข้าไป: \\( x^{1 \\times 3} \\times y^{2 \\times 3} = x^3y^6 \\)",
+            tags: ["power_distribution"]
+        },
+        {
+            id: 10,
+            q_th: "ข้อใดคือผลลัพธ์ของ \\( \\frac{(10^2 \\times 10^4)}{10^{-3}} \\)",
+            q_en: "What is the result of \\( \\frac{(10^2 \\times 10^4)}{10^{-3}} \\)?",
+            options: ["\\( 10^3 \\)", "\\( 10^9 \\)", "\\( 10^5 \\)", "\\( 10^{-1} \\)"],
+            correct: 1,
+            clue_th: "ระวังเครื่องหมายลบเมื่อนำมาลบกัน (ลบเจอติดลบ เป็นบวก)",
+            clue_en: "Be careful with subtracting a negative number (minus minus is plus).",
+            exp_th: "ตัวเศษ: \\( 10^{2+4} = 10^6 \\). ตัวส่วนหารด้วย \\( 10^{-3} \\) นำเลขชี้กำลังมาลบกัน: \\( 10^{6 - (-3)} = 10^{6+3} = 10^9 \\)",
+            tags: ["complex_fraction", "negative_exponent"]
+        }
+    ];
+
+    let currentLang = 'th';
+    let userAnswers = {};
+    const STORAGE_KEY = 'exponent_exam_state_v1';
+
+    // Fisher-Yates Shuffle
+    function shuffleArray(array) {
+        let currentIndex = array.length, randomIndex;
+        while (currentIndex !== 0) {
+            randomIndex = Math.floor(Math.random() * currentIndex);
+            currentIndex--;
+            [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+        }
+        return array;
+    }
+
+    // เตรียมคำถามพร้อมสุ่มตัวเลือก (สร้าง Array ตัวเลือกใหม่เพื่อจำ index ที่ถูกต้อง)
+    let shuffledExam = [];
+
+    function initializeExam() {
+        // โหลด State
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+            const parsed = JSON.parse(saved);
+            shuffledExam = parsed.shuffledExam;
+            userAnswers = parsed.userAnswers;
+            currentLang = parsed.lang || 'th';
+        } else {
+            // สุ่มใหม่
+            shuffledExam = examData.map(q => {
+                let opts = q.options.map((text, idx) => ({ text, isCorrect: idx === q.correct }));
+                shuffleArray(opts);
+                return { ...q, shuffledOptions: opts };
+            });
+            shuffleArray(shuffledExam);
+            saveState();
+        }
+        renderExam();
+        MathJax.typesetPromise();
+    }
+
+    function saveState() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({
+            shuffledExam,
+            userAnswers,
+            lang: currentLang
+        }));
+    }
+
+    function resetExam() {
+        if(confirm("คุณต้องการล้างข้อมูลการทำข้อสอบและเริ่มต้นใหม่ทั้งหมดหรือไม่?")) {
+            localStorage.removeItem(STORAGE_KEY);
+            userAnswers = {};
+            document.getElementById('results-panel').style.display = 'none';
+            initializeExam();
+        }
+    }
+
+    function toggleLanguage() {
+        currentLang = currentLang === 'th' ? 'en' : 'th';
+        saveState();
+        renderExam();
+        MathJax.typesetPromise();
+    }
+
+    function renderExam() {
+        const container = document.getElementById('exam-container');
+        container.innerHTML = '';
+        
+        let allAnswered = true;
+
+        shuffledExam.forEach((q, index) => {
+            const isAnswered = userAnswers[q.id] !== undefined;
+            if (!isAnswered) allAnswered = false;
+
+            const card = document.createElement('div');
+            card.className = 'question-card';
+            
+            const qText = currentLang === 'th' ? q.q_th : q.q_en;
+            const clueText = currentLang === 'th' ? q.clue_th : q.clue_en;
+            const expText = currentLang === 'th' ? q.exp_th : (q.exp_en || q.exp_th); // Fallback to TH if no EN exp
+
+            let html = `<div class="question-title">ข้อที่ ${index + 1}: ${qText}</div>`;
+            html += `<div class="options">`;
+            
+            q.shuffledOptions.forEach((opt, optIndex) => {
+                let btnClass = 'option-btn';
+                if (isAnswered) {
+                    if (opt.isCorrect) btnClass += ' correct';
+                    else if (userAnswers[q.id] === optIndex) btnClass += ' wrong';
+                }
+                
+                html += `<button class="${btnClass}" ${isAnswered ? 'disabled' : ''} onclick="selectAnswer(${q.id}, ${optIndex})">
+                            ${String.fromCharCode(65 + optIndex)}. ${opt.text}
+                         </button>`;
+            });
+            html += `</div>`;
+            
+            // Clue
+            if (!isAnswered) {
+                html += `<button class="show-clue-btn" onclick="this.nextElementSibling.style.display='block'; this.style.display='none'">💡 ดูคำใบ้ (Clue)</button>
+                         <div class="clue">🔍 ${clueText}</div>`;
+            }
+
+            // Explanation
+            if (isAnswered) {
+                html += `<div class="explanation" style="display:block;">
+                            <strong>👨‍🏫 เฉลยอย่างละเอียด (วิธีลัดจากติวเตอร์):</strong><br>${expText}
+                         </div>`;
+            }
+
+            card.innerHTML = html;
+            container.appendChild(card);
+        });
+
+        if (allAnswered && shuffledExam.length > 0) {
+            showAnalysis();
+        }
+    }
+
+    function selectAnswer(qId, optIndex) {
+        userAnswers[qId] = optIndex;
+        saveState();
+        renderExam();
+        MathJax.typesetPromise();
+    }
+
+    function showAnalysis() {
+        const panel = document.getElementById('results-panel');
+        const scoreEl = document.getElementById('final-score');
+        const analysisEl = document.getElementById('analysis');
+        
+        let score = 0;
+        let weaknessCounts = {
+            base_conversion: 0,
+            negative_exponent: 0,
+            algebraic: 0,
+            power_of_power: 0
+        };
+
+        shuffledExam.forEach(q => {
+            const selectedOptIndex = userAnswers[q.id];
+            if (q.shuffledOptions[selectedOptIndex].isCorrect) {
+                score++;
+            } else {
+                if (q.tags.includes('base_conversion')) weaknessCounts.base_conversion++;
+                if (q.tags.includes('negative_exponent')) weaknessCounts.negative_exponent++;
+                if (q.tags.includes('algebraic_multiplication') || q.tags.includes('algebraic_division')) weaknessCounts.algebraic++;
+                if (q.tags.includes('power_of_power') || q.tags.includes('power_distribution')) weaknessCounts.power_of_power++;
+            }
+        });
+
+        scoreEl.innerText = `${score} / 10`;
+        
+        let analysisText = `<strong>🎯 บทวิเคราะห์จุดเด่นและจุดด้อยของคุณ:</strong><br><br>`;
+        if (score >= 8) {
+            analysisText += `✅ <strong>จุดเด่น:</strong> ยอดเยี่ยมมาก! พื้นฐานเรื่องสมบัติเลขยกกำลังของคุณแน่นมาก คุณเข้าใจทั้งการคูณ การหาร และการจัดการวงเล็บได้อย่างดีเยี่ยม<br><br>`;
+        } else if (score >= 5) {
+            analysisText += `✅ <strong>จุดเด่น:</strong> คุณมีความเข้าใจพื้นฐานในระดับปานกลาง สามารถทำโจทย์ตรงไปตรงมาได้ดี แต่ยังมีสับสนในโจทย์ประยุกต์หรือโจทย์ที่มีหลายขั้นตอน<br><br>`;
+        } else {
+            analysisText += `⚠️ <strong>สิ่งที่ต้องพัฒนา:</strong> คุณยังสับสนในกฎพื้นฐาน ขอแนะนำให้อ่านสรุปเทคนิคการจำที่ด้านบนอีกครั้ง ช้าๆ และลองทำความเข้าใจทีละข้อ<br><br>`;
+        }
+
+        let weaknesses = [];
+        if (weaknessCounts.base_conversion > 0) weaknesses.push("- การแปลงฐานให้เท่ากันก่อนคำนวณ (เจอฐานต่างกันอย่าเพิ่งจับบวกลบ)");
+        if (weaknessCounts.negative_exponent > 0) weaknesses.push("- การจัดการเลขชี้กำลังที่ติดลบ (ระวังเครื่องหมายลบชนลบ)");
+        if (weaknessCounts.algebraic > 0) weaknesses.push("- การคูณหารตัวแปรและสัมประสิทธิ์ (แยกตัวเลขทำกับตัวเลข ตัวแปรทำกับตัวแปร)");
+        if (weaknessCounts.power_of_power > 0) weaknesses.push("- การกระจายเลขชี้กำลังเข้าไปในวงเล็บ (ต้องกระจายให้ครบทุกตัว)");
+
+        if (weaknesses.length > 0) {
+            analysisText += `🔥 <strong>จุดด้อยที่ควรกลับไปทบทวนเพิ่มเติม:</strong><br>${weaknesses.join('<br>')}`;
+        } else {
+            analysisText += `🔥 <strong>ข้อแนะนำ:</strong> สมบูรณ์แบบ! ลองหาโจทย์แข่งขันหรือโจทย์แนวข้อสอบเข้า ม.4 มาฝึกทำเพิ่มเติมเพื่อเพิ่มความเร็ว`;
+        }
+        
+        analysisText += `<br><br><div style="text-align: right; color: var(--primary); font-weight: bold;">-- เขียนโดย พระจอมเกล้าติวเตอร์ --</div>`;
+
+        analysisEl.innerHTML = analysisText;
+        panel.style.display = 'block';
+    }
+
+    // --- Whiteboard Logic ---
+    const canvas = document.getElementById('whiteboard');
+    const ctx = canvas.getContext('2d');
+    let isDrawing = false;
+    let lastX = 0;
+    let lastY = 0;
+
+    function resizeCanvas() {
+        const parent = canvas.parentElement;
+        canvas.width = parent.clientWidth;
+        // ลบความสูงของ toolbar
+        canvas.height = parent.clientHeight - 50; 
+    }
+    
+    // ตั้งค่า canvas เริ่มต้น
+    setTimeout(resizeCanvas, 100);
+    window.addEventListener('resize', resizeCanvas);
+
+    function draw(e) {
+        if (!isDrawing) return;
+        ctx.strokeStyle = document.getElementById('colorPicker').value;
+        ctx.lineWidth = document.getElementById('brushSize').value;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+
+        let clientX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
+        let clientY = e.type.includes('mouse') ? e.clientY : e.touches[0].clientY;
+        
+        const rect = canvas.getBoundingClientRect();
+        const x = clientX - rect.left;
+        const y = clientY - rect.top;
+
+        ctx.beginPath();
+        ctx.moveTo(lastX, lastY);
+        ctx.lineTo(x, y);
+        ctx.stroke();
+        [lastX, lastY] = [x, y];
+    }
+
+    function startDrawing(e) {
+        isDrawing = true;
+        const rect = canvas.getBoundingClientRect();
+        lastX = (e.type.includes('mouse') ? e.clientX : e.touches[0].clientX) - rect.left;
+        lastY = (e.type.includes('mouse') ? e.clientY : e.touches[0].clientY) - rect.top;
+        draw(e);
+    }
+    
+    function stopDrawing() { isDrawing = false; ctx.beginPath(); }
+    function clearCanvas() { ctx.clearRect(0, 0, canvas.width, canvas.height); }
+
+    // Mouse Events
+    canvas.addEventListener('mousedown', startDrawing);
+    canvas.addEventListener('mousemove', draw);
+    canvas.addEventListener('mouseup', stopDrawing);
+    canvas.addEventListener('mouseout', stopDrawing);
+    
+    // Touch Events for Mobile
+    canvas.addEventListener('touchstart', (e) => { e.preventDefault(); startDrawing(e); }, {passive: false});
+    canvas.addEventListener('touchmove', (e) => { e.preventDefault(); draw(e); }, {passive: false});
+    canvas.addEventListener('touchend', stopDrawing);
+
+    // Initial load
+    initializeExam();
+
+</script>
+
+</body>
+</html>
+"""
+
+with open("Math_Exponents_Exam.html", "w", encoding="utf-8") as f:
+    f.write(html_content)
+print("File Math_Exponents_Exam.html has been generated.")
