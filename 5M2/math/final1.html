@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ข้อสอบปลายภาคเรียนที่ 1 คณิตศาสตร์ ม.2 (ระดับเข้มข้น) - พระจอมเกล้าติวเตอร์</title>
+  <style>
+    :root {
+      --primary: #0f172a;
+      --primary-light: #1e293b;
+      --accent: #f59e0b;
+      --highlight: #0284c7;
+      --success: #10b981;
+      --danger: #ef4444;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --border: #cbd5e1;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Sarabun', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background-color: var(--bg); color: var(--text); line-height: 1.6; padding: 16px; }
+    .container { max-width: 1440px; margin: 0 auto; }
+    
+    header { background: linear-gradient(135deg, var(--primary), #334155); color: white; padding: 24px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+    .header-top { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+    .header-title { font-size: 1.5rem; font-weight: bold; }
+    .btn-lang { background: rgba(255,255,255,0.2); color: white; border: 1px solid white; padding: 6px 14px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+    .btn-lang:hover { background: rgba(255,255,255,0.3); }
+    
+    .summary-box { background: rgba(255,255,255,0.08); padding: 20px; border-radius: 8px; margin-top: 16px; font-size: 0.95rem; border-left: 4px solid var(--accent); }
+    .summary-box h3 { color: #fde047; margin-bottom: 12px; font-size: 1.15rem; }
+    .summary-box p { margin-bottom: 10px; }
+    .trick-box { background: rgba(245, 158, 11, 0.15); border: 1px dashed var(--accent); border-radius: 6px; padding: 12px; margin-top: 12px; }
+    .trick-title { font-weight: bold; color: #fbbf24; margin-bottom: 6px; }
+
+    /* Layout 2 Frames: 70% Exam, 30% Whiteboard */
+    .main-grid { display: flex; flex-direction: column; gap: 20px; }
+    @media (min-width: 992px) {
+      .main-grid { display: grid; grid-template-columns: 7fr 3fr; align-items: start; }
+    }
+
+    .exam-section { background: var(--card-bg); border-radius: 12px; padding: 20px; border: 1px solid var(--border); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+    .exam-controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid var(--border); flex-wrap: wrap; gap: 10px; }
+    .score-badge { font-size: 1.1rem; font-weight: bold; color: var(--highlight); background: #e0f2fe; padding: 6px 14px; border-radius: 20px; border: 1px solid #bae6fd; }
+    .btn-reset { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; padding: 6px 14px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+    .btn-reset:hover { background: #fecaca; }
+
+    .question-card { background: #fff; border: 1px solid var(--border); border-radius: 8px; padding: 18px; margin-bottom: 20px; transition: 0.2s; }
+    .question-card:hover { border-color: var(--highlight); }
+    .q-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px; }
+    .q-num { font-weight: bold; color: var(--primary); font-size: 1rem; }
+    .q-topic { font-size: 0.75rem; background: #e2e8f0; padding: 2px 8px; border-radius: 4px; color: var(--text-muted); font-weight: bold; }
+    .q-text { font-size: 1.05rem; font-weight: 500; margin-bottom: 12px; line-height: 1.5; }
+    .q-clue { font-size: 0.85rem; color: #b45309; background: #fffbeb; padding: 6px 10px; border-radius: 4px; margin-bottom: 12px; border-left: 3px solid #f59e0b; }
+    
+    .options-grid { display: grid; grid-template-columns: 1fr; gap: 8px; margin-bottom: 12px; }
+    @media (min-width: 600px) { .options-grid { grid-template-columns: 1fr 1fr; } }
+    
+    .opt-btn { background: #f8fafc; border: 1px solid #cbd5e1; padding: 10px 14px; border-radius: 6px; text-align: left; cursor: pointer; font-size: 0.95rem; transition: all 0.2s; display: flex; align-items: center; }
+    .opt-btn:hover:not([disabled]) { background: #e2e8f0; border-color: #94a3b8; }
+    .opt-btn.correct { background: #dcfce7 !important; border-color: #22c55e !important; color: #15803d; font-weight: bold; }
+    .opt-btn.wrong { background: #fee2e2 !important; border-color: #ef4444 !important; color: #b91c1c; }
+    .opt-btn:disabled { cursor: not-allowed; opacity: 0.95; }
+
+    .explanation-box { display: none; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 6px; padding: 12px; font-size: 0.9rem; margin-top: 10px; }
+    .explanation-box.show { display: block; }
+    .tutor-tip { color: #1e40af; font-weight: bold; margin-top: 6px; display: block; }
+
+    /* Whiteboard (30%) */
+    .whiteboard-section { background: var(--card-bg); border-radius: 12px; padding: 16px; border: 1px solid var(--border); box-shadow: 0 2px 4px rgba(0,0,0,0.05); position: sticky; top: 16px; }
+    .wb-title { font-weight: bold; margin-bottom: 8px; color: var(--primary); display: flex; justify-content: space-between; align-items: center; }
+    .wb-tools { display: flex; gap: 6px; margin-bottom: 8px; flex-wrap: wrap; }
+    .wb-btn { background: #f1f5f9; border: 1px solid #cbd5e1; padding: 4px 10px; border-radius: 4px; font-size: 0.8rem; cursor: pointer; }
+    .wb-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+    #canvas { background: #ffffff; border: 2px dashed #94a3b8; border-radius: 6px; width: 100%; height: 420px; touch-action: none; cursor: crosshair; }
+
+    .result-section { display: none; background: white; border-radius: 12px; padding: 24px; margin-top: 20px; border: 1px solid var(--border); box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+    .result-section.show { display: block; }
+    .result-score { font-size: 1.8rem; font-weight: bold; text-align: center; color: var(--primary); margin-bottom: 16px; }
+    .analysis-grid { display: grid; grid-template-columns: 1fr; gap: 16px; margin-top: 16px; }
+    @media (min-width: 600px) { .analysis-grid { grid-template-columns: 1fr 1fr; } }
+    .analysis-card { padding: 14px; border-radius: 8px; border: 1px solid var(--border); }
+    .strength-card { background: #f0fdf4; border-color: #bbf7d0; }
+    .weakness-card { background: #fef2f2; border-color: #fecaca; }
+    .analysis-card h4 { margin-bottom: 8px; }
+
+    footer { text-align: center; margin-top: 30px; padding: 16px; color: var(--text-muted); font-size: 0.95rem; font-weight: bold; border-top: 1px solid var(--border); }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <div class="header-top">
+      <div class="header-title">📐 ข้อสอบปลายภาคเรียนที่ 1 คณิตศาสตร์ ม.2 (ระดับเข้มข้น สสวท.)</div>
+      <button class="btn-lang" id="btnToggleLang" onclick="toggleLanguage()">สลับภาษา / Switch to EN</button>
+    </div>
+    
+    <div class="summary-box" id="summaryContent">
+      <h3>📘 สรุปสาระสำคัญและกระบวนการคิดวิชาคณิตศาสตร์ ม.2 ภาคเรียนที่ 1</h3>
+      <p><b>1. ทฤษฎีบทพีทาโกรัส:</b> c² = a² + b² ด้านตรงข้ามมุมฉากยาวที่สุดเสมอ จำชุดอัตราส่วนยอดฮิต: 3-4-5, 5-12-13, 7-24-25, 8-15-17 และ 9-40-41 บทกลับใช้เช็กชนิดสามเหลี่ยม: c² > a² + b² เป็นมุมป้าน, c² < a² + b² เป็นมุมแหลม</p>
+      <p><b>2. ความรู้เบื้องต้นเรื่องจำนวนจริง:</b> จำนวนจริงประกอบด้วยจำนวนตรรกยะ (เศษส่วน ทศนิยมซ้ำ รู้จบ) และอตรรกยะ (ทศนิยมไม่รู้จบไม่ซ้ำ รากถอดไม่ลงตัว ค่า π) รากที่สองของ a² คือ |a|</p>
+      <p><b>3. ปริซึมและทรงกระบอก:</b> ปริมาตร = พื้นที่ฐาน × สูง | พื้นที่ผิวข้างทรงกระบอก = 2πrh | พื้นที่ผิวทั้งหมดทรงกระบอก = 2πr(h + r)</p>
+      <p><b>4. การแปลงทางเรขาคณิต:</b> การเลื่อนขนาน (พิกัดขยับคงที่ตามเวกเตอร์), การสะท้อน (ระยะห่างจากเส้นสะท้อนเท่ากัน), การหมุน (มุมและทิศทางรอบจุดศูนย์กลางการหมุน)</p>
+      <p><b>5. พหุนาม:</b> การบวก-ลบเอกนามที่คล้ายกัน, การคูณพหุนามด้วยการแจกแจงทุกพจน์ และการหารพหุนาม</p>
+      
+      <div class="trick-box">
+        <div class="trick-title">💡 กล่องเทคนิคการจำและวิธีคิดลัด (Tutor Memory Tricks)</div>
+        • <b>พีทาโกรัสใน 3 มิติ:</b> เส้นทแยงมุมกล่องสี่เหลี่ยม = √(กว้าง² + ยาว² + สูง²)<br>
+        • <b>ถอดรากที่สอง:</b> √(x²) = |x| เสมอ (ผลลัพธ์ห้ามติดลบ)<br>
+        • <b>หมุนพิกัด 90° ทวนเข็ม:</b> (x, y) ➔ (-y, x) | <b>หมุน 180°:</b> (x, y) ➔ (-x, -y)<br>
+        • <b>ทรงกระบอก:</b> พื้นที่ผิวทั้งหมด = 2πr(h + r) ช่วยลดขั้นตอนการคำนวณซ้ำซ้อน
+      </div>
+    </div>
+  </header>
+
+  <div class="main-grid">
+    <!-- Frame ซ้าย (70%): ข้อสอบ 30 ข้อ -->
+    <div class="exam-section">
+      <div class="exam-controls">
+        <span class="score-badge" id="scoreDisplay">คะแนน: 0 / 30</span>
+        <button class="btn-reset" onclick="resetExam()">🔄 เริ่มทำใหม่ (Reset)</button>
+      </div>
+
+      <div id="questionsContainer"></div>
+
+      <!-- สรุปผลและวิเคราะห์ -->
+      <div class="result-section" id="resultSection">
+        <div class="result-score" id="finalScore"></div>
+        <div class="analysis-grid">
+          <div class="analysis-card strength-card">
+            <h4 style="color:#15803d;">🌟 จุดเด่นที่ทำได้ดีเยี่ยม (Strengths)</h4>
+            <ul id="strengthList"></ul>
+          </div>
+          <div class="analysis-card weakness-card">
+            <h4 style="color:#b91c1c;">⚠️ จุดที่ควรกลับไปทบทวนเพิ่มเติม (Areas for Improvement)</h4>
+            <ul id="weaknessList"></ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Frame ขวา (30%): Whiteboard -->
+    <div class="whiteboard-section">
+      <div class="wb-title">
+        <span>📝 กระดานทดเลข (Scratchpad)</span>
+      </div>
+      <div class="wb-tools">
+        <button class="wb-btn active" id="penBtn" onclick="setWbMode('pen')">✏️ ดินสอ</button>
+        <button class="wb-btn" id="eraserBtn" onclick="setWbMode('eraser')">🧹 ยางลบ</button>
+        <button class="wb-btn" onclick="clearWhiteboard()">🗑️ ล้างกระดาน</button>
+      </div>
+      <canvas id="canvas"></canvas>
+    </div>
+  </div>
+
+  <footer>
+    เขียนโดย พระจอมเกล้าติวเตอร์
+  </footer>
+</div>
+
+<script>
+const examData = [
+  {
+    id: 1, unit: "หน่วยที่ 1 พีทาโกรัส", topic: "ทฤษฎีบทพีทาโกรัส",
+    q_th: "รูปสามเหลี่ยมมุมฉากรูปหนึ่ง มีด้านประกอบมุมฉากยาว 9 เซนติเมตร และ 12 เซนติเมตร ด้านตรงข้ามมุมฉากจะยาวกี่เซนติเมตร?",
+    q_en: "A right triangle has legs of length 9 cm and 12 cm. What is the length of the hypotenuse?",
+    clue_th: "ใช้ความสัมพันธ์ c² = a² + b² หรืออัตราส่วน 3 : 4 : 5 ขยาย 3 เท่า",
+    clue_en: "Use c² = a² + b² or scale the 3:4:5 ratio by 3.",
+    options: ["15 เซนติเมตร", "18 เซนติเมตร", "21 เซนติเมตร", "13 เซนติเมตร"],
+    ans: 0,
+    exp_th: "c² = 9² + 12² = 81 + 144 = 225 ➔ c = √225 = 15 เซนติเมตร",
+    exp_en: "c² = 81 + 144 = 225 ➔ c = 15 cm.",
+    tip: "อัตราส่วน 3 : 4 : 5 ➔ คูณ 3 ได้ 9 : 12 : 15 ตอบ 15 ซม."
+  },
+  {
+    id: 2, unit: "หน่วยที่ 1 พีทาโกรัส", topic: "ทฤษฎีบทพีทาโกรัส",
+    q_th: "รูปสามเหลี่ยมมุมฉากรูปหนึ่ง มีด้านตรงข้ามมุมฉากยาว 25 นิ้ว และด้านประกอบมุมฉากด้านหนึ่งยาว 24 นิ้ว ด้านประกอบมุมฉากอีกด้านหนึ่งยาวกี่นิ้ว?",
+    q_en: "A right triangle has a hypotenuse of 25 inches and one leg of 24 inches. How long is the other leg?",
+    clue_th: "ใช้สูตร b² = c² - a²",
+    clue_en: "Use formula b² = 25² - 24² = (25-24)(25+24).",
+    options: ["7 นิ้ว", "8 นิ้ว", "9 นิ้ว", "6 นิ้ว"],
+    ans: 0,
+    exp_th: "b² = 25² - 24² = 625 - 576 = 49 ➔ b = 7 นิ้ว (ชุดตัวเลขพีทาโกรัส 7, 24, 25)",
+    exp_en: "b² = 625 - 576 = 49 ➔ b = 7 inches.",
+    tip: "ชุดตัวเลข 7, 24, 25 ➔ ตอบ 7 นิ้วทันที"
+  },
+  {
+    id: 3, unit: "หน่วยที่ 1 พีทาโกรัส", topic: "โจทย์ปัญหาพีทาโกรัส",
+    q_th: "บันไดยาว 13 เมตร วางพาดกำแพงโดยให้ปลายบันไดอยู่สูงจากพื้น 12 เมตร เชิงบันไดจะอยู่ห่างจากกำแพงกี่เมตร?",
+    q_en: "A 13-meter ladder leans against a wall reaching 12 meters high. How far is the base from the wall?",
+    clue_th: "มองเป็นรูปสามเหลี่ยมมุมฉาก โดยบันไดเป็นด้านตรงข้ามมุมฉาก",
+    clue_en: "The ladder is the hypotenuse (13m) and height is a leg (12m).",
+    options: ["5 เมตร", "6 เมตร", "4 เมตร", "7 เมตร"],
+    ans: 0,
+    exp_th: "ระยะห่าง² = 13² - 12² = 169 - 144 = 25 ➔ ระยะห่าง = √25 = 5 เมตร (ชุดตัวเลข 5, 12, 13)",
+    exp_en: "Distance² = 169 - 144 = 25 ➔ Distance = 5 meters.",
+    tip: "ชุดตัวเลข 5, 12, 13 ➔ ตอบ 5 เมตร"
+  },
+  {
+    id: 4, unit: "หน่วยที่ 1 พีทาโกรัส", topic: "บทกลับทฤษฎีบทพีทาโกรัส",
+    q_th: "ความยาวของด้านทั้งสามของรูปสามเหลี่ยมในข้อใด เป็นความยาวด้านของรูปสามเหลี่ยมมุมป้าน?",
+    q_en: "Which set of side lengths forms an obtuse triangle?",
+    clue_th: "รูปสามเหลี่ยมมุมป้านต้องสอดคล้องกับเงื่อนไข c² > a² + b² เมื่อ c ยาวที่สุด",
+    clue_en: "An obtuse triangle satisfies c² > a² + b² where c is the longest side.",
+    options: ["4, 6, 8", "6, 8, 10", "5, 12, 13", "7, 8, 10"],
+    ans: 0,
+    exp_th: "พิจารณา 4, 6, 8: 8² = 64 และ 4² + 6² = 16 + 36 = 52 เนื่องจาก 64 > 52 จึงเป็นรูปสามเหลี่ยมมุมป้าน",
+    exp_en: "8² = 64 > 4² + 6² = 52. Therefore, it is an obtuse triangle.",
+    tip: "c² = 64 มากกว่า a²+b² = 52 ➔ เป็นมุมป้าน"
+  },
+  {
+    id: 5, unit: "หน่วยที่ 1 พีทาโกรัส", topic: "พีทาโกรัสใน 3 มิติ",
+    q_th: "กล่องทรงสี่เหลี่ยมมุมฉากใบหนึ่ง มีขนาดกว้าง 3 นิ้ว ยาว 4 นิ้ว และสูง 12 นิ้ว เส้นทแยงมุมของกล่องใบนี้ยาวกี่นิ้ว?",
+    q_en: "A rectangular prism box has dimensions 3 in × 4 in × 12 in. What is the length of the space diagonal?",
+    clue_th: "ใช้สูตรเส้นทแยงมุมมิติสามมิติ: d = √(กว้าง² + ยาว² + สูง²)",
+    clue_en: "Space diagonal d = √(w² + l² + h²).",
+    options: ["13 นิ้ว", "15 นิ้ว", "14 นิ้ว", "16 นิ้ว"],
+    ans: 0,
+    exp_th: "d² = 3² + 4² + 12² = 9 + 16 + 144 = 169 ➔ d = √169 = 13 นิ้ว",
+    exp_en: "d = √(9 + 16 + 144) = √169 = 13 inches.",
+    tip: "ฐาน 3, 4 ได้เส้นทแยงมุม 5 ➔ นำ 5 กับสูง 12 ได้เส้นทแยงมุมกล่อง 13 นิ้ว"
+  },
+  {
+    id: 6, unit: "หน่วยที่ 2 จำนวนจริง", topic: "การจำแนกจำนวนจริง",
+    q_th: "ข้อใดจัดเป็นจำนวนอตรรกยะทุกจำนวน?",
+    q_en: "Which set contains ONLY irrational numbers?",
+    clue_th: "จำนวนอตรรกยะคือทศนิยมไม่รู้จบไม่ซ้ำ หรือรากที่ถอดไม่ลงตัว",
+    clue_en: "Irrational numbers cannot be expressed as a fraction of integers.",
+    options: ["√7, π, 0.121121112...", "√9, 22/7, 0.3̇", "√5, 3.1416, 1/3", "0, √2, 0.151515..."],
+    ans: 0,
+    exp_th: "√7 (รากไม่ลงตัว), π (ค่าคงตัวอตรรกยะ), 0.121121112... (ทศนิยมไม่ซ้ำ) ล้วนเป็นจำนวนอตรรกยะทั้งหมด",
+    exp_en: "√7, π, and non-repeating infinite decimals are all irrational.",
+    tip: "22/7 และทศนิยมซ้ำเป็นตรรกยะ แต่ π และทศนิยมไม่ซ้ำเป็นอตรรกยะ"
+  },
+  {
+    id: 7, unit: "หน่วยที่ 2 จำนวนจริง", topic: "การแปลงทศนิยมซ้ำ",
+    q_th: "ทศนิยมซ้ำ 0.235̇ (35 ซ้ำ) เขียนในรูปเศษส่วนอย่างต่ำได้ตรงกับข้อใด?",
+    q_en: "Express 0.23535... (0.23̇5̇) as a fraction in simplest form.",
+    clue_th: "ใช้สูตร: (235 - 2) / 990 = 233 / 990",
+    clue_en: "(All digits - non-repeating) / 990 = 233 / 990.",
+    options: ["233/990", "235/999", "233/999", "235/990"],
+    ans: 0,
+    exp_th: "0.23̇5̇ = (235 - 2) / 990 = 233 / 990 ซึ่งเป็นเศษส่วนอย่างต่ำแล้ว",
+    exp_en: "(235 - 2) / 990 = 233 / 990.",
+    tip: "สูตรลัด: ตัวเต็มลบไม่ซ้ำ ส่วนด้วย 9 สองตัว 0 หนึ่งตัว ➔ 233/990"
+  },
+  {
+    id: 8, unit: "หน่วยที่ 2 จำนวนจริง", topic: "รากที่สอง",
+    q_th: "ค่าของ √[(-12)²] + ( -√25 ) มีค่าเท่าใด?",
+    q_en: "What is √[(-12)²] + ( -√25 )?",
+    clue_th: "√[(-12)²] = |-12| = 12 และ √25 = 5",
+    clue_en: "√[(-12)²] = |-12| = 12, -√25 = -5.",
+    options: ["7", "-7", "17", "-17"],
+    ans: 0,
+    exp_th: "√[(-12)²] = |-12| = 12 และ -√25 = -5 ➔ 12 + (-5) = 7",
+    exp_en: "12 + (-5) = 7.",
+    tip: "ถอดรากต้องได้ค่าบวกเสมอ: 12 - 5 = 7"
+  },
+  {
+    id: 9, unit: "หน่วยที่ 2 จำนวนจริง", topic: "รากที่สาม",
+    q_th: "ผลลัพธ์ของ ∛(-216) + ∛343 มีค่าเท่าใด?",
+    q_en: "What is ∛(-216) + ∛343?",
+    clue_th: "(-6)³ = -216 และ 7³ = 343",
+    clue_en: "(-6)³ = -216, 7³ = 343.",
+    options: ["1", "-1", "13", "-13"],
+    ans: 0,
+    exp_th: "∛(-216) = -6 และ ∛343 = 7 ➔ (-6) + 7 = 1",
+    exp_en: "-6 + 7 = 1.",
+    tip: "-6 + 7 = 1"
+  },
+  {
+    id: 10, unit: "หน่วยที่ 2 จำนวนจริง", topic: "การประมาณค่าราก",
+    q_th: "จำนวนเต็มที่ใกล้เคียงกับ √70 มากที่สุดคือจำนวนใด?",
+    q_en: "Which integer is closest to √70?",
+    clue_th: "8² = 64 และ 9² = 81 พิจารณาว่า 70 ใกล้ 64 หรือ 81 มากกว่า",
+    clue_en: "8² = 64, 9² = 81. Check whether 70 is closer to 64 or 81.",
+    options: ["8", "9", "7", "10"],
+    ans: 0,
+    exp_th: "64 < 70 < 81 ➔ 70 ห่างจาก 64 อยู่ 6 หน่วย แต่ห่างจาก 81 อยู่ 11 หน่วย ดังนั้น √70 ใกล้เคียงกับ 8 มากที่สุด (≈ 8.36)",
+    exp_en: "|70 - 64| = 6 < |81 - 70| = 11. Closest integer is 8.",
+    tip: "70 อยู่ใกล้ 64 มากกว่า 81 ➔ ตอบ 8"
+  },
+  {
+    id: 11, unit: "หน่วยที่ 3 ปริซึมและทรงกระบอก", topic: "ปริมาตรปริซึม",
+    q_th: "ปริซึมตรงฐานสามเหลี่ยมมุมฉาก มีด้านประกอบมุมฉากยาว 6 เซนติเมตร และ 8 เซนติเมตร ถ้าปริซึมยาว 15 เซนติเมตร ปริซึมนี้มีปริมาตรกี่ลูกบาศก์เซนติเมตร?",
+    q_en: "A right triangular prism has leg lengths 6 cm and 8 cm. If length is 15 cm, what is its volume?",
+    clue_th: "พื้นที่ฐาน = (1/2) × 6 × 8 แล้วคูณกับความยาวปริซึม",
+    clue_en: "Base area = (1/2) × 6 × 8 = 24 cm². Volume = Base area × length.",
+    options: ["360 ลบ.ซม.", "720 ลบ.ซม.", "240 ลบ.ซม.", "480 ลบ.ซม."],
+    ans: 0,
+    exp_th: "พื้นที่ฐาน = (1/2) × 6 × 8 = 24 ตร.ซม. ➔ ปริมาตร = 24 × 15 = 360 ลบ.ซม.",
+    exp_en: "Volume = 24 × 15 = 360 cm³.",
+    tip: "พื้นที่ฐาน 24 × สูง 15 = 360 ลบ.ซม."
+  },
+  {
+    id: 12, unit: "หน่วยที่ 3 ปริซึมและทรงกระบอก", topic: "พื้นที่ผิวปริซึม",
+    q_th: "ปริซึมสี่เหลี่ยมมุมฉาก กว้าง 4 เซนติเมตร ยาว 5 เซนติเมตร และสูง 6 เซนติเมตร มีพื้นที่ผิวทั้งหมดกี่ตารางเซนติเมตร?",
+    q_en: "A rectangular prism has dimensions 4 cm × 5 cm × 6 cm. What is its total surface area?",
+    clue_th: "พื้นที่ผิวทั้งหมด = 2 × (กว้าง×ยาว + กว้าง×สูง + ยาว×สูง)",
+    clue_en: "Surface area = 2(wl + wh + lh).",
+    options: ["148 ตร.ซม.", "120 ตร.ซม.", "160 ตร.ซม.", "74 ตร.ซม."],
+    ans: 0,
+    exp_th: "พื้นที่ผิว = 2 × (4×5 + 4×6 + 5×6) = 2 × (20 + 24 + 30) = 2 × 74 = 148 ตร.ซม.",
+    exp_en: "2 × (20 + 24 + 30) = 2 × 74 = 148 cm².",
+    tip: "2 × (20 + 24 + 30) = 148 ตร.ซม."
+  },
+  {
+    id: 13, unit: "หน่วยที่ 3 ปริซึมและทรงกระบอก", topic: "ปริมาตรทรงกระบอก",
+    q_th: "ถังน้ำทรงกระบอกมีรัศมีฐาน 7 เซนติเมตร สูง 20 เซนติเมตร จะจุน้ำได้กี่ลูกบาศก์เซนติเมตร (กำหนดให้ π ≈ 22/7)?",
+    q_en: "A cylinder has radius 7 cm and height 20 cm. What is its volume (π ≈ 22/7)?",
+    clue_th: "ปริมาตรทรงกระบอก = πr²h",
+    clue_en: "Volume = πr²h = (22/7) × 7 × 7 × 20.",
+    options: ["3,080 ลบ.ซม.", "2,840 ลบ.ซม.", "3,140 ลบ.ซม.", "6,160 ลบ.ซม."],
+    ans: 0,
+    exp_th: "ปริมาตร = (22/7) × 7 × 7 × 20 = 22 × 7 × 20 = 154 × 20 = 3,080 ลบ.ซม.",
+    exp_en: "Volume = 154 × 20 = 3,080 cm³.",
+    tip: "พื้นที่ฐาน 154 × สูง 20 = 3,080 ลบ.ซม."
+  },
+  {
+    id: 14, unit: "หน่วยที่ 3 ปริซึมและทรงกระบอก", topic: "พื้นที่ผิวข้างทรงกระบอก",
+    q_th: "ทรงกระบอกอันหนึ่งมีเส้นผ่านศูนย์กลางของฐาน 14 เซนติเมตร และสูง 10 เซนติเมตร มีพื้นที่ผิวข้างกี่ตารางเซนติเมตร (กำหนดให้ π ≈ 22/7)?",
+    q_en: "A cylinder has diameter 14 cm and height 10 cm. What is its lateral surface area (π ≈ 22/7)?",
+    clue_th: "รัศมี r = 7 ซม. ใช้สูตรพื้นที่ผิวข้าง = 2πrh",
+    clue_en: "Radius r = 7 cm. Lateral area = 2πrh.",
+    options: ["440 ตร.ซม.", "220 ตร.ซม.", "594 ตร.ซม.", "748 ตร.ซม."],
+    ans: 0,
+    exp_th: "พื้นที่ผิวข้าง = 2 × (22/7) × 7 × 10 = 44 × 10 = 440 ตร.ซม.",
+    exp_en: "Lateral area = 2 × (22/7) × 7 × 10 = 440 cm².",
+    tip: "2πr = 44 ➔ 44 × 10 = 440 ตร.ซม."
+  },
+  {
+    id: 15, unit: "หน่วยที่ 3 ปริซึมและทรงกระบอก", topic: "โจทย์ประยุกต์ทรงกระบอก",
+    q_th: "แท่งเหล็กทรงกระบอกตันรัศมี 3 เซนติเมตร ยาว 14 เซนติเมตร นำมาหลอมเป็นลูกบาศก์ จะได้ปริมาตรเหล็กกี่ลูกบาศก์เซนติเมตร (กำหนดให้ π ≈ 22/7)?",
+    q_en: "A solid iron cylinder with r = 3 cm and h = 14 cm is melted. What is the volume of iron (π ≈ 22/7)?",
+    clue_th: "ปริมาตรคงเดิมหลังการหลอม คำนวณ πr²h",
+    clue_en: "Volume = (22/7) × 3² × 14.",
+    options: ["396 ลบ.ซม.", "360 ลบ.ซม.", "412 ลบ.ซม.", "378 ลบ.ซม."],
+    ans: 0,
+    exp_th: "ปริมาตร = (22/7) × 3 × 3 × 14 = 22 × 9 × 2 = 396 ลบ.ซม.",
+    exp_en: "Volume = 22 × 9 × 2 = 396 cm³.",
+    tip: "ตัด 14 กับ 7 เหลือ 2 ➔ 22 × 9 × 2 = 396 ลบ.ซม."
+  },
+  {
+    id: 16, unit: "หน่วยที่ 4 การแปลงทางเรขาคณิต", topic: "การเลื่อนขนาน",
+    q_th: "จุด A มีพิกัด (-3, 5) เมื่อเลื่อนขนานตามแนวแกน X ไปทางขวา 4 หน่วย และเลื่อนตามแนวแกน Y ลงด้านล่าง 6 หน่วย พิกัดของภาพที่ได้ตรงกับข้อใด?",
+    q_en: "Point A(-3, 5) is translated 4 units right and 6 units down. What are the coordinates of the image?",
+    clue_th: "พิกัดใหม่: (x + 4, y - 6)",
+    clue_en: "New coordinates: (-3 + 4, 5 - 6).",
+    options: ["(1, -1)", "(-7, 11)", "(1, 11)", "(-1, -1)"],
+    ans: 0,
+    exp_th: "x' = -3 + 4 = 1 และ y' = 5 - 6 = -1 ➔ พิกัดภาพคือ (1, -1)",
+    exp_en: "(-3 + 4, 5 - 6) = (1, -1).",
+    tip: "ขวาบวก ลงลบ: (-3+4, 5-6) = (1, -1)"
+  },
+  {
+    id: 17, unit: "หน่วยที่ 4 การแปลงทางเรขาคณิต", topic: "การสะท้อนข้ามแกน",
+    q_th: "จุด B มีพิกัด (4, -7) เมื่อสะท้อนข้ามแกน X พิกัดของจุด B' คือข้อใด?",
+    q_en: "Point B(4, -7) is reflected across the X-axis. What are the coordinates of B'?",
+    clue_th: "การสะท้อนข้ามแกน X พิกัด x เท่าเดิม และพิกัด y เปลี่ยนเครื่องหมายเป็นตรงข้าม (x, -y)",
+    clue_en: "Reflection across X-axis maps (x, y) to (x, -y).",
+    options: ["(4, 7)", "(-4, -7)", "(-4, 7)", "(-7, 4)"],
+    ans: 0,
+    exp_th: "สะท้อนข้ามแกน X: (x, y) ➔ (x, -y) ดังนั้น (4, -7) ➔ (4, 7)",
+    exp_en: "(4, -7) reflects across X-axis to (4, 7).",
+    tip: "สะท้อนข้ามแกน X ➔ เปลี่ยนเครื่องหมาย y เป็นตรงข้าม"
+  },
+  {
+    id: 18, unit: "หน่วยที่ 4 การแปลงทางเรขาคณิต", topic: "การสะท้อนข้ามเส้นตรง y = x",
+    q_th: "จุด P(-2, 6) เมื่อสะท้อนข้ามเส้นตรง y = x จะได้ภาพที่จุดใด?",
+    q_en: "Point P(-2, 6) is reflected across the line y = x. What are the coordinates of the image?",
+    clue_th: "การสะท้อนข้ามเส้นตรง y = x ให้สลับตำแหน่งระหว่างพิกัด x และ y: (y, x)",
+    clue_en: "Reflection across y = x maps (x, y) to (y, x).",
+    options: ["(6, -2)", "(-6, 2)", "(-2, -6)", "(2, -6)"],
+    ans: 0,
+    exp_th: "สะท้อนข้ามเส้น y = x: (x, y) ➔ (y, x) ดังนั้น (-2, 6) ➔ (6, -2)",
+    exp_en: "Swap coordinates: (-2, 6) ➔ (6, -2).",
+    tip: "สะท้อนเส้น y = x สลับที่ x กับ y ➔ (6, -2)"
+  },
+  {
+    id: 19, unit: "หน่วยที่ 4 การแปลงทางเรขาคณิต", topic: "การหมุนรอบจุดกำเนิด",
+    q_th: "จุด C(3, 4) เมื่อหมุนรอบจุดกำเนิด (0, 0) ด้วยมุม 90° ในทิศทวนเข็มนาฬิกา พิกัดใหม่คือข้อใด?",
+    q_en: "Point C(3, 4) is rotated 90° counterclockwise about origin (0, 0). What are the new coordinates?",
+    clue_th: "การหมุนทวนเข็ม 90°: (x, y) ➔ (-y, x)",
+    clue_en: "90° counterclockwise rotation maps (x, y) to (-y, x).",
+    options: ["(-4, 3)", "(4, -3)", "(-3, -4)", "(-4, -3)"],
+    ans: 0,
+    exp_th: "หมุนทวนเข็มนาฬิกา 90°: (x, y) ➔ (-y, x) ดังนั้น (3, 4) ➔ (-4, 3)",
+    exp_en: "(3, 4) ➔ (-4, 3).",
+    tip: "ทวนเข็ม 90°: สลับที่แล้วเปลี่ยนตัวหน้าเป็นลบ ➔ (-4, 3)"
+  },
+  {
+    id: 20, unit: "หน่วยที่ 4 การแปลงทางเรขาคณิต", topic: "การหมุน 180 องศา",
+    q_th: "จุด D(-5, -2) เมื่อหมุนรอบจุดกำเนิด (0, 0) ด้วยมุม 180° จะได้จุดใด?",
+    q_en: "Point D(-5, -2) is rotated 180° about the origin. What is the image point?",
+    clue_th: "การหมุน 180° รอบจุดกำเนิด: (x, y) ➔ (-x, -y)",
+    clue_en: "180° rotation maps (x, y) to (-x, -y).",
+    options: ["(5, 2)", "(-5, 2)", "(2, 5)", "(-2, -5)"],
+    ans: 0,
+    exp_th: "หมุน 180°: (x, y) ➔ (-x, -y) ดังนั้น (-5, -2) ➔ (5, 2)",
+    exp_en: "(-5, -2) ➔ (5, 2).",
+    tip: "หมุน 180° เปลี่ยนเครื่องหมายทั้งคู่ ➔ (5, 2)"
+  },
+  {
+    id: 21, unit: "หน่วยที่ 5 สมบัติเลขยกกำลัง", topic: "การคูณและหารเลขยกกำลัง",
+    q_th: "รูปอย่างง่ายของ (a³b⁻²)² × (a⁻⁴b³) เมื่อ a, b ≠ 0 คือข้อใด?",
+    q_en: "Simplify (a³b⁻²)² × (a⁻⁴b³) where a, b ≠ 0.",
+    clue_th: "กระจายกำลัง 2 เข้าไปก่อน: a⁶b⁻⁴ แล้วนำเลขชี้กำลังของฐานเดียวกันมารวมกัน",
+    clue_en: "(a³b⁻²)² = a⁶b⁻⁴. Then a⁶⁺⁽⁻⁴⁾b⁻⁴⁺³ = a²b⁻¹.",
+    options: ["a²/b", "a²b", "a¹⁰/b", "b/a²"],
+    ans: 0,
+    exp_th: "(a³b⁻²)² = a⁶b⁻⁴ ➔ คูณกับ a⁻⁴b³ จะได้ a^(6-4) × b^(-4+3) = a²b⁻¹ = a²/b",
+    exp_en: "a⁶b⁻⁴ × a⁻⁴b³ = a²b⁻¹ = a²/b.",
+    tip: "a⁶⁻⁴ = a² และ b⁻⁴⁺³ = b⁻¹ ➔ a²/b"
+  },
+  {
+    id: 22, unit: "หน่วยที่ 5 สมบัติเลขยกกำลัง", topic: "การแก้สมการเลขยกกำลัง",
+    q_th: "ถ้า 2^(2x-1) = 1/32 แล้ว ค่าของ x คือข้อใด?",
+    q_en: "If 2^(2x-1) = 1/32, what is the value of x?",
+    clue_th: "แปลง 1/32 เป็น 2⁻⁵ แล้วจับเลขชี้กำลังเท่ากัน",
+    clue_en: "1/32 = 2⁻⁵. Set 2x - 1 = -5.",
+    options: ["-2", "-3", "2", "-1"],
+    ans: 0,
+    exp_th: "2^(2x-1) = 2⁻⁵ ➔ 2x - 1 = -5 ➔ 2x = -4 ➔ x = -2",
+    exp_en: "2x - 1 = -5 ➔ 2x = -4 ➔ x = -2.",
+    tip: "2x - 1 = -5 ➔ x = -2"
+  },
+  {
+    id: 23, unit: "หน่วยที่ 5 พหุนาม", topic: "การบวกและลบพหุนาม",
+    q_th: "ผลลัพธ์ของ (5x² - 3x + 7) - (2x² + 4x - 9) ตรงกับข้อใด?",
+    q_en: "What is (5x² - 3x + 7) - (2x² + 4x - 9)?",
+    clue_th: "กระจายเครื่องหมายลบเข้าไปในวงเล็บหลัง: -2x² - 4x + 9 แล้วรวมพจน์คล้าย",
+    clue_en: "Distribute negative sign: -2x² - 4x + 9, then combine like terms.",
+    options: ["3x² - 7x + 16", "3x² + x - 2", "3x² - 7x - 2", "7x² - 7x + 16"],
+    ans: 0,
+    exp_th: "(5x² - 2x²) + (-3x - 4x) + (7 + 9) = 3x² - 7x + 16",
+    exp_en: "5x² - 2x² - 3x - 4x + 7 + 9 = 3x² - 7x + 16.",
+    tip: "5-2=3, -3-4=-7, 7-(-9)=16 ➔ 3x² - 7x + 16"
+  },
+  {
+    id: 24, unit: "หน่วยที่ 5 พหุนาม", topic: "การคูณพหุนาม",
+    q_th: "ผลคูณของ (2x - 3)(3x + 5) มีค่าเท่าใด?",
+    q_en: "Expand (2x - 3)(3x + 5).",
+    clue_th: "ใช้วิธีแจกแจง: (2x)(3x) + (2x)(5) + (-3)(3x) + (-3)(5)",
+    clue_en: "FOIL method: 6x² + 10x - 9x - 15.",
+    options: ["6x² + x - 15", "6x² - x - 15", "6x² + 19x - 15", "6x² - 15"],
+    ans: 0,
+    exp_th: "6x² + 10x - 9x - 15 = 6x² + x - 15",
+    exp_en: "6x² + 10x - 9x - 15 = 6x² + x - 15.",
+    tip: "พจน์กลาง: 10x - 9x = +x ➔ 6x² + x - 15"
+  },
+  {
+    id: 25, unit: "หน่วยที่ 5 พหุนาม", topic: "การหารพหุนามด้วยเอกนาม",
+    q_th: "ผลลัพธ์ของ (12x⁴y³ - 8x³y² + 4x²y) ÷ (4x²y) เมื่อ x, y ≠ 0 คือข้อใด?",
+    q_en: "Simplify (12x⁴y³ - 8x³y² + 4x²y) ÷ (4x²y) where x, y ≠ 0.",
+    clue_th: "นำตัวหาร 4x²y ไปหารทีละพจน์",
+    clue_en: "Divide each term by 4x²y.",
+    options: ["3x²y² - 2xy + 1", "3x²y² - 2xy", "3x²y² - 2xy + 4", "3x²y - 2x + 1"],
+    ans: 0,
+    exp_th: "(12x⁴y³ / 4x²y) - (8x³y² / 4x²y) + (4x²y / 4x²y) = 3x²y² - 2xy + 1",
+    exp_en: "3x²y² - 2xy + 1.",
+    tip: "ระวังพจน์สุดท้าย: 4x²y / 4x²y = 1 ห้ามตัดหาย"
+  },
+  {
+    id: 26, unit: "หน่วยที่ 1 พีทาโกรัส", topic: "การประยุกต์สามเหลี่ยมหน้าจั่ว",
+    q_th: "รูปสามเหลี่ยมหน้าจั่วรูปหนึ่ง มีด้านประกอบมุมยอดยาวด้านละ 10 เซนติเมตร และมีฐานยาว 12 เซนติเมตร รูปสามเหลี่ยมนี้มีพื้นที่กี่ตารางเซนติเมตร?",
+    q_en: "An isosceles triangle has legs of 10 cm and base 12 cm. What is its area?",
+    clue_th: "ลากส่วนสูงแบ่งครึ่งฐานเป็น 6 ซม. แล้วหาส่วนสูงจากพีทาโกรัส (h² = 10² - 6²)",
+    clue_en: "Height splits base into two 6 cm segments. h = √(10² - 6²) = 8. Area = 1/2 × 12 × 8.",
+    options: ["48 ตร.ซม.", "60 ตร.ซม.", "96 ตร.ซม.", "36 ตร.ซม."],
+    ans: 0,
+    exp_th: "ครึ่งฐาน = 6 ซม. ➔ ส่วนสูง h = √(10² - 6²) = √64 = 8 ซม. ➔ พื้นที่ = (1/2) × 12 × 8 = 48 ตร.ซม.",
+    exp_en: "h = 8 cm. Area = 1/2 × 12 × 8 = 48 cm².",
+    tip: "ชุด 6, 8, 10 ➔ สูง 8 ซม. ➔ พ.ท. = 1/2 × 12 × 8 = 48 ตร.ซม."
+  },
+  {
+    id: 27, unit: "หน่วยที่ 2 จำนวนจริง", topic: "การบวกและลบกรณฑ์",
+    q_th: "ผลลัพธ์ของ √50 + √18 - √8 มีค่าตรงกับข้อใด?",
+    q_en: "Simplify √50 + √18 - √8.",
+    clue_th: "ดึงตัวประกอบกำลังสองสมบูรณ์: √50 = 5√2, √18 = 3√2, √8 = 2√2",
+    clue_en: "5√2 + 3√2 - 2√2 = 6√2.",
+    options: ["6√2", "5√2", "8√2", "4√2"],
+    ans: 0,
+    exp_th: "√50 = 5√2, √18 = 3√2, √8 = 2√2 ➔ 5√2 + 3√2 - 2√2 = (5 + 3 - 2)√2 = 6√2",
+    exp_en: "5√2 + 3√2 - 2√2 = 6√2.",
+    tip: "(5 + 3 - 2)√2 = 6√2"
+  },
+  {
+    id: 28, unit: "หน่วยที่ 3 ปริซึมและทรงกระบอก", topic: "การเปลี่ยนระดับน้ำ",
+    q_th: "ตู้ปลาทรงสี่เหลี่ยมมุมฉาก กว้าง 20 ซม. ยาว 30 ซม. มีน้ำอยู่จำนวนหนึ่ง เมื่อใส่ก้อนหินลงไป ระดับน้ำสูงขึ้น 2 ซม. ก้อนหินมีปริมาตรกี่ลูกบาศก์เซนติเมตร?",
+    q_en: "A tank 20 cm × 30 cm has water. Dropping a rock raises the water level by 2 cm. What is the volume of the rock?",
+    clue_th: "ปริมาตรก้อนหิน = ปริมาตรน้ำที่เพิ่มขึ้น = กว้าง × ยาว × ระดับน้ำที่สูงขึ้น",
+    clue_en: "Rock volume = Base area × height increase = 20 × 30 × 2.",
+    options: ["1,200 ลบ.ซม.", "600 ลบ.ซม.", "1,500 ลบ.ซม.", "2,400 ลบ.ซม."],
+    ans: 0,
+    exp_th: "ปริมาตรหิน = กว้าง × ยาว × สูงที่เพิ่ม = 20 × 30 × 2 = 1,200 ลบ.ซม.",
+    exp_en: "Volume = 20 × 30 × 2 = 1,200 cm³.",
+    tip: "20 × 30 × 2 = 1,200 ลบ.ซม."
+  },
+  {
+    id: 29, unit: "หน่วยที่ 4 การแปลงทางเรขาคณิต", topic: "การแปลงต่อเนื่อง",
+    q_th: "จุด E(2, 3) เมื่อเลื่อนขนานด้วยเวกเตอร์ (3, -1) แล้วนำภาพที่ได้ไปสะท้อนข้ามแกน Y จะได้พิกัดสุดท้ายตรงกับข้อใด?",
+    q_en: "Point E(2, 3) is translated by vector (3, -1) then reflected across the Y-axis. What is the final point?",
+    clue_th: "ขั้นที่ 1 เลื่อนขนานได้ (2+3, 3-1) = (5, 2) ขั้นที่ 2 สะท้อนแกน Y เปลี่ยนเครื่องหมาย x",
+    clue_en: "Translation: (2+3, 3-1) = (5, 2). Reflection across Y-axis: (-5, 2).",
+    options: ["(-5, 2)", "(5, -2)", "(-5, -2)", "(5, 2)"],
+    ans: 0,
+    exp_th: "1) เลื่อนขนาน: (2+3, 3-1) = (5, 2) ➔ 2) สะท้อนข้ามแกน Y: (x, y) ➔ (-x, y) ได้ (-5, 2)",
+    exp_en: "Translate to (5, 2), then reflect across Y-axis to (-5, 2).",
+    tip: "(2+3, 3-1) = (5, 2) ➔ สะท้อนแกน Y ได้ (-5, 2)"
+  },
+  {
+    id: 30, unit: "หน่วยที่ 5 พหุนาม", topic: "การประยุกต์หาพื้นที่พหุนาม",
+    q_th: "สี่เหลี่ยมผืนผ้ารูปหนึ่ง มีด้านกว้างยาว x + 3 หน่วย และด้านยาว ยาว 2x - 1 หน่วย ถ้าพื้นที่ของรูปสี่เหลี่ยมนี้เท่ากับ ax² + bx + c แล้ว ค่าของ a + b + c มีค่าเท่าใด?",
+    q_en: "A rectangle has width x + 3 and length 2x - 1. Its area is ax² + bx + c. What is a + b + c?",
+    clue_th: "หาผลคูณ (x + 3)(2x - 1) เพื่อเทียบสัมประสิทธิ์ a, b, c หรือแทน x = 1",
+    clue_en: "Area = (x + 3)(2x - 1) = 2x² + 5x - 3. Sum of coefficients a + b + c = 2 + 5 - 3 = 4.",
+    options: ["4", "6", "-2", "5"],
+    ans: 0,
+    exp_th: "พื้นที่ = (x + 3)(2x - 1) = 2x² - x + 6x - 3 = 2x² + 5x - 3 ➔ a = 2, b = 5, c = -3 ➔ a + b + c = 2 + 5 + (-3) = 4",
+    exp_en: "Area = 2x² + 5x - 3 ➔ a+b+c = 2 + 5 - 3 = 4.",
+    tip: "วิธีคิดเร็ว: ผลรวมสัมประสิทธิ์แทน x = 1 ➔ (1+3)(2-1) = 4 × 1 = 4"
+  }
+];
+
+// App State Management
+let currentLang = 'th';
+let randomizedQuestions = [];
+let userAnswers = {};
+
+// Whiteboard Controls
+let isDrawing = false;
+let wbMode = 'pen';
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+
+function initWhiteboard() {
+  function resize() {
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width;
+    canvas.height = rect.height;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  function start(e) {
+    isDrawing = true;
+    ctx.beginPath();
+    const pos = getPos(e);
+    ctx.moveTo(pos.x, pos.y);
+  }
+  function move(e) {
+    if (!isDrawing) return;
+    const pos = getPos(e);
+    if (wbMode === 'pen') {
+      ctx.strokeStyle = '#0f172a';
+      ctx.lineWidth = 2.5;
+    } else {
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 20;
+    }
+    ctx.lineTo(pos.x, pos.y);
+    ctx.stroke();
+  }
+  function end() { isDrawing = false; }
+  function getPos(e) {
+    const rect = canvas.getBoundingClientRect();
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    return { x: clientX - rect.left, y: clientY - rect.top };
+  }
+
+  canvas.addEventListener('mousedown', start);
+  canvas.addEventListener('mousemove', move);
+  window.addEventListener('mouseup', end);
+
+  canvas.addEventListener('touchstart', (e) => { e.preventDefault(); start(e); }, { passive: false });
+  canvas.addEventListener('touchmove', (e) => { e.preventDefault(); move(e); }, { passive: false });
+  window.addEventListener('touchend', end);
+}
+
+function setWbMode(mode) {
+  wbMode = mode;
+  document.getElementById('penBtn').classList.toggle('active', mode === 'pen');
+  document.getElementById('eraserBtn').classList.toggle('active', mode === 'eraser');
+}
+
+function clearWhiteboard() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+}
+
+// Fisher-Yates Shuffle Algorithm
+function shuffle(array) {
+  let m = array.length, t, i;
+  while (m) {
+    i = Math.floor(Math.random() * m--);
+    t = array[m];
+    array[m] = array[i];
+    array[i] = t;
+  }
+  return array;
+}
+
+function prepareQuestions() {
+  const savedData = localStorage.getItem('m2_math_exam_data');
+  const savedState = localStorage.getItem('m2_math_exam_state');
+  const savedLang = localStorage.getItem('m2_math_exam_lang');
+
+  if (savedLang) currentLang = savedLang;
+
+  if (savedData && savedState) {
+    randomizedQuestions = JSON.parse(savedData);
+    userAnswers = JSON.parse(savedState);
+  } else {
+    randomizedQuestions = examData.map(q => {
+      const originalOptions = [...q.options];
+      const correctText = originalOptions[q.ans];
+      const shuffledOptions = shuffle([...originalOptions]);
+      const newAnsIndex = shuffledOptions.indexOf(correctText);
+
+      return {
+        ...q,
+        shuffledOptions: shuffledOptions,
+        correctIndex: newAnsIndex
+      };
+    });
+    randomizedQuestions = shuffle(randomizedQuestions);
+    localStorage.setItem('m2_math_exam_data', JSON.stringify(randomizedQuestions));
+  }
+  renderExam();
+}
+
+function renderExam() {
+  const container = document.getElementById('questionsContainer');
+  container.innerHTML = '';
+
+  let correctCount = 0;
+  let answeredCount = 0;
+
+  randomizedQuestions.forEach((q, qIndex) => {
+    const isAnswered = userAnswers.hasOwnProperty(qIndex);
+    const selectedOpt = userAnswers[qIndex];
+    if (isAnswered) {
+      answeredCount++;
+      if (selectedOpt === q.correctIndex) correctCount++;
+    }
+
+    const card = document.createElement('div');
+    card.className = 'question-card';
+    card.id = `q_card_${qIndex}`;
+
+    const qText = currentLang === 'th' ? q.q_th : q.q_en;
+    const clueText = currentLang === 'th' ? q.clue_th : q.clue_en;
+    const expText = currentLang === 'th' ? q.exp_th : q.exp_en;
+
+    let optionsHtml = '';
+    q.shuffledOptions.forEach((opt, optIndex) => {
+      let btnClass = 'opt-btn';
+      if (isAnswered) {
+        if (optIndex === q.correctIndex) btnClass += ' correct';
+        else if (optIndex === selectedOpt) btnClass += ' wrong';
+      }
+      const disabled = isAnswered ? 'disabled' : '';
+      optionsHtml += `
+        <button class="${btnClass}" ${disabled} onclick="selectAnswer(${qIndex}, ${optIndex})">
+          ${String.fromCharCode(65 + optIndex)}. ${opt}
+        </button>
+      `;
+    });
+
+    const expShowClass = isAnswered ? 'show' : '';
+
+    card.innerHTML = `
+      <div class="q-header">
+        <span class="q-num">${currentLang === 'th' ? 'ข้อที่' : 'Question'} ${qIndex + 1} / 30</span>
+        <span class="q-topic">${q.unit} : ${q.topic}</span>
+      </div>
+      <div class="q-text">${qText}</div>
+      <div class="q-clue">💡 <b>${currentLang === 'th' ? 'คำใบ้:' : 'Clue:'}</b> ${clueText}</div>
+      <div class="options-grid">${optionsHtml}</div>
+      <div class="explanation-box ${expShowClass}" id="exp_${qIndex}">
+        <b>${currentLang === 'th' ? 'เฉลยและวิธีคิดละเอียด:' : 'Detailed Explanation:'}</b> ${expText}
+        <span class="tutor-tip">⚡ เทคนิคติวเตอร์: ${q.tip}</span>
+      </div>
+    `;
+    container.appendChild(card);
+  });
+
+  document.getElementById('scoreDisplay').innerText = 
+    `${currentLang === 'th' ? 'คะแนน:' : 'Score:'} ${correctCount} / 30`;
+
+  if (answeredCount === 30) {
+    showResults(correctCount);
+  } else {
+    document.getElementById('resultSection').classList.remove('show');
+  }
+
+  document.getElementById('btnToggleLang').innerText = 
+    currentLang === 'th' ? 'สลับภาษา / Switch to EN' : 'Switch to TH / สลับภาษาไทย';
+}
+
+function selectAnswer(qIndex, optIndex) {
+  if (userAnswers.hasOwnProperty(qIndex)) return;
+  userAnswers[qIndex] = optIndex;
+  localStorage.setItem('m2_math_exam_state', JSON.stringify(userAnswers));
+  renderExam();
+}
+
+function toggleLanguage() {
+  currentLang = currentLang === 'th' ? 'en' : 'th';
+  localStorage.setItem('m2_math_exam_lang', currentLang);
+  renderExam();
+}
+
+function resetExam() {
+  if (confirm(currentLang === 'th' ? 'คุณต้องการเริ่มทำข้อสอบใหม่ทั้งหมดใช่หรือไม่?' : 'Do you want to reset the exam?')) {
+    localStorage.removeItem('m2_math_exam_data');
+    localStorage.removeItem('m2_math_exam_state');
+    userAnswers = {};
+    prepareQuestions();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+}
+
+function showResults(score) {
+  const resultSec = document.getElementById('resultSection');
+  resultSec.classList.add('show');
+  document.getElementById('finalScore').innerText = 
+    `${currentLang === 'th' ? 'สรุปผลคะแนนสอบรวม:' : 'Total Exam Score:'} ${score} / 30 (${Math.round((score/30)*100)}%)`;
+
+  const unitStats = {};
+  randomizedQuestions.forEach((q, idx) => {
+    if (!unitStats[q.unit]) unitStats[q.unit] = { total: 0, correct: 0, name: q.unit };
+    unitStats[q.unit].total++;
+    if (userAnswers[idx] === q.correctIndex) {
+      unitStats[q.unit].correct++;
+    }
+  });
+
+  const strengthList = document.getElementById('strengthList');
+  const weaknessList = document.getElementById('weaknessList');
+  strengthList.innerHTML = '';
+  weaknessList.innerHTML = '';
+
+  Object.values(unitStats).forEach(stat => {
+    const percentage = (stat.correct / stat.total) * 100;
+    const li = document.createElement('li');
+    li.style.marginBottom = '6px';
+    li.innerHTML = `<b>${stat.name}:</b> ทำได้ ${stat.correct}/${stat.total} ข้อ (${Math.round(percentage)}%)`;
+
+    if (percentage >= 70) {
+      li.innerHTML += ' ✅ <i>มีความเข้าใจดีเยี่ยมและคำนวณแม่นยำ</i>';
+      strengthList.appendChild(li);
+    } else {
+      li.innerHTML += ' ❌ <i>ควรกลับไปทบทวนขั้นตอนและทำแบบฝึกหัดเพิ่ม</i>';
+      weaknessList.appendChild(li);
+    }
+  });
+
+  if (strengthList.children.length === 0) {
+    strengthList.innerHTML = '<li>พยายามฝึกฝนเพิ่มเติมเพื่อสร้างความแม่นยำในแต่ละบทเรียน</li>';
+  }
+  if (weaknessList.children.length === 0) {
+    weaknessList.innerHTML = '<li>ยอดเยี่ยมมาก! มีความเชี่ยวชาญครบถ้วนทุกบทเรียนระดับ ม.2 เทอม 1</li>';
+  }
+}
+
+window.onload = () => {
+  prepareQuestions();
+  initWhiteboard();
+};
+</script>
+</body>
+</html>
