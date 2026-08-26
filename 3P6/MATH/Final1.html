@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ข้อสอบปลายภาคเรียนที่ 1 คณิตศาสตร์ ป.6 (ระดับเข้มข้น) - พระจอมเกล้าติวเตอร์</title>
+  <style>
+    :root {
+      --primary: #1e1b4b;
+      --primary-light: #312e81;
+      --accent: #f59e0b;
+      --highlight: #ec4899;
+      --success: #10b981;
+      --danger: #ef4444;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --border: #cbd5e1;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Sarabun', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background-color: var(--bg); color: var(--text); line-height: 1.6; padding: 16px; }
+    .container { max-width: 1440px; margin: 0 auto; }
+    
+    header { background: linear-gradient(135deg, var(--primary), var(--primary-light)); color: white; padding: 24px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+    .header-top { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+    .header-title { font-size: 1.5rem; font-weight: bold; }
+    .btn-lang { background: rgba(255,255,255,0.2); color: white; border: 1px solid white; padding: 6px 14px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+    .btn-lang:hover { background: rgba(255,255,255,0.3); }
+    
+    .summary-box { background: rgba(255,255,255,0.08); padding: 20px; border-radius: 8px; margin-top: 16px; font-size: 0.95rem; border-left: 4px solid var(--accent); }
+    .summary-box h3 { color: #fde047; margin-bottom: 12px; font-size: 1.15rem; }
+    .summary-box p { margin-bottom: 10px; }
+    .trick-box { background: rgba(245, 158, 11, 0.15); border: 1px dashed var(--accent); border-radius: 6px; padding: 12px; margin-top: 12px; }
+    .trick-title { font-weight: bold; color: #fbbf24; margin-bottom: 6px; }
+
+    /* Layout 2 Frames: 70% Exam, 30% Whiteboard */
+    .main-grid { display: flex; flex-direction: column; gap: 20px; }
+    @media (min-width: 992px) {
+      .main-grid { display: grid; grid-template-columns: 7fr 3fr; align-items: start; }
+    }
+
+    .exam-section { background: var(--card-bg); border-radius: 12px; padding: 20px; border: 1px solid var(--border); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+    .exam-controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid var(--border); flex-wrap: wrap; gap: 10px; }
+    .score-badge { font-size: 1.1rem; font-weight: bold; color: var(--primary-light); background: #e0e7ff; padding: 6px 14px; border-radius: 20px; border: 1px solid #c7d2fe; }
+    .btn-reset { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; padding: 6px 14px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+    .btn-reset:hover { background: #fecaca; }
+
+    .question-card { background: #fff; border: 1px solid var(--border); border-radius: 8px; padding: 18px; margin-bottom: 20px; transition: 0.2s; }
+    .question-card:hover { border-color: var(--primary-light); }
+    .q-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px; }
+    .q-num { font-weight: bold; color: var(--primary-light); font-size: 1rem; }
+    .q-topic { font-size: 0.75rem; background: #e2e8f0; padding: 2px 8px; border-radius: 4px; color: var(--text-muted); font-weight: bold; }
+    .q-text { font-size: 1.05rem; font-weight: 500; margin-bottom: 12px; line-height: 1.5; }
+    .q-clue { font-size: 0.85rem; color: #b45309; background: #fffbeb; padding: 6px 10px; border-radius: 4px; margin-bottom: 12px; border-left: 3px solid #f59e0b; }
+    
+    .options-grid { display: grid; grid-template-columns: 1fr; gap: 8px; margin-bottom: 12px; }
+    @media (min-width: 600px) { .options-grid { grid-template-columns: 1fr 1fr; } }
+    
+    .opt-btn { background: #f8fafc; border: 1px solid #cbd5e1; padding: 10px 14px; border-radius: 6px; text-align: left; cursor: pointer; font-size: 0.95rem; transition: all 0.2s; display: flex; align-items: center; }
+    .opt-btn:hover:not([disabled]) { background: #e2e8f0; border-color: #94a3b8; }
+    .opt-btn.correct { background: #dcfce7 !important; border-color: #22c55e !important; color: #15803d; font-weight: bold; }
+    .opt-btn.wrong { background: #fee2e2 !important; border-color: #ef4444 !important; color: #b91c1c; }
+    .opt-btn:disabled { cursor: not-allowed; opacity: 0.95; }
+
+    .explanation-box { display: none; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 6px; padding: 12px; font-size: 0.9rem; margin-top: 10px; }
+    .explanation-box.show { display: block; }
+    .tutor-tip { color: #1e40af; font-weight: bold; margin-top: 6px; display: block; }
+
+    /* Whiteboard (30%) */
+    .whiteboard-section { background: var(--card-bg); border-radius: 12px; padding: 16px; border: 1px solid var(--border); box-shadow: 0 2px 4px rgba(0,0,0,0.05); position: sticky; top: 16px; }
+    .wb-title { font-weight: bold; margin-bottom: 8px; color: var(--primary-light); display: flex; justify-content: space-between; align-items: center; }
+    .wb-tools { display: flex; gap: 6px; margin-bottom: 8px; flex-wrap: wrap; }
+    .wb-btn { background: #f1f5f9; border: 1px solid #cbd5e1; padding: 4px 10px; border-radius: 4px; font-size: 0.8rem; cursor: pointer; }
+    .wb-btn.active { background: var(--primary-light); color: white; border-color: var(--primary-light); }
+    #canvas { background: #ffffff; border: 2px dashed #94a3b8; border-radius: 6px; width: 100%; height: 420px; touch-action: none; cursor: crosshair; }
+
+    .result-section { display: none; background: white; border-radius: 12px; padding: 24px; margin-top: 20px; border: 1px solid var(--border); box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+    .result-section.show { display: block; }
+    .result-score { font-size: 1.8rem; font-weight: bold; text-align: center; color: var(--primary-light); margin-bottom: 16px; }
+    .analysis-grid { display: grid; grid-template-columns: 1fr; gap: 16px; margin-top: 16px; }
+    @media (min-width: 600px) { .analysis-grid { grid-template-columns: 1fr 1fr; } }
+    .analysis-card { padding: 14px; border-radius: 8px; border: 1px solid var(--border); }
+    .strength-card { background: #f0fdf4; border-color: #bbf7d0; }
+    .weakness-card { background: #fef2f2; border-color: #fecaca; }
+    .analysis-card h4 { margin-bottom: 8px; }
+
+    footer { text-align: center; margin-top: 30px; padding: 16px; color: var(--text-muted); font-size: 0.95rem; font-weight: bold; border-top: 1px solid var(--border); }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <div class="header-top">
+      <div class="header-title">🏆 ข้อสอบคณิตศาสตร์ ป.6 ปลายภาคเรียนที่ 1 (ระดับเข้มข้น ห้อง Gifted / สอบแข่งขัน)</div>
+      <button class="btn-lang" id="btnToggleLang" onclick="toggleLanguage()">สลับภาษา / Switch to EN</button>
+    </div>
+    
+    <div class="summary-box" id="summaryContent">
+      <h3>📘 สรุปหัวใจสำคัญคณิตศาสตร์ ป.6 เทอม 1 สู่ห้องเรียนพิเศษ</h3>
+      <p><b>1. ห.ร.ม. และ ค.ร.น.:</b> ห.ร.ม. คือ "ตัวหารร่วมที่มากที่สุด" เน้นการตัดแบ่งสิ่งของให้เท่ากันโดยไม่เหลือเศษ ส่วน ค.ร.น. คือ "ตัวคูณร่วมที่น้อยที่สุด" เน้นเหตุการณ์ที่เกิดขึ้นพร้อมกันในอนาคต จำสูตรเด็ด A × B = ห.ร.ม. × ค.ร.น. เสมอ</p>
+      <p><b>2. เศษส่วนและทศนิยมระคน:</b> คำนวณตามลำดับศักดิ์เครื่องหมาย: วงเล็บ ➔ คูณ/หาร (จากซ้ายไปขวา) ➔ บวก/ลบ (จากซ้ายไปขวา) ห้ามคำนวณเรียงจากซ้ายไปขวาโดยไม่สนลำดับเด็ดขาด</p>
+      <p><b>3. อัตราส่วนและร้อยละ:</b> การเปรียบเทียบปริมาณหลายจำนวนให้หาอัตราส่วนเชื่อมโยง (ตัวเชื่อม) เพื่อรวมเป็นอัตราส่วนต่อเนื่อง โจทย์กำไร-ขาดทุนให้ระลึกเสมอว่าต้องเทียบกับ "ราคาทุน" เป็นฐาน 100%</p>
+      <p><b>4. แบบรูป:</b> พิจารณาผลต่างระหว่างพจน์ หากผลต่างคงที่เท่ากับ d พจน์ที่ n จะอยู่ในรูป dn + c</p>
+      
+      <div class="trick-box">
+        <div class="trick-title">💡 กล่องเทคนิคการจำและวิธีคิดลัด (Tutor Memory Tricks)</div>
+        • <b>ห.ร.ม. เหลือเศษ:</b> "นำเศษไปลบออกจากตัวตั้งก่อน แล้วค่อยหา ห.ร.ม."<br>
+        • <b>ค.ร.น. เหลือเศษ:</b> "หา ค.ร.น. ให้เสร็จก่อน แล้วค่อยบวกเศษเพิ่มเข้าไป"<br>
+        • <b>อัตราส่วนเชื่อม:</b> ทำให้ตัวร่วมเท่ากันด้วย ค.ร.น. เช่น A:B = 2:3 และ B:C = 4:5 ➔ ทำให้ B เป็น 12 ได้ 8:12:15<br>
+        • <b>ลำดับการคำนวณ:</b> "วงเล็บ ➔ คูณ/หาร ➔ บวก/ลบ"
+      </div>
+    </div>
+  </header>
+
+  <div class="main-grid">
+    <!-- Frame ซ้าย (70%): ข้อสอบ 30 ข้อ -->
+    <div class="exam-section">
+      <div class="exam-controls">
+        <span class="score-badge" id="scoreDisplay">คะแนน: 0 / 30</span>
+        <button class="btn-reset" onclick="resetExam()">🔄 เริ่มทำใหม่ (Reset)</button>
+      </div>
+
+      <div id="questionsContainer"></div>
+
+      <!-- สรุปผลและวิเคราะห์ -->
+      <div class="result-section" id="resultSection">
+        <div class="result-score" id="finalScore"></div>
+        <div class="analysis-grid">
+          <div class="analysis-card strength-card">
+            <h4 style="color:#15803d;">🌟 จุดเด่นที่ทำได้ดีเยี่ยม (Strengths)</h4>
+            <ul id="strengthList"></ul>
+          </div>
+          <div class="analysis-card weakness-card">
+            <h4 style="color:#b91c1c;">⚠️ จุดที่ควรกลับไปทบทวนเพิ่มเติม (Areas for Improvement)</h4>
+            <ul id="weaknessList"></ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Frame ขวา (30%): Whiteboard -->
+    <div class="whiteboard-section">
+      <div class="wb-title">
+        <span>📝 กระดานทดเลข (Scratchpad)</span>
+      </div>
+      <div class="wb-tools">
+        <button class="wb-btn active" id="penBtn" onclick="setWbMode('pen')">✏️ ดินสอ</button>
+        <button class="wb-btn" id="eraserBtn" onclick="setWbMode('eraser')">🧹 ยางลบ</button>
+        <button class="wb-btn" onclick="clearWhiteboard()">🗑️ ล้างกระดาน</button>
+      </div>
+      <canvas id="canvas"></canvas>
+    </div>
+  </div>
+
+  <footer>
+    เขียนโดย พระจอมเกล้าติวเตอร์
+  </footer>
+</div>
+
+<script>
+const examData = [
+  {
+    id: 1, unit: "หน่วยที่ 1 ห.ร.ม. และ ค.ร.น.", topic: "การแยกตัวประกอบ",
+    q_th: "ข้อใดเป็นการแยกตัวประกอบของ 180 ได้ถูกต้อง?",
+    q_en: "Which is the correct prime factorization of 180?",
+    clue_th: "การแยกตัวประกอบต้องเขียนในรูปผลคูณของจำนวนเฉพาะเท่านั้น",
+    clue_en: "Prime factorization must only consist of prime numbers.",
+    options: ["2 × 2 × 3 × 3 × 5", "2 × 3 × 3 × 10", "4 × 9 × 5", "2 × 2 × 5 × 9"],
+    ans: 0,
+    exp_th: "180 = 2 × 2 × 3 × 3 × 5 (หรือ 2² × 3² × 5) ซึ่งทุกตัวเป็นจำนวนเฉพาะ ตัวเลือกอื่นมี 10, 4, 9 ซึ่งไม่ใช่จำนวนเฉพาะ",
+    exp_en: "180 = 2 × 2 × 3 × 3 × 5. Other options contain composite numbers (4, 9, 10).",
+    tip: "เช็กว่าทุกตัวเป็นจำนวนเฉพาะและผลคูณได้ 180 พอดี"
+  },
+  {
+    id: 2, unit: "หน่วยที่ 1 ห.ร.ม. และ ค.ร.น.", topic: "การหา ห.ร.ม.",
+    q_th: "ห.ร.ม. ของ 48, 72 และ 108 มีค่าเท่าใด?",
+    q_en: "What is the Greatest Common Divisor (GCD) of 48, 72, and 108?",
+    clue_th: "หาจำนวนนับที่มากที่สุดที่หารทั้ง 48, 72 และ 108 ได้ลงตัวพร้อมกันทั้ง 3 จำนวน",
+    clue_en: "Find the largest number that divides 48, 72, and 108 simultaneously.",
+    options: ["12", "6", "24", "18"],
+    ans: 0,
+    exp_th: "48 = 2⁴ × 3, 72 = 2³ × 3², 108 = 2² × 3³ ➔ ห.ร.ม. = 2² × 3 = 4 × 3 = 12",
+    exp_en: "GCD(48, 72, 108) = 2² × 3 = 12.",
+    tip: "นำ 12 ไปหาร: 48/12=4, 72/12=6, 108/12=9 (ไม่มีตัวหารร่วมอื่นนอกจาก 1)"
+  },
+  {
+    id: 3, unit: "หน่วยที่ 1 ห.ร.ม. และ ค.ร.น.", topic: "การหา ค.ร.น.",
+    q_th: "ค.ร.น. ของ 15, 20 และ 30 มีค่าเท่าใด?",
+    q_en: "What is the Least Common Multiple (LCM) of 15, 20, and 30?",
+    clue_th: "หาจำนวนนับที่น้อยที่สุดที่ 15, 20 และ 30 ไปหารได้ลงตัวทั้งหมด",
+    clue_en: "Find the smallest number divisible by 15, 20, and 30.",
+    options: ["60", "120", "30", "90"],
+    ans: 0,
+    exp_th: "15 = 3 × 5, 20 = 2² × 5, 30 = 2 × 3 × 5 ➔ ค.ร.น. = 2² × 3 × 5 = 60",
+    exp_en: "LCM(15, 20, 30) = 2² × 3 × 5 = 60.",
+    tip: "60 หารด้วย 15 ได้ 4, หารด้วย 20 ได้ 3, หารด้วย 30 ได้ 2 ลงตัวพอดี"
+  },
+  {
+    id: 4, unit: "หน่วยที่ 1 ห.ร.ม. และ ค.ร.น.", topic: "ความสัมพันธ์ ห.ร.ม. และ ค.ร.น.",
+    q_th: "จำนวนนับสองจำนวนมี ห.ร.ม. เท่ากับ 8 และมี ค.ร.น. เท่ากับ 96 ถ้าจำนวนหนึ่งคือ 24 อีกจำนวนหนึ่งคือข้อใด?",
+    q_en: "The GCD and LCM of two numbers are 8 and 96. If one number is 24, what is the other?",
+    clue_th: "ใช้สมบัติ: ผลคูณของจำนวนทั้งสอง = ห.ร.ม. × ค.ร.น.",
+    clue_en: "Use formula: A × B = GCD × LCM.",
+    options: ["32", "48", "16", "36"],
+    ans: 0,
+    exp_th: "A × B = ห.ร.ม. × ค.ร.น. ➔ 24 × B = 8 × 96 ➔ B = (8 × 96) / 24 = 768 / 24 = 32",
+    exp_en: "24 × B = 8 × 96 ➔ B = 768 / 24 = 32.",
+    tip: "ตัดทอน 8 กับ 24 เหลือ 3 ➔ 96 / 3 = 32"
+  },
+  {
+    id: 5, unit: "หน่วยที่ 1 ห.ร.ม. และ ค.ร.น.", topic: "โจทย์ปัญหา ห.ร.ม.",
+    q_th: "มีเชือก 3 เส้น ยาว 56, 84 และ 140 เซนติเมตร ต้องการตัดเป็นเส้นสั้นๆ ให้ยาวเท่ากันทุกเส้นและยาวที่สุดโดยไม่เหลือเศษ จะได้เชือกยาวเส้นละกี่เซนติเมตร และได้ทั้งหมดกี่เส้น?",
+    q_en: "Three ropes are 56, 84, and 140 cm long. Cut into equal longest pieces without waste. What is the length of each and total count?",
+    clue_th: "หา ห.ร.ม. ของความยาวเชือก แล้วนำความยาวแต่ละเส้นหารด้วย ห.ร.ม. เพื่อหาจำนวนเส้นรวม",
+    clue_en: "Find GCD for piece length, then divide each rope length by GCD and sum up.",
+    options: ["ยาวเส้นละ 28 ซม. ได้ทั้งหมด 10 เส้น", "ยาวเส้นละ 14 ซม. ได้ทั้งหมด 20 เส้น", "ยาวเส้นละ 28 ซม. ได้ทั้งหมด 12 เส้น", "ยาวเส้นละ 14 ซม. ได้ทั้งหมด 10 เส้น"],
+    ans: 0,
+    exp_th: "ห.ร.ม. ของ 56, 84, 140 คือ 28 ซม. ➔ จำนวนเส้น = (56/28) + (84/28) + (140/28) = 2 + 3 + 5 = 10 เส้น",
+    exp_en: "GCD = 28 cm. Total pieces = 2 + 3 + 5 = 10 pieces.",
+    tip: "ห.ร.ม. คือ 28 ➔ (56+84+140)/28 = 280/28 = 10 เส้น"
+  },
+  {
+    id: 6, unit: "หน่วยที่ 1 ห.ร.ม. และ ค.ร.น.", topic: "โจทย์ปัญหา ค.ร.น.",
+    q_th: "นาฬิกาปลุก 3 เรือน เรือนแรกปลุกทุก 12 นาที เรือนที่สองปลุกทุก 18 นาที และเรือนที่สามปลุกทุก 24 นาที ถ้าเริ่มปลุกพร้อมกันเวลา 06:00 น. นาฬิกาทั้งสามเรือนจะปลุกพร้อมกันครั้งต่อไปในเวลาใด?",
+    q_en: "Three alarms ring every 12, 18, and 24 min. If they ring together at 06:00, when will they ring together next?",
+    clue_th: "หา ค.ร.น. ของ 12, 18, 24 เพื่อหาระยะเวลาเป็นนาทีก่อนแปลงเป็นชั่วโมง",
+    clue_en: "Find LCM(12, 18, 24) to find the interval in minutes.",
+    options: ["07:12 น.", "07:24 น.", "06:48 น.", "08:12 น."],
+    ans: 0,
+    exp_th: "ค.ร.น. ของ 12, 18, 24 คือ 72 นาที ➔ 72 นาที = 1 ชั่วโมง 12 นาที ➔ 06:00 + 1:12 = 07:12 น.",
+    exp_en: "LCM = 72 minutes = 1 hr 12 min. 06:00 + 1:12 = 07:12.",
+    tip: "ค.ร.น. = 72 นาที = 1 ชม. 12 นาที ➔ ตอบ 07:12 น."
+  },
+  {
+    id: 7, unit: "หน่วยที่ 1 ห.ร.ม. และ ค.ร.น.", topic: "ห.ร.ม. และ ค.ร.น. เหลือเศษ",
+    q_th: "จำนวนนับที่มากที่สุดที่นำไปหาร 67 และ 115 แล้วเหลือเศษ 7 เท่ากัน คือจำนวนใด?",
+    q_en: "What is the largest number that divides 67 and 115 leaving a remainder of 7 in each case?",
+    clue_th: "นำเศษ 7 ไปลบออกจากทั้ง 67 และ 115 ก่อน แล้วจึงหา ห.ร.ม.",
+    clue_en: "Subtract 7 from both numbers first, then find the GCD.",
+    options: ["12", "6", "18", "24"],
+    ans: 0,
+    exp_th: "67 - 7 = 60 และ 115 - 7 = 108 ➔ หา ห.ร.ม. ของ 60 และ 108 ได้ 12",
+    exp_en: "67 - 7 = 60, 115 - 7 = 108. GCD(60, 108) = 12.",
+    tip: "ห.ร.ม. เหลือเศษ ให้ 'ลบเศษก่อน' ➔ ห.ร.ม.(60, 108) = 12"
+  },
+  {
+    id: 8, unit: "หน่วยที่ 2 เศษส่วน", topic: "การเปรียบเทียบเศษส่วนขั้นสูง",
+    q_th: "ข้อใดเรียงลำดับเศษส่วนจากมากไปหาน้อยได้ถูกต้อง?",
+    q_en: "Which sequence correctly arranges fractions from greatest to least?",
+    clue_th: "เปรียบเทียบกับ 1/2 หรือทำตัวส่วนให้เท่ากัน",
+    clue_en: "Compare with benchmark 1/2 or find a common denominator.",
+    options: ["5/6, 7/9, 2/3, 5/8", "7/9, 5/6, 2/3, 5/8", "5/6, 2/3, 7/9, 5/8", "5/8, 2/3, 7/9, 5/6"],
+    ans: 0,
+    exp_th: "แปลงเป็นทศนิยมเพื่อเช็ก: 5/6 ≈ 0.833, 7/9 ≈ 0.777, 2/3 ≈ 0.667, 5/8 = 0.625 ดังนั้น 5/6 > 7/9 > 2/3 > 5/8",
+    exp_en: "5/6 (0.833) > 7/9 (0.777) > 2/3 (0.667) > 5/8 (0.625).",
+    tip: "คูณไขว้เทียบทีละคู่: 5/6 > 7/9 > 6/9(2/3) > 5/8"
+  },
+  {
+    id: 9, unit: "หน่วยที่ 2 เศษส่วน", topic: "การบวกและลบระคนเศษส่วน",
+    q_th: "ผลลัพธ์ของ 3 1/4 - 1 2/3 + 2 5/6 มีค่าเท่าใด?",
+    q_en: "What is 3 1/4 - 1 2/3 + 2 5/6?",
+    clue_th: "ค.ร.น. ของส่วน 4, 3, 6 คือ 12 ทำส่วนให้เป็น 12 ทั้งหมด",
+    clue_en: "Common denominator is 12. Convert and compute left to right.",
+    options: ["4 5/12", "4 7/12", "3 11/12", "4 1/4"],
+    ans: 0,
+    exp_th: "แปลงเป็นส่วน 12: 13/4 = 39/12, 5/3 = 20/12, 17/6 = 34/12 ➔ (39 - 20 + 34)/12 = 53/12 = 4 5/12",
+    exp_en: "(39 - 20 + 34)/12 = 53/12 = 4 5/12.",
+    tip: "รวมส่วน 12: 39 - 20 + 34 = 53 ➔ 53/12 = 4 เศษ 5"
+  },
+  {
+    id: 10, unit: "หน่วยที่ 2 เศษส่วน", topic: "การคูณและหารระคนเศษส่วน",
+    q_th: "ผลลัพธ์ของ (2 4/7 ÷ 1 5/9) × 1 1/6 มีค่าเท่าใด?",
+    q_en: "What is (2 4/7 ÷ 1 5/9) × 1 1/6?",
+    clue_th: "แปลงเป็นเศษเกิน: (18/7 ÷ 14/9) × 7/6 แล้วเปลี่ยนหารเป็นคูณกลับเศษส่วน",
+    clue_en: "Convert to improper fractions: (18/7 × 9/14) × 7/6 and cancel out.",
+    options: ["1 13/14", "1 11/14", "2 1/7", "1 5/7"],
+    ans: 0,
+    exp_th: "(18/7 × 9/14) × 7/6 = (18 × 9 × 7) / (7 × 14 × 6) ตัด 7 กับ 7, ตัด 18 กับ 6 เหลือ 3 ➔ (3 × 9)/14 = 27/14 = 1 13/14",
+    exp_en: "(18/7 × 9/14) × 7/6 = 27/14 = 1 13/14.",
+    tip: "ตัดทอน 7 ตัด 7, 18 หาร 6 ได้ 3 ➔ เหลือ 3×9 / 14 = 27/14 = 1 13/14"
+  },
+  {
+    id: 11, unit: "หน่วยที่ 2 เศษส่วน", topic: "ลำดับการคำนวณระคนเศษส่วน",
+    q_th: "ผลลัพธ์ของ 4/5 + 3/4 × 2/3 - 1/2 มีค่าเท่าใด?",
+    q_en: "What is 4/5 + 3/4 × 2/3 - 1/2?",
+    clue_th: "ต้องทำเครื่องหมายคูณ (3/4 × 2/3) ก่อนเสมอ แล้วค่อยบวกและลบ",
+    clue_en: "Multiply (3/4 × 2/3) first, then add and subtract.",
+    options: ["4/5", "7/10", "1/2", "9/10"],
+    ans: 0,
+    exp_th: "1) คูณก่อน: 3/4 × 2/3 = 1/2 | 2) ซ้ายไปขวา: 4/5 + 1/2 - 1/2 = 4/5 พอดี",
+    exp_en: "3/4 × 2/3 = 1/2. Then 4/5 + 1/2 - 1/2 = 4/5.",
+    tip: "สังเกต + 1/2 กับ - 1/2 หักล้างกันหมด เหลือ 4/5 ทันที!"
+  },
+  {
+    id: 12, unit: "หน่วยที่ 2 เศษส่วน", topic: "โจทย์ปัญหาเศษส่วนหลายขั้นตอน",
+    q_th: "ชาวสวนมีที่ดิน 48 ไร่ ปลูกทุเรียน 3/8 ของที่ดินทั้งหมด ปลูกมังคุด 2/5 ของที่ดินที่เหลือ ที่ดินที่ยังไม่ได้ปลูกผลไม้มีกี่ไร่?",
+    q_en: "A farmer has 48 rai. 3/8 is planted with durian, and 2/5 of the remainder with mangosteen. How many rai are left?",
+    clue_th: "หาที่ดินเหลือจากทุเรียนก่อน แล้วหา 3/5 ของส่วนที่เหลือนั้น",
+    clue_en: "Find the remainder after durian, then take 3/5 of that remainder.",
+    options: ["18 ไร่", "12 ไร่", "20 ไร่", "15 ไร่"],
+    ans: 0,
+    exp_th: "ปลูกทุเรียน 3/8 × 48 = 18 ไร่ ➔ เหลือที่ดิน 48 - 18 = 30 ไร่ ➔ ปลูกมังคุด 2/5 × 30 = 12 ไร่ ➔ เหลือที่ดิน 30 - 12 = 18 ไร่",
+    exp_en: "Durian = 18 rai. Remainder = 30 rai. Mangosteen = 12 rai. Left = 30 - 12 = 18 rai.",
+    tip: "คิดลัด: 48 × (5/8) × (3/5) = 48 × 3/8 = 18 ไร่"
+  },
+  {
+    id: 13, unit: "หน่วยที่ 2 เศษส่วน", topic: "โจทย์ปัญหาย้อนกลับเศษส่วน",
+    q_th: "กานต์ใช้เงินไป 2/5 ของเงินที่มีอยู่ แล้วใช้อีก 150 บาท ปรากฏว่าเหลือเงิน 450 บาท เดิมกานต์มีเงินกี่บาท?",
+    q_en: "Karn spent 2/5 of his money, then spent another 150 THB. He had 450 THB left. How much did he have originally?",
+    clue_th: "ก่อนใช้ 150 บาท เขาเหลือเงิน 450 + 150 = 600 บาท ซึ่งคิดเป็น 3/5 ของเงินทั้งหมด",
+    clue_en: "450 + 150 = 600 THB represents 3/5 of the total money.",
+    options: ["1,000 บาท", "900 บาท", "1,200 บาท", "800 บาท"],
+    ans: 0,
+    exp_th: "เงิน 3/5 ส่วน = 450 + 150 = 600 บาท ➔ เงิน 1 ส่วน = 600 / 3 = 200 บาท ➔ เงินเดิม (5 ส่วน) = 200 × 5 = 1,000 บาท",
+    exp_en: "3/5 of Total = 600 THB ➔ Total = 600 × (5/3) = 1,000 THB.",
+    tip: "600 × 5/3 = 1,000 บาท ตรงไปตรงมา"
+  },
+  {
+    id: 14, unit: "หน่วยที่ 3 ทศนิยม", topic: "การเขียนเศษส่วนในรูปทศนิยมซ้ำ/ไม่รู้จบ",
+    q_th: "เศษส่วน 5/16 เขียนในรูปทศนิยมได้ตรงกับข้อใด?",
+    q_en: "What is 5/16 written as a decimal?",
+    clue_th: "นำ 16 คูณด้วย 625 ได้ 10,000 ➔ นำ 5 × 625 แล้วเลื่อนจุด 4 ตำแหน่ง",
+    clue_en: "16 × 625 = 10,000. 5 × 625 = 3,125.",
+    options: ["0.3125", "0.325", "0.315", "0.3175"],
+    ans: 0,
+    exp_th: "5 ÷ 16 = 0.3125 (หรือ (5 × 625)/(16 × 625) = 3,125/10,000 = 0.3125)",
+    exp_en: "5 ÷ 16 = 0.3125.",
+    tip: "1/16 = 0.0625 ➔ 5 × 0.0625 = 0.3125"
+  },
+  {
+    id: 15, unit: "หน่วยที่ 3 ทศนิยม", topic: "การหารทศนิยมขั้นสูง",
+    q_th: "ผลหารของ 0.0432 ÷ 0.0036 มีค่าเท่าใด?",
+    q_en: "What is 0.0432 ÷ 0.0036?",
+    clue_th: "เลื่อนจุดทศนิยมไปทางขวา 4 ตำแหน่งทั้งตัวหารและตัวตั้ง กลายเป็น 432 ÷ 36",
+    clue_en: "Multiply both by 10,000: 432 ÷ 36.",
+    options: ["12", "1.2", "120", "0.12"],
+    ans: 0,
+    exp_th: "0.0432 ÷ 0.0036 = 432 ÷ 36 = 12",
+    exp_en: "432 ÷ 36 = 12.",
+    tip: "432 / 36 = 12 พอดี ไม่ต้องมีจุดทศนิยม"
+  },
+  {
+    id: 16, unit: "หน่วยที่ 3 ทศนิยม", topic: "ลำดับการคำนวณระคนทศนิยม",
+    q_th: "ผลลัพธ์ของ 12.5 - 2.4 × 3.5 + 0.9 มีค่าเท่าใด?",
+    q_en: "What is 12.5 - 2.4 × 3.5 + 0.9?",
+    clue_th: "คำนวณผลคูณ 2.4 × 3.5 ก่อน แล้วจึงคำนวณบวกลบจากซ้ายไปขวา",
+    clue_en: "Multiply 2.4 × 3.5 first, then evaluate left to right.",
+    options: ["5.0", "4.1", "36.25", "6.8"],
+    ans: 0,
+    exp_th: "1) 2.4 × 3.5 = 8.4 | 2) 12.5 - 8.4 = 4.1 | 3) 4.1 + 0.9 = 5.0",
+    exp_en: "2.4 × 3.5 = 8.4. 12.5 - 8.4 + 0.9 = 5.0.",
+    tip: "12.5 - 8.4 + 0.9 = 4.1 + 0.9 = 5.0"
+  },
+  {
+    id: 17, unit: "หน่วยที่ 3 ทศนิยม", topic: "โจทย์ปัญหาทศนิยมประยุกต์",
+    q_th: "ถังใบหนึ่งมีน้ำอยู่ 45.6 ลิตร ตักออกไปใช้ครั้งละ 1.85 ลิตร จำนวน 16 ครั้ง จะเหลือน้ำในถังกี่ลิตร?",
+    q_en: "A tank has 45.6 L of water. 1.85 L is scooped out 16 times. How much water remains?",
+    clue_th: "หาน้ำที่ตักออกทั้งหมด (1.85 × 16) แล้วนำไปลบออกจาก 45.6",
+    clue_en: "Water used = 1.85 × 16. Remaining = 45.6 - Water used.",
+    options: ["16.0 ลิตร", "15.8 ลิตร", "16.2 ลิตร", "14.5 ลิตร"],
+    ans: 0,
+    exp_th: "น้ำที่ตักออก = 1.85 × 16 = 29.6 ลิตร ➔ เหลือน้ำ = 45.6 - 29.6 = 16.0 ลิตร",
+    exp_en: "Used = 29.6 L. Remaining = 45.6 - 29.6 = 16.0 L.",
+    tip: "1.85 × 16 = 29.6 ➔ 45.6 - 29.6 = 16 ลิตรพอดี"
+  },
+  {
+    id: 18, unit: "หน่วยที่ 4 อัตราส่วนและร้อยละ", topic: "อัตราส่วนที่เท่ากัน",
+    q_th: "ถ้า a : 24 = 15 : 40 แล้ว ค่าของ a คือข้อใด?",
+    q_en: "If a : 24 = 15 : 40, what is the value of a?",
+    clue_th: "ทอน 15 : 40 เป็นเศษส่วนอย่างต่ำ (3/8) แล้วหาตัวคูณ",
+    clue_en: "Simplify 15/40 = 3/8, then solve for a.",
+    options: ["9", "8", "10", "12"],
+    ans: 0,
+    exp_th: "a / 24 = 15 / 40 ➔ a = (15 × 24) / 40 = 360 / 40 = 9",
+    exp_en: "a = (15 × 24) / 40 = 9.",
+    tip: "15/40 = 3/8 ➔ ทำให้ส่วนเป็น 24 ต้องคูณ 3 ➔ 3 × 3 = 9"
+  },
+  {
+    id: 19, unit: "หน่วยที่ 4 อัตราส่วนและร้อยละ", topic: "อัตราส่วนของหลายจำนวน",
+    q_th: "ถ้า A : B = 3 : 4 และ B : C = 6 : 5 แล้ว อัตราส่วน A : B : C ตรงกับข้อใด?",
+    q_en: "If A : B = 3 : 4 and B : C = 6 : 5, what is A : B : C?",
+    clue_th: "หา ค.ร.น. ของค่า B (4 และ 6) คือ 12 แล้วปรับอัตราส่วนทั้งสองชุด",
+    clue_en: "Find LCM of B (4 and 6), which is 12, and scale both ratios.",
+    options: ["9 : 12 : 10", "3 : 12 : 5", "18 : 24 : 15", "9 : 10 : 12"],
+    ans: 0,
+    exp_th: "ทำให้ B = 12 ➔ A : B = (3×3) : (4×3) = 9 : 12 และ B : C = (6×2) : (5×2) = 12 : 10 ➔ A : B : C = 9 : 12 : 10",
+    exp_en: "Scale B to 12: A:B = 9:12, B:C = 12:10 ➔ A:B:C = 9:12:10.",
+    tip: "ค.ร.น. ของ 4 กับ 6 คือ 12 ➔ 3×3 : 12 : 5×2 = 9 : 12 : 10"
+  },
+  {
+    id: 20, unit: "หน่วยที่ 4 อัตราส่วนและร้อยละ", topic: "การแบ่งอัตราส่วน",
+    q_th: "เงิน 3,600 บาท แบ่งให้ ก, ข และ ค ตามอัตราส่วน 2 : 3 : 4 ข จะได้รับเงินกี่บาท?",
+    q_en: "Divide 3,600 THB among A, B, and C in the ratio 2 : 3 : 4. How much does B receive?",
+    clue_th: "รวมส่วนทั้งหมด 2 + 3 + 4 = 9 ส่วน แล้วหาค่าของ 3 ส่วน",
+    clue_en: "Total parts = 2 + 3 + 4 = 9 parts. Find the value of 3 parts.",
+    options: ["1,200 บาท", "800 บาท", "1,600 บาท", "1,000 บาท"],
+    ans: 0,
+    exp_th: "จำนวนส่วนทั้งหมด = 2 + 3 + 4 = 9 ส่วน ➔ 1 ส่วน = 3,600 / 9 = 400 บาท ➔ ข ได้ 3 ส่วน = 3 × 400 = 1,200 บาท",
+    exp_en: "Total 9 parts = 3,600 THB ➔ 1 part = 400 THB ➔ B gets 3 × 400 = 1,200 THB.",
+    tip: "ข ได้ 3/9 = 1/3 ของเงินทั้งหมด ➔ 3,600 / 3 = 1,200 บาท"
+  },
+  {
+    id: 21, unit: "หน่วยที่ 4 อัตราส่วนและร้อยละ", topic: "มาตราส่วน",
+    q_th: "แผนผังใช้มาตราส่วน 1 : 50,000 ถ้าระยะทางในแผนผังวัดได้ 6.4 เซนติเมตร ระยะทางจริงในภูมิประเทศเป็นกี่กิโลเมตร?",
+    q_en: "A map uses a scale of 1 : 50,000. If map distance is 6.4 cm, what is the actual distance in km?",
+    clue_th: "ระยะทางจริง = 6.4 × 50,000 เซนติเมตร แล้วแปลงเป็นกิโลเมตร (1 กม. = 100,000 ซม.)",
+    clue_en: "Actual = 6.4 × 50,000 cm. Convert to km by dividing by 100,000.",
+    options: ["3.2 กิโลเมตร", "32 กิโลเมตร", "0.32 กิโลเมตร", "320 กิโลเมตร"],
+    ans: 0,
+    exp_th: "ระยะทางจริง = 6.4 × 50,000 = 320,000 ซม. ➔ แปลงเป็นเมตร = 3,200 ม. ➔ แปลงเป็น กม. = 3.2 กิโลเมตร",
+    exp_en: "6.4 × 50,000 = 320,000 cm = 3.2 km.",
+    tip: "320,000 / 100,000 = 3.2 กิโลเมตร"
+  },
+  {
+    id: 22, unit: "หน่วยที่ 4 อัตราส่วนและร้อยละ", topic: "การหาราคาทุนจากกำไร",
+    q_th: "พ่อค้าขายโทรศัพท์มือถือไปในราคา 8,400 บาท ได้กำไร 20% พ่อค้าซื้อโทรศัพท์เครื่องนี้มาในราคากี่บาท?",
+    q_en: "A seller sold a phone for 8,400 THB making a 20% profit. What was the cost price?",
+    clue_th: "ราคาขาย 8,400 บาท คิดเป็น 120% ของราคาทุน ➔ ทุน = (8,400 × 100) / 120",
+    clue_en: "8,400 THB represents 120% of cost. Cost = (8,400 × 100) / 120.",
+    options: ["7,000 บาท", "6,720 บาท", "7,200 บาท", "6,800 บาท"],
+    ans: 0,
+    exp_th: "ราคาทุน = (8,400 × 100) / 120 = 8,400 / 1.2 = 7,000 บาท",
+    exp_en: "Cost = 8,400 / 1.20 = 7,000 THB.",
+    tip: "8,400 / 12 = 700 ➔ 700 × 10 = 7,000 บาท"
+  },
+  {
+    id: 23, unit: "หน่วยที่ 4 อัตราส่วนและร้อยละ", topic: "การลดราคาซ้อนสองชั้น",
+    q_th: "ร้านค้าติดป้ายราคากล้องถ่ายรูป 15,000 บาท จัดโปรโมชันลดราคา 10% และถ้าชำระด้วยเงินสดลดเพิ่มอีก 5% จากราคาที่ลดแล้ว ผู้ซื้อจ่ายเงินสดกี่บาท?",
+    q_en: "A camera is priced at 15,000 THB with a 10% discount, plus an extra 5% cash discount on the discounted price. What is the final price?",
+    clue_th: "หาราคาหลังลด 10% (จ่าย 90%) แล้วนำราคานั้นไปคิดจ่าย 95%",
+    clue_en: "Calculate 15,000 × 0.90 × 0.95.",
+    options: ["12,825 บาท", "12,750 บาท", "13,500 บาท", "12,600 บาท"],
+    ans: 0,
+    exp_th: "ลด 10% เหลือ = 15,000 × 0.90 = 13,500 บาท ➔ จ่ายสดลดอีก 5% = 13,500 × 0.95 = 12,825 บาท",
+    exp_en: "Step 1: 15,000 × 0.90 = 13,500. Step 2: 13,500 × 0.95 = 12,825 THB.",
+    tip: "ห้ามนำ 10% + 5% = 15% เด็ดขาด! ต้องคิดลดต่อยอด ➔ 13,500 - 675 = 12,825"
+  },
+  {
+    id: 24, unit: "หน่วยที่ 5 แบบรูป", topic: "แบบรูปเชิงเส้น",
+    q_th: "พิจารณาแบบรูปของจำนวน: 7, 13, 19, 25, 31, ... จำนวนในลำดับที่ 50 คือจำนวนใด?",
+    q_en: "Pattern: 7, 13, 19, 25, 31, ... What is the 50th number?",
+    clue_th: "ระยะห่างคงที่เท่ากับ 6 (สูตรพจน์ทั่วไปคือ 6n + 1)",
+    clue_en: "Constant difference is 6. The general formula is 6n + 1.",
+    options: ["301", "300", "295", "307"],
+    ans: 0,
+    exp_th: "ผลต่าง d = 6 ➔ พจน์ทั่วไปคือ 6n + 1 ➔ ลำดับที่ 50 = (6 × 50) + 1 = 300 + 1 = 301",
+    exp_en: "General term = 6n + 1 ➔ 50th term = 6(50) + 1 = 301.",
+    tip: "สูตร 6n + 1 ➔ 6 × 50 = 300 ➔ 300 + 1 = 301"
+  },
+  {
+    id: 25, unit: "หน่วยที่ 5 แบบรูป", topic: "แบบรูปเรขาคณิต/รูปภาพ",
+    q_th: "นำไม้ขีดไฟมาเรียงเป็นรูปสี่เหลี่ยมจัตุรัสต่อกัน 1 รูปใช้ 4 ก้าน, 2 รูปใช้ 7 ก้าน, 3 รูปใช้ 10 ก้าน ถ้าต้องการต่อรูปสี่เหลี่ยมจัตุรัสเรียงกัน 25 รูป ต้องใช้ไม้ขีดไฟกี่ก้าน?",
+    q_en: "Forming squares in a row: 1 square uses 4 matchsticks, 2 use 7, 3 use 10. How many matchsticks for 25 squares?",
+    clue_th: "สังเกตความสัมพันธ์: รูปแรกใช้ 4 รูปถัดไปเพิ่มทีละ 3 (สูตร 3n + 1)",
+    clue_en: "Formula is 3n + 1 where n is the number of squares.",
+    options: ["76 ก้าน", "75 ก้าน", "100 ก้าน", "78 ก้าน"],
+    ans: 0,
+    exp_th: "จำนวนไม้ขีด = 3n + 1 ➔ สำหรับ 25 รูป = (3 × 25) + 1 = 75 + 1 = 76 ก้าน",
+    exp_en: "Matchsticks = 3n + 1 ➔ 3(25) + 1 = 76 matchsticks.",
+    tip: "เพิ่มทีละ 3 ➔ 3 × 25 = 75 แล้วบวกหัวปิด 1 = 76 ก้าน"
+  },
+  {
+    id: 26, unit: "หน่วยที่ 1 ห.ร.ม. และ ค.ร.น.", topic: "โจทย์ประยุกต์ ห.ร.ม. แปลงที่ดิน",
+    q_th: "ที่ดินรูปสี่เหลี่ยมผืนผ้ากว้าง 72 เมตร ยาว 120 เมตร ต้องการปักเสาทำรั้วรอบที่ดินโดยให้เสาแต่ละต้นห่างเท่ากันเป็นระยะทางมากที่สุด และมีเสาอยู่ที่มุมทั้งสี่ ต้องใช้เสาทั้งหมดกี่ต้น?",
+    q_en: "A rectangular land is 72m wide and 120m long. Fence posts are placed around at maximum equal intervals including corners. How many posts are needed?",
+    clue_th: "หา ห.ร.ม. ของ 72 และ 120 เพื่อหาระยะห่างระหว่างเสา แล้วหาจำนวนเสาจากความยาวรอบรูป ÷ ระยะห่าง",
+    clue_en: "Find GCD(72, 120) for post interval. Total posts = Perimeter ÷ GCD.",
+    options: ["16 ต้น", "14 ต้น", "18 ต้น", "20 ต้น"],
+    ans: 0,
+    exp_th: "ห.ร.ม. ของ 72 และ 120 คือ 24 เมตร ➔ ความยาวรอบรูป = 2 × (72 + 120) = 384 เมตร ➔ จำนวนเสา = 384 / 24 = 16 ต้น",
+    exp_en: "GCD = 24m. Perimeter = 384m. Posts = 384 / 24 = 16 posts.",
+    tip: "ระยะห่าง 24 ม. ➔ ด้านกว้างใช้ 72/24=3 ช่อง ด้านยาว 120/24=5 ช่อง ➔ เสาปิดล้อม = (3+5)×2 = 16 ต้น"
+  },
+  {
+    id: 27, unit: "หน่วยที่ 2 เศษส่วน", topic: "โจทย์ปัญหาทำงานร่วมกัน (Work Problem)",
+    q_th: "ท่อน้ำ A เปิดน้ำเข้าถังเต็มในเวลา 4 ชั่วโมง ท่อน้ำ B เปิดน้ำเข้าถังใบเดียวกันเต็มในเวลา 6 ชั่วโมง ถ้าเปิดทั้งสองท่อพร้อมกัน น้ำจะเต็มถังในเวลากี่ชั่วโมง?",
+    q_en: "Pipe A fills a tank in 4 hours, Pipe B in 6 hours. If both open together, how many hours to fill the tank?",
+    clue_th: "ใน 1 ชม. ท่อ A ได้น้ำ 1/4 ถัง, ท่อ B ได้น้ำ 1/6 ถัง รวมกันได้ 1/4 + 1/6",
+    clue_en: "Rate per hour = 1/4 + 1/6 = 5/12 tank/hr. Time = 1 ÷ (5/12).",
+    options: ["2 2/5 ชั่วโมง (2 ชม. 24 นาที)", "2 1/2 ชั่วโมง (2 ชม. 30 นาที)", "5 ชั่วโมง", "2 1/5 ชั่วโมง (2 ชม. 12 นาที)"],
+    ans: 0,
+    exp_th: "1 ชั่วโมงทำงานได้ = 1/4 + 1/6 = 3/12 + 2/12 = 5/12 ของถัง ➔ เวลาที่ใช้ = 1 ÷ (5/12) = 12/5 = 2 2/5 ชั่วโมง (2 ชั่วโมง 24 นาที)",
+    exp_en: "Rate = 5/12 tank/hr ➔ Time = 12/5 = 2.4 hrs (2 hrs 24 mins).",
+    tip: "สูตรลัดผลคูณหารด้วยผลบวก: (4 × 6)/(4 + 6) = 24/10 = 2.4 ชม. = 2 ชม. 24 นาที"
+  },
+  {
+    id: 28, unit: "หน่วยที่ 3 ทศนิยม", topic: "โจทย์ปัญหาค่าเฉลี่ยทศนิยม",
+    q_th: "คะแนนสอบของนักเรียน 5 คน มีคะแนนเฉลี่ย 18.4 คะแนน ต่อมามีนักเรียนเพิ่มมาอีก 1 คน ทำให้คะแนนเฉลี่ยของทั้ง 6 คน กลายเป็น 19.1 คะแนน นักเรียนคนที่เข้ามาใหม่สอบได้กี่คะแนน?",
+    q_en: "Average score of 5 students is 18.4. A new student joins and the average becomes 19.1. What is the new student's score?",
+    clue_th: "หาผลรวมคะแนน 6 คน (6 × 19.1) ลบด้วยผลรวมคะแนน 5 คนเดิม (5 × 18.4)",
+    clue_en: "New score = (6 × 19.1) - (5 × 18.4).",
+    options: ["22.6 คะแนน", "21.8 คะแนน", "23.4 คะแนน", "20.6 คะแนน"],
+    ans: 0,
+    exp_th: "รวม 5 คน = 5 × 18.4 = 92 คะแนน ➔ รวม 6 คน = 6 × 19.1 = 114.6 คะแนน ➔ คนใหม่ได้ = 114.6 - 92 = 22.6 คะแนน",
+    exp_en: "Sum(6) = 114.6. Sum(5) = 92. New score = 114.6 - 92 = 22.6.",
+    tip: "114.6 - 92.0 = 22.6 คะแนน"
+  },
+  {
+    id: 29, unit: "หน่วยที่ 4 อัตราส่วนและร้อยละ", topic: "โจทย์กำไรผสมร้อยละ",
+    q_th: "ซื้อส้มมา 50 กิโลกรัม ราคากิโลกรัมละ 30 บาท เน่าเสียไป 10% ของที่ซื้อมา ส้มที่เหลือนำไปขายกิโลกรัมละ 45 บาท จะได้กำไรหรือขาดทุนกี่เปอร์เซ็นต์?",
+    q_en: "Bought 50 kg oranges at 30 THB/kg. 10% spoiled. Sold the rest at 45 THB/kg. What is the profit or loss percentage?",
+    clue_th: "ทุนรวม = 50 × 30 = 1,500 บาท ส้มเหลือ 45 กก. ขายได้ 45 × 45 บาท",
+    clue_en: "Cost = 1,500 THB. Oranges left = 45 kg. Revenue = 45 × 45 = 2,025 THB.",
+    options: ["กำไร 35%", "กำไร 30%", "กำไร 40%", "ขาดทุน 10%"],
+    ans: 0,
+    exp_th: "ทุน = 50 × 30 = 1,500 บาท ➔ เหลือส้ม 50 - 5 = 45 กก. ➔ ขายได้ = 45 × 45 = 2,025 บาท ➔ กำไร = 2,025 - 1,500 = 525 บาท ➔ คิดเป็น (525/1,500) × 100 = 35%",
+    exp_en: "Cost = 1,500. Revenue = 2,025. Profit = 525 THB (35%).",
+    tip: "(525 / 1500) × 100 = 525 / 15 = 35% กำไร"
+  },
+  {
+    id: 30, unit: "หน่วยที่ 5 แบบรูป", topic: "ผลบวกอนุกรมเลขคณิต",
+    q_th: "ผลบวกของ 1 + 2 + 3 + 4 + ... + 100 มีค่าเท่าใด?",
+    q_en: "What is the sum of 1 + 2 + 3 + 4 + ... + 100?",
+    clue_th: "ใช้สูตรการบวกเลขเรียง: (ต้น + ปลาย) × จำนวนตัว / 2",
+    clue_en: "Formula: Sum = (First + Last) × n / 2.",
+    options: ["5,050", "5,000", "5,100", "4,950"],
+    ans: 0,
+    exp_th: "สูตร = (1 + 100) × 100 / 2 = 101 × 50 = 5,050",
+    exp_en: "(1 + 100) × 100 / 2 = 101 × 50 = 5,050.",
+    tip: "สูตรการ์ส: 101 × 50 = 5,050"
+  }
+];
+
+// App State Management
+let currentLang = 'th';
+let randomizedQuestions = [];
+let userAnswers = {};
+
+// Whiteboard Controls
+let isDrawing = false;
+let wbMode = 'pen';
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+
+function initWhiteboard() {
+  function resize() {
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width;
+    canvas.height = rect.height;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  function start(e) {
+    isDrawing = true;
+    ctx.beginPath();
+    const pos = getPos(e);
+    ctx.moveTo(pos.x, pos.y);
+  }
+  function move(e) {
+    if (!isDrawing) return;
+    const pos = getPos(e);
+    if (wbMode === 'pen') {
+      ctx.strokeStyle = '#312e81';
+      ctx.lineWidth = 2.5;
+    } else {
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 20;
+    }
+    ctx.lineTo(pos.x, pos.y);
+    ctx.stroke();
+  }
+  function end() { isDrawing = false; }
+  function getPos(e) {
+    const rect = canvas.getBoundingClientRect();
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    return { x: clientX - rect.left, y: clientY - rect.top };
+  }
+
+  canvas.addEventListener('mousedown', start);
+  canvas.addEventListener('mousemove', move);
+  window.addEventListener('mouseup', end);
+
+  canvas.addEventListener('touchstart', (e) => { e.preventDefault(); start(e); }, { passive: false });
+  canvas.addEventListener('touchmove', (e) => { e.preventDefault(); move(e); }, { passive: false });
+  window.addEventListener('touchend', end);
+}
+
+function setWbMode(mode) {
+  wbMode = mode;
+  document.getElementById('penBtn').classList.toggle('active', mode === 'pen');
+  document.getElementById('eraserBtn').classList.toggle('active', mode === 'eraser');
+}
+
+function clearWhiteboard() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+}
+
+// Fisher-Yates Shuffle Algorithm
+function shuffle(array) {
+  let m = array.length, t, i;
+  while (m) {
+    i = Math.floor(Math.random() * m--);
+    t = array[m];
+    array[m] = array[i];
+    array[i] = t;
+  }
+  return array;
+}
+
+function prepareQuestions() {
+  const savedData = localStorage.getItem('p6_math_exam_data');
+  const savedState = localStorage.getItem('p6_math_exam_state');
+  const savedLang = localStorage.getItem('p6_math_exam_lang');
+
+  if (savedLang) currentLang = savedLang;
+
+  if (savedData && savedState) {
+    randomizedQuestions = JSON.parse(savedData);
+    userAnswers = JSON.parse(savedState);
+  } else {
+    randomizedQuestions = examData.map(q => {
+      const originalOptions = [...q.options];
+      const correctText = originalOptions[q.ans];
+      const shuffledOptions = shuffle([...originalOptions]);
+      const newAnsIndex = shuffledOptions.indexOf(correctText);
+
+      return {
+        ...q,
+        shuffledOptions: shuffledOptions,
+        correctIndex: newAnsIndex
+      };
+    });
+    randomizedQuestions = shuffle(randomizedQuestions);
+    localStorage.setItem('p6_math_exam_data', JSON.stringify(randomizedQuestions));
+  }
+  renderExam();
+}
+
+function renderExam() {
+  const container = document.getElementById('questionsContainer');
+  container.innerHTML = '';
+
+  let correctCount = 0;
+  let answeredCount = 0;
+
+  randomizedQuestions.forEach((q, qIndex) => {
+    const isAnswered = userAnswers.hasOwnProperty(qIndex);
+    const selectedOpt = userAnswers[qIndex];
+    if (isAnswered) {
+      answeredCount++;
+      if (selectedOpt === q.correctIndex) correctCount++;
+    }
+
+    const card = document.createElement('div');
+    card.className = 'question-card';
+    card.id = `q_card_${qIndex}`;
+
+    const qText = currentLang === 'th' ? q.q_th : q.q_en;
+    const clueText = currentLang === 'th' ? q.clue_th : q.clue_en;
+    const expText = currentLang === 'th' ? q.exp_th : q.exp_en;
+
+    let optionsHtml = '';
+    q.shuffledOptions.forEach((opt, optIndex) => {
+      let btnClass = 'opt-btn';
+      if (isAnswered) {
+        if (optIndex === q.correctIndex) btnClass += ' correct';
+        else if (optIndex === selectedOpt) btnClass += ' wrong';
+      }
+      const disabled = isAnswered ? 'disabled' : '';
+      optionsHtml += `
+        <button class="${btnClass}" ${disabled} onclick="selectAnswer(${qIndex}, ${optIndex})">
+          ${String.fromCharCode(65 + optIndex)}. ${opt}
+        </button>
+      `;
+    });
+
+    const expShowClass = isAnswered ? 'show' : '';
+
+    card.innerHTML = `
+      <div class="q-header">
+        <span class="q-num">${currentLang === 'th' ? 'ข้อที่' : 'Question'} ${qIndex + 1} / 30</span>
+        <span class="q-topic">${q.unit} : ${q.topic}</span>
+      </div>
+      <div class="q-text">${qText}</div>
+      <div class="q-clue">💡 <b>${currentLang === 'th' ? 'คำใบ้:' : 'Clue:'}</b> ${clueText}</div>
+      <div class="options-grid">${optionsHtml}</div>
+      <div class="explanation-box ${expShowClass}" id="exp_${qIndex}">
+        <b>${currentLang === 'th' ? 'เฉลยและวิธีคิดละเอียด:' : 'Detailed Explanation:'}</b> ${expText}
+        <span class="tutor-tip">⚡ เทคนิคติวเตอร์: ${q.tip}</span>
+      </div>
+    `;
+    container.appendChild(card);
+  });
+
+  document.getElementById('scoreDisplay').innerText = 
+    `${currentLang === 'th' ? 'คะแนน:' : 'Score:'} ${correctCount} / 30`;
+
+  if (answeredCount === 30) {
+    showResults(correctCount);
+  } else {
+    document.getElementById('resultSection').classList.remove('show');
+  }
+
+  document.getElementById('btnToggleLang').innerText = 
+    currentLang === 'th' ? 'สลับภาษา / Switch to EN' : 'Switch to TH / สลับภาษาไทย';
+}
+
+function selectAnswer(qIndex, optIndex) {
+  if (userAnswers.hasOwnProperty(qIndex)) return;
+  userAnswers[qIndex] = optIndex;
+  localStorage.setItem('p6_math_exam_state', JSON.stringify(userAnswers));
+  renderExam();
+}
+
+function toggleLanguage() {
+  currentLang = currentLang === 'th' ? 'en' : 'th';
+  localStorage.setItem('p6_math_exam_lang', currentLang);
+  renderExam();
+}
+
+function resetExam() {
+  if (confirm(currentLang === 'th' ? 'คุณต้องการเริ่มทำข้อสอบใหม่ทั้งหมดใช่หรือไม่?' : 'Do you want to reset the exam?')) {
+    localStorage.removeItem('p6_math_exam_data');
+    localStorage.removeItem('p6_math_exam_state');
+    userAnswers = {};
+    prepareQuestions();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+}
+
+function showResults(score) {
+  const resultSec = document.getElementById('resultSection');
+  resultSec.classList.add('show');
+  document.getElementById('finalScore').innerText = 
+    `${currentLang === 'th' ? 'สรุปผลคะแนนสอบรวม:' : 'Total Exam Score:'} ${score} / 30 (${Math.round((score/30)*100)}%)`;
+
+  const unitStats = {};
+  randomizedQuestions.forEach((q, idx) => {
+    if (!unitStats[q.unit]) unitStats[q.unit] = { total: 0, correct: 0, name: q.unit };
+    unitStats[q.unit].total++;
+    if (userAnswers[idx] === q.correctIndex) {
+      unitStats[q.unit].correct++;
+    }
+  });
+
+  const strengthList = document.getElementById('strengthList');
+  const weaknessList = document.getElementById('weaknessList');
+  strengthList.innerHTML = '';
+  weaknessList.innerHTML = '';
+
+  Object.values(unitStats).forEach(stat => {
+    const percentage = (stat.correct / stat.total) * 100;
+    const li = document.createElement('li');
+    li.style.marginBottom = '6px';
+    li.innerHTML = `<b>${stat.name}:</b> ทำได้ ${stat.correct}/${stat.total} ข้อ (${Math.round(percentage)}%)`;
+
+    if (percentage >= 70) {
+      li.innerHTML += ' ✅ <i>มีความเข้าใจดีเยี่ยม คำนวณรวดเร็วและแม่นยำ</i>';
+      strengthList.appendChild(li);
+    } else {
+      li.innerHTML += ' ❌ <i>ควรกลับไปทบทวนขั้นตอนและสูตรคิดลัดเพิ่มเติม</i>';
+      weaknessList.appendChild(li);
+    }
+  });
+
+  if (strengthList.children.length === 0) {
+    strengthList.innerHTML = '<li>พยายามฝึกฝนทำโจทย์ซ้ำเพื่อเพิ่มความแม่นยำและความมั่นใจ</li>';
+  }
+  if (weaknessList.children.length === 0) {
+    weaknessList.innerHTML = '<li>ยอดเยี่ยมระดับเหรียญทอง! มีความเชี่ยวชาญครบถ้วนพร้อมสอบเข้า ม.1 ทุกสนาม</li>';
+  }
+}
+
+window.onload = () => {
+  prepareQuestions();
+  initWhiteboard();
+};
+</script>
+</body>
+</html>
