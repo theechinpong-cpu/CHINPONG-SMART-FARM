@@ -1,0 +1,1469 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ระบบทดสอบคณิตศาสตร์ ม.1: เศษส่วนและการดำเนินการ - พระจอมเกล้าติวเตอร์</title>
+  <style>
+    :root {
+      --primary: #1e3a8a;
+      --primary-light: #3b82f6;
+      --accent: #f59e0b;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text: #1e293b;
+      --text-muted: #64748b;
+      --success: #10b981;
+      --danger: #ef4444;
+      --border: #e2e8f0;
+      --font-family: 'Sarabun', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-family);
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      padding: 16px;
+    }
+
+    header {
+      background: linear-gradient(135deg, var(--primary), #172554);
+      color: white;
+      padding: 24px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    header h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+    }
+
+    .lang-toggle-btn {
+      background-color: var(--accent);
+      color: #000;
+      font-weight: bold;
+      border: none;
+      padding: 8px 18px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.95rem;
+      transition: opacity 0.2s;
+    }
+    .lang-toggle-btn:hover {
+      opacity: 0.9;
+    }
+
+    /* สรุปเนื้อหา */
+    .summary-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+    .summary-card h2 {
+      color: var(--primary);
+      margin-bottom: 12px;
+      font-size: 1.3rem;
+      border-bottom: 2px solid var(--border);
+      padding-bottom: 6px;
+    }
+    .summary-card h3 {
+      color: var(--primary-light);
+      margin-top: 14px;
+      margin-bottom: 6px;
+      font-size: 1.1rem;
+    }
+    .summary-card p, .summary-card ul {
+      margin-bottom: 10px;
+      font-size: 0.95rem;
+    }
+    .summary-card ul {
+      padding-left: 24px;
+    }
+    .highlight-box {
+      background-color: #eff6ff;
+      border-left: 4px solid var(--primary-light);
+      padding: 12px 16px;
+      margin: 14px 0;
+      border-radius: 0 8px 8px 0;
+    }
+    .fraction-inline {
+      display: inline-block;
+      text-align: center;
+      vertical-align: middle;
+      font-style: normal;
+      padding: 0 2px;
+    }
+    .fraction-inline .top {
+      display: block;
+      border-bottom: 1px solid currentColor;
+      padding: 0 2px;
+    }
+    .fraction-inline .bottom {
+      display: block;
+      padding: 0 2px;
+    }
+
+    /* Layout: 70% Left, 30% Right */
+    .workspace-container {
+      display: flex;
+      gap: 20px;
+      align-items: flex-start;
+    }
+
+    .exam-pane {
+      flex: 0 0 70%;
+      max-width: 70%;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .whiteboard-pane {
+      flex: 0 0 30%;
+      max-width: 30%;
+      position: sticky;
+      top: 16px;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+      display: flex;
+      flex-direction: column;
+      height: calc(100vh - 32px);
+    }
+
+    .whiteboard-header {
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: var(--primary);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .whiteboard-tools {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 8px;
+      flex-wrap: wrap;
+    }
+    .tool-btn {
+      background: #f1f5f9;
+      border: 1px solid var(--border);
+      padding: 4px 8px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.8rem;
+    }
+    .tool-btn.active {
+      background: var(--primary-light);
+      color: white;
+    }
+    #paintCanvas {
+      flex: 1;
+      width: 100%;
+      border: 1px dashed #cbd5e1;
+      border-radius: 6px;
+      background-color: #ffffff;
+      cursor: crosshair;
+      touch-action: none;
+    }
+
+    /* Question Card */
+    .question-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+    }
+    .question-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      font-weight: 600;
+      color: var(--primary);
+    }
+    .topic-tag {
+      font-size: 0.8rem;
+      background: #e0f2fe;
+      color: #0369a1;
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+    .question-stem {
+      font-size: 1.05rem;
+      margin-bottom: 14px;
+      line-height: 1.7;
+    }
+    .clue-box {
+      font-size: 0.85rem;
+      color: #475569;
+      background: #f8fafc;
+      border-left: 3px solid #cbd5e1;
+      padding: 6px 12px;
+      margin-bottom: 14px;
+      border-radius: 0 4px 4px 0;
+    }
+    .options-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .option-btn {
+      text-align: left;
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 14px;
+      cursor: pointer;
+      font-size: 0.95rem;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+    .option-btn:hover:not(:disabled) {
+      border-color: var(--primary-light);
+      background-color: #f0f7ff;
+    }
+    .option-btn:disabled {
+      cursor: default;
+    }
+    .option-btn.selected-correct {
+      background-color: #dcfce7 !important;
+      border-color: var(--success) !important;
+      color: #166534 !important;
+      font-weight: bold;
+    }
+    .option-btn.selected-wrong {
+      background-color: #fee2e2 !important;
+      border-color: var(--danger) !important;
+      color: #991b1b !important;
+    }
+    .option-btn.actual-correct {
+      border: 2px solid var(--success) !important;
+      background-color: #f0fdf4 !important;
+    }
+
+    .feedback-panel {
+      display: none;
+      margin-top: 12px;
+      padding: 14px;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      line-height: 1.6;
+    }
+    .feedback-panel.correct {
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      color: #166534;
+    }
+    .feedback-panel.wrong {
+      background: #fff1f2;
+      border: 1px solid #fecdd3;
+      color: #9f1239;
+    }
+    .feedback-title {
+      font-weight: bold;
+      margin-bottom: 6px;
+    }
+    .tutor-trick {
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px dashed rgba(0,0,0,0.1);
+      font-style: italic;
+      color: #0f172a;
+    }
+
+    /* Results Dashboard */
+    .results-container {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      margin-top: 20px;
+      display: none;
+    }
+    .score-summary-bar {
+      display: flex;
+      justify-content: space-around;
+      background: #f1f5f9;
+      padding: 16px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    .score-number {
+      font-size: 2rem;
+      font-weight: bold;
+      color: var(--primary);
+    }
+    .analysis-section {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+    .analysis-box {
+      padding: 16px;
+      border-radius: 8px;
+    }
+    .strengths-box {
+      background: #ecfdf5;
+      border: 1px solid #a7f3d0;
+    }
+    .weaknesses-box {
+      background: #fff7ed;
+      border: 1px solid #fed7aa;
+    }
+    .analysis-title {
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+    .controls-row {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+      justify-content: flex-end;
+    }
+    .btn-reset {
+      background-color: var(--danger);
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    footer {
+      text-align: center;
+      padding: 24px;
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      margin-top: 30px;
+    }
+
+    /* Mobile First Adjustments */
+    @media (max-width: 900px) {
+      .workspace-container {
+        flex-direction: column-reverse;
+      }
+      .exam-pane {
+        flex: 0 0 100%;
+        max-width: 100%;
+      }
+      .whiteboard-pane {
+        flex: 0 0 100%;
+        max-width: 100%;
+        position: static;
+        height: 380px;
+      }
+      .analysis-section {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div>
+      <h1 id="headerTitle">วิชาคณิตศาสตร์ ม.1: บทเรียนเศษส่วนและการดำเนินการ (หลักสูตร สสวท.)</h1>
+      <p style="font-size: 0.9rem; opacity: 0.9;" id="headerSubtitle">ระดับความยาก: ปานกลาง - ประยุกต์ (30 ข้อเต็มรูปแบบ)</p>
+    </div>
+    <button class="lang-toggle-btn" id="langToggleBtn" onclick="toggleLanguage()">Switch to English</button>
+  </header>
+
+  <!-- สรุปเนื้อหามากกว่า 500 คำ -->
+  <section class="summary-card" id="summaryCard">
+    <!-- Rendered dynamically depending on language -->
+  </section>
+
+  <!-- พื้นที่ทำงาน 70:30 -->
+  <main class="workspace-container">
+    <!-- ฝั่งซ้าย 70% แสดงข้อสอบ -->
+    <section class="exam-pane" id="examContainer">
+      <!-- ข้อสอบ 30 ข้อจะถูก Render ด้วย JavaScript -->
+    </section>
+
+    <!-- ฝั่งขวา 30% กระดาน Whiteboard ทดเลขมืออาชีพ -->
+    <aside class="whiteboard-pane">
+      <div class="whiteboard-header">
+        <span id="wbTitle">กระดานทดเลข Whiteboard</span>
+        <button class="tool-btn" onclick="clearWhiteboard()" id="wbClearBtn">ล้างกระดาน</button>
+      </div>
+      <div class="whiteboard-tools">
+        <button class="tool-btn active" id="penToolBtn" onclick="setDrawingMode('pen')">ปากกา</button>
+        <button class="tool-btn" id="eraserToolBtn" onclick="setDrawingMode('eraser')">ยางลบ</button>
+        <input type="color" id="penColorPicker" value="#1e3a8a" title="เลือกสีปากกา" style="border:none; width:24px; height:24px; cursor:pointer;" />
+        <input type="range" id="penSizeSlider" min="1" max="10" value="2" title="ขนาดหัวปากกา" style="width: 70px;" />
+      </div>
+      <canvas id="paintCanvas"></canvas>
+    </aside>
+  </main>
+
+  <!-- แดชบอร์ดสรุปผลการประเมิน -->
+  <section class="results-container" id="resultsContainer">
+    <h2 id="resTitle" style="margin-bottom: 16px; color: var(--primary);">สรุปผลการทดสอบและการวิเคราะห์เชิงลึก</h2>
+    <div class="score-summary-bar">
+      <div>
+        <div class="score-number" id="finalScoreDisplay">0 / 30</div>
+        <div id="lblScoreText">คะแนนรวมที่ได้</div>
+      </div>
+      <div>
+        <div class="score-number" id="percentageDisplay">0%</div>
+        <div id="lblPercentage">ความแม่นยำทางคณิตศาสตร์</div>
+      </div>
+    </div>
+    <div class="analysis-section">
+      <div class="analysis-box strengths-box">
+        <div class="analysis-title" id="lblStrengths">จุดเด่นที่ทำได้ยอดเยี่ยม (Strengths)</div>
+        <ul id="strengthsList"></ul>
+      </div>
+      <div class="analysis-box weaknesses-box">
+        <div class="analysis-title" id="lblWeaknesses">จุดที่ควรกลับไปทบทวนเพิ่มเติม (Focus Areas)</div>
+        <ul id="weaknessesList"></ul>
+      </div>
+    </div>
+    <div class="controls-row">
+      <button class="btn-reset" onclick="resetExam()" id="btnResetExam">เริ่มทำใหม่อีกครั้ง (Reset Test)</button>
+    </div>
+  </section>
+
+  <footer>
+    <p>เขียนโดย พระจอมเกล้าติวเตอร์</p>
+  </footer>
+
+  <script>
+    /* =========================================================================
+       1. ฐานข้อมูลโจทย์ข้อสอบ (30 ข้อ ครอบคลุม 6 ทักษะย่อยตาม สสวท.)
+       ========================================================================= */
+    const rawQuestionsData = [
+      // 1. การบวก-ลบเศษส่วนธรรมดาและจำนวนคละ
+      {
+        id: 1,
+        topic: "AddSubBasic",
+        topicTh: "การบวกลบเศษส่วนเบื้องต้น",
+        topicEn: "Basic Addition & Subtraction",
+        stemTh: "ผลลัพธ์ของ 3/8 + 5/12 มีค่าตรงกับข้อใด",
+        stemEn: "What is the value of 3/8 + 5/12?",
+        clueTh: "คำใบ้: หา ค.ร.น. ของตัวส่วน 8 และ 12 ก่อนดำเนินการบวก",
+        clueEn: "Clue: Find the LCM of the denominators 8 and 12 first.",
+        options: [
+          { id: "A", textTh: "19/24", textEn: "19/24", isCorrect: true },
+          { id: "B", textTh: "8/20", textEn: "8/20", isCorrect: false },
+          { id: "C", textTh: "17/24", textEn: "17/24", isCorrect: false },
+          { id: "D", textTh: "23/24", textEn: "23/24", isCorrect: false }
+        ],
+        solutionTh: "ค.ร.น. ของ 8 และ 12 คือ 24 ปรับเศษส่วนได้เป็น (3×3)/24 + (5×2)/24 = 9/24 + 10/24 = 19/24",
+        solutionEn: "LCM of 8 and 12 is 24. Transforming yields (3×3)/24 + (5×2)/24 = 9/24 + 10/24 = 19/24.",
+        trickTh: "วิธีคิดเร็ว: หา ค.ร.น. โดยนำจำนวนที่มากที่สุดคือ 12 ลองคูณ 2 ได้ 24 ซึ่ง 8 หารลงตัวทันที ไม่ต้องตั้งหารสั้น"
+      },
+      {
+        id: 2,
+        topic: "AddSubBasic",
+        topicTh: "การบวกลบจำนวนคละ",
+        topicEn: "Mixed Numbers Addition & Subtraction",
+        stemTh: "ผลลัพธ์ของ 4 1/3 - 2 3/5 มีค่าตรงกับข้อใด",
+        stemEn: "What is the value of 4 1/3 - 2 3/5?",
+        clueTh: "คำใบ้: ทำเป็นเศษเกินหรือแยกส่วนจำนวนเต็มกับเศษส่วน โดยระวังการกระจายค่า",
+        clueEn: "Clue: Convert to improper fractions or group integers and fractions carefully.",
+        options: [
+          { id: "A", textTh: "1 11/15", textEn: "1 11/15", isCorrect: true },
+          { id: "B", textTh: "1 4/15", textEn: "1 4/15", isCorrect: false },
+          { id: "C", textTh: "2 4/15", textEn: "2 4/15", isCorrect: false },
+          { id: "D", textTh: "1 8/15", textEn: "1 8/15", isCorrect: false }
+        ],
+        solutionTh: "แปลงเป็นเศษเกิน: 13/3 - 13/5 = (65 - 39)/15 = 26/15 = 1 11/15",
+        solutionEn: "Convert to improper fractions: 13/3 - 13/5 = (65 - 39)/15 = 26/15 = 1 11/15.",
+        trickTh: "เทคนิคคิดลัด: 4 1/3 = 3 + 4/3 = 3 20/15 ลบด้วย 2 9/15 จะเหลือจำนวนเต็ม 3-2 = 1 และเศษ 20-9 = 11 ตอบ 1 11/15 ทันที"
+      },
+      {
+        id: 3,
+        topic: "NegativeFractions",
+        topicTh: "เศษส่วนติดลบ",
+        topicEn: "Negative Fractions Operations",
+        stemTh: "ผลลัพธ์ของ (-5/6) + (-3/4) มีค่าตรงกับข้อใด",
+        stemEn: "What is the value of (-5/6) + (-3/4)?",
+        clueTh: "คำใบ้: ลบรวมกับลบ ได้ผลลัพธ์ติดลบที่ค่าสัมบูรณ์เพิ่มขึ้น",
+        clueEn: "Clue: Negative plus negative yields a negative sum with larger magnitude.",
+        options: [
+          { id: "A", textTh: "-19/12", textEn: "-19/12", isCorrect: true },
+          { id: "B", textTh: "-8/10", textEn: "-8/10", isCorrect: false },
+          { id: "C", textTh: "-1 5/12", textEn: "-1 5/12", isCorrect: false },
+          { id: "D", textTh: "-7/12", textEn: "-7/12", isCorrect: false }
+        ],
+        solutionTh: "ค.ร.น. ของ 6 และ 4 คือ 12; (-10/12) + (-9/12) = -19/12 หรือ -1 7/12",
+        solutionEn: "LCM of 6 and 4 is 12; (-10/12) + (-9/12) = -19/12 or -1 7/12.",
+        trickTh: "ดึงเครื่องหมายลบออกข้างนอกก่อน: - [5/6 + 3/4] = - [10/12 + 9/12] = -19/12 ป้องกันการสับสนเครื่องหมาย"
+      },
+      {
+        id: 4,
+        topic: "NegativeFractions",
+        topicTh: "เศษส่วนติดลบ",
+        topicEn: "Negative Fractions Operations",
+        stemTh: "ค่าของ (-7/10) - (-2/5) เท่ากับข้อใด",
+        stemEn: "What is the value of (-7/10) - (-2/5)?",
+        clueTh: "คำใบ้: การลบด้วยจำนวนลบ มีค่าเทียบเท่ากับการบวกด้วยจำนวนตรงข้าม (ลบลบเป็นบวก)",
+        clueEn: "Clue: Subtracting a negative is equivalent to adding its positive counterpart.",
+        options: [
+          { id: "A", textTh: "-3/10", textEn: "-3/10", isCorrect: true },
+          { id: "B", textTh: "-9/10", textEn: "-9/10", isCorrect: false },
+          { id: "C", textTh: "-1/2", textEn: "-1/2", isCorrect: false },
+          { id: "D", textTh: "3/10", textEn: "3/10", isCorrect: false }
+        ],
+        solutionTh: "(-7/10) - (-2/5) = (-7/10) + (4/10) = (-7 + 4)/10 = -3/10",
+        solutionEn: "(-7/10) - (-2/5) = (-7/10) + (4/10) = -3/10.",
+        trickTh: "จำกฎสั้นๆ: 'เครื่องหมายชนกันซ้อน ลบชนลบเปลี่ยนเป็นบวก' ทันที"
+      },
+      {
+        id: 5,
+        topic: "MulDivBasic",
+        topicTh: "การคูณและหารเศษส่วน",
+        topicEn: "Multiplication & Division Basics",
+        stemTh: "ผลลัพธ์ของ (14/15) × (25/28) ในรูปเศษส่วนอย่างต่ำคือข้อใด",
+        stemEn: "What is (14/15) × (25/28) in simplest form?",
+        clueTh: "คำใบ้: ตัดทอนเศษกับส่วนไขว้กันด้วยตัวประกอบร่วมก่อนนำมาคูณ",
+        clueEn: "Clue: Cross-cancel common factors between numerators and denominators before multiplying.",
+        options: [
+          { id: "A", textTh: "5/6", textEn: "5/6", isCorrect: true },
+          { id: "B", textTh: "10/12", textEn: "10/12", isCorrect: false },
+          { id: "C", textTh: "25/30", textEn: "25/30", isCorrect: false },
+          { id: "D", textTh: "7/8", textEn: "7/8", isCorrect: false }
+        ],
+        solutionTh: "14 ตัดกับ 28 เหลือ 1 กับ 2, และ 15 กับ 25 แม่ 5 ตัดเหลือ 3 กับ 5 จะได้ (1×5)/(3×2) = 5/6",
+        solutionEn: "Cancel 14 and 28 by 14 (leaving 1 and 2); cancel 15 and 25 by 5 (leaving 3 and 5). Result: (1×5)/(3×2) = 5/6.",
+        trickTh: "ตัดทอนให้เหลือน้อยที่สุดก่อนคูณเสมอ อย่าคูณตัวเลขใหญ่แล้วค่อยมาตัดทีหลัง เสียเวลาและคิดผิดง่าย"
+      },
+      {
+        id: 6,
+        topic: "MulDivBasic",
+        topicTh: "การหารเศษส่วน",
+        topicEn: "Fraction Division",
+        stemTh: "ผลลัพธ์ของ (9/16) ÷ (3/8) มีค่าตรงกับข้อใด",
+        stemEn: "What is (9/16) ÷ (3/8)?",
+        clueTh: "คำใบ้: เปลี่ยนเครื่องหมายหารเป็นคูณ แล้วกลับเศษเป็นส่วนของตัวหาร",
+        clueEn: "Clue: Keep, Change, Flip (multiply by the reciprocal of the divisor).",
+        options: [
+          { id: "A", textTh: "1 1/2", textEn: "1 1/2", isCorrect: true },
+          { id: "B", textTh: "2/3", textEn: "2/3", isCorrect: false },
+          { id: "C", textTh: "1 1/4", textEn: "1 1/4", isCorrect: false },
+          { id: "D", textTh: "3/4", textEn: "3/4", isCorrect: false }
+        ],
+        solutionTh: "(9/16) × (8/3) -> 9 กับ 3 ตัดทอนได้ 3, 16 กับ 8 ตัดทอนได้ 2 ได้ผลลัพธ์ 3/2 = 1 1/2",
+        solutionEn: "(9/16) × (8/3) -> cancel 9 and 3 to 3; 8 and 16 to 2 -> 3/2 = 1 1/2.",
+        trickTh: "สูตรลับ: 'ตัวหน้าคงเดิม เปลี่ยนหารเป็นคูณ กลับเศษเป็นส่วนตัวหลัง แล้วตัดไขว้'"
+      },
+      {
+        id: 7,
+        topic: "NegativeFractions",
+        topicTh: "การคูณและหารเศษส่วนติดลบ",
+        topicEn: "Negative Multiplication & Division",
+        stemTh: "ผลลัพธ์ของ (-4/9) × (-27/32) มีค่าตรงกับข้อใด",
+        stemEn: "What is (-4/9) × (-27/32)?",
+        clueTh: "คำใบ้: จำนวนลบคูณจำนวนลบ ผลลัพธ์ต้องออกมาเป็นจำนวนบวก",
+        clueEn: "Clue: Negative multiplied by negative yields a positive result.",
+        options: [
+          { id: "A", textTh: "3/8", textEn: "3/8", isCorrect: true },
+          { id: "B", textTh: "-3/8", textEn: "-3/8", isCorrect: false },
+          { id: "C", textTh: "9/16", textEn: "9/16", isCorrect: false },
+          { id: "D", textTh: "-9/16", textEn: "-9/16", isCorrect: false }
+        ],
+        solutionTh: "(-) × (-) = (+); ตัด 4 กับ 32 ได้ 1/8, ตัด 9 กับ 27 ได้ 3 ผลลัพธ์คือ +3/8",
+        solutionEn: "(-) × (-) = (+); Cancel 4 and 32 to 1 and 8; cancel 9 and 27 to 3. Yields +3/8.",
+        trickTh: "นับจำนวนเครื่องหมายลบก่อนคิดเลข: ลบ 2 ตัว (จำนวนคู่) ผลลัพธ์เป็นบวกแน่นอน ตัดตัวเลือกติดลบทิ้งได้ทันที"
+      },
+      {
+        id: 8,
+        topic: "NegativeFractions",
+        topicTh: "การคูณและหารเศษส่วนติดลบ",
+        topicEn: "Negative Multiplication & Division",
+        stemTh: "ค่าของ (15/22) ÷ (-25/33) มีค่าตรงกับข้อใด",
+        stemEn: "What is (15/22) ÷ (-25/33)?",
+        clueTh: "คำใบ้: จำนวนบวกหารด้วยจำนวนลบ ย่อมได้ผลลัพธ์ติดลบ",
+        clueEn: "Clue: A positive divided by a negative always yields a negative answer.",
+        options: [
+          { id: "A", textTh: "-9/10", textEn: "-9/10", isCorrect: true },
+          { id: "B", textTh: "9/10", textEn: "9/10", isCorrect: false },
+          { id: "C", textTh: "-3/5", textEn: "-3/5", isCorrect: false },
+          { id: "D", textTh: "-11/10", textEn: "-11/10", isCorrect: false }
+        ],
+        solutionTh: "(15/22) × (-33/25) -> แม่ 11 ตัด 22 และ 33 เหลือ 2 กับ 3; แม่ 5 ตัด 15 และ 25 เหลือ 3 กับ 5 ได้ -(3×3)/(2×5) = -9/10",
+        solutionEn: "(15/22) × (-33/25) -> Cancel 11: 2 and 3; Cancel 5: 3 and 5 -> -(3×3)/(2×5) = -9/10.",
+        trickTh: "วางเครื่องหมายลบรอไว้ที่คำตอบทันทีเพื่อไม่ให้ตกหล่น แล้วคิดเฉพาะตัวเลข 15/22 × 33/25"
+      },
+      {
+        id: 9,
+        topic: "OrderOfOps",
+        topicTh: "การดำเนินการระคน",
+        topicEn: "Order of Operations",
+        stemTh: "จงหาผลลัพธ์ของ 1/2 + 3/4 × 2/3",
+        stemEn: "Evaluate: 1/2 + 3/4 × 2/3",
+        clueTh: "คำใบ้: ตามหลักการคำนวณ ต้องทำเครื่องหมายคูณก่อนบวกเสมอ",
+        clueEn: "Clue: By order of operations (PEMDAS), perform multiplication before addition.",
+        options: [
+          { id: "A", textTh: "1", textEn: "1", isCorrect: true },
+          { id: "B", textTh: "5/6", textEn: "5/6", isCorrect: false },
+          { id: "C", textTh: "1 1/4", textEn: "1 1/4", isCorrect: false },
+          { id: "D", textTh: "7/8", textEn: "7/8", isCorrect: false }
+        ],
+        solutionTh: "คิดคูณก่อน: 3/4 × 2/3 = 1/2 จากนั้นนำมาบวก: 1/2 + 1/2 = 2/2 = 1",
+        solutionEn: "Multiplication first: 3/4 × 2/3 = 1/2. Then add: 1/2 + 1/2 = 1.",
+        trickTh: "จำลำดับความสำคัญ: วงเล็บ -> คูณ/หาร (ซ้ายไปขวา) -> บวก/ลบ (ซ้ายไปขวา)"
+      },
+      {
+        id: 10,
+        topic: "OrderOfOps",
+        topicTh: "การดำเนินการระคน",
+        topicEn: "Order of Operations",
+        stemTh: "ผลลัพธ์ของ (5/6 - 1/4) ÷ 7/12 มีค่าตรงกับข้อใด",
+        stemEn: "What is the value of (5/6 - 1/4) ÷ 7/12?",
+        clueTh: "คำใบ้: ต้องจัดการหาผลลัพธ์ในวงเล็บให้เรียบร้อยก่อนนำไปหาร",
+        clueEn: "Clue: Evaluate parentheses first before performing the division.",
+        options: [
+          { id: "A", textTh: "1", textEn: "1", isCorrect: true },
+          { id: "B", textTh: "7/12", textEn: "7/12", isCorrect: false },
+          { id: "C", textTh: "49/144", textEn: "49/144", isCorrect: false },
+          { id: "D", textTh: "1 1/6", textEn: "1 1/6", isCorrect: false }
+        ],
+        solutionTh: "ในวงเล็บ: 5/6 - 1/4 = 10/12 - 3/12 = 7/12 จากนั้น 7/12 ÷ 7/12 = 1",
+        solutionEn: "Inside parentheses: 5/6 - 1/4 = 10/12 - 3/12 = 7/12. Then 7/12 ÷ 7/12 = 1.",
+        trickTh: "สังเกตเศษส่วนที่เหมือนกัน: เมื่อตัวตั้งและตัวหารเท่ากันเป๊ะ หารกันย่อมได้ 1 โดยไม่ต้องกลับเศษเป็นส่วน"
+      },
+      // 11 - 20
+      {
+        id: 11,
+        topic: "OrderOfOps",
+        topicTh: "การดำเนินการระคนซับซ้อน",
+        topicEn: "Complex Order of Operations",
+        stemTh: "ค่าของ 2 1/2 - [1/3 + (3/4 ÷ 9/8)] ตรงกับข้อใด",
+        stemEn: "What is 2 1/2 - [1/3 + (3/4 ÷ 9/8)]?",
+        clueTh: "คำใบ้: ทำในวงเล็บย่อยสุดก่อน (3/4 ÷ 9/8) แล้วนำไปรวมในวงเล็บก้ามปู",
+        clueEn: "Clue: Resolve innermost parentheses first, then work outward.",
+        options: [
+          { id: "A", textTh: "1 1/2", textEn: "1 1/2", isCorrect: true },
+          { id: "B", textTh: "1 1/3", textEn: "1 1/3", isCorrect: false },
+          { id: "C", textTh: "1 2/3", textEn: "1 2/3", isCorrect: false },
+          { id: "D", textTh: "2", textEn: "2", isCorrect: false }
+        ],
+        solutionTh: "3/4 ÷ 9/8 = 3/4 × 8/9 = 2/3. ในก้ามปู: 1/3 + 2/3 = 3/3 = 1. ดังนั้น 2 1/2 - 1 = 1 1/2",
+        solutionEn: "3/4 ÷ 9/8 = 2/3. Bracket: 1/3 + 2/3 = 1. Finally: 2 1/2 - 1 = 1 1/2.",
+        trickTh: "ยุบทีละชั้น: มองให้เห็นผลรวมของ 1/3 + 2/3 ว่าคือ 1 เต็ม จะทำให้การลบลำดับสุดท้ายคิดในใจได้ทันที"
+      },
+      {
+        id: 12,
+        topic: "OrderOfOps",
+        topicTh: "การกระจายและดึงตัวร่วม",
+        topicEn: "Distributive Property with Fractions",
+        stemTh: "ผลลัพธ์ของ (5/13 × 7/9) + (5/13 × 2/9) มีค่าเท่าใด",
+        stemEn: "Evaluate: (5/13 × 7/9) + (5/13 × 2/9)",
+        clueTh: "คำใบ้: ใช้สมบัติการแจกแจงดึงตัวประกอบร่วม 5/13 ออกมา",
+        clueEn: "Clue: Use the distributive law by factoring out 5/13.",
+        options: [
+          { id: "A", textTh: "5/13", textEn: "5/13", isCorrect: true },
+          { id: "B", textTh: "10/13", textEn: "10/13", isCorrect: false },
+          { id: "C", textTh: "35/117", textEn: "35/117", isCorrect: false },
+          { id: "D", textTh: "1", textEn: "1", isCorrect: false }
+        ],
+        solutionTh: "ดึง 5/13 ออกมาคูณกับ (7/9 + 2/9) = 5/13 × (9/9) = 5/13 × 1 = 5/13",
+        solutionEn: "Factor out 5/13: 5/13 × (7/9 + 2/9) = 5/13 × 1 = 5/13.",
+        trickTh: "เทคนิคหน้าตาซ้ำ: a×b + a×c = a(b+c) ช่วยประหยัดเวลาคูณตัวเลขใหญ่ได้อย่างมหาศาล"
+      },
+      {
+        id: 13,
+        topic: "FractionComparison",
+        topicTh: "การเปรียบเทียบเศษส่วน",
+        topicEn: "Comparing Fractions",
+        stemTh: "เศษส่วนในข้อใดมีค่าน้อยที่สุด",
+        stemEn: "Which of the following fractions has the smallest value?",
+        clueTh: "คำใบ้: ใช้วิธีคูณไขว้จับคู่เปรียบเทียบ หรือพิจารณาค่าเมื่อเทียบกับครึ่งหนึ่ง (1/2)",
+        clueEn: "Clue: Compare by cross-multiplying or benchmarking against 1/2.",
+        options: [
+          { id: "A", textTh: "5/12", textEn: "5/12", isCorrect: true },
+          { id: "B", textTh: "7/15", textEn: "7/15", isCorrect: false },
+          { id: "C", textTh: "4/7", textEn: "4/7", isCorrect: false },
+          { id: "D", textTh: "11/20", textEn: "11/20", isCorrect: false }
+        ],
+        solutionTh: "4/7 > 1/2 และ 11/20 > 1/2 จึงตัดทิ้ง. เปรียบเทียบ 5/12 กับ 7/15 โดยคูณไขว้: 5×15 = 75 ส่วน 12×7 = 84 ดังนั้น 5/12 น้อยที่สุด",
+        solutionEn: "4/7 and 11/20 are > 1/2. Comparing 5/12 and 7/15: 5×15 = 75 < 12×7 = 84. Thus 5/12 is smallest.",
+        trickTh: "ใช้จุดกึ่งกลาง 1/2 คัดกรองตัวเลือกก่อน: 5/12 (น้อยกว่าครึ่ง) ส่วน 4/7 และ 11/20 (มากกว่าครึ่ง) ตกไปทันที"
+      },
+      {
+        id: 14,
+        topic: "FractionComparison",
+        topicTh: "การเปรียบเทียบเศษส่วนติดลบ",
+        topicEn: "Comparing Negative Fractions",
+        stemTh: "เศษส่วนในข้อใดมีค่ามากที่สุด",
+        stemEn: "Which of the following negative fractions has the largest value?",
+        clueTh: "คำใบ้: สำหรับจำนวนติดลบ จำนวนที่มีค่าสัมบูรณ์น้อยที่สุด จะเป็นจำนวนที่มีค่ามากที่สุด",
+        clueEn: "Clue: For negative numbers, the one closest to zero (smallest absolute value) is greatest.",
+        options: [
+          { id: "A", textTh: "-2/5", textEn: "-2/5", isCorrect: true },
+          { id: "B", textTh: "-3/5", textEn: "-3/5", isCorrect: false },
+          { id: "C", textTh: "-5/8", textEn: "-5/8", isCorrect: false },
+          { id: "D", textTh: "-7/10", textEn: "-7/10", isCorrect: false }
+        ],
+        solutionTh: "-2/5 = -0.40, -3/5 = -0.60, -5/8 = -0.625, -7/10 = -0.70 จำนวนที่อยู่ชิดขวาบนเส้นจำนวนที่สุดคือ -0.40",
+        solutionEn: "-2/5 = -0.40, which is nearest to zero compared to -0.60, -0.625, and -0.70.",
+        trickTh: "ระวังกับดัก: เลขติดลบ ยิ่งเลขดูน้อย ค่ายิ่งมาก!"
+      },
+      {
+        id: 15,
+        topic: "WordProblems",
+        topicTh: "โจทย์ปัญหาเศษส่วน",
+        topicEn: "Fraction Word Problems",
+        stemTh: "ถังน้ำใบหนึ่งมีน้ำอยู่ 3/5 ของถัง หากใช้น้ำไป 1/3 ของน้ำที่มีอยู่ จะเหลือน้ำคิดเป็นเศษส่วนเท่าใดของความจุถัง",
+        stemEn: "A tank is 3/5 full of water. If 1/3 of the existing water is consumed, what fraction of the tank's capacity remains?",
+        clueTh: "คำใบ้: คีย์เวิร์ดคือ 'ของน้ำที่มีอยู่' หมายถึง ใช้น้ำไป 1/3 × 3/5",
+        clueEn: "Clue: Notice the phrase 'of the existing water', which means used = 1/3 × 3/5.",
+        options: [
+          { id: "A", textTh: "2/5", textEn: "2/5", isCorrect: true },
+          { id: "B", textTh: "4/15", textEn: "4/15", isCorrect: false },
+          { id: "C", textTh: "1/5", textEn: "1/5", isCorrect: false },
+          { id: "D", textTh: "7/15", textEn: "7/15", isCorrect: false }
+        ],
+        solutionTh: "ใช้น้ำไป 1/3 แสดงว่าเหลือน้ำ 2/3 ของน้ำเดิม -> (2/3) × (3/5) = 2/5 ของความจุถัง",
+        solutionEn: "Using 1/3 leaves 2/3 of what was inside: (2/3) × (3/5) = 2/5 of the total capacity.",
+        trickTh: "คิดจาก 'ส่วนที่เหลือ': ไม่ต้องคำนวณการใช้แล้วเอาไปลบ แต่ให้เอา (1 - 1/3) = 2/3 ไปคูณ 3/5 ได้คำตอบขั้นตอนเดียว"
+      },
+      {
+        id: 16,
+        topic: "WordProblems",
+        topicTh: "โจทย์ปัญหาย้อนกลับ",
+        topicEn: "Reverse Fraction Word Problems",
+        stemTh: "นักเรียนห้องหนึ่งเป็นนักเรียนชาย 4/9 ของนักเรียนทั้งหมด ถ้ามีนักเรียนหญิง 25 คน ห้องนี้มีนักเรียนทั้งหมดกี่คน",
+        stemEn: "In a class, 4/9 of the students are boys. If there are 25 girls, how many students are there in total?",
+        clueTh: "คำใบ้: นักเรียนหญิงคิดเป็น 1 - 4/9 = 5/9 ของนักเรียนทั้งหมด",
+        clueEn: "Clue: The girls represent 1 - 4/9 = 5/9 of the entire classroom.",
+        options: [
+          { id: "A", textTh: "45 คน", textEn: "45 students", isCorrect: true },
+          { id: "B", textTh: "40 คน", textEn: "40 students", isCorrect: false },
+          { id: "C", textTh: "50 คน", textEn: "50 students", isCorrect: false },
+          { id: "D", textTh: "36 คน", textEn: "36 students", isCorrect: false }
+        ],
+        solutionTh: "นักเรียนหญิง 5 ส่วน = 25 คน แสดงว่า 1 ส่วน = 5 คน ดังนั้นนักเรียนทั้งหมดมี 9 ส่วน = 9 × 5 = 45 คน",
+        solutionEn: "5 parts of girls = 25 students, so 1 part = 5 students. Total 9 parts = 9 × 5 = 45 students.",
+        trickTh: "เทคนิค Bar Model (อัตราส่วน): 5 ส่วน = 25 คน -> 1 ส่วน = 5 คน ตอบ 9 ส่วน = 45 คน คิดได้ใน 5 วินาที"
+      },
+      {
+        id: 17,
+        topic: "ComplexFraction",
+        topicTh: "เศษซ้อน (Complex Fractions)",
+        topicEn: "Complex Fractions",
+        stemTh: "ค่าของ [ (1/2 + 1/3) / (1/2 - 1/3) ] มีค่าตรงกับข้อใด",
+        stemEn: "What is the simplified value of [ (1/2 + 1/3) / (1/2 - 1/3) ]?",
+        clueTh: "คำใบ้: คำนวณเศษด้านบนและส่วนด้านล่างแยกกัน หรือคูณด้วย ค.ร.น. คือ 6 ทั้งเศษและส่วน",
+        clueEn: "Clue: Multiply both the entire numerator and denominator by the common denominator 6.",
+        options: [
+          { id: "A", textTh: "5", textEn: "5", isCorrect: true },
+          { id: "B", textTh: "1/5", textEn: "1/5", isCorrect: false },
+          { id: "C", textTh: "6", textEn: "6", isCorrect: false },
+          { id: "D", textTh: "25/36", textEn: "25/36", isCorrect: false }
+        ],
+        solutionTh: "เศษ: 3/6 + 2/6 = 5/6, ส่วน: 3/6 - 2/6 = 1/6 ดังนั้น (5/6) ÷ (1/6) = 5",
+        solutionEn: "Numerator: 5/6, Denominator: 1/6. Thus (5/6) / (1/6) = 5.",
+        trickTh: "เทคนิคระเบิดส่วน: นำ 6 มาคูณทั้งบนและล่าง -> (3+2)/(3-2) = 5/1 = 5 หลุดจากเศษซ้อนทันที"
+      },
+      {
+        id: 18,
+        topic: "ComplexFraction",
+        topicTh: "เศษซ้อนบันได",
+        topicEn: "Continued Fractions",
+        stemTh: "ค่าของ 1 / ( 1 + 1/2 ) เท่ากับข้อใด",
+        stemEn: "What is the value of 1 / ( 1 + 1/2 )?",
+        clueTh: "คำใบ้: รวมตัวส่วนด้านล่างสุดก่อน แล้วจึงกลับเศษเป็นส่วน",
+        clueEn: "Clue: Simplify the bottom expression first, then take the reciprocal.",
+        options: [
+          { id: "A", textTh: "2/3", textEn: "2/3", isCorrect: true },
+          { id: "B", textTh: "3/2", textEn: "3/2", isCorrect: false },
+          { id: "C", textTh: "1/3", textEn: "1/3", isCorrect: false },
+          { id: "D", textTh: "1/2", textEn: "1/2", isCorrect: false }
+        ],
+        solutionTh: "ตัวส่วน: 1 + 1/2 = 3/2. ดังนั้น 1 ÷ (3/2) = 2/3",
+        solutionEn: "Denominator: 1 + 1/2 = 3/2. Reciprocal gives 2/3.",
+        trickTh: "1 ส่วนด้วยอะไรก็ตาม ให้กลับเศษเป็นส่วนของสิ่งนั้นทันที"
+      },
+      {
+        id: 19,
+        topic: "NegativeFractions",
+        topicTh: "เศษส่วนและกำลังสอง",
+        topicEn: "Exponents with Fractions",
+        stemTh: "ค่าของ (-2/3)² - (-1/3)³ มีค่าตรงกับข้อใด",
+        stemEn: "What is the value of (-2/3)² - (-1/3)³?",
+        clueTh: "คำใบ้: จำนวนลบยกกำลังคู่ได้บวก ยกกำลังคี่ได้ลบ",
+        clueEn: "Clue: Even power of a negative is positive; odd power remains negative.",
+        options: [
+          { id: "A", textTh: "13/27", textEn: "13/27", isCorrect: true },
+          { id: "B", textTh: "11/27", textEn: "11/27", isCorrect: false },
+          { id: "C", textTh: "15/27", textEn: "15/27", isCorrect: false },
+          { id: "D", textTh: "-11/27", textEn: "-11/27", isCorrect: false }
+        ],
+        solutionTh: "(-2/3)² = 4/9 = 12/27. และ (-1/3)³ = -1/27. นำมาลบกัน: 12/27 - (-1/27) = 12/27 + 1/27 = 13/27",
+        solutionEn: "(-2/3)² = 4/9 = 12/27. (-1/3)³ = -1/27. Then 12/27 - (-1/27) = 13/27.",
+        trickTh: "กระจายกำลังเข้าทั้งเศษและส่วน: (a/b)ⁿ = aⁿ/bⁿ แล้วระวังเครื่องหมายลบชนลบ"
+      },
+      {
+        id: 20,
+        topic: "WordProblems",
+        topicTh: "โจทย์ปัญหาทำงานร่วมกัน/อัตราเร็ว",
+        topicEn: "Work Rate Word Problem",
+        stemTh: "ท่อ A เปิดน้ำเข้าถังเต็มใน 3 ชั่วโมง ท่อ B เปิดน้ำเข้าถังเต็มใน 6 ชั่วโมง หากเปิดพร้อมกันน้ำจะเต็มถังในเวลากี่ชั่วโมง",
+        stemEn: "Pipe A fills a pool in 3 hours, Pipe B in 6 hours. Working together, how many hours does it take to fill the pool?",
+        clueTh: "คำใบ้: หาอัตราการไหลใน 1 ชั่วโมงของแต่ละท่อแล้วนำมาบวกกัน",
+        clueEn: "Clue: Add their 1-hour filling rates together.",
+        options: [
+          { id: "A", textTh: "2 ชั่วโมง", textEn: "2 hours", isCorrect: true },
+          { id: "B", textTh: "4.5 ชั่วโมง", textEn: "4.5 hours", isCorrect: false },
+          { id: "C", textTh: "2.5 ชั่วโมง", textEn: "2.5 hours", isCorrect: false },
+          { id: "D", textTh: "1.8 ชั่วโมง", textEn: "1.8 hours", isCorrect: false }
+        ],
+        solutionTh: "ใน 1 ชม. ท่อ A ได้ 1/3 ถัง, ท่อ B ได้ 1/6 ถัง. รวมกันได้ 1/3 + 1/6 = 3/6 = 1/2 ถังต่อ ชม. ดังนั้นใช้เวลา 2 ชั่วโมง",
+        solutionEn: "In 1 hour: A does 1/3, B does 1/6. Together = 1/3 + 1/6 = 1/2 of pool/hr. Total time = 2 hours.",
+        trickTh: "สูตรลัดทำงานคู่: (ผลคูณ) ÷ (ผลบวก) = (3 × 6) ÷ (3 + 6) = 18 ÷ 9 = 2 ชั่วโมง!"
+      },
+      // 21 - 30
+      {
+        id: 21,
+        topic: "AddSubBasic",
+        topicTh: "ผลรวมเศษส่วนหลากจำนวน",
+        topicEn: "Multi-term Fraction Addition",
+        stemTh: "ผลบวกของ 1/2 + 1/4 + 1/8 + 1/16 มีค่าตรงกับข้อใด",
+        stemEn: "What is 1/2 + 1/4 + 1/8 + 1/16?",
+        clueTh: "คำใบ้: ค.ร.น. คือ 16 หรือสังเกตผลบวกของอนุกรมเรขาคณิต",
+        clueEn: "Clue: The common denominator is 16.",
+        options: [
+          { id: "A", textTh: "15/16", textEn: "15/16", isCorrect: true },
+          { id: "B", textTh: "13/16", textEn: "13/16", isCorrect: false },
+          { id: "C", textTh: "7/8", textEn: "7/8", isCorrect: false },
+          { id: "D", textTh: "31/32", textEn: "31/32", isCorrect: false }
+        ],
+        solutionTh: "แปลงส่วนเป็น 16: 8/16 + 4/16 + 2/16 + 1/16 = 15/16",
+        solutionEn: "Convert to denominator 16: (8+4+2+1)/16 = 15/16.",
+        trickTh: "รูปทรงเรขาคณิต: ผลบวกครึ่งหนึ่งสะสม 1/2 + 1/4 + ... + 1/2ⁿ จะมีค่าเท่ากับ (2ⁿ - 1)/2ⁿ เสมอ"
+      },
+      {
+        id: 22,
+        topic: "MulDivBasic",
+        topicTh: "การหารจำนวนคละ",
+        topicEn: "Division of Mixed Numbers",
+        stemTh: "ผลลัพธ์ของ 3 3/4 ÷ 1 7/8 มีค่าเท่าใด",
+        stemEn: "What is the value of 3 3/4 ÷ 1 7/8?",
+        clueTh: "คำใบ้: เปลี่ยนจำนวนคละเป็นเศษเกินก่อนทำตามขั้นตอนหารเศษส่วน",
+        clueEn: "Clue: Convert mixed numbers to improper fractions before dividing.",
+        options: [
+          { id: "A", textTh: "2", textEn: "2", isCorrect: true },
+          { id: "B", textTh: "2 1/2", textEn: "2 1/2", isCorrect: false },
+          { id: "C", textTh: "1 1/2", textEn: "1 1/2", isCorrect: false },
+          { id: "D", textTh: "3", textEn: "3", isCorrect: false }
+        ],
+        solutionTh: "3 3/4 = 15/4 และ 1 7/8 = 15/8. ดำเนินการ (15/4) × (8/15) = 8/4 = 2",
+        solutionEn: "15/4 ÷ 15/8 = 15/4 × 8/15 = 8/4 = 2.",
+        trickTh: "สังเกตความสัมพันธ์: 1 7/8 = 1.875 และ 3 3/4 = 3.750 ซึ่งเป็น 2 เท่าพอดี"
+      },
+      {
+        id: 23,
+        topic: "OrderOfOps",
+        topicTh: "เศษส่วนและตัวแปรง่ายๆ",
+        topicEn: "Linear Fraction Equation Concept",
+        stemTh: "ถ้า 2/3 ของจำนวนหนึ่งมีค่าเท่ากับ 18 จงหาว่า 5/9 ของจำนวนนั้นมีค่าเท่าใด",
+        stemEn: "If 2/3 of a number is 18, what is 5/9 of that same number?",
+        clueTh: "คำใบ้: หาจำนวนเต็มจำนวนนั้นก่อน (18 ÷ 2/3) แล้วจึงนำมาคูณ 5/9",
+        clueEn: "Clue: Find the original number first, then multiply by 5/9.",
+        options: [
+          { id: "A", textTh: "15", textEn: "15", isCorrect: true },
+          { id: "B", textTh: "12", textEn: "12", isCorrect: false },
+          { id: "C", textTh: "18", textEn: "18", isCorrect: false },
+          { id: "D", textTh: "27", textEn: "27", isCorrect: false }
+        ],
+        solutionTh: "จำนวนนั้นคือ 18 ÷ (2/3) = 18 × 3/2 = 27. ต่อมาหา 5/9 ของ 27 = (5/9) × 27 = 15",
+        solutionEn: "Original number = 18 × 3/2 = 27. Then 5/9 of 27 = 15.",
+        trickTh: "เทียบสัดส่วนเร็ว: (5/9) ÷ (2/3) = (5/9) × (3/2) = 5/6 เท่าของ 18 คิดเป็น 18 × 5/6 = 15"
+      },
+      {
+        id: 24,
+        topic: "FractionComparison",
+        topicTh: "การแทรกเศษส่วนระหว่างจำนวน",
+        topicEn: "Fraction Insertion",
+        stemTh: "เศษส่วนในข้อใดมีค่าอยู่ระหว่าง 2/5 และ 3/5",
+        stemEn: "Which fraction lies strictly between 2/5 and 3/5?",
+        clueTh: "คำใบ้: ขยายตัวส่วนโดยคูณ 2 ทั้งเศษและส่วนเพื่อให้เห็นช่องว่างระหว่างตัวเศษ",
+        clueEn: "Clue: Expand the denominator by multiplying by 2 to see the intermediate values.",
+        options: [
+          { id: "A", textTh: "1/2", textEn: "1/2", isCorrect: true },
+          { id: "B", textTh: "7/10", textEn: "7/10", isCorrect: false },
+          { id: "C", textTh: "3/10", textEn: "3/10", isCorrect: false },
+          { id: "D", textTh: "2/3", textEn: "2/3", isCorrect: false }
+        ],
+        solutionTh: "2/5 = 4/10 และ 3/5 = 6/10 จำนวนที่อยู่ตรงกลางระหว่าง 4/10 กับ 6/10 คือ 5/10 ซึ่งตัดทอนได้ 1/2",
+        solutionEn: "2/5 = 4/10 and 3/5 = 6/10. The middle value is 5/10 = 1/2.",
+        trickTh: "ค่าเฉลี่ยกึ่งกลาง: (2/5 + 3/5) ÷ 2 = (5/5) ÷ 2 = 1 ÷ 2 = 1/2 ทันที"
+      },
+      {
+        id: 25,
+        topic: "WordProblems",
+        topicTh: "โจทย์ปัญหาการแบ่งเงิน/สิ่งของ",
+        topicEn: "Resource Distribution Problem",
+        stemTh: "คุณแม่มีเงินจำนวนหนึ่ง แบ่งให้บุตรคนโต 2/5 ของเงินทั้งหมด แบ่งให้คนเล็ก 1/4 ของเงินทั้งหมด ยังเหลือเงิน 700 บาท เดิมคุณแม่มีเงินกี่บาท",
+        stemEn: "A mother gave 2/5 of her money to her eldest, 1/4 to the youngest, and had 700 Baht left. How much did she have initially?",
+        clueTh: "คำใบ้: รวมเศษส่วนที่แบ่งไปก่อน จากนั้นหาว่าส่วนที่เหลือคิดเป็นเศษส่วนเท่าใด",
+        clueEn: "Clue: Sum the distributed fractions, then find the remaining fraction.",
+        options: [
+          { id: "A", textTh: "2,000 บาท", textEn: "2,000 Baht", isCorrect: true },
+          { id: "B", textTh: "2,400 บาท", textEn: "2,400 Baht", isCorrect: false },
+          { id: "C", textTh: "1,800 บาท", textEn: "1,800 Baht", isCorrect: false },
+          { id: "D", textTh: "2,800 บาท", textEn: "2,800 Baht", isCorrect: false }
+        ],
+        solutionTh: "เงินที่ให้ลูก: 2/5 + 1/4 = 8/20 + 5/20 = 13/20. เงินเหลือ: 20/20 - 13/20 = 7/20 ซึ่งเท่ากับ 700 บาท แสดงว่า 1/20 คือ 100 บาท ดังนั้นเงินทั้งหมด 20 ส่วน = 2,000 บาท",
+        solutionEn: "Distributed: 8/20 + 5/20 = 13/20. Remainder: 7/20 = 700. Thus, total (20/20) = 2,000 Baht.",
+        trickTh: "7 ส่วน = 700 บาท ดังนั้น 1 ส่วน = 100 บาท ฐานส่วนคือ 20 จึงตอบ 20 × 100 = 2,000 บาท"
+      },
+      {
+        id: 26,
+        topic: "ComplexFraction",
+        topicTh: "เศษส่วนต่อเนื่อง",
+        topicEn: "Nested Fractions",
+        stemTh: "ค่าของ 1 - 1 / ( 1 - 1/3 ) มีค่าเท่ากับข้อใด",
+        stemEn: "What is 1 - 1 / ( 1 - 1/3 )?",
+        clueTh: "คำใบ้: คำนวณตัวส่วน 1 - 1/3 ให้เสร็จก่อน แล้วกลับเศษเป็นส่วนก่อนนำไปลบ",
+        clueEn: "Clue: Simplify 1 - 1/3 first, take reciprocal, then subtract from 1.",
+        options: [
+          { id: "A", textTh: "-1/2", textEn: "-1/2", isCorrect: true },
+          { id: "B", textTh: "1/2", textEn: "1/2", isCorrect: false },
+          { id: "C", textTh: "-2/3", textEn: "-2/3", isCorrect: false },
+          { id: "D", textTh: "3/2", textEn: "3/2", isCorrect: false }
+        ],
+        solutionTh: "ตัวส่วน: 1 - 1/3 = 2/3. เศษซ้อน: 1 / (2/3) = 3/2. การลบ: 1 - 3/2 = -1/2",
+        solutionEn: "Denominator: 1 - 1/3 = 2/3. Invert: 1/(2/3) = 3/2. Result: 1 - 3/2 = -1/2.",
+        trickTh: "ระวังเรื่องเครื่องหมายติดลบ: 1 น้อยกว่า 1.5 ผลลัพธ์ย่อมติดลบเสมอ"
+      },
+      {
+        id: 27,
+        topic: "NegativeFractions",
+        topicTh: "การคูณเศษส่วนติดลบหลายจำนวน",
+        topicEn: "Multiple Negative Multiplication",
+        stemTh: "ผลลัพธ์ของ (-1/2) × (-2/3) × (-3/4) × (-4/5) มีค่าเท่าใด",
+        stemEn: "Evaluate: (-1/2) × (-2/3) × (-3/4) × (-4/5)",
+        clueTh: "คำใบ้: ตัดทอนทะแยงแบบ Telescoping และนับจำนวนเครื่องหมายลบ",
+        clueEn: "Clue: Cancel telescoping numerators and denominators, count negatives.",
+        options: [
+          { id: "A", textTh: "1/5", textEn: "1/5", isCorrect: true },
+          { id: "B", textTh: "-1/5", textEn: "-1/5", isCorrect: false },
+          { id: "C", textTh: "1/10", textEn: "1/10", isCorrect: false },
+          { id: "D", textTh: "-1/10", textEn: "-1/10", isCorrect: false }
+        ],
+        solutionTh: "มีเครื่องหมายลบ 4 ตัว (จำนวนคู่) ผลลัพธ์เป็นบวก. ตัวเลขตัดทอนไขว้กัน: 2 ตัด 2, 3 ตัด 3, 4 ตัด 4 เหลือเฉพาะ 1 ด้านบน และ 5 ด้านล่าง ได้ 1/5",
+        solutionEn: "Four negatives yield a positive. Cross-cancellation leaves 1/5.",
+        trickTh: "เทคนิคตัดเป็นทอดๆ (Telescoping): เหลือหัวกับท้ายทันที คือ เศษ 1 และส่วน 5"
+      },
+      {
+        id: 28,
+        topic: "AddSubBasic",
+        topicTh: "เศษส่วนกับทศนิยมสัมพันธ์",
+        topicEn: "Fractions and Decimals",
+        stemTh: "ผลลัพธ์ของ 0.75 - 2/5 มีค่าตรงกับข้อใดในรูปเศษส่วนอย่างต่ำ",
+        stemEn: "What is 0.75 - 2/5 in simplest fraction form?",
+        clueTh: "คำใบ้: แปลง 0.75 ให้เป็นเศษส่วน 3/4 ก่อนดำเนินการลบ",
+        clueEn: "Clue: Convert 0.75 into 3/4 before subtracting.",
+        options: [
+          { id: "A", textTh: "7/20", textEn: "7/20", isCorrect: true },
+          { id: "B", textTh: "1/4", textEn: "1/4", isCorrect: false },
+          { id: "C", textTh: "3/10", textEn: "3/10", isCorrect: false },
+          { id: "D", textTh: "9/20", textEn: "9/20", isCorrect: false }
+        ],
+        solutionTh: "0.75 = 3/4. คำนวณ 3/4 - 2/5 = (15 - 8)/20 = 7/20",
+        solutionEn: "0.75 = 3/4. Compute 3/4 - 2/5 = 15/20 - 8/20 = 7/20.",
+        trickTh: "หรือคิดแบบทศนิยม: 0.75 - 0.40 = 0.35 แล้วแปลงเป็น 35/100 ตัดทอนได้ 7/20"
+      },
+      {
+        id: 29,
+        topic: "WordProblems",
+        topicTh: "โจทย์ประยุกต์พื้นที่และเศษส่วน",
+        topicEn: "Area & Fraction Application",
+        stemTh: "ที่ดินแปลงหนึ่งรูปสี่เหลี่ยมผืนผ้า กว้าง 12 1/2 วา ยาว 16 4/5 วา ที่ดินแปลงนี้มีพื้นที่กี่ตารางวา",
+        stemEn: "A rectangular plot is 12 1/2 wah wide and 16 4/5 wah long. What is the area in square wah?",
+        clueTh: "คำใบ้: พื้นที่สี่เหลี่ยมผืนผ้า = กว้าง × ยาว แปลงเป็นเศษเกินก่อนคูณ",
+        clueEn: "Clue: Area = Width × Length. Convert mixed numbers to improper fractions.",
+        options: [
+          { id: "A", textTh: "210 ตารางวา", textEn: "210 sq wah", isCorrect: true },
+          { id: "B", textTh: "192 4/10 ตารางวา", textEn: "192 4/10 sq wah", isCorrect: false },
+          { id: "C", textTh: "205 ตารางวา", textEn: "205 sq wah", isCorrect: false },
+          { id: "D", textTh: "220 ตารางวา", textEn: "220 sq wah", isCorrect: false }
+        ],
+        solutionTh: "12 1/2 = 25/2 และ 16 4/5 = 84/5. นำมาคูณกัน: (25/2) × (84/5) = 5 × 42 = 210 ตารางวา",
+        solutionEn: "25/2 × 84/5 -> 25/5 = 5; 84/2 = 42 -> 5 × 42 = 210 sq wah.",
+        trickTh: "ห้ามนำจำนวนเต็มคูณจำนวนเต็มและเศษคูณเศษแยกกันโดยเด็ดขาด ต้องแปลงเป็นเศษเกินก่อนเสมอ!"
+      },
+      {
+        id: 30,
+        topic: "OrderOfOps",
+        topicTh: "โจทย์ท้าทายการดำเนินการระคน",
+        topicEn: "Mastery Operations Challenge",
+        stemTh: "ค่าของ [ 3/4 - (1/2) × (2/5) ] ÷ [ 1/5 + 7/20 ] มีค่าเท่าใด",
+        stemEn: "What is the value of [ 3/4 - (1/2) × (2/5) ] ÷ [ 1/5 + 7/20 ]?",
+        clueTh: "คำใบ้: จัดการวงเล็บหน้าและวงเล็บหลังแยกกันก่อน แล้วนำมาหารกัน",
+        clueEn: "Clue: Evaluate left and right brackets independently, then divide.",
+        options: [
+          { id: "A", textTh: "1", textEn: "1", isCorrect: true },
+          { id: "B", textTh: "11/20", textEn: "11/20", isCorrect: false },
+          { id: "C", textTh: "4/5", textEn: "4/5", isCorrect: false },
+          { id: "D", textTh: "2", textEn: "2", isCorrect: false }
+        ],
+        solutionTh: "วงเล็บหน้า: 1/2 × 2/5 = 1/5. นำ 3/4 - 1/5 = (15 - 4)/20 = 11/20. วงเล็บหลัง: 1/5 + 7/20 = 4/20 + 7/20 = 11/20. ดังนั้น (11/20) ÷ (11/20) = 1",
+        solutionEn: "Left bracket: 3/4 - 1/5 = 11/20. Right bracket: 4/20 + 7/20 = 11/20. Result: 11/20 ÷ 11/20 = 1.",
+        trickTh: "มองหาตัวเลขที่สมมาตรกัน: เมื่อวงเล็บหน้าและหลังคำนวณได้ 11/20 เท่ากันเป๊ะ ค่าหารกันย่อมเป็น 1"
+      }
+    ];
+
+    /* =========================================================================
+       2. ข้อมูลสรุปเนื้อหาเข้มข้น (>500 คำ) และข้อความ UI
+       ========================================================================= */
+    const textContent = {
+      th: {
+        headerTitle: "วิชาคณิตศาสตร์ ม.1: บทเรียนเศษส่วนและการดำเนินการ (หลักสูตร สสวท.)",
+        headerSubtitle: "ระดับความยาก: ปานกลาง - ประยุกต์ (30 ข้อเต็มรูปแบบ)",
+        langBtn: "Switch to English",
+        wbTitle: "กระดานทดเลข Whiteboard",
+        wbClear: "ล้างกระดาน",
+        penTool: "ปากกา",
+        eraserTool: "ยางลบ",
+        summaryHeading: "บทสรุปและกระบวนการคิด: เรื่องเศษส่วนและการดำเนินการ ม.1",
+        summaryBody: `
+          <p>เศษส่วน (Fractions) คือจำนวนที่ใช้แสดงปริมาณของส่วนย่อยเมื่อเปรียบเทียบกับส่วนทั้งหมด โดยเขียนในรูป a/b เมื่อ a และ b เป็นจำนวนเต็มที่ b ≠ 0 ในระดับชั้นมัธยมศึกษาปีที่ 1 ตามหลักสูตรแกนกลาง สสวท. หัวใจสำคัญไม่ได้อยู่ที่การจำสูตรลัดเพียงอย่างเดียว แต่เป็นการสร้างมโนทัศน์เชิงพีชคณิตและการคิดอย่างเป็นระบบ</p>
+          
+          <div class="highlight-box">
+            <strong>กลยุทธ์หัวใจสำคัญ 4 ประการ:</strong>
+            <ul style="margin-top: 6px;">
+              <li><strong>การบวกและลบเศษส่วน:</strong> ทำได้ก็ต่อเมื่อ "ตัวส่วนเท่ากัน" เท่านั้น เครื่องมือหลักคือการหา ค.ร.น. (ตัวคูณร่วมน้อย) ของตัวส่วน หากพบจำนวนคละ ให้กระจายส่วนจำนวนเต็มกับเศษส่วน หรือแปลงเป็นเศษเกินก่อน</li>
+              <li><strong>การคูณเศษส่วน:</strong> "เศษคูณเศษ ส่วนคูณส่วน" แต่ข้อห้ามสำคัญคือห้ามคูณตัวเลขใหญ่ก่อน ต้องใช้เทคนิคตัดทอนไขว้ระหว่างตัวเศษและตัวส่วนให้เหลือน้อยที่สุดเสมอ</li>
+              <li><strong>การหารเศษส่วน:</strong> หลักการของส่วนกลับ (Reciprocal) จำให้ขึ้นใจ: <em>"ตัวตั้งคงเดิม เปลี่ยนหารเป็นคูณ กลับเศษเป็นส่วนตัวหาร"</em></li>
+              <li><strong>ระบบเศษส่วนติดลบ:</strong> ปฏิบัติตามกฎของจำนวนเต็มทุกประการ (-) × (-) = (+), (-) ÷ (+) = (-), และการลบด้วยจำนวนลบ คือการบวกด้วยจำนวนตรงข้าม</li>
+            </ul>
+          </div>
+
+          <h3>กระบวนการคิดและลำดับขั้นตอนการคำนวณ (Order of Operations)</h3>
+          <p>เมื่อพบโจทย์ระคนซับซ้อน ให้คำนึงถึงลำดับความสำคัญสากล (PEMDAS): (1) จัดการในวงเล็บย่อยสุดออกมาภายนอก (2) จัดการเลขยกกำลัง (3) คูณและหารจากซ้ายไปขวา (4) บวกและลบจากซ้ายไปขวา การละเลยลำดับขั้นคือจุดผิดพลาดอันดับ 1 ของนักเรียน ม.1 ทั่วประเทศ</p>
+          
+          <h3>เทคนิคการมองเศษซ้อนและโจทย์ปัญหา</h3>
+          <p>เศษซ้อน (Complex Fractions) สามารถแก้ไขได้รวดเร็วด้วยการนำ "ค.ร.น. ของส่วนย่อยทั้งหมด" มาคูณทั้งเศษและส่วนหลัก เพื่อระเบิดเศษส่วนให้กลายเป็นจำนวนเต็มในบรรทัดเดียว สำหรับโจทย์ปัญหาเชิงข้อความ ให้ระวังคำว่า <em>'ของ'</em> ซึ่งหมายถึงการคูณ และต้องสังเกตบริบทเสมอว่าเป็น <em>'ของที่มีอยู่เดิม'</em> หรือ <em>'ของทั้งหมด'</em></p>
+        `,
+        cluePrefix: "คำใบ้: ",
+        solPrefix: "เฉลยละเอียด: ",
+        trickPrefix: "เคล็ดลับกระบวนการคิด: ",
+        resTitle: "สรุปผลการทดสอบและการวิเคราะห์เชิงลึก",
+        lblScoreText: "คะแนนรวมที่ได้",
+        lblPercentage: "ความแม่นยำทางคณิตศาสตร์",
+        lblStrengths: "จุดเด่นที่ทำได้ยอดเยี่ยม (Strengths)",
+        lblWeaknesses: "จุดที่ควรกลับไปทบทวนเพิ่มเติม (Focus Areas)",
+        btnReset: "เริ่มทำใหม่อีกครั้ง (Reset Test)"
+      },
+      en: {
+        headerTitle: "Grade 7 Mathematics: Fractions and Operations (IPST Standard)",
+        headerSubtitle: "Difficulty: Intermediate to Advanced (Complete 30 Questions)",
+        langBtn: "สลับเป็นภาษาไทย",
+        wbTitle: "Scratchpad Whiteboard",
+        wbClear: "Clear Board",
+        penTool: "Pen",
+        eraserTool: "Eraser",
+        summaryHeading: "Concept Summary & Thought Process: Fractions (Grade 7)",
+        summaryBody: `
+          <p>A fraction represents a part of a whole or a quotient of two integers, written as a/b where b ≠ 0. In secondary mathematics, mastery requires moving beyond rote calculation to structural reasoning and algebraic thinking.</p>
+          
+          <div class="highlight-box">
+            <strong>Core Operational Principles:</strong>
+            <ul style="margin-top: 6px;">
+              <li><strong>Addition & Subtraction:</strong> Denominators must be identical before combining numerators. Find the Least Common Multiple (LCM) of the denominators. Convert mixed numbers properly.</li>
+              <li><strong>Multiplication:</strong> Multiply numerators together and denominators together. Always cross-cancel common prime factors first to minimize computation error.</li>
+              <li><strong>Division:</strong> Multiply by the reciprocal of the divisor: <em>"Keep, Change, Flip."</em></li>
+              <li><strong>Signed Fractions:</strong> Negative properties follow integer arithmetic: negative times negative equals positive; subtracting a negative equals adding its opposite.</li>
+            </ul>
+          </div>
+
+          <h3>Systematic Order of Operations (PEMDAS)</h3>
+          <p>Always solve complex expressions hierarchically: (1) Parentheses from the innermost outward (2) Exponents (3) Multiplication and Division evaluated left-to-right (4) Addition and Subtraction evaluated left-to-right.</p>
+          
+          <h3>Simplifying Complex Fractions and Word Problems</h3>
+          <p>For nested fractions, multiply the entire numerator and denominator by the common denominator of all internal fractions to eliminate layers instantly. In contextual word problems, strictly differentiate between 'fraction of the remainder' and 'fraction of the total'.</p>
+        `,
+        cluePrefix: "Clue: ",
+        solPrefix: "Detailed Solution: ",
+        trickPrefix: "Tutor's Strategy: ",
+        resTitle: "Assessment Summary & Detailed Analysis",
+        lblScoreText: "Total Score",
+        lblPercentage: "Mathematical Accuracy",
+        lblStrengths: "Strengths",
+        lblWeaknesses: "Focus Areas (Needs Improvement)",
+        btnReset: "Reset Exam"
+      }
+    };
+
+    /* =========================================================================
+       3. สถานะระบบและการควบคุม (State Management)
+       ========================================================================= */
+    const STORAGE_KEY = "M1_FRACTION_EXAM_STORE_V1";
+    let currentLang = "th";
+    let questions = [];
+    let userAnswers = {}; // { qId: optionId }
+
+    // Fisher-Yates Algorithm สำหรับสุ่มลำดับ
+    function shuffleArray(arr) {
+      const copy = [...arr];
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    }
+
+    // โหลดสถานะหรือเริ่มใหม่
+    function initializeState() {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          currentLang = parsed.lang || "th";
+          questions = parsed.questions || [];
+          userAnswers = parsed.userAnswers || {};
+          if (questions.length === 0) {
+            setupNewExam();
+          }
+        } catch (e) {
+          setupNewExam();
+        }
+      } else {
+        setupNewExam();
+      }
+      saveState();
+    }
+
+    function setupNewExam() {
+      userAnswers = {};
+      // สุ่มลำดับข้อ และสุ่มลำดับตัวเลือกในแต่ละข้อ
+      const shuffledQ = shuffleArray(rawQuestionsData);
+      questions = shuffledQ.map((q) => {
+        return {
+          ...q,
+          options: shuffleArray(q.options)
+        };
+      });
+    }
+
+    function saveState() {
+      const payload = {
+        lang: currentLang,
+        questions: questions,
+        userAnswers: userAnswers
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+    }
+
+    function resetExam() {
+      if (confirm(currentLang === "th" ? "คุณต้องการล้างคำตอบและเริ่มทำข้อสอบชุดนี้ใหม่ทั้งหมดหรือไม่?" : "Do you want to reset all answers and start a fresh test?")) {
+        setupNewExam();
+        saveState();
+        renderAll();
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+    }
+
+    function toggleLanguage() {
+      currentLang = currentLang === "th" ? "en" : "th";
+      saveState();
+      renderAll();
+    }
+
+    /* =========================================================================
+       4. การแสดงผล (Rendering Engine)
+       ========================================================================= */
+    function renderAll() {
+      const txt = textContent[currentLang];
+
+      // Static UI Text
+      document.getElementById("headerTitle").innerText = txt.headerTitle;
+      document.getElementById("headerSubtitle").innerText = txt.headerSubtitle;
+      document.getElementById("langToggleBtn").innerText = txt.langBtn;
+      document.getElementById("wbTitle").innerText = txt.wbTitle;
+      document.getElementById("wbClearBtn").innerText = txt.wbClear;
+      document.getElementById("penToolBtn").innerText = txt.penTool;
+      document.getElementById("eraserToolBtn").innerText = txt.eraserTool;
+      document.getElementById("resTitle").innerText = txt.resTitle;
+      document.getElementById("lblScoreText").innerText = txt.lblScoreText;
+      document.getElementById("lblPercentage").innerText = txt.lblPercentage;
+      document.getElementById("lblStrengths").innerText = txt.lblStrengths;
+      document.getElementById("lblWeaknesses").innerText = txt.lblWeaknesses;
+      document.getElementById("btnResetExam").innerText = txt.btnReset;
+
+      // Summary Card
+      document.getElementById("summaryCard").innerHTML = `
+        <h2>${txt.summaryHeading}</h2>
+        ${txt.summaryBody}
+      `;
+
+      // Render Questions
+      renderQuestions();
+
+      // Check if finished
+      evaluateAndRenderResults();
+    }
+
+    function renderQuestions() {
+      const container = document.getElementById("examContainer");
+      container.innerHTML = "";
+      const isTh = currentLang === "th";
+
+      questions.forEach((q, idx) => {
+        const qNum = idx + 1;
+        const userAnswer = userAnswers[q.id];
+        const isAnswered = userAnswer !== undefined;
+
+        const card = document.createElement("div");
+        card.className = "question-card";
+        card.id = `qCard_${q.id}`;
+
+        const topicText = isTh ? q.topicTh : q.topicEn;
+        const stemText = isTh ? q.stemTh : q.stemEn;
+        const clueText = isTh ? q.clueTh : q.clueEn;
+
+        let optionsHtml = '<div class="options-grid">';
+        q.options.forEach((opt) => {
+          let btnClass = "option-btn";
+          if (isAnswered) {
+            if (opt.id === userAnswer) {
+              btnClass += opt.isCorrect ? " selected-correct" : " selected-wrong";
+            } else if (opt.isCorrect) {
+              btnClass += " actual-correct";
+            }
+          }
+
+          const optText = isTh ? opt.textTh : opt.textEn;
+          optionsHtml += `
+            <button class="${btnClass}" 
+                    ${isAnswered ? "disabled" : ""} 
+                    onclick="handleSelectAnswer(${q.id}, '${opt.id}')">
+              <strong>${opt.id}.</strong> ${optText}
+            </button>
+          `;
+        });
+        optionsHtml += "</div>";
+
+        // Feedback Panel
+        let feedbackHtml = "";
+        if (isAnswered) {
+          const selectedOpt = q.options.find(o => o.id === userAnswer);
+          const isCorrect = selectedOpt ? selectedOpt.isCorrect : false;
+          const solText = isTh ? q.solutionTh : q.solutionEn;
+          const trickText = isTh ? q.trickTh : q.trickEn;
+
+          feedbackHtml = `
+            <div class="feedback-panel ${isCorrect ? "correct" : "wrong"}" style="display:block;">
+              <div class="feedback-title">
+                ${isCorrect ? (isTh ? "✓ ถูกต้องแม่นยำ!" : "✓ Correct!") : (isTh ? "✗ ยังไม่ถูกต้อง" : "✗ Incorrect")}
+              </div>
+              <p><strong>${isTh ? "เฉลยวิธีทำ:" : "Explanation:"}</strong> ${solText}</p>
+              <div class="tutor-trick">
+                <strong>💡 ${isTh ? "วิธีคิดลัด:" : "Tutor Strategy:"}</strong> ${trickText}
+              </div>
+            </div>
+          `;
+        }
+
+        card.innerHTML = `
+          <div class="question-header">
+            <span>${isTh ? "ข้อที่" : "Question"} ${qNum} / 30</span>
+            <span class="topic-tag">${topicText}</span>
+          </div>
+          <div class="question-stem">${stemText}</div>
+          <div class="clue-box">💡 ${clueText}</div>
+          ${optionsHtml}
+          ${feedbackHtml}
+        `;
+
+        container.appendChild(card);
+      });
+    }
+
+    function handleSelectAnswer(questionId, selectedOptionId) {
+      if (userAnswers[questionId]) return; // ห้ามตอบซ้ำ
+      userAnswers[questionId] = selectedOptionId;
+      saveState();
+      renderQuestions();
+      evaluateAndRenderResults();
+    }
+
+    function evaluateAndRenderResults() {
+      const totalAnswered = Object.keys(userAnswers).length;
+      const resultsContainer = document.getElementById("resultsContainer");
+
+      if (totalAnswered < questions.length) {
+        resultsContainer.style.display = "none";
+        return;
+      }
+
+      // แสดงผลเมื่อทำครบ 30 ข้อ
+      resultsContainer.style.display = "block";
+      let score = 0;
+      const topicStats = {};
+
+      questions.forEach((q) => {
+        if (!topicStats[q.topic]) {
+          topicStats[q.topic] = { total: 0, correct: 0, nameTh: q.topicTh, nameEn: q.topicEn };
+        }
+        topicStats[q.topic].total += 1;
+
+        const ans = userAnswers[q.id];
+        const correctOpt = q.options.find(o => o.isCorrect);
+        if (ans === correctOpt.id) {
+          score += 1;
+          topicStats[q.topic].correct += 1;
+        }
+      });
+
+      const percentage = Math.round((score / questions.length) * 100);
+      document.getElementById("finalScoreDisplay").innerText = `${score} / ${questions.length}`;
+      document.getElementById("percentageDisplay").innerText = `${percentage}%`;
+
+      // วิเคราะห์จุดเด่น-จุดด้อย
+      const strengthsList = document.getElementById("strengthsList");
+      const weaknessesList = document.getElementById("weaknessesList");
+      strengthsList.innerHTML = "";
+      weaknessesList.innerHTML = "";
+
+      const isTh = currentLang === "th";
+
+      Object.keys(topicStats).forEach((tKey) => {
+        const st = topicStats[tKey];
+        const pct = (st.correct / st.total) * 100;
+        const topicLabel = isTh ? st.nameTh : st.nameEn;
+        const li = document.createElement("li");
+
+        if (pct >= 70) {
+          li.innerHTML = `<strong>${topicLabel}:</strong> ${isTh ? `เข้าใจดีเยี่ยม (${st.correct}/${st.total} ข้อ)` : `Excellent understanding (${st.correct}/${st.total})`}`;
+          strengthsList.appendChild(li);
+        } else {
+          li.innerHTML = `<strong>${topicLabel}:</strong> ${isTh ? `ควรทบทวนนิยามและแบบฝึกหัดเพิ่มเติม (${st.correct}/${st.total} ข้อ)` : `Needs more revision and practice (${st.correct}/${st.total})`}`;
+          weaknessesList.appendChild(li);
+        }
+      });
+
+      if (strengthsList.children.length === 0) {
+        strengthsList.innerHTML = `<li>${isTh ? "ยังไม่มีหมวดที่คะแนนผ่านเกณฑ์เด่นชัด พยายามใหม่อีกครั้ง!" : "No notable strong areas yet. Keep practicing!"}</li>`;
+      }
+      if (weaknessesList.children.length === 0) {
+        weaknessesList.innerHTML = `<li>${isTh ? "ยอดเยี่ยมมาก! ไม่มีจุดบกพร่องที่มีนัยสำคัญ" : "Superb! No major weak areas found."}</li>`;
+      }
+    }
+
+    /* =========================================================================
+       5. กระดาน Whiteboard Scratchpad มืออาชีพ
+       ========================================================================= */
+    const canvas = document.getElementById("paintCanvas");
+    const ctx = canvas.getContext("2d");
+    let isDrawing = false;
+    let drawMode = "pen"; // 'pen' | 'eraser'
+    const colorPicker = document.getElementById("penColorPicker");
+    const sizeSlider = document.getElementById("penSizeSlider");
+
+    function resizeCanvas() {
+      const rect = canvas.getBoundingClientRect();
+      // เก็บข้อมูลเดิมก่อน resize
+      const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      canvas.width = rect.width;
+      canvas.height = rect.height;
+      try {
+        ctx.putImageData(imgData, 0, 0);
+      } catch (e) {}
+    }
+
+    window.addEventListener("resize", () => {
+      resizeCanvas();
+    });
+
+    function setDrawingMode(mode) {
+      drawMode = mode;
+      document.getElementById("penToolBtn").classList.toggle("active", mode === "pen");
+      document.getElementById("eraserToolBtn").classList.toggle("active", mode === "eraser");
+    }
+
+    function clearWhiteboard() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+
+    function getCanvasCoordinates(e) {
+      const rect = canvas.getBoundingClientRect();
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      return {
+        x: clientX - rect.left,
+        y: clientY - rect.top
+      };
+    }
+
+    function startDrawing(e) {
+      isDrawing = true;
+      const coords = getCanvasCoordinates(e);
+      ctx.beginPath();
+      ctx.moveTo(coords.x, coords.y);
+      if (e.cancelable && e.type.startsWith("touch")) e.preventDefault();
+    }
+
+    function draw(e) {
+      if (!isDrawing) return;
+      const coords = getCanvasCoordinates(e);
+
+      ctx.lineWidth = sizeSlider.value * (drawMode === "eraser" ? 4 : 1);
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+
+      if (drawMode === "pen") {
+        ctx.globalCompositeOperation = "source-over";
+        ctx.strokeStyle = colorPicker.value;
+      } else {
+        ctx.globalCompositeOperation = "destination-out";
+      }
+
+      ctx.lineTo(coords.x, coords.y);
+      ctx.stroke();
+      if (e.cancelable && e.type.startsWith("touch")) e.preventDefault();
+    }
+
+    function stopDrawing() {
+      if (isDrawing) {
+        ctx.closePath();
+        isDrawing = false;
+      }
+    }
+
+    canvas.addEventListener("mousedown", startDrawing);
+    canvas.addEventListener("mousemove", draw);
+    window.addEventListener("mouseup", stopDrawing);
+
+    canvas.addEventListener("touchstart", startDrawing, { passive: false });
+    canvas.addEventListener("touchmove", draw, { passive: false });
+    window.addEventListener("touchend", stopDrawing);
+
+    // Initial Execution
+    window.addEventListener("DOMContentLoaded", () => {
+      initializeState();
+      renderAll();
+      setTimeout(resizeCanvas, 100);
+    });
+  </script>
+</body>
+</html>
