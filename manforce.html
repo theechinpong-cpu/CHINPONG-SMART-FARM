@@ -1,0 +1,948 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Workforce & Onsite Document Management</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            forest: {
+              DEFAULT: '#007A3D',
+              light: '#0A914C',
+              dark: '#00582B',
+              soft: '#E8F5E9'
+            },
+            accent: {
+              DEFAULT: '#10B981',
+              warning: '#F59E0B',
+              danger: '#EF4444'
+            }
+          },
+          fontFamily: {
+            sans: ['Sarabun', 'Inter', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Google Fonts: Sarabun & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Vue 3 -->
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+
+  <style>
+    body {
+      font-family: 'Sarabun', 'Inter', sans-serif;
+      background-color: #0F172A;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+    .hide-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .hide-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+  </style>
+</head>
+<body class="flex justify-center items-center min-h-screen">
+
+  <div id="app" class="w-full max-w-[430px] h-[100dvh] bg-[#F8FAFC] flex flex-col relative overflow-hidden shadow-2xl sm:rounded-3xl border border-slate-700/20">
+
+    <!-- Top App Bar -->
+    <header class="bg-forest text-white px-4 pt-4 pb-3 flex items-center justify-between shadow-md z-10 select-none">
+      <div class="flex items-center space-x-2">
+        <div class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center">
+          <i data-lucide="building-2" class="w-5 h-5 text-emerald-300"></i>
+        </div>
+        <div class="flex flex-col">
+          <span class="text-[10px] text-emerald-100 uppercase tracking-wider font-semibold">Company Hub</span>
+          <select v-model="selectedHub" class="bg-transparent text-sm font-bold text-white outline-none cursor-pointer pr-2">
+            <option value="ALL" class="text-gray-800">สำนักงานใหญ่ / ทุกฮับ</option>
+            <option value="HUB-A" class="text-gray-800">ฮับ 1 - ภาคกลาง (Agro-Hub A)</option>
+            <option value="HUB-B" class="text-gray-800">ฮับ 2 - ภาคใต้ (Farm Logistics B)</option>
+            <option value="HUB-C" class="text-gray-800">ฮับ 3 - ตะวันออก (Plant Center C)</option>
+          </select>
+        </div>
+      </div>
+      <div class="relative">
+        <button @click="showNotification = !showNotification" class="p-2 rounded-full bg-white/10 hover:bg-white/20 transition relative">
+          <i data-lucide="bell" class="w-5 h-5 text-white"></i>
+          <span v-if="expiringSoonCount > 0 || expiredCount > 0" class="absolute top-1 right-1 w-2.5 h-2.5 bg-accent-danger rounded-full border-2 border-forest"></span>
+        </button>
+        <!-- Popover Notifications -->
+        <div v-if="showNotification" class="absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-xl p-3 border border-slate-200 z-50 text-slate-800">
+          <h4 class="font-bold text-xs text-slate-500 uppercase tracking-wider mb-2">การแจ้งเตือนสำคัญ</h4>
+          <div class="space-y-2 text-xs">
+            <div class="p-2 rounded bg-amber-50 border border-amber-200 text-amber-800">
+              <span class="font-bold">ใกล้หมดอายุ:</span> มี {{ expiringSoonCount }} รายการ ต้องต่ออายุใน 30 วัน
+            </div>
+            <div class="p-2 rounded bg-rose-50 border border-rose-200 text-rose-800">
+              <span class="font-bold">หมดอายุแล้ว:</span> มี {{ expiredCount }} รายการ ต้องเร่งตรวจสอบ
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 overflow-y-auto hide-scrollbar pb-24 px-4 pt-3">
+      
+      <!-- SCREEN 1: DASHBOARD -->
+      <section v-if="currentTab === 'dashboard'" class="space-y-4">
+        <!-- Search bar -->
+        <div class="relative">
+          <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-3.5"></i>
+          <input 
+            type="text" 
+            v-model="dashboardSearch"
+            placeholder="ค้นหาชื่อ, รหัสพนักงาน, หรือเอกสาร..." 
+            class="w-full bg-white pl-9 pr-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-forest/30 focus:border-forest transition shadow-sm"
+          />
+        </div>
+
+        <!-- Quick Register Action Button -->
+        <button 
+          @click="openRegistrationModal()" 
+          class="w-full bg-gradient-to-r from-forest to-forest-light text-white p-3.5 rounded-xl font-bold flex items-center justify-center space-x-2 shadow-lg shadow-forest/20 active:scale-[0.98] transition">
+          <i data-lucide="user-plus" class="w-5 h-5"></i>
+          <span>+ ลงทะเบียนข้อมูลพนักงานใหม่</span>
+        </button>
+
+        <!-- Summary Metric Cards (2x2 Grid) -->
+        <div class="grid grid-cols-2 gap-3">
+          <div class="bg-white p-3.5 rounded-xl border border-slate-100 shadow-sm flex flex-col justify-between">
+            <div class="flex justify-between items-start">
+              <span class="text-xs text-slate-500 font-medium">พนักงานทั้งหมด</span>
+              <div class="p-1.5 rounded-lg bg-emerald-50 text-forest">
+                <i data-lucide="users" class="w-4 h-4"></i>
+              </div>
+            </div>
+            <div class="mt-2">
+              <span class="text-2xl font-black text-slate-800">{{ filteredWorkers.length }}</span>
+              <span class="text-[11px] text-slate-400 ml-1">คน</span>
+            </div>
+          </div>
+
+          <div class="bg-white p-3.5 rounded-xl border border-slate-100 shadow-sm flex flex-col justify-between">
+            <div class="flex justify-between items-start">
+              <span class="text-xs text-amber-600 font-medium">ใกล้หมดอายุ 30 วัน</span>
+              <div class="p-1.5 rounded-lg bg-amber-50 text-amber-600">
+                <i data-lucide="clock-alert" class="w-4 h-4"></i>
+              </div>
+            </div>
+            <div class="mt-2">
+              <span class="text-2xl font-black text-amber-600">{{ expiringSoonCount }}</span>
+              <span class="text-[11px] text-slate-400 ml-1">ฉบับ</span>
+            </div>
+          </div>
+
+          <div class="bg-white p-3.5 rounded-xl border border-slate-100 shadow-sm flex flex-col justify-between">
+            <div class="flex justify-between items-start">
+              <span class="text-xs text-rose-600 font-medium">เอกสารหมดอายุ</span>
+              <div class="p-1.5 rounded-lg bg-rose-50 text-rose-600">
+                <i data-lucide="alert-circle" class="w-4 h-4"></i>
+              </div>
+            </div>
+            <div class="mt-2">
+              <span class="text-2xl font-black text-rose-600">{{ expiredCount }}</span>
+              <span class="text-[11px] text-slate-400 ml-1">ฉบับ</span>
+            </div>
+          </div>
+
+          <div class="bg-white p-3.5 rounded-xl border border-slate-100 shadow-sm flex flex-col justify-between">
+            <div class="flex justify-between items-start">
+              <span class="text-xs text-slate-500 font-medium">รออัปโหลดเอกสาร</span>
+              <div class="p-1.5 rounded-lg bg-slate-100 text-slate-600">
+                <i data-lucide="file-up" class="w-4 h-4"></i>
+              </div>
+            </div>
+            <div class="mt-2">
+              <span class="text-2xl font-black text-slate-700">{{ pendingUploadCount }}</span>
+              <span class="text-[11px] text-slate-400 ml-1">ฉบับ</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Registered List Preview -->
+        <div class="pt-2">
+          <div class="flex justify-between items-center mb-2">
+            <h3 class="font-bold text-sm text-slate-800">รายชื่อแรงงานล่าสุด</h3>
+            <button @click="currentTab = 'roster'" class="text-xs text-forest font-semibold hover:underline">ดูทั้งหมด</button>
+          </div>
+          <div class="space-y-2">
+            <div 
+              v-for="worker in filteredWorkers.slice(0, 4)" 
+              :key="worker.id"
+              @click="openWorkerDetails(worker)"
+              class="bg-white p-3 rounded-xl border border-slate-100 shadow-sm flex items-center justify-between active:bg-slate-50 cursor-pointer">
+              <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-full bg-forest-soft text-forest font-bold flex items-center justify-center text-sm">
+                  {{ worker.nameEn.charAt(0) }}
+                </div>
+                <div>
+                  <div class="font-bold text-sm text-slate-800">{{ worker.nameTh }}</div>
+                  <div class="text-[11px] text-slate-400">ID: {{ worker.id }} | {{ worker.visaType }}</div>
+                </div>
+              </div>
+              <div class="flex items-center space-x-1.5">
+                <span :class="getOverallStatusBadge(worker).class" class="text-[10px] px-2 py-0.5 rounded-full font-semibold">
+                  {{ getOverallStatusBadge(worker).text }}
+                </span>
+                <i data-lucide="chevron-right" class="w-4 h-4 text-slate-400"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN 2: WORKER REGISTRATION (VIEW MODE) -->
+      <section v-if="currentTab === 'register'" class="space-y-4">
+        <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm">
+          <div class="flex items-center space-x-2 border-b border-slate-100 pb-3 mb-4">
+            <i data-lucide="user-check" class="w-5 h-5 text-forest"></i>
+            <h2 class="font-bold text-base text-slate-800">แบบฟอร์มลงทะเบียนพนักงาน</h2>
+          </div>
+
+          <form @submit.prevent="saveWorkerForm" class="space-y-3">
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">รหัสพนักงาน (Worker ID) *</label>
+              <input type="text" v-model="formWorker.id" required placeholder="เช่น EMP-9021" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:bg-white focus:outline-none focus:ring-1 focus:ring-forest">
+            </div>
+
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1">ชื่อ-สกุล (ไทย) *</label>
+                <input type="text" v-model="formWorker.nameTh" required placeholder="นาย สมคิด จิตดี" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:bg-white focus:outline-none focus:ring-1 focus:ring-forest">
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1">Name-Surname (EN) *</label>
+                <input type="text" v-model="formWorker.nameEn" required placeholder="Somkid Jitdee" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:bg-white focus:outline-none focus:ring-1 focus:ring-forest">
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1">เพศ (Gender)</label>
+                <select v-model="formWorker.gender" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:bg-white focus:outline-none focus:ring-1 focus:ring-forest">
+                  <option value="ชาย">ชาย (Male)</option>
+                  <option value="หญิง">หญิง (Female)</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1">วันเกิด (DOB)</label>
+                <input type="date" v-model="formWorker.dob" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:bg-white focus:outline-none focus:ring-1 focus:ring-forest">
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1">สังกัด Hub / Company *</label>
+                <select v-model="formWorker.hub" required class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:bg-white focus:outline-none focus:ring-1 focus:ring-forest">
+                  <option value="HUB-A">Agro-Hub A</option>
+                  <option value="HUB-B">Farm Logistics B</option>
+                  <option value="HUB-C">Plant Center C</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1">ประเภทวีซ่า (Visa Type)</label>
+                <select v-model="formWorker.visaType" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:bg-white focus:outline-none focus:ring-1 focus:ring-forest">
+                  <option value="MOU">MOU สองฝ่าย</option>
+                  <option value="Non-L-A">Non-Immigrant L-A</option>
+                  <option value="CI / Border Pass">CI / Border Pass</option>
+                  <option value="มติ ครม.">มติ ครม. พิเศษ</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">ยอดเงินคงค้างเบิกจ่าย (THB)</label>
+              <input type="number" v-model.number="formWorker.outstandingBalance" placeholder="0.00" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:bg-white focus:outline-none focus:ring-1 focus:ring-forest">
+            </div>
+
+            <div class="pt-3 flex space-x-2">
+              <button 
+                type="button" 
+                @click="resetRegistrationForm" 
+                class="flex-1 py-2.5 border border-slate-300 text-slate-700 rounded-xl text-sm font-semibold hover:bg-slate-100 transition">
+                ยกเลิก
+              </button>
+              <button 
+                type="submit" 
+                class="flex-1 py-2.5 bg-forest text-white rounded-xl text-sm font-bold shadow-md shadow-forest/20 active:scale-95 transition">
+                บันทึกข้อมูลพนักงาน
+              </button>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <!-- SCREEN 3: 4 CORE DOCUMENTS ATTACHMENT & STATUS -->
+      <section v-if="currentTab === 'documents'" class="space-y-4">
+        <!-- Worker Selector Dropdown -->
+        <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm">
+          <label class="block text-xs font-semibold text-slate-500 mb-1">เลือกพนักงานเพื่อดูหรืออัปเดตเอกสาร</label>
+          <select v-model="selectedWorkerIdForDoc" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm font-bold text-slate-800 focus:outline-none focus:ring-1 focus:ring-forest">
+            <option v-for="w in workers" :key="w.id" :value="w.id">{{ w.id }} - {{ w.nameTh }} ({{ w.hub }})</option>
+          </select>
+        </div>
+
+        <div v-if="activeWorkerForDoc" class="space-y-3">
+          <div class="text-xs font-bold text-slate-500 uppercase tracking-wider px-1">เอกสารหลักตามกฎหมาย 4 ฉบับ</div>
+
+          <!-- Document 1: Passport -->
+          <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-3">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center space-x-2">
+                <span class="p-2 rounded-lg bg-blue-50 text-blue-600 font-bold text-xs">PP</span>
+                <div>
+                  <h4 class="text-sm font-bold text-slate-800">Passport (หนังสือเดินทาง)</h4>
+                  <p class="text-[11px] text-slate-400">เลขเล่ม: {{ activeWorkerForDoc.docs.passport.docNumber || 'ยังไม่ระบุ' }}</p>
+                </div>
+              </div>
+              <span :class="getStatusBadgeClass(activeWorkerForDoc.docs.passport.expiryDate, activeWorkerForDoc.docs.passport.uploaded)" class="text-[10px] font-bold px-2 py-0.5 rounded-full">
+                {{ getDocStatusLabel(activeWorkerForDoc.docs.passport.expiryDate, activeWorkerForDoc.docs.passport.uploaded) }}
+              </span>
+            </div>
+            <div class="grid grid-cols-2 gap-2 text-xs">
+              <div>
+                <span class="text-slate-400 block text-[10px]">วันหมดอายุ</span>
+                <input type="date" v-model="activeWorkerForDoc.docs.passport.expiryDate" @change="saveToLocalStorage" class="w-full bg-slate-50 border border-slate-200 rounded px-2 py-1 text-xs">
+              </div>
+              <div>
+                <span class="text-slate-400 block text-[10px]">ไฟล์เอกสารแนบ</span>
+                <label class="cursor-pointer flex items-center justify-center space-x-1 w-full bg-slate-100 hover:bg-slate-200 text-slate-700 py-1 px-2 rounded border border-slate-200 text-[11px] truncate">
+                  <i data-lucide="upload" class="w-3 h-3 flex-shrink-0"></i>
+                  <span class="truncate">{{ activeWorkerForDoc.docs.passport.fileName || 'แนบไฟล์' }}</span>
+                  <input type="file" class="hidden" @change="handleFileUpload($event, 'passport')">
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Document 2: Visa -->
+          <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-3">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center space-x-2">
+                <span class="p-2 rounded-lg bg-emerald-50 text-emerald-600 font-bold text-xs">VS</span>
+                <div>
+                  <h4 class="text-sm font-bold text-slate-800">Visa (วีซ่าทำงาน)</h4>
+                  <p class="text-[11px] text-slate-400">ประเภท: {{ activeWorkerForDoc.visaType }}</p>
+                </div>
+              </div>
+              <span :class="getStatusBadgeClass(activeWorkerForDoc.docs.visa.expiryDate, activeWorkerForDoc.docs.visa.uploaded)" class="text-[10px] font-bold px-2 py-0.5 rounded-full">
+                {{ getDocStatusLabel(activeWorkerForDoc.docs.visa.expiryDate, activeWorkerForDoc.docs.visa.uploaded) }}
+              </span>
+            </div>
+            <div class="grid grid-cols-2 gap-2 text-xs">
+              <div>
+                <span class="text-slate-400 block text-[10px]">วันหมดอายุ</span>
+                <input type="date" v-model="activeWorkerForDoc.docs.visa.expiryDate" @change="saveToLocalStorage" class="w-full bg-slate-50 border border-slate-200 rounded px-2 py-1 text-xs">
+              </div>
+              <div>
+                <span class="text-slate-400 block text-[10px]">ไฟล์เอกสารแนบ</span>
+                <label class="cursor-pointer flex items-center justify-center space-x-1 w-full bg-slate-100 hover:bg-slate-200 text-slate-700 py-1 px-2 rounded border border-slate-200 text-[11px] truncate">
+                  <i data-lucide="upload" class="w-3 h-3 flex-shrink-0"></i>
+                  <span class="truncate">{{ activeWorkerForDoc.docs.visa.fileName || 'แนบไฟล์' }}</span>
+                  <input type="file" class="hidden" @change="handleFileUpload($event, 'visa')">
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Document 3: Work Permit -->
+          <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-3">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center space-x-2">
+                <span class="p-2 rounded-lg bg-indigo-50 text-indigo-600 font-bold text-xs">WP</span>
+                <div>
+                  <h4 class="text-sm font-bold text-slate-800">Work Permit (ใบอนุญาตทำงาน)</h4>
+                  <p class="text-[11px] text-slate-400">เลขที่: {{ activeWorkerForDoc.docs.workPermit.docNumber || 'WP-99212' }}</p>
+                </div>
+              </div>
+              <span :class="getStatusBadgeClass(activeWorkerForDoc.docs.workPermit.expiryDate, activeWorkerForDoc.docs.workPermit.uploaded)" class="text-[10px] font-bold px-2 py-0.5 rounded-full">
+                {{ getDocStatusLabel(activeWorkerForDoc.docs.workPermit.expiryDate, activeWorkerForDoc.docs.workPermit.uploaded) }}
+              </span>
+            </div>
+            <div class="grid grid-cols-2 gap-2 text-xs">
+              <div>
+                <span class="text-slate-400 block text-[10px]">วันหมดอายุ</span>
+                <input type="date" v-model="activeWorkerForDoc.docs.workPermit.expiryDate" @change="saveToLocalStorage" class="w-full bg-slate-50 border border-slate-200 rounded px-2 py-1 text-xs">
+              </div>
+              <div>
+                <span class="text-slate-400 block text-[10px]">ไฟล์เอกสารแนบ</span>
+                <label class="cursor-pointer flex items-center justify-center space-x-1 w-full bg-slate-100 hover:bg-slate-200 text-slate-700 py-1 px-2 rounded border border-slate-200 text-[11px] truncate">
+                  <i data-lucide="upload" class="w-3 h-3 flex-shrink-0"></i>
+                  <span class="truncate">{{ activeWorkerForDoc.docs.workPermit.fileName || 'แนบไฟล์' }}</span>
+                  <input type="file" class="hidden" @change="handleFileUpload($event, 'workPermit')">
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Document 4: 90-Day Report -->
+          <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-3">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center space-x-2">
+                <span class="p-2 rounded-lg bg-purple-50 text-purple-600 font-bold text-xs">90D</span>
+                <div>
+                  <h4 class="text-sm font-bold text-slate-800">รายงานตัว 90 วัน (90-Day Report)</h4>
+                  <p class="text-[11px] text-slate-400">รอบรายงานตัวถัดไป</p>
+                </div>
+              </div>
+              <span :class="getStatusBadgeClass(activeWorkerForDoc.docs.report90.expiryDate, activeWorkerForDoc.docs.report90.uploaded)" class="text-[10px] font-bold px-2 py-0.5 rounded-full">
+                {{ getDocStatusLabel(activeWorkerForDoc.docs.report90.expiryDate, activeWorkerForDoc.docs.report90.uploaded) }}
+              </span>
+            </div>
+            <div class="grid grid-cols-2 gap-2 text-xs">
+              <div>
+                <span class="text-slate-400 block text-[10px]">ครบกำหนดรายงานตัว</span>
+                <input type="date" v-model="activeWorkerForDoc.docs.report90.expiryDate" @change="saveToLocalStorage" class="w-full bg-slate-50 border border-slate-200 rounded px-2 py-1 text-xs">
+              </div>
+              <div>
+                <span class="text-slate-400 block text-[10px]">ใบรับแจ้งการรายงานตัว</span>
+                <label class="cursor-pointer flex items-center justify-center space-x-1 w-full bg-slate-100 hover:bg-slate-200 text-slate-700 py-1 px-2 rounded border border-slate-200 text-[11px] truncate">
+                  <i data-lucide="upload" class="w-3 h-3 flex-shrink-0"></i>
+                  <span class="truncate">{{ activeWorkerForDoc.docs.report90.fileName || 'แนบไฟล์' }}</span>
+                  <input type="file" class="hidden" @change="handleFileUpload($event, 'report90')">
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN 4: WORKER ROSTER & DIRECTORY -->
+      <section v-if="currentTab === 'roster'" class="space-y-3">
+        <!-- Search bar inside Roster -->
+        <div class="relative">
+          <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-3.5"></i>
+          <input 
+            type="text" 
+            v-model="rosterSearch"
+            placeholder="ค้นหาชื่อ, รหัสพนักงาน, หรือ Hub..." 
+            class="w-full bg-white pl-9 pr-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-forest/30 focus:border-forest transition shadow-sm"
+          />
+        </div>
+
+        <div class="flex justify-between items-center px-1">
+          <span class="text-xs font-semibold text-slate-500">ผลการค้นหา: {{ searchedWorkers.length }} คน</span>
+          <span class="text-[10px] text-slate-400">จุดสถานะ: PP • VS • WP • 90D</span>
+        </div>
+
+        <!-- Workers List Cards -->
+        <div class="space-y-2.5">
+          <div 
+            v-for="w in searchedWorkers" 
+            :key="w.id"
+            @click="openWorkerDetails(w)"
+            class="bg-white p-3.5 rounded-xl border border-slate-100 shadow-sm hover:border-forest/40 transition cursor-pointer active:scale-[0.99]">
+            <div class="flex justify-between items-start">
+              <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-full bg-slate-100 border border-slate-200 text-slate-700 font-bold flex items-center justify-center text-sm">
+                  {{ w.nameEn.charAt(0) }}
+                </div>
+                <div>
+                  <div class="font-bold text-sm text-slate-800">{{ w.nameTh }}</div>
+                  <div class="text-xs text-slate-500">{{ w.nameEn }} ({{ w.id }})</div>
+                </div>
+              </div>
+              <span class="text-[10px] bg-slate-100 text-slate-700 px-2 py-0.5 rounded font-medium">{{ w.hub }}</span>
+            </div>
+
+            <div class="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between text-xs">
+              <div class="text-slate-500 text-[11px]">วีซ่า: <span class="font-semibold text-slate-700">{{ w.visaType }}</span></div>
+              
+              <!-- 4 Document Status Quick Indicator Dots -->
+              <div class="flex items-center space-x-1.5" title="Passport, Visa, Work Permit, 90-Days">
+                <span class="w-2.5 h-2.5 rounded-full" :class="getDotColor(w.docs.passport)" title="Passport"></span>
+                <span class="w-2.5 h-2.5 rounded-full" :class="getDotColor(w.docs.visa)" title="Visa"></span>
+                <span class="w-2.5 h-2.5 rounded-full" :class="getDotColor(w.docs.workPermit)" title="Work Permit"></span>
+                <span class="w-2.5 h-2.5 rounded-full" :class="getDotColor(w.docs.report90)" title="90-Day Report"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- FULL WORKER DOSSIER MODAL -->
+    <div v-if="selectedWorkerModal" class="absolute inset-0 bg-black/60 z-50 flex flex-col justify-end backdrop-blur-xs">
+      <div class="bg-white w-full rounded-t-3xl max-h-[85dvh] flex flex-col overflow-hidden animate-in slide-in-from-bottom duration-200">
+        <div class="px-5 pt-4 pb-3 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+          <div>
+            <span class="text-[10px] font-bold text-forest uppercase tracking-wider">Worker Dossier</span>
+            <h3 class="font-bold text-base text-slate-800">{{ selectedWorkerModal.nameTh }}</h3>
+          </div>
+          <button @click="selectedWorkerModal = null" class="p-1.5 rounded-full bg-slate-200 text-slate-600 hover:bg-slate-300">
+            <i data-lucide="x" class="w-5 h-5"></i>
+          </button>
+        </div>
+
+        <div class="p-5 overflow-y-auto space-y-4 text-xs">
+          <!-- Profile Overview Card -->
+          <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200 grid grid-cols-2 gap-2">
+            <div>
+              <span class="text-slate-400 block text-[10px]">ชื่อภาษาอังกฤษ</span>
+              <span class="font-semibold text-slate-800">{{ selectedWorkerModal.nameEn }}</span>
+            </div>
+            <div>
+              <span class="text-slate-400 block text-[10px]">รหัสประจำตัว</span>
+              <span class="font-semibold text-slate-800">{{ selectedWorkerModal.id }}</span>
+            </div>
+            <div>
+              <span class="text-slate-400 block text-[10px]">สาขา / สังกัด</span>
+              <span class="font-semibold text-slate-800">{{ selectedWorkerModal.hub }}</span>
+            </div>
+            <div>
+              <span class="text-slate-400 block text-[10px]">ประเภทวีซ่า</span>
+              <span class="font-semibold text-slate-800">{{ selectedWorkerModal.visaType }}</span>
+            </div>
+            <div>
+              <span class="text-slate-400 block text-[10px]">เพศ</span>
+              <span class="font-semibold text-slate-800">{{ selectedWorkerModal.gender }}</span>
+            </div>
+            <div>
+              <span class="text-slate-400 block text-[10px]">วันเกิด</span>
+              <span class="font-semibold text-slate-800">{{ selectedWorkerModal.dob || '-' }}</span>
+            </div>
+            <div class="col-span-2 pt-1 border-t border-slate-200 flex justify-between items-center">
+              <span class="text-slate-500 font-medium">ยอดเงินคงค้างเบิกจ่าย:</span>
+              <span class="font-bold text-slate-800 text-sm">฿{{ Number(selectedWorkerModal.outstandingBalance || 0).toLocaleString() }}</span>
+            </div>
+          </div>
+
+          <!-- Document Inspection -->
+          <div>
+            <h4 class="font-bold text-slate-700 mb-2">สถานะเอกสารทั้ง 4 ฉบับ</h4>
+            <div class="space-y-2">
+              <div v-for="(doc, key) in selectedWorkerModal.docs" :key="key" class="p-2.5 rounded-lg border border-slate-200 flex items-center justify-between">
+                <div>
+                  <span class="font-bold uppercase text-slate-700 block">{{ getDocName(key) }}</span>
+                  <span class="text-[10px] text-slate-400">หมดอายุ: {{ doc.expiryDate || 'ไม่ได้ระบุ' }}</span>
+                </div>
+                <span :class="getStatusBadgeClass(doc.expiryDate, doc.uploaded)" class="text-[10px] font-bold px-2 py-0.5 rounded-full">
+                  {{ getDocStatusLabel(doc.expiryDate, doc.uploaded) }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Action inside Modal -->
+          <div class="pt-2">
+            <button 
+              @click="manageWorkerDocs(selectedWorkerModal.id)" 
+              class="w-full py-2.5 bg-forest text-white font-bold rounded-xl flex items-center justify-center space-x-2">
+              <i data-lucide="file-edit" class="w-4 h-4"></i>
+              <span>จัดการเอกสารและแนบไฟล์</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Fixed Bottom Navigation Bar -->
+    <nav class="absolute bottom-0 left-0 right-0 h-16 bg-white border-t border-slate-200 flex items-center justify-around px-2 z-20 shadow-lg">
+      <button 
+        @click="currentTab = 'dashboard'" 
+        class="flex flex-col items-center justify-center flex-1 py-1 transition"
+        :class="currentTab === 'dashboard' ? 'text-forest font-bold' : 'text-slate-400'">
+        <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+        <span class="text-[10px] mt-1">หน้าหลัก</span>
+      </button>
+
+      <button 
+        @click="currentTab = 'register'" 
+        class="flex flex-col items-center justify-center flex-1 py-1 transition"
+        :class="currentTab === 'register' ? 'text-forest font-bold' : 'text-slate-400'">
+        <i data-lucide="user-plus" class="w-5 h-5"></i>
+        <span class="text-[10px] mt-1">ลงทะเบียน</span>
+      </button>
+
+      <button 
+        @click="currentTab = 'documents'" 
+        class="flex flex-col items-center justify-center flex-1 py-1 transition"
+        :class="currentTab === 'documents' ? 'text-forest font-bold' : 'text-slate-400'">
+        <i data-lucide="file-check-2" class="w-5 h-5"></i>
+        <span class="text-[10px] mt-1">เอกสาร</span>
+      </button>
+
+      <button 
+        @click="currentTab = 'roster'" 
+        class="flex flex-col items-center justify-center flex-1 py-1 transition"
+        :class="currentTab === 'roster' ? 'text-forest font-bold' : 'text-slate-400'">
+        <i data-lucide="contact-2" class="w-5 h-5"></i>
+        <span class="text-[10px] mt-1">ค้นหา/รายชื่อ</span>
+      </button>
+    </nav>
+
+  </div>
+
+  <script>
+    const { createApp, ref, computed, onMounted, nextTick, watch } = Vue;
+
+    createApp({
+      setup() {
+        const currentTab = ref('dashboard');
+        const selectedHub = ref('ALL');
+        const dashboardSearch = ref('');
+        const rosterSearch = ref('');
+        const showNotification = ref(false);
+        const selectedWorkerIdForDoc = ref('');
+        const selectedWorkerModal = ref(null);
+
+        // Blank registration form model
+        const formWorker = ref({
+          id: '',
+          nameTh: '',
+          nameEn: '',
+          gender: 'ชาย',
+          dob: '',
+          hub: 'HUB-A',
+          visaType: 'MOU',
+          outstandingBalance: 0
+        });
+
+        // Seed data for initial run
+        const initialSeedWorkers = [
+          {
+            id: 'EMP-1001',
+            nameTh: 'นาย คำหล้า ไชยวงศ์',
+            nameEn: 'Khamla Chaiyawong',
+            gender: 'ชาย',
+            dob: '1992-05-14',
+            hub: 'HUB-A',
+            visaType: 'MOU',
+            outstandingBalance: 1250,
+            docs: {
+              passport: { docNumber: 'P1293841', expiryDate: '2026-11-20', uploaded: true, fileName: 'pp_khamla.pdf' },
+              visa: { docNumber: 'V-9923', expiryDate: '2026-09-28', uploaded: true, fileName: 'visa_stamp.jpg' },
+              workPermit: { docNumber: 'WP-8811', expiryDate: '2027-01-15', uploaded: true, fileName: 'wp_card.pdf' },
+              report90: { docNumber: '90D-44', expiryDate: '2026-09-18', uploaded: true, fileName: 'receipt_90d.pdf' }
+            }
+          },
+          {
+            id: 'EMP-1002',
+            nameTh: 'นาง จิตรา บุญมี',
+            nameEn: 'Jitra Boonmee',
+            gender: 'หญิง',
+            dob: '1995-08-22',
+            hub: 'HUB-B',
+            visaType: 'Non-L-A',
+            outstandingBalance: 0,
+            docs: {
+              passport: { docNumber: 'P8832101', expiryDate: '2026-08-10', uploaded: true, fileName: 'pp_jitra.pdf' }, // Expired
+              visa: { docNumber: 'V-1022', expiryDate: '2026-12-31', uploaded: true, fileName: 'visa.pdf' },
+              workPermit: { docNumber: 'WP-3312', expiryDate: '2026-12-31', uploaded: false, fileName: '' },
+              report90: { docNumber: '90D-55', expiryDate: '2026-10-12', uploaded: true, fileName: '90_jitra.pdf' }
+            }
+          },
+          {
+            id: 'EMP-1003',
+            nameTh: 'นาย ตัน วิน',
+            nameEn: 'Tun Win',
+            gender: 'ชาย',
+            dob: '1989-12-03',
+            hub: 'HUB-C',
+            visaType: 'CI / Border Pass',
+            outstandingBalance: 3400,
+            docs: {
+              passport: { docNumber: 'CI-90022', expiryDate: '2027-03-01', uploaded: true, fileName: 'ci_pass.pdf' },
+              visa: { docNumber: 'V-8821', expiryDate: '2026-10-02', uploaded: true, fileName: 'visa_tun.jpg' },
+              workPermit: { docNumber: 'WP-7721', expiryDate: '2026-11-10', uploaded: true, fileName: 'wp_tun.pdf' },
+              report90: { docNumber: '90D-99', expiryDate: '2026-09-12', uploaded: true, fileName: '90d_sep.pdf' }
+            }
+          }
+        ];
+
+        const workers = ref([]);
+
+        // LocalStorage Management
+        const loadFromLocalStorage = () => {
+          const stored = localStorage.getItem('on_site_workforce_data');
+          if (stored) {
+            try {
+              workers.value = JSON.parse(stored);
+            } catch (e) {
+              workers.value = initialSeedWorkers;
+            }
+          } else {
+            workers.value = initialSeedWorkers;
+            saveToLocalStorage();
+          }
+
+          if (workers.value.length > 0 && !selectedWorkerIdForDoc.value) {
+            selectedWorkerIdForDoc.value = workers.value[0].id;
+          }
+        };
+
+        const saveToLocalStorage = () => {
+          localStorage.setItem('on_site_workforce_data', JSON.stringify(workers.value));
+          triggerLucide();
+        };
+
+        const triggerLucide = () => {
+          nextTick(() => {
+            if (window.lucide) {
+              window.lucide.createIcons();
+            }
+          });
+        };
+
+        // Date calculation helpers
+        const getDaysDiff = (targetDateStr) => {
+          if (!targetDateStr) return 99999;
+          const today = new Date('2026-09-08'); // Current system date
+          const target = new Date(targetDateStr);
+          const diffTime = target.getTime() - today.getTime();
+          return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        };
+
+        const getDocStatusKey = (expiryDate, isUploaded) => {
+          if (!isUploaded || !expiryDate) return 'PENDING';
+          const diff = getDaysDiff(expiryDate);
+          if (diff < 0) return 'EXPIRED';
+          if (diff <= 30) return 'EXPIRING';
+          return 'ACTIVE';
+        };
+
+        const getDocStatusLabel = (expiryDate, isUploaded) => {
+          const status = getDocStatusKey(expiryDate, isUploaded);
+          if (status === 'PENDING') return 'รออัปโหลด';
+          if (status === 'EXPIRED') return 'หมดอายุแล้ว';
+          if (status === 'EXPIRING') return 'ใกล้หมดอายุ';
+          return 'ปกติสมบูรณ์';
+        };
+
+        const getStatusBadgeClass = (expiryDate, isUploaded) => {
+          const status = getDocStatusKey(expiryDate, isUploaded);
+          if (status === 'PENDING') return 'bg-slate-100 text-slate-600 border border-slate-200';
+          if (status === 'EXPIRED') return 'bg-rose-100 text-rose-700 border border-rose-200';
+          if (status === 'EXPIRING') return 'bg-amber-100 text-amber-700 border border-amber-200';
+          return 'bg-emerald-100 text-emerald-700 border border-emerald-200';
+        };
+
+        const getDotColor = (doc) => {
+          if (!doc) return 'bg-slate-300';
+          const status = getDocStatusKey(doc.expiryDate, doc.uploaded);
+          if (status === 'PENDING') return 'bg-slate-400';
+          if (status === 'EXPIRED') return 'bg-rose-500';
+          if (status === 'EXPIRING') return 'bg-amber-500';
+          return 'bg-emerald-500';
+        };
+
+        const getOverallStatusBadge = (worker) => {
+          let hasExpired = false;
+          let hasExpiring = false;
+          let hasPending = false;
+
+          Object.values(worker.docs).forEach(d => {
+            const st = getDocStatusKey(d.expiryDate, d.uploaded);
+            if (st === 'EXPIRED') hasExpired = true;
+            if (st === 'EXPIRING') hasExpiring = true;
+            if (st === 'PENDING') hasPending = true;
+          });
+
+          if (hasExpired) return { text: 'มีเอกสารหมดอายุ', class: 'bg-rose-100 text-rose-700' };
+          if (hasExpiring) return { text: 'ต้องต่ออายุเร็วๆ นี้', class: 'bg-amber-100 text-amber-700' };
+          if (hasPending) return { text: 'รอเอกสารแนบ', class: 'bg-slate-100 text-slate-600' };
+          return { text: 'เอกสารครบถ้วน', class: 'bg-emerald-100 text-emerald-700' };
+        };
+
+        // Computed metrics and lists
+        const filteredWorkers = computed(() => {
+          return workers.value.filter(w => {
+            const matchHub = selectedHub.value === 'ALL' || w.hub === selectedHub.value;
+            const term = dashboardSearch.value.trim().toLowerCase();
+            const matchQuery = !term || 
+              w.nameTh.toLowerCase().includes(term) || 
+              w.nameEn.toLowerCase().includes(term) || 
+              w.id.toLowerCase().includes(term);
+            return matchHub && matchQuery;
+          });
+        });
+
+        const searchedWorkers = computed(() => {
+          return workers.value.filter(w => {
+            const matchHub = selectedHub.value === 'ALL' || w.hub === selectedHub.value;
+            const term = rosterSearch.value.trim().toLowerCase();
+            const matchQuery = !term || 
+              w.nameTh.toLowerCase().includes(term) || 
+              w.nameEn.toLowerCase().includes(term) || 
+              w.id.toLowerCase().includes(term) ||
+              w.hub.toLowerCase().includes(term);
+            return matchHub && matchQuery;
+          });
+        });
+
+        const expiringSoonCount = computed(() => {
+          let count = 0;
+          filteredWorkers.value.forEach(w => {
+            Object.values(w.docs).forEach(d => {
+              if (getDocStatusKey(d.expiryDate, d.uploaded) === 'EXPIRING') count++;
+            });
+          });
+          return count;
+        });
+
+        const expiredCount = computed(() => {
+          let count = 0;
+          filteredWorkers.value.forEach(w => {
+            Object.values(w.docs).forEach(d => {
+              if (getDocStatusKey(d.expiryDate, d.uploaded) === 'EXPIRED') count++;
+            });
+          });
+          return count;
+        });
+
+        const pendingUploadCount = computed(() => {
+          let count = 0;
+          filteredWorkers.value.forEach(w => {
+            Object.values(w.docs).forEach(d => {
+              if (getDocStatusKey(d.expiryDate, d.uploaded) === 'PENDING') count++;
+            });
+          });
+          return count;
+        });
+
+        const activeWorkerForDoc = computed(() => {
+          return workers.value.find(w => w.id === selectedWorkerIdForDoc.value) || workers.value[0];
+        });
+
+        // Form actions
+        const openRegistrationModal = () => {
+          currentTab.value = 'register';
+        };
+
+        const resetRegistrationForm = () => {
+          formWorker.value = {
+            id: '',
+            nameTh: '',
+            nameEn: '',
+            gender: 'ชาย',
+            dob: '',
+            hub: selectedHub.value !== 'ALL' ? selectedHub.value : 'HUB-A',
+            visaType: 'MOU',
+            outstandingBalance: 0
+          };
+          currentTab.value = 'dashboard';
+        };
+
+        const saveWorkerForm = () => {
+          const newWorker = {
+            ...formWorker.value,
+            docs: {
+              passport: { docNumber: '', expiryDate: '', uploaded: false, fileName: '' },
+              visa: { docNumber: '', expiryDate: '', uploaded: false, fileName: '' },
+              workPermit: { docNumber: '', expiryDate: '', uploaded: false, fileName: '' },
+              report90: { docNumber: '', expiryDate: '', uploaded: false, fileName: '' }
+            }
+          };
+
+          // Check duplicate ID
+          const existingIdx = workers.value.findIndex(w => w.id === newWorker.id);
+          if (existingIdx >= 0) {
+            workers.value[existingIdx] = { ...workers.value[existingIdx], ...formWorker.value };
+          } else {
+            workers.value.unshift(newWorker);
+          }
+
+          saveToLocalStorage();
+          selectedWorkerIdForDoc.value = newWorker.id;
+          currentTab.value = 'documents';
+        };
+
+        const handleFileUpload = (event, docKey) => {
+          const file = event.target.files[0];
+          if (file && activeWorkerForDoc.value) {
+            activeWorkerForDoc.value.docs[docKey].fileName = file.name;
+            activeWorkerForDoc.value.docs[docKey].uploaded = true;
+            if (!activeWorkerForDoc.value.docs[docKey].expiryDate) {
+              // Default to 1 year ahead if empty
+              activeWorkerForDoc.value.docs[docKey].expiryDate = '2027-09-08';
+            }
+            saveToLocalStorage();
+          }
+        };
+
+        const openWorkerDetails = (worker) => {
+          selectedWorkerModal.value = worker;
+          triggerLucide();
+        };
+
+        const manageWorkerDocs = (workerId) => {
+          selectedWorkerIdForDoc.value = workerId;
+          selectedWorkerModal.value = null;
+          currentTab.value = 'documents';
+        };
+
+        const getDocName = (key) => {
+          const names = {
+            passport: 'Passport (หนังสือเดินทาง)',
+            visa: 'Visa (วีซ่า)',
+            workPermit: 'Work Permit (ใบอนุญาตทำงาน)',
+            report90: '90-Day Report (รายงานตัว 90 วัน)'
+          };
+          return names[key] || key;
+        };
+
+        watch(currentTab, () => {
+          triggerLucide();
+        });
+
+        onMounted(() => {
+          loadFromLocalStorage();
+          triggerLucide();
+        });
+
+        return {
+          currentTab,
+          selectedHub,
+          dashboardSearch,
+          rosterSearch,
+          showNotification,
+          formWorker,
+          workers,
+          filteredWorkers,
+          searchedWorkers,
+          expiringSoonCount,
+          expiredCount,
+          pendingUploadCount,
+          selectedWorkerIdForDoc,
+          activeWorkerForDoc,
+          selectedWorkerModal,
+          openRegistrationModal,
+          resetRegistrationForm,
+          saveWorkerForm,
+          handleFileUpload,
+          openWorkerDetails,
+          manageWorkerDocs,
+          saveToLocalStorage,
+          getStatusBadgeClass,
+          getDocStatusLabel,
+          getOverallStatusBadge,
+          getDotColor,
+          getDocName
+        };
+      }
+    }).mount('#app');
+  </script>
+</body>
+</html>
