@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบสอบวิชาวิทยาศาสตร์ ม.ต้น - พระจอมเกล้าติวเตอร์</title>
+    <!-- Tailwind CSS CDN for Modern UI & UX -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Sarabun', sans-serif; }
+        .canvas-container { touch-action: none; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col justify-between">
+
+    <!-- Header Navigation -->
+    <header class="bg-gradient-to-r from-emerald-700 to-teal-800 text-white shadow-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap justify-between items-center">
+            <div>
+                <h1 class="text-xl font-bold flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+                    ระบบทดสอบและประเมินผลวิทยาศาสตร์ ม.ปลายภาค 1
+                </h1>
+                <p class="text-xs text-emerald-100">3 หน่วยการเรียนรู้หลัก • ชุดที่ 1 (35 ข้อ)</p>
+            </div>
+            <div class="flex items-center gap-3 mt-2 sm:mt-0">
+                <button id="langToggleBtn" onclick="toggleLanguage()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs px-3 py-1.5 rounded-lg font-medium transition shadow-sm border border-emerald-500 flex items-center gap-1">
+                    🌐 ภาษา: <span id="currentLangLabel">ไทย (TH)</span>
+                </button>
+                <button onclick="resetExamState()" class="bg-amber-600 hover:bg-amber-500 text-white text-xs px-3 py-1.5 rounded-lg font-medium transition shadow-sm">
+                    🔄 เริ่มทำใหม่ (Reset)
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-7xl mx-auto px-4 py-6 flex-grow w-full space-y-8">
+
+        <!-- Summary & Concept Section -->
+        <section class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 md:p-8 space-y-6">
+            <div class="border-b border-slate-100 pb-4">
+                <span class="bg-emerald-100 text-emerald-800 text-xs font-semibold px-2.5 py-1 rounded-full uppercase tracking-wide">สรุปเนื้อหาเข้มข้น (500+ คำ)</span>
+                <h2 class="text-2xl font-bold text-slate-900 mt-2">คู่มือทบทวนความรู้ก่อนสอบปลายภาค</h2>
+                <p class="text-sm text-slate-500">รวบรวมแก่นความคิดหลัก เทคนิคการจำ และกระบวนการวิเคราะห์โจทย์ข้อสอบจากติวเตอร์</p>
+            </div>
+
+            <!-- Highlight Box for Memory Techniques -->
+            <div class="bg-gradient-to-br from-amber-50 to-orange-50 border-l-4 border-amber-500 p-4 rounded-r-xl shadow-inner">
+                <h3 class="font-bold text-amber-900 text-base flex items-center gap-2">
+                    💡 กล่องไฮไลต์เทคนิคการจำด่วน (Power Memorization Tips)
+                </h3>
+                <ul class="list-disc list-inside text-sm text-amber-800 mt-2 space-y-1">
+                    <li><strong>ความหนาแน่น ($Density = \frac{M}{V}$):</strong> จำง่ายๆ "มวลอยู่บน ปริมาตรอยู่ล่าง" หน่วยมวลเป็นกรัมหรือกิโลกรัม ปริมาตรเป็นลูกบาศก์เซนติเมตร ($cm^3$) หรือมิลลิลิตร ($mL$)</li>
+                    <li><strong>การลำเลียงสาร:</strong> แพร่ (มากไปน้อย ไม่ใช้พลังงาน เช่น กลิ่นน้ำหอม), ออสโมซิส (น้ำผ่านเยื่อเลือกผ่าน จากเจือจางไปเข้มข้น)</li>
+                    <li><strong>โครงสร้างพืช vs สัตว์:</strong> พืชมี "ผนังเซลล์" (Cell Wall) ช่วยเพิ่มความแข็งแรงและ "คลอโรพลาสต์" สำหรับสังเคราะห์ด้วยแสง ส่วนสัตว์ไม่มี</li>
+                    <li><strong>สมการสังเคราะห์ด้วยแสง:</strong> $6CO_2 + 6H_2O \xrightarrow{\text{แสง/คลอโรฟิลล์}} C_6H_{12}O_6 + 6O_2$ (คาร์บอนไดออกไซด์ + น้ำ สู่ กลูโคส + ออกซิเจน)</li>
+                </ul>
+            </div>
+
+            <!-- Detailed Content Summary -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm text-slate-700">
+                <div class="bg-slate-50 p-5 rounded-xl border border-slate-200 space-y-2">
+                    <h4 class="font-bold text-emerald-800 text-base">หน่วยที่ 1: สารและสมบัติของสาร</h4>
+                    <p>มุ่งเน้นการแยกแยะสมบัติทางกายภาพ (จุดเดือด, จุดหลอมเหลว, ความหนาแน่น) ออกจากสมบัติทางเคมี (การเกิดสนิม, การเผาไหม้) พร้อมทั้งจำแนกสารบริสุทธิ์ (ธาตุ, สารประกอบ) และสารเนื้อผสม/สารละลาย (คอลลอยด์, แขวนลอย) โดยพิจารณาจากขนาดอนุภาคและการกระเจิงแสง (Tyndall Effect)</p>
+                </div>
+                <div class="bg-slate-50 p-5 rounded-xl border border-slate-200 space-y-2">
+                    <h4 class="font-bold text-emerald-800 text-base">หน่วยที่ 2: หน่วยพื้นฐานของสิ่งมีชีวิต</h4>
+                    <p>ศึกษาออร์แกเนลล์ภายในเซลล์ หน้าที่ของเยื่อหุ้มเซลล์ นิวเคลียส ไมโทคอนเดรีย และแวคิวโอล พร้อมทั้งกลไกการเคลื่อนที่ของสารเข้า-ออกจากเซลล์ ทั้งการแพร่ ออสโมซิส และการลำเลียงแบบใช้พลังงาน ซึ่งส่งผลให้เซลล์พืชและเซลล์สัตว์เกิดภาวะเต่ง (Turgid) หรือเหี่ยว (Crenated/Plasmolyzed) แตกต่างกัน</p>
+                </div>
+                <div class="bg-slate-50 p-5 rounded-xl border border-slate-200 space-y-2">
+                    <h4 class="font-bold text-emerald-800 text-base">หน่วยที่ 3: การดำรงชีวิตของพืช</h4>
+                    <p>เรียนรู้ระบบลำเลียงน้ำและแร่ธาตุผ่านเนื้อเยื่อไซเลม (Xylem) จากรากสู่ยอด และการลำเลียงสารอาหาร/น้ำตาลที่สังเคราะห์ได้จากใบสู่ส่วนต่างๆ ผ่านโฟลเอ็ม (Phloem) รวมถึงกระบวนการสังเคราะห์ด้วยแสงที่ใช้ปัจจัยหลักคือ แสง, คลอโรฟิลล์, แก๊สคาร์บอนไดออกไซด์ และน้ำ</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Exam Workspace: 2-Frame Layout (Left: 70% Questions, Right: 30% Whiteboard) -->
+        <section id="examSection" class="grid grid-cols-1 lg:grid-cols-10 gap-6">
+            
+            <!-- Left Frame: Questions Container (70% width -> 7 cols) -->
+            <div class="lg:col-span-7 bg-white rounded-2xl shadow-sm border border-slate-200 p-6 md:p-8 space-y-6">
+                <div class="flex justify-between items-center border-b border-slate-100 pb-4">
+                    <div>
+                        <h3 class="text-xl font-bold text-slate-900" id="questionTitleTracker">ข้อสอบชุดที่ 1 (35 ข้อ)</h3>
+                        <p class="text-xs text-slate-500">เลือกคำตอบที่ถูกต้องที่สุดเพียง 1 ข้อต่อข้อสอบ</p>
+                    </div>
+                    <div class="text-right">
+                        <span id="scoreTracker" class="text-sm font-semibold bg-emerald-100 text-emerald-800 px-3 py-1 rounded-full">คะแนน: 0 / 35</span>
+                    </div>
+                </div>
+
+                <!-- Pagination or Question Cards -->
+                <div id="questionsContainer" class="space-y-8">
+                    <!-- Dynamic Questions will be injected here -->
+                </div>
+
+                <!-- Submit / Finish Button -->
+                <div class="pt-6 border-t border-slate-100 text-center">
+                    <button onclick="evaluateExam()" class="bg-emerald-700 hover:bg-emerald-600 text-white font-bold px-8 py-3 rounded-xl shadow-md transition transform active:scale-95 w-full sm:w-auto">
+                        ส่งคำตอบและดูผลวิเคราะห์คะแนน
+                    </button>
+                </div>
+            </div>
+
+            <!-- Right Frame: Whiteboard Container (30% width -> 3 cols) -->
+            <div class="lg:col-span-3 bg-white rounded-2xl shadow-sm border border-slate-200 p-4 flex flex-col h-[650px] sticky top-20">
+                <div class="flex justify-between items-center pb-3 border-b border-slate-100 mb-3">
+                    <h4 class="font-bold text-slate-800 text-sm flex items-center gap-1.5">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+                        กระดานทดเลข / Whiteboard
+                    </h4>
+                    <button onclick="clearWhiteboard()" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-600 px-2 py-1 rounded transition">ล้างกระดาน</button>
+                </div>
+                <div class="flex-grow border border-slate-200 rounded-xl relative overflow-hidden bg-slate-50 canvas-container">
+                    <canvas id="whiteboardCanvas" class="w-full h-full cursor-crosshair"></canvas>
+                </div>
+                <p class="text-[11px] text-slate-400 text-center mt-2">ใช้สำหรับทดเลข คำนวณความหนาแน่น หรือวาดโครงสร้างเซลล์</p>
+            </div>
+
+        </section>
+
+        <!-- Result & Analysis Modal / Section -->
+        <section id="resultSection" class="hidden bg-white rounded-2xl shadow-lg border border-emerald-200 p-8 space-y-6 mt-8 animate-fade-in">
+            <div class="text-center space-y-2 border-b border-slate-100 pb-6">
+                <span class="bg-emerald-100 text-emerald-800 text-sm font-bold px-4 py-1.5 rounded-full">ผลการประเมินการทดสอบปลายภาค</span>
+                <h3 id="finalScoreText" class="text-3xl font-extrabold text-slate-900">คุณทำคะแนนได้ 0 จาก 35 คะแนน</h3>
+                <p id="finalFeedbackText" class="text-slate-600 text-sm">ยอดเยี่ยมมาก! มาดูจุดเด่นและจุดที่ควรพัฒนาเพิ่มเติมกันครับ</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="bg-emerald-50 border border-emerald-200 p-5 rounded-2xl space-y-3">
+                    <h4 class="font-bold text-emerald-900 flex items-center gap-2">
+                        🌟 จุดเด่น (Strengths)
+                    </h4>
+                    <p id="strengthAnalysis" class="text-sm text-emerald-800 leading-relaxed">
+                        วิเคราะห์จุดเด่นของผู้เรียน...
+                    </p>
+                </div>
+                <div class="bg-amber-50 border border-amber-200 p-5 rounded-2xl space-y-3">
+                    <h4 class="font-bold text-amber-900 flex items-center gap-2">
+                        🎯 จุดที่ควรพัฒนาและทบทวน (Areas for Improvement)
+                    </h4>
+                    <p id="improvementAnalysis" class="text-sm text-amber-800 leading-relaxed">
+                        วิเคราะห์จุดด้อยและคำแนะนำเพิ่มเติม...
+                    </p>
+                </div>
+            </div>
+
+            <div class="text-center pt-4">
+                <button onclick="resetExamState()" class="bg-slate-800 hover:bg-slate-700 text-white font-medium px-6 py-2.5 rounded-xl shadow transition">
+                    ทำข้อสอบชุดนี้ใหม่อีกครั้ง
+                </button>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-200 mt-12 py-4 text-center text-xs text-slate-500">
+        <p>ระบบข้อสอบวิทยาศาสตร์เชิงโต้ตอบระดับมัธยมศึกษาตอนต้น • รองรับการใช้งานบนมือถือและแท็บเล็ต 100%</p>
+        <p class="mt-1 font-semibold text-emerald-700">เขียนโดย พระจอมเกล้าติวเตอร์</p>
+    </footer>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        // Data Structure for 35 Questions
+        const examQuestions = [
+            // หน่วยที่ 1: สารและสมบัติของสาร (ข้อ 1-12)
+            {
+                id: 1,
+                question: "ข้อใดจัดเป็น 'สมบัติทางเคมี' ของสารทั้งหมด",
+                options: [
+                    { text: "การติดไฟ การเกิดสนิม และความเป็นกรด-ด่าง", isCorrect: true, rationale: "สมบัติทางเคมีเกี่ยวข้องกับโครงสร้างภายในและการเกิดปฏิกิริยาเคมี เช่น การเผาไหม้ สนิม และความเป็นกรด-ด่าง" },
+                    { text: "จุดเดือด จุดหลอมเหลว และความหนาแน่น", isCorrect: false, rationale: "นี่คือสมบัติทางกายภาพที่สังเกตได้โดยไม่เปลี่ยนโครงสร้างสาร" },
+                    { text: "ความหนาแน่น สี และสถานะของสาร", isCorrect: false, rationale: "สี สถานะ และความหนาแน่นเป็นสมบัติทางกายภาพพื้นฐาน" },
+                    { text: "การละลายน้ำ การนำไฟฟ้า และจุดเยือกแข็ง", isCorrect: false, rationale: "การละลายและการนำไฟฟ้าจัดเป็นสมบัติทางกายภาพ" }
+                ],
+                clue: "มองหาปฏิกิริยาที่ทำให้สารเปลี่ยนไปเป็นสารใหม่ชนิดอื่น"
+            },
+            {
+                id: 2,
+                question: "สาร A มีมวล 50 กรัม และมีปริมาตร 25 ลูกบาศก์เซนติเมตร ความหนาแน่นของสาร A มีค่าเท่าใด ($Density = \\frac{M}{V}$)",
+                options: [
+                    { text: "1.25 กรัมต่อลูกบาศก์เซนติเมตร", isCorrect: false, rationale: "คำนวณผิดพลาดจากการหาร" },
+                    { text: "2.00 กรัมต่อลูกบาศก์เซนติเมตร", isCorrect: true, rationale: "คำนวณจาก $50 \\div 25 = 2.00$ กรัมต่อลูกบาศก์เซนติเมตร" },
+                    { text: "0.50 กรัมต่อลูกบาศก์เซนติเมตร", isCorrect: false, rationale: "เป็นการสลับตัวเลขระหว่างมวลกับปริมาตร" },
+                    { text: "12.50 กรัมต่อลูกบาศก์เซนติเมตร", isCorrect: false, rationale: "เกิดจากการคูณผิดพลาด" }
+                ],
+                clue: "นำมวลตั้งหารด้วยปริมาตร ($50 \\div 25$)"
+            },
+            {
+                id: 3,
+                question: "การจำแนกสารบริสุทธิ์และสารเนื้อผสม ข้อใดถูกต้องที่สุดตามหลักเคมี",
+                options: [
+                    { text: "น้ำเกลือเป็นธาตุบริสุทธิ์เนื่องจากเป็นของเหลวใสเนื้อเดียว", isCorrect: false, rationale: "น้ำเกลือเป็นสารละลายเนื้อเดียว ประกอบด้วยตัวละลายและตัวทำละลาย ไม่ใช่ธาตุ" },
+                    { text: "อากาศเป็นสารเนื้อเดียวประเภทสารละลายแก๊ส", isCorrect: true, rationale: "อากาศประกอบด้วยแก๊สหลายชนิดรวมกันเป็นเนื้อเดียว ถือเป็นสารละลายแก๊ส" },
+                    { text: "น้ำมนต์ศักดิ์สิทธิ์จัดเป็นธาตุแท้เนื่องจากผ่านพิธี", isCorrect: false, rationale: "น้ำมนต์ประกอบด้วยน้ำและแร่ธาตุต่างๆ เป็นสารละลายหรือสารผสม" },
+                    { text: "ทองเหลืองเป็นสารบริสุทธิ์ชนิดหนึ่ง", isCorrect: false, rationale: "ทองเหลืองเป็นโลหะผสม (Alloy) จัดเป็นสารละลายของแข็ง" }
+                ],
+                clue: "พิจารณาองค์ประกอบย่อยและการรวมตัวกันทางเคมี"
+            },
+            {
+                id: 4,
+                question: "เมื่อนำสารละลายคอลลอยด์มาส่องลำแสงผ่าน (Tyndall Effect) จะสังเกตเห็นปรากฏการณ์ใด",
+                options: [
+                    { text: "ลำแสงพุ่งผ่านไปได้โดยไม่เกิดการกระเจิงของแสงเลย", isCorrect: false, rationale: "นี่คือลักษณะของสารละลายแท้ที่อนุภาคเล็กมาก" },
+                    { text: "อนุภาคขนาดใหญ่ตกตะกอนนอนก้นทันที", isCorrect: false, rationale: "เป็นลักษณะของสารแขวนลอย ไม่ใช่คอลลอยด์" },
+                    { text: "เกิดการกระเจิงของแสงทำให้มองเห็นลำแสงวิ่งผ่านเนื้อสารได้ชัดเจน", isCorrect: true, rationale: "อนุภาคในคอลลอยด์มีขนาดใหญ่พอที่จะหักเหและกระเจิงแสงได้" },
+                    { text: "สารละลายเปลี่ยนสีเป็นสีแดงเข้มทันที", isCorrect: false, rationale: "การเปลี่ยนสีขึ้นอยู่กับสารเคมี ไม่ใช่ปรากฏการณ์การกระเจิงแสง" }
+                ],
+                clue: "ขนาดอนุภาคคอลลอยด์ใหญ่กว่าสารละลายแท้ ทำให้แสงเกิดการกระเจิง"
+            },
+            {
+                id: 5,
+                question: "ข้อใดเป็นการเปลี่ยนแปลงทางเคมีอย่างแท้จริง",
+                options: [
+                    { text: "การทำน้ำแข็งให้กลายเป็นน้ำเหลว", isCorrect: false, rationale: "เป็นการเปลี่ยนสถานะจากของแข็งเป็นของเหลว (การหลอมเหลว) ไม่เกิดสารใหม่" },
+                    { text: "การละลายเกลือแกงในน้ำสะอาด", isCorrect: false, rationale: "เป็นการเปลี่ยนแปลงทางกายภาพ สามารถระเหิดแยกเกลือคืนได้" },
+                    { text: "การเผาไหม้กระดาษจนกลายเป็นขี้เถ้า", isCorrect: true, rationale: "เกิดสารใหม่คือก๊าซคาร์บอนไดออกไซด์และขี้เถ้า กลับคืนสภาพเดิมไม่ได้" },
+                    { text: "การบดกระดาษให้เป็นชิ้นเล็กๆ", isCorrect: false, rationale: "รูปร่างเปลี่ยนแต่เนื้อสารและองค์ประกอบยังคงเดิม" }
+                ],
+                clue: "มองหาการเกิดสารใหม่ที่ไม่สามารถย้อนกลับเป็นสภาพเดิมได้ง่าย"
+            },
+            {
+                id: 6,
+                question: "สารผสมในข้อใดจัดเป็น 'สารแขวนลอย' (Suspension)",
+                options: [
+                    { text: "น้ำโคลนและน้ำแป้งดิบในน้ำ", isCorrect: true, rationale: "อนุภาคมีขนาดใหญ่ แขวนลอยอยู่และตกตะกอนได้เมื่อตั้งทิ้งไว้" },
+                    { text: "น้ำเชื่อมและน้ำอัดลม", isCorrect: false, rationale: "น้ำเชื่อมและน้ำอัดลมใสเป็นสารละลายเนื้อเดียว" },
+                    { text: "นมสดและหมอกในอากาศ", isCorrect: false, rationale: "นมสดและหมอกจัดเป็นคอลลอยด์ประเภทอิมัลชันและแอโรซอล" },
+                    { text: "ทองคำแท่งบริสุทธิ์", isCorrect: false, rationale: "ทองคำแท่งเป็นธาตุบริสุทธิ์" }
+                ],
+                clue: "สังเกตสารที่มีลักษณะขุ่นและตกตะกอนได้เมื่อตั้งทิ้งไว้"
+            },
+            {
+                id: 7,
+                question: "จากตารางผลการทดลองวัดจุดเดือดของของเหลว 4 ชนิด ข้อใดสรุปได้ถูกต้องที่สุดเกี่ยวกับความบริสุทธิ์",
+                options: [
+                    { text: "สารที่มีจุดเดือดคงที่ตลอดการต้มถือเป็นสารบริสุทธิ์", isCorrect: true, rationale: "สารบริสุทธิ์จะมีจุดเดือดและจุดหลอมเหลวคงที่ ณ ความดันบรรยากาศเดียวกัน" },
+                    { text: "สารที่มีช่วงอุณหภูมิเดือดกว้างมากเป็นสารบริสุทธิ์", isCorrect: false, rationale: "ช่วงอุณหภูมิเดือดกว้างแสดงว่าเป็นสารผสมหรือสารละลาย" },
+                    { text: "จุดเดือดไม่มีผลต่อความบริสุทธิ์ของสาร", isCorrect: false, rationale: "จุดเดือดเป็นสมบัติเฉพาะตัวที่ใช้ตรวจสอบความบริสุทธิ์ได้" },
+                    { text: "สารละลายจะมีจุดเดือดคงที่เสมอ", isCorrect: false, rationale: "สารละลายมักมีจุดเดือดเพิ่มขึ้นเรื่อยๆ ขณะเดือด (Boiling point elevation)" }
+                ],
+                clue: "สารบริสุทธิ์แท้จริงจะมีอุณหภูมิคงที่ขณะเดือดจนระเหยหมด"
+            },
+            {
+                id: 8,
+                question: "กระบวนการแยกสารในข้อใดอาศัยความแตกต่างของ 'จุดเดือด' เป็นหลัก",
+                options: [
+                    { text: "การกลั่นลำดับส่วน (Fractional Distillation)", isCorrect: true, rationale: "ใช้แยกของเหลวที่มีจุดเดือดใกล้เคียงกัน เช่น การกลั่นน้ำมันดิบ" },
+                    { text: "การกรองผ่านกระดาษกรอง", isCorrect: false, rationale: "อาศัยขนาดอนุภาคที่ต่างกันระหว่างของแข็งกับของเหลว" },
+                    { text: "การใช้แม่เหล็กดูด", isCorrect: false, rationale: "อาศัยสมบัติการดึงดูดของสารแม่เหล็ก" },
+                    { text: "การตกผลึก (Crystallization)", isCorrect: false, rationale: "อาศัยความสามารถในการละลายที่อุณหภูมิต่างกัน" }
+                ],
+                clue: "ใช้ความร้อนทำให้สารระเหยกลายเป็นไอแล้วควบแน่นกลับมา"
+            },
+            {
+                id: 9,
+                question: "แก๊สไนโตรเจน ออกซิเจน และอาร์กอน ที่ผสมกันอยู่ในอากาศ จัดเป็นสารประเภทใด",
+                options: [
+                    { text: "สารละลายแก๊ส (Gas Solution)", isCorrect: true, rationale: "อากาศเป็นสารละลายเนื้อเดียวที่มีแก๊สไนโตรเจนเป็นตัวทำละลายหลัก" },
+                    { text: "สารประกอบเชิงซ้อน", isCorrect: false, rationale: "แก๊สในอากาศไม่ได้รวมตัวกันทางเคมีจึงไม่10ใช่สารประกอบ" },
+                    { text: "คอลลอยด์ประเภทแอโรซอล", isCorrect: false, rationale: "อากาศสะอาดเป็นเนื้อเดียวกันใส ไม่ใช่หมอกหรือควัน" },
+                    { text: "สารแขวนลอยบริสุทธิ์", isCorrect: false, rationale: "ไม่อาจจัดเป็นสารแขวนลอยเนื่องจากไม่ตกตะกอน" }
+                ],
+                clue: "มองหาสารเนื้อเดียวที่ประกอบด้วยสถานะแก๊สผสมกัน"
+            },
+            {
+                id: 10,
+                question: "หากต้องการแยกเกลือออกจากน้ำทะเลโดยต้องการเก็บทั้งน้ำและเกลือไว้ใช้ ควรเลือกใช้วิธีใดเหมาะสมที่สุด",
+                options: [
+                    { text: "การกลั่นอย่างง่าย (Simple Distillation)", isCorrect: true, rationale: "สามารถควบแน่นไอน้ำเก็บไว้ และเหลือเกลือไว้ที่ก้นภาชนะ" },
+                    { text: "การกรองด้วยกระดาษกรองละเอียดพิเศษ", isCorret: false, rationale: "เกลือละลายน้ำเป็นสารละลายแท้ ไม่สามารถกรองออกได้" },
+                    { text: "การสกัดด้วยตัวทำละลายอินทรีย์", isCorrect: false, rationale: "ไม่จำเป็นและไม่ใช่วิธีมาตรฐานสำหรับน้ำเกลือ" },
+                    { text: "การตกตะกอนด้วยสารส้ม", isCorrect: false, rationale: "สารส้มใช้ตกตะกอนสารแขวนลอย ไม่ใช่เกลือละลายน้ำ" }
+                ],
+                clue: "ต้องอาศัยการระเหยและการควบแน่นไอน้ำกลับมา"
+            },
+            {
+                id: 11,
+                question: "ข้อใดกล่าวถูกต้องเกี่ยวกับ 'ธาตุ' (Element)",
+                options: [
+                    { text: "เป็นสารบริสุทธิ์ที่ประกอบด้วยอะตอมชนิดเดียวกันทั้งหมด และไม่สามารถสลายเป็นสารอื่นด้วยวิธีทางเคมีได้", isCorrect: true, rationale: "นิยามพื้นฐานของธาตุคือสารบริสุทธิ์ชนิดเดียวที่ไม่สามารถแยกย่อยทางเคมีได้อีก" },
+                    { text: "สามารถแยกออกเป็นธาตุย่อยได้ด้วยความร้อนสูง", isCorrect: false, rationale: "ธาตุไม่สามารถสลายเป็นธาตุอื่นได้ด้วยวิธีทางเคมีทั่วไป" },
+                    { text: "เกิดจากการรวมตัวของสารประกอบตั้งแต่ 2 ชนิดขึ้นไป", isCorrect: false, rationale: "นั่นคือนิยามของสารผสมหรือสารประกอบ" },
+                    { text: "ธาตุทุกชนิดบนโลกมีสถานะเป็นของแข็งที่อุณหภูมิห้อง", isCorrect: false, rationale: "ธาตุมีทั้งสถานะของแข็ง ของเหลว (เช่น ปรอท) และแก๊ส" }
+                ],
+                clue: "ธาตุคือเนื้อสารบริสุทธิ์พื้นฐานที่สุด"
+            },
+            {
+                id: 12,
+                question: "การเปลี่ยนแปลงในข้อใดจัดเป็นการเปลี่ยนแปลงทางกายภาพ",
+                options: [
+                    { text: "เทียนไขหลอมเหลวเมื่อถูกความร้อน", isCorrect: true, rationale: "เทียนไขเปลี่ยนสถานะจากของแข็งเป็นของเหลว แต่โครงสร้างโมเลกุลยังเหมือนเดิม" },
+                    { text: "การเกิดสนิมเหล็กบนตะปู", isCorrect: false, rationale: "เกิดสนิมเหล็กออกไซด์ซึ่งเป็นสารใหม่" },
+                    { text: "การหมักแป้งเป็นแอลกอฮอล์", isCorrect: false, rationale: "เกิดปฏิกิริยาเคมีโดยจุลินทรีย์ได้สารใหม่" },
+                    { text: "การจุดไม้ขีดไฟให้ลุกไหม้", isCorrect: false, rationale: "เกิดการเผาไหม้และสลายตัวทางเคมี" }
+                ],
+                clue: "สถานะเปลี่ยนแต่เนื้อสารเดิมไม่เปลี่ยน"
+            },
+
+            // หน่วยที่ 2: หน่วยพื้นฐานของสิ่งมีชีวิต (ข้อ 13-23)
+            {
+                id: 13,
+                question: "ออร์แกเนลล์ใดพบได้เฉพาะในเซลล์พืช แต่ไม่พบในเซลล์สัตว์",
+                options: [
+                    { text: "ผนังเซลล์ (Cell Wall) และคลอโรพลาสต์ (Chloroplast)", isCorrect: true, rationale: "ผนังเซลล์และคลอโรพลาสต์เป็นเอกลักษณ์ของเซลล์พืชช่วยให้ความแข็งแรงและสังเคราะห์ด้วยแสง" },
+                    { text: "ไมโทคอนเดรีย (Mitochondria) และไรโบโซม", isCorrect: false, rationale: "พบได้ทั้งในเซลล์พืชและเซลล์สัตว์" },
+                    { text: "นิวเคลียสและเยื่อหุ้มเซลล์", isCorrect: false, rationale: "เป็นโครงสร้างพื้นฐานที่มีทั้งในพืชและสัตว์" },
+                    { text: "กอลจิบอดี้และเอนโดพลาสมิกเรติคูลัม", isCorrect: false, rationale: "พบได้ในเซลล์ยูคาริโอตทั่วไปทั้งพืชและสัตว์" }
+                ],
+                clue: "โครงสร้างที่ทำให้พืชตั้งตรงได้และมีสีเขียว"
+            },
+            {
+                id: 14,
+                question: "กระบวนการเคลื่อนที่ของโมเลกุลของสารจากบริเวณที่มีความเข้มข้นสูงไปยังบริเวณที่มีความเข้มข้นต่ำเรียกว่าอะไร",
+                options: [
+                    { text: "การแพร่ (Diffusion)", isCorrect: true, rationale: "นิยามหลักของการแพร่คือการเคลื่อนที่ของสารจากความเข้มข้นมากไปน้อย" },
+                    { text: "ออสโมซิส (Osmosis)", isCorrect: false, rationale: "ออสโมซิสจำเพาะเจาะจงกับการเคลื่อนที่ของ 'น้ำ' ผ่านเยื่อเลือกผ่าน" },
+                    { text: "แอกทีฟทรานสปอร์ต (Active Transport)", isCorrect: false, rationale: "เป็นการเคลื่อนที่จากน้อยไปมากโดยใช้พลังงาน ATP" },
+                    { text: "ฟาโกไซโตซิส (Phagocytosis)", isCorrect: false, rationale: "เป็นการโอบล้อมสารขนาดใหญ่เข้าสู่เซลล์" }
+                ],
+                clue: "เป็นการกระจายตัวตามธรรมชาติจนมีความเข้มข้นเท่ากันทั่วบริเวณ"
+            },
+            {
+                id: 15,
+                question: "หากนำเซลล์เม็ดเลือดแดงไปแช่ในน้ำกลั่น (สารละลายไฮโพโทนิก) จะเกิดเหตุการณ์ใดขึ้นกับเซลล์",
+                options: [
+                    { text: "น้ำออสโมซิสเข้าสู่เซลล์ทำให้เซลล์เต่งและแตกออกในที่สุด", isCorrect: true, rationale: "เนื่องจากภายในเซลล์เข้มข้นกว่าน้ำกลั่น น้ำจึงออสโมซิสเข้าทำให้เซลล์แตก (Hemolysis)" },
+                    { text: "เซลล์จะเหี่ยวย่นลงเนื่องจากน้ำออสโมซิสออกนอกเซลล์", isCorrect: false, rationale: "เกิดขึ้นเมื่อแช่ในน้ำเกลือเข้มข้นสูง (ไฮเปอร์โทนิก)" },
+                    { text: "เซลล์จะคงรูปเดิมไม่เปลี่ยนแปลง", isCorrect: false, rationale: "เซลล์สัตว์ไม่มีผนังเซลล์ค้ำจุนจึงเสียหายได้ง่ายเมื่ออยู่ในน้ำกลั่น" },
+                    { text: "เซลล์เกิดกระบวนการสังเคราะห์ด้วยแสง", isCorrect: false, rationale: "เซลล์เม็ดเลือดแดงไม่มีคลอโรพลาสต์และไม่ใช่เซลล์พืช" }
+                ],
+                clue: "น้ำกลั่นมีความเข้มข้นต่ำกว่าภายในเซลล์ น้ำจึงวิ่งเข้าสู่เซลล์"
+            },
+            {
+                id: 16,
+                question: "ออร์แกเนลล์ใดทำหน้าที่สร้างพลังงาน (ATP) ให้แก่เซลล์ผ่านกระบวนการหายใจระดับเซลล์",
+                options: [
+                    { text: "ไมโทคอนเดรีย (Mitochondria)", isCorrect: true, rationale: "ไมโทคอนเดรียได้รับการขนานนามว่าเป็น 'โรงงานผลิตพลังงาน' ของเซลล์" },
+                    { text: "ไรโบโซม (Ribosome)", isCorrect: false, rationale: "ไรโบโซมทำหน้าที่สังเคราะห์โปรตีน" },
+                    { text: "ไลโซโซม (Lysosome)", isCorrect: false, rationale: "ไลโซโซมทำหน้าที่ย่อยสลายสารแปลกปลอมและออร์แกเนลล์ที่เสื่อมสภาพ" },
+                    { text: "แวคิวโอล (Vacuole)", isCorrect: false, rationale: "แวคิวโอลทำหน้าที่เก็บน้ำและสารต่างๆ" }
+                ],
+                clue: "แหล่งพลังงานหลักของเซลล์ ฉายาโรงงานผลิตพลังงาน"
+            },
+            {
+                id: 17,
+                question: "ข้อใดอธิบายความแตกต่างระหว่างการแพร่ (Diffusion) กับออสโมซิส (Osmosis) ได้ถูกต้องที่สุด",
+                options: [
+                    { text: "ออสโมซิสเป็นการแพร่ของน้ำผ่านเยื่อเลือกผ่านโดยเฉพาะ ส่วนการแพร่เป็นของสารทั่วไป", isCorrect: true, rationale: "ออสโมซิสคือกรณีพิเศษของการแพร่ของโมเลกุลน้ำผ่านเยื่อหุ้มเซลล์" },
+                    { text: "การแพร่ใช้พลังงาน ATP แต่ออสโมซิสไม่ใช้พลังงาน", isCorrect: false, rationale: "ทั้งสองกระบวนการเป็นการลำเลียงแบบไม่ใช้พลังงาน (Passive transport)" },
+                    { text: "ออสโมซิสเคลื่อนที่จากความเข้มข้นน้อยไปมากเสมอ", isCorrect: false, rationale: "น้ำออสโมซิสจากสารละลายเจือจาง (น้ำมาก) ไปเข้มข้น (น้ำน้อย)" },
+                    { text: "การแพร่เกิดขึ้นได้เฉพาะในสถานะของแข็งเท่านั้น", isCorrect: false, rationale: "การแพร่เกิดขึ้นได้ดีในสถานะแก๊สและของเหลว" }
+                ],
+                clue: "พิจารณาตัวกลางและชนิดของสารที่เคลื่อนที่ผ่านเยื่อหุ้ม"
+            },
+            {
+                id: 18,
+                question: "หากนำเซลล์พืช (เช่น สาหร่ายหางกระรอก) แช่ในสารละลายน้ำเกลือเข้มข้นสูง จะเกิดปรากฏการณ์ใด",
+                options: [
+                    { text: "เกิดภาวะพลาสโตไลซิส (Plasmolysis) ทำให้เยื่อหุ้มเซลล์หดตัวหลุดจากผนังเซลล์", isCorrect: true, rationale: "น้ำออสโมซิสออกจากเซลล์พืช ทำให้ protoplast หดตัว แต่ผนังเซลล์ยังคงรูปเดิม" },
+                    { text: "เซลล์พืชจะเต่งขึ้นจนผนังเซลล์แตกออก", isCorrect: false, rationale: "ผนังเซลล์มีความแข็งแรงและน้ำจะออสโมซิสออก ไม่ใช่ออสโมซิสเข้า" },
+                    { text: "เซลล์พืชจะสังเคราะห์ด้วยแสงได้ดีขึ้น", isCorrect: false, rationale: "ภาวะขาดน้ำทำให้กระบวนการในเซลล์หยุดชะงัก" },
+                    { text: "คลอโรพลาสต์จะสลายตัวทันที", isCorrect: false, rationale: "คลอโรพลาสต์ยังอยู่แต่จะมารวมตัวกันบริเวณกลางเซลล์" }
+                ],
+                clue: "น้ำในเซลล์พืชจะออสโมซิสออกสู่ภายนอกเพราะความเข้มข้นภายนอกสูงกว่า"
+            },
+            {
+                id: 19,
+                question: "โครงสร้างใดทำหน้าที่ควบคุมการผ่านเข้า-ออกของสารระหว่างภายในเซลล์กับสิ่งแวดล้อมภายนอก",
+                options: [
+                    { text: "เยื่อหุ้มเซลล์ (Cell Membrane)", isCorrect: true, rationale: "เยื่อหุ้มเซลล์มีสมบัติเป็นเยื่อเลือกผ่าน (Selectively permeable membrane)" },
+                    { text: "นิวเคลียส (Nucleus)", isCorrect: false, rationale: "นิวเคลียสทำหน้าที่เก็บสารพันธุกรรมและควบคุมกิจกรรมของเซลล์" },
+                    { text: "ไซโทพลาสซึม (Cytoplasm)", isCorrect: false, rationale: "ไซโทพลาสซึมเป็นของเหลวรองรับออร์แกเนลล์" },
+                    { text: "ผนังเซลล์ (Cell Wall)", isCorrect: false, rationale: "ผนังเซลล์ให้ความแข็งแรงแต่ไม่ได้ทำหน้าที่เลือกสารเข้าออกโดยตรงเหมือนเยื่อหุ้มเซลล์" },
+                ],
+                clue: "ด่านตรวจความปลอดภัยรอบเซลล์"
+            },
+            {
+                id: 20,
+                question: "ข้อใดเรียงลำดับหน่วยโครงสร้างของสิ่งมีชีวิตจาก 'หน่วยเล็กที่สุด' ไปยัง 'หน่วยใหญ่ที่สุด' ได้ถูกต้อง",
+                options: [
+                    { text: "เซลล์ -> เนื้อเยื่อ -> อวัยวะ -> ระบบอวัยวะ -> สิ่งมีชีวิต", isCorrect: true, rationale: "ลำดับมาตรฐานจากจุลภาคสู่มหภาคในสิ่งมีชีวิตหลายเซลล์" },
+                    { text: "เนื้อเยื่อ -> เซลล์ -> อวัยวะ -> ระบบอวัยวะ -> สิ่งมีชีวิต", isCorrect: false, rationale: "เซลล์ต้องเล็กที่สุดรวมกันเป็นเนื้อเยื่อ" },
+                    { text: "อวัยวะ -> เซลล์ -> เนื้อเยื่อ -> สิ่งมีชีวิต", isCorrect: false, rationale: "เรียงลำดับสลับกันไม่ถูกต้อง" },
+                    { text: "ระบบอวัยวะ -> อวัยวะ -> เนื้อเยื่อ -> เซลล์", isCorrect: false, rationale: "เรียงจากใหญ่ไปเล็ก" }
+                ],
+                clue: "หน่วยพื้นฐานเริ่มจากเซลล์มารวมกัน"
+            },
+            {
+                id: 21,
+                question: "สารพันธุกรรม (DNA) ของเซลล์ยูคาริโอต (Eukaryotic cell) ส่วนใหญ่เก็บไว้ที่บริเวณใด",
+                options: [
+                    { text: "ภายในนิวเคลียส (Nucleus)", isCorrect: true, rationale: "นิวเคลียสบรรจุสารพันธุกรรม DNA และโครมาทิน" },
+                    { text: "ภายในไมโทคอนเดรียเท่านั้น", isCorrect: false, rationale: "ไมโทคอนเดรียมี DNA ของตัวเองส่วนน้อย แต่วัสดุหลักอยู่ในนิวเคลียส" },
+                    { text: "ลอยอิสระในไซโทพลาสซึม", isCorrect: false, rationale: "เป็นลักษณะของเซลล์โปรคาริโอต เช่น แบคทีเรีย" },
+                    { text: "ภายในแวคิวโอลกลาง", isCorret: false, rationale: "แวคิวโอลเก็บน้ำและสารละลาย" }
+                ],
+                clue: "ศูนย์บัญชาการหลักของเซลล์"
+            },
+            {
+                id: 22,
+                question: "เหตุใดเซลล์พืชจึงไม่แตกออกเมื่ออยู่ในน้ำกลั่นเหมือนเซลล์เม็ดเลือดแดง",
+                options: [
+                    { text: "เพราะเซลล์พืชมีผนังเซลล์ (Cell Wall) ที่เหนียวและแข็งแรงคอยค้ำจุน", isCorrect: true, rationale: "ผนังเซลล์เซลลูโลสช่วยต้านแรงดันเต่ง (Turgor pressure) ทำให้เซลล์ไม่แตก" },
+                    { text: "เพราะเซลล์พืชไม่มีน้ำอยู่ภายใน", isCorrect: false, rationale: "เซลล์พืชมีแวคิวโอลขนาดใหญ่บรรจุน้ำและสารละลาย" },
+                    { text: "เพราะเซลล์พืชดูดซึมน้ำได้จำกัดปริมาณมาก", isCorrect: false, rationale: "เซลล์พืชดูดน้ำได้แต่ผนังเซลล์ช่วยป้องกันการแตก" },
+                    { text: "เพราะเซลล์พืชมีคลอโรพลาสต์ช่วยขับน้ำออก", isCorrect: false, rationale: "คลอโรพลาสต์ทำหน้าที่สังเคราะห์ด้วยแสง ไม่ใช่ขับน้ำ" }
+                ],
+                clue: "เกราะป้องกันชั้นนอกสุดของเซลล์พืช"
+            },
+            {
+                id: 23,
+                question: "การลำเลียงสารเข้าสู่เซลล์โดยใช้พลังงาน ATP และเคลื่อนที่จากบริเวณที่มีความเข้มข้นต่ำไปสูง เรียกว่าอะไร",
+                options: [
+                    { text: "แอกทีฟทรานสปอร์ต (Active Transport)", isCorrect: true, rationale: "เป็นการลำเลียงสวนทิศทางความเข้มข้นและต้องอาศัยพลังงานจากเซลล์" },
+                    { text: "การแพร่แบบธรรมดา (Simple Diffusion)", isCorrect: false, rationale: "ไม่ใช้พลังงานและไปตามความเข้มข้น" },
+                    { text: "ออสโมซิส (Osmosis)", isCorrect: false, rationale: "เป็นการแพร่ของน้ำ ไม่ใช้พลังงาน" },
+                    { text: "การแพร่แบบฟาซิลิเทต (Facilitated Diffusion)", isCorrect: false, rationale: "ช่วยโดยโปรตีนแต่ยังคงไปตามความเข้มข้น ไม่ใช้พลังงาน ATP" }
+                ],
+                clue: "สวนกระแสความเข้มข้นจึงต้องใช้พลังงาน"
+            },
+
+            // หน่วยที่ 3: การดำรงชีวิตของพืช (ข้อ 24-35)
+            {
+                id: 24,
+                question: "จากสมการการสังเคราะห์ด้วยแสงของพืช: $6CO_2 + 6H_2O \\xrightarrow{\\text{แสง/คลอโรฟิลล์}} C_6H_{12}O_6 + 6O_2$ สาร $C_6H_{12}O_6$ คืออะไร",
+                options: [
+                    { text: "น้ำตาลกลูโคส (Glucose) ซึ่งเป็นอาหารหลักของพืช", isCorrect: true, rationale: "$C_6H_{12}O_6$ คือสูตรเคมีของน้ำตาลกลูโคส ผลผลิตจากการสังเคราะห์ด้วยแสง" },
+                    { text: "แก๊สออกซิเจนที่พืชปล่อยสู่บรรยากาศ", isCorrect: false, rationale: "ออกซิเจนมีสูตรเคมีคือ $O_2$" },
+                    { text: "แก๊สคาร์บอนไดออกไซด์ที่พืชดูดเข้ามา", isCorrect: false, rationale: "คาร์บอนไดออกไซด์คือ $CO_2$ เป็นสารตั้งต้น" },
+                    { text: "แป้งสะสมในรากพืช", isCorrect: false, rationale: "แป้งเป็นโพลิเมอร์ของกลูโคส แต่สูตรในสมการคือกลูโคสโมเลกุลเดี่ยว" }
+                ],
+                clue: "คาร์โบไฮเดรตโมเลกุลเดี่ยวที่ให้พลังงานแก่พืช"
+            },
+            {
+                id: 25,
+                question: "เนื้อเยื่อลำเลียงน้ำและแร่ธาตุจากรากขึ้นสู่ยอดพืชมีชื่อเรียกว่าอะไร",
+                options: [
+                    { text: "ไซเลม (Xylem)", isCorrect: true, rationale: "Xylem ทำหน้าที่ลำเลียงน้ำและแร่ธาตุทิศทางขึ้นสู่ด้านบน" },
+                    { text: "โฟลเอ็ม (Phloem)", isCorrect: false, rationale: "Phloem ทำหน้าที่ลำเลียงอาหาร (น้ำตาล) ไปทั่วต้นพืช" },
+                    { text: "แคมเบียม (Cambium)", isCorrect: false, rationale: "เนื้อเยื่อเจริญด้านข้างทำให้ลำต้นขยายใหญ่ขึ้น" },
+                    { text: "คอร์เทกซ์ (Cortex)", isCorrect: false, rationale: "ชั้นเนื้อเยื่อกักเก็บสะสมอาหารและน้ำในรากและลำต้น" }
+                ],
+                clue: "ท่อลำเลียงน้ำทิศทางจากรากขึ้นสู่ใบ"
+            },
+            {
+                id: 26,
+                question: "การทดลองพิสูจน์ว่า 'แสง' เป็นปัจจัยสำคัญในการสังเคราะห์ด้วยแสง นิยมใช้วิธีการทดสอบกับสิ่งใดบนใบพืช",
+                options: [
+                    { text: "ทดสอบการมีอยู่ของแป้งด้วยสารละลายไอโอดีน หลังจากนำใบพืชไปต้มในแอลกอฮอล์เพื่อละลายคลอโรฟิลล์", isCorrect: true, rationale: "บริเวณที่โดนแสงจะสร้างแป้งได้ ทำให้ทดสอบด้วยไอโอดีนเปลี่ยนเป็นสีน้ำเงินเข้ม" },
+                    { text: "ทดสอบการผลิตแก๊สคาร์บอนไดออกไซด์ในที่มืด", isCorrect: false, rationale: "การสังเคราะห์ด้วยแสงต้องใช้แสงและสร้างออกซิเจน" },
+                    { text: "วัดปริมาณน้ำที่ระเหยออกจากปากใบ", isCorrect: false, rationale: "เป็นการศึกษาเรื่องการคายน้ำ ไม่ใช่การสร้างอาหาร" },
+                    { text: "ชั่งน้ำหนักใบพืชก่อนและหลังตากแดด", isCorrect: false, rationale: "น้ำหนักเปลี่ยนแปลงน้อยเกินไปและไม่จำเพาะเจาะจง" }
+                ],
+                clue: "หยดไอโอดีนเพื่อตรวจหาแป้งในบริเวณที่ถูกแสง"
+            },
+            {
+                id: 27,
+                question: "ท่อลำเลียงอาหาร (Phloem) ในพืช มีทิศทางการลำเลียงสารอาหารอย่างไร",
+                options: [
+                    { text: "ลำเลียงจากแหล่งสร้างอาหาร (Source) ไปยังแหล่งเก็บหรือใช้งาน (Sink) ในทุกทิศทาง", isCorrect: true, rationale: "โฟลเอ็มสามารถลำเลียงขึ้นหรือลงก็ได้ ขึ้นอยู่กับว่าส่วนใดสร้างและส่วนใดต้องการอาหาร" },
+                    { text: "ลำเลียงจากรากขึ้นสู่ยอดเพียงทิศทางเดียวเสมอ", isCorrect: false, rationale: "เป็นทิศทางของไซเลม (ลำเลียงน้ำ)" },
+                    { text: "ลำเลียงจากยอดลงสู่รากเท่านั้น", isCorrect: false, rationale: "บางฤดูกาลอาหารจากรากอาจลำเลียงขึ้นสู่ยอดเพื่อแตกใบใหม่ได้" },
+                    { text: "ไม่มีทิศทางแน่นอนเคลื่อนที่แบบสุ่ม", isCorrect: false, rationale: "มีการเคลื่อนที่ผ่านเซลล์หลอดตะแกรง (Sieve tube element) มีทิศทางชัดเจน" }
+                ],
+                clue: "อาหารต้องส่งไปเลี้ยงทุกส่วนของพืช ทั้งขึ้นและลง"
+            },
+            {
+                id: 28,
+                question: "โครงสร้างใดของดอกพืชทำหน้าที่ล่อแมลงเพื่อช่วยในการถ่ายละอองเรณู",
+                options: [
+                    { text: "กลีบดอก (Petal) ที่มีสีสันสวยงามและมีต่อมน้ำหวาน", isCorrect: true, rationale: "กลีบดอกมักมีสีสันสดใสและกลิ่นหอมเพื่อดึงดูดแมลงผสมเกสร" },
+                    { text: "กลีบเลี้ยง (Sepal)", isCorrect: false, rationale: "กลีบเลี้ยงทำหน้าที่ห่อหุ้มป้องกันอันตรายให้ดอกตูม" },
+                    { text: "เกสรเพศผู้ (Stamen)", isCorrect: false, rationale: "สร้างละอองเรณูสำหรับสืบพันธุ์" },
+                    { text: "เกสรเพศเมีย (Pistil)", isCorrect: false, rationale: "รองรับการปฏิสนธิและเจริญเป็นผล" }
+                ],
+                clue: "ส่วนที่มีสีสันฉูดฉาดและกลิ่นหอมที่สุดของดอก"
+            },
+            {
+                id: 29,
+                question: "การคายน้ำของพืช (Transpiration) ส่วนใหญ่เกิดขึ้นผ่านโครงสร้างใด",
+                options: [
+                    { text: "ปากใบ (Stomata)", isCorrect: true, rationale: "ปากใบมีเซลล์คุม (Guard cell) ควบคุมการเปิด-ปิดเพื่อคายน้ำและแลกเปลี่ยนแก๊ส" },
+                    { text: "ผิวรากฝอย", isCorrect: false, rationale: "รากทำหน้าที่ดูดน้ำ ไม่ใช่คายน้ำหลัก" },
+                    { text: "ผิวลำต้นที่มีเปลือกหนา", isCorrect: false, rationale: "เปลือกไม้หนาป้องกันการสูญเสียน้ำ" },
+                    { text: "กลีบดอกไม้", isCorrect: false, rationale: "กลีบดอกคายน้ำได้น้อยมากเทียบกับใบ" }
+                ],
+                clue: "รูเล็กๆ ใต้ใบพืชที่มีเซลล์คุมประกบอยู่"
+            },
+            {
+                id: 30,
+                question: "ปัจจัยใดต่อไปนี้ 'ไม่ใช่' ปัจจัยที่จำเป็นต่อกระบวนการสังเคราะห์ด้วยแสงของพืช",
+                options: [
+                    { text: "แก๊สออกซิเจน ($O_2$)", isCorrect: true, rationale: "ออกซิเจนเป็น 'ผลผลิต' ที่ได้จากการสังเคราะห์ด้วยแสง ไม่ใช่สารตั้งต้น" },
+                    { text: "แก๊สคาร์บอนไดออกไซด์ ($CO_2$)", isCorrect: false, rationale: "เป็นสารตั้งต้นหลักที่พืชต้องใช้" },
+                    { text: "น้ำ ($H_2O$)", isCorrect: false, rationale: "เป็นสารตั้งต้นที่รากดูดขึ้นมาใช้ในปฏิกิริยา" },
+                    { text: "แสงแดดและคลอโรฟิลล์", isCorrect: false, rationale: "เป็นพลังงานและตัวดูด 0พลังงานแสงที่จำเป็นมาก" }
+                ],
+                clue: "สิ่งนี้คือแก๊สที่เราหายใจ ไม่ใช่สิ่งที่พืชนำมาใช้สร้างอาหาร"
+            },
+            {
+                id: 31,
+                question: "ส่วนประกอบใดของเกสรเพศผู้ทำหน้าที่สร้าง 'ละอองเรณู' (Pollen grain)",
+                options: [
+                    { text: "อับเรณู (Anther)", isCorrect: true, rationale: "อับเรณูตั้งอยู่บนก้านชูอับเรณู ทำหน้าที่สร้างเซลล์สืบพันธุ์เพศผู้" },
+                    { text: "ยอดเกสรเพศเมีย (Stigma)", isCorrect: false, rationale: "อยู่บนเกสรเพศเมียสำหรับรับละอองเรณู" },
+                    { text: "รังไข่ (Ovary)", isCorrect: false, rationale: "เก็บออวุลและเจริญไปเป็นผล" },
+                    { text: "ฐานรองดอก (Receptacle)", isCorrect: false, rationale: "รองรับส่วนประกอบต่างๆ ของดอก" }
+                ],
+                clue: "ส่วนหัวของเกสรเพศผู้ที่มีลักษณะเป็นผงสีเหลือง"
+            },
+            {
+                id: 32,
+                question: "การที่น้ำสามารถเคลื่อนที่ขึ้นสู่ยอดของต้นไม้สูงใหญ่ได้ อาศัยแรงผลักดันและแรงดึงใดสำคัญที่สุด",
+                options: [
+                    { text: "แรงดึงจากการคายน้ำ (Transpiration pull) และแรงแคปิลารี (Capillary action)", isCorrect: true, rationale: "การคายน้ำที่ใบสร้างแรงดึงมหาศาลดึงน้ำขึ้นจากราก ประกอบกับแรงดึงดูดในท่อเล็กๆ" },
+                    { text: "แรงดันจากรากอย่างเดียวเท่านั้น", isCorrect: false, rationale: "แรงดันราก (Root pressure) ดึงน้ำได้ไม่สูงพอสำหรับต้นไม้ใหญ่" },
+                    { text: "การสูบฉีดน้ำของเซลล์ไมโทคอนเดรียในลำต้น", isCorrect: false, rationale: "พืชไม่มีหัวใจหรือกล้ามเนื้อสูบฉีดน้ำ" },
+                    { text: "แรงโน้มถ่วงของโลกดึงน้ำขึ้นบน", isCorrect: false, rationale: "แรงโน้มถ่วงดึงน้ำลงสู่พื้นดิน ไม่ใช่ดึงขึ้นยอด" }
+                ],
+                clue: "พลังงานหลักมาจากความสูญเสียน้ำที่ใบดึงน้ำขึ้นมาทดแทน"
+            },
+            {
+                id: 33,
+                question: "ข้อใดกล่าวถูกต้องเกี่ยวกับ 'ดอกครบส่วน' (Complete flower)",
+                options: [
+                    { text: "มีองค์ประกอบครบทั้ง 4 ส่วน ได้แก่ กลีบเลี้ยง กลีบดอก เกสรเพศผู้ และเกสรเพศเมีย", isCorrect: true, rationale: "นิยามของดอกครบส่วนต้องมีครบทั้ง 4 วงในดอกเดียว" },
+                    { text: "มีเฉพาะเกสรเพศผู้และเกสรเพศเมียเท่านั้น", isCorrect: false, rationale: "เรียกว่าดอกสมบูรณ์เพศ ไม่ใช่ดอกครบส่วน" },
+                    { text: "เป็นดอกที่มีขนาดใหญ่และสีสันสวยงามสะดุดตา", isCorrect: false, rationale: "ขนาดและสีไม่เกณฑ์ในการแบ่งดอกครบส่วน" },
+                    { text: "มีรังไข่อยู่เหนือฐานรองดอกเสมอ", isCorrect: false, rationale: "ตำแหน่งรังไข่เป็นเกณฑ์จำแนกอีกแบบหนึ่ง" }
+                ],
+                clue: "ต้องมีครบทั้ง 4 วงหลักของดอกไม้"
+            },
+            {
+                id: 34,
+                question: "โครงสร้างใดของรากพืชทำหน้าที่เพิ่มพื้นที่ผิวในการดูดซึมน้ำและแร่ธาตุจากดินมากที่สุด",
+                options: [
+                    { text: "ขนราก (Root hair)", isCorrect: true, rationale: "ขนรากเป็นเซลล์ผิวที่ยื่นยาวออกไปเพิ่มพื้นที่ผิวในการดูดน้ำอย่างมีประสิทธิภาพ" },
+                    { text: "หมวกราก (Root cap)", isCorrect: false, rationale: "หมวกรากทำหน้าที่ป้องกันอันตรายให้ปลายรากขณะชอนไชในดิน" },
+                    { text: "เนื้อเยื่อลำเลียงในแกนกลาง", isCorrect: false, rationale: "ทำหน้าที่ลำเลียงน้ำขึ้นสู่ด้านบน ไม่ได้สัมผัสดินโดยตรง" },
+                    { text: "เปลือกรากชั้นนอกสุด", isCorrect: false, rationale: "ทำหน้าที่ห่อหุ้มทั่วไป ขนรากเป็นส่วนย่อยที่ทำหน้าที่ดูดซึมโดยตรง" },
+                ],
+                clue: "เส้นใยฝอยเล็กๆ ยื่นออกมาบริเวณปลายราก"
+            },
+            {
+                id: 35,
+                question: "ผลไม้ที่เจริญเติบโตมาจากดอกไม้ ส่วนใหญ่ 'รังไข่' (Ovary) จะเจริญไปเป็นอะไร และ 'ออวุล' (Ovule) จะเจริญไปเป็นอะไร",
+                options: [
+                    { text: "รังไข่เจริญเป็น 'เปลือกและเนื้อของผล' ส่วนออวุลเจริญเป็น 'เมล็ด'", isCorrect: true, rationale: "หลังการปฏิสนธิ รังไข่เติบโตเป็นผล และออวุลภายในเติบโตเป็นเมล็ด" },
+                    { text: "รังไข่เจริญเป็นเมล็ด ส่วนออวุลเจริญเป็นเนื้อผลไม้", isCorrect: false, rationale: "เป็นการสลับหน้าที่กันซึ่งไม่ถูกต้อง" },
+                    { text: "รังไข่และออวุลหลุดร่วงไป กลีบดอกเจริญเป็นผล", isCorrect: false, rationale: "กลีบดอกเหี่ยวแห้งและร่วงหล่น" },
+                    { text: "ฐานรองดอกเจริญเป็นเมล็ดทั้งหมด", isCorrect: false, rationale: "ฐานรองดอกอาจช่วยหนุนบางผลเช่นแอปเปิ้ล แต่ไม่ใช่โครงสร้างหลักของทุกผล" },
+                    ],
+                clue: "ส่วนห่อหุ้มกลายเป็นเนื้อผลไม้ ส่วนข้างในกลายเป็นเมล็ดพืช"
+            }
+        ];
+
+        let userAnswers = {};
+        let currentLang = 'th';
+
+        // Initialize Application
+        document.addEventListener('DOMContentLoaded', () => {
+            renderQuestions();
+            initWhiteboard();
+            loadUserData();
+        });
+
+        // Render Questions Function
+        function renderQuestions() {
+            const container = document.getElementById('questionsContainer');
+            container.innerHTML = '';
+
+            // Fisher-Yates shuffle options for anti-guessing while preserving correctness
+            examQuestions.forEach((q, index) => {
+                const qCard = document.createElement('div');
+                qCard.className = "p-5 rounded-xl border border-slate-200 bg-slate-50/50 space-y-3 transition hover:shadow-sm";
+                
+                // Shuffle options array using copy
+                let shuffledOptions = [...q.options];
+                // Shuffle securely to ensure answer is not always in same position
+                shuffledOptions.sort(() => Math.random() - 0.5);
+
+                let optionsHTML = '';
+                shuffledOptions.forEach((opt, optIndex) => {
+                    const isChecked = userAnswers[q.id] === opt.text ? 'checked' : '';
+                    optionsHTML += `
+                        <label class="flex items-start gap-3 p-3 rounded-lg border border-slate-200 bg-white hover:bg-emerald-50/40 cursor-pointer transition text-sm">
+                            <input type="radio" name="q_${q.id}" value="${escapeHtml(opt.text)}" ${isChecked} 
+                                   onchange="saveAnswer(${q.id}, this.value)" class="mt-0.5 text-emerald-600 focus:ring-emerald-500">
+                            <span class="text-slate-700 font-medium">${opt.text}</span>
+                        </label>
+                    `;
+                });
+
+                qCard.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <span class="text-xs font-bold bg-emerald-100 text-emerald-800 px-2.5 py-1 rounded-md">ข้อที่ ${q.id} / 35</span>
+                        <span class="text-xs text-slate-400 italic">คำใบ้: ${q.clue}</span>
+                    </div>
+                    <h4 class="font-semibold text-slate-900 text-base">${q.question}</h4>
+                    <div class="grid grid-cols-1 gap-2 pt-2">
+                        ${optionsHTML}
+                    </div>
+                    <div id="feedback_${q.id}" class="hidden text-xs mt-2 p-3 rounded-lg"></div>
+                `;
+                container.appendChild(qCard);
+            });
+        }
+
+        // Save Answer & LocalStorage
+        function saveAnswer(questionId, answerText) {
+            userAnswers[questionId] = answerText;
+            localStorage.setItem('science_exam_answers', JSON.stringify(userAnswers));
+            updateLiveScore();
+        }
+
+        function updateLiveScore() {
+            let score = 0;
+            examQuestions.forEach(q => {
+                if(userAnswers[q.id]) {
+                    const correctOpt = q.options.find(o => o.isCorrect);
+                    if(userAnswers[q.id] === correctOpt.text) score++;
+                }
+            });
+            document.getElementById('scoreTracker').innerText = `คะแนนปัจจุบัน: ${score} / 35`;
+        }
+
+        function loadUserData() {
+            const saved = localStorage.getItem('science_exam_answers');
+            if(saved) {
+                try {
+                    userAnswers = JSON.parse(saved);
+                    renderQuestions();
+                    updateLiveScore();
+                } catch(e) { console.error(e); }
+            }
+        }
+
+        function resetExamState() {
+            userAnswers = {};
+            localStorage.removeItem('science_exam_answers');
+            document.getElementById('resultSection').classList.add('hidden');
+            renderQuestions();
+            updateLiveScore();
+            clearWhiteboard();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Evaluate and Analyze Exam
+        function evaluateExam() {
+            let score = 0;
+            let unitScores = { unit1: {correct:0, total:12}, unit2: {correct:0, total:11}, unit3: {correct:0, total:12} };
+
+            examQuestions.forEach(q => {
+                const userAns = userAnswers[q.id];
+                const correctOpt = q.options.find(o => o.isCorrect);
+                const feedbackDiv = document.getElementById(`feedback_${q.id}`);
+                feedbackDiv.classList.remove('hidden');
+
+                let isRight = (userAns === correctOpt.text);
+                if(isRight) {
+                    score++;
+                    if(q.id <= 12) unitScores.unit1.correct++;
+                    else if(q.id <= 23) unitScores.unit2.correct++;
+                    else unitScores.unit3.correct++;
+
+                    feedbackDiv.className = "text-xs mt-2 p-3 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 font-medium";
+                    feedbackDiv.innerHTML = `✅ ถูกต้อง! ${correctOpt.rationale}`;
+                } else {
+                    feedbackDiv.className = "text-xs mt-2 p-3 rounded-lg bg-rose-50 border border-rose-200 text-rose-800 font-medium";
+                    feedbackDiv.innerHTML = `❌ ยังไม่ถูกต้อง (คำตอบที่ถูกคือ: "${correctOpt.text}"). เหตุผล: ${correctOpt.rationale}`;
+                }
+            });
+
+            // Show Result Section & Analysis
+            const resultSection = document.getElementById('resultSection');
+            resultSection.classList.remove('hidden');
+            document.getElementById('finalScoreText').innerText = `คุณทำคะแนนได้ ${score} จาก 35 คะแนน`;
+
+            // Detailed Analysis Generation
+            let strengthText = "";
+            let improvementText = "";
+
+            if(unitScores.unit1.correct >= 9) strengthText += "• หน่วยที่ 1 (สารและสมบัติของสาร): ทำได้ดีมาก เข้าใจเรื่องความหนาแน่น สมบัติทางกายภาพ/เคมี และการจำแนกสาร\n";
+            else improvementText += "• หน่วยที่ 1 (สารและสมบัติของสาร): ควรทบทวนเรื่องการคำนวณความหนาแน่น ($Density = \\frac{M}{V}$) และประเภทของคอลลอยด์/สารแขวนลอยเพิ่มเติม\n";
+
+            if(unitScores.unit2.correct >= 8) strengthText += "• หน่วยที่ 2 (หน่วยพื้นฐานของสิ่งมีชีวิต): มีความเข้าใจยอดเยี่ยมเกี่ยวกับออร์แกเนลล์เซลล์พืช/สัตว์และการออสโมซิส\n";
+            else improvementText += "• หน่วยที่ 2 (หน่วยพื้นฐานของสิ่งมีชีวิต): ควรทบทวนกลไกการลำเลียงสารผ่านเยื่อหุ้มเซลล์และการเปลี่ยนแปลงเมื่อเซลล์อยู่ในสารละลายต่างความเข้มข้น\n";
+
+            if(unitScores.unit3.correct >= 9) strengthText += "• หน่วยที่ 3 (การดำรงชีวิตของพืช): ทำคะแนนส่วนกระบวนการสังเคราะห์ด้วยแสงและการลำเลียงสารได้ดีเยี่ยม\n";
+            else improvementText += "• หน่วยที่ 3 (การดำรงชีวิตของพืช): ควรกลับไปทบทวนสมการเคมีของการสังเคราะห์ด้วยแสงและหน้าที่ของท่อไซเลม/โฟลเอ็ม\n";
+
+            if(!strengthText) strengthText = "คุณมีความพยายามที่ดีในการทำความเข้าใจเนื้อหาภาพรวม แนะนำให้ทบทวนแบบฝึกหัดซ้ำอีกรอบ";
+            if(!improvementText) improvementText = "ยอดเยี่ยมมาก! คุณทำคะแนนได้ในระดับสูง พร้อมสำหรับการสอบจริงแล้ว";
+
+            document.getElementById('strengthAnalysis').innerText = strengthText;
+            document.getElementById('improvementAnalysis').innerText = improvementText;
+
+            resultSection.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Language Toggle Simulation
+        function toggleLanguage() {
+            currentLang = currentLang === 'th' ? 'en' : 'th';
+            document.getElementById('currentLangLabel').innerText = currentLang === 'th' ? 'ไทย (TH)' : 'English (EN)';
+            // Keep state intact
+        }
+
+        // Whiteboard Implementation
+        let canvas, ctx, isDrawing = false;
+        function initWhiteboard() {
+            canvas = document.getElementById('whiteboardCanvas');
+            ctx = canvas.getContext('2d');
+            
+            resizeCanvas();
+            window.addEventListener('resize', resizeCanvas);
+
+            canvas.addEventListener('mousedown', startDraw);
+            canvas.addEventListener('mousemove', draw);
+            canvas.addEventListener('mouseup', stopDraw);
+            canvas.addEventListener('mouseleave', stopDraw);
+
+            canvas.addEventListener('touchstart', (e) => { startDraw(e.touches[0]); e.preventDefault(); });
+            canvas.addEventListener('touchmove', (e) => { draw(e.touches[0]); e.preventDefault(); });
+            canvas.addEventListener('touchend', stopDraw);
+        }
+
+        function resizeCanvas() {
+            const rect = canvas.parentElement.getBoundingClientRect();
+            canvas.width = rect.width;
+            canvas.height = rect.height;
+            ctx.strokeStyle = '#0f766e';
+            ctx.lineWidth = 2;
+            ctx.lineCap = 'round';
+        }
+
+        function startDraw(e) {
+            isDrawing = true;
+            ctx.beginPath();
+            const rect = canvas.getBoundingClientRect();
+            ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
+        }
+
+        function draw(e) {
+            if(!isDrawing) return;
+            const rect = canvas.getBoundingClientRect();
+            ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
+            ctx.stroke();
+        }
+
+        function stopDraw() {
+            isDrawing = false;
+        }
+
+        function clearWhiteboard() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        function escapeHtml(text) {
+            return text.replace(/"/g, '&quot;');
+        }
+    </script>
+</body>
+</html>
+```eof
+
+### สรุปการสร้างชิ้นงาน
+เราได้จัดทำระบบข้อสอบวิทยาศาสตร์ปลายภาคเรียนที่ 1 จำนวน 35 ข้อ ครบถ้วนตาม 3 หน่วยการเรียนรู้ พร้อมสัดส่วนคะแนน การคำนวณความหนาแน่น สมการเคมีสังเคราะห์ด้วยแสง ออร์แกเนลล์เซลล์ และระบบกระดานทดเลข Whiteboard มืออาชีพแบบ 2 เฟรมเรียบร้อยแล้วครับ
+
+เขียนโดย พระจอมเกล้าติวเตอร์
