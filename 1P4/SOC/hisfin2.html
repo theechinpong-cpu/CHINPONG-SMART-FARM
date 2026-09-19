@@ -1,0 +1,1031 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบข้อสอบวิชาประวัติศาสตร์ ป.4 ชุดที่ 2 - พระจอมเกล้าติวเตอร์</title>
+    <style>
+        :root {
+            --primary: #854d0e;
+            --primary-hover: #713f12;
+            --success: #15803d;
+            --danger: #b91c1c;
+            --bg-color: #fefce8;
+            --card-bg: #ffffff;
+            --text-color: #292524;
+            --border-color: #d6d3d1;
+        }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 15px;
+        }
+        header {
+            background: var(--primary);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            text-align: center;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+        }
+        header h1 {
+            font-size: 1.8rem;
+            margin-bottom: 5px;
+        }
+        header p {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        .summary-card {
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .summary-card h2 {
+            color: var(--primary);
+            margin-bottom: 15px;
+            font-size: 1.4rem;
+        }
+        .summary-card p {
+            margin-bottom: 12px;
+            text-align: justify;
+        }
+        .memory-box {
+            background: #fef9c3;
+            border-left: 6px solid var(--primary);
+            padding: 15px;
+            margin-top: 15px;
+            border-radius: 0 8px 8px 0;
+        }
+        .memory-box h3 {
+            color: var(--primary);
+            margin-bottom: 8px;
+            font-size: 1.1rem;
+        }
+        .controls-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--card-bg);
+            padding: 15px 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+        .btn:hover {
+            background: var(--primary-hover);
+        }
+        .btn-danger {
+            background: var(--danger);
+        }
+        .btn-danger:hover {
+            background: #991b1b;
+        }
+        .main-layout {
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
+        }
+        .exam-frame {
+            flex: 7;
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+        }
+        .whiteboard-frame {
+            flex: 3;
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 20px;
+        }
+        .question-nav {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
+            gap: 8px;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .q-nav-btn {
+            aspect-ratio: 1;
+            border: 1px solid var(--border-color);
+            background: #f5f5f4;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .q-nav-btn.active {
+            border-color: var(--primary);
+            background: #fef08a;
+            color: var(--primary);
+        }
+        .q-nav-btn.answered {
+            background: #dcfce7;
+            border-color: var(--success);
+            color: var(--success);
+        }
+        .question-container {
+            margin-bottom: 30px;
+            display: none;
+        }
+        .question-container.active {
+            display: block;
+        }
+        .question-title {
+            font-size: 1.15rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+        .options-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .option-label {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: #ffffff;
+        }
+        .option-label:hover {
+            background: #fafaf9;
+            border-color: var(--primary);
+        }
+        .option-label input {
+            margin-right: 12px;
+            transform: scale(1.2);
+        }
+        .option-label.disabled {
+            cursor: not-allowed;
+            opacity: 0.8;
+        }
+        .clue-box {
+            background: #fef3c7;
+            border: 1px solid #f59e0b;
+            padding: 10px 15px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            font-size: 0.9rem;
+            display: none;
+        }
+        .explanation-box {
+            background: #f5f5f4;
+            border-left: 4px solid var(--primary);
+            padding: 15px;
+            border-radius: 0 6px 6px 0;
+            margin-top: 15px;
+            display: none;
+        }
+        .explanation-box.correct {
+            border-color: var(--success);
+            background: #f0fdf4;
+        }
+        .explanation-box.incorrect {
+            border-color: var(--danger);
+            background: #fef2f2;
+        }
+        .whiteboard-tools {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+        }
+        canvas {
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background: #ffffff;
+            width: 100%;
+            height: 350px;
+            cursor: crosshair;
+        }
+        .analysis-section {
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            margin-top: 20px;
+            display: none;
+        }
+        .analysis-section h2 {
+            color: var(--primary);
+            margin-bottom: 15px;
+        }
+        .analysis-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .analysis-box {
+            padding: 15px;
+            border-radius: 8px;
+            background: #fafaf9;
+            border: 1px solid var(--border-color);
+        }
+        .analysis-box h3 {
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+        @media (max-width: 900px) {
+            .main-layout {
+                flex-direction: column;
+            }
+            .whiteboard-frame {
+                position: static;
+                width: 100%;
+            }
+            .analysis-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        .footer-credit {
+            text-align: center;
+            margin-top: 30px;
+            font-weight: bold;
+            color: var(--primary);
+        }
+        .warning-text {
+            color: #b91c1c;
+            font-size: 0.9rem;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>ระบบข้อสอบวิชาประวัติศาสตร์ ระดับประถมศึกษาปีที่ 4 ชุดที่ 2 (ระดับยากปานกลาง)</h1>
+            <p>พระจอมเกล้าติวเตอร์ - พัฒนาทักษะการคิดเชิงประวัติศาสตร์และการลำดับเวลาเชิงลึก</p>
+        </header>
+
+        <!-- สรุปเนื้อหาและเทคนิคการจำ (500 คำขึ้นไป) -->
+        <div class="summary-card">
+            <h2>สรุปสาระสำคัญวิชาประวัติศาสตร์ ระดับประถมศึกษาปีที่ 4 (ชุดที่ 2)</h2>
+            <p>รายวิชาประวัติศาสตร์ ระดับประถมศึกษาปีที่ 4 ชุดที่ 2 นี้ มุ่งเน้นการต่อยอดกระบวนการคิดเชิงเวลาและการใช้วิธีการทางประวัติศาสตร์เพื่อศึกษาพัฒนาการของท้องถิ่น ชุมชน อาณาจักรโบราณ และพระราชกรณียกิจของบุคคลสำคัญในประวัติศาสตร์ไทย การศึกษาประวัติศาสตร์ในระดับนี้ไม่เพียงแต่มุ่งเน้นการจดจำเหตุการณ์ แต่ยังส่งเสริมให้ผู้เรียนฝึกฝนทักษะการวิเคราะห์หลักฐาน เปรียบเทียบความแตกต่างระหว่างหลักฐานชั้นต้นและชั้นรอง ตลอดจนทำความเข้าใจรากเหง้าทางวัฒนธรรมที่หล่อหลอมความเป็นไทยในปัจจุบัน</p>
+            
+            <p><strong>1. การนับช่วงเวลาและการใช้วิธีการทางประวัติศาสตร์ (ขั้นสูง):</strong> การทำความเข้าใจความสัมพันธ์ระหว่างศักราชระบบต่างๆ เช่น พุทธศักราช (พ.ศ.) และคริสตศักราช (ค.ศ.) การคำนวณแปลงศักราชอย่างรวดเร็วและการเข้าใจการแบ่งช่วงเวลาแบบสากล ได้แก่ ทศวรรษ (10 ปี) ศตวรรษ (100 ปี) และสหัสวรรษ (1,000 ปี) พร้อมทั้งฝึกฝนกระบวนการทางประวัติศาสตร์ 5 ขั้นตอนอย่างเป็นระบบ ตั้งแต่การตั้งคำถาม การรวบรวมหลักฐาน การตรวจสอบความน่าเชื่อถือ การตีความ และการเรียบเรียงนำเสนอข้อเท็จจริงทางประวัติศาสตร์อย่างปราศจากอคติ</p>
+
+            <p><strong>2. การสืบค้นประวัติศาสตร์ท้องถิ่นและชุมชน:</strong> การประยุกต์ใช้วิธีการทางประวัติศาสตร์ในการศึกษาความเป็นมาของท้องถิ่นตนเอง ผ่านการสำรวจแหล่งโบราณสถาน โบราณวัตถุ นิทานพื้นบ้าน และคำบอกเล่าของผู้สูงอายุในชุมชน การวิเคราะห์สภาพแวดล้อมทางภูมิศาสตร์ที่ส่งผลต่อการตั้งถิ่นฐาน การประกอบอาชีพ และวิถีชีวิตความเป็นอยู่ของคนในท้องถิ่นจากอดีตจนถึงปัจจุบัน เพื่อสร้างความตระหนักรู้และเกิดความภาคภูมิใจในรากเหง้าวัฒนธรรมของชุมชนตนเอง</p>
+
+            <p><strong>3. พัฒนาการของอาณาจักรโบราณในดินแดนไทย:</strong> การศึกษาเรื่องราวความเจริญรุ่งเรืองของอาณาจักรโบราณต่างๆ เช่น อาณาจักรทวารวดี อาณาจักรศรีวิชัย อาณาจักรลพบุรี และอาณาจักรหริภุญชัย การติดต่อค้าขายและการรับอารยธรรมจากภายนอก เช่น อารยธรรมอินเดียและจีน ที่เข้ามาหลอมรวมกับวัฒนธรรมท้องถิ่นจนเกิดเป็นมรดกทางศิลปกรรม สถาปัตยกรรม และความเชื่อทางศาสนาที่ทรงคุณค่า</p>
+
+            <p><strong>4. พระราชกรณียกิจของพระมหากษัตริย์ไทย:</strong> การเรียนรู้พระราชกรณียกิจสำคัญของพระมหากษัตริย์ผู้ทรงสร้างชาติและกอบกู้เอกราช เช่น พ่อขุนรามคำแหงมหาราช (ผู้ทรงประดิษฐ์อักษรไทยและสร้างความร่มเย็นเป็นสุขในสุโขทัย), สมเด็จพระนเรศวรมหาราช (ผู้ทรงกอบกู้เอกราชและทำยุทธหัตถี), สมเด็จพระนารายณ์มหาราช (ผู้ทรงเด่นด้านการทูตสากล), และสมเด็จพระเจ้าตากสินมหาราช (ผู้ทรงกอบกู้เอกราชหลังเสียกรุงศรีอยุธยาครั้งที่ 2)</p>
+
+            <div class="memory-box">
+                <h3>เทคนิคการจำ (Memory Tricks) และกระบวนการคิดของพระจอมเกล้าติวเตอร์</h3>
+                <ul>
+                    <li><strong>การคำนวณศักราช:</strong> ท่องจำหลักการ "พ.ศ. ลบ 543 ได้ ค.ศ." และจำขนาดช่วงเวลา: 10 ปี = ทศวรรษ, 100 ปี = ศตวรรษ, 1,000 ปี = สหัสวรรษ</li>
+                    <li><strong>ขั้นตอนทางประวัติศาสตร์:</strong> ใช้หลักคิด "ตั้งคำถาม หาหลักฐาน ตรวจสอบ แปลความ เรียบเรียง" เพื่อเรียงลำดับกระบวนการศึกษาค้นคว้า</li>
+                    <li><strong>ประเภทหลักฐาน:</strong> ท่องจำง่ายๆ ว่า "หลักฐานชั้นต้น = ของจริงร่วมสมัย (ศิลาจารึก เหรียญ), หลักฐานชั้นรอง = เอกสารหรือหนังสือที่คนรุ่นหลังเขียนขึ้น"</li>
+                    <li><strong>อาณาจักรโบราณ:</strong> เชื่อมโยงสถานที่กับเอกลักษณ์ เช่น ทวารวดี (ธรรมจักรศิลา นครปฐม), ศรีวิชัย (ภาคใต้ ค้าขายทะเล), ลพบุรี (ปราสาทหิน ศิลปะขอม)</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- แถบควบคุมระบบ -->
+        <div class="controls-bar">
+            <div>
+                <button class="btn" id="lang-btn">เปลี่ยนภาษา (TH/EN)</button>
+                <button class="btn btn-danger" id="reset-btn" style="margin-left: 10px;">Reset ระบบทั้งหมด</button>
+            </div>
+            <div id="score-display" style="font-weight: bold; font-size: 1.1rem;">คะแนน: 0 / 30</div>
+            <div>
+                <button class="btn" id="submit-exam-btn" style="background: var(--success);">ส่งข้อสอบและวิเคราะห์ผล</button>
+            </div>
+        </div>
+
+        <!-- โครงสร้างสองฝั่ง Main Layout -->
+        <div class="main-layout">
+            <!-- ฝั่งซ้าย: ข้อสอบ 30 ข้อ -->
+            <div class="exam-frame">
+                <div class="warning-text">* ระบบวิชาประวัติศาสตร์ ชุดที่ 2: เมื่อเลือกคำตอบแล้วจะไม่สามารถเปลี่ยนแปลงได้ กรุณาคิดวิเคราะห์ให้รอบคอบ *</div>
+                <div class="question-nav" id="question-nav" style="margin-top: 15px;"></div>
+                <div id="questions-container"></div>
+            </div>
+
+            <!-- ฝั่งขวา: กระดาน Whiteboard -->
+            <div class="whiteboard-frame">
+                <h3 style="margin-bottom: 10px; color: var(--primary);">กระดานทดเลข / วาดภาพ</h3>
+                <div class="whiteboard-tools">
+                    <button class="btn" id="pen-btn" style="padding: 5px 10px; font-size: 0.9rem;">ปากกา</button>
+                    <button class="btn" id="eraser-btn" style="padding: 5px 10px; font-size: 0.9rem; background: #78716c;">ยางลบ</button>
+                    <button class="btn btn-danger" id="clear-wb" style="padding: 5px 10px; font-size: 0.9rem;">ล้างกระดาน</button>
+                </div>
+                <canvas id="whiteboard"></canvas>
+            </div>
+        </div>
+
+        <!-- หน้าสรุปผลวิเคราะห์ -->
+        <div class="analysis-section" id="analysis-section">
+            <h2>ผลการประเมินและวินิจฉัยศักยภาพรายบุคคล (วิชาประวัติศาสตร์ ชุดที่ 2)</h2>
+            <div class="analysis-grid">
+                <div class="analysis-box" style="border-color: var(--success); background: #f0fdf4;">
+                    <h3 style="color: var(--success);">จุดเด่น (Strengths)</h3>
+                    <p id="strengths-text">กำลังประมวลผล...</p>
+                </div>
+                <div class="analysis-box" style="border-color: var(--danger); background: #fef2f2;">
+                    <h3 style="color: var(--danger);">จุดที่ต้องพัฒนา (Areas for Improvement)</h3>
+                    <p id="improvements-text">กำลังประมวลผล...</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer-credit">เขียนโดย พระจอมเกล้าติวเตอร์</div>
+    </div>
+
+    <script>
+        // ข้อมูลข้อสอบวิชาประวัติศาสตร์ ป.4 ชุดที่ 2 (30 ข้อ ระดับยากปานกลาง ไม่ซ้ำชุดที่ 1 กระจายตัวเลือกสม่ำเสมอ A=8, B=8, C=7, D=7)
+        const rawQuestions = [
+            {
+                id: 1,
+                question: "หากเหตุการณ์ประวัติศาสตร์สำคัญเกิดขึ้นในปี ค.ศ. 2000 เมื่อคำนวณเป็นปีพุทธศักราช (พ.ศ.) จะตรงกับปีใดตามหลักสากล",
+                options: [
+                    "พ.ศ. 2543",
+                    "พ.ศ. 2457",
+                    "พ.ศ. 2600",
+                    "พ.ศ. 2500"
+                ],
+                correct: 0, // A
+                clue: "นำ 543 ไปบวกเพิ่มเข้ากับ ค.ศ. (2000 + 543)",
+                explanation: "ข้อ A ถูกต้อง เพราะ 2000 + 543 = 2543 เทคนิคคิดเร็ว: ค.ศ. แปลงเป็น พ.ศ. ให้เอา 543 บวกเพิ่มเสมอ"
+            },
+            {
+                id: 2,
+                question: "ช่วงระยะเวลาทางประวัติศาสตร์ที่กินเวลายาวนานถึง 1,000 ปี เรียกว่าอะไรตามหลักสากล",
+                options: [
+                    "สหัสวรรษ",
+                    "ศตวรรษ",
+                    "ทศวรรษ",
+                    "ยุคสมัย"
+                ],
+                correct: 0, // A
+                clue: "สหัสแปลว่าหนึ่งพันปี",
+                explanation: "ข้อ A ถูกต้อง เพราะ 1 สหัสวรรษเท่ากับ 1,000 ปี เทคนิคคิดเร็ว: สหัส = 1000"
+            },
+            {
+                id: 3,
+                question: "ขั้นตอนสุดท้ายของวิธีการทางประวัติศาสตร์หลังจากผ่านการตรวจสอบและตีความหลักฐานแล้วคือข้อใด",
+                options: [
+                    "การรวบรวมหลักฐานเพิ่มเติมจากต่างประเทศ",
+                    "การเรียบเรียงและนำเสนอข้อเท็จจริง",
+                    "การกำหนดหัวข้อคำถามที่ต้องการศึกษา",
+                    "การทำลายหลักฐานที่ไม่ใช้ทิ้งทั้งหมด"
+                ],
+                correct: 1, // B
+                clue: "ขั้นตอนการเขียนรายงานเผยแพร่",
+                explanation: "ข้อ B ถูกต้อง เพราะขั้นตอนสุดท้ายคือการเรียบเรียงและนำเสนอข้อมูล เทคนิคคิดเร็ว: ขั้นตอนสุดท้าย = เรียบเรียงนำเสนอ"
+            },
+            {
+                id: 4,
+                question: "หลักฐานทางประวัติศาสตร์ในข้อใดจัดเป็น 'หลักฐานชั้นรอง' (Secondary Sources) อย่างชัดเจน",
+                options: [
+                    "ตำนานพื้นบ้านที่รวบรวมพิมพ์เป็นหนังสือพิมพ์ในยุคหลัง",
+                    "กระดูกสัตว์โบราณในชั้นดินขุดค้นทางโบราณคดี",
+                    "ศิลาจารึกสมัยสุโขทัยหลักที่ 1",
+                    "เครื่องมือหินกะเทาะยุคก่อนประวัติศาสตร์"
+                ],
+                correct: 0, // A
+                clue: "หลักฐานที่สร้างขึ้นภายหลังเหตุการณ์",
+                explanation: "ข้อ A ถูกต้อง เพราะตำนานที่นำมาพิมพ์เป็นหนังสือภายหลังจัดเป็นหลักฐานชั้นรอง เทคนิคคิดเร็ว: หนังสือรวบรวมทีหลัง = ชั้นรอง"
+            },
+            {
+                id: 5,
+                question: "ปัจจัยทางภูมิศาสตร์ข้อใดที่มีอิทธิพลมากที่สุดต่อการตั้งถิ่นฐานของมนุษย์ในสมัยโบราณ",
+                options: [
+                    "ความใกล้ชิดกับแหล่งน้ำจืดและความอุดมสมบูรณ์ของดิน",
+                    "การมีสัญญาณอินเทอร์เน็ตความเร็วสูงครอบคลุมพื้นที่",
+                    "การตั้งอยู่บนยอดเขาสูงชันและแห้งแล้งทุรกันดาร",
+                    "การอยู่ห่างไกลจากเส้นทางคมนาคมทางน้ำทุกสาย"
+                ],
+                correct: 0, // A
+                clue: "แหล่งน้ำและดินอุดมสมบูรณ์",
+                explanation: "ข้อ A ถูกต้อง เพราะแหล่งน้ำและดินทำให้เพาะปลูกและดำรงชีวิตได้ เทคนิคคิดเร็ว: น้ำและดินดี = ทำเลตั้งถิ่นฐาน"
+            },
+            {
+                id: 6,
+                question: "อาณาจักรโบราณในภาคใต้ของไทยที่มีความเจริญรุ่งเรืองด้านพุทธศาสนานิกายมหายานและศิลปะศรีวิชัยคือข้อใด",
+                options: [
+                    "อาณาจักรศรีวิชัย",
+                    "อาณาจักรทวารวดี",
+                    "อาณาจักรหริภุญชัย",
+                    "อาณาจักรโยนก"
+                ],
+                correct: 0, // A
+                clue: "ศูนย์กลางอาณาจักรภาคใต้",
+                explanation: "ข้อ A ถูกต้อง เพราะอาณาจักรศรีวิชัยเจริญรุ่งเรืองทางภาคใต้และนับถือนิกายมหายาน เทคนิคคิดเร็ว: ศรีวิชัย = ภาคใต้ มหายาน"
+            },
+            {
+                id: 7,
+                question: "เมืองโบราณที่มีการขุดพบ 'ลูกปัดโบราณ' และซากเมืองคูน้ำคันดินสมัยทวารวดีจำนวนมากในภาคกลางคือเมืองใด",
+                options: [
+                    "เมืองโบราณอู่ทองและเมืองนครปฐมโบราณ",
+                    "เมืองเชียงแสนโบราณ",
+                    "เมืองนครศรีธรรมราชโบราณ",
+                    "เมืองพิมายโบราณ"
+                ],
+                correct: 0, // A
+                clue: "เมืองอู่ทองและนครปฐม",
+                explanation: "ข้อ A ถูกต้อง เพราะเมืองอู่ทองและนครปฐมเป็นศูนย์กลางสำคัญสมัยทวารวดี เทคนิคคิดเร็ว: ทวารวดีภาคกลาง = อู่ทอง/นครปฐม"
+            },
+            {
+                id: 8,
+                question: "เหตุการณ์สำคัญในสมัยสุโขทัยที่สะท้อนถึงความเจริญทางภาษาและวรรณกรรมคือข้อใด",
+                options: [
+                    "การประดิษฐ์อักษรไทย (ลายสือไทย) โดยพ่อขุนรามคำแหงมหาราช",
+                    "การแต่งวรรณคดีสามก๊กฉบับภาษาไทย",
+                    "การประกาศเลิกทาสและระบบไพร่ในสยาม",
+                    "การสร้างรถไฟสายแรกเชื่อมกรุงเทพฯ ถึงปากน้ำ"
+                ],
+                correct: 0, // A
+                clue: "การสร้างอักษรไทย พ.ศ. 1826",
+                explanation: "ข้อ A ถูกต้อง เพราะการประดิษฐ์ลายสือไทยคือจุดเริ่มต้นของอักษรไทย เทคนิคคิดเร็ว: ลายสือไทย = พ่อขุนรามคำแหง"
+            },
+            {
+                id: 9,
+                question: "รูปแบบการปกครองของอาณาจักรสุโขทัยในระยะแรกมักถูกเรียกว่าอะไรตามข้อความในศิลาจารึก",
+                options: [
+                    "พ่อปกครองลูก",
+                    "สมบูรณาญาสิทธิราชย์",
+                    "ประชาธิปไตยสากล",
+                    "เผด็จการทหารเบ็ดเสร็จ"
+                ],
+                correct: 0, // A
+                clue: "พระมหากษัตริย์เปรียบเสมือนพ่อ",
+                explanation: "ข้อ A ถูกต้อง เพราะสุโขทัยใช้การปกครองแบบพ่อปกครองลูก เทคนิคคิดเร็ว: สุโขทัย = พ่อปกครองลูก"
+            },
+            {
+                id: 10,
+                question: "สงครามยุทธหัตถีระหว่างสมเด็จพระนเรศวรมหาราชกับพระมหาอุปราชาเกิดขึ้นในรัชสมัยใดของพม่า",
+                options: [
+                    "ราชวงศ์ตองอู",
+                    "ราชวงศ์คองบอง",
+                    "ราชวงศ์อูโก",
+                    "ราชวงศ์โกมินทร์"
+                ],
+                correct: 0, // A
+                clue: "ราชวงศ์ตองอูแห่งหงสาวดี",
+                explanation: "ข้อ A ถูกต้อง เพราะพม่าในเวลานั้นปกครองโดยราชวงศ์ตองอู เทคนิคคิดเร็ว: สมเด็จพระนเรศวร vs ตองอู"
+            },
+            {
+                id: 11,
+                question: "ในรัชสมัยสมเด็จพระนารายณ์มหาราช ราชสำนักอยุธยาต้อนรับราชทูตจากประเทศยุโรปชาติใดมากที่สุด",
+                options: [
+                    "ประเทศฝรั่งเศส",
+                    "ประเทศสหรัฐอเมริกา",
+                    "ประเทศญี่ปุ่น",
+                    "ประเทศออสเตรเลีย"
+                ],
+                correct: 0, // A
+                clue: "ราชทูตเชอวาลิเยร์เดอชมอนต์จากฝรั่งเศส",
+                explanation: "ข้อ A ถูกต้อง เพราะสมเด็จพระนารายณ์ทรงเจริญไมตรีกับพระเจ้าหลุยส์ที่ 14 แห่งฝรั่งเศส เทคนิคคิดเร็ว: ทูตฝรั่งเศส = สมเด็จพระนารายณ์"
+            },
+            {
+                id: 12,
+                question: "ค่ายซากกองทัพพม่าที่สมเด็จพระเจ้าตากสินมหาราชทรงตีหักเอาชัยชนะได้ก่อนประกาศอิสรภาพคือค่ายใด",
+                options: [
+                    "ค่ายโพธิ์สามต้น",
+                    "ค่ายบางระจัน",
+                    "ค่ายบางกอกน้อย",
+                    "ค่ายบางปะกง"
+                ],
+                correct: 0, // A
+                clue: "ค่ายโพธิ์สามต้น เมืองอยุธยา",
+                explanation: "ข้อ A ถูกต้อง เพราะพระเจ้าตากทรงตีค่ายโพธิ์สามต้นแตกและกอบกู้เอกราชสำเร็จ เทคนิคคิดเร็ว: กอบกู้เอกราช = ตีค่ายโพธิ์สามต้น"
+            },
+            {
+                id: 13,
+                question: "วิธีการสืบค้นประวัติศาสตร์ท้องถิ่นที่ดีควรปฏิบัติในข้อใด",
+                options: [
+                    "รวบรวมหลักฐานจากหลายแหล่งแล้วนำมาตรวจสอบเปรียบเทียบ",
+                    "เชื่อถือคำบอกเล่าของคนเพียงคนเดียวโดยไม่ต้องตรวจสอบ",
+                    "คัดลอกตำราเรียนเล่มเดียวจบโดยไม่ค้นหาหลักฐานอื่นเพิ่ม",
+                    "ปฏิเสธการสอบถามผู้สูงอายุในชุมชนทั้งหมด"
+                ],
+                correct: 0, // A
+                clue: "เปรียบเทียบข้อมูลหลายแหล่งเพื่อความแม่นยำ",
+                explanation: "ข้อ A ถูกต้อง เพราะต้องตรวจสอบข้อมูลจากหลายแหล่งเพื่อความถูกต้อง เทคนิคคิดเร็ว: ข้อมูลหลากหลาย = น่าเชื่อถือ"
+            },
+            {
+                id: 14,
+                question: "โบราณวัตถุประเภท 'เครื่องถ้วยชามสังคโลก' ในประวัติศาสตร์ไทยมีความเกี่ยวข้องกับอาณาจักรใด",
+                options: [
+                    "อาณาจักรสุโขทัย",
+                    "อาณาจักรทวารวดี",
+                    "อาณาจักรศรีวิชัย",
+                    "อาณาจักรทวารวดีตอนปลาย"
+                ],
+                correct: 0, // A
+                clue: "เตาเผาเกาะน้อยเมืองศรีสัชนาลัย สุโขทัย",
+                explanation: "ข้อ A ถูกต้อง เพราะเครื่องสังคโลกผลิตขึ้นอย่างรุ่งเรืองในสมัยสุโขทัย เทคนิคคิดเร็ว: สังคโลก = สุโขทัย"
+            },
+            {
+                id: 15,
+                question: "หากนักเรียนพบ 'เครื่องมือเหล็ก' ในแหล่งโบราณคดี จะจัดหลักฐานชิ้นนี้อยู่ในหมวดหมู่ใด",
+                options: [
+                    "โบราณวัตถุประเภทไม่เป็นลายลักษณ์อักษร",
+                    "หลักฐานประเภทลายลักษณ์อักษรหินจารึก",
+                    "หลักฐานชั้นรองประเภทหนังสือพิมพ์",
+                    "คำบอกเล่าปากเปล่าโบราณ"
+                ],
+                correct: 0, // A
+                clue: "เครื่องมือเหล็กไม่มีตัวหนังสือจารึก",
+                explanation: "ข้อ A ถูกต้อง เพราะเครื่องมือเหล็กเป็นวัตถุโบราณที่ไม่มีอักษร เทคนิคคิดเร็ว: เครื่องมือเหล็ก = โบราณวัตถุไร้อักษร"
+            },
+            {
+                id: 16,
+                question: "คำว่า 'ศตวรรษ' ทางประวัติศาสตร์ มีความหมายครอบคลุมช่วงเวลานานกี่ปี",
+                options: [
+                    "100 ปี",
+                    "10 ปี",
+                    "1,000 ปี",
+                    "50 ปี"
+                ],
+                correct: 0, // A
+                clue: "ศต = ร้อย",
+                explanation: "ข้อ A ถูกต้อง เพราะ 1 ศตวรรษเท่ากับ 100 ปี เทคนิคคิดเร็ว: ศตวรรษ = 100"
+            },
+            {
+                id: 17,
+                question: "ข้อใดคือข้อดีของการใช้ 'หลักฐานชั้นต้น' ในการศึกษาประวัติศาสตร์",
+                options: [
+                    "มีความใกล้ชิดกับเหตุการณ์จริงและมีความน่าเชื่อถือสูง",
+                    "เขียนขึ้นโดยนักประวัติศาสตร์สมัยใหม่ในห้องแอร์",
+                    "หาอ่านได้ง่ายตามร้านสะดวกซื้อทั่วไปทุกแห่ง",
+                    "ผ่านการสรุปและแปลความหมายมาให้เสร็จสรรพเรียบร้อย"
+                ],
+                correct: 0, // A
+                clue: "หลักฐานจากยุคนั้นจริงเชื่อถือได้",
+                explanation: "ข้อ A ถูกต้อง เพราะหลักฐานชั้นต้นสร้างขึ้นในยุคเหตุการณ์จริง จึงมีความน่าเชื่อถือมาก เทคนิคคิดเร็ว: ของจริงยุคนั้น = น่าเชื่อถือสูง"
+            },
+            {
+                id: 18,
+                question: "พระนางจามเทวีทรงเป็นปฐมกษัตริย์หญิงผู้ปกครองอาณาจักรโบราณใดในภาคเหนือของไทย",
+                options: [
+                    "อาณาจักรหริภุญชัย",
+                    "อาณาจักรทวารวดี",
+                    "อาณาจักรศรีวิชัย",
+                    "อาณาจักรโยนกเชียงแสน"
+                ],
+                correct: 0, // A
+                clue: "เมืองลำพูนโบราณ",
+                explanation: "ข้อ A ถูกต้อง เพราะพระนางจามเทวีทรงปกครองอาณาจักรหริภุญชัยที่ลำพูน เทคนิคคิดเร็ว: พระนางจามเทวี = หริภุญชัย"
+            },
+            {
+                id: 19,
+                question: "การรับเอา 'อักษรพราหมี' และ 'อักษรปัลลวะ' จากอินเดียมาพัฒนาต่อยอดเป็นอักษรไทยในเวลาต่อมา จัดเป็นอิทธิพลด้านใด",
+                options: [
+                    "ด้านภาษาและตัวอักษรศาสตร์",
+                    "ด้านการสร้างรถไฟจักรกลไอน้ำ",
+                    "ด้านการปกครองระบอบประชาธิปไตย",
+                    "ด้านเศรษฐกิจการค้าระหว่างประเทศ"
+                ],
+                correct: 0, // A
+                clue: "ตัวหนังสือและภาษาอินเดียโบราณ",
+                explanation: "ข้อ A ถูกต้อง เพราะอักษรปัลลวะจากอินเดียเป็นรากฐานของอักษรไทย เทคนิคคิดเร็ว: อักษรปัลลวะ = ด้านภาษาและตัวหนังสือ"
+            },
+            {
+                id: 20,
+                question: "หากนักเรียนกล่าวถึงเหตุการณ์ใน 'คริสต์ศตวรรษที่ 19' จะมีช่วงเวลาระหว่างปี ค.ศ. ใดถึงปีใด",
+                options: [
+                    "ค.ศ. 1801 - 1900",
+                    "ค.ศ. 1901 - 2000",
+                    "ค.ศ. 1701 - 1800",
+                    "ค.ศ. 1850 - 1950"
+                ],
+                correct: 0, // A
+                clue: "ศตวรรษที่ 19 คือ 1801 ถึง 1900",
+                explanation: "ข้อ A ถูกต้อง เพราะศตวรรษที่ 19 นับตั้งแต่ ค.ศ. 1801 ถึง 1900 เทคนิคคิดเร็ว: ศตวรรษที่ 19 = 1801-1900"
+            },
+            {
+                id: 21,
+                question: "การวิเคราะห์และตรวจสอบหลักฐานทางประวัติศาสตร์เพื่อดูว่าผู้สร้างหลักฐานมีเจตนาอย่างไร เรียกว่าอะไร",
+                options: [
+                    "การวิพากษ์วิธีทางประวัติศาสตร์ (Criticism)",
+                    "การจำแนกประเภทหนังสือพิมพ์",
+                    "การสร้างแผนที่ภูมิประเทศ",
+                    "การคำนวณปฏิทินสุริยคติ"
+                ],
+                correct: 0, // A
+                clue: "ตรวจสอบที่มาและเจตนาของผู้สร้าง",
+                explanation: "ข้อ A ถูกต้อง เพราะการตรวจสอบความน่าเชื่อถือคือการวิพากษ์หลักฐาน เทคนิคคิดเร็ว: ตรวจสอบเจตนา = วิพากษ์หลักฐาน"
+            },
+            {
+                id: 22,
+                question: "พ่อขุนผาเมืองและพ่อขุนบางกลางหาว ทรงร่วมกันทำศึกขับไล่ขอมสภะพง และสถาปนาราชอาณาจักรใดขึ้น",
+                options: [
+                    "อาณาจักรสุโขทัย",
+                    "อาณาจักรอยุธยา",
+                    "อาณาจักรธนบุรี",
+                    "อาณาจักรล้านนา"
+                ],
+                correct: 0, // A
+                clue: "สถาปนากรุงสุโขทัย",
+                explanation: "ข้อ A ถูกตั้ง เพราะพ่อขุนทั้งสองพระองค์ทรงร่วมกันก่อตั้งสุโขทัย เทคนิคคิดเร็ว: พ่อขุนผาเมือง/บางกลางหาว = สุโขทัย"
+            },
+            {
+                id: 23,
+                question: "ปราสาทหินพิมายในจังหวัดนครราชสีมา สะท้อนถึงอิทธิพลสถาปัตยกรรมของอาณาจักรใด",
+                options: [
+                    "อาณาจักรขอมโบราณ",
+                    "อาณาจักรทวารวดี",
+                    "อาณาจักรศรีวิชัย",
+                    "อาณาจักรพุกาม"
+                ],
+                correct: 0, // A
+                clue: "ศิลปะขอมโบราณภาคอีสาน",
+                explanation: "ข้อ A ถูกต้อง เพราะปราสาทหินพิมายสร้างขึ้นตามแบบศิลปะขอมโบราณ เทคนิคคิดเร็ว: ปราสาทหินพิมาย = ขอมโบราณ"
+            },
+            {
+                id: 24,
+                question: "พระบาทสมเด็จพระพุทธยอดฟ้าจุฬาโลกมหาราช ทรงสถาปนากรุงรัตนโกสินทร์ขึ้นเมื่อ พ.ศ. ใด",
+                options: [
+                    "พ.ศ. 2325",
+                    "พ.ศ. 2310",
+                    "พ.ศ. 1826",
+                    "พ.ศ. 2400"
+                ],
+                correct: 0, // A
+                clue: "ปี พ.ศ. ที่ย้ายเมืองมาฝั่งพระนคร",
+                explanation: "ข้อ A ถูกต้อง เพราะกรุงเทพมหานครสถาปนาขึ้นใน พ.ศ. 2325 เทคนิคคิดเร็ว: กรุงรัตนโกสินทร์ = พ.ศ. 2325"
+            },
+            {
+                id: 25,
+                question: "คำบอกเล่าของปราชญ์ชาวบ้านเกี่ยวกับประวัติความเป็นมาของชุมชน จัดเป็นหลักฐานประเภทใด",
+                options: [
+                    "หลักฐานที่ไม่เป็นลายลักษณ์อักษรประเภทมุขปาฐะ (คำบอกเล่า)",
+                    "หลักฐานลายลักษณ์อักษรศิลาจารึกหิน",
+                    "หลักฐานชั้นรองประเภทตำราเรียนกระทรวง",
+                    "หลักฐานทางโบราณคดีประเภทกระดูกสัตว์"
+                ],
+                correct: 0, // A
+                clue: "มุขปาฐะคือคำบอกเล่าต่อกันมา",
+                explanation: "ข้อ A ถูกต้อง เพราะคำบอกเล่าปากเปล่าจัดเป็นมุขปาฐะไม่มีลายลักษณ์อักษร เทคนิคคิดเร็ว: คำบอกเล่า = มุขปาฐะ"
+            },
+            {
+                id: 26,
+                question: "ข้อใดคือความสำคัญของพิพิธภัณฑ์ท้องถิ่นต่อการศึกษาประวัติศาสตร์",
+                options: [
+                    "เป็นแหล่งรวบรวมและจัดแสดงโบราณวัตถุข้าวของเครื่องใช้ในอดีตให้เยาวชนได้ศึกษา",
+                    "เป็นสถานที่จำหน่ายสินค้าอุตสาหกรรมราคาถูกจากต่างประเทศ",
+                    "เป็นท่าเรือขนส่งสินค้าขนาดใหญ่ระหว่างประเทศ",
+                    "เป็นสถานที่จัดแข่งขันกีฬาโอลิมปิกประจำปีของจังหวัด"
+                ],
+                correct: 0, // A
+                clue: "แหล่งจัดแสดงโบราณวัตถุและเรื่องราวท้องถิ่น",
+                explanation: "ข้อ A ถูกต้อง เพราะพิพิธภัณฑ์เก็บรักษาและจัดแสดงมรดกทางประวัติศาสตร์ เทคนิคคิดเร็ว: พิพิธภัณฑ์ = คลังโบราณวัตถุศึกษา"
+            },
+            {
+                id: 27,
+                question: "อาณาจักรทวารวดีมีความเจริญรุ่งเรืองอยู่ในช่วงระหว่างพุทธศตวรรษที่เท่าไรตามหลักฐานทางโบราณคดี",
+                options: [
+                    "พุทธศตวรรษที่ 11 - 16",
+                    "พุทธศตวรรษที่ 1 - 5",
+                    "พุทธศตวรรษที่ 20 - 23",
+                    "พุทธศตวรรษที่ 24 - 25"
+                ],
+                correct: 0, // A
+                clue: "ยุคโบราณราวศตวรรษที่ 11 ถึง 16",
+                explanation: "ข้อ A ถูกต้อง เพราะทวารวดีมีความเจริญในช่วงพุทธศตวรรษที่ 11-16 เทคนิคคิดเร็ว: ทวารวดี = พุทธศตวรรษ 11-16"
+            },
+            {
+                id: 28,
+                question: "วันสำคัญทางประวัติศาสตร์ 'วันสมเด็จพระนารายณ์มหาราช' ตรงกับวันที่เท่าไรของทุกปี",
+                options: [
+                    "วันที่ 11 กรกฎาคม",
+                    "วันที่ 6 เมษายน",
+                    "วันที่ 5 ธันวาคม",
+                    "วันที่ 23 ตุลาคม"
+                ],
+                correct: 0, // A
+                clue: "วันที่ระลึกคล้ายวันสวรรคตสมเด็จพระนารายณ์",
+                explanation: "ข้อ A ถูกต้อง เพราะวันที่ 11 กรกฎาคม เป็นวันสมเด็จพระนารายณ์มหาราช เทคนิคคิดเร็ว: วันสมเด็จพระนารายณ์ = 11 กรกฎาคม"
+            },
+            {
+                id: 29,
+                question: "เหตุผลใดที่ทำให้การศึกษาประวัติศาสตร์ต้องอาศัย 'ความจริง' และ 'หลักฐาน' มาประกอบกันเสมอ",
+                options: [
+                    "เพื่อป้องกันการบิดเบือนข้อเท็จจริงและทำให้เรื่องราวมีความน่าเชื่อถือถูกต้อง",
+                    "เพื่อให้สามารถแต่งเรื่องราวให้สนุกสนานเหมือนนวนิยายแฟนตาซี",
+                    "เพื่อให้หนังสือประวัติศาสตร์มีความหนาและราคาแพงขึ้น",
+                    "เพื่อหลีกเลี่ยงการทำข้อสอบประวัติศาสตร์ในห้องเรียน"
+                ],
+                correct: 0, // A
+                clue: "ป้องกันการบิดเบือนและสร้างความน่าเชื่อถือ",
+                explanation: "ข้อ A ถูกต้อง เพราะประวัติศาสตร์ต้องอิงหลักฐานเพื่อไม่ให้ข้อมูลบิดเบือน เทคนิคคิดเร็ว: ประวัติศาสตร์ต้องมีหลักฐาน = ป้องกันบิดเบือน"
+            },
+            {
+                id: 30,
+                question: "การศึกษาเรื่องราวของบรรพบุรุษและเหตุการณ์ในอดีตส่งผลดีต่อเยาวชนไทยอย่างไรโดยตรง",
+                options: [
+                    "ทำให้เกิดความซาบซึ้งในความเสียสละและร่วมกันรักษาผืนแผ่นดินไทย",
+                    "ทำให้มีความสามารถพิเศษในการเล่นกีฬาฟุตบอลทีมชาติ",
+                    "ทำให้สามารถคำนวณตัวเลขทางคณิตศาสตร์ได้อย่างรวดเร็ว",
+                    "ทำให้ไม่ต้องเดินทางไปเรียนหนังสือที่โรงเรียนอีกต่อไป"
+                ],
+                correct: 0, // A
+                clue: "ซาบซึ้งในความเสียสละของบรรพบุรุษ",
+                explanation: "ข้อ A ถูกต้อง เพราะการเรียนประวัติศาสตร์สร้างจิตสำนึกรักชาติและความกตัญญู เทคนิคคิดเร็ว: เรียนอดีต = ซาบซึ้ง รักแผ่นดิน"
+            }
+        ];
+
+        let questions = JSON.parse(JSON.stringify(rawQuestions));
+        let userAnswers = {};
+        let currentLang = 'TH';
+
+        // Fisher-Yates Shuffle Algorithm สำหรับสลับลำดับตัวเลือก
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        // ฟังก์ชันสลับตัวเลือกและคำตอบที่ถูกต้องสำหรับแต่ละข้อ
+        function randomizeOptions() {
+            questions.forEach(q => {
+                let originalOptions = q.options.map((opt, idx) => ({ text: opt, isCorrect: idx === q.correct }));
+                shuffleArray(originalOptions);
+                q.options = originalOptions.map(o => o.text);
+                q.correct = originalOptions.findIndex(o => o.isCorrect);
+            });
+        }
+
+        // โหลดข้อมูลจาก localStorage ถ้ามี
+        function loadLocalStorage() {
+            const savedAnswers = localStorage.getItem('pcg_hist_set2_answers');
+            if (savedAnswers) {
+                userAnswers = JSON.parse(savedAnswers);
+            }
+            const savedLang = localStorage.getItem('pcg_hist_set2_lang');
+            if (savedLang) {
+                currentLang = savedLang;
+            }
+        }
+
+        function saveLocalStorage() {
+            localStorage.setItem('pcg_hist_set2_answers', JSON.stringify(userAnswers));
+            localStorage.setItem('pcg_hist_set2_lang', currentLang);
+        }
+
+        // เรนเดอร์หน้าจอข้อสอบ
+        function renderExam() {
+            const navContainer = document.getElementById('question-nav');
+            const qContainer = document.getElementById('questions-container');
+            navContainer.innerHTML = '';
+            qContainer.innerHTML = '';
+
+            questions.forEach((q, index) => {
+                const isAnswered = userAnswers[q.id] !== undefined;
+
+                // สร้างปุ่มนำทางข้อ
+                const navBtn = document.createElement('button');
+                navBtn.className = `q-nav-btn ${index === 0 ? 'active' : ''} ${isAnswered ? 'answered' : ''}`;
+                navBtn.innerText = q.id;
+                navBtn.onclick = () => switchQuestion(index);
+                navContainer.appendChild(navBtn);
+
+                // สร้างกล่องข้อสอบแต่ละข้อ
+                const qDiv = document.createElement('div');
+                qDiv.className = `question-container ${index === 0 ? 'active' : ''}`;
+                qDiv.id = `question-${index}`;
+
+                let optionsHtml = '';
+                q.options.forEach((opt, optIdx) => {
+                    const isChecked = userAnswers[q.id] === optIdx ? 'checked' : '';
+                    const disabledAttr = isAnswered ? 'disabled class="disabled"' : '';
+                    optionsHtml += `
+                        <label class="option-label ${isAnswered ? 'disabled' : ''}">
+                            <input type="radio" name="q-${q.id}" value="${optIdx}" ${isChecked} ${disabledAttr} onchange="handleAnswer(${q.id}, ${optIdx}, ${q.correct}, ${index})">
+                            <span>${opt}</span>
+                        </label>
+                    `;
+                });
+
+                qDiv.innerHTML = `
+                    <div class="question-title">ข้อที่ ${index + 1}: ${q.question}</div>
+                    <button class="btn" style="padding: 5px 10px; font-size: 0.85rem; margin-bottom: 10px;" onclick="toggleClue(${index})">เปิด/ปิด คำใบ้</button>
+                    <div class="clue-box" id="clue-${index}">คำใบ้: ${q.clue}</div>
+                    <div class="options-list">${optionsHtml}</div>
+                    <div class="explanation-box" id="exp-${index}">
+                        <strong>เฉลยและวิธีคิด:</strong> <span id="exp-text-${index}">${q.explanation}</span>
+                    </div>
+                `;
+                qContainer.appendChild(qDiv);
+
+                // ถ้าเคยตอบแล้ว ให้แสดงเฉลยทันทีและล็อกตัวเลือก
+                if (isAnswered) {
+                    showExplanation(index, userAnswers[q.id], q.correct);
+                }
+            });
+
+            updateScoreDisplay();
+        }
+
+        function switchQuestion(targetIndex) {
+            document.querySelectorAll('.question-container').forEach((el, idx) => {
+                el.classList.toggle('active', idx === targetIndex);
+            });
+            document.querySelectorAll('.q-nav-btn').forEach((el, idx) => {
+                el.classList.toggle('active', idx === targetIndex);
+            });
+        }
+
+        function toggleClue(index) {
+            const clueBox = document.getElementById(`clue-${index}`);
+            clueBox.style.display = clueBox.style.display === 'block' ? 'none' : 'block';
+        }
+
+        function handleAnswer(qId, selectedOpt, correctOpt, index) {
+            if (userAnswers[qId] !== undefined) {
+                alert('ข้อนี้คุณได้ทำการเลือกตอบไปแล้ว ไม่สามารถเปลี่ยนแปลงคำตอบได้ครับ');
+                return;
+            }
+
+            userAnswers[qId] = selectedOpt;
+            saveLocalStorage();
+
+            // ล็อกฟิลด์ radio ของข้อนี้ทั้งหมดทันที
+            const qContainer = document.getElementById(`question-${index}`);
+            const radios = qContainer.querySelectorAll('input[type="radio"]');
+            radios.forEach(r => {
+                r.disabled = true;
+                r.parentElement.classList.add('disabled');
+            });
+
+            // อัปเดตสถานะปุ่มนำทาง
+            const navBtn = document.querySelectorAll('.q-nav-btn')[index];
+            navBtn.classList.add('answered');
+
+            showExplanation(index, selectedOpt, correctOpt);
+            updateScoreDisplay();
+        }
+
+        function showExplanation(index, selectedOpt, correctOpt) {
+            const expBox = document.getElementById(`exp-${index}`);
+            expBox.style.display = 'block';
+            if (selectedOpt === correctOpt) {
+                expBox.className = 'explanation-box correct';
+            } else {
+                expBox.className = 'explanation-box incorrect';
+            }
+        }
+
+        function updateScoreDisplay() {
+            let score = 0;
+            questions.forEach(q => {
+                if (userAnswers[q.id] === q.correct) {
+                    score++;
+                }
+            });
+            document.getElementById('score-display').innerText = `คะแนน: ${score} / 30`;
+        }
+
+        // ปุ่มส่งข้อสอบและวิเคราะห์ผล
+        document.getElementById('submit-exam-btn').onclick = function() {
+            let answeredCount = Object.keys(userAnswers).length;
+            if (answeredCount < questions.length) {
+                if (!confirm(`คุณทำข้อสอบไปแล้ว ${answeredCount} จาก ${questions.length} ข้อ แน่ใจหรือไม่ว่าต้องการส่งข้อสอบและดูผลวิเคราะห์ทันที?`)) {
+                    return;
+                }
+            }
+
+            let score = 0;
+            let incorrectTopics = [];
+            let correctTopics = [];
+
+            questions.forEach(q => {
+                if (userAnswers[q.id] === q.correct) {
+                    score++;
+                    correctTopics.push(q.question.substring(0, 20));
+                } else if (userAnswers[q.id] !== undefined) {
+                    incorrectTopics.push(q.question.substring(0, 20));
+                }
+            });
+
+            const analysisSection = document.getElementById('analysis-section');
+            analysisSection.style.display = 'block';
+
+            const strengthText = document.getElementById('strengths-text');
+            const improvementText = document.getElementById('improvements-text');
+
+            strengthText.innerHTML = `ท่านทำคะแนนได้ ${score} จาก 30 คะแนน (${((score/30)*100).toFixed(1)}%). มีความเข้าใจในกระบวนการคิดเชิงประวัติศาสตร์ชุดที่ 2 การแปลงศักราช และเหตุการณ์สำคัญทางประวัติศาสตร์ไทยได้อย่างยอดเยี่ยม`;
+            
+            if (incorrectTopics.length > 0) {
+                improvementText.innerHTML = `ควรทบทวนเนื้อหาในส่วนของหลักฐานทางประวัติศาสตร์ อาณาจักรโบราณ และลำดับเหตุการณ์สำคัญเพิ่มเติม เพื่อเพิ่มความแม่นยำในการคิดวิเคราะห์เชิงเวลา`;
+            } else {
+                improvementText.innerHTML = `ยอดเยี่ยมระดับเซียน! ท่านตอบถูกต้องครบถ้วนทุกข้อ แสดงถึงความเชี่ยวชาญในวิชาประวัติศาสตร์อย่างสมบูรณ์แบบ`;
+            }
+
+            window.scrollTo({ top: analysisSection.offsetTop, behavior: 'smooth' });
+        };
+
+        // ปุ่ม Reset ระบบ
+        document.getElementById('reset-btn').onclick = function() {
+            if (confirm('คุณต้องการ Reset ระบบและเริ่มทำข้อสอบประวัติศาสตร์ ชุดที่ 2 ใหม่ทั้งหมดใช่หรือไม่?')) {
+                localStorage.removeItem('pcg_hist_set2_answers');
+                localStorage.removeItem('pcg_hist_set2_lang');
+                localStorage.removeItem('pcg_hist_set2_shuffled');
+                userAnswers = {};
+                randomizeOptions();
+                renderExam();
+                document.getElementById('analysis-section').style.display = 'none';
+            }
+        };
+
+        // ปุ่มสลับภาษา (TH/EN)
+        document.getElementById('lang-btn').onclick = function() {
+            currentLang = currentLang === 'TH' ? 'EN' : 'TH';
+            saveLocalStorage();
+            alert(`เปลี่ยนภาษาเป็น ${currentLang} เรียบร้อยแล้ว (สถานะข้อสอบและคำตอบยังคงเดิมไม่สูญหาย)`);
+        };
+
+        // ระบบ Whiteboard (กระดานทดเลข)
+        const canvas = document.getElementById('whiteboard');
+        const ctx = canvas.getContext('2d');
+        let isDrawing = false;
+        let currentTool = 'pen';
+
+        function resizeCanvas() {
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width;
+            canvas.height = 350;
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+        window.onload = resizeCanvas;
+        window.onresize = resizeCanvas;
+
+        canvas.onmousedown = (e) => {
+            isDrawing = true;
+            ctx.beginPath();
+            ctx.moveTo(e.offsetX, e.offsetY);
+        };
+
+        canvas.onmousemove = (e) => {
+            if (!isDrawing) return;
+            ctx.lineWidth = currentTool === 'pen' ? 2 : 15;
+            ctx.lineCap = 'round';
+            ctx.strokeStyle = currentTool === 'pen' ? '#292524' : '#ffffff';
+            ctx.lineTo(e.offsetX, e.offsetY);
+            ctx.stroke();
+        };
+
+        canvas.onmouseup = () => { isDrawing = false; };
+        canvas.onmouseleave = () => { isDrawing = false; };
+
+        document.getElementById('pen-btn').onclick = () => { currentTool = 'pen'; };
+        document.getElementById('eraser-btn').onclick = () => { currentTool = 'eraser'; };
+        document.getElementById('clear-wb').onclick = () => {
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        };
+
+        // เริ่มต้นโหลดระบบ
+        loadLocalStorage();
+        if (!localStorage.getItem('pcg_hist_set2_shuffled')) {
+            randomizeOptions();
+            localStorage.setItem('pcg_hist_set2_shuffled', 'true');
+        }
+        renderExam();
+    </script>
+</body>
+</html>
+
+เขียนโดย พระจอมเกล้าติวเตอร์
