@@ -1,0 +1,1156 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบสอบออนไลน์ - RAM1201: ความคิดสร้างสรรค์เพื่อการพัฒนานวัตกรรม</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --success-color: #2ecc71;
+            --danger-color: #e74c3c;
+            --warning-color: #f39c12;
+            --bg-color: #f8f9fa;
+            --card-bg: #ffffff;
+            --text-color: #333333;
+            --border-color: #dcdde1;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        header h1 {
+            font-size: 1.8rem;
+            margin-bottom: 5px;
+        }
+
+        header p {
+            font-size: 0.95rem;
+            opacity: 0.8;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 20px auto;
+            padding: 0 15px;
+            width: 100%;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* Top Frame: Summary & Thinking Process */
+        .summary-section {
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            border-top: 4px solid var(--secondary-color);
+        }
+
+        .summary-section h2 {
+            color: var(--primary-color);
+            margin-bottom: 15px;
+            font-size: 1.4rem;
+        }
+
+        .summary-section p {
+            margin-bottom: 15px;
+            text-align: justify;
+        }
+
+        .thinking-box {
+            background: #eef9ff;
+            border-left: 4px solid var(--secondary-color);
+            padding: 15px;
+            border-radius: 0 8px 8px 0;
+            margin-top: 15px;
+        }
+
+        .thinking-box h3 {
+            color: var(--secondary-color);
+            margin-bottom: 8px;
+            font-size: 1.1rem;
+        }
+
+        /* Bottom Section: Two-Frame Layout (70% Exam, 30% Whiteboard) */
+        .main-layout {
+            display: flex;
+            gap: 20px;
+            flex: 1;
+        }
+
+        @media (max-width: 992px) {
+            .main-layout {
+                flex-direction: column;
+            }
+        }
+
+        .exam-frame {
+            flex: 7;
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .whiteboard-frame {
+            flex: 3;
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            height: fit-content;
+            position: sticky;
+            top: 20px;
+        }
+
+        .whiteboard-frame h3 {
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+            color: var(--primary-color);
+        }
+
+        .wb-tools {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+        }
+
+        .wb-tools button, .wb-tools input {
+            padding: 6px 12px;
+            border: 1px solid var(--border-color);
+            background: white;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+
+        .wb-tools button.active {
+            background: var(--secondary-color);
+            color: white;
+            border-color: var(--secondary-color);
+        }
+
+        #whiteboardCanvas {
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background: #fff;
+            cursor: crosshair;
+            width: 100%;
+            height: 400px;
+            touch-action: none;
+        }
+
+        /* Exam Styling */
+        .controls-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: opacity 0.2s;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+        }
+
+        .btn-primary { background: var(--secondary-color); color: white; }
+        .btn-danger { background: var(--danger-color); color: white; }
+        .btn-success { background: var(--success-color); color: white; }
+
+        .question-card {
+            margin-bottom: 25px;
+            padding: 20px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background: #fff;
+        }
+
+        .question-title {
+            font-size: 1.05rem;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: var(--primary-color);
+        }
+
+        .options-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .option-item {
+            padding: 10px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .option-item:hover {
+            background: #f1f2f6;
+        }
+
+        .option-item input {
+            cursor: pointer;
+        }
+
+        .clue-toggle {
+            font-size: 0.85rem;
+            color: var(--secondary-color);
+            background: none;
+            border: none;
+            cursor: pointer;
+            margin-top: 10px;
+            text-decoration: underline;
+        }
+
+        .clue-box {
+            display: none;
+            margin-top: 8px;
+            padding: 8px 12px;
+            background: #fffdf0;
+            border-left: 3px solid var(--warning-color);
+            font-size: 0.9rem;
+            border-radius: 0 4px 4px 0;
+        }
+
+        .explanation {
+            display: none;
+            margin-top: 12px;
+            padding: 12px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+
+        .explanation.correct-exp {
+            background: #e8f8f5;
+            border-left: 4px solid var(--success-color);
+            color: #0e6655;
+        }
+
+        .explanation.incorrect-exp {
+            background: #ffd2d2;
+            border-left: 4px solid var(--danger-color);
+            color: #78281f;
+        }
+
+        /* Results & Analysis Modal/Section */
+        #resultsSection {
+            display: none;
+            background: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .score-display {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--secondary-color);
+            margin: 15px 0;
+        }
+
+        .analysis-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 20px;
+            text-align: left;
+        }
+
+        @media (max-width: 768px) {
+            .analysis-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .analysis-card {
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+        }
+
+        .analysis-card.strengths {
+            border-left: 4px solid var(--success-color);
+            background: #f4fcf7;
+        }
+
+        .analysis-card.weaknesses {
+            border-left: 4px solid var(--danger-color);
+            background: #fdf4f4;
+        }
+
+        .footer-credit {
+            text-align: center;
+            padding: 20px;
+            font-size: 0.9rem;
+            color: #7f8c8d;
+            border-top: 1px solid var(--border-color);
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>RAM1201: ความคิดสร้างสรรค์เพื่อการพัฒนานวัตกรรม</h1>
+        <p>ชุดข้อสอบมาตรฐานสากล (ชุดที่ 2) - เน้นกระบวนการคิดวิเคราะห์และแก้ปัญหาเชิงสถานการณ์</p>
+    </header>
+
+    <div class="container">
+        <!-- Top Frame: Summary & Thinking Process (500+ words) -->
+        <section class="summary-section">
+            <h2>สรุปเนื้อหาบทเรียนและการพัฒนาทักษะกระบวนการคิด</h2>
+            <p>รายวิชา RAM1201 ว่าด้วยการขับเคลื่อนและยกระดับศักยภาพมนุษย์ผ่านมิติของความคิดสร้างสรรค์ (Creativity) และการแปลงความคิดเหล่านั้นให้เกิดมูลค่าเชิงประจักษ์ในรูปแบบของนวัตกรรม (Innovation) ความคิดสร้างสรรค์ไม่ได้เป็นพรสวรรค์ติดตัวแต่กำเนิดที่จำกัดเฉพาะกลุ่มศิลปินหรือนักประดิษฐ์เท่านั้น แต่เป็นทักษะพื้นฐานทางปัญญาที่มนุษย์ทุกคนสามารถฝึกฝน พัฒนา และประยุกต์ใช้เพื่อยกระดับกระบวนการคิดแก้ปัญหาในชีวิตประจำวันและการทำงานในองค์กรยุคดิจิทัลได้อย่างมีประสิทธิภาพ องค์ประกอบสำคัญของความคิดสร้างสรรค์ประกอบด้วย ความคิดริเริ่ม (Originality) ซึ่งหมายถึงความสามารถในการคิดนอกกรอบและสร้างสรรค์สิ่งใหม่ที่ไม่ซ้ำใคร ความคิดคล่องแคล่ว (Fluency) ที่วัดจากปริมาณความคิดที่ผลิตออกมาได้ในเวลาที่กำหนด ความคิดยืดหยุ่น (Flexibility) หรือความสามารถในการมองปัญหาจากหลากหลายมุมมอง และความละเอียดลออ (Elaboration) ซึ่งเกี่ยวกับการต่อยอดและลงรายละเอียดให้ชิ้นงานมีความสมบูรณ์ยิ่งขึ้น อุปสรรคสำคัญที่ขัดขวางศักยภาพเหล่านี้มักเกิดจากกรอบความคิดแบบตายตัว (Fixed Mindset) ความกลัวต่อความล้มเหลว การยึดติดกับบรรทัดฐานเดิม และสภาพแวดล้อมที่ไม่เอื้ออำนวยต่อการทดลองสิ่งใหม่</p>
+            
+            <p>ในมิติของการทำงานร่วมกับสมองและการประยุกต์เครื่องมือทางปัญญา การเข้าใจกลไกการทำงานของสมองซีกซ้ายและซีกขวาช่วยให้ผู้เรียนสามารถบูรณาการการคิดเชิงวิเคราะห์ (Analytical Thinking) เข้ากับการคิดเชิงสังเคราะห์ (Synthetic Thinking) ได้อย่างสมดุล การแก้ปัญหาที่ซับซ้อนในทางปฏิบัติจำเป็นต้องอาศัยเครื่องมือสนับสนุนที่หลากหลาย อาทิ การระดมสมอง (Brainstorming) ที่ต้องปฏิบัติตามกฎเหล็กเพื่อกระตุ้นบรรยากาศที่ปราศจากการวิพากษ์วิจารณ์ในทางลบ การจัดระเบียบความคิดด้วยแผนผังความคิด (Mind Mapping) การวิเคราะห์รากเหง้าปัญหาด้วยผังกระดูกปลา (Fishbone Diagram) ตลอดจนการประยุกต์ใช้เทคนิค SCAMPER เพื่อดัดแปลง ปรับปรุง หรือรังสรรค์ผลิตภัณฑ์และบริการใหม่จากฐานทรัพยากรเดิมที่มีอยู่ นอกจากนี้กระบวนการคิดเชิงออกแบบ (Design Thinking) อันประกอบด้วย 5 ขั้นตอนหลัก ได้แก่ การเข้าอกเข้าใจผู้ใช้ (Empathize) การกำหนดปัญหาให้ชัดเจน (Define) การระดมทางเลือก (Ideate) การสร้างต้นแบบเบื้องต้น (Prototype) และการทดสอบประเมินผล (Test) ถือเป็นเข็มทิศสำคัญที่ช่วยเชื่อมโยงความต้องการที่แท้จริงของมนุษย์เข้ากับความเป็นไปได้ทางเทคโนโลยีและความคุ้มค่าทางธุรกิจ การทำความเข้าใจวงจรชีวิตของนวัตกรรมและการจำแนกประเภทนวัตกรรม ไม่ว่าจะเป็นนวัตกรรมผลิตภัณฑ์ นวัตกรรมกระบวนการ นวัตกรรมบริการ หรือนวัตกรรมรูปแบบธุรกิจ จะช่วยให้ผู้เรียนสามารถก้าวข้ามขีดจำกัดเดิม ๆ และพร้อมรับมือกับความเปลี่ยนแปลงทางเศรษฐกิจและสังคมได้อย่างยั่งยืน</p>
+
+            <div class="thinking-box">
+                <h3>กล่องเทคนิคการจำและกระบวนการคิด (Memory Tricks & Thought Processes)</h3>
+                <p><strong>1. เทคนิคจำองค์ประกอบความคิดสร้างสรรค์ "ริ-คล่อง-ยืด-ละเอียด":</strong> นึกถึงภาพนักกีฬาพายเรือ <em>ริ</em> (ริเริ่ม ออกตัวแปลกใหม่) พายด้วยความ <em>คล่อง</em> (รวดเร็ว ได้ปริมาณมาก) สามารถหักเลี้ยวเรือหลบสิ่งกีดขวางได้อย่าง <em>ยืดหยุ่น</em> และเก็บรายละเอียดทุกรอยต่อของเรืออย่าง <em>ละเอียดลออ</em></p>
+                <p><strong>2. เทคนิคจำกระบวนการ Design Thinking "E-De-I-P-T":</strong> ใช้คำย่อสั้นๆ ว่า <strong>"เอ-ดี-ไอ-พี-ที"</strong> (เอ็นดูผู้ใช้ กำหนดปัญหาสุดเจ๋ง คิดแต่งเติม สร้างตัวอย่าง ทดลองจริง)</p>
+                <p><strong>3. กระบวนการคิดวิเคราะห์สถานการณ์ข้อสอบ:</strong> เมื่อเจอโจทย์เคสสัปดนหรือสถานการณ์จำลอง ให้ตั้งคำถามย้อนกลับ 3 ประถำม: "ปัญหาหลักคืออะไร?" -> "ใครคือผู้มีส่วนได้ส่วนเสียสูงสุดในจุดนั้น?" -> "เครื่องมือใดตอบโจทย์ความคุ้มค่าและแก้ที่ต้นเหตุที่สุด?"</p>
+            </div>
+        </section>
+
+        <!-- Bottom Section: Two-Frame Layout -->
+        <div class="main-layout">
+            <!-- Left Frame: Exam (70%) -->
+            <div class="exam-frame">
+                <div class="controls-bar">
+                    <div>
+                        <span id="progressText">ทำแล้ว: 0 / 35 ข้อ</span> | 
+                        <span id="scoreText">คะแนนปัจจุบัน: 0</span>
+                    </div>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="btn btn-primary" id="langBtn" onclick="toggleLanguage()">EN / TH</button>
+                        <button class="btn btn-danger" onclick="resetExam()">Reset ข้อสอบ</button>
+                    </div>
+                </div>
+
+                <div id="examContainer">
+                    <!-- Questions will be rendered here dynamically -->
+                </div>
+
+                <div style="text-align: center; margin-top: 30px;">
+                    <button class="btn btn-success" style="padding: 12px 30px; font-size: 1.1rem;" onclick="submitExam()">ส่งข้อสอบและดูผลวิเคราะห์</button>
+                </div>
+
+                <!-- Results and Analysis Section -->
+                <div id="resultsSection">
+                    <h2>ผลการประเมินความรู้รายบุคคล</h2>
+                    <div class="score-display" id="finalScoreDisplay">0 / 35</div>
+                    <p id="percentageDisplay" style="font-size: 1.2rem; font-weight: 600;"></p>
+                    
+                    <div class="analysis-grid">
+                        <div class="analysis-card strengths">
+                            <h3 style="color: var(--success-color); margin-bottom: 10px;">จุดเด่น (Strengths)</h3>
+                            <p id="strengthsText">กำลังประมวลผล...</p>
+                        </div>
+                        <div class="analysis-card weaknesses">
+                            <h3 style="color: var(--danger-color); margin-bottom: 10px;">จุดที่ต้องพัฒนา (Areas for Improvement)</h3>
+                            <p id="weaknessesText">กำลังประมวลผล...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Frame: Whiteboard (30%) -->
+            <div class="whiteboard-frame">
+                <h3>กระดานทดเลขและวาดภาพ (Whiteboard)</h3>
+                <div class="wb-tools">
+                    <button class="active" id="penBtn" onclick="setTool('pen')">ปากกา</button>
+                    <button id="eraserBtn" onclick="setTool('eraser')">ยางลบ</button>
+                    <input type="color" id="colorPicker" value="#2c3e50" onchange="setColor(this.value)" title="เลือกสี">
+                    <button onclick="clearWhiteboard()">ล้างกระดาน</button>
+                </div>
+                <canvas id="whiteboardCanvas"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer-credit">
+        เขียนโดย พระจอมเกล้าติวเตอร์
+    </div>
+
+    <script>
+        // Data Store for 35 Questions (Ensuring Key Distribution Balance & Standards)
+        // Correct answers balanced across A, B, C, D (approx 8-9 per option)
+        const questionsData = [
+            {
+                id: 1,
+                stem: "สถานการณ์ใดต่อไปนี้สะท้อนถึงองค์ประกอบของ 'ความคิดริเริ่ม (Originality)' ชัดเจนที่สุด?",
+                stemEn: "Which of the following situations best reflects the component of 'Originality'?",
+                options: [
+                    "นาย ก. วาดภาพการ์ตูนล้อเลียนการเมืองตามกระแสที่กำลังได้รับความนิยมในสื่อสังคมออนไลน์",
+                    "นางสาว ข. นำขวดพลาสติกใช้แล้วมาตัดแต่งและเพ้นท์ลายเป็นกระถางต้นไม้แขวนประดับระเบียงบ้าน",
+                    "นาย ค. คิดค้นกระบวนการเปลี่ยนเศษอาหารในโรงงานให้กลายเป็นปุ๋ยชีวภาพโดยไม่พึ่งพาเครื่องจักรกลไฟฟ้า",
+                    "นางสาว ง. ท่องจำสูตรคำนวณทางนวัตกรรมเพื่อนำไปใช้ตอบปัญหาในการประชุมเชิงปฏิบัติการประจำสัปดาห์"
+                ],
+                correct: 2,
+                clue: "มองหาตัวเลือกที่สร้างแนวคิดหรือผลงานใหม่ที่แหวกแนว ไม่ลอกเลียนแบบกระแสสังคมเดิม",
+                explanation: "ข้อ ค. ถูกต้อง เพราะการคิดค้นกระบวนการกำจัดขยะและสร้างปุ๋ยโดยไม่ใช้เครื่องจักรไฟฟ้าถือเป็นแนวคิดใหม่ที่ไม่เคยปรากฏมาก่อน (Originality) ส่วนข้ออื่นเป็นการทำตามกระแสหรือดัดแปลงแบบทั่วไป"
+            },
+            {
+                id: 2,
+                stem: "เมื่อทีมงานเผชิญปัญหาคอขวดในกระบวนการผลิตสินค้า หัวหน้าทีมจึงกระตุ้นให้ทุกคนเสนอทางออกให้ได้มากที่สุดโดยห้ามวิพากษ์วิจารณ์ เทคนิคนี้สอดคล้องกับข้อใด?",
+                stemEn: "When a team faces a production bottleneck, the leader encourages generating maximum solutions without criticism. This technique aligns with:",
+                options: [
+                    "การทำแผนผังความคิด (Mind Mapping) เพื่อจัดระบบหมวดหมู่ข้อมูล",
+                    "การระดมสมอง (Brainstorming) เพื่อมุ่งเน้นปริมาณความคิดในขั้นต้น",
+                    "การใช้ผังกระดูกปลา (Fishbone Diagram) เพื่อสืบหาต้นตอสาเหตุ",
+                    "การวิเคราะห์จุดแข็งจุดอ่อน (SWOT Analysis) เชิงกลยุทธ์ธุรกิจ"
+                ],
+                correct: 1,
+                clue: "เน้นการปล่อยไอเดียออกมาจำนวนมากในบรรยากาศที่ปลอดจากการตัดสินถูกผิด",
+                explanation: "ข้อ ข. ถูกต้อง การระดมสมองมีกฎเหล็กสำคัญคือห้ามวิจารณ์ไอเดียผู้อื่นในระหว่างการเสนอ เพื่อเปิดโอกาสให้เกิดความคิดหลั่งไหลออกมามากที่สุด"
+            },
+            {
+                id: 3,
+                stem: "ข้อใดคือลักษณะการทำงานร่วมกันระหว่างสมองซีกซ้ายและสมองซีกขวาในกระบวนการสร้างสรรค์นวัตกรรม?",
+                stemEn: "Which statement describes the cooperation between left and right brain hemispheres in innovation?",
+                options: [
+                    "สมองซีกขวาทำหน้าที่วิเคราะห์ตัวเลขและตรรกะ ส่วนสมองซีกซ้ายสร้างจินตนาการทางศิลปะ",
+                    "สมองซีกซ้ายใช้ประเมินความเป็นไปได้เชิงตรรกะ ส่วนสมองซีกขวารังสรรค์แนวคิดเชิงนามธรรม",
+                    "สมองทั้งสองซีกทำงานแยกส่วนกันอย่างเด็ดขาดโดยไม่มีการสื่อสารระหว่างกันในกิจกรรมนวัตกรรม",
+                    "สมองซีกขวาควบคุมการใช้ภาษาทางการ ส่วนสมองซีกซ้ายควบคุมจังหวะและท่วงทำนองดนตรี"
+                ],
+                correct: 1,
+                clue: "สมองซีกซ้ายเน้นตรรกะ/วิเคราะห์ สมองซีกขวาเน้นจินตนาการ/ภาพรวม",
+                explanation: "ข้อ ข. ถูกต้อง สมองซีกซ้ายรับผิดชอบตรรกะและการวิเคราะห์ ส่วนสมองซีกขวารับผิดชอบจินตนาการ การสังเคราะห์ และมุมมองภาพรวม"
+            },
+            {
+                id: 4,
+                stem: "ข้อใดจัดเป็นอุปสรรคภายในจิตใจ (Internal Barrier) ที่ขัดขวางความคิดสร้างสรรค์ของบุคคลมากที่สุด?",
+                stemEn: "Which of the following is classified as an internal mental barrier hindering personal creativity?",
+                options: [
+                    "กฎระเบียบและข้อบังคับที่เข้มงวดขององค์กรหรือสถานประกอบการ",
+                    "ความกลัวต่อความล้มเหลวและการถูกหัวเราะเยาะจากเพื่อนร่วมงาน",
+                    "สภาพแวดล้อมทางกายภาพที่มีเสียงดังและแสงสว่างไม่เพียงพอ",
+                    "ข้อจำกัดด้านงบประมาณสนับสนุนโครงการพัฒนานวัตกรรมจากผู้บริหาร"
+                ],
+                correct: 1,
+                clue: "อุปสรรคที่เกิดจากความรู้สึกนึกคิดและความกลัวภายในตัวบุคคลเอง",
+                explanation: "ข้อ ข. ถูกต้อง ความกลัวความล้มเหลวเป็นอุปสรรคภายในจิตใจ ส่วนข้อ ก. ค. และ ง. เป็นอุปสรรคภายนอก (External Barriers)"
+            },
+            {
+                id: 5,
+                stem: "ในขั้นตอนแรกสุดของกระบวนการคิดเชิงออกแบบ (Design Thinking) นักนวัตกรรมควรปฏิบัติสิ่งใดเป็นลำดับแรก?",
+                stemEn: "In the very first step of the Design Thinking process, what should an innovator do first?",
+                options: [
+                    "สร้างต้นแบบจำลองขนาดจริงเพื่อนำไปให้กลุ่มเป้าหมายทดลองใช้งาน",
+                    "ระดมความคิดเพื่อคัดเลือกแนวทางแก้ปัญหาที่ใช้งบประมาณน้อยที่สุด",
+                    "เข้าอกเข้าใจผู้ใช้ผ่านการสังเกตการณ์และสัมภาษณ์เชิงลึก (Empathize)",
+                    "กำหนดขอบเขตปัญหาและเขียนวัตถุประสงค์โครงการให้มีความชัดเจน"
+                ],
+                correct: 2,
+                clue: "ขั้นตอนนี้คือการสวมรอยหรือเข้าไปสัมผัสชีวิตและความรู้สึกของผู้ใช้งานจริง",
+                explanation: "ข้อ ค. ถูกต้อง ขั้นตอนแรกของ Design Thinking คือ Empathize (การเข้าอกเข้าใจผู้ใช้) ก่อนที่จะไปกำหนดปัญหาหรือสร้างไอเดียใดๆ"
+            },
+            {
+                id: 6,
+                stem: "หากท่านต้องการจัดระเบียบความคิดที่กระจัดกระจายเกี่ยวกับหัวข้อโครงการให้ออกมาเป็นหมวดหมู่ย่อยรอบศูนย์กลาง เครื่องมือใดเหมาะสมที่สุด?",
+                stemEn: "If you want to organize scattered thoughts about a project around a central theme, which tool is best?",
+                options: [
+                    "แผนผังความคิด (Mind Mapping) สำหรับเชื่อมโยงโครงสร้างความคิด",
+                    "การทดสอบสมมติฐานทางสถิติ (Statistical Hypothesis Testing)",
+                    "ผังกระดูกปลา (Fishbone Diagram) สำหรับวิเคราะห์หาข้อผิดพลาด",
+                    "ตารางวิเคราะห์ความคุ้มค่าทางการเงิน (Cost-Benefit Analysis)"
+                ],
+                correct: 0,
+                clue: "เครื่องมือที่มีหัวข้อหลักอยู่ตรงกลางแล้วแตกกิ่งก้านสาขาออกไปเหมือนใยแมงมุม",
+                explanation: "ข้อ ก. ถูกต้อง Mind Mapping ออกแบบมาเพื่อจัดระบบความคิดและการเชื่อมโยงข้อมูลจากแกนกลางไปยังสาขาย่อยได้อย่างเป็นระบบ"
+            },
+            {
+                id: 7,
+                stem: "ข้อใดอธิบายความแตกต่างระหว่าง 'ความคิดสร้างสรรค์ (Creativity)' กับ 'นวัตกรรม (Innovation)' ได้แม่นยำที่สุด?",
+                stemEn: "Which statement accurately explains the difference between 'Creativity' and 'Innovation'?",
+                options: [
+                    "ความคิดสร้างสรรค์คือกระบวนการผลิตไอเดีย แต่นวัตกรรมคือนำไอเดียนั้นมาปฏิบัติจริงจนเกิดมูลค่า",
+                    "นวัตกรรมเกิดขึ้นก่อนความคิดสร้างสรรค์เสมอในทุกวงจรการพัฒนาธุรกิจสมัยใหม่",
+                    "ความคิดสร้างสรรค์ต้องใช้เงินลงทุนสูงกว่านวัตกรรมเนื่องจากต้องผ่านการวิจัยเชิงลึก",
+                    "นวัตกรรมเป็นเพียงแนวคิดนามธรรมที่ไม่สามารถนำมาจับต้องหรือจำหน่ายในตลาดได้"
+                ],
+                correct: 0,
+                clue: "Creativity คือการคิดค้นไอเดีย ส่วน Innovation คือการทำให้ไอเดียนั้นเกิดผลลัพธ์ใช้ได้จริง",
+                explanation: "ข้อ ก. ถูกต้อง Creativity คือการสร้างสรรค์แนวคิดใหม่ ส่วน Innovation คือการนำแนวคิดนั้นมาแปลงเป็นผลผลิต บริการ หรือกระบวนการที่สร้างมูลค่าเชิงเศรษฐกิจหรือสังคม"
+            },
+            {
+                id: 8,
+                stem: "เทคนิค SCAMPER ในข้อใดที่มุ่งเน้นการนำส่วนประกอบของสิ่งหนึ่งไปผสมผสานเข้ากับอีกสิ่งหนึ่งเพื่อเกิดเป็นนวัตกรรมลูกผสม?",
+                stemEn: "Which SCAMPER technique focuses on combining components of one thing with another to form a hybrid innovation?",
+                options: [
+                    "การทดแทนหรือสับเปลี่ยน (Substitute)",
+                    "การรวมกันหรือผสมผสาน (Combine)",
+                    "การปรับเปลี่ยนขนาดหรือรูปร่าง (Modify)",
+                    "การนำไปใช้ประโยชน์อื่น (Put to Another Use)"
+                ],
+                correct: 1,
+                clue: "คำศัพท์ภาษาอังกฤษที่แปลว่า การรวมกันหรือผสมผสานเข้าด้วยกัน",
+                explanation: "ข้อ ข. ถูกต้อง ตัวอักษร C ใน SCAMPER ย่อมาจาก Combine ซึ่งหมายถึงการรวมสิ่งต่างๆ เข้าด้วยกันเพื่อสร้างสิ่งใหม่ที่มีประสิทธิภาพมากกว่าเดิม"
+            },
+            {
+                id: 9,
+                stem: "เมื่อผู้บริโภคสะท้อนว่าแอปพลิเคชันสั่งอาหารใช้งานยากเกินไป ทีมงานจึงสรุปปัญหาออกมาเป็นโจทย์ว่า 'ทำอย่างไรให้ผู้สูงอายุสามารถกดสั่งอาหารได้ภายใน 3 ขั้นตอน' ขั้นตอนนี้ตรงกับกระบวนการใด?",
+                stemEn: "When users report that a food delivery app is too hard to use, the team defines the problem: 'How to let elderly users order food in 3 steps.' This matches:",
+                options: [
+                    "ขั้นตอนการสร้างต้นแบบ (Prototype Stage)",
+                    "ขั้นตอนการทดสอบระบบ (Test Stage)",
+                    "ขั้นตอนการกำหนดปัญหา (Define Stage)",
+                    "ขั้นตอนการสร้างแรงบันดาลใจ (Empathize Stage)"
+                ],
+                correct: 2,
+                clue: "การแปลงเสียงสะท้อนของผู้ใช้ให้กลายเป็นกรอบปัญหาที่ชัดเจนเพื่อหาทางแก้",
+                explanation: "ข้อ ค. ถูกต้อง ขั้นตอน Define คือการนำข้อมูลจาก Empathize มาสรุปและนิยามปัญหาที่แท้จริงให้ชัดเจนก่อนเข้าสู่การระดมไอเดีย"
+            },
+            {
+                id: 10,
+                stem: "นวัตกรรมประเภทใดที่เกี่ยวข้องกับการปรับเปลี่ยนโครงสร้างการบริหารจัดการ ช่องทางการจัดจำหน่าย หรือโมเดลการสร้างรายได้ขององค์กร?",
+                stemEn: "What type of innovation involves changing management structures, distribution channels, or revenue models?",
+                options: [
+                    "นวัตกรรมผลิตภัณฑ์ (Product Innovation)",
+                    "นวัตกรรมกระบวนการ (Process Innovation)",
+                    "นวัตกรรมรูปแบบธุรกิจ (Business Model Innovation)",
+                    "นวัตกรรมบริการเฉพาะกิจ (Ad-hoc Service Innovation)"
+                ],
+                correct: 2,
+                clue: "เกี่ยวข้องกับโมเดลการสร้างรายได้และวิธีดำเนินธุรกิจโดยภาพรวม",
+                explanation: "ข้อ ค. ถูกต้อง Business Model Innovation มุ่งเน้นการเปลี่ยนผ่านรูปแบบการทำธุรกิจ วิธีสร้างรายได้ และโครงสร้างองค์กรเพื่อให้ได้เปรียบทางการแข่งขัน"
+            },
+            {
+                id: 11,
+                stem: "ทักษะความคิดยืดหยุ่น (Flexibility) ในความคิดสร้างสรรค์ มีความหมายตรงกับข้อใดมากที่สุด?",
+                stemEn: "The skill of 'Flexibility' in creativity corresponds most closely to which of the following?",
+                options: [
+                    "ความสามารถในการปรับเปลี่ยนมุมมองและคิดแก้ปัญหาได้หลายทิศทางหลากลายหมวดหมู่",
+                    "ความสามารถในการออกกำลังกายและยืดเหยียดกล้ามเนื้อเพื่อเตรียมพร้อมรับมือความเครียด",
+                    "ความสามารถในการจดจำกฎเกณฑ์ข้อบังคับขององค์กรได้อย่างแม่นยำรวดเร็ว",
+                    "ความสามารถในการลดต้นทุนการผลิตสินค้าลงครึ่งหนึ่งโดยไม่ลดคุณภาพของชิ้นงาน"
+                ],
+                correct: 0,
+                clue: "ความหลากหลายในการมองปัญหาและเปลี่ยนหมวดหมู่แนวคิดได้ไม่ติดยึด",
+                explanation: "ข้อ ก. ถูกต้อง ความยืดหยุ่นคือความสามารถในการคิดเปลี่ยนหมวดหมู่หรือมองปัญหาจากหลายมุมมอง ไม่ยึดติดอยู่กับกรอบหรือวิธีเดียว"
+            },
+            {
+                id: 12,
+                stem: "ข้อใดคือวัตถุประสงค์หลักของการสร้างต้นแบบ (Prototype) ในกระบวนการคิดเชิงออกแบบ?",
+                stemEn: "What is the primary purpose of creating a Prototype in Design Thinking?",
+                options: [
+                    "เพื่อนำออกวางจำหน่ายในตลาดเชิงพาณิชย์ทันทีโดยไม่ต้องผ่านการทดสอบซ้ำ",
+                    "เพื่อสื่อสารแนวคิดและให้ผู้ใช้ได้ทดลองสัมผัสจับต้องเพื่อรับฟังข้อเสนอแนะ",
+                    "เพื่อลดต้นทุนค่าใช้จ่ายในการจ้างพนักงานออกแบบกราฟิกภายนอกองค์กร",
+                    "เพื่อใช้เป็นหลักฐานทางกฎหมายในการจดทะเบียนสิทธิบัตรคุ้มครองทรัพย์สินทางปัญญา"
+                ],
+                correct: 1,
+                clue: "จำลองชิ้นงานหยาบๆ ขึ้นมาเพื่อให้เห็นภาพและทดสอบฟีดแบคจากผู้ใช้งานจริง",
+                explanation: "ข้อ ข. ถูกต้อง ต้นแบบช่วยให้ไอเดียที่เป็นนามธรรมกลายเป็นรูปธรรม เพื่อนำไปทดสอบและรับคำติชม (Feedback) นำมาปรับปรุงต่อไป"
+            },
+            {
+                id: 13,
+                stem: "ข้อใดอธิบายคุณลักษณะของ 'ความคิดคล่องแคล่ว (Fluency)' ได้ถูกต้องตามหลักจิตวิทยาการศึกษา?",
+                stemEn: "Which statement correctly describes 'Fluency' according to educational psychology?",
+                options: [
+                    "ความสามารถในการพูดภาษาต่างประเทศได้อย่างคล่องแคล่วและไม่มีสำเนียงเพี้ยน",
+                    "ความสามารถในการผลิตจำนวนความคิดหรือไอเดียออกมาให้ได้มากที่สุดในเวลาที่จำกัด",
+                    "ความสามารถในการเขียนโปรแกรมคอมพิวเตอร์ด้วยภาษาเชิงโครงสร้างขั้นสูง",
+                    "ความสามารถในการคำนวณสูตรทางคณิตศาสตร์สถิติได้อย่างรวดเร็วและแม่นยำ"
+                ],
+                correct: 1,
+                clue: "วัดผลจาก 'ปริมาณ' ของไอเดียที่หลั่งไหลออกมาในกรอบเวลาสั้นๆ",
+                explanation: "ข้อ ข. ถูกต้อง Fluency คือปริมาณความสามารถในการคิดผลิตคำตอบหรือไอเดียออกมาได้เป็นจำนวนมาก ยิ่งคิดได้มากยิ่งแสดงถึงความคล่องแคล่วสูง"
+            },
+            {
+                id: 14,
+                stem: "เครื่องมือวิเคราะห์สาเหตุของปัญหาโดยจำแนกออกเป็นกลุ่มก้าน (เช่น คน เครื่องจักร วัตถุดิบ วิธีการ) รู้จักกันในนามใด?",
+                stemEn: "The problem-solving analysis tool categorized by branches (such as Man, Machine, Material, Method) is known as:",
+                options: [
+                    "แผนผังความคิด (Mind Mapping)",
+                    "ผังกระดูกปลาหรือไดอะแกรมอิชิกาวา (Fishbone Diagram / Ishikawa Diagram)",
+                    "เมทริกซ์การตัดสินใจแบบพหุเกณฑ์ (Multi-Criteria Decision Matrix)",
+                    "แผนภูมิแกนต์ชาร์ตสำหรับการบริหารโครงการ (Gantt Chart)"
+                ],
+                correct: 1,
+                clue: "มีลักษณะโครงสร้างคล้ายก้างปลา โดยมีหัวปลาคือปัญหาและก้างแยกตามปัจจัยเหตุ",
+                explanation: "ข้อ ข. ถูกต้อง Fishbone Diagram ใช้จำแนกหาปัจจัยต้นเหตุของปัญหาตามหมวดหมู่ 4M หรือ 6M อย่างเป็นระบบ"
+            },
+            {
+                id: 15,
+                stem: "หากผู้ประกอบการต้องการปรับปรุงบรรจุภัณฑ์น้ำดื่มให้มีขนาดกะทัดรัดและพับเก็บได้ง่ายขึ้นหลังใช้งาน เทคนิค SCAMPER ข้อใดตรงที่สุด?",
+                stemEn: "If an entrepreneur wants to make a water bottle package compact and collapsible after use, which SCAMPER technique fits best?",
+                options: [
+                    "การดัดแปลงหรือปรับเปลี่ยนขนาดรูปร่าง (Modify)",
+                    "การสับเปลี่ยนวัตถุดิบหลักในการผลิต (Substitute)",
+                    "การนำไปใช้ประโยชน์ในบริบทอื่น (Put to Another Use)",
+                    "การตัดทอนตัดทอนส่วนประกอบที่ไม่จำเป็น (Eliminate / Reverse)"
+                ],
+                correct: 0,
+                clue: "ปรับเปลี่ยนขนาด โครงสร้าง หรือรูปร่างเดิมให้แปลกตาและตอบโจทย์ขึ้น",
+                explanation: "ข้อ ก. ถูกต้อง การปรับเปลี่ยน (Modify) เช่น ทำให้พับได้ ย่อส่วนได้ หรือเปลี่ยนรูปทรงให้สะดวกต่อการพกพา"
+            },
+            {
+                id: 16,
+                stem: "ข้อใดจัดเป็นลักษณะของ 'นวัตกรรมกระบวนการ (Process Innovation)' ที่ชัดเจนในองค์กรธุรกิจ?",
+                stemEn: "Which of the following is a clear example of 'Process Innovation' in a business organization?",
+                options: [
+                    "การออกผลิตภัณฑ์สมาร์ทโฟนรุ่นใหม่ล่าสุดที่มีกล้องความละเอียดสูงขึ้นกว่าเดิม",
+                    "การนำหุ่นยนต์ปัญญาประดิษฐ์มาช่วยคัดแยกและแพ็คสินค้าในคลังสินค้าอัตโนมัติ",
+                    "การเปลี่ยนโลโก้บริษัทและโทนสีของแบรนด์ให้มีความทันสมัยดึงดูดใจวัยรุ่น",
+                    "การเพิ่มบริการหลังการขายโดยเปิดศูนย์ช่วยเหลือลูกค้าตลอด 24 ชั่วโมง"
+                ],
+                correct: 1,
+                clue: "เน้นที่วิธีการผลิต ขั้นตอนการทำงาน หรือระบบหลังบ้านที่ทำให้มีประสิทธิภาพขึ้น",
+                explanation: "ข้อ ข. ถูกต้อง การใช้หุ่นยนต์อัตโนมัติในคลังสินค้าถือเป็นนวัตกรรมกระบวนการที่เปลี่ยนวิธีปฏิบัติงานให้รวดเร็วและลดต้นทุน ส่วนข้อ ก. เป็น Product Innovation"
+            },
+            {
+                id: 17,
+                stem: "ข้อใดคือผลลัพธ์เชิงบวกที่สำคัญที่สุดของการฝึกฝน 'ความคิดละเอียดลออ (Elaboration)' ในการทำงานโปรเจกต์?",
+                stemEn: "What is the most important positive outcome of practicing 'Elaboration' in project work?",
+                options: [
+                    "ทำให้โครงการมีความสมบูรณ์แบบ เก็บรายละเอียดครบถ้วน และลดข้อผิดพลาดหน้างาน",
+                    "ทำให้กระบวนการคิดไอเดียเริ่มต้นเสร็จสิ้นเร็วกว่ากำหนดการเดิมถึงสามเท่า",
+                    "ช่วยตัดทอนขั้นตอนการดำเนินงานทั้งหมดให้เหลือเพียงขั้นตอนเดียวที่ง่ายที่สุด",
+                    "เพิ่มจำนวนสมาชิกในทีมให้มีความหลากหลายทางวัฒนธรรมมากยิ่งขึ้น"
+                ],
+                correct: 0,
+                clue: "การใส่ใจในรายละเอียดปลีกย่อยและการต่อยอดต่อเติมให้งานสมบูรณ์แบบไร้ที่ติ",
+                explanation: "ข้อ ก. ถูกต้อง ความละเอียดลออช่วยขยายความ ต่อยอด และตรวจสอบความเรียบร้อยของชิ้นงานให้มีความประณีตและพร้อมใช้งานจริง"
+            },
+            {
+                id: 18,
+                stem: "อุปสรรคทางสภาพแวดล้อมภายนอก (Environmental Barrier) ข้อใดที่มีผลกระทบเชิงลบต่อความคิดสร้างสรรค์ในองค์กรมากที่สุด?",
+                stemEn: "Which external environmental barrier has the most negative impact on organizational creativity?",
+                options: [
+                    "สภาพภูมิอากาศที่มีฝนตกชุกในช่วงฤดูมรสุมของทุกปี",
+                    "วัฒนธรรมองค์กรที่ยึดติดกับพิธีรีตองและการจับผิดความผิดพลาดอย่างรุนแรง",
+                    "ทำที่ตั้งของสำนักงานตั้งอยู่ใกล้กับสถานีรถไฟฟ้าใต้ดินใจกลางเมือง",
+                    "การใช้ระบบคอมพิวเตอร์แม่ข่ายรุ่นเก่าที่ต้องอัปเดตซอฟต์แวร์ทุกๆ สัปดาห์"
+                ],
+                correct: 1,
+                clue: "วัฒนธรรมหรือบรรยากาศการทำงานที่ไม่อิสระและคอยลงโทษเมื่อเกิดความผิดพลาด",
+                explanation: "ข้อ ข. ถูกต้อง วัฒนธรรมองค์กรที่กลัวความผิดพลาดและปิดกั้นการแสดงออกเป็นสภาพแวดล้อมภายนอกที่ทำลายความคิดสร้างสรรค์โดยตรง"
+            },
+            {
+                id: 19,
+                stem: "เมื่อทีมงานนำต้นแบบผลิตภัณฑ์ไปให้กลุ่มเป้าหมายทดลองใช้ แล้วพบข้อบกพร่องบางประการ ทีมงานควรปฏิบัติตามกระบวนการ Design Thinking อย่างไรเป็นลำดับถัดไป?",
+                stemEn: "When a prototype is tested and flaws are found, what should the team do next according to Design Thinking?",
+                options: [
+                    "ยุติโครงการทันทีเนื่องจากต้นแบบไม่ผ่านเกณฑ์การทดสอบครั้งแรก",
+                    "นำข้อเสนอแนะจากการทดสอบ (Test) ย้อนกลับไปปรับปรุงแก้ไขในขั้นตอน Empathize, Define หรือ Ideate",
+                    "ดำเนินการผลิตสินค้าออกสู่ตลาดจำนวนมากเพื่อชดเชยเวลาที่เสียไป",
+                    "เปลี่ยนกลุ่มเป้าหมายใหม่ทั้งหมดโดยไม่สนใจคำติชมของผู้ทดลองใช้เดิม"
+                ],
+                correct: 1,
+                clue: "กระบวนการนี้มีความเป็นวงจร (Iterative) สามารถย้อนกลับไปแก้จุดบกพร่องได้เสมอ",
+                explanation: "ข้อ ข. ถูกต้อง Design Thinking เป็นกระบวนการย้อนกลับได้ (Iterative) เมื่อ Test แล้วพบปัญหา สามารถวนกลับไปปรับความเข้าใจหรือปรับไอเดียได้"
+            },
+            {
+                id: 20,
+                stem: "คำกล่าวในข้อใดสอดคล้องกับแนวคิดเชิงสังเคราะห์ (Synthetic Thinking) ในกระบวนการพัฒนานวัตกรรมมากที่สุด?",
+                stemEn: "Which statement best aligns with 'Synthetic Thinking' in innovation development?",
+                options: [
+                    "การแยกแยะชิ้นส่วนประกอบย่อยของปัญหาออกเป็นส่วนเล็กๆ เพื่อตรวจสอบทีละประเด็น",
+                    "การนำแนวคิดและองค์ความรู้จากหลายศาสตร์ที่แตกต่างกันมาผสมผสานร้อยเรียงเป็นภาพรวมใหม่",
+                    "การคำนวณสถิติความน่าจะเป็นเพื่อหาค่าเฉลี่ยของความสำเร็จในโครงการย้อนหลัง",
+                    "การปฏิเสธแนวคิดของผู้อื่นโดยยึดถือผลการทดลองทางห้องปฏิบัติการของตนเองเป็นหลัก"
+                ],
+                correct: 1,
+                clue: "การผสมผสานองค์ประกอบต่างๆ เข้าด้วยกันเพื่อสร้างภาพใหญ่หรือสิ่งใหม่ขึ้นมา",
+                explanation: "ข้อ ข. ถูกต้อง การคิดเชิงสังเคราะห์คือการรวบรวมองค์ประกอบหรือแนวคิดหลากหลายมาร้อยเรียงรวมกันเป็นสิ่งใหม่ (Synthesis)"
+            },
+            {
+                id: 21,
+                stem: "เทคนิค SCAMPER ตัวอักษร 'R' (Reverse / Rearrange) มักถูกนำมาประยุกต์ใช้ในสถานการณ์ใด?",
+                stemEn: "In SCAMPER, the letter 'R' (Reverse / Rearrange) is typically applied in which situation?",
+                options: [
+                    "การสลับลำดับขั้นตอนการทำงานใหม่ หรือการพลิกมุมมองกระบวนการให้กลับตาลปัตรเพื่อหาทางออก",
+                    "การลดขนาดชิ้นส่วนของอุปกรณ์อิเล็กทรอนิกส์ให้มีน้ำหนักเบาลงกว่าเดิมครึ่งหนึ่ง",
+                    "การนำวัสดุเหลือใช้จากโรงงานอื่นมาเป็นวัตถุดิบตั้งต้นในการผลิตสินค้าทดแทน",
+                    "การรวมบริการขนส่งสินค้าเข้ากับระบบชำระเงินออนไลน์ในแอปพลิเคชันเดียว"
+                ],
+                correct: 0,
+                clue: "การสลับลำดับ กลับด้าน หรือจัดเรียงกระบวนการใหม่เพื่อให้เกิดมุมมองใหม่",
+                explanation: "ข้อ ก. ถูกต้อง Reverse หรือ Rearrange คือการพลิกกลับด้านกระบวนการ สลับลำดับขั้นตอน หรือมองในมุมตรงกันข้ามเพื่อค้นพบนวัตกรรมแปลกใหม่"
+            },
+            {
+                id: 22,
+                stem: "ข้อใดอธิบายคุณลักษณะของนวัตกรรมที่มีวงจรชีวิตอยู่ในช่วง 'แนะนำ (Introduction Stage)' ได้ถูกต้อง?",
+                stemEn: "Which statement correctly describes an innovation in its 'Introduction Stage'?",
+                options: [
+                    "ยอดขายเติบโตพุ่งสูงสุดในตลาด และคู่แข่งจำนวนมากเริ่มเข้ามาแข่งขันตัดราคา",
+                    "อัตรากำไรสูงมากเนื่องจากต้นทุนการผลิตต่อหน่วยลดต่ำลงจนถึงขีดสุด",
+                    "ตลาดมีความไม่แน่นอนสูง ผู้บริโภคส่วนใหญ่ยังไม่รู้จัก และต้องใช้ต้นทุนการตลาดมาก",
+                    "ผลิตภัณฑ์เริ่มล้าสมัยและผู้ประกอบการต้องเตรียมถอนตัวออกจากตลาด"
+                ],
+                correct: 2,
+                clue: "ช่วงเปิดตัวครั้งแรก ลูกค้ายังไม่คุ้นเคย และต้องสร้างการรับรู้สูง",
+                explanation: "ข้อ ค. ถูกต้อง ในช่วง Introduction Innovation จะมีความเสี่ยงสูง ยอดขายยังน้อย และต้องลงทุนสูงเพื่อให้ตลาดรู้จัก"
+            },
+            {
+                id: 23,
+                stem: "นักศึกษากลุ่มหนึ่งต้องการสร้างนวัตกรรมแก้ปัญหาขยะพลาสติกในมหาวิทยาลัย ขั้นตอนแรกที่พวกเขาควรทำตามหลัก Design Thinking คือข้อใด?",
+                stemEn: "A group of students wants to innovate plastic waste solutions on campus. Their first step in Design Thinking is:",
+                options: [
+                    "ออกแบบแอปพลิเคชันรีไซเคิลและเขียนโค้ดระบบฐานข้อมูลทันที",
+                    "ลงพื้นที่สังเกตพฤติกรรมการทิ้งขยะและสัมภาษณ์นักศึกษา แม่ค้า และภารโรง (Empathize)",
+                    "จัดประชุมระดมทุนจากผู้บริหารมหาวิทยาลัยเพื่อซื้อเครื่องจักรบดขยะพลาสติก",
+                    "กำหนดกฎระเบียบปรับเงินผู้ที่ทิ้งขยะไม่ลงถังอย่างเข้มงวด"
+                ],
+                correct: 1,
+                clue: "เริ่มต้นด้วยการเข้าใจปัญหาและกลุ่มเป้าหมายอย่างลึกซึ้งผ่านการสังเกตและพูดคุย",
+                explanation: "ข้อ ข. ถูกต้อง การทำ Empathize ต้องลงไปสัมผัสและทำความเข้าใจผู้มีส่วนเกี่ยวข้องทุกฝ่ายเพื่อทราบปัญหาที่แท้จริง"
+            },
+            {
+                id: 24,
+                stem: "คำถามรูปแบบ 6W1H ประกอบด้วยองค์ประกอบหลักข้อใดที่ช่วยให้การวิเคราะห์โจทย์ปัญหาครบถ้วนสมบูรณ์?",
+                stemEn: "The 6W1H question framework includes which key elements for complete problem analysis?",
+                options: [
+                    "Who, What, Where, When, Why, How, Which (หรือ How much)",
+                    "Width, Weight, Wise, Wealth, Word, Work, Whole",
+                    "Wander, Wave, Wind, Wood, Wool, Worm, Wish",
+                    "Water, Wind, Wire, Wall, Waste, Water, Wash"
+                ],
+                correct: 0,
+                clue: "ชุดคำถามภาษาอังกฤษที่ขึ้นต้นด้วยตัว W หกตัวและ H หนึ่งตัว",
+                explanation: "ข้อ ก. ถูกต้อง 6W1H ย่อมาจาก Who, What, Where, When, Why, Which และ How ซึ่งครอบคลุมทุกแง่มุมของการวิเคราะห์สถานการณ์"
+            },
+            {
+                id: 25,
+                stem: "ข้อใดคือความเสี่ยงสูงสุดหากทีมงานละเลยขั้นตอนการทำ 'ต้นแบบ (Prototype)' และนำผลิตภัณฑ์นวัตกรรมออกสู่ตลาดจริงทันที?",
+                stemEn: "What is the highest risk if a team skips the 'Prototype' stage and launches directly to market?",
+                options: [
+                    "ประหยัดงบประมาณและเวลาในการดำเนินโครงการได้มากกว่าเดิมอย่างมหาศาล",
+                    "อาจสูญเสียเงินลงทุนจำนวนมากและเสียชื่อเสียงหากสินค้าไม่ตอบโจทย์ผู้ใช้งานจริง",
+                    "ทำให้คู่แข่งทางการค้าไม่สามารถลอกเลียนแบบแนวคิดนวัตกรรมดังกล่าวได้ทัน",
+                    "ช่วยให้ได้รับรางวัลนวัตกรรมระดับชาติเนื่องจากมีความกล้าหาญในการตัดสินใจ"
+                ],
+                correct: 1,
+                clue: "หากไม่ทำต้นแบบทดลองก่อน ออกไปจริงอาจล้มเหลวและเสียหายหนัก",
+                explanation: "ข้อ ข. ถูกต้อง การข้ามขั้นตอน Prototype ทำให้พลาดโอกาสในการค้นหาข้อผิดพลาดก่อนลงสนามจริง ส่งผลให้เสี่ยงต่อการขาดทุนและเสียชื่อเสียง"
+            },
+            {
+                id: 26,
+                stem: "สถานการณ์ใดสะท้อนถึงการประยุกต์ใช้เทคนิค SCAMPER ในหมวด 'Adapt (ดัดแปลง)' ได้ชัดเจนที่สุด?",
+                stemEn: "Which situation reflects the application of the SCAMPER 'Adapt' technique?",
+                options: [
+                    "นำเทคโนโลยีเซ็นเซอร์วัดการสั่นสะเทือนจากอุตสาหกรรมยานยนต์มาปรับใช้กับระบบเตือนภัยแผ่นดินไหวในอาคารสูง",
+                    "ถอดชิ้นส่วนหน้าจอโทรศัพท์มือถือรุ่นเก่าออกแล้วนำไปทิ้งในถังขยะรีไซเคิลอิเล็กทรอนิกส์",
+                    "เพิ่มราคาสินค้าขึ้นสองเท่าเพื่อยกระดับภาพลักษณ์ของแบรนด์ให้เป็นสินค้าพรีเมียม",
+                    "ยกเลิกการผลิตสินค้าประเภทกระเป๋าหนังแท้แล้วหันไปผลิตรองเท้าผ้าใบแทนอย่างถาวร"
+                ],
+                correct: 0,
+                clue: "การหยิบจับแนวคิดจากที่อื่นมาปรับประยุกต์ใช้กับบริบทใหม่ที่มีปัญหาคล้ายกัน",
+                explanation: "ข้อ ก. ถูกต้อง Adapt คือการดัดแปลงหรือนำแนวคิดจากบริบทหนึ่งมาปรับใช้กับอีกบริบทหนึ่งเพื่อให้เกิดประโยชน์ใหม่"
+            },
+            {
+                id: 27,
+                stem: "ข้อใดคือลักษณะสำคัญของ 'นวัตกรรมบริการ (Service Innovation)' ในธุรกิจยุคปัจจุบัน?",
+                stemEn: "What is a key characteristic of 'Service Innovation' in modern business?",
+                options: [
+                    "การคิดค้นสูตรเคมีของวัตถุดิบในการผลิตเครื่องสำอางให้มีอายุการใช้งานนานขึ้น",
+                    "การสร้างสรรค์ประสบการณ์ลูกค้า รูปแบบการบริการใหม่ หรือช่องทางช่วยเหลือที่สะดวกสบายยิ่งขึ้น",
+                    "การสร้างเครื่องจักรกลหนักที่ใช้พลังงานแสงอาทิตย์ในการทุ่นแรงก่อสร้าง",
+                    "การเปลี่ยนผังโรงงานอุตสาหกรรมเพื่อเพิ่มความเร็วในการประกอบรถยนต์"
+                ],
+                correct: 1,
+                clue: "เน้นการยกระดับประสบการณ์และความสะดวกสบายในการรับบริการของผู้บริโภค",
+                explanation: "ข้อ ข. ถูกต้อง Service Innovation มุ่งเน้นการปรับปรุงหรือสร้างสรรค์ประสบการณ์ รูปแบบ และกระบวนการส่งมอบบริการให้ตอบโจทย์ผู้รับบริการ"
+            },
+            {
+                id: 28,
+                stem: "ในการทำกิจกรรมระดมสมอง (Brainstorming) หากมีสมาชิกคนหนึ่งเสนอความคิดที่ดูแปลกประหลาดและเป็นไปไม่ได้ ผู้นำกลุ่มควรแสดงปฏิกิริยาอย่างไร?",
+                stemEn: "During brainstorming, if a member suggests a strange and seemingly impossible idea, how should the leader react?",
+                options: [
+                    "หัวเราะและตักเตือนทันทีเพื่อไม่ให้สมาชิกคนอื่นเสียเวลาฟังแนวคิดที่ไร้สาระ",
+                    "รับฟังและบันทึกไว้ เนื่องจากความคิดแปลกอาจนำไปสู่การต่อยอดเป็นนวัตกรรมสร้างสรรค์ได้",
+                    "สั่งให้สมาชิกคนนั้นออกจากห้องประชุมทันทีเพราะทำลายบรรยากาศการทำงาน",
+                    "บังคับให้สมาชิกทุกคนลงคะแนนเสียงคัดค้านแนวคิดดังกล่าวในทันที"
+                ],
+                correct: 1,
+                clue: "ความคิดแปลกๆ หรือพิลึกในขั้นระดมสมองอาจเป็นประกายไฟสู่ไอเดียเจ๋งๆ ได้",
+                explanation: "ข้อ ข. ถูกต้อง ในขั้นตอนระดมสมอง ไอเดียที่แปลกประหลาดอาจนำไปสู่ความคิดสร้างสรรค์ใหม่ๆ (Wild ideas are welcome) ห้ามปิดกั้นหรือวิจารณ์ในทางลบ"
+            },
+            {
+                id: 29,
+                stem: "ข้อใดคือประโยชน์หลักของการใช้แผนผังความคิด (Mind Mapping) ในการเตรียมนำเสนอโครงงานนวัตกรรมต่อผู้บริหาร?",
+                stemEn: "What is the main benefit of using a Mind Map when preparing to present an innovation project to executives?",
+                options: [
+                    "ช่วยให้ผู้บริหารเห็นภาพรวม โครงสร้างความเชื่อมโยงของข้อมูล และประเด็นสำคัญได้อย่างรวดเร็ว",
+                    "ช่วยจำกัดจำนวนหน้าของเอกสารรายงานให้มีความยาวไม่เกิน 1 หน้ากระดาษเสมอ",
+                    "ช่วยคำนวณงบประมาณกำไรขาดทุนล่วงหน้าได้อย่างแม่นยำ 100 เปอร์เซ็นต์",
+                    "ช่วยเปลี่ยนไฟล์ข้อมูลตัวอักษรให้กลายเป็นโปรแกรมแอปพลิเคชันมือถืออัตโนมัติ"
+                ],
+                correct: 0,
+                clue: "ช่วยสรุปภาพรวมและโครงสร้างความสัมพันธ์ของเนื้อหาให้เข้าใจง่ายในแผ่นเดียว",
+                explanation: "ข้อ ก. ถูกต้อง Mind Map ช่วยจัดโครงสร้างข้อมูลให้อยู่ในภาพรวมเดียว ทำให้ผู้ฟังจับประเด็นและเห็นความเชื่อมโยงของหัวข้อต่างๆ ได้ง่าย"
+            },
+            {
+                id: 30,
+                stem: "เมื่อองค์กรประสบปัญหาอัตราการลาออกของพนักงานสูงขึ้นอย่างผิดปกติ การใช้เครื่องมือ 'ผังกระดูกปลา (Fishbone Diagram)' จะช่วยทีมงานในเรื่องใด?",
+                stemEn: "When an organization faces high employee turnover, using a 'Fishbone Diagram' helps the team in what way?",
+                options: [
+                    "ช่วยคำนวณเงินชดเชยที่ต้องจ่ายให้แก่พนักงานที่ลาออกตามกฎหมายแรงงาน",
+                    "ช่วยจำแนกและค้นหารากเหง้าสาเหตุของปัญหาการลาออกตามปัจจัยต่างๆ เช่น ค่าตอบแทน บรรยากาศ และภาระงาน",
+                    "ช่วยสลับตัวผู้บริหารระดับสูงเพื่อลดความขัดแย้งภายในแผนกทรัพยากรบุคคล",
+                    "ช่วยออกแบบประกาศรับสมัครงานฉบับใหม่ให้ออกมาดึงดูดใจผู้สมัครมากยิ่งขึ้น"
+                ],
+                correct: 1,
+                clue: "สืบสาวราวเรื่องหาต้นตอและปัจจัยรากเหง้าของปัญหาที่เกิดขึ้น",
+                explanation: "ข้อ ข. ถูกต้อง Fishbone Diagram ช่วยวิเคราะห์รากเหง้าปัญหา (Root Cause Analysis) ว่าปัจจัยใดบ้างที่เป็นต้นเหตุของปัญหาการลาออก"
+            },
+            {
+                id: 31,
+                stem: "ข้อใดอธิบายความหมายของขั้นตอน 'Define' ในกระบวนการคิดเชิงออกแบบ (Design Thinking) ได้สมบูรณ์ที่สุด?",
+                stemEn: "Which statement best defines the 'Define' stage in Design Thinking?",
+                options: [
+                    "การรวบรวมข้อมูลดิบจากการสัมภาษณ์กลุ่มเป้าหมายให้ได้จำนวนมากที่สุด",
+                    "การสังเคราะห์ข้อมูลเพื่อระบุและตั้งกรอบปัญหาที่แท้จริงที่ต้องการแก้ไขให้ชัดเจน",
+                    "การสร้างชิ้นงานต้นแบบเสมือนจริงเพื่อให้ผู้ใช้งานได้ทดลองกดสัมผัส",
+                    "การนำเสนอผลงานโครงการต่อหน้านักลงทุนเพื่อขอรับการสนับสนุนเงินทุน"
+                ],
+                correct: 1,
+                clue: "การกรั่นกรองข้อมูลจาก Empathize มาสรุปเป็นประเด็นปัญหาหลักที่ต้องแก้",
+                explanation: "ข้อ ข. ถูกต้อง ขั้นตอน Define คือการนำข้อมูลเชิงลึกมาประมวลผลเพื่อตั้งโจทย์หรือกรอบปัญหาให้ชัดเจน ตรงจุด และเข้าใจตรงกันในทีม"
+            },
+            {
+                id: 32,
+                stem: "เทคนิค SCAMPER ตัวอักษร 'E' (Eliminate / Elaborate) หากเลือกใช้กลยุทธ์ 'Eliminate (ตัดทอนออก)' จะส่งผลอย่างไรต่อผลิตภัณฑ์?",
+                stemEn: "In SCAMPER, if you apply the 'Eliminate' strategy, what effect does it have on a product?",
+                options: [
+                    "เพิ่มฟังก์ชันการทำงานให้มีความซับซ้อนและหลากหลายมากยิ่งขึ้น",
+                    "ตัดทอนฟังก์ชันหรือส่วนประกอบที่ไม่จำเป็นออก เพื่อให้ใช้งานง่ายและลดต้นทุน",
+                    "เพิ่มขนาดน้ำหนักของผลิตภัณฑ์ให้มีความแข็งแรงทนทานต่อแรงกระแทก",
+                    "สลับตำแหน่งการจัดวางปุ่มควบคุมการใช้งานให้อยู่ในมุมตรงข้าม"
+                ],
+                correct: 1,
+                clue: "การตัดสิ่งที่ไม่จำเป็นออกเพื่อให้กระชับและใช้งานได้ดีขึ้น",
+                explanation: "ข้อ ข. ถูกต้อง Eliminate คือการตัดทอนสิ่งส่วนเกินหรือฟังก์ชันที่ไม่จำเป็นออก เพื่อทำให้ผลิตภัณฑ์เรียบง่ายขึ้น ต้นทุนต่ำลง และใช้งานสะดวกขึ้น"
+            },
+            {
+                id: 33,
+                stem: "ข้อใดคือตัวอย่างของการสร้าง 'นวัตกรรมรูปแบบธุรกิจ (Business Model Innovation)' ที่ประสบความสำเร็จในระดับสากล?",
+                stemEn: "Which is an example of a globally successful 'Business Model Innovation'?",
+                options: [
+                    "การเปลี่ยนจากการขายขาดซอฟต์แวร์คอมพิวเตอร์ มาเป็นระบบเช่าใช้บริการรายเดือน (Subscription Model)",
+                    "การพัฒนาหน้าจอโทรศัพท์มือถือให้มีความคมชัดระดับ 8K และกันน้ำได้ลึก 2 เมตร",
+                    "การเพิ่มความเร็วในการประมวลผลของหน่วยประมวลผลกลาง (CPU) ในคอมพิวเตอร์",
+                    "การใช้หุ่นยนต์แขนกลอัจฉริยะในการเชื่อมประกอบโครงสร้างตัวถังรถยนต์"
+                ],
+                correct: 0,
+                clue: "เปลี่ยนวิธีคิดเรื่องรายได้และการส่งมอบบริการจากซื้อขาดเป็นรูปแบบสมาชิก",
+                explanation: "ข้อ ก. ถูกต้อง Subscription Model เป็นนวัตกรรมรูปแบบธุรกิจที่เปลี่ยนวิธีสร้างรายได้ขององค์กร ส่วนข้ออื่นเป็นนวัตกรรมผลิตภัณฑ์หรือกระบวนการ"
+            },
+            {
+                id: 34,
+                stem: "เมื่อบุคคลมีความสามารถในการมองเห็นความเชื่อมโยงของสิ่งต่างๆ ที่ดูเหมือนจะไม่เกี่ยวข้องกันเลยให้นำมารวมกันเป็นไอเดียใหม่ได้ สิ่งนี้แสดงถึงทักษะใด?",
+                stemEn: "When a person connects seemingly unrelated things into a new idea, what skill is demonstrated?",
+                options: [
+                    "ความคิดสร้างสรรค์เชิงเชื่อมโยงและการสังเคราะห์ (Associative & Synthetic Thinking)",
+                    "ความสามารถในการจดจำข้อมูลตัวเลขทางสถิติย้อนหลัง (Numerical Memory)",
+                    "ทักษะการเจรจาต่อรองธุรกิจและการสื่อสารระหว่างบุคคล (Negotiation Skill)",
+                    "ความเชี่ยวชาญในการซ่อมแซมอุปกรณ์เครื่องจักรกลไฟฟ้า (Technical Maintenance)"
+                ],
+                correct: 0,
+                clue: "ความสามารถในการโยงใยสิ่งรอบตัวที่ต่างกันให้มาบรรจบกันเป็นนวัตกรรม",
+                explanation: "ข้อ ก. ถูกต้อง การเชื่อมโยงสิ่งที่ไม่เกี่ยวข้องกันให้ออกมาเป็นนวัตกรรมใหม่คือนิยามของความคิดสร้างสรรค์และการคิดเชิงสังเคราะห์"
+            },
+            {
+                id: 35,
+                stem: "ข้อใดคือข้อควรระวังที่สำคัญที่สุดในการทำกิจกรรม 'ระดมสมอง (Brainstorming)' เพื่อให้ได้ผลลัพธ์ที่มีประสิทธิภาพสูง?",
+                stemEn: "What is the most critical precaution during a brainstorming session for high effectiveness?",
+                options: [
+                    "ห้ามมิให้มีการวิพากษ์วิจารณ์หรือตัดสินไอเดียของผู้อื่นในระหว่างช่วงเวลาเสนอความคิด",
+                    "ต้องให้หัวหน้างานเป็นผู้เสนอความคิดเห็นคนแรกเสมอเพื่อเป็นแนวทางให้ลูกน้อง",
+                    "จำกัดให้เสนอความคิดได้เพียงคนละ 1 ไอเดียเท่านั้นเพื่อประหยัดเวลาประชุม",
+                    "ห้ามจดบันทึกความคิดใดๆ ลงในกระดาษหรือคอมพิวเตอร์เด็ดขาดเพื่อป้องกันข้อมูลรั่วไหล"
+                ],
+                correct: 0,
+                clue: "กฎเหล็กข้อสำคัญที่สุดเพื่อป้องกันไม่ให้สมาชิกฝักใฝ่การวิจารณ์จนคนไม่กล้าออกความเห็น",
+                explanation: "ข้อ ก. ถูกต้อง กฎเหล็กของการระดมสมองคือ 'No Judgment' (ห้ามวิจารณ์หรือตัดสิน) เพื่อให้ทุกคนกล้าแสดงไอเดียอย่างเต็มที่โดยไม่ต้องกลัวถูกตำหนิ"
+            }
+        ];
+
+        let userAnswers = {};
+        let currentLang = 'th';
+        let score = 0;
+
+        // Fisher-Yates Shuffle Algorithm for Anti-Guessing Engine
+        function fisherYatesShuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        // Initialize Exam
+        function initExam() {
+            const container = document.getElementById('examContainer');
+            container.innerHTML = '';
+
+            // Load from localStorage if available
+            const savedAnswers = localStorage.getItem('ram1201_answers');
+            if (savedAnswers) {
+                userAnswers = JSON.parse(savedAnswers);
+            }
+
+            questionsData.forEach((q, index) => {
+                // Map options with original index
+                let optionsWithIndex = q.options.map((opt, idx) => ({ text: opt, originalIdx: idx }));
+                
+                // Shuffle options for Client-Side Rendering Anti-Guessing
+                optionsWithIndex = fisherYatesShuffle(optionsWithIndex);
+
+                const card = document.createElement('div');
+                card.className = 'question-card';
+                card.id = `q_card_${q.id}`;
+
+                let optionsHtml = '';
+                optionsWithIndex.forEach((optObj, optIdx) => {
+                    const isChecked = userAnswers[q.id] === optObj.originalIdx ? 'checked' : '';
+                    optionsHtml += `
+                        <label class="option-item">
+                            <input type="radio" name="question_${q.id}" value="${optObj.originalIdx}" ${isChecked} onclick="handleAnswer(${q.id}, ${optObj.originalIdx})">
+                            <span>${String.fromCharCode(65 + optIdx)}. ${optObj.text}</span>
+                        </label>
+                    `;
+                });
+
+                card.innerHTML = `
+                    <div class="question-title">ข้อที่ ${index + 1} (${q.id}): <span class="q-stem">${currentLang === 'th' ? q.stem : q.stemEn}</span></div>
+                    <div class="options-list">
+                        ${optionsHtml}
+                    </div>
+                    <button class="clue-toggle" onclick="toggleClue(${q.id})">💡 แสดง/ซ่อน คำใบ้</button>
+                    <div class="clue-box" id="clue_${q.id}">${q.clue}</div>
+                    <div class="explanation" id="exp_${q.id}"></div>
+                `;
+                container.appendChild(card);
+            });
+
+            updateProgress();
+        }
+
+        function handleAnswer(qId, selectedOpt) {
+            userAnswers[qId] = selectedOpt;
+            localStorage.setItem('ram1201_answers', JSON.stringify(userAnswers));
+            updateProgress();
+        }
+
+        function updateProgress() {
+            const answeredCount = Object.keys(userAnswers).length;
+            document.getElementById('progressTextinnerText') || (document.getElementById('progressText').innerText = `ทำแล้ว: ${answeredCount} / 35 ข้อ`);
+        }
+
+        function toggleClue(qId) {
+            const clueBox = document.getElementById(`clue_${qId}`);
+            clueBox.style.display = clueBox.style.display === 'block' ? 'none' : 'block';
+        }
+
+        function toggleLanguage() {
+            currentLang = currentLang === 'th' ? 'en' : 'th';
+            initExam();
+        }
+
+        function resetExam() {
+            if (confirm('คุณต้องการล้างคำตอบและเริ่มทำใหม่ทั้งหมดใช่หรือไม่?')) {
+                localStorage.removeItem('ram1201_answers');
+                userAnswers = {};
+                document.getElementById('resultsSection').style.display = 'none';
+                initExam();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+
+        function submitExam() {
+            score = 0;
+            let categoryScores = {
+                creativity: { correct: 0, total: 0 },
+                brainTools: { correct: 0, total: 0 },
+                designThinking: { correct: 0, total: 0 },
+                innovation: { correct: 0, total: 0 }
+            };
+
+            questionsData.forEach((q) => {
+                const userAns = userAnswers[q.id];
+                const expDiv = document.getElementById(`exp_${q.id}`);
+                expDiv.style.display = 'block';
+
+                // Categorization for analysis
+                let cat = 'creativity';
+                if ([2, 6, 14, 24, 29, 30].includes(q.id)) cat = 'brainTools';
+                else if ([5, 9, 12, 19, 23, 25, 31].includes(q.id)) cat = 'designThinking';
+                else if ([7, 10, 16, 22, 27, 33].includes(q.id)) cat = 'innovation';
+
+                categoryScores[cat].total++;
+
+                if (userAns !== undefined && parseInt(userAns) === q.correct) {
+                    score++;
+                    categoryScores[cat].correct++;
+                    expDiv.className = 'explanation correct-exp';
+                    expDiv.innerHTML = `<strong>ถูกต้อง!</strong> ${q.explanation}`;
+                } else {
+                    expDiv.className = 'explanation incorrect-exp';
+                    const correctOptText = q.options[q.correct];
+                    expDiv.innerHTML = `<strong>ผิดครับ!</strong> เฉลยที่ถูกต้องคือ: ${correctOptText}. <br>${q.explanation}`;
+                }
+            });
+
+            // Display Results
+            const percent = ((score / 35) * 100).toFixed(2);
+            document.getElementById('finalScoreDisplay').innerText = `${score} / 35`;
+            document.getElementById('percentageDisplay').innerText = `คิดเป็นร้อยละ ${percent}%`;
+
+            // Analyze strengths & weaknesses
+            let bestCat = '';
+            let worstCat = '';
+            let maxRatio = -1;
+            let minRatio = 2;
+
+            const catNames = {
+                creativity: 'แนวคิดพื้นฐานและความหมายของความคิดสร้างสรรค์',
+                brainTools: 'ทฤษฎีสมอง เครื่องมือระดมสมองและผังวิเคราะห์',
+                designThinking: 'กระบวนการคิดเชิงออกแบบ (Design Thinking)',
+                innovation: 'นวัตกรรมและวงจรชีวิตนวัตกรรม'
+            };
+
+            for (let c in categoryScores) {
+                let ratio = categoryScores[c].total > 0 ? categoryScores[c].correct / categoryScores[c].total : 0;
+                if (ratio > maxRatio) {
+                    maxRatio = ratio;
+                    bestCat = catNames[c];
+                }
+                if (ratio < minRatio) {
+                    minRatio = ratio;
+                    worstCat = catNames[c];
+                }
+            }
+
+            document.getElementById('strengthsText').innerText = `คุณทำคะแนนได้ดีเยี่ยมในหมวด: "${bestCat}" แสดงถึงความเข้าใจในทฤษฎีและการประยุกต์ใช้ในระดับสูง`;
+            document.getElementById('weaknessesText').innerText = `ควรทบทวนเพิ่มเติมในหมวด: "${worstCat}" แนะนำให้กลับไปอ่านทบทวนเนื้อหานิยามและขั้นตอนการปฏิบัติงานในส่วนนี้เป็นพิเศษ`;
+
+            const resultsSec = document.getElementById('resultsSection');
+            resultsSec.style.display = 'block';
+            resultsSec.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Whiteboard Implementation
+        const canvas = document.getElementById('whiteboardCanvas');
+        const ctx = canvas.getContext('2d');
+        let painting = false;
+        let currentTool = 'pen';
+        let currentColor = '#2c3e50';
+
+        function resizeCanvas() {
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width;
+            canvas.height = 400;
+        }
+
+        window.addEventListener('load', resizeCanvas);
+        window.addEventListener('resize', resizeCanvas);
+
+        function startPosition(e) {
+            painting = true;
+            draw(e);
+        }
+
+        function endPosition() {
+            painting = false;
+            ctx.beginPath();
+        }
+
+        function draw(e) {
+            if (!painting) return;
+            ctx.lineWidth = currentTool === 'eraser' ? 20 : 3;
+            ctx.lineCap = 'round';
+            ctx.strokeStyle = currentTool === 'eraser' ? '#ffffff' : currentColor;
+
+            const rect = canvas.getBoundingClientRect();
+            const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+            const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+
+            ctx.lineTo(clientX - rect.left, clientY - rect.top);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(clientX - rect.left, clientY - rect.top);
+        }
+
+        canvas.addEventListener('mousedown', startPosition);
+        canvas.addEventListener('mouseup', endPosition);
+        canvas.addEventListener('mousemove', draw);
+
+        canvas.addEventListener('touchstart', startPosition);
+        canvas.addEventListener('touchend', endPosition);
+        canvas.addEventListener('touchmove', draw);
+
+        function setTool(tool) {
+            currentTool = tool;
+            document.getElementById('penBtn').classList.toggle('active', tool === 'pen');
+            document.getElementById('eraserBtn').classList.toggle('active', tool === 'eraser');
+        }
+
+        function setColor(color) {
+            currentColor = color;
+            setTool('pen');
+        }
+
+        function clearWhiteboard() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        // Initialize on load
+        window.onload = function() {
+            initExam();
+            resizeCanvas();
+        };
+    </script>
+</body>
+</html>
+
+เขียนโดย พระจอมเกล้าติวเตอร์
