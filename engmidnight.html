@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ข้อสอบปลายภาค วิชาภาษาอังกฤษ ม.1 (รหัส อ21101)</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- MathJax CDN for LaTeX mathematical notation -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Sarabun', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col justify-between">
+
+    <!-- Header -->
+    <header class="bg-indigo-700 text-white shadow-md sticky top-0 z-50">
+        <div class="max-w-5xl mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center">
+            <div>
+                <h1 class="text-xl md:text-2xl font-bold">ข้อสอบปลายภาค วิชาภาษาอังกฤษ ม.1 (รหัส อ21101)</h1>
+                <p class="text-indigo-200 text-sm mt-1">ภาคเรียนที่ 1 / 2569 | สำหรับนักเรียนชั้น ม.1/3, 1/6, 1/8, 1/9</p>
+            </div>
+            <div class="mt-3 md:mt-0 bg-indigo-800 px-4 py-2 rounded-lg border border-indigo-600 flex items-center space-x-3">
+                <span class="text-sm font-medium">คะแนนรวม: <span id="current-score" class="text-yellow-300 font-bold text-lg">0</span> / 35</span>
+                <button onclick="resetExam()" class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs px-3 py-1.5 rounded transition shadow">ทำข้อสอบใหม่</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-4xl mx-auto px-4 py-8 flex-grow w-full">
+        <!-- Instructions Card -->
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-8">
+            <h2 class="text-lg font-bold text-indigo-900 mb-2">คำชี้แจงในการทำข้อสอบ</h2>
+            <ul class="list-disc list-inside text-sm text-slate-600 space-y-1">
+                <li>ข้อสอบปรนัยแบบ 4 ตัวเลือก จำนวนทั้งหมด 35 ข้อ ได้แก่ Part Vocabulary (ข้อ 1-10), Part Conversation (ข้อ 11-20), Part Grammar (ข้อ 21-30) และ Part Reading (ข้อ 31-35)</li>
+                <li>เมื่อท่านเลือกคำตอบ ระบบจะแสดงการเฉลยอย่างละเอียดพร้อมคำอธิบายและเนื้อหาที่เกี่ยวข้องทันที</li>
+                <li>การให้คะแนน: ตอบถูกได้ 1 คะแนน ตอบผิดได้ 0 คะแนน</li>
+            </ul>
+            <div class="mt-4 flex flex-wrap gap-2">
+                <span class="bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-1 rounded">Part 1: Vocabulary (1-10)</span>
+                <span class="bg-emerald-100 text-emerald-800 text-xs font-semibold px-2.5 py-1 rounded">Part 2: Conversation (11-20)</span>
+                <span class="bg-amber-100 text-amber-800 text-xs font-semibold px-2.5 py-1 rounded">Part 3: Grammar (21-30)</span>
+                <span class="bg-purple-100 text-purple-800 text-xs font-semibold px-2.5 py-1 rounded">Part 4: Reading (31-35)</span>
+            </div>
+        </div>
+
+        <!-- Quiz Container -->
+        <div id="quiz-container" class="space-y-6">
+            <!-- Questions will be injected here via JavaScript -->
+        </div>
+
+        <!-- Submit / Summary Section -->
+        <div class="mt-10 text-center bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+            <h3 class="text-xl font-bold text-slate-800 mb-2">สรุปผลการทดสอบ</h3>
+            <p id="summary-text" class="text-slate-600 mb-4">ท่านยังทำข้อสอบไม่ครบ กรุณาเลือกคำตอบให้ครบทุกข้อเพื่อดูผลประเมินฉบับสมบูรณ์</p>
+            <button onclick="scrollToTop()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-6 py-2.5 rounded-lg transition shadow-md">กลับสู่ด้านบน</button>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-slate-800 text-slate-400 py-6 mt-12 text-center text-sm border-t border-slate-700">
+        <p>ระบบข้อสอบออนไลน์มาตรฐานสากล | วิชาภาษาอังกฤษ ม.1 (อ21101) โรงเรียนมัธยมศึกษา พ.ศ. 2569</p>
+    </footer>
+
+    <!-- Script Data & Logic -->
+    <script>
+        const examData = [
+            // PART 1: VOCABULARY (1-10)
+            {
+                id: 1,
+                part: "Part 1: Vocabulary (คำศัพท์)",
+                question: "Which of the following reference tools is specifically defined as a book or digital resource that lists words in alphabetical order and gives their meanings, pronunciations, and parts of speech?",
+                options: ["Dictionary", "Pilot", "Laboratory", "Laptop"],
+                correctIndex: 0,
+                explanation: "<strong>เฉลยข้อ 1: Dictionary</strong><br><em>เหตุผลและเนื้อหา:</em> คำว่า 'Dictionary' (พจนานุกรม) ตรงกับคำนิยามของการรวบรวมคำศัพท์เรียงตามตัวอักษร พร้อมบอกความหมาย การออกเสียง และชนิดของคำ เหมาะสำหรับนักเรียน ม.1 ในการค้นคว้าคำศัพท์ (เทียบกับข้ออื่น: Pilot คือ นักบิน, Laboratory คือ ห้องปฏิบัติการ, Laptop คือ คอมพิวเตอร์พกพา)"
+            },
+            {
+                id: 2,
+                part: "Part 1: Vocabulary (คำศัพท์)",
+                question: "During a career day presentation, a professional states, 'My primary duty is to navigate and operate commercial aircraft safely while communicating with air traffic control.' Which occupation is being described?",
+                options: ["Dictionary", "Pilot", "Architect", "Teacher"],
+                correctIndex: 1,
+                explanation: "<strong>เฉลยข้อ 2: Pilot</strong><br><em>เหตุผลและเนื้อหา:</em> 'Pilot' แปลว่า นักบิน มีหน้าที่ควบคุมและนำทางอากาศยานพาณิชย์อย่างปลอดภัยและสื่อสารกับหอควบคุมการบิน"
+            },
+            {
+                id: 3,
+                part: "Part 1: Vocabulary (คำศัพท์)",
+                question: "Choose the correct term for a room or building equipped for scientific experiments, research, and practical student investigations.",
+                options: ["Recess", "Laboratory", "Library", "Examination"],
+                correctIndex: 1,
+                explanation: "<strong>เฉลยข้อ 3: Laboratory</strong><br><em>เหตุผลและเนื้อหา:</em> 'Laboratory' (ห้องปฏิบัติการ/ห้องทดลอง) เป็นสถานที่สำหรับทำการทดลองทางวิทยาศาสตร์และการวิจัยของนักเรียน"
+            },
+            {
+                id: 4,
+                part: "Part 1: Vocabulary (คำศัพท์)",
+                question: "Which item is most appropriate to describe a portable electronic device used by students to write documents, browse educational databases, and complete digital assignments?",
+                options: ["Laptop", "Dictionary", "Pilot", "Recess"],
+                correctIndex: 0,
+                explanation: "<strong>เฉลยข้อ 4: Laptop</strong><br><em>เหตุผลและเนื้อหา:</em> 'Laptop' คือ คอมพิวเตอร์พกพา (โน้ตบุ๊ก) ที่นักเรียนใช้ในการพิมพ์งาน ค้นคว้าข้อมูล และส่งการบ้านดิจิทัล"
+            },
+            {
+                id: 5,
+                part: "Part 1: Vocabulary (คำศัพท์)",
+                question: "Identify the correct adjective meaning 'covering a wide range of subjects; comprehensive and general' often used to describe introductory school courses.",
+                options: ["General", "Specific", "Technical", "Advanced"],
+                correctIndex: 0,
+                explanation: "<strong>เฉลยข้อ 5: General</strong><br><em>เหตุผลและเนื้อหา:</em> 'General' หมายถึง ทั่วไป ครอบคลุมหลากหลายวิชา เช่น วิชาพื้นฐาน (General courses) ในระดับชั้น ม.1"
+            },
+            {
+                id: 6,
+                part: "Part 1: Vocabulary (คำศัพท์)",
+                question: "Which noun describes a formal test administered to assess a student's knowledge and understanding of a subject at the end of a term?",
+                options: ["Examination", "Recess", "Learn", "Library"],
+                correctIndex: 0,
+                explanation: "<strong>เฉลยข้อ 6: Examination</strong><br><em>เหตุผลและเนื้อหา:</em> 'Examination' (การสอบ) หมายถึง การทดสอบความรู้ความเข้าใจอย่างเป็นทางการเมื่อสิ้นสุดภาคเรียน"
+            },
+            {
+                id: 7,
+                part: "Part 1: Vocabulary (คำศัพท์)",
+                question: "Select the verb that means 'to obtain knowledge, understanding, or a skill through study, experience, or being taught'.",
+                options: ["Learn", "Teach", "Build", "Design"],
+                correctIndex: 0,
+                explanation: "<strong>เฉลยข้อ 7: Learn</strong><br><em>เหตุผลและเนื้อหา:</em> 'Learn' แปลว่า เรียนรู้ ซึ่งตรงกับการได้รับความรู้ ความเข้าใจ หรือทักษะผ่านการศึกษาหรือประสบการณ์"
+            },
+            {
+                id: 8,
+                part: "Part 1: Vocabulary (คำศัพท์)",
+                question: "What is the term for a scheduled period of time during the school day when students have a break from classes to eat, relax, or play?",
+                options: ["Recess", "Laboratory", "Examination", "Library"],
+                correctIndex: 0,
+                explanation: "<strong>เฉลยข้อ 8: Recess</strong><br><em>เหตุผลและเนื้อหา:</em> 'Recess' คือ เวลาพักระหว่างคาบเรียน เพื่อให้นักเรียนรับประทานอาหาร พักผ่อน หรือทำกิจกรรม"
+            },
+            {
+                id: 9,
+                part: "Part 1: Vocabulary (คำศัพท์)",
+                question: "Which professional occupation involves designing the structural layout, aesthetics, and safety plans for residential and commercial buildings?",
+                options: ["Architect", "Pilot", "Teacher", "Librarian"],
+                correctIndex: 0,
+                explanation: "<strong>เฉลยข้อ 9: Architect</strong><br><em>เหตุผลและเนื้อหา:</em> 'Architect' แปลว่า สถาปนิก ผู้มีหน้าที่ออกแบบโครงสร้าง ความสวยงาม และแปลนความปลอดภัยของอาคาร"
+            },
+            {
+                id: 10,
+                part: "Part 1: Vocabulary (คำศัพท์)",
+                question: "Choose the noun that represents a comprehensive collection of books, periodicals, and digital resources maintained for reading and research.",
+                options: ["Library", "Laboratory", "Recess", "Laptop"],
+                correctIndex: 0,
+                explanation: "<strong>เฉลยข้อ 10: Library</strong><br><em>เหตุผลและเนื้อหา:</em> 'Library' คือ ห้องสมุด ซึ่งรวบรวมหนังสือ วารสาร และทรัพยากรดิจิทัลเพื่อการอ่านและการค้นคว้าวิจัย"
+            },
+
+            // PART 2: CONVERSATION - There is / There are / Is there / Are there (11-20)
+            {
+                id: 11,
+                part: "Part 2: Conversation (บทสนทนา: There is / There are / Is there / Are there)",
+                question: "Complete the dialogue correctly:\nStudent A: Excuse me, __________ any English reference books left on the library shelf?\nStudent B: Yes, there are a few copies near the window.",
+                options: ["are there", "is there", "there is", "there are"],
+                correctIndex: 0,
+                explanation: "<strong>เฉลยข้อ 11: are there</strong><br><em>หลักไวยากรณ์:</em> ประโยคคำถามถามถึงสิ่งของพหูพจน์ ($books$, ใช้คำนามนับได้พหูพจน์) ในประโยคคำถามของโครงสร้าง $There\ are$ จะต้องสลับรูปเป็น $Are\ there\ + \text{plural noun}$"
+            },
+            {
+                id: 12,
+                part: "Part 2: Conversation (บทสนทนา: There is / There are / Is there / Are there)",
+                question: "Complete the dialogue correctly:\nTeacher: __________ a projector available in multimedia room 3 for today's presentation?\nClass President: No, Sir, but we can borrow one from the science department.",
+                options: ["Is there", "Are there", "There is", "There are"],
+                correctIndex: 0,
+                explanation: "<strong>เฉลยข้อ 12: Is there</strong><br><em>หลักไวยากรณ์:</em> คำนามตามหลังช่องว่างคือ $a\ projector$ ซึ่งเป็นเอกพจน์นับได้ (Singular countable noun) ดังนั้นประโยคคำถามจึงต้องใช้ $Is\ there$"
+            },
+            {
+                id: 13,
+                part: "Part 2: Conversation (บทสนทนา: There is / There are / Is there / Are there)",
+                question: "Complete the dialogue correctly:\nTourist: Excuse me, __________ any convenience stores near this school campus?\nLocal Resident: Yes, there is one right across the main street.",
+                options: ["are there", "is there", "there are", "there is"],
+                correctIndex: 0,
+                explanation: "<strong>เฉลยข้อ 13: are there</strong><br><em>หลักไวยากรณ์:</em> คำว่า $convenience\ stores$ เป็นพหูพจน์ (Plural noun) จึงต้องใช้ประโยคคำถาม $Are\ there\ ...?$"
+            },
+            {
+                id: 14,
+                part: "Part 2: Conversation (บทสนทนา: There is / There are / Is there / Are there)",
+                question: "Complete the dialogue correctly:\nTeacher: __________ any questions about the upcoming English grammar test?\nStudent: No, teacher, everything is crystal clear.",
+                options: ["Are there", "Is there", "There are", "There is"],
+                correctIndex: 0,
+                explanation: "<strong>เฉลยข้อ 14: Are there</strong><br><em>หลักไวยากรณ์:</em> $questions$ เป็นคำนามพหูพจน์ การตั้งคำถามจึงต้องใช้ $Are\ there\ any\ questions...?$"
+            },
+            {
+                id: 15,
+                part: "Part 2: Conversation (บทสนทนา: There is / There are / Is there / Are there)",
+                question: "Complete the dialogue correctly:\nLibrary Staff: __________ a dictionary on your desk that you are not using?\nStudent: Yes, you can take this one.",
+                options: ["Is there", "Are there", "There is", "There are"],
+                correctIndex: 0,
+                explanation: "<strong>เฉลยข้อ 15: Is there</strong><br><em>หลักไวยากรณ์:</em> คำว่า $a\ dictionary$ เป็นเอกพจน์นับได้ (Singular noun) นำหน้าด้วย $a$ จึงต้องใช้ $Is\ there\ ...?$"
+            },
+            {
+                id: 16,
+                part: "Part 2: Conversation (บทสนทนา: There is / There are / Is there / Are there)",
+                question: "Complete the dialogue correctly:\nClassmate A: Look at the schedule board! __________ a computer science club meeting this afternoon?\nClassmate B: Yes, in room 402 right after lunch.",
+                options: ["Is there", "Are there", "There is", "There are"],
+                correctIndex: 0,
+                explanation: "<strong>เฉลยข้อ 16: Is there</strong><br><em>หลักไวยากรณ์:</em> $a\ computer\ science\ club\ meeting$ นับเป็นเหตุการณ์/นามเอกพจน์เอกภาพ จึงใช้ $Is\ there$ ในการถาม"
+            },
+            {
+                id: 17,
+                part: "Part 2: Conversation (บทสนทนา: There is / There are / Is there / Are there)",
+                question: "Complete the dialogue correctly:\nFather: How is your new schedule? __________ any difficult subjects this semester?\nSon: Yes, mathematics and physics are quite challenging.",
+                options: ["Are there", "Is there", "There are", "There is"],
+                correctIndex: 0,
+                explanation: "<strong>เฉลยข้อ 17: Are there</strong><br><em>หลักไวยากรณ์:</em> $difficult\ subjects$ เป็นคำนามพหูพจน์ (Plural noun) ดังนั้นต้องใช้ $Are\ there$ ในการตั้งคำถาม"
+            },
+            {
+                id: 18,
+                part: "Part 2: Conversation (บทสนทนา: There is / There are / Is there / Are there)",
+                question: "Complete the dialogue correctly:\nTeacher: __________ a drinking fountain near the gymnasium?\nStudent: Yes, teacher, right next to the locker rooms.",
+                options: ["Is there", "Are there", "There is", "There are"],
+                correctIndex: 0,
+                explanation: "<strong>เฉลยข้อ 18: Is there</strong><br><em>หลักไวยากรณ์:</em> $a\ drinking\ fountain$ เป็นคำนามเอกพจน์นับได้ ใช้ $Is\ there$ ในการถาม"
+            },
+            {
+                id: 19,
+                part: "Part 2: Conversation (บทสนทนา: There is / There are / Is there / Are there)",
+                question: "Complete the dialogue correctly:\nNew Student: Excuse me, __________ any lockers available for Grade 7 students?\nSchool Staff: Yes, you can register for one at the administration office.",
+                options: ["are there", "is there", "there are", "there is"],
+                correctIndex: 0,
+                explanation: "<strong>เฉลยข้อ 19: are there</strong><br><em>หลักไวยากรณ์:</em> $lockers$ เป็นคำนามพหูพจน์ ต้องใช้คำถามว่า $Are\ there\ ...?$"
+            },
+            {
+                id: 20,
+                part: "Part 2: Conversation (บทสนทนา: There is / There are / Is there / Are there)",
+                question: "Complete the dialogue correctly:\nStudent A: __________ a biology lab session after school today?\nStudent B: No, the laboratory is closed for equipment maintenance.",
+                options: ["Is there", "Are there", "There is", "There are"],
+                correctIndex: 0,
+                explanation: "<strong>เฉลยข้อ 20: Is there</strong><br><em>หลักไวยากรณ์:</em> $a\ biology\ lab\ session$ เป็นคำนามเอกพจน์นับได้ จึงต้องใช้ $Is\ there$ ในรูปคำถาม"
+            },
+
+            // PART 3: GRAMMAR - Question Words (21-30)
+            {
+                id: 21,
+                part: "Part 3: Grammar (หลักภาษา: Question Words)",
+                question: "Choose the correct Question Word to complete the sentence:\n'__________ do you usually arrive at school every morning?' — 'At 7:30 AM.'",
+                options: ["What time", "Where", "Who", "Why"],
+                correctIndex: 0,
+                explanation: "<strong>เฉลยข้อ 21: What time</strong><br><em>หลักภาษา:</em> คำตอบบอกเวลาเฉพาะเจาะจง ($At\ 7:30\ AM$) การตั้งคำถามเพื่อถามเวลาที่แน่นอนจึงต้องใช้ $What\ time$ หรือ $When$"
+            },
+            {
+                id: 22,
+                part: "Part 3: Grammar (หลักภาษา: Question Words)",
+                question: "Choose the correct Question Word to complete the sentence:\n'__________ is your favorite subject in Grade 7?' — 'Mathematics and English.'",
+                options: ["What", "Where", "When", "Who"],
+                correctIndex: 0,
+                explanation: "<strong>เฉลยข้อ 22: What</strong><br><em>หลักภาษา:</em> คำตอบระบุชื่อวิชา ($Mathematics\ and\ English$) ซึ่งเป็นการถามหาข้อมูลสิ่งของหรือวิชา จึงต้องใช้ $What$"
+            },
+            {
+                id: 23,
+                part: "Part 3: Grammar (หลักภาษา: Question Words)",
+                question: "Choose the correct Question Word to complete the sentence:\n'__________ do you study in the evening?' — 'Because I have an important exam tomorrow.'",
+                options: ["Why", "What", "When", "Where"],
+                correctIndex: 0,
+                explanation: "<strong>เฉลยข้อ 23: Why</strong><br><em>หลักภาษา:</em> คำตอบขึ้นต้นด้วย $Because$ (เพราะว่า) ซึ่งแสดงเหตุผล คำถามที่สอดคล้องต้องใช้ $Why$ (ทำไม)"
+            },
+            {
+                id: 24,
+                part: "Part 3: Grammar (หลักภาษา: Question Words)",
+                question: "Choose the correct Question Word to complete the sentence:\n'__________ teaches your science class on Tuesdays?' — 'Mr. Robert does.'",
+                options: ["Who", "What", "Where", "When"],
+                correctIndex: 0,
+                explanation: "<strong>เฉลยข้อ 24: Who</strong><br><em>หลักภาษา:</em> คำตอบคือชื่อบุคคล ($Mr.\ Robert$) ซึ่งเป็นผู้กระทำกริยา (Subject) การถามหาตัวบุคคลจึงต้องใช้ $Who$ (ใคร)"
+            },
+            {
+                id: 25,
+                part: "Part 3: Grammar (หลักภาษา: Question Words)",
+                question: "Choose the correct Question Word to complete the sentence:\n'__________ is the school library located?' — 'It is on the second floor next to the computer lab.'",
+                options: ["Where", "What", "Who", "When"],
+                correctIndex: 0,
+                explanation: "<strong>เฉลยข้อ 25: Where</strong><br><em>หลักภาษา:</em> คำตอบระบุสถานที่ ($on\ the\ second\ floor$) คำถามที่ใช้ถามสถานที่คือ $Where$ (ที่ไหน)"
+            },
+            {
+                id: 26,
+                part: "Part 3: Grammar (หลักภาษา: Question Words)",
+                question: "Choose the correct Question Word to complete the sentence:\n'__________ do you have English class?' — 'On Mondays and Thursdays.'",
+                options: ["When", "Where", "Who", "Why"],
+                correctIndex: 0,
+                explanation: "<strong>เฉลยข้อ 26: When</strong><br><em>หลักภาษา:</em> คำตอบบอกวันในสัปดาห์ ($On\ Mondays\ and\ Thursdays$) การถามหาเวลาหรือวันในสัปดาห์ใช้ $When$"
+            },
+            {
+                id: 27,
+                part: "Part 3: Grammar (หลักภาษา: Question Words)",
+                question: "Choose the correct Question Word to complete the sentence:\n'__________ do you get to school?' — 'I take the school bus every morning.'",
+                options: ["How", "What", "Where", "Who"],
+                correctIndex: 0,
+                explanation: "<strong>เฉลยข้อ 27: How</strong><br><em>หลักภาษา:</em> คำตอบบอกวิธีการเดินทาง ($I\ take\ the\ school\ bus$) คำถามที่ใช้ถามวิธีหรือกระบวนการคือ $How$ (อย่างไร)"
+            },
+            {
+                id: 28,
+                part: "Part 3: Grammar (หลักภาษา: Question Words)",
+                question: "Choose the correct Question Word to complete the sentence:\n'__________ notebooks do you have in your backpack?' — 'I have four notebooks.'",
+                options: ["How many", "How much", "What", "Which"],
+                correctIndex: 0,
+                explanation: "<strong>เฉลยข้อ 28: How many</strong><br><em>หลักภาษา:</em> คำนาม $notebooks$ เป็นคำนามนับได้พหูพจน์ การถามจำนวนของคำนามนับได้ต้องใช้ $How\ many$"
+            },
+            {
+                id: 29,
+                part: "Part 3: Grammar (หลักภาษา: Question Words)",
+                question: "Choose the correct Question Word to complete the sentence:\n'__________ of these two books is your English textbook?' — 'The one with the blue cover.'",
+                options: ["Which", "What", "Who", "Where"],
+                correctIndex: 0,
+                explanation: "<strong>เฉลยข้อ 29: Which</strong><br><em>หลักภาษา:</em> มีตัวเลือกจำกัด ($these\ two\ books$) การถามเจาะจงให้เลือกจากสิ่งที่มีจำนวนจำกัดต้องใช้ $Which$ (อันไหน/สิ่งไหน)"
+            },
+            {
+                id: 30,
+                part: "Part 3: Grammar (หลักภาษา: Question Words)",
+                question: "Choose the correct Question Word to complete the sentence:\n'__________ is your English teacher?' — 'Ms. Sarah.'",
+                options: ["Who", "What", "Where", "When"],
+                correctIndex: 0,
+                explanation: "<strong>เฉลยข้อ 30: Who</strong><br><em>หลักภาษา:</em> คำตอบระบุบุคคล ($Ms.\ Sarah$) การถามว่าใครคือคุณครูภาษาอังกฤษจึงใช้ $Who$"
+            },
+
+            // PART 4: READING COMPREHENSION - My school day (31-35)
+            {
+                id: 31,
+                part: "Part 4: Reading Comprehension (การอ่านจับใจความ: My school day)",
+                question: "Based on a typical school day passage where Mark arrives at school at 7:30 AM, attends homeroom, studies math and science in the morning, has lunch at 12:00 PM, and joins the computer club after classes end at 3:30 PM, what is Mark's first activity immediately after arriving at school?",
+                options: ["Attending homeroom", "Having lunch", "Joining the computer club", "Studying science"],
+                correctIndex: 0,
+                explanation: "<strong>เฉลยข้อ 31: Attending homeroom</strong><br><em>การวิเคราะห์เรื่อง:</em> จากเนื้อเรื่องระบุว่า Mark มาถึงโรงเรียนตอน 7:30 น. จากนั้นเข้าแถวโฮมรูม (attending homeroom) ก่อนเริ่มเรียนคาบเช้า"
+            },
+            {
+                id: 32,
+                part: "Part 4: Reading Comprehension (การอ่านจับใจความ: My school day)",
+                question: "Based on Mark's school day routine, at what time does he have his lunch break?",
+                options: ["At 12:00 PM", "At 7:30 AM", "At 3:30 PM", "At 10:00 AM"],
+                correctIndex: 0,
+                explanation: "<strong>เฉลยข้อ 32: At 12:00 PM</strong><br><em>การวิเคราะห์เรื่อง:</em> ข้อความระบุชัดเจนว่า Mark รับประทานอาหารกลางวันเวลา 12:00 น. ($12:00\ PM$)"
+            },
+            {
+                id: 33,
+                part: "Part 4: Reading Comprehension (การอ่านจับใจความ: My school day)",
+                question: "Based on Mark's school day routine, which subjects does he study during the morning session?",
+                options: ["Math and science", "Art and music", "History and geography", "Physical education"],
+                correctIndex: 0,
+                explanation: "<strong>เฉลยข้อ 33: Math and science</strong><br><em>การวิเคราะห์เรื่อง:</em> เนื้อเรื่องระบุว่าในช่วงเช้า Mark เรียนวิชาคณิตศาสตร์และวิทยาศาสตร์ ($math\ and\ science$)"
+            },
+            {
+                id: 34,
+                part: "Part 4: Reading Comprehension (การอ่านจับใจความ: My school day)",
+                question: "Based on Mark's school day routine, what activity does he participate in after regular classes end at 3:30 PM?",
+                options: ["Computer club", "Soccer team", "Swimming practice", "Library reading"],
+                correctIndex: 0,
+                explanation: "<strong>เฉลยข้อ 34: Computer club</strong><br><em>การวิเคราะห์เรื่อง:</em> หลังเลิกเรียนตอน 3:30 น. ($3:30\ PM$) Mark เข้าร่วมชมรมคอมพิวเตอร์ ($computer\ club$)"
+            },
+            {
+                id: 35,
+                part: "Part 4: Reading Comprehension (การอ่านจับใจความ: My school day)",
+                question: "Based on Mark's school day routine, which of the following statements is completely true about his daily schedule?",
+                options: ["He arrives at school before attending his morning classes and homeroom.", "He has lunch before attending his morning classes.", "He joins the computer club before regular classes start.", "He goes home before 7:30 AM every day."],
+                correctIndex: 0,
+                explanation: "<strong>เฉลยข้อ 35: He arrives at school before attending his morning classes and homeroom.</strong><br><em>การวิเคราะห์เรื่อง:</em> การลำดับเหตุการณ์ (Chronological order) ใน 1 วันของ Mark คือ มาถึงโรงเรียนตอนเช้า เข้าโฮมรูม เรียนภาคเช้า พักเที่ยง เรียนภาคบ่าย และทำกิจกรรมชมรมหลังเลิกเรียน"
+            }
+        ];
+
+        let userAnswers = {};
+
+        function renderQuiz() {
+            const container = document.getElementById('quiz-container');
+            container.innerHTML = '';
+
+            examData.forEach((item, index) => {
+                const questionNum = index + 1;
+                const card = document.createElement('div');
+                card.className = "bg-white rounded-xl shadow-sm border border-slate-200 p-6 transition";
+                card.id = `question-card-${questionNum}`;
+
+                let optionsHtml = '';
+                item.options.forEach((option, optIdx) => {
+                    const isSelected = userAnswers[questionNum] === optIdx;
+                    const btnClass = isSelected 
+                        ? "bg-indigo-600 text-white border-indigo-600 shadow-sm" 
+                        : "bg-white hover:bg-slate-50 text-slate-700 border-slate-200";
+
+                    optionsHtml += `
+                        <button onclick="selectOption(${questionNum}, ${optIdx})" 
+                            class="w-full text-left px-4 py-3 rounded-lg border text-sm font-medium transition flex items-center space-x-3 ${btnClass}">
+                            <span class="w-6 h-6 flex items-center justify-center rounded-full bg-slate-100 text-slate-600 text-xs font-bold border">${String.fromCharCode(65 + optIdx)}</span>
+                            <span>${option}</span>
+                        </button>
+                    `;
+                });
+
+                let explanationHtml = '';
+                if (userAnswers[questionNum] !== undefined) {
+                    const isCorrect = userAnswers[questionNum] === item.correctIndex;
+                    const resultBadge = isCorrect 
+                        ? `<div class="mt-4 p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-lg text-sm font-semibold flex items-center space-x-2"><span>✅ ถูกต้องครับ!</span></div>`
+                        : `<div class="mt-4 p-3 bg-rose-50 border border-rose-200 text-rose-800 rounded-lg text-sm font-semibold flex items-center space-x-2"><span>❌ ยังไม่ถูกต้อง (คำตอบที่ถูกต้องคือ: ${String.fromCharCode(65 + item.correctIndex)})</span></div>`;
+                    
+                    explanationHtml = `
+                        ${resultBadge}
+                        <div class="mt-3 p-4 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-700 leading-relaxed">
+                            ${item.explanation}
+                        </div>
+                    `;
+                }
+
+                card.innerHTML = `
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="text-xs font-bold px-2.5 py-1 rounded bg-slate-100 text-slate-600">${item.part}</span>
+                        <span class="text-xs font-semibold text-indigo-600">ข้อที่ ${questionNum} / 35</span>
+                    </div>
+                    <h3 class="text-base font-semibold text-slate-800 mb-4 whitespace-pre-line">${questionNum}. ${item.question}</h3>
+                    <div class="space-y-2">
+                        ${optionsHtml}
+                    </div>
+                    ${explanationHtml}
+                `;
+
+                container.appendChild(card);
+            });
+
+            updateScoreDisplay();
+            // Trigger MathJax re-render if mathematical notation is present
+            if (window.MathJax) {
+                MathJax.typeset();
+            }
+        }
+
+        function selectOption(questionNum, optIdx) {
+            userAnswers[questionNum] = optIdx;
+            renderQuiz();
+        }
+
+        function updateScoreDisplay() {
+            let score = 0;
+            let answeredCount = 0;
+
+            examData.forEach((item, index) => {
+                const qNum = index + 1;
+                if (userAnswers[qNum] !== undefined) {
+                    answeredCount++;
+                    if (userAnswers[qNum] === item.correctIndex) {
+                        score++;
+                    }
+                }
+            });
+
+            document.getElementById('current-score').innerText = score;
+
+            const summaryText = document.getElementById('summary-text');
+            if (answeredCount === 35) {
+                summaryText.innerHTML = `🎉 ยินดีด้วยครับ ท่านทำข้อสอบครบทุก 35 ข้อแล้ว! คะแนนรวมของท่านคือ <strong class="text-indigo-600 text-lg">${score} / 35</strong> คะแนน (${((score/35)*100).toFixed(1)}%)`;
+            } else {
+                summaryText.innerHTML = `ท่านทำไปแล้ว <strong class="text-indigo-600">${answeredCount} / 35</strong> ข้อ กรุณาตอบให้ครบทุกข้อเพื่อดูคะแนนสรุปสมบูรณ์`;
+            }
+        }
+
+        function resetExam() {
+            if (confirm("ท่านต้องการล้างคำตอบทั้งหมดและเริ่มทำข้อสอบใหม่หรือไม่?")) {
+                userAnswers = {};
+                renderQuiz();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+
+        function scrollToTop() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Initial load
+        window.onload = function() {
+            renderQuiz();
+        };
+    </script>
+</body>
+</html>
