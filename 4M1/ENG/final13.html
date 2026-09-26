@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>แบบทดสอบปลายภาค วิชาภาษาอังกฤษ อ21101 - พระจอมเกล้าติวเตอร์</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --success-color: #27ae60;
+            --danger-color: #e74c3c;
+            --bg-color: #f8f9fa;
+            --card-bg: #ffffff;
+            --text-color: #333333;
+        }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        .container {
+            display: flex;
+            flex-direction: row;
+            height: calc(100vh - 80px);
+            max-width: 100%;
+            overflow: hidden;
+        }
+        .left-panel {
+            flex: 0 0 70%;
+            overflow-y: auto;
+            padding: 20px;
+            border-right: 2px solid #ddd;
+        }
+        .right-panel {
+            flex: 0 0 30%;
+            display: flex;
+            flex-direction: column;
+            background: #eef2f3;
+            padding: 15px;
+        }
+        .question-card {
+            background: var(--card-bg);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .question-title {
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin-bottom: 12px;
+        }
+        .options-list {
+            list-style: none;
+        }
+        .option-item {
+            padding: 10px 15px;
+            margin: 8px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .option-item:hover {
+            background-color: #f1f1f1;
+        }
+        .option-item.correct {
+            background-color: var(--success-color);
+            color: white;
+            border-color: var(--success-color);
+        }
+        .option-item.incorrect {
+            background-color: var(--danger-color);
+            color: white;
+            border-color: var(--danger-color);
+        }
+        .explanation {
+            margin-top: 10px;
+            padding: 10px;
+            background: #e8f4f8;
+            border-left: 4px solid var(--secondary-color);
+            font-size: 0.95rem;
+            display: none;
+        }
+        .clue-btn {
+            background: #f39c12;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            margin-top: 10px;
+        }
+        .clue-box {
+            margin-top: 5px;
+            font-size: 0.85rem;
+            color: #d35400;
+            font-style: italic;
+            display: none;
+        }
+        /* Whiteboard styling */
+        #whiteboard-container {
+            flex: 1;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .wb-tools {
+            padding: 10px;
+            background: #ddd;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        canvas {
+            flex: 1;
+            cursor: crosshair;
+        }
+        .btn-action {
+            background: var(--secondary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            margin: 20px 0;
+            width: 100%;
+        }
+        #result-container {
+            display: none;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        @media(max-width: 768px) {
+            .container {
+                flex-direction: column;
+                height: auto;
+            }
+            .left-panel {
+                flex: 1;
+                border-right: none;
+            }
+            .right-panel {
+                height: 400px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>แบบทดสอบปลายภาค วิชา อ21101 ภาษาอังกฤษ 1 (ม.1)</h1>
+    <p>ระบบสอบแบบโต้ตอบอัจฉริยะ ป้องกันการเดาด้วยอัลกอริทึมมาตรฐาน</p>
+</header>
+
+<div class="container">
+    <div class="left-panel" id="quiz-scroll-area">
+        <div id="result-container">
+            <h2>ผลการประเมินการทดสอบ</h2>
+            <p id="score-summary" style="font-size: 1.2rem; margin: 15px 0;"></p>
+            <div id="analysis-box"></div>
+        </div>
+
+        <div id="questions-container">
+            <!-- Questions will be dynamically loaded here via JS -->
+        </div>
+
+        <button class="btn-action" onclick="submitExam()">ส่งข้อสอบและดูผลวิเคราะห์</button>
+        <button class="btn-action" style="background-color: #e74c3c;" onclick="resetExam()">รีเซ็ตข้อสอบใหม่ (Reset)</button>
+    </div>
+
+    <div class="right-panel">
+        <h3>กระดานทดเลขและวาดภาพ</h3>
+        <div id="whiteboard-container">
+            <div class="wb-tools">
+                <label>สี: <input type="color" id="wb-color" value="#000000"></label>
+                <label>ขนาด: <input type="range" id="wb-size" min="1" max="10" value="2"></label>
+                <button onclick="clearWhiteboard()">ล้างกระดาน</button>
+            </div>
+            <canvas id="wb-canvas"></canvas>
+        </div>
+    </div>
+</div>
+
+<script>
+const rawQuestions = [
+    {
+        id: 1,
+        question: "Which sentence uses the correct Present Simple Tense for a daily routine?",
+        options: [
+            "She usually walk to school every morning at seven.",
+            "She usually walks to school every morning at seven.",
+            "She is usually walk to school every morning at seven.",
+            "She usually walking to school every morning at seven."
+        ],
+        answer: 1,
+        clue: "Look at the subject 'She' which is singular and the adverb of frequency 'usually'.",
+        explanation: "ข้อที่ถูกต้องคือข้อ B เนื่องจากประธาน 'She' เป็นเอกพจน์บุรุษที่ 3 คำกริยาจึงต้องเติม s (walks) หลังคำบอกความถี่ usually"
+    },
+    {
+        id: 2,
+        question: "Choose the correct possessive adjective to complete the sentence: 'John loves _____ new computer game very much.'",
+        options: [
+            "his computer game because it is very fast.",
+            "her computer game because it is very fast.",
+            "their computer game because it is very fast.",
+            "our computer game because it is very fast."
+        ],
+        answer: 0,
+        clue: "Identify the gender of the subject 'John' to choose the correct possessive form.",
+        explanation: "ข้อ A ถูกต้อง เพราะ 'John' เป็นผู้ชาย สรรพนามแสดงความเป็นเจ้าของจึงต้องใช้ 'his' ให้สอดคล้องกับประธาน"
+    },
+    {
+        id: 3,
+        question: "What is the correct question word for asking about a person's identity or profession?",
+        options: [
+            "Where do you live in this big city?",
+            "When do you finish your daily classes?",
+            "Who is that tall man standing near the door?",
+            "Why do you like studying English grammar?"
+        ],
+        answer: 2,
+        clue: "The question asks about 'that tall man standing near the door'.",
+        explanation: "ข้อ C ถูกต้อง เนื่องจาก 'Who' ใช้สำหรับถามเกี่ยวกับบุคคล (เช่น ผู้ชายร่างสูงที่ยืนอยู่ใกล้ประตู)"
+    },
+    {
+        id: 4,
+        question: "Select the correct preposition of time for the phrase '_____ Monday morning'.",
+        options: [
+            "at Monday morning in the quiet classroom",
+            "in Monday morning during the first period",
+            "on Monday morning before the school assembly",
+            "by Monday morning after the weekly test"
+        ],
+        answer: 2,
+        clue: "Rule for days of the week: always use a specific preposition.",
+        explanation: "ข้อ C ถูกต้อง เพราะกฎการใช้ Preposition กับวันในสัปดาห์ (เช่น Monday morning) จะต้องใช้คำว่า 'on' เสมอ"
+    },
+    {
+        id: 5,
+        question: "Which of the following sentences correctly describes weather and clothing?",
+        options: [
+            "It is cold and snowy, so we wear warm coats.",
+            "It is hot and sunny, so we wear heavy jackets.",
+            "It is rainy and wet, so we wear sunglasses only.",
+            "It is windy and dry, so we wear winter boots."
+        ],
+        answer: 0,
+        clue: "Match weather conditions with logical and appropriate clothing items.",
+        explanation: "ข้อ A ถูกต้อง เพราะอากาศหนาวและมีหิมะ (cold and snowy) สอดคล้องกับการสวมเสื้อโค้ทกันหนาว (warm coats)"
+    },
+    {
+        id: 6,
+        question: "Identify the correct negative form of the sentence: 'They play football after school.'",
+        options: [
+            "They does not play football after school.",
+            "They do not play football after school.",
+            "They are not play football after school.",
+            "They not play football after school."
+        ],
+        answer: 1,
+        clue: "Plural subject 'They' requires a specific auxiliary verb for negation in Present Simple.",
+        explanation: "ข้อ B ถูกต้อง เพราะประธานพหูพจน์ 'They' ใน Present Simple Tense เมื่อทำเป็นปฏิเสธต้องใช้ 'do not' (don't) ตามด้วยกริยาช่อง 1"
+    },
+    {
+        id: 7,
+        question: "Choose the correct pronoun to complete: 'My mother gave a gift to _____ because I was helpful.'",
+        options: [
+            "I because I helped her with housework.",
+            "he because he helped her with housework.",
+            "they because they helped her with housework.",
+            "me because I helped her with housework."
+        ],
+        answer: 3,
+        clue: "The blank comes after the preposition 'to', requiring an object pronoun.",
+        explanation: "ข้อ D ถูกต้อง เนื่องจากอยู่หลังคำบุพบท 'to' ต้องใช้รูปกรรม (Object pronoun) คือ 'me' และสอดคล้องกับสรรพนามประธาน 'I'"
+    },
+    {
+        id: 8,
+        question: "Which sentence correctly uses a preposition of place inside a school?",
+        options: [
+            "The library is between the canteen and the science lab.",
+            "The library is under the canteen and the science lab.",
+            "The library is behind the canteen and the science lab.",
+            "The library is above the canteen and the science lab."
+        ],
+        answer: 0,
+        clue: "Look for the preposition used when something is situated in the middle of two locations.",
+        explanation: "ข้อ A ถูกต้อง เพราะการระบุตำแหน่งที่อยู่ตรงกลางระหว่างสองสถานที่ต้องใช้คำบุพบท 'between... and...'"
+    },
+    {
+        id: 9,
+        question: "What is the proper response when someone says: 'How are you today?'",
+        options: [
+            "I am twelve years old and live in Bangkok.",
+            "I am fine, thank you, and how are you?",
+            "I like eating spicy food and fresh fruits.",
+            "I usually wake up early in the morning."
+        ],
+        answer: 1,
+        clue: "This is a standard polite social greeting and inquiry.",
+        explanation: "ข้อ B ถูกต้อง เนื่องจากเป็นการตอบรับคำทักทาย 'How are you today?' ด้วยความสุภาพและถามกลับตามมารยาทสากล"
+    },
+    {
+        id: 10,
+        question: "Which family member relationship is correctly defined?",
+        options: [
+            "Your uncle is the brother of your mother or father.",
+            "Your aunt is the daughter of your own children.",
+            "Your cousin is the parent of your mother or father.",
+            "Your nephew is the sister of your brother or sister."
+        ],
+        answer: 0,
+        clue: "Think about extended family members on your parents' side.",
+        explanation: "ข้อ A ถูกต้อง เพราะ 'uncle' (ลุง/น้าชาย/อาชาย) คือพี่ชายหรือน้องชายของพ่อหรือแม่ของเรา"
+    },
+    {
+        id: 11,
+        question: "Choose the correct verb form for the third-person singular: 'My cat _____ milk every evening.'",
+        options: [
+            "drink fresh milk every evening in the kitchen",
+            "drinks fresh milk every evening in the kitchen",
+            "drinking fresh milk every evening in the kitchen",
+            "are drinking fresh milk every evening in the kitchen"
+        ],
+        answer: 1,
+        clue: "'My cat' is a singular subject performing a routine action.",
+        explanation: "ข้อ B ถูกต้อง เพราะ 'My cat' เป็นประธานเอกพจน์ จึงต้องเติม s ที่กริยา 'drinks' ในโครงสร้าง Present Simple"
+    },
+    {
+        id: 12,
+        question: "Select the correct Wh- question to match the answer: 'I go to school by local bus.'",
+        options: [
+            "Why do you go to school every morning?",
+            "Where do you go to school with friends?",
+            "When do you go to school during weekdays?",
+            "How do you go to school every morning?"
+        ],
+        answer: 3,
+        clue: "The answer indicates a method or mode of transportation ('by local bus').",
+        explanation: "ข้อ D ถูกต้อง เพราะการถามวิธีเดินทางหรือพาหนะที่ใช้ต้องขึ้นต้นด้วยคำว่า 'How'"
+    },
+    {
+        id: 13,
+        question: "Which sentence correctly describes a holiday celebration in December?",
+        options: [
+            "People celebrate Christmas and decorate pine trees.",
+            "People celebrate Halloween and wear spooky costumes.",
+            "People celebrate Songkran and splash water outside.",
+            "People celebrate Valentine and give red roses."
+        ],
+        answer: 0,
+        clue: "December features a major global winter festival with pine trees.",
+        explanation: "ข้อ A ถูกต้อง เพราะเทศกาลในเดือนธันวาคมคือคริสต์มาส (Christmas) ซึ่งมีการประดับตกแต่งต้นสน"
+    },
+    {
+        id: 14,
+        question: "Identify the correct plural form of the noun in the sentence: 'There are three _____ in the classroom.'",
+        options: [
+            "child studying English grammar together",
+            "student studying English grammar together",
+            "children studying English grammar together",
+            "baby studying English grammar together"
+        ],
+        answer: 2,
+        clue: "The modifier is 'three', so the following noun must be an irregular plural form.",
+        explanation: "ข้อ C ถูกต้อง เนื่องจากจำนวน 'three' ต้องตามด้วยคำนามพหูพจน์ ซึ่งรูปพหูพจน์ไม่ปกติของ 'child' คือ 'children'"
+    },
+    {
+        id: 15,
+        question: "Choose the correct option to complete the daily routine statement: 'I always _____ my teeth before sleeping.'",
+        options: [
+            "brush my teeth before sleeping at night",
+            "brushes my teeth before sleeping at night",
+            "brushed my teeth before sleeping at night",
+            "am brushing my teeth before sleeping at night"
+        ],
+        answer: 0,
+        clue: "The subject is 'I', and the sentence describes a general habit with 'always'.",
+        explanation: "ข้อ A ถูกต้อง เพราะประธานเป็น 'I' คำกริยาใน Present Simple จึงต้องใช้รูปเดิม (base form) คือ 'brush'"
+    },
+    {
+        id: 16,
+        question: "What does the festival of Halloween typically involve in October?",
+        options: [
+            "Children wearing spooky costumes and trick-or-treating.",
+            "Families gathering together to eat turkey and pumpkin pie.",
+            "People giving red chocolate hearts to their close friends.",
+            "Citizens watching grand fireworks display at midnight."
+        ],
+        answer: 0,
+        clue: "Halloween is famous for costumes, pumpkins, and candy collection.",
+        explanation: "ข้อ A ถูกต้อง เพราะวันฮาโลวีนในเดือนตุลาคมเด็กๆ จะสวมชุดแฟนตาซีสยองขวัญและขอขนม (trick-or-treating)"
+    },
+    {
+        id: 17,
+        question: "Which sentence uses the correct article (a/an/the) before a noun?",
+        options: [
+            "She wants to buy an new umbrella for rainy days.",
+            "He has an apple and a banana in his lunch box.",
+            "They saw a elephant walking near the big river.",
+            "We visited an museum located in downtown area."
+        ],
+        answer: 1,
+        clue: "Check the sound starting each noun to choose between 'a' and 'an'.",
+        explanation: "ข้อ B ถูกต้อง เพราะ 'apple' ขึ้นต้นด้วยเสียงสระจึงใช้ 'an' และ 'banana' ขึ้นต้นด้วยเสียงพยัญชนะจึงใช้ 'a'"
+    },
+    {
+        id: 18,
+        question: "Select the correct interrogative sentence for asking about time or schedule:",
+        options: [
+            "What time does the English class start today?",
+            "Where time does the English class start today?",
+            "Who time does the English class start today?",
+            "How time does the English class start today?"
+        ],
+        answer: 0,
+        clue: "The inquiry is about clock time for a scheduled event.",
+        explanation: "ข้อ A ถูกต้อง เพราะการถามเวลาที่เจาะจงต้องใช้โครงสร้าง 'What time...'"
+    },
+    {
+        id: 19,
+        question: "Which sentence correctly describes a person's physical appearance?",
+        options: [
+            "Anna has long black hair and beautiful brown eyes.",
+            "Anna is have long black hair and beautiful brown eyes.",
+            "Anna having long black hair and beautiful brown eyes.",
+            "Anna does have long black hair and beautiful brown eyes."
+        ],
+        answer: 0,
+        clue: "Use the verb 'have/has' for describing hair, eyes, and physical features.",
+        explanation: "ข้อ A ถูกต้อง เพราะประธานเอกพจน์ 'Anna' ใช้กริยาแสดงลักษณะภายนอกว่า 'has' (มาจากการผัน verb have)"
+    },
+    {
+        id: 20,
+        question: "Choose the correct sentence structure for a polite request in a classroom:",
+        options: [
+            "Could you please open the window for fresh air?",
+            "Could you please opening the window for fresh air?",
+            "Could you please opened the window for fresh air?",
+            "Could you please opens the window for fresh air?"
+        ],
+        answer: 0,
+        clue: "Modal verbs like 'Could' must be followed by a bare infinitive verb.",
+        explanation: "ข้อ A ถูกต้อง เพราะหลังกริยาช่วย 'Could you please' ต้องตามด้วยคำกริยาช่อง 1 ที่ไม่ผัน (bare infinitive) คือ 'open'"
+    },
+    {
+        id: 21,
+        question: "What is the correct seasonal description for summer in tropical countries?",
+        options: [
+            "The weather is very hot and sunny all day long.",
+            "The weather is extremely cold and snowy outside.",
+            "The weather is windy and filled with fallen leaves.",
+            "The weather is freezing and rivers turn to ice."
+        ],
+        answer: 0,
+        clue: "Think about tropical summer climate characteristics.",
+        explanation: "ข้อ A ถูกต้อง เพราะฤดูร้อนในประเทศเขตร้อนจะมีลักษณะอากาศที่ร้อนจัดและมีแดดจัด (hot and sunny)"
+    },
+    {
+        id: 22,
+        question: "Identify the correct sentence using an adjective to describe a place:",
+        options: [
+            "Our school has a playground which is very large.",
+            "Our school has a playground which is very largely.",
+            "Our school has a playground which is very larger.",
+            "Our school has a playground which is very largest."
+        ],
+        answer: 0,
+        clue: "Use a standard adjective after the linking verb 'is' to describe a noun.",
+        explanation: "ข้อ A ถูกต้อง เพราะคำคุณศัพท์ (Adjective) 'large' ทำหน้าที่ขยายคำนาม playground หลัง linking verb 'is'"
+    },
+    {
+        id: 23,
+        question: "Choose the correct answer for the dialogue: 'A: Whose notebook is this on the desk? B: It is _____.'",
+        options: [
+            "belonging to my friend Sarah's desk",
+            "my friend Sarah because she wrote it",
+            "mine because my name is written inside",
+            "myself because I put it there yesterday"
+        ],
+        answer: 2,
+        clue: "The response indicates ownership using a possessive pronoun.",
+        explanation: "ข้อ C ถูกต้อง เพราะตอบคำถามความเป็นเจ้าของ (Whose) โดยใช้ possessive pronoun 'mine' (ของฉัน)"
+    },
+    {
+        id: 24,
+        question: "Which sentence correctly demonstrates the use of adverbs of frequency?",
+        options: [
+            "He never comes to school late in the morning.",
+            "He comes never to school late in the morning.",
+            "He is never come to school late in the morning.",
+            "He does never come to school late in the morning."
+        ],
+        answer: 0,
+        clue: "Adverbs of frequency (never, always) are placed before main verbs.",
+        explanation: "ข้อ A ถูกต้อง เพราะคำกริยาวิเศษณ์บอกความถี่ (never) จะวางไว้หน้าคำกริยาแท้ (comes)"
+    },
+    {
+        id: 25,
+        question: "What is the appropriate response to the expression: 'Thank you very much for your help.'",
+        options: [
+            "You are welcome, I am glad to help you.",
+            "Never mind about what you did yesterday.",
+            "Excuse me for disturbing your study time.",
+            "I am sorry to hear that unfortunate news."
+        ],
+        answer: 0,
+        clue: "Standard polite reply when someone expresses gratitude.",
+        explanation: "ข้อ A ถูกต้อง เพราะเป็นการตอบรับคำขอบคุณ 'Thank you' ด้วยคำว่า 'You are welcome'"
+    },
+    {
+        id: 26,
+        question: "Which sentence correctly uses a plural noun and verb agreement?",
+        options: [
+            "All the students in this class love learning English.",
+            "All the student in this class loves learning English.",
+            "All the students in this class is loving learning English.",
+            "All the student in this class are love learning English."
+        ],
+        answer: 0,
+        clue: "Look at the determiner 'All the' which requires a plural noun and matching plural verb.",
+        explanation: "ข้อ A ถูกต้อง เพราะ 'All the students' เป็นพหูพจน์ คำกริยาจึงใช้รูปพหูพจน์ปกติคือ 'love'"
+    },
+    {
+        id: 27,
+        question: "Choose the correct sentence describing a routine action in the evening:",
+        options: [
+            "They do their homework before having dinner together.",
+            "They does their homework before having dinner together.",
+            "They doing their homework before having dinner together.",
+            "They are do their homework before having dinner together."
+        ],
+        answer: 0,
+        clue: "Plural subject 'They' with base verb form in Present Simple.",
+        explanation: "ข้อ A ถูกต้อง เพราะประธานพหูพจน์ 'They' ใช้คำกริยาช่อง 1 รูปเดิม 'do'"
+    },
+    {
+        id: 28,
+        question: "What is the main purpose of Mother's Day celebrations in many cultures?",
+        options: [
+            "To express love and gratitude to mothers for their care.",
+            "To celebrate academic achievements of graduating students.",
+            "To clean up local community parks and public beaches.",
+            "To collect autumn leaves for science class experiments."
+        ],
+        answer: 0,
+        clue: "The focus of the day is appreciation for maternal love and dedication.",
+        explanation: "ข้อ A ถูกต้อง เพราะวันแม่แห่งชาติจัดขึ้นเพื่อแสดงความรักและความกตัญญูต่อแม่"
+    },
+    {
+        id: 29,
+        question: "Which sentence correctly identifies a person's nationality based on their country?",
+        options: [
+            "She is from Japan, so she speaks Japanese fluently.",
+            "He is from Thailand, so he speaks Thailand fluently.",
+            "They are from France, so they speak France fluently.",
+            "We are from China, so we speak China fluently."
+        ],
+        answer: 0,
+        clue: "Match the country of origin with its correct adjectival nationality and language.",
+        explanation: "ข้อ A ถูกต้อง เพราะมาจากประเทศญี่ปุ่น (Japan) สัญชาติและภาษาที่พูดคือ 'Japanese'"
+    },
+    {
+        id: 30,
+        question: "Choose the correct comparative sentence structure between two things:",
+        options: [
+            "An elephant is bigger than a dog in size.",
+            "An elephant is big than a dog in size.",
+            "An elephant is more big than a dog in size.",
+            "An elephant is the biggest than a dog in size."
+        ],
+        answer: 0,
+        clue: "One-syllable adjective rule for comparison: adjective + -er + than.",
+        explanation: "ข้อ A ถูกต้อง เพราะการเปรียบเทียบขั้นกว่า (Comparative) ของคำคุณศัพท์พยางค์เดียวสั้นๆ ต้องเติม -er และตามด้วย 'than' (bigger than)"
+    }
+];
+
+let questions = [];
+
+// Fisher-Yates Shuffle Algorithm
+function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+}
+
+function initQuiz() {
+    // Deep clone and shuffle options for each question
+    questions = rawQuestions.map(q => {
+        let optionsWithIndex = q.options.map((opt, idx) => ({ text: opt, originalIndex: idx }));
+        shuffleArray(optionsWithIndex);
+        let newAnswerIndex = optionsWithIndex.findIndex(item => item.originalIndex === q.answer);
+        return {
+            id: q.id,
+            question: q.question,
+            options: optionsWithIndex.map(item => item.text),
+            answer: newAnswerIndex,
+            clue: q.clue,
+            explanation: q.explanation
+        };
+    });
+
+    const container = document.getElementById('questions-container');
+    container.innerHTML = '';
+
+    questions.forEach((q, index) => {
+        let optionsHtml = '';
+        q.options.forEach((opt, optIdx) => {
+            optionsHtml += `<li class="option-item" onclick="selectOption(${index}, ${optIdx})">${String.fromCharCode(65 + curLetterOffset(optIdx))}. ${opt}</li>`;
+        });
+
+        const card = document.createElement('div');
+        card.className = 'question-card';
+        card.id = `q-card-${index}`;
+        card.innerHTML = `
+            <div class="question-title">ข้อที่ ${index + 1}: ${q.question}</div>
+            <ul class="options-list" id="options-${index}">${optionsHtml}</ul>
+            <button class="clue-btn" onclick="toggleClue(${index})">🔍 ดูคำใบ้ (Clue)</button>
+            <div class="clue-box" id="clue-${index}">${q.clue}</div>
+            <div class="explanation" id="exp-${index}"><strong>เฉลยและวิธีคิด:</strong> ${q.explanation}</div>
+        `;
+        container.appendChild(card);
+    });
+}
+
+function curLetterOffset(idx) {
+    return idx;
+}
+
+let userAnswers = {};
+
+function selectOption(qIdx, optIdx) {
+    const card = document.getElementById(`options-${qIdx}`);
+    const items = card.getElementsByClassName('option-item');
+    
+    userAnswers[qIdx] = optIdx;
+
+    for (let i = 0; i < items.length; i++) {
+        items[i].classList.remove('correct', 'incorrect');
+    }
+
+    const correctIndex = questions[qIdx].answer;
+    if (optIdx === correctIndex) {
+        items[optIdx].classList.add('correct');
+    } else {
+        items[optIdx].classList.add('incorrect');
+        items[correctIndex].classList.add('correct');
+    }
+
+    document.getElementById(`exp-${qIdx}`).style.display = 'block';
+    localStorage.setItem('user_answers', JSON.stringify(userAnswers));
+}
+
+function toggleClue(qIdx) {
+    const clueBox = document.getElementById(`clue-${qIdx}`);
+    clueBox.style.display = clueBox.style.display === 'block' ? 'none' : 'block';
+}
+
+function submitExam() {
+    let score = 0;
+    let total = questions.length;
+    let unanswered = 0;
+
+    questions.forEach((q, index) => {
+        if (userAnswers[index] === undefined) {
+            unanswered++;
+        } else if (userAnswers[index] === q.answer) {
+            score++;
+        }
+        // Force show explanations for all
+        document.getElementById(`exp-${index}`).style.display = 'block';
+    });
+
+    const percent = ((score / total) * 100).toFixed(2);
+    const resultContainer = document.getElementById('result-container');
+    const scoreSummary = document.getElementById('score-summary');
+    const analysisBox = document.getElementById('analysis-box');
+
+    scoreSummary.innerHTML = `คุณทำคะแนนได้ <strong>${score} / ${total}</strong> คะแนน (${percent}%)<br>ข้อที่ยังไม่ได้ตอบ: ${unanswered} ข้อ`;
+
+    let strength = "มีความเข้าใจในโครงสร้างไวยากรณ์พื้นฐาน เช่น Present Simple Tense และคำสรรพนาม (Pronouns) เป็นอย่างดี";
+    let weakness = "ควรทบทวนเพิ่มเติมในส่วนของกฎการใช้คำบุพบทบอกเวลา (Prepositions) และการเลือกใช้คำถาม (Wh- Questions) ให้แม่นยำยิ่งขึ้น";
+
+    if (percent >= 80) {
+        strength = "มีความเชี่ยวชาญยอดเยี่ยมทั้งด้านคำศัพท์ ไวยากรณ์ และทักษะการสื่อสารเบื้องต้น";
+        weakness = "รักษาระดับการฝึกฝนและทบทวนรูปแบบประโยคที่ซับซ้อนเพิ่มเติม";
+    }
+
+    analysisBox.innerHTML = `
+        <div style="margin-top: 15px; padding: 15px; background: #e8f8f5; border-left: 5px solid #27ae60; border-radius: 4px;">
+            <h4>📊 การวิเคราะห์ผลสัมฤทธิ์รายบุคคล</h4>
+            <p><strong>จุดเด่น (Strengths):</strong> ${strength}</p>
+            <p><strong>จุดที่ต้องพัฒนา (Areas for Improvement):</strong> ${weakness}</p>
+        </div>
+    `;
+
+    resultContainer.style.display = 'block';
+    resultContainer.scrollIntoView({ behavior: 'smooth' });
+}
+
+function resetExam() {
+    localStorage.removeItem('user_answers');
+    userAnswers = {};
+    document.getElementById('result-container').style.display = 'none';
+    initQuiz();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// Whiteboard Implementation
+const canvas = document.getElementById('wb-canvas');
+const ctx = canvas.getContext('2d');
+let painting = false;
+
+function resizeCanvas() {
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width;
+    canvas.height = rect.height;
+}
+window.addEventListener('resize', resizeCanvas);
+window.addEventListener('load', () => {
+    resizeCanvas();
+    initQuiz();
+    let saved = localStorage.getItem('user_answers');
+    if(saved) {
+        // Restore logic if needed
+    }
+});
+
+canvas.addEventListener('mousedown', startPosition);
+canvas.addEventListener('mouseup', endPosition);
+canvas.addEventListener('mousemove', draw);
+canvas.addEventListener('touchstart', handleTouch);
+canvas.addEventListener('touchend', endPosition);
+canvas.addEventListener('touchmove', handleTouchMove);
+
+function startPosition(e) {
+    painting = true;
+    draw(e);
+}
+
+function endPosition() {
+    painting = false;
+    ctx.beginPath();
+}
+
+function draw(e) {
+    if (!painting) return;
+    ctx.lineWidth = document.getElementById('wb-size').value;
+    ctx.lineCap = 'round';
+    ctx.strokeStyle = document.getElementById('wb-color').value;
+
+    const rect = canvas.getBoundingClientRect();
+    let x = (e.clientX || e.touches[0].clientX) - rect.left;
+    let y = (e.clientY || e.touches[0].clientY) - rect.top;
+
+    ctx.lineTo(x, y);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+}
+
+function handleTouch(e) {
+    e.preventDefault();
+    startPosition(e);
+}
+
+function handleTouchMove(e) {
+    e.preventDefault();
+    draw(e);
+}
+
+function clearWhiteboard() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+}
+</script>
+
+</body>
+</html>
