@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบสอบคัดเลือก ปวช. 1 - พระจอมเกล้าติวเตอร์</title>
+    <style>
+        :root {
+            --primary: #1e3a8a;
+            --secondary: #3b82f6;
+            --success: #10b981;
+            --danger: #ef4444;
+            --bg-color: #f3f4f6;
+            --card-bg: #ffffff;
+            --text-color: #1f2937;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Sarabun', sans-serif; }
+        body { background-color: var(--bg-color); color: var(--text-color); display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+        header { background: var(--primary); color: white; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        header h1 { font-size: 1.2rem; }
+        .controls { display: flex; gap: 10px; align-items: center; }
+        button { padding: 6px 12px; background: var(--secondary); color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.9rem; transition: background 0.2s; }
+        button:hover { opacity: 0.9; }
+        .main-container { display: flex; flex: 1; overflow: hidden; height: calc(100vh - 50px); }
+        .summary-box { background: #e0f2fe; border-left: 5px solid var(--secondary); padding: 15px; margin: 10px; border-radius: 4px; font-size: 0.95rem; line-height: 1.5; }
+        .left-panel { flex: 7; display: flex; flex-direction: column; background: white; border-right: 1px solid #e5e7eb; overflow-y: auto; }
+        .right-panel { flex: 3; display: flex; flex-direction: column; background: #fafafa; padding: 10px; }
+        .quiz-container { padding: 20px; flex: 1; overflow-y: auto; }
+        .question-card { background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 15px; margin-bottom: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .question-title { font-weight: bold; margin-bottom: 10px; color: var(--primary); }
+        .options-list { display: flex; flex-direction: column; gap: 8px; }
+        .option-item { padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 6px; cursor: pointer; transition: all 0.2s; background: #fff; }
+        .option-item:hover { background: #f9fafb; border-color: var(--secondary); }
+        .option-item.correct { background: #d1fae5; border-color: var(--success); color: #065f46; font-weight: bold; }
+        .option-item.incorrect { background: #fee2e2; border-color: var(--danger); color: #991b1b; }
+        .explanation { margin-top: 10px; padding: 10px; background: #f0fdf4; border-left: 4px solid var(--success); font-size: 0.9rem; display: none; }
+        .clue-btn { background: #f59e0b; color: white; font-size: 0.8rem; padding: 2px 6px; border-radius: 3px; cursor: pointer; border: none; margin-bottom: 8px; display: inline-block; }
+        .clue-box { font-size: 0.85rem; color: #d97706; background: #fef3c7; padding: 5px; border-radius: 4px; margin-bottom: 8px; display: none; }
+        #whiteboard { flex: 1; background: white; border: 1px solid #d1d5db; border-radius: 6px; cursor: crosshair; }
+        .wb-tools { display: flex; gap: 5px; margin-bottom: 5px; }
+        .results-section { padding: 20px; background: white; border-radius: 8px; margin: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); display: none; }
+        @media(max-width: 768px) {
+            .main-container { flex-direction: column; }
+            .right-panel { height: 200px; }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>ระบบสอบคัดเลือก ปวช. 1 (ชุดข้อสอบรวม)</h1>
+    <div class="controls">
+        <span id="lang-label">ภาษา: ไทย</span>
+        <button onclick="toggleLang()">TH/EN</button>
+        <button onclick="resetQuiz()">รีเซ็ตข้อสอบ</button>
+    </div>
+</header>
+
+<div class="summary-box" id="summary-text">
+    <strong>คำแนะนำการทำข้อสอบ:</strong> ชุดข้อสอบนี้จำลองแนวข้อสอบคัดเลือกเข้า ปวช. 1 ประกอบด้วย คณิตศาสตร์ วิทยาศาสตร์ ภาษา และความรู้พื้นฐานทางช่าง จำนวน 30 ข้อ จงเลือกคำตอบที่ถูกต้องที่สุด ระบบจะแสดงเฉลยและวิธีคิดลัดทันทีเมื่อท่านเลือกตอบ
+</div>
+
+<div class="main-container">
+    <div class="left-panel">
+        <div class="quiz-container" id="quiz-box">
+            <!-- ข้อสอบทั้งหมดจะถูกเรนเดอร์ผ่าน JavaScript -->
+        </div>
+        <div class="results-section" id="results-box">
+            <h2>ผลการประเมินวิเคราะห์ศักยภาพ</h2>
+            <p id="score-summary" style="margin: 10px 0; font-size: 1.1rem; font-weight: bold;"></p>
+            <div id="analysis-detail"></div>
+        </div>
+    </div>
+    <div class="right-panel">
+        <div class="wb-tools">
+            <button onclick="setPenColor('#1e3a8a')">น้ำเงิน</button>
+            <button onclick="setPenColor('#ef4444')">แดง</button>
+            <button onclick="clearCanvas()">ล้างกระดาน</button>
+        </div>
+        <canvas id="whiteboard"></canvas>
+    </div>
+</div>
+
+<script>
+    let currentLang = 'TH';
+    const questions = [
+        {
+            id: 1,
+            qTH: "1. ถ้าสนามรูปสี่เหลี่ยมผืนผ้ากว้าง 15 เมตร ยาว 20 เมตร ต้องการล้อมรั้วลวดหนาม 3 ชั้น ต้องใช้ลวดหนามยาวอย่างน้อยกี่เมตร?",
+            qEN: "1. If a rectangular field is 15m wide and 20m long, how long is the barbed wire needed for a 3-layer fence?",
+            options: [
+                { text: "ก. 70 เมตร", correct: false },
+                { text: "ข. 140 เมตร", correct: false },
+                { text: "ค. 210 เมตร", correct: true },
+                { text: "ง. 280 เมตร", correct: false }
+            ],
+            clue: "คำหาความยาวรอบรูปก่อน แล้วค่อยคูณด้วยจำนวนชั้นของลวดหนาม",
+            exp: "วิธีคิดลัด: ความยาวรอบรูป = 2 * (กว้าง + ยาว) = 2 * (15 + 20) = 70 เมตร ล้อม 3 ชั้น = 70 * 3 = 210 เมตร"
+        },
+        {
+            id: 2,
+            qTH: "2. อุปกรณ์ช่างข้อใดใช้สำหรับ 'ขันหรือคลายสกรูที่มีหัวเป็นร่องแฉก'?",
+            qEN: "2. Which tool is used to tighten or loosen slotted screws with cross heads?",
+            options: [
+                { text: "ก. ประแจปากตาย", correct: false },
+                { text: "ข. ไขควงปากแบน", correct: false },
+                { text: "ค. ไขควงแฉก (Phillips)", correct: true },
+                { text: "ง. คีมปากจระเข้", correct: false }
+            ],
+            clue: "สังเกตคำว่า 'ร่องแฉก' ซึ่งตรงกับหัวสกรูแบบฟิลิปส์",
+            exp: "วิธีคิดลัด: ไขควงแฉกออกแบบมาสำหรับสกรูหัวแฉกโดยเฉพาะเพื่อให้แรงบิดได้ดีและไม่ลื่นหลุด"
+        },
+        {
+            id: 3,
+            qTH: "3. วงจรไฟฟ้าหลอดไฟมีความต้านทาน 20 โอห์ม และมีกระแสไฟฟ้าไหลผ่าน 2 แอมแปร์ จะมีแรงดันไฟฟ้าตกคร่อมเท่าใด?",
+            qEN: "3. A lamp circuit has a resistance of 20 ohms and a current of 2 amperes. What is the voltage?",
+            options: [
+                { text: "ก. 10 โวลต์", correct: false },
+                { text: "ข. 40 โวลต์", correct: true },
+                { text: "ค. 220 โวลต์", correct: false },
+                { text: "ง. 400 โวลต์", correct: false }
+            ],
+            clue: "ใช้กฎของโอห์ม V = I * R",
+            exp: "วิธีคิดลัด: แทนค่าจากสูตร V = I * R = 2 * 20 = 40 โวลต์"
+        },
+        {
+            id: 4,
+            qTH: "4. ข้อใดคือคำราชาศัพท์ของคำว่า 'นอน'?",
+            qEN: "4. What is the royal vocabulary word for 'to sleep'?",
+            options: [
+                { text: "ก. เสวย", correct: false },
+                { text: "ข. บรรทม", correct: true },
+                { text: "ค. ประชวร", correct: false },
+                { text: "ง. ทรงพระสำราญ", correct: false }
+            ],
+            clue: "คำราชาศัพท์หมวดอิริยาบถ",
+            exp: "วิธีคิดลัด: บรรทม แปลว่า นอน, เสวย แปลว่า กิน, ประชวร แปลว่า ป่วย"
+        },
+        {
+            id: 5,
+            qTH: "5. สมการเชิงเส้นตัวแปรเดียว 3x - 6 = 12 ค่าของ x คือข้อใด?",
+            qEN: "5. Linear equation 3x - 6 = 12, what is the value of x?",
+            options: [
+                { text: "ก. x = 2", correct: false },
+                { text: "ข. x = 4", correct: false },
+                { text: "ค. x = 6", correct: true },
+                { text: "ง. x = 8", correct: false }
+            ],
+            clue: "ย้าย -6 ไปบวกฝั่งขวา แล้วนำ 3 ไปหาร",
+            exp: "วิธีคิดลัด: 3x = 12 + 6 => 3x = 18 => x = 18 / 3 = 6"
+        },
+        {
+            id: 6,
+            qTH: "6. หน่วยวัดกระแสไฟฟ้าในระบบ SI คือข้อใด?",
+            qEN: "6. What is the SI unit of electric current?",
+            options: [
+                { text: "ก. โวลต์ (Volt)", correct: false },
+                { text: "ข. แอมแปร์ (Ampere)", correct: true },
+                { text: "ค. โอห์ม (Ohm)", correct: false },
+                { text: "ง. วัตต์ (Watt)", correct: false }
+            ],
+            clue: "กระแสไฟฟ้าคือปริมาณประจุไฟฟ้าที่ไหลผ่าน",
+            exp: "วิธีคิดลัด: แอมแปร์คือหน่วยวัดกระแสไฟฟ้า โวลต์คือแรงดัน และโอห์มคือความต้านทาน"
+        },
+        {
+            id: 7,
+            qTH: "7. คำว่า 'Communication' ในภาษาอังกฤษ มีความหมายตรงกับข้อใด?",
+            qEN: "7. What does the word 'Communication' mean in Thai?",
+            options: [
+                { text: "ก. การคำนวณ", correct: false },
+                { text: "ข. การสื่อสาร", correct: true },
+                { text: "ค. การคมนาคม", correct: false },
+                { text: "ง. การควบคุม", correct: false }
+            ],
+            clue: "รากศัพท์มาจาก commune (ทำให้ร่วมกัน)",
+            exp: "วิธีคิดลัด: Communication แปลว่า การสื่อสาร หรือการติดต่อแลกเปลี่ยนข้อมูลกัน"
+        },
+        {
+            id: 8,
+            qTH: "8. หากต้องการเจาะรูวัสดุที่เป็นโลหะแผ่นบาง ควรเลือกใช้เครื่องมือใดจึงจะเหมาะสมที่สุด?",
+            qEN: "8. Which tool is best suited for drilling thin sheet metal?",
+            options: [
+                { text: "ก. เลื่อยลันดา", correct: false },
+                { text: "ข. สว่านไฟฟ้าและดอกสว่านเจาะโลหะ", correct: true },
+                { text: "ค. ค้อนหงอน", correct: false },
+                { text: "ง. สิ่วปากบาง", correct: false }
+            ],
+            clue: "เครื่องมือไฟฟ้าที่ใช้ร่วมกับดอกสว่านเฉพาะงาน",
+            exp: "วิธีคิดลัด: สว่านไฟฟ้าพร้อมดอกสว่านเหล็กกล้าคาร์บอนสูงออกแบบมาเพื่อเจาะโลหะโดยเฉพาะ"
+        },
+        {
+            id: 9,
+            qTH: "9. ผลลัพธ์ของ (-8) + 15 - (-3) มีค่าเท่ากับเท่าใด?",
+            qEN: "9. What is the result of (-8) + 15 - (-3)?",
+            options: [
+                { text: "ก. 4", correct: false },
+                { text: "ข. 10", correct: true },
+                { text: "ค. 16", correct: false },
+                { text: "ง. 26", correct: false }
+            ],
+            clue: "ลบซ้อนลบกลายเป็นบวก (-8) + 15 + 3",
+            exp: "วิธีคิดลัด: -8 + 15 = 7 จากนั้น 7 - (-3) = 7 + 3 = 10"
+        },
+        {
+            id: 10,
+            qTH: "10. ข้อใดไม่ใช่สมบัติทางกายภาพของโลหะทั่วไป?",
+            qEN: "10. Which is NOT a physical property of general metals?",
+            options: [
+                { text: "ก. นำความร้อนและไฟฟ้าได้ดี", correct: false },
+                { text: "ข. มีจุดหลอมเหลวต่ำและเปราะแตกหักง่าย", correct: true },
+                { text: "ค. มีความมันวาว", correct: false },
+                { text: "ง. สามารถตีแผ่เป็นแผ่นได้", correct: false }
+            ],
+            clue: "นึกถึงเหล็กหรือทองแดง มีความเหนียวสูง ไม่เปราะ",
+            exp: "วิธีคิดลัด: โลหะส่วนใหญ่มีความเหนียวสูง ไม่เปราะแตกหักง่ายเหมือนอโลหะ"
+        },
+        {
+            id: 11,
+            qTH: "11. ถ้าอัตราส่วนของเงิน A ต่อ B เป็น 3 : 5 และ A มีเงิน 150 บาท B จะมีเงินเท่าใด?",
+            qEN: "11. If the ratio of A to B is 3:5 and A has 150 baht, how much does B have?",
+            options: [
+                { text: "ก. 200 บาท", correct: false },
+                { text: "ข. 250 บาท", correct: true },
+                { text: "ค. 300 บาท", correct: false },
+                { text: "ง. 350 บาท", correct: false }
+            ],
+            clue: "เทียบสัดส่วน 3 ส่วน คือ 150 บาท ดังนั้น 1 ส่วนคือ 50 บาท",
+            exp: "วิธีคิดลัด: 3 ส่วน = 150 ดังนั้น 1 ส่วน = 50 บาท B มี 5 ส่วน = 5 * 50 = 250 บาท"
+        },
+        {
+            id: 12,
+            qTH: "12. สำนวนไทยในข้อใดหมายถึง 'สั่งสอนหรือแนะนำคนที่ไม่ค่อยรู้เรื่องได้ยาก'?",
+            qEN: "12. Which Thai idiom means 'hard to teach or advise'?",
+            options: [
+                { text: "ก. สีซอให้ควายฟัง", correct: true },
+                { text: "ข. กบในกะลาครอบ", correct: false },
+                { text: "ค. ขี่ช้างจับตั๊กแตน", correct: false },
+                { text: "ง. น้ำพิ่งเรือเสือพึ่งป่า", correct: false }
+            ],
+            clue: "เกี่ยวข้องกับสัตว์ใหญ่และเครื่องดนตรีโบราณ",
+            exp: "วิธีคิดลัด: สีซอให้ควายฟัง เปรียบเทียบการแนะนำคนปัญญาอ่อนหรือดื้อด้านซึ่งไม่เกิดประโยชน์"
+        },
+        {
+            id: 13,
+            qTH: "13. กฎความปลอดภัยเบื้องต้นในโรงงานอุตสาหกรรม ข้อใดสำคัญที่สุดในการปฏิบัติงานกับเครื่องจักรกล?",
+            qEN: "13. What is the most important safety rule when working with machinery?",
+            options: [
+                { text: "ก. สวมใส่อุปกรณ์คุ้มครองความปลอดภัยส่วนบุคคล (PPE)", correct: true },
+                { text: "ข. เปิดเพลงเสียงดังเพื่อคลายเครียด", correct: false },
+                { text: "ค. สวมเสื้อผ้าแขนยาวหลวมๆ เพื่อความสบาย", correct: false },
+                { text: "ง. ถอดแว่นตานิรภัยเพื่อให้มองเห็นชัดเจน", correct: false }
+            ],
+            clue: "อุปกรณ์ป้องกันร่างกาย เช่น แว่นตา รองเท้านิรภัย",
+            exp: "วิธีคิดลัด: การสวมใส่ PPE และแต่งกายรัดกุมช่วยป้องกันอุบัติเหตุจากเครื่องจักรหนีบหรือสะเก็ดกระเด็น"
+        },
+        {
+            id: 14,
+            qTH: "14. ค่าของ $2^3 \times 2^4$ มีค่าตรงกับข้อใด?",
+            qEN: "14. What is the value of $2^3 \times 2^4$?",
+            options: [
+                { text: "ก. $2^7$", correct: true },
+                { text: "ข. $2^{12}$", correct: false },
+                { text: "ค. $4^7$", correct: false },
+                { text: "ง. $4^{12}$", correct: false }
+            ],
+            clue: "เลขฐานเหมือนกันคูณกัน นำเลขชี้กำลังมาบวกกัน",
+            exp: "วิธีคิดลัด: $a^m \times a^n = a^{m+n}$ ดังนั้น $2^{3+4} = 2^7$"
+        },
+        {
+            id: 15,
+            qTH: "15. ประโยคภาษาอังกฤษในข้อใดใช้สำหรับการแนะนำตัวอย่างเป็นทางการ?",
+            qEN: "15. Which English sentence is used for a formal self-introduction?",
+            options: [
+                { text: "ก. What's up, bro?", correct: false },
+                { text: "ข. Let me introduce myself. My name is...", correct: true },
+                { text: "ค. See you later.", correct: false },
+                { text: "ง. Give me a call.", correct: false }
+            ],
+            clue: "คำขึ้นต้นแปลว่า 'ขออนุญาตแนะนำตัว'",
+            exp: "วิธีคิดลัด: 'Let me introduce myself' เป็นสำนวนมาตรฐานทางการ ส่วนทางเลือกอื่นเป็นภาษาพูดไม่เป็นทางการ"
+        },
+        {
+            id: 16,
+            qTH: "16. แรงลัพธ์ที่มีขนาดเท่ากันและกระทำในทิศทางเดียวกัน จะส่งผลต่อวัตถุอย่างไร?",
+            qEN: "16. How do equal net forces acting in the same direction affect an object?",
+            options: [
+                { text: "ก. วัตถุหยุดนิ่งอยู่กับที่", correct: false },
+                { text: "ข. วัตถุเคลื่อนที่ด้วยความเร็วเพิ่มขึ้นไปในทิศทางนั้น", correct: true },
+                { text: "ค. วัตถุเคลื่อนที่ถอยหลัง", correct: false },
+                { text: "ง. ไม่มีผลใดๆ ต่อวัตถุ", correct: false }
+            ],
+            clue: "แรงเสริมกันทำให้วัตถุเคลื่อนที่ไปทางเดียวกัน",
+            exp: "วิธีคิดลัด: แรงทิศเดียวกันจะรวมขนาดเข้าด้วยกัน ทำให้เกิดการเคลื่อนที่เร่งไปตามทิศทางของแรง"
+        },
+        {
+            id: 17,
+            qTH: "17. ข้อใดคือคำสะกดที่ถูกต้องตามพจนานุกรมไทย?",
+            qEN: "17. Which Thai word is spelled correctly?",
+            options: [
+                { text: "ก. อนุญาต", correct: true },
+                { text: "ข. อนุญาติ", correct: false },
+                { text: "ค. ผัดวันประกันพรุ่ง", correct: false },
+                { text: "ง. กะเพรา (เขียนผิดหลัก)", correct: false }
+            ],
+            clue: "คำว่าอนุญาตไม่มีสระอิ",
+            exp: "วิธีคิดลัด: 'อนุญาต' ไม่ต้องมีเครื่องหมายทัณฑฆาตหรือสระอิบนตเต่า"
+        },
+        {
+            id: 18,
+            qTH: "18. พื้นที่ผิวทรงกระบอกที่มีรัศมี r และสูง h คำนวณจากสูตรใด?",
+            qEN: "18. What is the formula for the surface area of a cylinder with radius r and height h?",
+            options: [
+                { text: "ก. $\\pi r^2 h$", correct: false },
+                { text: "ข. $2\\pi r h + 2\\pi r^2$", correct: true },
+                { text: "ค. $4\\pi r^2$", correct: false },
+                { text: "ง. $\\frac{1}{3} \\pi r^2 h$", correct: false }
+            ],
+            clue: "ประกอบด้วยพื้นที่ผิวข้าง (2*pi*r*h) บวกกับพื้นที่ฐานกลมสองด้าน (2*pi*r^2)",
+            exp: "วิธีคิดลัด: พื้นที่ผิวรวมทรงกระบอก = พื้นที่ผิวข้าง + พื้นที่หน้าตัดหัวท้ายทั้งสอง = $2\\pi r h + 2\\pi r^2$"
+        },
+        {
+            id: 19,
+            qTH: "19. ปรากฏการณ์ธรรมชาติข้อใดเกิดจากการหมุนรอบตัวเองของโลก?",
+            qEN: "19. Which natural phenomenon is caused by the Earth's rotation?",
+            options: [
+                { text: "ก. การเกิดฤดูกาล", correct: false },
+                { text: "ข. การเกิดกลางวันและกลางคืน", correct: true },
+                { text: "ค. การเกิดสุริยุปราคา", correct: false },
+                { text: "ง. การเกิดน้ำขึ้นน้ำลงตามแรงดึงดูดดวงจันทร์", correct: false }
+            ],
+            clue: "โลกหมุนรอบตัวเองครบ 1 รอบใช้เวลา 24 ชั่วโมง",
+            exp: "วิธีคิดลัด: การหมุนรอบตัวเองทำให้ด้านหนึ่งรับแสงอาทิตย์ (กลางวัน) และอีกด้านลับแสง (กลางคืน)"
+        },
+        {
+            id: 20,
+            qTH: "20. หากต้องการแปลงหน่วยความยาว 1.5 เมตร ให้เป็นเซนติเมตร จะได้ค่าเท่าใด?",
+            qEN: "20. Convert 1.5 meters into centimeters.",
+            options: [
+                { text: "ก. 15 เซนติเมตร", correct: false },
+                { text: "ข. 150 เซนติเมตร", correct: true },
+                { text: "ค. 1,500 เซนติเมตร", correct: false },
+                { text: "ง. 15,000 เซนติเมตร", correct: false }
+            ],
+            clue: "1 เมตร เท่ากับ 100 เซนติเมตร",
+            exp: "วิธีคิดลัด: 1.5 * 100 = 150 เซนติเมตร"
+        },
+        {
+            id: 21,
+            qTH: "21. คำว่า 'Technology' มีความหมายที่ถูกต้องในบริบทงานช่างคือข้อใด?",
+            qEN: "21. What is the correct meaning of 'Technology' in engineering context?",
+            options: [
+                { text: "ก. วิทยาการคำนวณและความบันเทิง", correct: false },
+                { text: "ข. การนำความรู้ทางวิทยาศาสตร์มาประยุกต์ใช้เพื่อประโยชน์ทางปฏิบัติ", correct: true },
+                { text: "ค. ศิลปะการวาดภาพลายเส้น", correct: false },
+                { text: "ง. ทฤษฎีทางปรัชญาชั้นสูง", correct: false }
+            ],
+            clue: "การประยุกต์ใช้วิทยาศาสตร์เพื่อสร้างเครื่องมือ",
+            exp: "วิธีคิดลัด: เทคโนโลยีคือการประยุกต์องค์ความรู้เพื่อแก้ปัญหาและอำนวยความสะดวกในทางปฏิบัติ"
+        },
+        {
+            id: 22,
+            qTH: "22. มุมภายในรวมกันของรูปสามเหลี่ยมทุกชนิดมีค่าเท่ากับกี่องศา?",
+            qEN: "22. What is the sum of interior angles of any triangle?",
+            options: [
+                { text: "ก. 90 องศา", correct: false },
+                { text: "ข. 180 องศา", correct: true },
+                { text: "ค. 270 องศา", correct: false },
+                { text: "ง. 360 องศา", correct: false }
+            ],
+            clue: "คุณสมบัติพื้นฐานเรขาคณิตของรูปสามเหลี่ยม",
+            exp: "วิธีคิดลัด: ผลบวกมุมภายในของรูปสามเหลี่ยมทุกชนิดคงที่เสมอที่ 180 องศา"
+        },
+        {
+            id: 23,
+            qTH: "23. ข้อใดเป็นสัญกรณ์วิทยาศาสตร์ของจำนวน 45,000,000?",
+            qEN: "23. Which is the scientific notation of 45,000,000?",
+            options: [
+                { text: "ก. $4.5 \times 10^6$", correct: false },
+                { text: "ข. $4.5 \times 10^7$", correct: true },
+                { text: "ค. $45 \times 10^6$", correct: false },
+                { text: "ง. $0.45 \times 10^8$", correct: false }
+            ],
+            clue: "จัดรูปให้อยู่ในรูป $A \times 10^n$ โดยที่ $1 \le A < 10$",
+            exp: "วิธีคิดลัด: เลื่อนจุดทศนิยมไปทางซ้าย 7 ตำแหน่ง จะได้ $4.5 \times 10^7$"
+        },
+        {
+            id: 24,
+            qTH: "24. เมื่อเกิดอุบัติเหตุไฟไหม้จากอุปกรณ์ไฟฟ้าภายในห้องปฏิบัติการ สิ่งแรกที่ต้องทำคืออะไร?",
+            qEN: "24. What should be done first when an electrical fire occurs in a lab?",
+            options: [
+                { text: "ก. สาดน้ำสะอาดใส่ทันที", correct: false },
+                { text: "ข. ตัดกระแสไฟฟ้า (สับคัทアウト/เบรกเกอร์) ก่อนดับเพลิง", correct: true },
+                { text: "ค. วิ่งหนีออกจากห้องโดยไม่แจ้งใคร", correct: false },
+                { text: "ง. ใช้มือเปล่าดึงสายไฟออก", correct: false }
+            ],
+            clue: "ไฟฟ้ากับน้ำเป็นอันตรายถึงชีวิต ต้องตัดไฟก่อน",
+            exp: "วิธีคิดลัด: การตัดกระแสไฟฟ้าป้องกันการถูกไฟฟ้าดูดซ้ำ จากนั้นใช้ถังดับเพลิงเคมีแห้ง (ห้ามใช้น้ำ)"
+        },
+        {
+            id: 25,
+            qTH: "25. ค่าเฉลี่ยเลขคณิตของข้อมูลชุดนี้: 10, 15, 20, 25, 30 คือเท่าใด?",
+            qEN: "25. What is the arithmetic mean of data: 10, 15, 20, 25, 30?",
+            options: [
+                { text: "ก. 18", correct: false },
+                { text: "ข. 20", correct: true },
+                { text: "ค. 22", correct: false },
+                { text: "ง. 25", correct: false }
+            ],
+            clue: "นำผลรวมข้อมูลทั้งหมดหารด้วยจำนวนตัว",
+            exp: "วิธีคิดลัด: ผลรวม = 10+15+20+25+30 = 100 มี 5 ตัว ค่าเฉลี่ย = 100 / 5 = 20"
+        },
+        {
+            id: 26,
+            qTH: "26. ข้อใดกล่าวถึงประโยชน์ของ 'แผนผังความคิด (Mind Map)' ได้ถูกต้องที่สุด?",
+            qEN: "26. Which describes the benefit of a Mind Map correctly?",
+            options: [
+                { text: "ก. ใช้บันทึกข้อความแบบบรรยายยาวๆ", correct: false },
+                { text: "ข. ช่วยจัดระบบความคิดและเชื่อมโยงความสัมพันธ์ของข้อมูลภาพรวม", correct: true },
+                { text: "ค. ใช้คำนวณตัวเลขทางสถิติซับซ้อน", correct: false },
+                { text: "ง. ใช้สร้างภาพสามมิติเสมือนจริง", correct: false }
+            ],
+            clue: "การใช้ภาพและคีย์เวิร์ดเชื่อมโยงสมองซีกซ้ายและขวา",
+            exp: "วิธีคิดลัด: แผนผังความคิดเน้นการจัดระเบียบข้อมูลเป็นโครงสร้างกิ่งก้านช่วยให้จำง่ายและเห็นภาพรวม"
+        },
+        {
+            id: 27,
+            qTH: "27. ถ้าแรง 50 นิวตัน กระทำต่อวัตถุแล้วทำให้วัตถุเคลื่อนที่ไปได้ระยะทาง 4 เมตร งานที่เกิดขึ้นมีค่าเท่าใด?",
+            qEN: "27. If a force of 50N moves an object by 4 meters, what is the work done?",
+            options: [
+                { text: "ก. 12.5 จูล", correct: false },
+                { text: "ข. 200 จูล", correct: true },
+                { text: "ค. 400 จูล", correct: false },
+                { text: "ง. 500 จูล", correct: false }
+            ],
+            clue: "สูตรคำนวณงาน W = F * s",
+            exp: "วิธีคิดลัด: แทนค่า W = 50 นิวตัน * 4 เมตร = 200 จูล (Joule)"
+        },
+        {
+            id: 28,
+            qTH: "28. คำถามข้อใดขึ้นต้นด้วย 'Where' เป็นการสอบถามเกี่ยวกับสิ่งใด?",
+            qEN: "28. Questions starting with 'Where' ask about what?",
+            options: [
+                { text: "ก. เวลา (Time)", correct: false },
+                { text: "ข. สถานที่ (Place/Location)", correct: true },
+                { text: "ค. เหตุผล (Reason)", correct: false },
+                { text: "ง. วิธีการ (Manner)", correct: false }
+            ],
+            clue: "Where แปลว่า ที่ไหน",
+            exp: "วิธีคิดลัด: Where ใช้ถามสถานที่ (เช่น Where are you going?) ส่วน When ถามเวลา และ Why ถามเหตุผล"
+        },
+        {
+            id: 29,
+            qTH: "29. แหล่งพลังงานทดแทนในข้อใด 'ไม่ส่งผลกระทบ' ต่อปริมาณแก๊สเรือนกระจกในชั้นบรรยากาศมากที่สุด?",
+            qEN: "29. Which renewable energy source has the least greenhouse gas impact?",
+            options: [
+                { text: "ก. ถ่านหิน", correct: false },
+                { text: "ข. พลังงานแสงอาทิตย์ (Solar Energy)", correct: true },
+                { text: "ค. น้ำมันปิโตรเลียม", correct: false },
+                { text: "ง. ก๊าซธรรมชาติ", correct: false }
+            ],
+            clue: "พลังงานสะอาดจากธรรมชาติโดยตรง",
+            exp: "วิธีคิดลัด: พลังงานแสงอาทิตย์เปลี่ยนแสงเป็นไฟฟ้าโดยตรง ไม่มีการเผาไหม้เชื้อเพลิงฟอสซิล"
+        },
+        {
+            id: 30,
+            qTH: "30. ข้อใดคือขั้นตอนแรกสุดของกระบวนการแก้ไขปัญหาเชิงตรรกะ (Problem Solving Process)?",
+            qEN: "30. What is the very first step in problem solving process?",
+            options: [
+                { text: "ก. การลงมือเขียนโปรแกรมทันที", correct: false },
+                { text: "ข. การวิเคราะห์และทำความเข้าใจปัญหา", correct: true },
+                { text: "ค. การทดสอบระบบ", correct: false },
+                { text: "ง. การสรุปผลรายงาน", correct: false }
+            ],
+            clue: "ก่อนแก้ปัญหาต้องรู้ก่อนว่าปัญหาคืออะไร",
+            exp: "วิธีคิดลัด: การวิเคราะห์และทำความเข้าใจปัญหา (Problem Definition) เป็นหัวใจสำคัญก่อนเริ่มวางแผนขั้นตอนแก้ไข"
+        }
+    ];
+
+    let userAnswers = {};
+
+    function renderQuiz() {
+        const quizBox = document.getElementById('quiz-box');
+        quizBox.innerHTML = '';
+        questions.forEach((q, index) => {
+            let optionsHTML = '';
+            q.options.forEach((opt, oIdx) => {
+                optionsHTML += `<div class="option-item" id="q${index}_opt${oIdx}" onclick="selectAnswer(${index}, ${oIdx})">${opt.text}</div>`;
+            });
+
+            quizBox.innerHTML += `
+                <div class="question-card">
+                    <div class="question-title">${currentLang === 'TH' ? q.qTH : q.qEN}</div>
+                    <button class="clue-btn" onclick="toggleClue(${index})">เปิดคำใบ้</button>
+                    <div class="clue-box" id="clue_${index}">คำใบ้: ${q.clue}</div>
+                    <div class="options-list">${optionsHTML}</div>
+                    <div class="explanation" id="exp_${index}"><strong>เฉลยและแนวคิด:</strong> ${q.exp}</div>
+                </div>
+            `;
+        });
+    }
+
+    function toggleClue(index) {
+        const box = document.getElementById(`clue_${index}`);
+        box.style.display = box.style.display === 'block' ? 'none' : 'block';
+    }
+
+    function selectAnswer(qIdx, oIdx) {
+        if (userAnswers[qIdx] !== undefined) return; // ตอบแล้วตอบเลย
+        userAnswers[qIdx] = oIdx;
+        const q = questions[qIdx];
+        const selectedOpt = q.options[oIdx];
+
+        // ตรวจสอบถูกผิด
+        q.options.forEach((opt, i) => {
+            const el = document.getElementById(`q${qIdx}_opt${i}`);
+            if (opt.correct) {
+                el.classList.add('correct');
+            } else if (i === oIdx) {
+                el.classList.add('incorrect');
+            }
+        });
+
+        document.getElementById(`exp_${qIdx}`).style.display = 'block';
+
+        // ตรวจสอบว่าทำครบทุกข้อหรือยัง
+        if (Object.keys(userAnswers).length === questions.length) {
+            showResults();
+        }
+    }
+
+    function showResults() {
+        let score = 0;
+        Object.keys(userAnswers).forEach(qIdx => {
+            if (questions[qIdx].options[userAnswers[qIdx]].correct) {
+                score++;
+            }
+        });
+
+        const resultsBox = document.getElementById('results-box');
+        const scoreSummary = document.getElementById('score-summary');
+        const analysisDetail = document.getElementById('analysis-detail');
+
+        scoreSummary.innerText = `คะแนนรวมของคุณ: ${score} / ${questions.length} (${((score/questions.length)*100).toFixed(2)}%)`;
+
+        let analysisHTML = `<p><strong>จุดเด่น (Strengths):</strong> ท่านมีความเข้าใจในหลักการพื้นฐานและสามารถวิเคราะห์โจทย์คำนวณเบื้องต้นได้ดี</p>`;
+        if (score < 25) {
+            analysisHTML += `<p style="color:var(--danger)"><strong>จุดที่ต้องพัฒนา (Areas for Improvement):</strong> แนะนำให้ทบทวนสูตรคำนวณทางวิทยาศาสตร์และทฤษฎีเครื่องมือช่างพื้นฐานเพิ่มเติมเพื่อความแม่นยำ</p>`;
+        } else {
+            analysisHTML += `<p style="color:var(--success)"><strong>จุดที่ต้องพัฒนา (Areas for Improvement):</strong> ท่านมีความพร้อมสูงในการสอบคัดเลือก ขอให้รักษามาตรฐานการบริหารเวลาเช่นนี้ไว้</p>`;
+        }
+        analysisDetail.innerHTML = analysisHTML;
+        resultsBox.style.display = 'block';
+    }
+
+    function toggleLang() {
+        currentLang = currentLang === 'TH' ? 'EN' : 'TH';
+        document.getElementById('lang-label').innerText = `ภาษา: ${currentLang}`;
+        renderQuiz();
+    }
+
+    function shuffleOptions() {
+        questions.forEach(q => {
+            for (let i = q.options.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [q.options[i], q.options[j]] = [q.options[j], q.options[i]];
+            }
+        });
+    }
+
+    function resetQuiz() {
+        userAnswers = {};
+        document.getElementById('results-box').style.display = 'none';
+        shuffleOptions();
+        renderQuiz();
+    }
+
+    // Whiteboard Script
+    const canvas = document.getElementById('whiteboard');
+    const ctx = canvas.getContext('2d');
+    let painting = false;
+    let penColor = '#1e3a8a';
+
+    function resizeCanvas() {
+        canvas.width = canvas.parentElement.clientWidth - 20;
+        canvas.height = 250;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    canvas.addEventListener('mousedown', startPosition);
+    canvas.addEventListener('mouseup', endPosition);
+    canvas.addEventListener('mousemove', draw);
+
+    canvas.addEventListener('touchstart', (e) => { startPosition(e.touches[0]); e.preventDefault(); });
+    canvas.addEventListener('touchend', endPosition);
+    canvas.addEventListener('touchmove', (e) => { draw(e.touches[0]); e.preventDefault(); });
+
+    function startPosition(e) {
+        painting = true;
+        draw(e);
+    }
+    function endPosition() {
+        painting = false;
+        ctx.beginPath();
+    }
+    function draw(e) {
+        if (!painting) return;
+        ctx.lineWidth = 2;
+        ctx.lineCap = 'round';
+        ctx.strokeStyle = penColor;
+
+        const rect = canvas.getBoundingClientRect();
+        ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
+    }
+    function setPenColor(color) { penColor = color; }
+    function clearCanvas() { ctx.clearRect(0, 0, canvas.width, canvas.height); }
+
+    // Init
+    shuffleOptions();
+    renderQuiz();
+</script>
+</body>
+</html>
