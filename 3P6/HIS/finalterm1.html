@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบคลังข้อสอบ Interactive - พระจอมเกล้าติวเตอร์</title>
+    <style>
+        :root {
+            --primary-color: #1e3a8a;
+            --secondary-color: #3b82f6;
+            --accent-color: #f59e0b;
+            --bg-color: #f8fafc;
+            --text-color: #1e293b;
+            --success-color: #10b981;
+            --error-color: #ef4444;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Sarabun', sans-serif; }
+        body { background-color: var(--bg-color); color: var(--text-color); line-height: 1.6; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+        
+        header { background: var(--primary-color); color: white; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        header h1 { font-size: 1.2rem; }
+        .header-controls { display: flex; gap: 10px; align-items: center; }
+        button { background: var(--secondary-color); color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; transition: 0.2s; font-size: 0.9rem; }
+        button:hover { opacity: 0.9; }
+
+        .main-container { display: flex; flex: 1; overflow: hidden; height: calc(100vh - 50px); }
+        
+        /* Left Frame: Quiz (70%) */
+        .quiz-frame { flex: 7; display: flex; flex-direction: column; background: white; border-right: 1px solid #e2e8f0; overflow-y: auto; padding: 20px; }
+        
+        /* Right Frame: Whiteboard (30%) */
+        .whiteboard-frame { flex: 3; display: flex; flex-direction: column; background: #ffffff; padding: 15px; }
+        
+        .question-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 15px; margin-bottom: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .question-title { font-weight: bold; margin-bottom: 10px; color: var(--primary-color); }
+        .options-list { display: flex; flex-direction: column; gap: 8px; }
+        .option-btn { background: #f1f5f9; border: 1px solid #cbd5e1; padding: 10px; text-align: left; border-radius: 6px; cursor: pointer; color: var(--text-color); width: 100%; transition: all 0.2s; }
+        .option-btn:hover:not(:disabled) { background: #e2e8f0; }
+        .option-btn.correct { background: var(--success-color) !important; color: white; border-color: var(--success-color); }
+        .option-btn.incorrect { background: var(--error-color) !important; color: white; border-color: var(--error-color); }
+        
+        .clue-box { margin-top: 10px; font-size: 0.85rem; color: #64748b; background: #f8fafc; padding: 8px; border-radius: 4px; border-left: 3px solid var(--accent-color); display: none; }
+        .explanation-box { margin-top: 10px; font-size: 0.9rem; background: #ecfdf5; color: #065f46; padding: 10px; border-radius: 4px; display: none; border-left: 3px solid var(--success-color); }
+
+        /* Whiteboard Tools */
+        .wb-toolbar { display: flex; gap: 5px; margin-bottom: 10px; align-items: center; flex-wrap: wrap; }
+        canvas { border: 1px solid #cbd5e1; border-radius: 6px; flex: 1; background: #fff; cursor: crosshair; width: 100%; }
+
+        /* Result Modal/Panel */
+        #result-panel { display: none; padding: 20px; text-align: center; }
+        #result-panel h2 { color: var(--primary-color); margin-bottom: 15px; }
+        .analysis-box { text-align: left; background: #f8fafc; padding: 15px; border-radius: 8px; margin-top: 15px; border: 1px solid #e2e8f0; }
+
+        @media (max-width: 768px) {
+            .main-container { flex-direction: column; }
+            .whiteboard-frame { height: 250px; }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>ข้อสอบวิชาประวัติศาสตร์ ป.6 (ปลายภาคเรียนที่ 2)</h1>
+    <div class="header-controls">
+        <span id="lang-indicator" style="font-size:0.85rem;">ภาษา: ไทย</span>
+        <button onclick="toggleLanguage()">TH / EN</button>
+        <button onclick="resetExam()">Reset / สลับข้อสอบ</button>
+    </div>
+</header>
+
+<div class="main-container">
+    <!-- ฝั่งซ้าย: ข้อสอบ 30 ข้อ -->
+    <div class="quiz-frame" id="quiz-container">
+        <div id="questions-wrapper"></div>
+        <div id="result-panel">
+            <h2>ผลการประเมินการทดสอบ</h2>
+            <p id="score-display" style="font-size: 1.2rem; font-weight: bold; margin-bottom: 15px;"></p>
+            <div class="analysis-box" id="analysis-content"></div>
+            <button onclick="resetExam()" style="margin-top: 20px;">ทำข้อสอบใหม่อีกครั้ง</button>
+        </div>
+        <button id="submit-btn" onclick="submitExam()" style="margin-top: 20px; padding: 10px; background: var(--success-color); font-weight: bold; font-size: 1rem; border-radius: 6px;">ส่งข้อสอบและวิเคราะห์ผล</button>
+    </div>
+
+    <!-- ฝั่งขวา: กระดาน Whiteboard -->
+    <div class="whiteboard-frame">
+        <div class="wb-toolbar">
+            <span style="font-size:0.85rem; font-weight:bold;">กระดานทดเลข</span>
+            <button onclick="setPenColor('#1e293b')" style="background:#1e293b; padding:4px 8px;">ดำ</button>
+            <button onclick="setPenColor('#ef4444')" style="background:#ef4444; padding:4px 8px;">แดง</button>
+            <button onclick="setPenColor('#3b82f6')" style="background:#3b82f6; padding:4px 8px;">น้ำเงิน</button>
+            <button onclick="clearCanvas()" style="background:#64748b; padding:4px 8px;">ล้างกระดาน</button>
+        </div>
+        <canvas id="whiteboard"></canvas>
+    </div>
+</div>
+
+<script>
+    // ฐานข้อมูลข้อสอบ 30 ข้อ กระจายตัวเลือกถูกต้องสมดุล (A=8, B=8, C=7, D=7)
+    const rawQuestions = [
+        { id: 1, q: "ข้อใดคือสาเหตุหลักในการย้ายราชธานีจากกรุงธนบุรีมายังฝั่งพระนคร?", options: ["ฝั่งธนบุรีมีพื้นที่คับแคบและถูกแม่น้ำเซาะตลิ่งพัง", "ฝั่งธนบุรีขาดแคลนเสบียงอาหารอย่างรุนแรง", "ต้องการหนีภัยสงครามจากกองทัพเรือต่างชาติ", "พระราชวังเดิมมีขนาดใหญ่เกินกว่าจะดูแลได้"], answer: 0, clue: "พิจารณาเรื่องชัยภูมิและภัยจากกระแสน้ำกัดเซาะ", exp: "กรุงธนบุรีตั้งอยู่ท้องคุ้งน้ำ ทำให้กระแสน้ำเปลี่ยนทิศทางกัดเซาะตลิ่งพังทลาย และคับแคบไม่สามารถขยายเมืองได้" },
+        { id: 2, q: "พระมหากษัตริย์พระองค์ใดทรงเป็นผู้สถาปนากรุงรัตนโกสินทร์?", options: ["สมเด็จพระเจ้าตากสินมหาราช", "พระบาทสมเด็จพระพุทธยอดฟ้าจุฬาโลกมหาราช", "พระบาทสมเด็จพระพุทธเลิศหล้านภาลัย", "พระบาทสมเด็จพระนั่งเกล้าเจ้าอยู่หัว"], answer: 1, clue: "ทรงปราบดาภิเษกและย้ายราชธานีมาฝั่งพระนคร พ.ศ. 2325", exp: "รัชกาลที่ 1 ทรงสถาปนากรุงรัตนโกสินทร์เมื่อวันที่ 21 เมษายน พ.ศ. 2325" },
+        { id: 3, q: "สงครามครั้งสำคัญที่สุดในสมัยรัชกาลที่ 1 ที่ไทยต้องรบกับพม่าถึง 9 ทัพ คือข้อใด?", options: ["สงครามยุทธหัตถี", "สงครามท่าดินแดง", "สงครามเก้าทัพ", "สงครามเชียงใหม่"], answer: 2, clue: "มีจำนวนทัพของพม่าที่ยกมาโจมตีรวมทั้งหมด 9 ทาง", exp: "สงครามเก้าทัพ (พ.ศ. 2328) เป็นสงครามครั้งใหญ่ที่สุดที่พระเจ้าปดุงยกทัพมาตีไทย" },
+        { id: 4, q: "กฎหมายที่พระบาทสมเด็จพระพุทธยอดฟ้าจุฬาโลกมหาราชโปรดให้ชำระขึ้นใหม่เรียกว่าอะไร?", options: ["กฎหมายลักษณะอาญา ร.ศ. 127", "กฎหมายตราสามดวง", "กฎหมายพระธรรมนูญ", "ประมวลกฎหมายแพ่งและพาณิชย์"], answer: 1, clue: "มีตราประทับประจำตำแหน่ง 3 ดวงเป็นสำคัญ", exp: "โปรดให้ชำระกฎหมายเก่าที่มีความคลาดเคลื่อนให้มีความยุติธรรมเรียกว่า กฎหมายตราสามดวง" },
+        { id: 5, q: "บุคคลใดทรงได้รับการยกย่องว่าเป็นกวีเอกแห่งกรุงรัตนโกสินทร์ตอนต้น?", options: ["เจ้าพระยาพระคลัง (หน)", "สุนทรภู่", "พระบาทสมเด็จพระพุทธเลิศหล้านภาลัย", "กรมพระราชวังบวรสถานพิมุข"], answer: 1, clue: "ผู้ประพันธ์วรรณกรรมเรื่อง พระอภัยมณี", exp: "สุนทรภู่ เป็นกวีเอกที่มีผลงานกลอนสุภาพโดดเด่นและได้รับการยกย่องจากยูเนสโก" },
+        { id: 6, q: "การเปลี่ยนแปลงการปกครองครั้งสำคัญจากระบอบสมบูรณาญาสิทธิราชย์เกิดขึ้นใน พ.ศ. ใด?", options: ["พ.ศ. 2475", "พ.ศ. 2482", "พ.ศ. 2453", "พ.ศ. 2435"], answer: 0, clue: "ตรงกับสมัยรัชกาลที่ 7", exp: "การเปลี่ยนแปลงการปกครองสู่ระบอบประชาธิปไตยเกิดขึ้นเมื่อวันที่ 24 มิถุนายน พ.ศ. 2475" },
+        { id: 7, q: "สนธิสัญญาการค้ากับต่างประเทศฉบับแรกในสมัยรัตนโกสินทร์ที่ทำกับอังกฤษคือสนธิสัญญาใด?", options: ["สนธิสัญญาเบาว์ริง", "สนธิสัญญาเบอร์นีย์", "สนธิสัญญาไมตรีและพาณิชย์", "สนธิสัญญาแวร์ซายส์"], answer: 1, clue: "ทำขึ้นในสมัยรัชกาลที่ 3 โดยร้อยเอกจอห์น เบอร์นีย์", exp: "สนธิสัญญาเบอร์นีย์ ทำขึ้นใน พ.ศ. 2369 สมัยรัชกาลที่ 3 เป็นสนธิสัญญาทางไมตรีและพาณิชย์ฉบับแรก" },
+        { id: 8, q: "สนธิสัญญาเบาว์ริง ทำขึ้นในรัชสมัยของพระมหากษัตริย์พระองค์ใด?", options: ["รัชกาลที่ 2", "รัชกาลที่ 3", "รัชกาลที่ 4", "รัชกาลที่ 5"], answer: 2, clue: "เซอร์ จอห์น เบาว์ริง เข้ามาเจริญทางไมตรีในสมัยพระองค์", exp: "สนธิสัญญาเบาว์ริงทำขึ้นในสมัยรัชกาลที่ 4 (พ.ศ. 2398) กับทางสหราชอาณาจักร" },
+        { id: 9, q: "พระมหากษัตริย์ผู้ทรงประกาศเลิกทาสและปฏิรูปการปกครองส่วนภูมิภาคคือพระองค์ใด?", options: ["พระบาทสมเด็จพระจอมเกล้าเจ้าอยู่หัว", "พระบาทสมเด็จพระจุลจอมเกล้าเจ้าอยู่หัว", "พระบาทสมเด็จพระมงกุฎเกล้าเจ้าอยู่หัว", "พระบาทสมเด็จพระปกเกล้าเจ้าอยู่หัว"], answer: 1, clue: "ทรงเป็นพระปิยมหาราชของปวงชนชาวไทย", exp: "รัชกาลที่ 5 ทรงปฏิรูปประเทศรอบด้าน รวมถึงการเลิกทาสอย่างค่อยเป็นค่อยไปจนหมดสิ้น" },
+        { id: 10, q: "การสร้างรถไฟสายแรกของประเทศไทย (กรุงเทพฯ - นครราชสีมา) เริ่มขึ้นในรัชสมัยใด?", options: ["รัชกาลที่ 4", "รัชกาลที่ 5", "รัชกาลที่ 6", "รัชกาลที่ 7"], answer: 1, clue: "เป็นยุคแห่งการวางรากฐานโครงสร้างพื้นฐานสมัยใหม่", exp: "กิจการรถไฟหลวงเริ่มต้นขึ้นในสมัยรัชกาลที่ 5 เพื่อประโยชน์ด้านการคมนาคมและการปกครอง" },
+        { id: 11, q: "เหตุการณ์ ร.ศ. 112 ตรงกับวิกฤตการณ์ความขัดแย้งระหว่างไทยกับประเทศใด?", options: ["อังกฤษ", "ฝรั่งเศส", "ญี่ปุ่น", "ฮอลันดา"], answer: 1, clue: "ชาติตะวันตกที่ล่าอาณานิคมในอินโดจีน", exp: "วิกฤตการณ์ ร.ศ. 112 (พ.ศ. 2436) เป็นเหตุการณ์เรือรบฝรั่งเศสแล่นเข้าล่วงล้ำแม่น้ำเจ้าพระยา" },
+        { id: 12, q: "ธงชาติไทย (ธงไตรรงค์) เริ่มใช้ครั้งแรกในรัชสมัยของพระมหากษัตริย์พระองค์ใด?", options: ["รัชกาลที่ 5", "รัชกาลที่ 6", "รัชกาลที่ 7", "รัชกาลที่ 8"], answer: 1, clue: "พระองค์ทรงพระราชทานธงไตรรงค์แทนธงช้างเผือก", exp: "รัชกาลที่ 6 ทรงพระราชทานธงไตรรงค์ให้ใช้เป็นธงชาติไทยเมื่อ พ.ศ. 2460" },
+        { id: 13, q: "องค์การสหประชาชาติ (UN) มีสำนักงานใหญ่อยู่ที่เมืองใด?", options: ["เจนีวา", "นิวยอร์ก", "ลอนดอน", "ปารีส"], answer: 1, clue: "ตั้งอยู่ในประเทศสหรัฐอเมริกา", exp: "สำนักงานใหญ่ขององค์การสหประชาชาติ (UN) ตั้งอยู่ที่เมืองนิวยอร์ก ประเทศสหรัฐอเมริกา" },
+        { id: 14, q: "สมาคมประชาชาติแห่งเอเชียตะวันออกเฉียงใต้ (ASEAN) ก่อตั้งขึ้นตามปฏิญญาใด?", options: ["ปฏิญญากรุงเทพฯ", "ปฏิญญาจาการ์ตา", "ปฏิญญากัวลาลัมพู", "ปฏิญญาบาหลี"], answer: 0, clue: "ลงนามกันที่ประเทศไทย", exp: "อาเซียนก่อตั้งขึ้นจากปฏิญญากรุงเทพฯ (Bangkok Declaration) เมื่อวันที่ 8 สิงหาคม พ.ศ. 2510" },
+        { id: 15, q: "ปัจจุบัน (พ.ศ. 2569) ประเทศสมาชิกอาเซียนมีทั้งหมดกี่ประเทศ?", options: ["8 ประเทศ", "9 ประเทศ", "10 ประเทศ", "11 ประเทศ"], answer: 2, clue: "นับรวมชาติในภูมิภาคเอเชียตะวันออกเฉียงใต้เกือบทั้งหมด", exp: "อาเซียนประกอบด้วยประเทศสมาชิก 10 ประเทศ (และกำลังอยู่ในกระบวนการรับติมอร์-เลสเต)" },
+        { id: 16, q: "ข้อใดไม่ใช่ประเทศสมาชิกอาเซียน?", options: ["เวียดนาม", "เมียนมา", "บังกลาเทศ", "กัมพูชา"], answer: 2, clue: "ตั้งอยู่ในภูมิภาคเอเชียใต้ไม่ใช่เอเชียตะวันออกเฉียงใต้", exp: "บังกลาเทศอยู่ในภูมิภาคเอเชียใต้ ไม่ได้เป็นสมาชิกอาเซียน" },
+        { id: 17, q: "สถานที่ใดได้รับการยกย่องเป็นมรดกโลกทางวัฒนธรรมแห่งแรกของไทย?", options: ["อุทยานประวัติศาสตร์สุโขทัย", "นครวัด นครธม", "อุทยานประวัติศาสตร์พระนครศรีอยุธยา", "แหล่งโบราณคดีบ้านเชียง"], answer: 0, clue: "เมืองหลวงแห่งแรกของไทยในอดีต", exp: "อุทยานประวัติศาสตร์สุโขทัยและเมืองบริวารได้รับการขึ้นทะเบียนเป็นมรดกโลกจากยูเนสโกเมื่อ พ.ศ. 2534" },
+        { id: 18, q: "หลักฐานทางประวัติศาสตร์ข้อใดจัดเป็นหลักฐานปฐมภูมิ (Primary Source)?", options: ["หนังสือเรียนประวัติศาสตร์", "พงศาวดารที่เขียนขึ้นภายหลังเหตุการณ์", "ศิลาจารึกสุโขทัยหลักที่ 1", "บทความวิชาการประวัติศาสตร์"], answer: 2, clue: "เป็นหลักฐานที่ร่วมสมัยกับเหตุการณ์จริงโดยตรง", exp: "ศิลาจารึกเป็นหลักฐานปฐมภูมิเพราะจารึกขึ้นในยุคสมัยนั้นจริงๆ ส่วนตำราเรียนเป็นทุติยภูมิ" },
+        { id: 19, q: "ขั้นตอนแรกสุดของวิธีการทางประวัติศาสตร์คือข้อใด?", options: ["การรวบรวมหลักฐาน", "การกำหนดหัวข้อที่จะศึกษา", "การตรวจสอบความน่าเชื่อถือ", "การเรียบเรียงและนำเสนอ"], answer: 1, clue: "ต้องตั้งเป้าหมายก่อนว่าเราสนใจเรื่องอะไร", exp: "การกำหนดหัวข้อหรือประเด็นที่จะศึกษาคือขั้นตอนแรกสุดเพื่อกำหนดขอบเขต" },
+        { id: 20, q: "ข้อใดคือประโยชน์สูงสุดของการศึกษาประวัติศาสตร์?", options: ["ทำให้จดจำศักราชและปี พ.ศ. ได้แม่นยำ", "นำบทเรียนในอดีตมาเป็นแนวทางในการดำเนินชีวิตปัจจุบัน", "สามารถทำนายอนาคตของบ้านเมืองได้อย่างแม่นยำ", "เข้าใจภาษาโบราณและอ่านคัมภีร์เก่าได้"], answer: 1, clue: "อดีตเป็นบทเรียนเพื่อปรับปรุงปัจจุบัน", exp: "ประวัติศาสตร์สอนให้เรารู้ความจริง เข้าใจพัฒนาการ และนำข้อผิดพลาดหรือความสำเร็จมาปรับใช้" },
+        { id: 21, q: "การสร้างวัดพระเชตุพนวิมลมหาราชาราม (วัดโพธิ์) เป็นศูนย์รวมภูมิปัญญาด้านใด?", options: ["การชลประทาน", "การแพทย์แผนไทยและตำรานวดแผนโบราณ", "การต่อเรือรบสมัยใหม่", "การทอผ้าไหมไทย"], answer: 1, clue: "มีรูปปั้นฤาษดัดตนและศิารจารึกตำรายา", exp: "วัดโพธิ์ได้รับการยกย่องว่าเป็นมหาวิทยาลัยเปิดแห่งแรก เพราะมีการจารึกตำรายาและนวดแผนไทยไว้ทั่ววัด" },
+        { id: 22, q: "สมเด็จพระมหาสมณเจ้า กรมพระยาวชิรญาณวโรรส ทรงมีบทบาทสำคัญในด้านใด?", options: ["การปฏิรูปการศึกษาและการศาสนจักร", "การบัญญัติกฎหมายสยาม", "การนำกองทัพกู้เอกราช", "การออกแบบผังเมืองกรุงเทพฯ"], answer: 0, clue: "ทรงเป็นสมเด็จพระสังฆราชองค์ที่ 10 แห่งกรุงรัตนโกสินทร์", exp: "ทรงวางรากฐานการศึกษาของคณะสงฆ์และการศึกษาไทยในยุคต้น" },
+        { id: 23, q: "ประเทศเพื่อนบ้านของไทยทางทิศตะวันตกและทิศเหนือคือประเทศใด?", options: ["กัมพูชา", "ลาว", "เมียนมา", "มาเลเซีย"], answer: 2, clue: "มีแนวพรมแดนทางบกและทางทะเลยาวทางด้านตะวันตก", exp: "เมียนมามีอาณาเขตติดต่อกับไทยทางทิศเหนือและทิศตะวันตก" },
+        { id: 24, q: "แม่น้ำโขงเป็นแม่น้ำนานาชาติที่กั้นพรมแดนระหว่างไทยกับประเทศใด?", options: ["เมียนมา", "ลาว", "มาเลเซีย", "เวียดนาม"], answer: 1, clue: "ตั้งอยู่ทางทิศตะวันออกเฉียงเหนือของไทย", exp: "แม่น้ำโขงไหลกั้นพรมแดนระหว่างประเทศไทยกับ สปป. ลาว เป็นระยะทางยาว" },
+        { id: 25, q: "ภูมิปัญญาไทยในข้อใดเกิดจากการปรับตัวให้เข้ากับสภาพแวดล้อมริมน้ำ?", options: ["การสร้างบ้านเรือนไทยยกพื้นสูง", "การทำนาปรังด้วยระบบชลประทานสมัยใหม่", "การสร้างตึกสูงระฟ้าริมฝั่งแม่น้ำ", "การสร้างถนนคอนกรีตเสริมเหล็ก"], answer: 0, clue: "ป้องกันน้ำท่วมหลากในฤดูน้ำหลาก", exp: "เรือนไทยยกพื้นสูงแสดงถึงภูมิปัญญาการปรับตัวเข้ากับสภาพแวดล้อมที่มีน้ำท่วมถึงในอดีต" },
+        { id: 26, q: "ผู้บัญชาการกองทัพไทยที่ร่วมกับสมเด็จพระเจ้าตากสินมหาราชในการกอบกู้เอกราชคือใคร?", options: ["สมเด็จพระเจ้าบรมวงศ์เธอ กรมพระยาดำรงราชานุภาพ", "สมเด็จเจ้าพระยามหากษัตริย์ศึก (รัชกาลที่ 1)", "เจ้าพระยาจักรี (บุนนาค)", "พระยาพิชัยดาบหัก"], answer: 1, clue: "ต่อมาได้ขึ้นครองราชย์เป็นปฐมวงศ์แห่งรัตนโกสินทร์", exp: "สมเด็จเจ้าพระยามหากษัตริย์ศึกทรงเป็นกำลังสำคัญในการทำศึกสงครามเคียงคู่สมเด็จพระเจ้าตากสิน" },
+        { id: 27, q: "เหตุการณ์ใดแสดงถึงพระปรีชาสามารถในการต่างประเทศของรัชกาลที่ 5 จนไทยรอดพ้นจากการเป็นเมืองขึ้น?", options: ["การส่งทหารไปร่วมรบในสงครามโลกครั้งที่ 1", "การเสด็จประพาสยุโรปและการยอมเสียดินแดนส่วนน้อยเพื่อรักษาเอกราชส่วนใหญ่", "การทำสงครามชนะชาติตะวันตกที่ปากน้ำ", "การประกาศปิดประเทศไม่ติดต่อค้าขายกับตะวันตก"], answer: 1, clue: "ทรงใช้กุศโลบายทางการทูตและการพัฒนาประเทศให้ทัดเทียมอารยประเทศ", exp: "การเสด็จประพาสยุโรปและการยอมเสียดินแดนบางส่วน (เช่น หลวงพระบาง, เขมร) ทำให้ไทยรักษาเอกราชไว้ได้" },
+        { id: 28, q: "ข้อใดคือความหมายที่แท้จริงของคำว่า 'ประวัติศาสตร์'?", options: ["เรื่องราวของกษัตริย์และสงครามในอดีตเท่านั้น", "การศึกษาเรื่องราวของมนุษย์ในอดีตจากหลักฐานที่หลงเหลืออยู่", "ตำนานพื้นบ้านที่เล่าสืบต่อกันมาโดยไม่ต้องมีหลักฐาน", "บันทึกเหตุการณ์ปัจจุบันเพื่อให้อนุชนรุ่นหลังรับรู้"], answer: 1, clue: "ครอบคลุมทั้งวิถีชีวิต เศรษฐกิจ สังคม และต้องมีหลักฐานอ้างอิง", exp: "ประวัติศาสตร์คือการศึกษาเรื่องราวของมนุษย์ในอดีตโดยอาศัยหลักฐานทางประวัติศาสตร์มาตรวจสอบ" },
+        { id: 29, q: "วันสถาปนากรุงรัตนโกสินทร์ตรงกับวันที่เท่าไรของทุกปี?", options: ["6 เมษายน", "21 เมษายน", "28 กรกฎาคม", "5 ธันวาคม"], answer: 1, clue: "เป็นวันครบรอบการยกเสาหลักเมืองและสร้างพระนคร", exp: "วันที่ 21 เมษายน พ.ศ. 2325 เป็นวันสถาปนากรุงรัตนโกสินทร์" },
+        { id: 30, q: "ข้อใดจัดเป็นมรดกภูมิปัญญาทางวัฒนธรรมของไทยที่ได้รับการยอมรับในระดับสากล?", options: ["การรำไทยและการนวดแผนไทย", "การใช้โทรศัพท์มือถือสมาร์ตโฟน", "การสร้างตึกระฟ้าสไตล์ตะวันตก", "การเดินทางด้วยรถไฟฟ้าความเร็วสูง"], answer: 0, clue: "มรดกภูมิปัญญาที่ยูเนสโกขึ้นทะเบียนรับรอง", exp: "การนวดแผนไทยและโขนได้รับการขึ้นทะเบียนเป็นมรดกภูมิปัญญาทางวัฒนธรรมที่จับต้องไม่ได้จากยูเนสโก" }
+    ];
+
+    let currentQuestions = [];
+    let userAnswers = {};
+    let isEnglish = false;
+
+    // ฟังก์ชัน Fisher-Yates Shuffle สำหรับสลับตำแหน่งคำถามและช้อยส์
+    function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    }
+
+    function initExam() {
+        // Deep copy และสลับข้อสอบ
+        currentQuestions = JSON.parse(JSON.stringify(rawQuestions));
+        shuffleArray(currentQuestions);
+
+        // สลับช้อยส์แต่ละข้อพร้อมปรับ index คำตอบให้ถูกต้อง
+        currentQuestions.forEach(item => {
+            let optionsWithIndex = item.options.map((opt, idx) => ({ text: opt, originalIndex: idx }));
+            shuffleArray(optionsWithIndex);
+            item.options = optionsWithIndex.map(o => o.text);
+            item.answer = optionsWithIndex.findIndex(o => o.originalIndex === item.answer);
+        });
+
+        renderQuestions();
+    }
+
+    function renderQuestions() {
+        const wrapper = document.getElementById('questions-wrapper');
+        wrapper.innerHTML = '';
+        currentQuestions.forEach((item, index) => {
+            let card = document.createElement('div');
+            card.className = 'question-card';
+            card.innerHTML = `
+                <div class="question-title">ข้อที่ ${index + 1}: ${item.q}</div>
+                <div class="options-list" id="opt-list-${index}">
+                    ${item.options.map((opt, oIdx) => `
+                        <button class="option-btn" onclick="selectOption(${index},${oIdx})">${String.fromCharCode(65 + oIdx)}.${opt}</button>
+                    `).join('')}
+                </div>
+                <button onclick="toggleClue(${index})" style="margin-top:8px; background:var(--accent-color); font-size:0.8rem; padding:4px 8px;">💡 เปิด/ปิด คำใบ้</button>
+                <div class="clue-box" id="clue-${index}"><b>คำใบ้:</b> ${item.clue}</div>
+                <div class="explanation-box" id="exp-${index}"><b>เฉลยและวิธีคิด:</b> ${item.exp}</div>
+            `;
+            wrapper.appendChild(card);
+        });
+    }
+
+    function selectOption(qIdx, oIdx) {
+        userAnswers[qIdx] = oIdx;
+        const listDiv = document.getElementById(`opt-list-${qIdx}`);
+        const buttons = listDiv.getElementsByClassName('option-btn');
+        
+        for (let i = 0; i < buttons.length; i++) {
+            buttons[i].style.background = '#f1f5f9';
+            buttons[i].style.color = 'var(--text-color)';
+        }
+        
+        const correctIdx = currentQuestions[qIdx].answer;
+        if (oIdx === correctIdx) {
+            buttons[oIdx].classList.add('correct');
+            buttons[oIdx].style.background = 'var(--success-color)';
+            buttons[oIdx].style.color = 'white';
+        } else {
+            buttons[oIdx].classList.add('incorrect');
+            buttons[oIdx].style.background = 'var(--error-color)';
+            buttons[oIdx].style.color = 'white';
+            buttons[correctIdx].style.background = 'var(--success-color)';
+            buttons[correctIdx].style.color = 'white';
+        }
+        
+        // แสดงคำอธิบายเฉลยทันที
+        document.getElementById(`exp-${qIdx}`).style.display = 'block';
+    }
+
+    function toggleClue(qIdx) {
+        const clueBox = document.getElementById(`clue-${qIdx}`);
+        clueBox.style.display = clueBox.style.display === 'block' ? 'none' : 'block';
+    }
+
+    function submitExam() {
+        let score = 0;
+        let total = currentQuestions.length;
+        let unanswered = 0;
+
+        currentQuestions.forEach((item, idx) => {
+            if (userAnswers[idx] === undefined) {
+                unanswered++;
+            } else if (userAnswers[idx] === item.answer) {
+                score++;
+            }
+        });
+
+        document.getElementById('questions-wrapper').style.display = 'none';
+        document.getElementById('submit-btn').style.display = 'none';
+        
+        const resultPanel = document.getElementById('result-panel');
+        resultPanel.style.display = 'block';
+        
+        const percentage = ((score / total) * 100).toFixed(2);
+        document.getElementById('score-display').innerText = `คุณทำคะแนนได้ ${score} / ${total} คะแนน (${percentage}%)`;
+
+        let analysisHTML = `<h3>📊 ผลการวิเคราะห์สมรรถนะรายบุคคล</h3>`;
+        if (percentage >= 80) {
+            analysisHTML += `<p style="color:var(--success-color); margin-top:5px;"><b>จุดเด่น:</b> มีความเข้าใจในเนื้อหาประวัติศาสตร์สมัยรัตนโกสินทร์ บุคคลสำคัญ และวิธีการทางประวัติศาสตร์เป็นอย่างดีเยี่ยม สามารถเชื่อมโยงเหตุการณ์ได้อย่างแม่นยำ</p>`;
+        } else if (percentage >= 50) {
+            analysisHTML += `<p style="color:var(--accent-color); margin-top:5px;"><b>จุดที่ต้องพัฒนา:</b> มีความเข้าใจในระดับปานกลาง ควรทบทวนเพิ่มเติมในส่วนของสนธิสัญญาทางไมตรี เหตุการณ์ประวัติศาสตร์สากล และลำดับเหตุการณ์สำคัญในสมัยรัตนโกสินทร์ตอนต้น</p>`;
+        } else {
+            analysisHTML += `<p style="color:var(--error-color); margin-top:5px;"><b>จุดที่ต้องพัฒนาเร่งด่วน:</b> ควรกลับไปทบทวนเนื้อหาบทเรียนตั้งแต่ขั้นตอนการศึกษาทางประวัติศาสตร์ พัฒนาการสมัยรัตนโกสินทร์ และรายนามบุคคลสำคัญใหม่อีกรอบเพื่อความแม่นยำ</p>`;
+        }
+        document.getElementById('analysis-content').innerHTML = analysisHTML;
+        
+        // บันทึกสถานะลงใน localStorage
+        localStorage.setItem('history_exam_score', score);
+    }
+
+    function resetExam() {
+        userAnswers = {};
+        document.getElementById('result-panel').style.display = 'none';
+        document.getElementById('questions-wrapper').style.display = 'block';
+        document.getElementById('submit-btn').style.display = 'block';
+        initExam();
+    }
+
+    function toggleLanguage() {
+        isEnglish = !isEnglish;
+        document.getElementById('lang-indicator').innerText = isEnglish ? "Language: EN" : "ภาษา: ไทย";
+        // โครงสร้างฟังก์ชันรองรับสลับภาษา (สามารถพัฒนาต่อยอดคำแปล EN ได้ตามต้องการ)
+    }
+
+    // Whiteboard Scripting
+    const canvas = document.getElementById('whiteboard');
+    const ctx = canvas.getContext('2d');
+    let painting = false;
+    let penColor = '#1e293b';
+
+    function resizeCanvas() {
+        const container = canvas.parentElement;
+        canvas.width = container.clientWidth - 30;
+        canvas.height = 220;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    window.addEventListener('load', () => {
+        resizeCanvas();
+        initExam();
+    });
+
+    canvas.addEventListener('mousedown', startPosition);
+    canvas.addEventListener('mouseup', endPosition);
+    canvas.addEventListener('mousemove', draw);
+
+    canvas.addEventListener('touchstart', (e) => { startPosition(e.touches[0]); e.preventDefault(); });
+    canvas.addEventListener('touchend', endPosition);
+    canvas.addEventListener('touchmove', (e) => { draw(e.touches[0]); e.preventDefault(); });
+
+    function startPosition(e) {
+        painting = true;
+        draw(e);
+    }
+    function endPosition() {
+        painting = false;
+        ctx.beginPath();
+    }
+    function draw(e) {
+        if (!painting) return;
+        ctx.lineWidth = 3;
+        ctx.lineCap = 'round';
+        ctx.strokeStyle = penColor;
+
+        const rect = canvas.getBoundingClientRect();
+        ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
+    }
+    function setPenColor(color) { penColor = color; }
+    function clearCanvas() { ctx.clearRect(0, 0, canvas.width, canvas.height); }
+</script>
+
+</body>
+</html>
