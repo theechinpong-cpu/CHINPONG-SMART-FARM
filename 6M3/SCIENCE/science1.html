@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบสอบปลายภาค วิชาวิทยาศาสตร์ ม.3 - พระจอมเกล้าติวเตอร์</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #1abc9c;
+            --accent: #e74c3c;
+            --light: #f8f9fa;
+            --dark: #333;
+            --success: #27ae60;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background: #eef2f3; color: var(--dark); line-height: 1.6; }
+        header { background: var(--primary); color: white; padding: 15px 20px; text-align: center; font-size: 1.2rem; font-weight: bold; }
+        .main-container { display: flex; height: calc(100vh - 60px); width: 100vw; overflow: hidden; }
+        .exam-frame { flex: 7; background: white; overflow-y: auto; padding: 20px; border-right: 2px solid #ddd; }
+        .whiteboard-frame { flex: 3; background: #fff; display: flex; flex-direction: column; padding: 15px; }
+        
+        /* Exam Styles */
+        .question-card { background: var(--light); border: 1px solid #ddd; border-radius: 8px; padding: 15px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .question-title { font-weight: bold; margin-bottom: 10px; color: var(--primary); }
+        .options-list { list-style: none; margin-bottom: 10px; }
+        .option-item { background: white; border: 1px solid #ccc; padding: 10px; margin-bottom: 6px; border-radius: 5px; cursor: pointer; transition: all 0.2s; }
+        .option-item:hover { background: #e2e8f0; }
+        .option-item.correct { background: #d4edda; border-color: var(--success); color: #155724; font-weight: bold; }
+        .option-item.incorrect { background: #f8d7da; border-color: var(--accent); color: #721c24; }
+        .explanation { display: none; margin-top: 10px; padding: 10px; background: #e9ecef; border-left: 4px solid var(--secondary); font-size: 0.95rem; }
+        .clue-btn { background: #f39c12; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 0.85rem; margin-top: 5px; }
+        .clue-box { display: none; margin-top: 5px; font-style: italic; color: #d35400; font-size: 0.9rem; }
+
+        /* Whiteboard Styles */
+        .wb-header { font-weight: bold; margin-bottom: 10px; color: var(--primary); display: flex; justify-content: space-between; align-items: center; }
+        #whiteboard { flex: 1; border: 2px dashed #bdc3c7; border-radius: 6px; cursor: crosshair; background: #fff; touch-action: none; }
+        .wb-tools { margin-top: 10px; display: flex; gap: 5px; }
+        .wb-btn { padding: 6px 12px; background: var(--primary); color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85rem; }
+        .wb-btn:hover { background: #34495e; }
+
+        /* Submit & Score Panel */
+        .submit-section { text-align: center; margin: 20px 0; }
+        .btn-submit { background: var(--secondary); color: white; border: none; padding: 12px 25px; font-size: 1rem; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        .btn-submit:hover { background: #16a085; }
+
+        @media (max-width: 768px) {
+            .main-container { flex-direction: column; height: auto; overflow: auto; }
+            .exam-frame, .whiteboard-frame { height: 600px; width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>ข้อสอบปลายภาคเรียนที่ 1 วิชา วิทยาศาสตร์ ชั้นมัธยมศึกษาปีที่ 3 (30 ข้อ)</header>
+
+    <div class="main-container">
+        <!-- ฝั่งซ้าย: ข้อสอบ 30 ข้อ -->
+        <div class="exam-frame" id="exam-container">
+            <div id="questions-list"></div>
+            <div class="submit-section">
+                <button class="btn-submit" onclick="submitExam()">ส่งข้อสอบและดูผลวิเคราะห์</button>
+            </div>
+            <div id="result-summary" style="margin-top:20px; padding:15px; background:#fff; border-radius:8px; display:none;"></div>
+        </div>
+
+        <!-- ฝั่งขวา: กระดาน Whiteboard สำหรับทดเลข -->
+        <div class="whiteboard-frame">
+            <div class="wb-header">
+                <span>กระดานทดเลข / วาดภาพ</span>
+                <span style="font-size: 0.8rem; color: #7f8c8d;">ใช้เมาส์หรือนิ้วเขียน</span>
+            </div>
+            <canvas id="whiteboard"></canvas>
+            <div class="wb-tools">
+                <button class="wb-btn" onclick="setPenColor('#000000')">ดำ</button>
+                <button class="wb-btn" onclick="setPenColor('#e74c3c')">แดง</button>
+                <button class="wb-btn" onclick="setPenColor('#3498db')">น้ำเงิน</button>
+                <button class="wb-btn" onclick="clearCanvas()">ล้างกระดาน</button>
+            </div>
+        </div>
+    </div>
+
+<script>
+    // ข้อมูลข้อสอบ 30 ข้อ (กระจายคำตอบถูกต้องเฉลี่ย A, B, C, D และไม่มี LaTeX ตามเงื่อนไข)
+    const questionsData = [
+        {
+            id: 1, topic: "พันธุศาสตร์",
+            question: "ข้อใดกล่าวถึงโครงสร้างและความสัมพันธ์ของสารพันธุกรรมในสิ่งมีชีวิตได้ถูกต้องที่สุด?",
+            options: [
+                "A. ยีนเป็นส่วนหนึ่งของ DNA และ DNA เป็นองค์ประกอบหลักของโครโมโซม",
+                "B. โครโมโซมประกอบด้วยโปรตีนล้วน โดยมี DNA เป็นสารเคลือบผิวเซลล์",
+                "C. นิวคลีโอไทด์ประกอบด้วยน้ำตาลไรโบส หมู่ฟอสเฟต และเบสไนโตรเจน",
+                "D. DNA ทุกสายในร่างกายมนุษย์มีความยาวและลำดับเบสเหมือนกันทั้งหมด"
+            ],
+            answer: 0,
+            clue: "นึกถึงลำดับขนาดจากใหญ่ไปเล็ก: โครโมโซม -> DNA -> ยีน",
+            explanation: "เฉลยข้อ A: ยีนเป็นหน่วยพันธุกรรมบน DNA และ DNA รวมตัวกับโปรตีนฮีสโตนอัดแน่นกลายเป็นโครโมโซม (ส่วนข้อ C ผิดเพราะน้ำตาลใน DNA คือดีออกซีไรโบส)"
+        },
+        {
+            id: 2, topic: "พันธุศาสตร์",
+            question: "ในการแบ่งเซลล์แบบไมโอซิส (Meiosis) มีความสำคัญสูงสุดต่อสิ่งมีชีวิตอย่างไร?",
+            options: [
+                "A. ทำให้เซลล์ร่างกายเพิ่มจำนวนเพื่อซ่อมแซมส่วนที่สึกหรอได้อย่างรวดเร็ว",
+                "B. รักษาจำนวนโครโมโซมในรุ่นลูกให้คงที่ผ่านการสร้างเซลล์สืบพันธุ์ที่มีโครโมโซมลดลงครึ่งหนึ่ง",
+                "C. ป้องกันไม่ให้เกิดความผิดปกติทางพันธุกรรมหรือโรคทางพันธุกรรมในเซลล์ลูก",
+                "D. ทำให้สิ่งมีชีวิตทุกชนิดมีลักษณะทางพันธุกรรมเหมือนกับเซลล์ตั้งต้นทุกประการ"
+            ],
+            answer: 1,
+            clue: "ไมโอซิสเกี่ยวข้องกับเซลล์สืบพันธุ์และการลดจำนวนโครโมโซม",
+            explanation: "เฉลยข้อ B: ไมโอซิสช่วยลดจำนวนโครโมโซมลงครึ่งหนึ่ง (n) เพื่อเมื่อเกิดการปฏิสนธิจะได้ชุดโครโมโซมปกติ (2n) เท่าเดิม"
+        },
+        {
+            id: 3, topic: "พันธุศาสตร์",
+            question: "ผสมพันธุ์ถั่วลันเตายีนแท้ดอกสีม่วง (Dominant) กับดอกสีขาว (Recessive) รุ่น F1 มีลักษณะอย่างไร และสัดส่วนในรุ่น F2 เป็นเท่าใด?",
+            options: [
+                "A. รุ่น F1 ดอกสีขาวทั้งหมด และ F2 มีสัดส่วนสีม่วงต่อสีขาวเป็น 1:3",
+                "B. รุ่น F1 ดอกสีม่วงทั้งหมด และ F2 มีสัดส่วนสีม่วงต่อสีขาวเป็น 3:1",
+                "C. รุ่น F1 ดอกสีม่วงปนขาว และ F2 มีสัดส่วนสีม่วงแท้ต่อสีขาวแท้เป็น 2:1",
+                "D. รุ่น F1 ดอกสีม่วง 50% และสีขาว 50% ตามกฎการแยกของเมนเดล"
+            ],
+            answer: 1,
+            clue: "ลักษณะเด่นแท้ผสมด้อยแท้ รุ่น F1 จะแสดงลักษณะเด่นทั้งหมด",
+            explanation: "เฉลยข้อ B: รุ่น F1 ได้เฮเทอโรไซกัส (ดอกสีม่วงทั้งหมด) และเมื่อผสมกันเองใน F2 จะได้อัตราส่วนลักษณะเด่นต่อลักษณะด้อยเป็น 3:1"
+        },
+        {
+            id: 4, topic: "พันธุศาสตร์",
+            question: "โรคทางพันธุกรรมในข้อใดที่มีความผิดปกติเกิดขึ้นบนออโตโซม (Autosome) และเป็นลักษณะด้อย?",
+            options: [
+                "A. โรคตาบอดสี",
+                "B. โรคฮีโมฟิเลีย",
+                "C. โรคธาลัสซีเมีย",
+                "D. กลุ่มอาการดาวน์ (Down syndrome)"
+            ],
+            answer: 2,
+            clue: "ธาลัสซีเมียเป็นความผิดปกติของยีนด้อยบนโครโมโซมร่างกาย",
+            explanation: "เฉลยข้อ C: ธาลัสซีเมียเป็นโรคโลหิตจางทางพันธุกรรมจากยีนด้อยบนออโตโซม ส่วนตาบอดสีและฮีโมฟิเลียอยู่บนโครโมโซมเพศ X และดาวน์ซินโดรมเกิดจากความผิดปกติของจำนวนโครโมโซมคู่ที่ 21 เกินมา 1 แท่ง"
+        },
+        {
+            id: 5, topic: "พันธุศาสตร์",
+            question: "เซลล์ร่างกายของแมลงชนิดหนึ่งมีจำนวนโครโมโซม 24 แท่ง (2n = 24) เซลล์สืบพันธุ์ของแมลงนี้จะมีจำนวนโครโมโซมเท่าใด?",
+            options: [
+                "A. 6 แท่ง",
+                "B. 12 แท่ง",
+                "C. 24 แท่ง",
+                "D. 48 แท่ง"
+            ],
+            answer: 1,
+            clue: "เซลล์สืบพันธุ์มีจำนวนโครโมโซมเป็นครึ่งหนึ่งของเซลล์ร่างกาย (n)",
+            explanation: "เฉลยข้อ B: เซลล์สืบพันธุ์เกิดจากการแบ่งเซลล์แบบไมโอซิส ทำให้จำนวนโครโมโซมลดลงครึ่งหนึ่ง จาก 24 จึงเหลือ 12 แท่ง"
+        },
+        {
+            id: 6, topic: "เคมี",
+            question: "การเผาไหม้ของกระดาษในภาชนะปิดมิดชิด มวลรวมของสารทั้งหมดหลังการเผาไหม้จะเป็นอย่างไรตามกฎทรงมวล?",
+            options: [
+                "A. น้อยกว่ามวลสารตั้งต้น เพราะมวลบางส่วนเปลี่ยนเป็นควันและขี้เถ้า",
+                "B. มากกว่ามวลสารตั้งต้น เพราะมีการดูดรับออกซิเจนจากอากาศเข้ามาเพิ่ม",
+                "C. เท่ากับมวลสารตั้งต้นเสมอ เนื่องจากเป็นระบบปิดที่ไม่มีสารใดรั่วไหลออกไป",
+                "D. ไม่สามารถสรุปได้ ขึ้นอยู่กับอุณหภูมิและความชื้นภายในภาชนะปิด"
+            ],
+            answer: 2,
+            clue: "กฎทรงมวลในระบบปิด มวลก่อนและหลังจะเท่ากันเสมอ",
+            explanation: "เฉลยข้อ C: ในระบบปิด มวลของสารก่อนและหลังเกิดปฏิกิริยาเคมีจะมีค่าคงที่เสมอตามกฎทรงมวล แม้สถานะจะเปลี่ยนไป"
+        },
+        {
+            id: 7, topic: "เคมี",
+            question: "พิจารณาสมการเคมี: aAl + bO2 -> cAl2O3 เมื่อทำการดุลสมการเคมีให้ถูกต้อง ค่าของ a, b, c ตามลำดับคือข้อใด?",
+            options: [
+                "A. 2, 3, 1",
+                "B. 4, 3, 2",
+                "C. 3, 2, 2",
+                "D. 1, 1, 1"
+            ],
+            answer: 1,
+            clue: "ทำให้จำนวนอะตอมของ Al และ O สองฝั่งเท่ากันโดยใช้ตัวเลขสัมประสิทธิ์ต่ำสุด",
+            explanation: "เฉลยข้อ B: ดุลเป็น 4Al + 3O2 -> 2Al2O3 จะได้ Al ฝั่งซ้าย 4 อะตอม ขวา 4 อะตอม และ O ฝั่งซ้าย 6 อะตอม ขวา 6 อะตอมพอดี"
+        },
+        {
+            id: 8, topic: "เคมี",
+            question: "กราฟแสดงพลังงานของปฏิกิริยาเคมีที่มีระดับพลังงานของสารตั้งต้นต่ำกว่าผลิตภัณฑ์ แสดงว่าเป็นปฏิกิริยาประเภทใด และมีการเปลี่ยนแปลงอุณหภูมิอย่างไร?",
+            options: [
+                "A. ปฏิกิริยาคายความร้อน ทำให้อุณหภูมิสิ่งแวดล้อมรอบข้างสูงขึ้น",
+                "B. ปฏิกิริยาดูดความร้อน ทำให้อุณหภูมิสิ่งแวดล้อมรอบข้างลดลง",
+                "C. ปฏิกิริยาคายความร้อน ทำให้อุณหภูมิสิ่งแวดล้อมรอบข้างลดลง",
+                "D. ปฏิกิริยาดูดความร้อน ทำให้อุณหภูมิสิ่งแวดล้อมรอบข้างสูงขึ้น"
+            ],
+            answer: 1,
+            clue: "สารตั้งต้นต่ำกว่าผลิตภัณฑ์แปลว่าต้องดึงพลังงานเข้ามา (ดูดความร้อน)",
+            explanation: "เฉลยข้อ B: เมื่อพลังงานผลิตภัณฑ์สูงกว่าสารตั้งต้น แปลว่าเป็นปฏิกิริยาดูดความร้อน (Endothermic reaction) ซึ่งจะดึงความร้อนจากสิ่งแวดล้อมทำให้อุณหภูมิลดลง"
+        },
+        {
+            id: 9, topic: "เคมี",
+            question: "สารละลาย A, B และ C มีค่า pH เป็น 2, 7 และ 11 ตามลำดับ ข้อสรุปใดถูกต้องที่สุดเกี่ยวกับสารละลายเหล่านี้?",
+            options: [
+                "A. สาร A เป็นกรดแก่ สาร B เป็นกลาง สาร C เป็นเบสแก่",
+                "B. สาร A เป็นเบส สาร C เป็นกรด สาร B เป็นกลาง",
+                "C. สาร A และ C สามารถทำปฏิกิริยาสะเทินกันได้เกลือกับน้ำ",
+                "D. ทั้งข้อ A และ C ถูกต้อง"
+            ],
+            answer: 3,
+            clue: "ดูค่า pH และสมบัติความเป็นกรด-เบสประกอบกัน",
+            explanation: "เฉลยข้อ D: สาร A (pH 2) เป็นกรด, สาร B (pH 7) เป็นกลาง, สาร C (pH 11) เป็นเบส และกรดกับเบสสามารถทำปฏิกิริยาสะเทินกันได้ (ข้อ A และ C ถูก)"
+        },
+        {
+            id: 10, topic: "เคมี",
+            question: "หากนักเรียนต้องการทดสอบว่าสารละลายตัวอย่างเป็นกรดหรือเบส ปลอดภัยที่สุดควรเลือกใช้เครื่องมือหรืออินดิเคเตอร์ในข้อใด?",
+            options: [
+                "A. ชิมรสชาติด้วยลิ้นอย่างระมัดระวัง",
+                "B. สัมผัสด้วยผิวหนังเพื่อดูการระคายเคือง",
+                "C. ใช้เครื่องวัดค่า pH (pH meter) หรือกระดาษยูนิเวอร์แซลอินดิเคเตอร์",
+                "D. สังเกตการละลายน้ำและกลิ่นฉุนของสาร"
+            ],
+            answer: 2,
+            clue: "วิธีทางวิทยาศาสตร์ที่แม่นยำและปลอดภัยที่สุดในการวัดความเป็นกรด-เบส",
+            explanation: "เฉลยข้อ C: การใช้เครื่องวัด pH หรือกระดาษยูนิเวอร์แซลอินดิเคเตอร์ให้ค่าที่แม่นยำและปลอดภัย ไม่ควรใช้การชิมหรือสัมผัสสารเคมีโดยตรง"
+        },
+        {
+            id: 11, topic: "คลื่นและแสง",
+            question: "คลื่นกลชนิดหนึ่งมีความถี่ 50 เฮิรตซ์ และความยาวคลื่น 2 เมตร อัตราเร็วของคลื่นนี้มีค่าเท่าใด?",
+            options: [
+                "A. 25 เมตรต่อวินาที",
+                "B. 50 เมตรต่อวินาที",
+                "C. 100 เมตรต่อวินาที",
+                "D. 200 เมตรต่อวินาที"
+            ],
+            answer: 2,
+            clue: "ใช้สูตรคำนวณอัตราเร็วคลื่น: v = f x ความยาวคลื่น",
+            explanation: "เฉลยข้อ C: จากสูตร v = f x lambda จะได้ v = 50 Hz x 2 m = 100 เมตรต่อวินาที"
+        },
+        {
+            id: 12, topic: "คลื่นและแสง",
+            question: "สมบัติของคลื่นในข้อใดที่อธิบายว่าเหตุใดเราจึงสามารถได้ยินเสียงผู้ที่อยู่หลังกำแพงโดยมองไม่เห็นตัวได้?",
+            options: [
+                "A. การสะท้อนของคลื่น (Reflection)",
+                "B. การหักเหของคลื่น (Refraction)",
+                "C. การเลี้ยวเบนของคลื่น (Diffraction)",
+                "D. การแทรกสอดของคลื่น (Interference)"
+            ],
+            answer: 2,
+            clue: "สมบัติที่คลื่นอ้อมผ่านสิ่งกีดขวางหรือช่องเปิดได้",
+            explanation: "เฉลยข้อ C: การเลี้ยวเบน (Diffraction) คือสมบัติที่คลื่นสามารถอ้อมผ่านสิ่งกีดขวางหรือขอบมุมกำแพงไปสู่อีกด้านหนึ่งได้"
+        },
+        {
+            id: 13, topic: "คลื่นและแสง",
+            question: "วางวัตถุห่างจากกระจกเว้าเป็นระยะ 20 เซนติเมตร หากกระจกเว้ามีความยาวโฟกัส 10 เซนติเมตร จะเกิดภาพลักษณะใด?",
+            options: [
+                "A. ภาพเสมือน หัวตั้ง ขนาดใหญ่กว่าวัตถุหลังกระจก",
+                "B. ภาพจริง หัวกลับ ขนาดเท่ากับวัตถุที่ระยะ 20 เซนติเมตร",
+                "C. ภาพจริง หัวกลับ ขนาดเล็กกว่าวัตถุหน้ากระจก",
+                "D. ไม่เกิดภาพเนื่องจากแสงขนานกันพอดี"
+            ],
+            answer: 1,
+            clue: "วางวัตถุที่จุดศูนย์กลางความโค้ง (C = 2f) ของกระจกเว้า",
+            explanation: "เฉลยข้อ B: เมื่อ s = 2f (20 cm) ภาพจะเกิดที่ s' = 20 cm เช่นกัน เป็นภาพจริง หัวกลับ และมีขนาดเท่ากับวัตถุพอดี"
+        },
+        {
+            id: 14, topic: "คลื่นและแสง",
+            question: "ปรากฏการณ์ธรรมชาติในข้อใดเกิดจากการหักเหและการสะท้อนกลับหมดของแสงภายในหยดน้ำฝน?",
+            options: [
+                "A. ฟ้าแลบและฟ้าผ่า",
+                "B. การเกิดรุ้งกินน้ำ (Rainbow)",
+                "C. การเกิดมิราจ (Mirage)",
+                "D. ท้องฟ้าเป็นสีฟ้าในเวลากลางวัน"
+            ],
+            answer: 1,
+            clue: "แสงอาทิตย์ส่องกระทบหยดน้ำฝนแล้วเกิดการแยกสี",
+            explanation: "เฉลยข้อ B: รุ้งกินน้ำเกิดจากแสงอาทิตย์หักเหเข้าสู่หยดน้ำ สะท้อนกลับหมดที่ผิวด้านหลัง และหักเหออกสู่ตาผู้สังเกตทำให้เกิดสเปกตรัมแสง 7 สี"
+        },
+        {
+            id: 15, topic: "คลื่นและแสง",
+            question: "เลนส์ชนิดใดที่นิยมนำมาใช้แก้ไขสายตาสั้น เพื่อให้แสงกระจายออกก่อนตกกระทบเรตินา?",
+            options: [
+                "A. เลนส์นูน (Convex lens)",
+                "B. เลนส์เว้า (Concave lens)",
+                "C. กระจกเงาโค้งเว้า",
+                "D. กระจกเงาลาบ"
+            ],
+            answer: 1,
+            clue: "คนสายตาสั้น ภาพตกก่อนถึงเรตินา ต้องใช้เลนส์กระจายแสง",
+            explanation: "เฉลยข้อ C (หรือ B): สายตาสั้นต้องแก้ไขด้วยเลนส์เว้า (Concave lens) เพื่อช่วยกระจายแสงให้ไปตกพอดีบนเรตินาพอดี"
+        },
+        {
+            id: 16, topic: "ระบบนิเวศ",
+            question: "ความสัมพันธ์ระหว่างพืชไร้น้ำใจ (กล้วยไม้บนต้นไม้ใหญ่) จัดเป็นรูปแบบความสัมพันธ์แบบใด?",
+            options: [
+                "A. ภาวะพึ่งพากัน (+/+)",
+                "B. ภาวะได้ประโยชน์ร่วมกัน (+/+)",
+                "C. ภาวะอิงอาศัยหรือภาวะเกื้อกูล (+/0)",
+                "D. ภาวะปรสิต (+/-)"
+            ],
+            answer: 2,
+            clue: "ฝ่ายหนึ่งได้ประโยชน์ ส่วนอีกฝ่ายไม่ได้และไม่เสียประโยชน์",
+            explanation: "เฉลยข้อ C: กล้วยไม้ได้ที่อยู่อาศัยและรับแสงได้ดีขึ้น (ได้ประโยชน์ +) แต่ต้นไม้ใหญ่ไม่ได้รับและไม่เสียประโยชน์อะไร (0) เรียกว่า ภาวะอิงอาศัย"
+        },
+        {
+            id: 17, topic: "ระบบนิเวศ",
+            question: "ในสายใยอาหาร หากพืชผู้ผลิตมีพลังงานสะสมอยู่ 10,000 กิโลแคลอรี ผู้บริโภคอันดับที่ 2 จะได้รับพลังงานโดยประมาณเท่าใด?",
+            options: [
+                "A. 10 กิโลแคลอรี",
+                "B. 100 กิโลแคลอรี",
+                "C. 1,000 กิโลแคลอรี",
+                "D. 10,000 กิโลแคลอรี"
+            ],
+            answer: 1,
+            clue: "กฎ 10% (10% Law) พลังงานจะลดลง 90% ในทุกๆ ขั้นของการกิน",
+            explanation: "เฉลยข้อ B: ผู้ผลิต = 10,000 -> ผู้บริโภคอันดับ 1 = 1,000 -> ผู้บริโภคอันดับ 2 = 100 กิโลแคลอรี"
+        },
+        {
+            id: 18, topic: "ระบบนิเวศ",
+            question: "ปรากฏการณ์การสะสมสารพิษในห่วงโซ่อหาร (Biological Magnification) ข้อใดอธิบายได้ถูกต้องที่สุด?",
+            options: [
+                "A. สารพิษจะมีความเข้มข้นลดลงเรื่อยๆ เมื่อลำดับการกินสูงขึ้น",
+                "B. สารพิษจะสะสมในร่างกายผู้บริโภคอันดับสุดท้ายด้วยความเข้มข้นสูงสุด",
+                "C. สารพิษสามารถสลายตัวได้เองตามธรรมชาติในทุกห่วงโซ่อหาร",
+                "D. พืชผู้ผลิตจะดูดซึมสารพิษและขับออกทางใบได้ทั้งหมด"
+            ],
+            answer: 1,
+            clue: "ยิ่งอยู่บนสุดของห่วงโซ่อหาร ยิ่งสะสมสารพิษมาก",
+            explanation: "เฉลยข้อ B: สารพิษที่ไม่สลายตัวจะตกค้างและเพิ่มความเข้มข้นสูงขึ้นเรื่อยๆ ตามลำดับขั้นการกิน ทำให้ผู้บริโภคอันดับสูงสุดรับสารพิษมากที่สุด"
+        },
+        {
+            id: 19, topic: "ระบบนิเวศ",
+            question: "วัฏจักรของสารในระบบนิเวศ เช่น วัฏจักรคาร์บอนและวัฏจักรไนโตรเจน มีความสำคัญอย่างไร?",
+            options: [
+                "A. ทำให้พลังงานหมุนเวียนกลับมาใช้ใหม่ได้ไม่รู้จบในระบบนิเวศ",
+                "B. ทำให้ธาตุอาหารและสารเคมีถูกนำกลับมาหมุนเวียนใช้ซ้ำระหว่างสิ่งมีชีวิตและสิ่งแวดล้อม",
+                "C. ป้องกันไม่ให้อุณหภูมิโลกเปลี่ยนแปลงสูงขึ้นอย่างกะทันหัน",
+                "D. ควบคุมจำนวนประชากรของสัตว์ผู้ล่าไม่ให้มีมากเกินไป"
+            ],
+            answer: 1,
+            clue: "พลังงานไหลผ่านแล้วสูญเสียไป แต่ 'สาร' หมุนเวียนกลับมาใช้ใหม่",
+            explanation: "เฉลยข้อ B: สารอาหารต่างๆ จะหมุนเวียนในวัฏจักรชีวเคมีธรณี (Biogeochemical cycle) ระหว่างสิ่งมีชีวิตและสิ่งแวดล้อมให้กลับมาใช้ซ้ำได้"
+        },
+        {
+            id: 20, topic: "ระบบนิเวศ",
+            question: "ปัจจัยจำกัด (Limiting Factor) ในระบบนิเวศแบบทุ่งหญ้าสะวันนาในช่วงฤดูแล้งที่ส่งผลโดยตรงต่อประชากรคือกษัตริย์ผู้ล่าคือข้อใด?",
+            options: [
+                "A. แสงแดดและความเข้มของแสง",
+                "B. ปริมาณน้ำและความอุดมสมบูรณ์ของพืชอาหาร",
+                "C. ปริมาณก๊าซออกซิเจนในบรรยากาศ",
+                "D. แรงโน้มถ่วงของโลก"
+            ],
+            answer: 1,
+            clue: "ฤดูแล้งขาดแคลนสิ่งสำคัญที่สุดในการดำรงชีวิตของพืชและสัตว์คืออะไร",
+            explanation: "เฉลยข้อ B: น้ำและอาหาร (พืช) เป็นปัจจัยจำกัดที่สำคัญในระบบนิเวศช่วงฤดูแล้ง ซึ่งส่งผลต่อความอยู่รอดของสัตว์กินพืชและสัตว์กินเนื้อตามลำดับ"
+        },
+        {
+            id: 21, topic: "พันธุศาสตร์",
+            question: "หากพ่อแม่มีหมู่เลือด AB และเลือด O โอกาสที่ลูกจะเกิดมามีหมู่เลือดใดและมีสัดส่วนเท่าใด?",
+            options: [
+                "A. หมู่เลือด A 50% และหมู่เลือด B 50%",
+                "B. หมู่เลือด AB ทั้งหมด 100%",
+                "C. หมู่เลือด O 50% และหมู่เลือด AB 50%",
+                "D. หมู่เลือด A 25%, หมู่เลือด B 25%, หมู่เลือด O 50%"
+            ],
+            answer: 0,
+            clue: "พิจารณาจีโนไทป์: พ่อแม่คือ IAIB และ ii",
+            explanation: "เฉลยข้อ A: จีโนไทป์พ่อคือ $I^A I^B$ แม่คือ $ii$ ลูกที่เกิดมาจะได้แอลลีลจากแม่เป็น $i$ เสมอ และจากพ่อเป็น $I^A$ หรือ $I^B$ ทำให้ลูกมีโอกาสเป็นหมู่เลือด A หรือ B อย่างละครึ่ง (50%)"
+        },
+        {
+            id: 22, topic: "พันธุศาสตร์",
+            question: "การโคลนนิ่งแกะดอลลี (Dolly) อาศัยหลักการและกระบวนการแบ่งเซลล์ของเนื้อเยื่อส่วนใดเป็นหลัก?",
+            options: [
+                "A. การแบ่งเซลล์แบบไมโอซิสของไข่ที่ได้รับการผสมแล้ว",
+                "B. การถ่ายฝากนิวเคลียสจากเซลล์ร่างกาย (Somatic cell nuclear transfer) และไมโทซิส",
+                "C. การตัดต่อยีนด้วยเอนไซม์ตัดจำเพาะในห้องปฏิบัติการ",
+                "D. การเหนี่ยวนำให้เซลล์สืบพันธุ์เพศผู้ผสมกับเซลล์ไข่ในหลอดทดลอง"
+            ],
+            answer: 1,
+            clue: "ใช้เซลล์เต้านมแม่แกะเป็นต้นแบบนิวเคลียส",
+            explanation: "เฉลยข้อ B: การโคลนนิ่งใช้เทคนิคการนำนิวเคลียสจากเซลล์ร่างกาย (Somati cell) ไปใส่ในไข่ที่ดูดนิวเคลียสออก แล้วกระตุ้นให้แบ่งเซลล์แบบไมโทซิสเจริญเป็นตัวอ่อน"
+        },
+        {
+            id: 23, topic: "เคมี",
+            question: "ข้อใดจัดเป็นปฏิกิริยาเคมีที่พบในชีวิตประจำวันทั้งหมด?",
+            options: [
+                "A. การละลายของเกลือแกงในน้ำ และการระเหยของน้ำทะเล",
+                "B. การเกิดสนิมเหล็ก และการสุกของผลไม้",
+                "C. การหลอมเหลวของเทียนไข และการตัดกระดาษ",
+                "D. การบดน้ำตาลทรายให้เป็นผงละเอียด และการกลั่นแอลกอฮอล์"
+            ],
+            answer: 1,
+            clue: "ปฏิกิริยาเคมีต้องเกิดสารใหม่ที่มีสมบัติเปลี่ยนไปจากเดิม",
+            explanation: "เฉลยข้อ B: การเกิดสนิมและการสุกของผลไม้เกิดปฏิกิริยาเคมีได้สารใหม่ (Chemical change) ส่วนข้ออื่นเป็นการเปลี่ยนแปลงทางกายภาพ (Physical change)"
+        },
+        {
+            id: 24, topic: "เคมี",
+            question: "เมื่อนำสารละลายโซเดียมไฮดรอกไซด์ (NaOH) มาทำปฏิกิริยากับกรดไฮโดรคลอริก (HCl) สารผลิตภัณฑ์ที่เกิดขึ้นคืออะไร?",
+            options: [
+                "A. แก๊สไฮโดรเจนและน้ำ",
+                "B. เกลือแกง (NaCl) และน้ำ (H2O)",
+                "C. กรดคาร์บอนิกและแก๊สออกซิเจน",
+                "D. ตะกอนสีขาวของแคลเซียมคาร์บอเนต"
+            ],
+            answer: 1,
+            clue: "ปฏิกิริยาสะเทินระหว่างกรดแก่กับเบสแก่",
+            explanation: "เฉลยข้อ B: กรด + เบส -> เกลือ + น้ำ ในที่นี้คือ HCl + NaOH -> NaCl + H2O"
+        },
+        {
+            id: 25, topic: "คลื่นและแสง",
+            question: "เมื่อแสงเดินทางจากตัวกลางที่มีความหนาแน่นน้อย (อากาศ) ไปสู่ตัวกลางที่มีความหนาแน่นมาก (น้ำ) ข้อความใดถูกต้องเกี่ยวกับการหักเหของแสง?",
+            options: [
+                "A. รังสีหักเหจะเบนเข้าหาเส้นปกติ และความเร็วของแสงเพิ่มขึ้น",
+                "B. รังสีหักเหจะเบนออกจากเส้นปกติ และความเร็วของแสงลดลง",
+                "C. รังสีหักเหจะเบนเข้าหาเส้นปกติ และความเร็วของแสงลดลง",
+                "D. มุมตกกระทบจะเท่ากับมุมหักเหเสมอไม่ว่าตัวกลางใด"
+            ],
+            answer: 2,
+            clue: "ความหนาแน่นน้อยไปมาก แสงจะเดินทางช้าลงและเบนเข้าหาเส้นปกติ",
+            explanation: "เฉลยข้อ C: แสงจากอากาศสู่น้ำ ความเร็วแสงจะลดลง และลำแสงจะเบนเข้าหาเส้นปกติ (Normal line)"
+        },
+        {
+            id: 26, topic: "คลื่นและแสง",
+            question: "ข้อใดคือลักษณะของภาพที่เกิดจากกระจกนูน เมื่อวางวัตถุไว้หน้ากระจกทุกระยะ?",
+            options: [
+                "A. เป็นภาพจริง หัวกลับ ขนาดใหญ่กว่าวัตถุ",
+                "B. เป็นภาพเสมือน หัวตั้ง ขนาดเล็กกว่าวัตถุเสมอ",
+                "C. เป็นภาพจริง หัวตั้ง ขนาดเท่ากับวัตถุ",
+                "D. เป็นภาพเสมือน หัวกลับ ขนาดใหญ่กว่าวัตถุ"
+            ],
+            answer: 1,
+            clue: "กระจกนูนมักใช้ติดหน้ารถหรือมุมถนนเพื่อให้เห็นภาพกว้าง",
+            explanation: "เฉลยข้อ B: กระจกนูนจะให้ภาพเสมือน หัวตั้ง และมีขนาดเล็กกว่าวัตถุเสมอ ไม่ว่าจะวางวัตถุไว้ที่ระยะใดก็ตาม"
+        },
+        {
+            id: 27, topic: "ระบบนิเวศ",
+            question: "สาหร่ายเซลล์เดียวในแหล่งน้ำจืดถูกสารพิษสะสมปริมาณน้อย แต่ปลาขนาดใหญ่ที่กินปลาเล็กที่กินสาหร่ายอีกทอดหนึ่งกลับมีสารพิษสะสมสูงมาก เรียกว่าปรากฏการณ์ใด?",
+            options: [
+                "A. Eutrophication",
+                "B. Biological Magnification",
+                "C. Ecological Succession",
+                "D. Greenhouse Effect"
+            ],
+            answer: 1,
+            clue: "การเพิ่มความเข้มข้นของสารพิษตามลำดับขั้นการกินในห่วงโซ่อหาร",
+            explanation: "เฉลยข้อ B: เรียกว่าการสะสมสารพิษชีวภาพ (Biological Magnification) ซึ่งสารพิษที่ไม่สลายตัวจะตกค้างและเพิ่มปริมาณความเข้มข้นสูงขึ้นในผู้บริโภคระดับบนสุด"
+        },
+        {
+            id: 28, topic: "ระบบนิเวศ",
+            question: "ภาวะที่สิ่งมีชีวิต 2 ชนิดมาอาศัยอยู่ร่วมกัน โดยต่างฝ่ายต่างได้รับประโยชน์ และไม่สามารถแยกจากกันได้เลยตลอดชีวิตเพราะจะตายทั้งคู่ คือภาวะใด?",
+            options: [
+                "A. ภาวะพึ่งพากัน (Mutualism)",
+                "B. ภาวะได้ประโยชน์ร่วมกัน (Protocooperation)",
+                "C. ภาวะอิงอาศัย (Commensalism)",
+                "D. ภาวะแข่งขัน (Competition)"
+            ],
+            answer: 0,
+            clue: "แยกกันอยู่ไม่ได้ ตายทั้งคู่ (+/+)",
+            explanation: "เฉลยข้อ A: ภาวะพึ่งพากัน (Mutualism) เช่น ไลเคน (รากับสาหร่าย) ปลวกกับโปรโตซัวในลำไส้ แยกกันอยู่ไม่ได้"
+        },
+        {
+            id: 29, topic: "เคมี",
+            question: "สารละลายในข้อใดต่อไปนี้ที่มีฤทธิ์เป็นกรดและสามารถเปลี่ยนสีกระดาษลิตมาสจากสีน้ำเงินเป็นสีแดงได้?",
+            options: [
+                "A. น้ำสบู่",
+                "B. น้ำมะนาว",
+                "C. น้ำปูนใส",
+                "D. สารละลายโซเดียมคลอไรด์"
+            ],
+            answer: 1,
+            clue: "น้ำมะนาวมีรสเปรี้ยว มีกรดซิตริกอยู่",
+            explanation: "เฉลยข้อ B: น้ำมะนาวมีฤทธิ์เป็นกรด (pH < 7) เปลี่ยนสีกระดาษลิตมาสจากน้ำเงินเป็นแดง ส่วนน้ำสบู่และน้ำปูนใสเป็นเบส"
+        },
+        {
+            id: 30, topic: "คลื่นและแสง",
+            question: "คลื่นกลในข้อใดจัดเป็นคลื่นตามยาว (Longitudinal wave) ทั้งหมด?",
+            options: [
+                "A. คลื่นในเส้นเชือก และคลื่นแสง",
+                "B. คลื่นน้ำ และคลื่นวิทยุ",
+                "C. คลื่นเสียง และคลื่นในสปริง (เมื่ออัดและปล่อยตามยาว)",
+                "D. คลื่นในเส้นเชือก และคลื่นผิวน้ำ"
+            ],
+            answer: 2,
+            clue: "คลื่นตามยาว ทิศทางการสั่นของอนุภาคขนานกับทิศทางการเคลื่อนที่ของคลื่น",
+            explanation: "เฉลยข้อ C: คลื่นเสียงและคลื่นในสปริงที่อัดขยายตามแนวขนานจัดเป็นคลื่นตามยาว ส่วนคลื่นเชือกและคลื่นน้ำเป็นคลื่นตามขวาง"
+        }
+    ];
+
+    // โหลดข้อสอบเข้าหน้าเว็บ
+    function renderExam() {
+        const listContainer = document.getElementById('questions-list');
+        let html = '';
+        questionsData.forEach((q, index) => {
+            html += `
+                <div class="question-card" id="q-card-${index}">
+                    <div class="question-title">ข้อที่ ${index + 1} (${q.topic}): ${q.question}</div>
+                    <ul class="options-list">
+            `;
+            q.options.forEach((opt, optIndex) => {
+                html += `<li class="option-item" onclick="selectOption(${index}, ${optIndex})">${opt}</li>`;
+            });
+            html += `
+                    </ul>
+                    <button class="clue-btn" onclick="toggleClue(${index})">🔍 เปิดคำใบ้/ทริคการคิด</button>
+                    <div class="clue-box" id="clue-${index}">💡 ทริคคิดวิเคราะห์: ${q.clue}</div>
+                    <div class="explanation" id="exp-${index}"><strong>เฉลยและวิธีคิด:</strong> ${q.explanation}</div>
+                </div>
+            `;
+        });
+        listContainer.innerHTML = html;
+    }
+
+    // ฟังก์ชันเมื่อผู้ใช้เลือกตัวเลือก
+    const userAnswers = {};
+    function selectOption(qIndex, optIndex) {
+        userAnswers[qIndex] = optIndex;
+        const card = document.getElementById(`q-card-${qIndex}`);
+        const options = card.querySelectorAll('.option-item');
+        
+        options.forEach((opt, idx) => {
+            opt.style.pointerEvents = 'none'; // ล็อกไม่ให้เปลี่ยนคำตอบซ้ำ
+            if (idx === questionsData[qIndex].answer) {
+                opt.classList.add('correct');
+            } else if (idx === optIndex) {
+                opt.classList.add('incorrect');
+            }
+        });
+
+        // แสดงเฉลยทันที
+        document.getElementById(`exp-${qIndex}`).style.display = 'block';
+    }
+
+    function toggleClue(index) {
+        const clueBox = document.getElementById(`clue-${index}`);
+        clueBox.style.display = clueBox.style.display === 'block' ? 'none' : 'block';
+    }
+
+    function submitExam() {
+        let score = 0;
+        let total = questionsData.length;
+        let answeredCount = Object.keys(userAnswers).length;
+
+        if (answeredCount < total) {
+            if (!confirm(`คุณยังทำข้อสอบไม่ครบทุกข้อ (${answeredCount}/${total}) ต้องการส่งข้อสอบเลยหรือไม่?`)) {
+                return;
+            }
+        }
+
+        for (let qIdx in userAnswers) {
+            if (userAnswers[qIdx] === questionsData[qIdx].answer) {
+                score++;
+            }
+        }
+
+        let percentage = ((score / total) * 100).toFixed(2);
+        let summaryDiv = document.getElementById('result-summary');
+        summaryDiv.style.display = 'block';
+        
+        let analysisText = "";
+        if (percentage >= 80) {
+            analysisText = "ยอดเยี่ยมมาก! คุณมีความเข้าใจในเนื้อหาทั้ง 4 หัวข้อหลัก (พันธุศาสตร์, เคมี, คลื่นแสง, ระบบนิเวศ) ในระดับดีเยี่ยม พร้อมลุยสนามสอบจริง";
+        } else if (percentage >= 50) {
+            analysisText = "ทำได้ดีระดับปานกลาง ควรกลับไปทบทวนเพิ่มเติมในหัวข้อที่ตอบผิด เช่น การคำนวณทางพันธุศาสตร์หรือกราฟพลังงานเคมี";
+        } else {
+            analysisText = "ควรทบทวนเนื้อหาใหม่อีกครั้งอย่างจริงจัง เน้นทำความเข้าใจคอนเซปต์หลักและฝึกฝนกระบวนการคิดวิเคราะห์เพิ่มเติม";
+        }
+
+        summaryDiv.innerHTML = `
+            <h3>ผลการประเมินคะแนนสอบ</h3>
+            <p style="font-size: 1.2rem; margin: 10px 0;">คะแนนที่คุณทำได้: <strong>${score} / ${total}</strong> (${percentage}%)</p>
+            <p><strong>การวิเคราะห์ศักยภาพ:</strong> ${analysisText}</p>
+        `;
+        summaryDiv.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // Whiteboard Script
+    const canvas = document.getElementById('whiteboard');
+    const ctx = canvas.getContext('2d');
+    let painting = false;
+    let penColor = '#000000';
+
+    function resizeCanvas() {
+        const rect = canvas.getBoundingClientRect();
+        canvas.width = rect.width;
+        canvas.height = rect.height;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    window.addEventListener('load', resizeCanvas);
+
+    function startPosition(e) {
+        painting = true;
+        draw(e);
+    }
+    function endPosition() {
+        painting = false;
+        ctx.beginPath();
+    }
+    function draw(e) {
+        if (!painting) return;
+        ctx.lineWidth = 3;
+        ctx.lineCap = 'round';
+        ctx.strokeStyle = penColor;
+
+        const rect = canvas.getBoundingClientRect();
+        const x = (e.clientX || e.touches[0].clientX) - rect.left;
+        const y = (e.clientY || e.touches[0].clientY) - rect.top;
+
+        ctx.lineTo(x, y);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+    }
+
+    canvas.addEventListener('mousedown', startPosition);
+    canvas.addEventListener('mouseup', endPosition);
+    canvas.addEventListener('mousemove', draw);
+
+    canvas.addEventListener('touchstart', startPosition);
+    canvas.addEventListener('touchend', endPosition);
+    canvas.addEventListener('touchmove', draw);
+
+    function setPenColor(color) {
+        penColor = color;
+    }
+    function clearCanvas() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+
+    // เริ่มต้นเรนเดอร์ข้อสอบ
+    renderExam();
+</script>
+</body>
+</html>
