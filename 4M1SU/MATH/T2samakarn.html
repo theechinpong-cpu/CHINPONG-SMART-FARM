@@ -30,6 +30,7 @@
         .options-list { display: flex; flex-direction: column; gap: 8px; margin-left: 10px; }
         .option-label { display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border-color); transition: all 0.2s; }
         .option-label:hover { background-color: #f1f5f9; }
+        .option-label.disabled { cursor: not-allowed; opacity: 0.8; }
         
         .clue-btn { background: #fef08a; border: none; padding: 4px 10px; font-size: 0.8rem; border-radius: 4px; cursor: pointer; margin-top: 8px; font-weight: 600; }
         .clue-box { background: #fef9c3; padding: 8px; border-radius: 6px; font-size: 0.85rem; margin-top: 6px; display: none; border-left: 3px solid #eab308; }
@@ -67,7 +68,7 @@
     <div class="exam-frame" id="exam-container">
         <div id="questions-box"></div>
         <div class="footer-actions">
-            <button class="btn" onclick="submitExam()">ส่งข้อสอบและประเมินผล</button>
+            <button class="btn" onclick="submitExam()">สรุปผลคะแนนรวม</button>
             <button class="btn btn-secondary" onclick="resetExam()">รีเซ็ตข้อสอบใหม่</button>
         </div>
         <div id="results-section">
@@ -89,7 +90,6 @@
 </div>
 
 <script>
-    // ฐานข้อมูลข้อสอบ 30 ข้อ (Anti-Guessing: กระจายตัวเลือกถูกต้องสมดุล ความยาวและโครงสร้างใกล้เคียงกัน)
     const questionsData = [
         {
             q: "ข้อใดต่อไปนี้คือนิพจน์พีชคณิตที่ตรงกับข้อความ 'ผลบวกของจำนวนจำนวนหนึ่งกับเจ็ดเท่าของอีกจำนวนหนึ่ง'",
@@ -103,7 +103,7 @@
             options: ["3x - 5 = 7", "2x + 4 = 10", "5x - 8 = 15", "4x + 1 = 18"],
             answer: 0,
             clue: "ลองแทนค่า x = 4 ลงในตัวเลือกทีละข้อเพื่อดูผลลัพธ์",
-            explanation: "แทน x = 4 ในข้อ ก: 3(4) - 5 = 12 - 5 = 7 ซึ่งเท่ากับฝั่งขวาพอดี สมการจึงเป็นจริง"
+            explanation: "แทน x = 4 ในข้อแรก: 3(4) - 5 = 12 - 5 = 7 ซึ่งเท่ากับฝั่งขวาพอดี สมการจึงเป็นจริง"
         },
         {
             q: "ค่าของ x จากสมการ x - 9 = 15 ตรงกับข้อใด",
@@ -138,7 +138,7 @@
             options: ["2x = 14", "3x = 21", "x - 3 = 4", "4x = 28"],
             answer: 0,
             clue: "หาค่า x จากสมการตั้งต้นก่อนว่าได้เท่าไร แล้วเทียบกับตัวเลือก",
-            explanation: "จาก x + 5 = 12 จะได้ x = 7 เมื่อแทน x = 7 ในข้อ ก จะได้ 2(7) = 14 ซึ่งสมการเป็นจริง"
+            explanation: "จาก x + 5 = 12 จะได้ x = 7 เมื่อแทน x = 7 ในข้อแรก จะได้ 2(7) = 14 ซึ่งสมการเป็นจริง"
         },
         {
             q: "ถ้า 3(x - 2) = 15 แล้วค่าของ x ตรงกับข้อใด",
@@ -176,7 +176,7 @@
             explanation: "4x - 2x = 15 - 5 -> 2x = 10 -> x = 5"
         },
         {
-            q: "พ่อมีอายุเป็น 3 เท่าของลูก ถ้าปัจจุบันพ่ออายุ 45 ปี ลูกจะมีอายุเท่าไร (สร้างสมการแก้ปัญหา)",
+            q: "พ่อมีอายุเป็น 3 เท่าของลูก ถ้าปัจจุบันพ่ออายุ 45 ปี ลูกจะมีอายุเท่าไร",
             options: ["15 ปี", "12 ปี", "18 ปี", "20 ปี"],
             answer: 0,
             clue: "ให้ลูกอายุ x ปี พ่ออายุ 3x ปี เท่ากับ 45",
@@ -184,7 +184,7 @@
         },
         {
             q: "ข้อใดเป็นสมการที่เป็นเท็จ",
-            options: ["7 + 3 = 12", "5 \xd7 4 = 20", "12 - 4 = 8", "18 / 3 = 6"],
+            options: ["7 + 3 = 12", "5 * 4 = 20", "12 - 4 = 8", "18 / 3 = 6"],
             answer: 0,
             clue: "มองหาข้อที่ผลลัพธ์สองข้างไม่เท่ากัน",
             explanation: "7 + 3 = 10 แต่ฝั่งขวาเป็น 12 ซึ่ง 10 ไม่เท่ากับ 12 จึงเป็นสมการที่เป็นเท็จ"
@@ -242,8 +242,8 @@
             q: "ค่าของ x จากสมการ (x / 3) + 4 = 9 คือข้อใด",
             options: ["x = 15", "x = 12", "x = 18", "x = 9"],
             answer: 0,
-            clue: "ย้าย 4ไปลบออกจาก 9 ก่อน แล้วคูณด้วย 3",
-            explanation: "x / 3 = 5 -> x = 5 \xd7 3 = 15"
+            clue: "ย้าย 4 ไปลบออกจาก 9 ก่อน แล้วคูณด้วย 3",
+            explanation: "x / 3 = 5 -> x = 5 * 3 = 15"
         },
         {
             q: "พี่มีเงินมากกว่าน้อง 50 บาท เขาทั้งสองคนมีเงินรวมกัน 350 บาท น้องมีเงินเท่าไร",
@@ -260,7 +260,7 @@
             explanation: "3x = 15 -> x = 5"
         },
         {
-            q: "จำนวนเต็มบวกสามจำนวนเรียงติดต่อกัน มีผล cộng เท่ากับ 63 จำนวนตรงกลางคือจำนวนใด",
+            q: "จำนวนเต็มบวกสามจำนวนเรียงติดต่อกัน มีผลบวกเท่ากับ 63 จำนวนตรงกลางคือจำนวนใด",
             options: ["21", "20", "22", "19"],
             answer: 0,
             clue: "ให้จำนวนกลางเป็น x จำนวนคือก่อนหน้าคือ x - 1 จำนวนถัดไปคือ x + 1",
@@ -303,7 +303,6 @@
         }
     ];
 
-    // ฟังก์ชันสลับตัวเลือกแบบ Fisher-Yates (Anti-Guessing Engine)
     function shuffleArray(array) {
         for (let i = array.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
@@ -313,28 +312,30 @@
     }
 
     let userAnswers = {};
+    let answeredStatus = {};
 
     function renderExam() {
         const box = document.getElementById('questions-box');
         box.innerHTML = '';
         
         questionsData.forEach((qObj, index) => {
-            // สร้างสำเนา option พร้อมเก็บ index เดิมไว้เช็คคำตอบ
             let optionsWithIndex = qObj.options.map((opt, i) => ({ text: opt, originalIndex: i }));
             
-            // สลับตำแหน่งตัวเลือกเฉพาะเมื่อโหลดครั้งแรกหรือรีเซ็ต
             if (!qObj.shuffledOptions) {
                 qObj.shuffledOptions = shuffleArray([...optionsWithIndex]);
             }
 
             let html = `<div class="question-card" data-qid="${index}">
                 <div class="question-title">ข้อที่ ${index + 1}: ${qObj.q}</div>
-                <div class="options-list">`;
+                <div class="options-list" id="options-list-${index}">`;
             
             qObj.shuffledOptions.forEach((opt, optIdx) => {
                 let isChecked = userAnswers[index] === opt.originalIndex ? 'checked' : '';
-                html += `<label class="option-label">
-                    <input type="radio" name="q${index}" value="${opt.originalIndex}" ${isChecked} onclick="recordAnswer(${index}, ${opt.originalIndex})">
+                let isDisabled = answeredStatus[index] ? 'disabled' : '';
+                let disabledClass = answeredStatus[index] ? 'disabled' : '';
+                
+                html += `<label class="option-label ${disabledClass}">
+                    <input type="radio" name="q${index}" value="${opt.originalIndex}" ${isChecked} ${isDisabled} onclick="handleAnswer(${index}, ${opt.originalIndex})">
                     <span>${opt.text}</span>
                 </label>`;
             });
@@ -345,12 +346,42 @@
                 <div class="feedback" id="feedback-${index}"></div>
             </div>`;
             box.innerHTML += html;
+
+            // หากเคยตอบไปแล้ว ให้แสดงผลลัพธ์ค้างไว้
+            if (answeredStatus[index]) {
+                showFeedback(index, userAnswers[index]);
+            }
         });
     }
 
-    function recordAnswer(qIndex, optIndex) {
+    function handleAnswer(qIndex, optIndex) {
+        if (answeredStatus[qIndex]) return; // ป้องกันการเปลี่ยนคำตอบหากตอบไปแล้ว
+
         userAnswers[qIndex] = optIndex;
+        answeredStatus[qIndex] = true;
         localStorage.setItem('userAnswers', JSON.stringify(userAnswers));
+        localStorage.setItem('answeredStatus', JSON.stringify(answeredStatus));
+
+        // ล็อกการคลิกตัวเลือกทั้งหมดในข้อนี้
+        const optionsList = document.getElementById(`options-list-${qIndex}`);
+        const inputs = optionsList.querySelectorAll('input');
+        const labels = optionsList.querySelectorAll('.option-label');
+        
+        inputs.forEach(input => input.disabled = true);
+        labels.forEach(label => label.classList.add('disabled'));
+
+        showFeedback(qIndex, optIndex);
+    }
+
+    function showFeedback(qIndex, optIndex) {
+        let qObj = questionsData[qIndex];
+        let feedback = document.getElementById(`feedback-${qIndex}`);
+
+        if (optIndex === qObj.answer) {
+            feedback.innerHTML = `<span class="correct">✔ ถูกต้อง! ${qObj.explanation}</span>`;
+        } else {
+            feedback.innerHTML = `<span class="incorrect">✖ ผิดครับ เฉลยที่ถูกต้อง: ${qObj.options[qObj.answer]} (${qObj.explanation})</span>`;
+        }
     }
 
     function toggleClue(index) {
@@ -363,14 +394,10 @@
         let incorrectTopics = [];
 
         questionsData.forEach((qObj, index) => {
-            let feedback = document.getElementById(`feedback-${index}`);
             let userAnswer = userAnswers[index];
-
             if (userAnswer === qObj.answer) {
                 score++;
-                feedback.innerHTML = `<span class="correct">✔ ถูกต้อง! ${qObj.explanation}</span>`;
             } else {
-                feedback.innerHTML = `<span class="incorrect">✖ ผิดครับ เฉลยที่ถูกต้อง: ${qObj.options[qObj.answer]} (${qObj.explanation})</span>`;
                 incorrectTopics.push(`ข้อ ${index + 1}`);
             }
         });
@@ -394,7 +421,9 @@
     function resetExam() {
         if (confirm('คุณต้องการรีเซ็ตคำตอบทั้งหมดและสลับตัวเลือกใหม่ใช่หรือไม่?')) {
             localStorage.removeItem('userAnswers');
+            localStorage.removeItem('answeredStatus');
             userAnswers = {};
+            answeredStatus = {};
             questionsData.forEach(q => q.shuffledOptions = null);
             document.getElementById('results-section').style.display = 'none';
             renderExam();
@@ -452,11 +481,14 @@
         btn.innerText = isErasing ? 'กำลังใช้ยางลบ' : 'ยางลบ';
     }
 
-    // โหลดข้อมูลเก่าจาก localStorage หากมี
     window.onload = function() {
-        let saved = localStorage.getItem('userAnswers');
-        if (saved) {
-            userAnswers = JSON.parse(saved);
+        let savedAnswers = localStorage.getItem('userAnswers');
+        let savedStatus = localStorage.getItem('answeredStatus');
+        if (savedAnswers) {
+            userAnswers = JSON.parse(savedAnswers);
+        }
+        if (savedStatus) {
+            answeredStatus = JSON.parse(savedStatus);
         }
         renderExam();
     };
