@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบสอบคณิตศาสตร์ ม.1 เทอม 2 - สมการเชิงเส้นตัวแปรเดียว</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-color: #1e293b;
+            --border-color: #e2e8f0;
+            --success: #16a34a;
+            --danger: #dc2626;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: var(--bg-color); color: var(--text-color); line-height: 1.6; padding: 20px; }
+        header { text-align: center; margin-bottom: 20px; }
+        h1 { color: var(--primary); font-size: 1.8rem; margin-bottom: 5px; }
+        p.subtitle { color: #64748b; font-size: 0.95rem; }
+        
+        .container { display: flex; gap: 20px; max-width: 1400px; margin: 0 auto; height: calc(100vh - 120px); }
+        .exam-frame { flex: 7; background: var(--card-bg); border-radius: 12px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); padding: 20px; overflow-y: auto; display: flex; flex-direction: column; }
+        .whiteboard-frame { flex: 3; background: var(--card-bg); border-radius: 12px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); padding: 20px; display: flex; flex-direction: column; }
+
+        .question-card { margin-bottom: 25px; border-bottom: 1px solid var(--border-color); padding-bottom: 20px; }
+        .question-title { font-weight: 600; margin-bottom: 10px; font-size: 1.05rem; }
+        .options-list { display: flex; flex-direction: column; gap: 8px; margin-left: 10px; }
+        .option-label { display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border-color); transition: all 0.2s; }
+        .option-label:hover { background-color: #f1f5f9; }
+        
+        .clue-btn { background: #fef08a; border: none; padding: 4px 10px; font-size: 0.8rem; border-radius: 4px; cursor: pointer; margin-top: 8px; font-weight: 600; }
+        .clue-box { background: #fef9c3; padding: 8px; border-radius: 6px; font-size: 0.85rem; margin-top: 6px; display: none; border-left: 3px solid #eab308; }
+
+        .feedback { margin-top: 8px; font-weight: 600; font-size: 0.9rem; }
+        .correct { color: var(--success); }
+        .incorrect { color: var(--danger); }
+
+        /* Whiteboard styles */
+        #wb-canvas { border: 1px solid var(--border-color); border-radius: 8px; background: #fff; cursor: crosshair; flex-grow: 1; width: 100%; margin-top: 10px; }
+        .wb-controls { display: flex; gap: 10px; margin-top: 10px; }
+        .btn { background: var(--primary); color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600; transition: background 0.2s; }
+        .btn:hover { background: var(--primary-hover); }
+        .btn-secondary { background: #64748b; }
+        .btn-secondary:hover { background: #475569; }
+
+        .footer-actions { margin-top: 20px; display: flex; justify-content: space-between; align-items: center; }
+        #results-section { display: none; margin-top: 20px; padding: 20px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; }
+
+        @media (max-width: 900px) {
+            .container { flex-direction: column; height: auto; }
+            .exam-frame, .whiteboard-frame { height: 500px; }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>แบบทดสอบบทที่ 1 สมการเชิงเส้นตัวแปรเดียว</h1>
+    <p class="subtitle">ระบบทดสอบมาตรฐานพร้อมระบบป้องกันการเดาและกระดานทดอัจฉริยะ</p>
+</header>
+
+<div class="container">
+    <!-- ฝั่งซ้าย: ข้อสอบ 70% -->
+    <div class="exam-frame" id="exam-container">
+        <div id="questions-box"></div>
+        <div class="footer-actions">
+            <button class="btn" onclick="submitExam()">ส่งข้อสอบและประเมินผล</button>
+            <button class="btn btn-secondary" onclick="resetExam()">รีเซ็ตข้อสอบใหม่</button>
+        </div>
+        <div id="results-section">
+            <h3>ผลการประเมินการทดสอบ</h3>
+            <p id="score-text"></p>
+            <div id="analysis-text" style="margin-top: 10px;"></div>
+        </div>
+    </div>
+
+    <!-- ฝั่งขวา: กระดานทดเลข 30% -->
+    <div class="whiteboard-frame">
+        <h3>กระดานทดคำนวณ (Whiteboard)</h3>
+        <canvas id="wb-canvas"></canvas>
+        <div class="wb-controls">
+            <button class="btn btn-secondary" onclick="clearWhiteboard()">ล้างกระดาน</button>
+            <button class="btn btn-secondary" id="eraser-btn" onclick="toggleEraser()">ยางลบ</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ฐานข้อมูลข้อสอบ 30 ข้อ (Anti-Guessing: กระจายตัวเลือกถูกต้องสมดุล ความยาวและโครงสร้างใกล้เคียงกัน)
+    const questionsData = [
+        {
+            q: "ข้อใดต่อไปนี้คือนิพจน์พีชคณิตที่ตรงกับข้อความ 'ผลบวกของจำนวนจำนวนหนึ่งกับเจ็ดเท่าของอีกจำนวนหนึ่ง'",
+            options: ["x + 7y", "7x + y", "x - 7y", "7x - y"],
+            answer: 0,
+            clue: "คำว่าผลบวกคือการบวก เจ็ดเท่าของอีกจำนวนคือ 7 คูณตัวแปรที่สอง",
+            explanation: "กำหนดให้จำนวนแรกคือ x และอีกจำนวนคือ y เจ็ดเท่าของ y คือ 7y ผลบวกจึงเขียนได้เป็น x + 7y"
+        },
+        {
+            q: "กำหนดให้ x = 4 ข้อใดต่อไปนี้ทำให้สมการเป็นจริง",
+            options: ["3x - 5 = 7", "2x + 4 = 10", "5x - 8 = 15", "4x + 1 = 18"],
+            answer: 0,
+            clue: "ลองแทนค่า x = 4 ลงในตัวเลือกทีละข้อเพื่อดูผลลัพธ์",
+            explanation: "แทน x = 4 ในข้อ ก: 3(4) - 5 = 12 - 5 = 7 ซึ่งเท่ากับฝั่งขวาพอดี สมการจึงเป็นจริง"
+        },
+        {
+            q: "ค่าของ x จากสมการ x - 9 = 15 ตรงกับข้อใด",
+            options: ["x = 24", "x = 6", "x = -6", "x = -24"],
+            answer: 0,
+            clue: "ใช้สมบัติการบวกโดยการย้าย -9 ไปบวกกับ 15 ที่ฝั่งขวา",
+            explanation: "จาก x - 9 = 15 ย้าย -9 ไปฝั่งขวาจะได้ x = 15 + 9 ดังนั้น x = 24"
+        },
+        {
+            q: "คำตอบของสมการ 5x = 45 คือข้อใด",
+            options: ["x = 9", "x = 8", "x = 10", "x = 7"],
+            answer: 0,
+            clue: "ใช้สมบัติการหาร นำ 5 ไปหารทั้งสองข้างของสมการ",
+            explanation: "จาก 5x = 45 นำ 5 มาหารทั้งสองข้าง จะได้ x = 45 / 5 ดังนั้น x = 9"
+        },
+        {
+            q: "ข้อใดคือขั้นตอนแรกที่เหมาะสมที่สุดในการแก้สมการ 3x + 4 = 19",
+            options: ["นำ 4 มาลบออกทั้งสองข้าง", "นำ 3 ไปหารทั้งสองข้าง", "นำ 19 ไปลบออกจาก 4", "นำ 3 ไปคูณเข้าทั้งสองข้าง"],
+            answer: 0,
+            clue: "กำจัดค่าคงตัวที่บวกอยู่กับพจน์ตัวแปรก่อน โดยใช้การลบ",
+            explanation: "ควรนำ 4 มาลบออกทั้งสองข้างเพื่อกำจัด 4 ฝั่งซ้ายให้เหลือพจน์ของ x เพียงลำพังก่อน"
+        },
+        {
+            q: "ผลลัพธ์ของ x จากการแก้สมการ 2x - 6 = 14 คือข้อใด",
+            options: ["x = 10", "x = 4", "x = 8", "x = 12"],
+            answer: 0,
+            clue: "ย้าย -6 ไปบวกกับ 14 ก่อน จากนั้นจึงนำ 2 ไปหาร",
+            explanation: "2x = 14 + 6 -> 2x = 20 -> x = 20 / 2 = 10"
+        },
+        {
+            q: "สมการในข้อใดต่อไปนี้มีคำตอบเท่ากับสมการ x + 5 = 12",
+            options: ["2x = 14", "3x = 21", "x - 3 = 4", "4x = 28"],
+            answer: 0,
+            clue: "หาค่า x จากสมการตั้งต้นก่อนว่าได้เท่าไร แล้วเทียบกับตัวเลือก",
+            explanation: "จาก x + 5 = 12 จะได้ x = 7 เมื่อแทน x = 7 ในข้อ ก จะได้ 2(7) = 14 ซึ่งสมการเป็นจริง"
+        },
+        {
+            q: "ถ้า 3(x - 2) = 15 แล้วค่าของ x ตรงกับข้อใด",
+            options: ["x = 7", "x = 5", "x = 6", "x = 8"],
+            answer: 0,
+            clue: "สามารถนำ 3 ไปหาร 15 ก่อน หรือจะกระจาย 3 เข้าไปในวงเล็บก็ได้",
+            explanation: "นำ 3 หารทั้งสองข้างจะได้ x - 2 = 5 ย้าย -2 ไปบวกจะได้ x = 5 + 2 = 7"
+        },
+        {
+            q: "ข้อใดคือสมการแสดงโจทย์ปัญหา 'จำนวนหนึ่งมากกว่าสิบอยู่สิบห้า'",
+            options: ["x - 10 = 15", "10 - x = 15", "x + 15 = 10", "15 - x = 10"],
+            answer: 0,
+            clue: "คำว่ามากกว่าหมายถึงการลบระหว่างจำนวนนั้นกับ 10",
+            explanation: "กำหนดจำนวนนั้นคือ x มากกว่า 10 อยู่ 15 เขียนเป็นสมการได้ว่า x - 10 = 15"
+        },
+        {
+            q: "ผลบวกของจำนวนคู่สามจำนวนที่เรียงติดกันเท่ากับ 72 จงหาจำนวนที่น้อยที่สุด",
+            options: ["x = 22", "x = 24", "x = 20", "x = 26"],
+            answer: 0,
+            clue: "ให้จำนวนน้อยที่สุดคือ x จำนวนถัดไปคือ x + 2 และ x + 4",
+            explanation: "x + (x + 2) + (x + 4) = 72 -> 3x + 6 = 72 -> 3x = 66 -> x = 22"
+        },
+        {
+            q: "หากต้องการแก้สมการเศษส่วน (x / 4) = 6 ขั้นตอนแรกควรทำอย่างไร",
+            options: ["นำ 4 คูณเข้าทั้งสองข้าง", "นำ 6 หารด้วย 4", "นำ 4 ลบออกทั้งสองข้าง", "นำ 6 คูณเข้าทั้งสองข้าง"],
+            answer: 0,
+            clue: "กำจัดตัวหาร 4 ที่อยู่ด้านล่างด้วยการคูณ",
+            explanation: "ใช้สมบัติการคูณโดยการนำ 4 ไปคูณทั้งสองข้างของสมการเพื่อให้ตัวส่วนหมดไป"
+        },
+        {
+            q: "คำตอบของสมการ 4x + 5 = 2x + 15 คือข้อใด",
+            options: ["x = 5", "x = 4", "x = 6", "x = 3"],
+            answer: 0,
+            clue: "ย้ายพจน์ตัวแปรมารวมกันฝั่งซ้าย และย้ายค่าคงตัวไปรวมกันฝั่งขวา",
+            explanation: "4x - 2x = 15 - 5 -> 2x = 10 -> x = 5"
+        },
+        {
+            q: "พ่อมีอายุเป็น 3 เท่าของลูก ถ้าปัจจุบันพ่ออายุ 45 ปี ลูกจะมีอายุเท่าไร (สร้างสมการแก้ปัญหา)",
+            options: ["15 ปี", "12 ปี", "18 ปี", "20 ปี"],
+            answer: 0,
+            clue: "ให้ลูกอายุ x ปี พ่ออายุ 3x ปี เท่ากับ 45",
+            explanation: "จาก 3x = 45 จะได้ x = 45 / 3 = 15 ปี"
+        },
+        {
+            q: "ข้อใดเป็นสมการที่เป็นเท็จ",
+            options: ["7 + 3 = 12", "5 \xd7 4 = 20", "12 - 4 = 8", "18 / 3 = 6"],
+            answer: 0,
+            clue: "มองหาข้อที่ผลลัพธ์สองข้างไม่เท่ากัน",
+            explanation: "7 + 3 = 10 แต่ฝั่งขวาเป็น 12 ซึ่ง 10 ไม่เท่ากับ 12 จึงเป็นสมการที่เป็นเท็จ"
+        },
+        {
+            q: "ถ้า 7x - 14 = 0 แล้วค่าของ x ตรงกับข้อใด",
+            options: ["x = 2", "x = -2", "x = 7", "x = 14"],
+            answer: 0,
+            clue: "ย้าย -14 ไปฝั่งขวาแล้วนำ 7 ไปหาร",
+            explanation: "7x = 14 -> x = 14 / 7 = 2"
+        },
+        {
+            q: "ผลลัพธ์ของสมการ (2x + 3) / 5 = 3 คือข้อใด",
+            options: ["x = 6", "x = 7", "x = 5", "x = 8"],
+            answer: 0,
+            clue: "นำ 5 ไปคูณ 3 ก่อน แล้วจึงแก้สมการตามปกติ",
+            explanation: "2x + 3 = 15 -> 2x = 12 -> x = 6"
+        },
+        {
+            q: "ซื้อสมุดมาจำนวนหนึ่ง ราคาเล่มละ 12 บาท จ่ายเงินไปทั้งหมด 108 บาท ซื้อสมุดกี่เล่ม",
+            options: ["9 เล่ม", "8 เล่ม", "10 เล่ม", "12 เล่ม"],
+            answer: 0,
+            clue: "ให้จำนวนสมุดเป็น x เล่ม คูณด้วยราคา 12 บาท เท่ากับ 108",
+            explanation: "12x = 108 -> x = 108 / 12 = 9 เล่ม"
+        },
+        {
+            q: "ข้อใดคือคำตอบของสมการ -3x = -27",
+            options: ["x = 9", "x = -9", "x = 3", "x = -3"],
+            answer: 0,
+            clue: "นำ -3 ไปหารทั้งสองข้าง เครื่องหมายลบหารลบได้บวก",
+            explanation: "x = (-27) / (-3) = 9"
+        },
+        {
+            q: "สนามหญ้ารูปสี่เหลี่ยมผืนผ้ามีความกว้าง x เมตร ยาวกว่าความกว้างอยู่ 5 เมตร มีความรอบรูป 58 เมตร จงหาความกว้าง",
+            options: ["12 เมตร", "10 เมตร", "14 เมตร", "15 เมตร"],
+            answer: 0,
+            clue: "ความยาวรอบรูป = 2(กว้าง + ยาว) = 58",
+            explanation: "2(x + (x + 5)) = 58 -> 2(2x + 5) = 58 -> 4x + 10 = 58 -> 4x = 48 -> x = 12 เมตร"
+        },
+        {
+            q: "ถ้า 5(x + 2) - 3 = 22 แล้ว x มีค่าเท่าไร",
+            options: ["x = 3", "x = 4", "x = 2", "x = 5"],
+            answer: 0,
+            clue: "ย้าย -3 ไปบวกกับ 22 ก่อน จากนั้นหารด้วย 5",
+            explanation: "5(x + 2) = 25 -> x + 2 = 5 -> x = 3"
+        },
+        {
+            q: "ข้อใดกล่าวถูกต้องที่สุดเกี่ยวกับสมการเชิงเส้นตัวแปรเดียว",
+            options: ["เลขชี้กำลังสูงสุดของตัวแปรต้องเป็น 1", "ต้องมีตัวแปรมากกว่าสองตัวขึ้นไป", "เครื่องหมายเชื่อมต้องเป็นมากกว่าหรือเท่ากับ", "ไม่สามารถหาคำตอบที่แน่นอนได้"],
+            answer: 0,
+            clue: "นึกถึงนิยามคำว่า 'เชิงเส้น' และ 'ตัวแปรเดียว'",
+            explanation: "สมการเชิงเส้นตัวแปรเดียวต้องมีตัวแปรเดียวและเลขชี้กำลังของตัวแปรเป็น 1 เสมอ"
+        },
+        {
+            q: "ค่าของ x จากสมการ (x / 3) + 4 = 9 คือข้อใด",
+            options: ["x = 15", "x = 12", "x = 18", "x = 9"],
+            answer: 0,
+            clue: "ย้าย 4ไปลบออกจาก 9 ก่อน แล้วคูณด้วย 3",
+            explanation: "x / 3 = 5 -> x = 5 \xd7 3 = 15"
+        },
+        {
+            q: "พี่มีเงินมากกว่าน้อง 50 บาท เขาทั้งสองคนมีเงินรวมกัน 350 บาท น้องมีเงินเท่าไร",
+            options: ["150 บาท", "175 บาท", "200 บาท", "125 บาท"],
+            answer: 0,
+            clue: "ให้น้องมีเงิน x บาท พี่มีเงิน x + 50 บาท รวมกันได้ 350",
+            explanation: "x + (x + 50) = 350 -> 2x + 50 = 350 -> 2x = 300 -> x = 150 บาท"
+        },
+        {
+            q: "ถ้า 6x - 5 = 3x + 10 แล้ว x มีค่าเท่าใด",
+            options: ["x = 5", "x = 3", "x = 4", "x = 6"],
+            answer: 0,
+            clue: "ย้าย 3x มาลบ 6x และย้าย -5 ไปบวกกับ 10",
+            explanation: "3x = 15 -> x = 5"
+        },
+        {
+            q: "จำนวนเต็มบวกสามจำนวนเรียงติดต่อกัน มีผล cộng เท่ากับ 63 จำนวนตรงกลางคือจำนวนใด",
+            options: ["21", "20", "22", "19"],
+            answer: 0,
+            clue: "ให้จำนวนกลางเป็น x จำนวนคือก่อนหน้าคือ x - 1 จำนวนถัดไปคือ x + 1",
+            explanation: "(x - 1) + x + (x + 1) = 63 -> 3x = 63 -> x = 21"
+        },
+        {
+            q: "ถ้า 2(3x - 4) = 22 แล้วค่าของ x คือข้อใด",
+            options: ["x = 5", "x = 4", "x = 6", "x = 3"],
+            answer: 0,
+            clue: "นำ 2 ไปหาร 22 ก่อน จะได้ 3x - 4 = 11",
+            explanation: "3x - 4 = 11 -> 3x = 15 -> x = 5"
+        },
+        {
+            q: "ข้อใดคือคำตอบของสมการ 10 - 2x = 4",
+            options: ["x = 3", "x = 2", "x = 4", "x = -3"],
+            answer: 0,
+            clue: "ย้าย -2x ไปฝั่งขวาและย้าย 4 มาลบฝั่งซ้าย",
+            explanation: "10 - 4 = 2x -> 6 = 2x -> x = 3"
+        },
+        {
+            q: "อายุของแม่ปัจจุบันเป็น 4 เท่าของลูก ถ้าอีก 5 ปีข้างหน้าแม่จะมีอายุ 41 ปี ปัจจุบันลูกอายุเท่าไร",
+            options: ["9 ปี", "8 ปี", "10 ปี", "11 ปี"],
+            answer: 0,
+            clue: "ให้ลูกปัจจุบันอายุ x ปี แม่มีอายุ 4x ปี อีก 5 ปีข้างหน้าแม่จะอายุ 4x + 5 = 41",
+            explanation: "4x + 5 = 41 -> 4x = 36 -> x = 9 ปี"
+        },
+        {
+            q: "หากแก้สมการแล้วได้ผลลัพธ์เป็น 0 = 5 จะสรุปได้ว่าอย่างไรเกี่ยวกับคำตอบของสมการ",
+            options: ["สมการไม่มีคำตอบ", "สมการมีคำตอบอนันต์", "คำตอบคือ x = 0", "คำตอบคือ x = 5"],
+            answer: 0,
+            clue: "กรณีที่ตัวแปรตัดกันหมดแล้วเหลือเท็จ แสดงว่าสมการนั้นเป็นไปไม่ได้",
+            explanation: "เมื่อแก้สมการแล้วเกิดข้อขัดแย้งที่เป็นเท็จ (เช่น 0 = 5) แสดงว่าไม่มีจำนวนใดมาแทนแล้วเป็นจริง สรุปได้ว่าสมการไม่มีคำตอบ"
+        },
+        {
+            q: "ข้อใดคือรูปแบบมาตรฐานของสมการเชิงเส้นตัวแปรเดียว",
+            options: ["ax + b = 0 เมื่อ a ไม่เท่ากับ 0", "ax^2 + bx + c = 0", "ax + by = c", "y = ax^2 + b"],
+            answer: 0,
+            clue: "นึกถึงเงื่อนไขดีกรีสูงสุดของตัวแปรคือ 1 และมีตัวแปรเดียว",
+            explanation: "รูปแบบมาตรฐานคือ ax + b = 0 โดยที่ a และ b เป็นค่าคงตัว และ a ไม่เท่ากับ 0"
+        }
+    ];
+
+    // ฟังก์ชันสลับตัวเลือกแบบ Fisher-Yates (Anti-Guessing Engine)
+    function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    }
+
+    let userAnswers = {};
+
+    function renderExam() {
+        const box = document.getElementById('questions-box');
+        box.innerHTML = '';
+        
+        questionsData.forEach((qObj, index) => {
+            // สร้างสำเนา option พร้อมเก็บ index เดิมไว้เช็คคำตอบ
+            let optionsWithIndex = qObj.options.map((opt, i) => ({ text: opt, originalIndex: i }));
+            
+            // สลับตำแหน่งตัวเลือกเฉพาะเมื่อโหลดครั้งแรกหรือรีเซ็ต
+            if (!qObj.shuffledOptions) {
+                qObj.shuffledOptions = shuffleArray([...optionsWithIndex]);
+            }
+
+            let html = `<div class="question-card" data-qid="${index}">
+                <div class="question-title">ข้อที่ ${index + 1}: ${qObj.q}</div>
+                <div class="options-list">`;
+            
+            qObj.shuffledOptions.forEach((opt, optIdx) => {
+                let isChecked = userAnswers[index] === opt.originalIndex ? 'checked' : '';
+                html += `<label class="option-label">
+                    <input type="radio" name="q${index}" value="${opt.originalIndex}" ${isChecked} onclick="recordAnswer(${index}, ${opt.originalIndex})">
+                    <span>${opt.text}</span>
+                </label>`;
+            });
+
+            html += `</div>
+                <button class="clue-btn" onclick="toggleClue(${index})">🔍 ดูคำใบ้ / แนวคิด</button>
+                <div class="clue-box" id="clue-${index}"><strong>คำใบ้:</strong> ${qObj.clue}</div>
+                <div class="feedback" id="feedback-${index}"></div>
+            </div>`;
+            box.innerHTML += html;
+        });
+    }
+
+    function recordAnswer(qIndex, optIndex) {
+        userAnswers[qIndex] = optIndex;
+        localStorage.setItem('userAnswers', JSON.stringify(userAnswers));
+    }
+
+    function toggleClue(index) {
+        let box = document.getElementById(`clue-${index}`);
+        box.style.display = box.style.display === 'block' ? 'none' : 'block';
+    }
+
+    function submitExam() {
+        let score = 0;
+        let incorrectTopics = [];
+
+        questionsData.forEach((qObj, index) => {
+            let feedback = document.getElementById(`feedback-${index}`);
+            let userAnswer = userAnswers[index];
+
+            if (userAnswer === qObj.answer) {
+                score++;
+                feedback.innerHTML = `<span class="correct">✔ ถูกต้อง! ${qObj.explanation}</span>`;
+            } else {
+                feedback.innerHTML = `<span class="incorrect">✖ ผิดครับ เฉลยที่ถูกต้อง: ${qObj.options[qObj.answer]} (${qObj.explanation})</span>`;
+                incorrectTopics.push(`ข้อ ${index + 1}`);
+            }
+        });
+
+        let resultsSection = document.getElementById('results-section');
+        let scoreText = document.getElementById('score-text');
+        let analysisText = document.getElementById('analysis-text');
+
+        resultsSection.style.display = 'block';
+        scoreText.innerHTML = `<strong>คะแนนรวมของคุณ:</strong> ${score} / ${questionsData.length} (${((score/questionsData.length)*100).toFixed(2)}%)`;
+
+        if (incorrectTopics.length === 0) {
+            analysisText.innerHTML = `<strong>วิเคราะห์ผล:</strong> ยอดเยี่ยมมาก! คุณมีความเข้าใจในเรื่องสมการเชิงเส้นตัวแปรเดียวอย่างสมบูรณ์แบบ ได้คะแนนเต็มทุกข้อ`;
+        } else {
+            analysisText.innerHTML = `<strong>จุดที่ต้องพัฒนา:</strong> คุณยังมีความเข้าใจคลาดเคลื่อนในข้อดังต่อไปนี้: ${incorrectTopics.join(', ')} ควรกลับไปทบทวนเนื้อหาในหัวข้อการแก้สมการและการแปลงโจทย์ปัญหาใหม่อีกรอบ`;
+        }
+
+        resultsSection.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function resetExam() {
+        if (confirm('คุณต้องการรีเซ็ตคำตอบทั้งหมดและสลับตัวเลือกใหม่ใช่หรือไม่?')) {
+            localStorage.removeItem('userAnswers');
+            userAnswers = {};
+            questionsData.forEach(q => q.shuffledOptions = null);
+            document.getElementById('results-section').style.display = 'none';
+            renderExam();
+        }
+    }
+
+    // Whiteboard Script
+    const canvas = document.getElementById('wb-canvas');
+    const ctx = canvas.getContext('2d');
+    let isDrawing = false;
+    let isErasing = false;
+
+    function resizeCanvas() {
+        canvas.width = canvas.parentElement.clientWidth - 40;
+        canvas.height = 350;
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    canvas.addEventListener('mousedown', startDraw);
+    canvas.addEventListener('mousemove', draw);
+    canvas.addEventListener('mouseup', stopDraw);
+    canvas.addEventListener('mouseleave', stopDraw);
+
+    function startDraw(e) {
+        isDrawing = true;
+        ctx.beginPath();
+        ctx.moveTo(e.offsetX, e.offsetY);
+    }
+
+    function draw(e) {
+        if (!isDrawing) return;
+        ctx.lineWidth = isErasing ? 20 : 2;
+        ctx.lineCap = 'round';
+        ctx.strokeStyle = isErasing ? '#ffffff' : '#1e293b';
+        ctx.lineTo(e.offsetX, e.offsetY);
+        ctx.stroke();
+    }
+
+    function stopDraw() {
+        isDrawing = false;
+    }
+
+    function clearWhiteboard() {
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+
+    function toggleEraser() {
+        isErasing = !isErasing;
+        let btn = document.getElementById('eraser-btn');
+        btn.style.background = isErasing ? '#dc2626' : '#64748b';
+        btn.innerText = isErasing ? 'กำลังใช้ยางลบ' : 'ยางลบ';
+    }
+
+    // โหลดข้อมูลเก่าจาก localStorage หากมี
+    window.onload = function() {
+        let saved = localStorage.getItem('userAnswers');
+        if (saved) {
+            userAnswers = JSON.parse(saved);
+        }
+        renderExam();
+    };
+</script>
+
+</body>
+</html>
