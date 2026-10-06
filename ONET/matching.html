@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>เกมจับคู่คำศัพท์ ป.2 (10 คู่) สนุกๆ</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600&family=Prompt:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Fredoka', 'Prompt', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #74b9ff, #ffeaa7);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 15px;
+        }
+
+        .container {
+            max-width: 720px;
+            width: 100%;
+            background: #ffffff;
+            border-radius: 25px;
+            box-shadow: 0 12px 35px rgba(0,0,0,0.15);
+            padding: 25px;
+            text-align: center;
+            border: 5px solid #fff;
+        }
+
+        h1 {
+            color: #d63031;
+            margin-bottom: 5px;
+            font-size: 26px;
+            text-shadow: 2px 2px 0px #ffeaa7;
+        }
+
+        .subtitle {
+            color: #636e72;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+
+        .scoreboard {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+            font-size: 15px;
+            font-weight: bold;
+            color: #2d3436;
+            background: #f1f2f6;
+            padding: 10px;
+            border-radius: 15px;
+        }
+
+        .scoreboard span {
+            color: #0984e3;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 600px) {
+            .grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+
+        .card {
+            aspect-ratio: 1;
+            background-color: transparent;
+            perspective: 1000px;
+            cursor: pointer;
+        }
+
+        .card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.4s ease;
+            transform-style: preserve-3d;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .card.flipped .card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .card.matched .card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .card-front, .card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            left: 0;
+            top: 0;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            user-select: none;
+        }
+
+        .card-front {
+            background: linear-gradient(135deg, #ff7675, #fab1a0);
+            color: white;
+            font-size: 28px;
+            border: 3px solid #fff;
+            z-index: 2;
+        }
+
+        .card-back {
+            background-color: #ffffff;
+            color: #2d3436;
+            transform: rotateY(180deg);
+            border: 3px solid #dfe6e9;
+            padding: 4px;
+            z-index: 1;
+        }
+
+        .card-back .emoji {
+            font-size: 26px;
+            margin-bottom: 2px;
+        }
+
+        .card-back .text {
+            font-size: 11px;
+            font-weight: bold;
+            color: #0984e3;
+        }
+
+        .card.matched .card-back {
+            background-color: #55efc4;
+            border-color: #00b894;
+        }
+
+        .btn-restart {
+            background-color: #00b894;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 5px 15px rgba(0,184,148,0.4);
+        }
+
+        .btn-restart:hover {
+            background-color: #00a884;
+            transform: translateY(-2px);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6);
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 35px 25px;
+            border-radius: 25px;
+            text-align: center;
+            max-width: 380px;
+            width: 90%;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+            border: 5px solid #ffeaa7;
+        }
+
+        .modal-content h2 {
+            color: #00b894;
+            margin-bottom: 10px;
+            font-size: 26px;
+        }
+
+        .modal-content p {
+            color: #636e72;
+            margin-bottom: 20px;
+            font-size: 16px;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>🌟 เกมจับคู่คำศัพท์ ป.2 (10 คู่สุดสนุก) 🌟</h1>
+        <div class="subtitle">เปิดการ์ดหาคู่คำศัพท์และรูปภาพให้ถูกต้องครบ 10 คู่!</div>
+        
+        <div class="scoreboard">
+            <div>เวลา: <span id="timer">0</span> วินาที</div>
+            <div>เปิดแล้ว: <span id="flips">0</span> ครั้ง</div>
+            <div>จับคู่ได้: <span id="matches">0</span> / 10 คู่</div>
+        </div>
+
+        <div class="grid" id="cardGrid"></div>
+
+        <button class="btn-restart" onclick="startGame()">🔄 เริ่มเกมใหม่</button>
+    </div>
+
+    <div class="modal" id="winModal">
+        <div class="modal-content">
+            <h2>🏆 ยอดเยี่ยมมาก!</h2>
+            <p id="winText">คุณเก่งมากๆ จับคู่คำศัพท์ครบ 10 คู่แล้ว!</p>
+            <button class="btn-restart" onclick="startGame()">เล่นอีกครั้ง</button>
+        </div>
+    </div>
+
+    <script>
+        let audioCtx = null;
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        function playSound(type) {
+            try {
+                initAudio();
+                if (!audioCtx) return;
+                
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                const now = audioCtx.currentTime;
+
+                if (type === 'flip') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(400, now);
+                    osc.frequency.exponentialRampToValueAtTime(600, now + 0.08);
+                    gain.gain.setValueAtTime(0.15, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.08);
+                    osc.start(now);
+                    osc.stop(now + 0.08);
+                } else if (type === 'match') {
+                    [523.25, 659.25, 783.99].forEach((freq, i) => {
+                        const o = audioCtx.createOscillator();
+                        const g = audioCtx.createGain();
+                        o.type = 'triangle';
+                        o.frequency.setValueAtTime(freq, now + i * 0.06);
+                        o.connect(g);
+                        g.connect(audioCtx.destination);
+                        g.gain.setValueAtTime(0.15, now + i * 0.06);
+                        g.gain.exponentialRampToValueAtTime(0.001, now + i * 0.06 + 0.3);
+                        o.start(now + i * 0.06);
+                        o.stop(now + i * 0.06 + 0.3);
+                    });
+                } else if (type === 'wrong') {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(180, now);
+                    osc.frequency.setValueAtTime(120, now + 0.1);
+                    gain.gain.setValueAtTime(0.15, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+                    osc.start(now);
+                    osc.stop(now + 0.2);
+                } else if (type === 'win') {
+                    const notes = [523.25, 659.25, 783.99, 1046.50];
+                    notes.forEach((freq, i) => {
+                        const o = audioCtx.createOscillator();
+                        const g = audioCtx.createGain();
+                        o.type = 'sine';
+                        o.frequency.setValueAtTime(freq, now + i * 0.12);
+                        o.connect(g);
+                        g.connect(audioCtx.destination);
+                        g.gain.setValueAtTime(0.2, now + i * 0.12);
+                        g.gain.exponentialRampToValueAtTime(0.001, now + i * 0.12 + 0.4);
+                        o.start(now + i * 0.12);
+                        o.stop(now + i * 0.12 + 0.4);
+                    });
+                }
+            } catch (e) {
+                console.log("Audio error: ", e);
+            }
+        }
+
+        // ข้อมูลคำศัพท์ระดับ ป.2 เพิ่มเติมครบ 10 คู่
+        const vocabPairs = [
+            { id: 1, emoji: "🐱", text: "Cat (แมว)" },
+            { id: 2, emoji: "🐶", text: "Dog (สุนัข)" },
+            { id: 3, emoji: "🍎", text: "Apple (แอปเปิ้ล)" },
+            { id: 4, emoji: "☀️", text: "Sun (พระอาทิตย์)" },
+            { id: 5, emoji: "🐟", text: "Fish (ปลา)" },
+            { id: 6, emoji: "🚗", text: "Car (รถยนต์)" },
+            { id: 7, emoji: "🌳", text: "Tree (ต้นไม้)" },
+            { id: 8, emoji: "⭐", text: "Star (ดาว)" },
+            { id: 9, emoji: "🍌", text: "Banana (กล้วย)" },
+            { id: 10, emoji: "🏠", text: "House (บ้าน)" }
+        ];
+
+        let cards = [];
+        let flippedCards = [];
+        let matchedCount = 0;
+        let flipCount = 0;
+        let isLockBoard = false;
+        let timerInterval = null;
+        let secondsElapsed = 0;
+        let gameStarted = false;
+
+        const grid = document.getElementById('cardGrid');
+        const flipsDisplay = document.getElementById('flips');
+        const matchesDisplay = document.getElementById('matches');
+        const timerDisplay = document.getElementById('timer');
+        const winModal = document.getElementById('winModal');
+        const winText = document.getElementById('winText');
+
+        function startGame() {
+            winModal.style.display = 'none';
+            grid.innerHTML = '';
+            flippedCards = [];
+            matchedCount = 0;
+            flipCount = 0;
+            isLockBoard = false;
+            secondsElapsed = 0;
+            gameStarted = false;
+            
+            flipsDisplay.textContent = flipCount;
+            matchesDisplay.textContent = matchedCount;
+            timerDisplay.textContent = secondsElapsed;
+            
+            clearInterval(timerInterval);
+
+            cards = [];
+            vocabPairs.forEach(pair => {
+                cards.push({ pairId: pair.id, displayHtml: `<div class="emoji">${pair.emoji}</div><div class="text">${pair.text.split(' ')[0]}</div>` });
+                cards.push({ pairId: pair.id, displayHtml: `<div class="emoji">📖</div><div class="text">${pair.text}</div>` });
+            });
+
+            cards.sort(() => Math.random() - 0.5);
+
+            cards.forEach((cardData, index) => {
+                const card = document.createElement('div');
+                card.classList.add('card');
+                card.dataset.pairId = cardData.pairId;
+
+                card.innerHTML = `
+                    <div class="card-inner">
+                        <div class="card-front">❓</div>
+                        <div class="card-back">${cardData.displayHtml}</div>
+                    </div>
+                `;
+
+                card.addEventListener('click', function() {
+                    handleCardClick(this);
+                });
+                grid.appendChild(card);
+            });
+        }
+
+        function startTimer() {
+            if (!gameStarted) {
+                gameStarted = true;
+                timerInterval = setInterval(() => {
+                    secondsElapsed++;
+                    timerDisplay.textContent = secondsElapsed;
+                }, 1000);
+            }
+        }
+
+        function handleCardClick(card) {
+            if (isLockBoard) return;
+            if (card.classList.contains('flipped') || card.classList.contains('matched')) return;
+
+            startTimer();
+            playSound('flip');
+
+            card.classList.add('flipped');
+            flippedCards.push(card);
+
+            if (flippedCards.length === 2) {
+                flipCount++;
+                flipsDisplay.textContent = flipCount;
+                checkForMatch();
+            }
+        }
+
+        function checkForMatch() {
+            const [card1, card2] = flippedCards;
+            const isMatch = card1.dataset.pairId === card2.dataset.pairId;
+
+            if (isMatch) {
+                disableCards();
+            } else {
+                unflipCards();
+            }
+        }
+
+        function disableCards() {
+            playSound('match');
+            flippedCards.forEach(card => {
+                card.classList.add('matched');
+            });
+            matchedCount++;
+            matchesDisplay.textContent = matchedCount;
+            resetTurn();
+
+            if (matchedCount === 10) {
+                clearInterval(timerInterval);
+                setTimeout(() => {
+                    playSound('win');
+                    winText.textContent = `ยอดเยี่ยมมาก! คุณใช้เวลาไป ${secondsElapsed} วินาที และเปิดการ์ดไป ${flipCount} ครั้ง`;
+                    winModal.style.display = 'flex';
+                }, 500);
+            }
+        }
+
+        function unflipCards() {
+            isLockBoard = true;
+            setTimeout(() => {
+                playSound('wrong');
+                flippedCards.forEach(card => {
+                    card.classList.remove('flipped');
+                });
+                resetTurn();
+            }, 900);
+        }
+
+        function resetTurn() {
+            flippedCards = [];
+            isLockBoard = false;
+        }
+
+        startGame();
+    </script>
+</body>
+</html>
