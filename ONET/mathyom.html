@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบคลังข้อสอบคณิตศาสตร์ ป.2 - พระจอมเกล้าติวเตอร์</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Sarabun', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+    <!-- Header -->
+    <header class="bg-indigo-600 text-white shadow-md p-4 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div>
+                <h1 class="text-xl font-bold">📚 คลังข้อสอบคณิตศาสตร์ ป.2 (ยากปานกลาง)</h1>
+                <p class="text-xs text-indigo-200">พระจอมเกล้าติวเตอร์ | Interactive Learning & Testing System</p>
+            </div>
+            <div class="flex items-center gap-3">
+                <button id="langToggleBtn" onclick="toggleLanguage()" class="bg-indigo-700 hover:bg-indigo-800 px-3 py-1.5 rounded text-sm font-medium transition border border-indigo-500">
+                    🌐 ภาษา: ไทย (TH)
+                </button>
+                <div class="bg-indigo-800 px-3 py-1.5 rounded text-sm">
+                    ชุดข้อสอบ: <span id="currentSetLabel" class="font-bold">ชุดที่ 1</span>
+                </div>
+                <button onclick="switchTestSet()" class="bg-amber-500 hover:bg-amber-600 text-slate-900 px-3 py-1.5 rounded text-sm font-bold transition shadow">
+                    🔄 สลับชุดข้อสอบ
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-7xl mx-auto p-4 w-full flex-grow flex flex-col gap-6">
+        
+        <!-- Summary & Thinking Process Section -->
+        <section class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+            <h2 id="summaryTitle" class="text-lg font-bold text-indigo-700 mb-2">💡 สรุปเนื้อหาและกระบวนการคิด (Math Concept & Thinking Process)</h2>
+            <div id="summaryContent" class="text-slate-600 text-sm leading-relaxed space-y-2">
+                <p>การเรียนคณิตศาสตร์ระดับชั้น ป.2 เน้นการพัฒนาทักษะกระบวนการคิดคำนวณขั้นสูงขึ้น เช่น การบวก-ลบระคน, การแก้โจทย์ปัญหา 2 ขั้นตอน, ความเข้าใจเรื่องรูปทรงเรขาคณิตสองมิติและสามมิติ, การวัดความยาว น้ำหนัก และปริมาตร ตลอดจนการจัดการข้อมูลและการนับเพิ่ม-ลดที่เป็นระบบ</p>
+                <div class="bg-indigo-50 border-l-4 border-indigo-500 p-3 rounded-r text-indigo-900 mt-3">
+                    <p class="font-semibold">✨ เทคนิคการคิดเร็ว (Fast-Thinking Strategy):</p>
+                    <p class="text-xs mt-1">1. อ่านโจทย์แยกตัวแปรสำคัญ (ระบุตัวตั้ง ตัวกระทำ และสิ่งที่โจทย์ต้องการ)<br>2. วาดภาพประกอบหรือใช้กระดานทดเลขด้านข้างเพื่อช่วยจำลองสถานการณ์<br>3. ตรวจสอบความสมเหตุสมผลของคำตอบก่อนเลือกทุกครั้ง</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Two-Frame Layout (Desktop: 70% Quiz | 30% Whiteboard) -->
+        <div class="grid grid-cols-1 lg:grid-cols-10 gap-6 flex-grow">
+            
+            <!-- Left Frame: Quiz Area (70%) -->
+            <div class="lg:col-span-7 bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex flex-col">
+                <div class="flex justify-between items-center border-b border-slate-100 pb-4 mb-4">
+                    <h3 id="quizHeaderTitle" class="font-bold text-slate-700 text-base">ทำแบบทดสอบ (ข้อที่ <span id="activeQuestionNum">1</span> จาก 20)</h3>
+                    <div class="text-sm font-semibold text-indigo-600">คะแนนปัจจุบัน: <span id="liveScore">0</span> / 20</div>
+                </div>
+
+                <!-- Question Box -->
+                <div class="flex-grow flex flex-col justify-between">
+                    <div>
+                        <div id="questionText" class="text-slate-800 font-medium text-lg mb-4 min-h-[60px]">
+                            กำลังโหลดคำถาม...
+                        </div>
+
+                        <!-- Answer Options -->
+                        <div id="optionsContainer" class="space-y-3 mb-6">
+                            <!-- Options will be injected here -->
+                        </div>
+
+                        <!-- Clue Box -->
+                        <div class="mb-4">
+                            <button onclick="toggleClue()" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded font-medium transition flex items-center gap-1">
+                                🔍 <span id="clueBtnText">แสดงคำใบ้ (Clue)</span>
+                            </button>
+                            <div id="clueBox" class="hidden mt-2 p-3 bg-amber-50 border border-amber-200 rounded text-xs text-amber-800">
+                                <span id="clueText">คำใบ้จะปรากฏที่นี่</span>
+                            </div>
+                        </div>
+
+                        <!-- Rationale / Explanation Box -->
+                        <div id="explanationBox" class="hidden p-4 rounded-lg text-sm mb-4">
+                            <!-- Rationale details -->
+                        </div>
+                    </div>
+
+                    <!-- Navigation & Action Buttons -->
+                    <div class="flex justify-between items-center pt-4 border-t border-slate-100">
+                        <button onclick="prevQuestion()" id="prevBtn" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-4 py-2 rounded text-sm font-medium transition disabled:opacity-50">
+                            ⬅️ ข้อก่อนหน้า
+                        </button>
+                        <div class="flex gap-2">
+                            <button onclick="resetQuizState()" class="bg-rose-100 hover:bg-rose-200 text-rose-700 px-3 py-2 rounded text-sm font-medium transition">
+                                🔄 เริ่มใหม่ (Reset)
+                            </button>
+                            <button onclick="nextQuestion()" id="nextBtn" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded text-sm font-medium transition shadow">
+                                ข้อถัดไป ➡️
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Frame: Whiteboard & Analysis (30%) -->
+            <div class="lg:col-span-3 flex flex-col gap-6">
+                <!-- Whiteboard Component -->
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 flex flex-col h-[400px]">
+                    <div class="flex justify-between items-center mb-2">
+                        <h4 class="text-sm font-bold text-slate-700">✏️ กระดานทดเลข (Whiteboard)</h4>
+                        <div class="flex gap-1">
+                            <button onclick="setPenColor('#1e293b')" class="w-5 h-5 rounded-full bg-slate-800 border" title="สีดำ"></button>
+                            <button onclick="setPenColor('#dc2626')" class="w-5 h-5 rounded-full bg-red-600 border" title="สีแดง"></button>
+                            <button onclick="setPenColor('#2563eb')" class="w-5 h-5 rounded-full bg-blue-600 border" title="สีน้ำเงิน"></button>
+                            <button onclick="clearWhiteboard()" class="text-xs bg-slate-100 hover:bg-slate-200 px-2 py-0.5 rounded text-slate-600 ml-2">ล้าง</button>
+                        </div>
+                    </div>
+                    <div class="border border-slate-200 rounded-lg flex-grow relative bg-slate-50 overflow-hidden cursor-crosshair">
+                        <canvas id="whiteboardCanvas" class="w-full h-full touch-none"></canvas>
+                    </div>
+                </div>
+
+                <!-- Analysis Summary Box -->
+                <div id="analysisSection" class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 hidden">
+                    <h4 class="text-sm font-bold text-indigo-700 mb-2">📊 ผลการวิเคราะห์รายบุคคล</h4>
+                    <div id="analysisContent" class="text-xs text-slate-600 space-y-2">
+                        <!-- Analysis details -->
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-200 py-4 mt-auto text-center text-xs text-slate-500">
+        เขียนโดย พระจอมเกล้าติวเตอร์
+    </footer>
+
+    <!-- Script Application Logic -->
+    <script>
+        // Data Sets: 2 Sets of 20 Questions (Math Grade 2, Medium Difficulty)
+        const quizSets = [
+            {
+                setName: "ชุดที่ 1",
+                questions: [
+                    {
+                        id: 1,
+                        question: "ผลลัพธ์ของ (450 + 235) - 180 มีค่าเท่ากับเท่าใด?",
+                        clue: "ให้ทำในวงเล็บก่อน แล้วจึงนำผลลัพธ์ไปลบด้วย 180",
+                        options: [
+                            { text: "505", isCorrect: true, rationale: "คำนวณในวงเล็บ 450 + 235 = 685 จากนั้นนำ 685 - 180 = 505 ได้คำตอบถูกต้อง" },
+                            { text: "495", isCorrect: false, rationale: "เกิดจากการทดเลขหรือการลบหลักหน่วยผิดพลาด ควรตรวจสอบการยืมหลักสิบ" },
+                            { text: "515", isCorrect: false, rationale: "เกิดจากการบวกในวงเล็บเกินไป หรือลบตัวเลขผิดพลาด" },
+                            { text: "485", isCorrect: false, rationale: "เป็นผลลัพธ์จากการลบผิดพลาดในขั้นตอนสุดท้าย" }
+                        ]
+                    },
+                    {
+                        id: 2,
+                        question: "แม่ค้ามีส้มอยู่ 340 ผล ขายไปวันแรก 125 ผล วันที่สองขายได้อีก 110 ผล แม่ค้าเหลือส้มกี่ผล?",
+                        clue: "นำจำนวนส้มเริ่มต้น ลบด้วยส้มที่ขายไปทั้งสองวัน หรือลบออกทีละวัน",
+                        options: [
+                            { text: "105 ผล", isCorrect: true, rationale: "นำ 340 - 125 = 215 แล้วนำ 215 - 110 = 105 ผล หรือนำ 125 + 110 = 235 แล้วนำ 340 - 235 = 105 ผล" },
+                            { text: "115 ผล", isCorrect: false, rationale: "เกิดจากการคำนวณผลรวมที่ขายไปผิดพลาด ทำให้เหลือเศษต่างกัน 10 ผล" },
+                            { text: "95 ผล", isCorrect: false, rationale: "เกิดจากการลบเลขซ้ำซ้อนหรือลบหลักสิบผิดพลาด" },
+                            { text: "125 ผล", isCorrect: false, rationale: "สับสนกับจำนวนส้มที่ขายไปในวันแรก" }
+                        ]
+                    },
+                    {
+                        id: 3,
+                        question: "จำนวนใดมีค่ามากกว่า 500 อยู่ 85 และน้อยกว่า 700 อยู่ 115?",
+                        clue: "หาค่าจากสองเงื่อนไข: 500 + 85 และ 700 - 115",
+                        options: [
+                            { text: "585", isCorrect: true, rationale: "ตรวจสอบเงื่อนไขแรก 500 + 85 = 585 และเงื่อนไขที่สอง 700 - 115 = 585 ซึ่งตรงกันพอดี" },
+                            { text: "595", isCorrect: false, rationale: "เกิดจากการคำนวณเงื่อนไขที่สองผิดพลาด" },
+                            { text: "575", isCorrect: false, rationale: "เกิดจากการคำนวณเงื่อนไขแรกผิดพลาด" },
+                            { text: "605", isCorrect: false, rationale: "ไม่อยู่ในช่วงการคำนวณที่ถูกต้องของเงื่อนไขทั้งสอง" }
+                        ]
+                    },
+                    {
+                        id: 4,
+                        question: "เชือกเส้นหนึ่งยาว 4 เมตร 50 เซนติเมตร ตัดออกไป 1 เมตร 80 เซนติเมตร จะเหลือเชือกยาวเท่าใด?",
+                        clue: "แปลงหน่วยเซนติเมตรช่วยหากลุ่ม 1 เมตร = 100 เซนติเมตร",
+                        options: [
+                            { text: "2 เมตร 70 เซนติเมตร", isCorrect: true, rationale: "แปลง 4 เมตร 50 ซม. เป็น 450 ซม. และ 1 เมตร 80 ซม. เป็น 180 ซม. นำ 450 - 180 = 270 ซม. หรือ 2 เมตร 70 ซม." },
+                            { text: "3 เมตร 30 เซนติเมตร", isCorrect: false, rationale: "เกิดจากการลบหน่วยเซนติเมตรแบบยืมหลักผิดพลาดโดยไม่ได้แปลงหน่วย" },
+                            { text: "2 เมตร 30 เซนติเมตร", isCorrect: false, rationale: "เกิดจากการคำนวณตัวเลขผิดพลาดในหลักสิบเซนติเมตร" },
+                            { text: "3 เมตร 70 เซนติเมตร", isCorrect: false, rationale: "เกิดจากการหักลบจำนวนเมตรผิดพลาด" }
+                        ]
+                    },
+                    {
+                        id: 5,
+                        question: "ลุงAมีเงิน 850 บาท ซื้อรองเท้า 420 บาท และซื้อเสื้อ 185 บาท ลุงAจะเหลือเงินกี่บาท?",
+                        clue: "นำราคาสิ่งของทั้งสองอย่างมารวมกันก่อน แล้วลบออกจากเงินตั้งต้น",
+                        options: [
+                            { text: "245 บาท", isCorrect: true, rationale: "รวมราคารองเท้าและเสื้อ 420 + 185 = 605 บาท จากนั้นนำเงินตั้งต้น 850 - 605 = 245 บาท" },
+                            { text: "235 บาท", isCorrect: false, rationale: "เกิดจากการคำนวณบวกราคารวมผิดพลาด 1 บาท" },
+                            { text: "255 บาท", isCorrect: false, rationale: "เกิดจากการหักลบเงินสดผิดพลาด" },
+                            { text: "265 บาท", isCorrect: false, rationale: "เกิดจากการคำนวณราคาสินค้าต่ำกว่าความเป็นจริง" }
+                        ]
+                    },
+                    {
+                        id: 6,
+                        question: "ผลลัพธ์ของ 7 × 8 มีค่าเท่ากับข้อใด?",
+                        clue: "ท่องสูตรคูณแม่ 7 หรือแม่ 8",
+                        options: [
+                            { text: "56", isCorrect: true, rationale: "จากสูตรคูณแม่ 7: 7 × 8 = 56 หรือ 8 × 7 = 56" },
+                            { text: "54", isCorrect: false, rationale: "เกิดจากการสับสนกับผลคูณของ 6 × 9 หรือ 7 × 7" },
+                            { text: "63", isCorrect: false, rationale: "เป็นผลคูณของ 7 × 9" },
+                            { text: "48", isCorrect: false, rationale: "เป็นผลคูณของ 6 × 8" }
+                        ]
+                    },
+                    {
+                        id: 7,
+                        question: "มีลูกอม 48 เม็ด แบ่งใส่ถุง ถุงละ 6 เม็ด จะได้ทั้งหมดกี่ถุง?",
+                        clue: "ใช้การหารจำนวนทั้งหมดด้วยจำนวนลูกอมในแต่ละถุง",
+                        options: [
+                            { text: "8 ถุง", isCorrect: true, rationale: "นำ 48 ÷ 6 = 8 ถุงพอดี เพราะ 6 × 8 = 48" },
+                            { text: "7 ถุง", isCorrect: false, rationale: "เกิดจากการคำนวณสูตรคูณผิดพลาด 6 × 7 = 42" },
+                            { text: "9 ถุง", isCorrect: false, rationale: "เกิดจากการคำนวณสูตรคูณเกินไป 6 × 9 = 54" },
+                            { text: "6 ถุง", isCorrect: false, rationale: "สับสนระหว่างจำนวนถุงกับจำนวนเม็ดต่อถุง" }
+                        ]
+                    },
+                    {
+                        id: 8,
+                        question: "รูปทรงเรขาคณิตสามมิติที่มีหน้าตัดทุกหน้าเป็นรูปสี่เหลี่ยมจัตุรัสเท่ากันทุกหน้า คือรูปใด?",
+                        clue: "มีลักษณะเหมือนกล่องลูกเต๋า",
+                        options: [
+                            { text: "ทรงสี่เหลี่ยมมุมฉาก (ลูกบาศก์)", isCorrect: true, rationale: "ทรงสี่เหลี่ยมมุมฉากที่มีความกว้าง ยาว สูง เท่ากัน (ลูกบาศก์) มีหน้าตัดเป็นสี่เหลี่ยมจัตุรัส 6 หน้าเท่ากัน" },
+                            { text: "ทรงกระบอก", isCorrect: false, rationale: "ทรงกระบอกมีหน้าตัดเป็นรูปวงกลม 2 หน้า" },
+                            { text: "พีระมิด", isCorrect: false, rationale: "พีระมิดมีฐานเป็นรูปเหลี่ยมและหน้าข้างเป็นรูปสามเหลี่ยม" },
+                            { text: "ทรงกลม", isCorrect: false, rationale: "ทรงกลมมีผิวโค้งเรียบไม่มีหน้าตัดเหลี่ยม" }
+                        ]
+                    },
+                    {
+                        id: 9,
+                        question: "เข็มสั้นชี้เลข 3 และเข็มยาวชี้เลข 12 เป็นเวลาในข้อใด?",
+                        clue: "เข็มยาวชี้เลข 12 แสดงว่าตรงกับเวลาเต็มชั่วโมง",
+                        options: [
+                            { text: "นาฬิกา 3 นาฬิกา (03:00 น.)", isCorrect: true, rationale: "เมื่อเข็มยาวชี้เลข 12 แสดงว่านาทีเป็น 00 และเข็มสั้นชี้เลข 3 คือเวลา 3 นาฬิกา" },
+                            { text: "12 นาฬิกา 15 นาที", isCorrect: false, rationale: "สับสนตำแหน่งของเข็มสั้นและเข็มยาว" },
+                            { text: "3 นาฬิกา 30 นาที", isCorrect: false, rationale: "หากเป็น 30 นาที เข็มยาวจะต้องชี้ที่เลข 6" },
+                            { text: "12 นาฬิกา 3 นาที", isCorrect: false, rationale: "อ่านตำแหน่งเข็มสั้นและเข็มยาวสลับกัน" }
+                        ]
+                    },
+                    {
+                        id: 10,
+                        question: "คุณแม่ซื้อแตงโมหนัก 3 กิโลกรัม 500 กรัม และมะละกอหนัก 2 กิโลกรัม 300 กรัม ผลไม้ทั้งสองอย่างหนักรวมกันเท่าใด?",
+                        clue: "นำกิโลกรัมบวกกิโลกรัม และกรัมบวกกรัม",
+                        options: [
+                            { text: "5 กิโลกรัม 800 กรัม", isCorrect: true, rationale: "นำกิโลกรัมรวมกัน: 3 + 2 = 5 กิโลกรัม และกรัมรวมกัน: 500 + 300 = 800 กรัม ได้ 5 กิโลกรัม 800 กรัม" },
+                            { text: "6 กิโลกรัม 200 กรัม", isCorrect: false, rationale: "เกิดจากการบวกหน่วยน้ำหนักผิดพลาดหรือทดหน่วยเกิน" },
+                            { text: "5 กิโลกรัม 200 กรัม", isCorrect: false, rationale: "เกิดจากการนำกรัมมาลบกันแทนที่จะบวก" },
+                            { text: "6 กิโลกรัม 800 กรัม", isCorrect: false, rationale: "เกิดจากการบวกจำนวนกิโลกรัมเกินความเป็นจริง" }
+                        ]
+                    },
+                    {
+                        id: 11,
+                        question: "แบบรูปของจำนวน: 12, 18, 24, 30, ... จำนวนถัดไปคือจำนวนใด?",
+                        clue: "สังเกตการเพิ่มขึ้นของแต่ละจำนวนทีละเท่าๆ กัน",
+                        options: [
+                            { text: "36", isCorrect: true, rationale: "เป็นการนับเพิ่มทีละ 6 (12+6=18, 18+6=24, 24+6=30, 30+6=36)" },
+                            { text: "38", isCorrect: false, rationale: "เกิดจากการคำนวณระยะห่างของการเพิ่มขึ้นผิดพลาด" },
+                            { text: "34", isCorrect: false, rationale: "เกิดจากการนับเพิ่มทีละ 4 ผิดพลาด" },
+                            { text: "40", isCorrect: false, rationale: "เกิดจากการบวกค่าเพิ่มเกินไป" }
+                        ]
+                    },
+                    {
+                        id: 12,
+                        question: "ธนบัตรฉบับละ 500 บาท 1 ใบ แลกเหรียญ 10 บาท ได้ทั้งหมดกี่เหรียญ?",
+                        clue: "นำมูลค่า 500 หารด้วย 10",
+                        options: [
+                            { text: "50 เหรียญ", isCorrect: true, rationale: "500 ÷ 10 = 50 เหรียญ เพราะ 50 × 10 = 500 บาท" },
+                            { text: "5 เหรียญ", isCorrect: false, rationale: "คำนวณพลาดไป 10 เท่า" },
+                            { text: "100 เหรียญ", isCorrect: false, rationale: "เกิดจากการสับสนมูลค่าธนบัตรเป็น 1,000 บาท" },
+                            { text: "20 เหรียญ", isCorrect: false, rationale: "คำนวณจำนวนเหรียญต่ำกว่าความเป็นจริง" }
+                        ]
+                    },
+                    {
+                        id: 13,
+                        question: "พี่มีเงิน 725 บาท น้องมีเงินน้อยกว่าพี่ 180 บาท น้องมีเงินกี่บาท?",
+                        clue: "นำเงินของพี่ตั้งต้น แล้วลบด้วยจำนวนเงินที่น้อยกว่า",
+                        options: [
+                            { text: "545 บาท", isCorrect: true, rationale: "นำ 725 - 180 = 545 บาท โดยทำการยืมหลักร้อยมาหลักสิบถูกต้อง" },
+                            { text: "555 บาท", isCorrect: false, rationale: "เกิดจากการยืมหลักตัวเลขผิดพลาด 10 หน่วย" },
+                            { text: "645 บาท", isCorrect: false, rationale: "เกิดจากการลบหลักร้อยผิดพลาด" },
+                            { text: "535 บาท", isCorrect: false, rationale: "เกิดจากการคำนวณตัวเลขหลักหน่วยคลาดเคลื่อน" }
+                        ]
+                    },
+                    {
+                        id: 14,
+                        question: "ข้อใดเรียงลำดับจำนวนจากน้อยไปมากได้ถูกต้องที่สุด?",
+                        clue: "เปรียบเทียบค่าจากหลักร้อย หลักสิบ และหลักหน่วยตามลำดับ",
+                        options: [
+                            { text: "412, 421, 480, 502", isCorrect: true, rationale: "เรียงจากน้อยไปมากถูกต้อง: 412 น้อยที่สุด ตามด้วย 421, 480 และ 502 มากที่สุด" },
+                            { text: "480, 421, 412, 502", isCorrect: false, rationale: "มีการสลับลำดับระหว่าง 480 กับ 412 ซึ่งผิดหลักการจากน้อยไปมาก" },
+                            { text: "502, 480, 421, 412", isCorrect: false, rationale: "เป็นการเรียงลำดับจากมากไปน้อย" },
+                            { text: "421, 412, 480, 502", isCorrect: false, rationale: "ตำแหน่งของ 421 และ 412 สลับกันอยู่" }
+                        ]
+                    },
+                    {
+                        id: 15,
+                        question: "ผลลัพธ์ของ 900 - (350 + 220) มีค่าเท่ากับเท่าใด?",
+                        clue: "บวกเลขในวงเล็บให้เสร็จก่อน แล้วนำไปลบออกจาก 900",
+                        options: [
+                            { text: "330", isCorrect: true, rationale: "คำนวณในวงเล็บ 350 + 220 = 570 จากนั้นนำ 900 - 570 = 330 ได้คำตอบถูกต้อง" },
+                            { text: "320", isCorrect: false, rationale: "เกิดจากการลบเลขหลักสิบผิดพลาด 10 หน่วย" },
+                            { text: "340", isCorrect: false, rationale: "เกิดจากการคำนวณบวกในวงเล็บคลาดเคลื่อน" },
+                            { text: "310", isCorrect: false, rationale: "เป็นผลลัพธ์จากการคำนวณผิดพลาดในขั้นตอนสุดท้าย" }
+                        ]
+                    },
+                    {
+                        id: 16,
+                        question: "ห้องเรียนมีความกว้าง 6 เมตร ยาว 8 เมตร ต้องการเดินล้อมรอบห้องนี้ 1 รอบ จะต้องเดินเป็นระยะทางเท่าใด?",
+                        clue: "หาความยาวรอบรูปสี่เหลี่ยมผืนผ้า (กว้าง + ยาว) × 2",
+                        options: [
+                            { text: "28 เมตร", isCorrect: true, rationale: "คำนวณความยาวรอบรูป: (6 + 8) × 2 = 14 × 2 = 28 เมตร" },
+                            { text: "48 เมตร", isCorrect: false, rationale: "เกิดจากการนำกว้างคูณยาวกลายเป็นพื้นที่ (6 × 8 = 48)" },
+                            { text: "14 เมตร", isCorrect: false, rationale: "เป็นเพียงผลบวกด้านกว้างและด้านยาวด้านละ 1 ด้านเท่านั้นยังไม่ได้คูณ 2" },
+                            { text: "24 เมตร", isCorrect: false, rationale: "เกิดจากการคำนวณผลบวกด้านผิดพลาด" }
+                        ]
+                    },
+                    {
+                        id: 17,
+                        question: "แก้วตานอนหลับตั้งแต่เวลา 21:00 น. และตื่นนอนเวลา 06:00 น. ของวันถัดไป แก้วตานอนหลับรวมเป็นเวลานานเท่าใด?",
+                        clue: "นับเวลาจาก 21:00 น. ถึง 24:00 น. และจาก 00:00 น. ถึง 06:00 น.",
+                        options: [
+                            { text: "9 ชั่วโมง", isCorrect: true, rationale: "จาก 21:00 น. ถึง 24:00 น. เป็นเวลา 3 ชั่วโมง และจาก 00:00 น. ถึง 06:00 น. เป็นเวลา 6 ชั่วโมง รวมกันเป็น 3 + 6 = 9 ชั่วโมง" },
+                            { text: "8 ชั่วโมง", isCorrect: false, rationale: "คำนวณเวลาช่วงค่ำหรือเช้าขาดไป 1 ชั่วโมง" },
+                            { text: "10 ชั่วโมง", isCorrect: false, rationale: "คำนวณเวลาเกินความเป็นจริง 1 ชั่วโมง" },
+                            { text: "7 ชั่วโมง", isCorrect: false, rationale: "คำนวณช่วงเวลานอนขาดหายไป" }
+                        ]
+                    },
+                    {
+                        id: 18,
+                        question: "กำหนดให้แผนภูมิรูปภาพแทนจำนวนส้ม: 🍎 แทนส้ม 5 ผล ถ้ามีสรูป 🍎 🍎 🍎 🍎 🍎 จะมีส้มทั้งหมดกี่ผล?",
+                        clue: "นำจำนวนรูปภาพส้มคูณด้วยจำนวนที่กำหนดแทนต่อ 1 รูป",
+                        options: [
+                            { text: "25 ผล", isCorrect: true, rationale: "มีรูปส้ม 5 รูป และแต่ละรูปแทน 5 ผล ดังนั้น 5 × 5 = 25 ผล" },
+                            { text: "20 ผล", isCorrect: false, rationale: "คำนวณส้มเพียง 4 รูปเท่านั้น" },
+                            { text: "30 ผล", isCorrect: false, rationale: "คำนวณเกินไป 1 รูป" },
+                            { text: "10 ผล", isCorrect: false, rationale: "สับสนค่าการแทนค่าของสัญลักษณ์รูปภาพ" }
+                        ]
+                    },
+                    {
+                        id: 19,
+                        question: "พ่อมีเงินอยู่ 1,000 บาท ซื้อตู้เย็นราคา 750 บาท พ่อจะเหลือเงินทอนเท่าใด?",
+                        clue: "นำเงินตั้งต้นลบด้วยราคาสินค้า",
+                        options: [
+                            { text: "250 บาท", isCorrect: true, rationale: "1,000 - 750 = 250 บาท ได้ผลลัพธ์ถูกต้อง" },
+                            { text: "150 บาท", isCorrect: false, rationale: "เกิดจากการลบหลักร้อยผิดพลาด" },
+                            { text: "350 บาท", isCorrect: false, rationale: "เกิดจากการคำนวณเงินทอนเกินไป 100 บาท" },
+                            { text: "200 บาท", isCorrect: false, rationale: "คำนวณเงินทอนคลาดเคลื่อน" }
+                        ]
+                    },
+                    {
+                        id: 20,
+                        question: "จำนวนในข้อใดเมื่อนำมารวมกับ 345 แล้วได้ผลลัพธ์เท่ากับ 700พอดี?",
+                        clue: "นำผลลัพธ์ตั้งต้น 700 ลบด้วย 345 เพื่อหาจำนวนที่หายไป",
+                        options: [
+                            { text: "355", isCorrect: true, rationale: "ตรวจสอบคำตอบ: 345 + 355 = 700 หรือนำ 700 - 345 = 355 ถูกต้องตามหลักการลบจำนวน" },
+                            { text: "365", isCorrect: false, rationale: "เกิดจากการคำนวณยืมหลักสิบและหลักหน่วยผิดพลาด" },
+                            { text: "345", isCorrect: false, rationale: "เป็นจำนวนตั้งต้นเดิม ไม่ใช่จำนวนที่นำมาบวกเพิ่ม" },
+                            { text: "455", isCorrect: false, rationale: "เกิดจากการตั้งตั้งลบเลขผิดพลาด" }
+                        ]
+                    }
+                ]
+            },
+            {
+                setName: "ชุดที่ 2",
+                questions: [
+                    {
+                        id: 1,
+                        question: "ผลลัพธ์ของ (620 - 240) + 150 มีค่าเท่ากับเท่าใด?",
+                        clue: "ทำในวงเล็บ 620 - 240 ก่อน แล้วบวกด้วย 150",
+                        options: [
+                            { text: "530", isCorrect: true, rationale: "คำนวณในวงเล็บ 620 - 240 = 380 จากนั้นนำ 380 + 150 = 530 ได้คำตอบถูกต้อง" },
+                            { text: "520", isCorrect: false, rationale: "เกิดจากการคำนวณบวกในขั้นตอนสุดท้ายพลาดไป 10 หน่วย" },
+                            { text: "540", isCorrect: false, rationale: "เกิดจากการคำนวณตัวเลขคลาดเคลื่อน" },
+                            { text: "510", isCorrect: false, rationale: "เกิดจากการยืมเลขในขั้นตอนลบผิดพลาด" }
+                        ]
+                    },
+                    {
+                        id: 2,
+                        question: "ฟาร์มแห่งหนึ่งมีไก่ 420 ตัว มีเป็ดน้อยกว่าไก่ 145 ตัว ฟาร์มแห่งนี้มีเป็ดกี่ตัว?",
+                        clue: "นำจำนวนไก่ตั้งต้น ลบด้วยจำนวนที่น้อยกว่าของเป็ด",
+                        options: [
+                            { text: "275 ตัว", isCorrect: true, rationale: "นำ 420 - 145 = 275 ตัว โดยทำการยืมหลักร้อยและหลักสิบอย่างถูกต้อง" },
+                            { text: "285 ตัว", isCorrect: false, rationale: "เกิดจากการยืมเลขหลักสิบผิดพลาด 10 หน่วย" },
+                            { text: "265 ตัว", isCorrect: false, rationale: "เกิดจากการลบเลขหลักหน่วยคลาดเคลื่อน" },
+                            { text: "295 ตัว", isCorrect: false, rationale: "คำนวณผลต่างต่ำกว่าความเป็นจริง" }
+                        ]
+                    },
+                    {
+                        id: 3,
+                        question: "จำนวนใดมีค่าน้อยกว่า 800 อยู่ 125 และมากกว่า 500 อยู่ 175?",
+                        clue: "ตรวจสอบสองเงื่อนไข: 800 - 125 และ 500 + 175",
+                        options: [
+                            { text: "675", isCorrect: true, rationale: "ตรวจสอบเงื่อนไขแรก 800 - 125 = 675 และเงื่อนไขที่สอง 500 + 175 = 675 ตรงกันพอดี" },
+                            { text: "685", isCorrect: false, rationale: "เกิดจากการคำนวณเงื่อนไขแรกคลาดเคลื่อน" },
+                            { text: "665", isCorrect: false, rationale: "เกิดจากการคำนวณเงื่อนไขที่สองคลาดเคลื่อน" },
+                            { text: "695", isCorrect: false, rationale: "ไม่อยู่ในช่วงคำนวณที่ถูกต้องของเงื่อนไขทั้งสอง" }
+                        ]
+                    },
+                    {
+                        id: 4,
+                        question: "ริบบิ้นยาว 3 เมตร 20 เซนติเมตร นำมาต่อเพิ่มอีก 1 เมตร 90 เซนติเมตร ริบบิ้นจะยาวรวมกันเท่าใด?",
+                        clue: "นำหน่วยเมตรบวกเมตร และเซนติเมตรบวกเซนติเมตร (หากเกิน 100 ซม. ให้ทดเป็น 1 เมตร)",
+                        options: [
+                            { text: "5 เมตร 10 เซนติเมตร", isCorrect: true, rationale: "รวมเมตร: 3 + 1 = 4 เมตร, รวมเซนติเมตร: 20 + 90 = 110 เซนติเมตร ซึ่ง 110 ซม. เท่ากับ 1 เมตร 10 ซม. เมื่อรวมกันได้ 5 เมตร 10 เซนติเมตร" },
+                            { text: "4 เมตร 10 เซนติเมตร", isCorrect: false, rationale: "ลืมทด 1 เมตรจากผลรวมเซนติเมตรที่เกิน 100" },
+                            { text: "5 เมตร 90 เซนติเมตร", isCorrect: false, rationale: "เกิดจากการบวกตัวเลขหน่วยเซนติเมตรผิดพลาด" },
+                            { text: "4 เมตร 90 เซนติเมตร", isCorrect: false, rationale: "คำนวณผลรวมความยาวผิดพลาด" }
+                        ]
+                    },
+                    {
+                        id: 5,
+                        question: "นารีมีเงิน 900 บาท ซื้อกระเป๋า 450 บาท และซื้อสมุด 210 บาท นารีจะเหลือเงินกี่บาท?",
+                        clue: "รวมราคาสิ่งของทั้งสองอย่างก่อน แล้วนำไปลบออกจากเงินทั้งหมด",
+                        options: [
+                            { text: "240 บาท", isCorrect: true, rationale: "รวมราคาสินค้า 450 + 210 = 660 บาท จากนั้นนำ 900 - 660 = 240 บาท ได้คำตอบถูกต้อง" },
+                            { text: "230 บาท", isCorrect: false, rationale: "เกิดจากการคำนวณเงินทอนผิดพลาด 10 บาท" },
+                            { text: "250 บาท", isCorrect: false, rationale: "เกิดจากการบวกราคาสินค้าคลาดเคลื่อน" },
+                            { text: "220 บาท", isCorrect: false, rationale: "คำนวณเงินคงเหลือต่ำกว่าความเป็นจริง" }
+                        ]
+                    },
+                    {
+                        id: 6,
+                        question: "ผลลัพธ์ของ 9 × 7 มีค่าเท่ากับข้อใด?",
+                        clue: "ท่องสูตรคูณแม่ 9 หรือแม่ 7",
+                        options: [
+                            { text: "63", isCorrect: true, rationale: "จากสูตรคูณแม่ 9: 9 × 7 = 63 หรือ 7 × 9 = 63" },
+                            { text: "56", isCorrect: false, rationale: "เป็นผลคูณของ 7 × 8" },
+                            { text: "72", isCorrect: false, rationale: "เป็นผลคูณของ 8 × 9" },
+                            { text: "54", isCorrect: false, rationale: "เป็นผลคูณของ 6 × 9" }
+                        ]
+                    },
+                    {
+                        id: 7,
+                        question: "มีดินสอ 54 แท่ง จัดใส่กล่อง กล่องละ 9 แท่ง จะได้ทั้งหมดกี่กล่อง?",
+                        clue: "นำจำนวนดินสอทั้งหมดหารด้วยจำนวนดินสอต่อกล่อง",
+                        options: [
+                            { text: "6 กล่อง", isCorrect: true, rationale: "54 ÷ 9 = 6 กล่อง เพราะ 9 × 6 = 54 พอดี" },
+                            { text: "7 กล่อง", isCorrect: false, rationale: "เกิดจากการคำนวณสูตรคูณผิดพลาด 9 × 7 = 63" },
+                            { text: "5 กล่อง", isCorrect: false, rationale: "เกิดจากการคำนวณสูตรคูณต่ำกว่า 9 × 5 = 45" },
+                            { text: "8 กล่อง", isCorrect: false, rationale: "เกิดจากการคำนวณสูตรคูณเกินไป" }
+                        ]
+                    },
+                    {
+                        id: 8,
+                        question: "รูปทรงเรขาคณิตสามมิติที่มีฐานเป็นรูปวงกลม 2 หน้า และมีผิวข้างโค้งเรียบ คือรูปใด?",
+                        clue: "มีลักษณะคล้ายกระป๋องนมหรือกระป๋องแป้ง",
+                        options: [
+                            { text: "ทรงกระบอก", isCorrect: true, rationale: "ทรงกระบอกมีหน้าตัดหรือฐานเป็นวงกลมเท่ากัน 2 หน้า และมีผิวโค้งเรียบเชื่อมต่อ" },
+                            { text: "ทรงสี่เหลี่ยมมุมฉาก", isCorrect: false, rationale: "ทรงสี่เหลี่ยมมุมฉากมีหน้าตัดเป็นรูปสี่เหลี่ยมทั้งหมด" },
+                            { text: "กรวย", isCorrect: false, rationale: "กรวยมีฐานเป็นวงกลมเพียง 1 หน้า และมีปลายแหลมด้านบน" },
+                            { text: "ทรงกลม", isCorrect: false, rationale: "ทรงกลมไม่มีหน้าตัดวงกลมเรียบแบน" }
+                        ]
+                    },
+                    {
+                        id: 9,
+                        question: "เข็มสั้นชี้ระหว่างเลข 4 กับเลข 5 และเข็มยาวชี้เลข 6 เป็นเวลาในข้อใด?",
+                        clue: "เข็มยาวชี้เลข 6 แสดงว่าผ่านไปแล้ว 30 นาที",
+                        options: [
+                            { text: "4 นาฬิกา 30 นาที (04:30 น.)", isCorrect: true, rationale: "เข็มสั้นอยู่ระหว่าง 4 กับ 5 แสดงว่ายังไม่ถึง 5 นาฬิกา (คือ 4 นาฬิกา) และเข็มยาวชี้ 6 คือ 30 นาที" },
+                            { text: "5 นาฬิกา 30 นาที", isCorrect: false, rationale: "เข็มสั้นยังไม่ถึงเลข 5 เต็มตัว จึงยังไม่นับเป็น 5 นาฬิกา" },
+                            { text: "4 นาฬิกา 6 นาที", isCorrect: false, rationale: "อ่านตำแหน่งเข็มยาวเป็นตัวเลขหลักหน่วยแทนที่จะคูณ 5 นาที" },
+                            { text: "6 นาฬิกา 20 นาที", isCorrect: false, rationale: "อ่านตำแหน่งเข็มสั้นและเข็มยาวสลับกันอย่างสิ้นเชิง" }
+                        ]
+                    },
+                    {
+                        id: 10,
+                        question: "น้ำตาลทรายถุงแรกหนัก 4 กิโลกรัม 200 กรัม ถุงที่สองหนัก 3 กิโลกรัม 600 กรัม น้ำตาลทรายทั้งสองถุงหนักรวมกันเท่าใด?",
+                        clue: "บวกกิโลกรัมกับกิโลกรัม และกรัมกับกรัม",
+                        options: [
+                            { text: "7 กิโลกรัม 800 กรัม", isCorrect: true, rationale: "รวมกิโลกรัม: 4 + 3 = 7 กิโลกรัม, รวมกรัม: 200 + 600 = 800 กรัม ได้ 7 กิโลกรัม 800 กรัม" },
+                            { text: "8 กิโลกรัม 200 กรัม", isCorrect: false, rationale: "เกิดจากการบวกหน่วยน้ำหนักผิดพลาด" },
+                            { text: "7 กิโลกรัม 400 กรัม", isCorrect: false, rationale: "เกิดจากการลบหน่วยกรัมคลาดเคลื่อน" },
+                            { text: "8 กิโลกรัม 400 กรัม", isCorrect: false, rationale: "เกิดจากการทดน้ำหนักเกินความจริง" }
+                        ]
+                    },
+                    {
+                        id: 11,
+                        question: "แบบรูปของจำนวน: 80, 72, 64, 56, ... จำนวนถัดไปคือจำนวนใด?",
+                        clue: "สังเกตการลดลงของแต่ละจำนวนทีละเท่าๆ กัน",
+                        options: [
+                            { text: "48", isCorrect: true, rationale: "เป็นการนับลดทีละ 8 (80-8=72, 72-8=64, 64-8=56, 56-8=48)" },
+                            { text: "46", isCorrect: false, rationale: "เกิดจากการคำนวณระยะห่างการลดลงผิดพลาด" },
+                            { text: "50", isCorrect: false, rationale: "เกิดจากการนับลดทีละ 6 ผิดพลาด" },
+                            { text: "40", isCorrect: false, rationale: "เกิดจากการลบค่าลดลงเกินไป" }
+                        ]
+                    },
+                    {
+                        id: 12,
+                        question: "ธนบัตรฉบับละ 100 บาท 5 ใบ มีค่าเท่ากับเหรียญ 50 บาท ทั้งหมดกี่เหรียญ?",
+                        clue: "หาค่ารวมของธนบัตร 100 บาท 5 ใบก่อน แล้วนำไปหารด้วย 50",
+                        options: [
+                            { text: "10 เหรียญ", isCorrect: true, rationale: "ธนบัตร 100 บาท 5 ใบคือกำลังมีเงิน 500 บาท นำไปแลกเหรียญ 50 บาทจะได้ 500 ÷ 50 = 10 เหรียญ" },
+                            { text: "5 เหรียญ", isCorrect: false, rationale: "คำนวณจำนวนเหรียญต่ำกว่าความเป็นจริง" },
+                            { text: "20 เหรียญ", isCorrect: false, rationale: "คำนวณจำนวนเหรียญเกินความเป็นจริง" },
+                            { text: "15 เหรียญ", isCorrect: false, rationale: "เกิดจากการคำนวณตัวเลขคลาดเคลื่อน" }
+                        ]
+                    },
+                    {
+                        id: 13,
+                        question: "กล้ามีเงิน 840 บาท แก้วตามีเงินน้อยกว่ากล้า 215 บาท แก้วตามีเงินกี่บาท?",
+                        clue: "นำเงินของกล้าตั้งต้น แล้วลบด้วยส่วนต่างที่น้อยกว่า",
+                        options: [
+                            { text: "625 บาท", isCorrect: true, rationale: "นำ 840 - 215 = 625 บาท โดยทำการยืมหลักสิบและหลักร้อยอย่างถูกต้อง" },
+                            { text: "635 บาท", isCorrect: false, rationale: "เกิดจากการยืมเลขหลักสิบผิดพลาด 10 หน่วย" },
+                            { text: "525 บาท", isCorrect: false, rationale: "เกิดจากการลบหลักร้อยคลาดเคลื่อน 100 บาท" },
+                            { text: "615 บาท", isCorrect: false, rationale: "เกิดจากการคำนวณตัวเลขหลักหน่วยคลาดเคลื่อน" }
+                        ]
+                    },
+                    {
+                        id: 14,
+                        question: "ข้อใดเรียงลำดับจำนวนจากมากไปน้อยได้ถูกต้องที่สุด?",
+                        clue: "เปรียบเทียบค่าจากหลักร้อยลงมาหาหลักหน่วย โดยเลือกจำนวนมาก่อน",
+                        options: [
+                            { text: "720, 685, 612, 599", isCorrect: true, rationale: "เรียงจากมากไปน้อยถูกต้อง: 720 มากที่สุด ตามด้วย 685, 612 และ 599 น้อยที่สุด" },
+                            { text: "685, 720, 612, 599", isCorrect: false, rationale: "ตำแหน่งของ 685 และ 720 สลับกันอยู่" },
+                            { text: "599, 612, 685, 720", isCorrect: false, rationale: "เป็นการเรียงลำดับจากน้อยไปมาก" },
+                            { text: "720, 612, 685, 599", isCorrect: false, rationale: "ตำแหน่งของ 612 และ 685 สลับกัน" }
+                        ]
+                    },
+                    {
+                        id: 15,
+                        question: "ผลลัพธ์ของ 800 - (240 + 310) มีค่าเท่ากับเท่าใด?",
+                        clue: "บวกเลขในวงเล็บก่อน แล้วนำไปลบออกจาก 800",
+                        options: [
+                            { text: "250", isCorrect: true, rationale: "คำนวณในวงเล็บ 240 + 310 = 550 จากนั้นนำ 800 - 550 = 250 ได้คำตอบถูกต้อง" },
+                            { text: "260", isCorrect: false, rationale: "เกิดจากการลบเลขหลักสิบผิดพลาด 10 หน่วย" },
+                            { text: "240", isCorrect: false, rationale: "เกิดจากการคำนวณบวกในวงเล็บคลาดเคลื่อน" },
+                            { text: "270", isCorrect: false, rationale: "เป็นผลลัพธ์จากการคำนวณผิดพลาดในขั้นตอนสุดท้าย" }
+                        ]
+                    },
+                    {
+                        id: 16,
+                        question: "สนามหญ้ารูปสี่เหลี่ยมผืนผ้า กว้าง 5 เมตร ยาว 9 เมตร ลวดหนามล้อมรอบ 1 รอบ ต้องใช้ลวดหนามยาวเท่าใด?",
+                        clue: "หาความยาวรอบรูป (กว้าง + ยาว) × 2",
+                        options: [
+                            { text: "28 เมตร", isCorrect: true, rationale: "คำนวณความยาวรอบรูป: (5 + 9) × 2 = 14 × 2 = 28 เมตร" },
+                            { text: "45 เมตร", isCorrect: false, rationale: "เกิดจากการนำกว้างคูณยาวกลายเป็นพื้นที่ (5 × 9 = 45)" },
+                            { text: "14 เมตร", isCorrect: false, rationale: "เป็นผลบวกด้านกว้างและยาวอย่างละด้านเท่านั้น ยังไม่ได้คูณ 2" },
+                            { text: "38 เมตร", isCorrect: false, rationale: "เกิดจากการคำนวณผลบวกด้านผิดพลาด" }
+                        ]
+                    },
+                    {
+                        id: 17,
+                        question: "สุดาเดินทางไปโรงเรียนใช้เวลา 45 นาที ถ้าสุดาออกจากบ้านเวลา 07:15 น. จะถึงโรงเรียนเวลาใด?",
+                        clue: "นำเวลาเริ่มต้นบวกเพิ่มด้วยเวลาที่ใช้เดินทาง",
+                        options: [
+                            { text: "08:00 น.", isCorrect: true, rationale: "07:15 น. บวกเพิ่มอีก 45 นาที จะครบ 60 นาทีพอดี ซึ่งเท่ากับเวลา 08:00 น." },
+                            { text: "07:60 น.", isCorrect: false, rationale: "เขียนในรูปแบบนาทีเกิน 60 โดยยังไม่แปลงเป็น 1 ชั่วโมงเต็ม" },
+                            { text: "08:15 น.", isCorrect: false, rationale: "บวกเวลาเพิ่มเกินไป 15 นาที" },
+                            { text: "07:55 น.", isCorrect: false, rationale: "คำนวณเวลาเพิ่มขึ้นไม่ครบ 45 นาที" }
+                        ]
+                    },
+                    {
+                        id: 18,
+                        question: "แผนภูมิรูปภาพกำหนดให้ ⭐ แทนจำนวนดาว 10 ดวง ถ้ามีดาว ⭐ ⭐ ⭐ ⭐ ⭐ ⭐ จะมีดาวทั้งหมดกี่ดวง?",
+                        clue: "นำจำนวนรูปดาวทั้งหมดคูณด้วย 10",
+                        options: [
+                            { text: "60 ดวง", isCorrect: true, rationale: "มีรูปดาว 6 รูป และแต่ละรูปแทน 10 ดวง ดังนั้น 6 × 10 = 60 ดวง" },
+                            { text: "50 ดวง", isCorrect: false, rationale: "คำนวณรูปดาวเพียง 5 รูปเท่านั้น" },
+                            { text: "70 ดวง", isCorrect: false, rationale: "คำนวณรูปดาวเกินไป 1 รูป" },
+                            { text: "6 ดวง", isCorrect: false, rationale: "ลืมคูณด้วยค่าการแทนสัญลักษณ์รูปภาพ" }
+                        ]
+                    },
+                    {
+                        id: 19,
+                        question: "พ่อค้ามีมะม่วง 600 ผล เน่าเสียไป 85 ผล ขายไปได้อีก 350 ผล พ่อค้าจะเหลือมะม่วงกี่ผล?",
+                        clue: "นำจำนวนตั้งต้นลบด้วยมะม่วงที่เน่าเสีย และลบด้วยมะม่วงที่ขายไป",
+                        options: [
+                            { text: "165 ผล", isCorrect: true, rationale: "นำ 600 - 85 = 515 ผล จากนั้นนำ 515 - 350 = 165 ผล หรือนำ 85 + 350 = 435 แล้วนำ 600 - 435 = 165 ผล" },
+                            { text: "175 ผล", isCorrect: false, rationale: "เกิดจากการคำนวณผลลบหลักสิบผิดพลาด" },
+                            { text: "155 ผล", isCorrect: false, rationale: "เกิดจากการคำนวณผลรวมมะม่วงที่เสียและขายคลาดเคลื่อน" },
+                            { text: "185 ผล", isCorrect: false, rationale: "เกิดจากการคำนวณตัวเลขคลาดเคลื่อน" }
+                        ]
+                    },
+                    {
+                        id: 20,
+                        question: "จำนวนใดเมื่อนำมาลบออกจาก 900 แล้วเหลือผลลัพธ์เท่ากับ 425 พอดี?",
+                        clue: "นำจำนวนตั้งต้น 900 ลบด้วยผลลัพธ์ 425 เพื่อหาตัวเลขที่ถูกลบออกไป",
+                        options: [
+                            { text: "475", isCorrect: true, rationale: "ตรวจสอบคำตอบ: 900 - 475 = 425 หรือนำ 900 - 425 = 475 ถูกต้องตามหลักการหาตัวลบ" },
+                            { text: "485", isCorrect: false, rationale: "เกิดจากการยืมเลขหลักสิบและหลักหน่วยผิดพลาด" },
+                            { text: "425", isCorrect: false, rationale: "เป็นผลลัพธ์คงเหลือ ไม่ใช่จำนวนที่ถูกลบออก" },
+                            { text: "525", isCorrect: false, rationale: "เกิดจากการตั้งตั้งลบเลขสลับกัน" }
+                        ]
+                    }
+                ]
+            }
+        ];
+
+        let currentSetIndex = 0;
+        let currentQuestionIndex = 0;
+        let userAnswers = {}; // { questionId: selectedOptionIndex }
+        let currentLanguage = 'TH'; // 'TH' or 'EN'
+
+        // Fisher-Yates Shuffle Algorithm for Anti-Guessing Option Shuffle
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        // Cache loaded options with randomized order per session load
+        let activeQuestions = [];
+
+        function initQuizSet() {
+            const rawSet = quizSets[currentSetIndex];
+            // Deep clone and shuffle options for each question
+            activeQuestions = rawSet.questions.map(q => {
+                let clonedOptions = q.options.map((opt, idx) => ({ ...opt, originalIndex: idx }));
+                shuffleArray(clonedOptions);
+                return {
+                    ...q,
+                    shuffledOptions: clonedOptions
+                };
+            });
+            currentQuestionIndex = 0;
+            userAnswers = {};
+            document.getElementById('currentSetLabelinnerText') = rawSet.setName;
+            document.getElementById('currentSetLabel').innerText = rawSet.setName;
+            document.getElementById('analysisSection').classList.add('hidden');
+            renderQuestion();
+            updateLiveScore();
+        }
+
+        function switchTestSet() {
+            currentSetIndex = currentSetIndex === 0 ? 1 : 0;
+            initQuizSet();
+        }
+
+        function renderQuestion() {
+            const q = activeQuestions[currentQuestionIndex];
+            document.getElementById('activeQuestionNum').innerText = currentQuestionIndex + 1;
+            document.getElementById('questionText').innerText = `${currentQuestionIndex + 1}. ${q.question}`;
+            
+            // Render Options
+            const container = document.getElementById('optionsContainer');
+            container.innerHTML = '';
+
+            q.shuffledOptions.forEach((opt, idx) => {
+                const isSelected = userAnswers[currentQuestionIndex] === idx;
+                const isAnswered = userAnswers[currentQuestionIndex] !== undefined;
+
+                let btnClass = "w-full text-left p-3 rounded-lg border text-sm transition font-medium flex justify-between items-center ";
+                
+                if (isAnswered) {
+                    if (opt.isCorrect) {
+                        btnClass += "bg-emerald-50 border-emerald-500 text-emerald-900 ";
+                    } else if (isSelected && !opt.isCorrect) {
+                        btnClass += "bg-rose-50 border-rose-500 text-rose-900 ";
+                    } else {
+                        btnClass += "bg-white border-slate-200 text-slate-700 opacity-60 ";
+                    }
+                } else {
+                    btnClass += "bg-white border-slate-200 hover:border-indigo-400 hover:bg-slate-50 text-slate-700 ";
+                }
+
+                const button = document.createElement('button');
+                button.className = btnClass;
+                button.innerHTML = `<span>${String.fromCharCode(65 + idx)}. ${opt.text}</span>`;
+                
+                if (!isAnswered) {
+                    button.onclick = () => selectAnswer(idx);
+                } else {
+                    button.disabled = true;
+                }
+
+                container.appendChild(button);
+            });
+
+            // Clue & Explanation handling
+            document.getElementById('clueBox').classList.add('hidden');
+            document.getElementById('clueText').innerText = q.clue;
+            document.getElementById('clueBtnText').innerText = currentLanguage === 'TH' ? 'แสดงคำใบ้ (Clue)' : 'Show Clue';
+
+            const expBox = document.getElementById('explanationBox');
+            if (userAnswers[currentQuestionIndex] !== undefined) {
+                const selectedOpt = q.shuffledOptions[userAnswers[currentQuestionIndex]];
+                expBox.classList.remove('hidden');
+                if (selectedOpt.isCorrect) {
+                    expBox.className = "p-4 rounded-lg text-sm mb-4 bg-emerald-50 border border-emerald-200 text-emerald-900";
+                    expBox.innerHTML = `<strong>🎉 ถูกต้องครับ!</strong> ${selectedOpt.rationale}`;
+                } else {
+                    expBox.className = "p-4 rounded-lg text-sm mb-4 bg-rose-50 border border-rose-200 text-rose-900";
+                    expBox.innerHTML = `<strong>❌ ยังไม่ถูกต้องครับ:</strong> ${selectedOpt.rationale}`;
+                }
+            } else {
+                expBox.classList.add('hidden');
+            }
+
+            // Navigation button states
+            document.getElementById('prevBtn').disabled = currentQuestionIndex === 0;
+            document.getElementById('nextBtn').innerText = currentQuestionIndex === activeQuestions.length - 1 ? 
+                (currentLanguage === 'TH' ? 'ดูผลการวิเคราะห์ 📊' : 'View Analysis 📊') : 
+                (currentLanguage === 'TH' ? 'ข้อถัดไป ➡️' : 'Next ➡️');
+        }
+
+        function selectAnswer(optionIndex) {
+            userAnswers[currentQuestionIndex] = optionIndex;
+            updateLiveScore();
+            renderQuestion();
+
+            // Check if all answered to show final analysis
+            if (Object.keys(userAnswers).length === activeQuestions.length) {
+                showFinalAnalysis();
+            }
+        }
+
+        function nextQuestion() {
+            if (currentQuestionIndex < activeQuestions.length - 1) {
+                currentQuestionIndex++;
+                renderQuestion();
+            } else {
+                showFinalAnalysis();
+            }
+        }
+
+        function prevQuestion() {
+            if (currentQuestionIndex > 0) {
+                currentQuestionIndex--;
+                renderQuestion();
+            }
+        }
+
+        function toggleClue() {
+            const clueBox = document.getElementById('clueBox');
+            clueBox.classList.toggle('hidden');
+        }
+
+        function updateLiveScore() {
+            let score = 0;
+            Object.keys(userAnswers).forEach(qIdx => {
+                const q = activeQuestions[qIdx];
+                const selectedOpt = q.shuffledOptions[userAnswers[qIdx]];
+                if (selectedOpt.isCorrect) score++;
+            });
+            document.getElementById('liveScore').innerText = score;
+        }
+
+        function showFinalAnalysis() {
+            let score = 0;
+            Object.keys(userAnswers).forEach(qIdx => {
+                const q = activeQuestions[qIdx];
+                if (q.shuffledOptions[userAnswers[qIdx]].isCorrect) score++;
+            });
+
+            const analysisSection = document.getElementById('analysisSection');
+            analysisSection.classList.remove('hidden');
+
+            let gradeComment = "";
+            if (score >= 18) gradeComment = "ยอดเยี่ยมมาก! มีความเข้าใจในกระบวนการคิดคำนวณและแก้โจทย์ปัญหาได้อย่างแม่นยำ";
+            else if (score >= 14) gradeComment = "ทำได้ดี! แนะนำให้ทบทวนจุดที่ผิดพลาดเล็กน้อยเพื่อความมั่นใจยิ่งขึ้น";
+            else gradeComment = "ควรกลับไปทบทวนเนื้อหาและฝึกกระบวนการคิดวิเคราะห์เพิ่มเติมในบทเรียนนี้";
+
+            document.getElementById('analysisContent').innerHTML = `
+                <p><strong>คะแนนรวมที่ได้:</strong> <span class="text-indigo-600 font-bold text-sm">${score} / 20</span> (${((score/20)*100).toFixed(0)}%)</p>
+                <p><strong>จุดเด่น (Strengths):</strong> การทำความเข้าใจโจทย์และการบวก-ลบเบื้องต้นทำได้ดี</p>
+                <p><strong>จุดที่ต้องพัฒนา (Areas for Improvement):</strong> ควรระมัดระวังการทดเลขและการยืมหลักในโจทย์ระคน</p>
+                <p class="text-indigo-800 font-medium mt-1">${gradeComment}</p>
+            `;
+        }
+
+        function resetQuizState() {
+            initQuizSet();
+        }
+
+        // Language Toggle Function
+        function toggleLanguage() {
+            currentLanguage = currentLanguage === 'TH' ? 'EN' : 'TH';
+            const btn = document.getElementById('langToggleBtn');
+            const sumTitle = document.getElementById('summaryTitle');
+            const quizTitle = document.getElementById('quizHeaderTitle');
+
+            if (currentLanguage === 'EN') {
+                btn.innerText = "🌐 Lang: English (EN)";
+                sumTitle.innerText = "💡 Math Concepts & Thinking Process";
+                quizTitle.innerHTML = `Interactive Quiz (Question <span id="activeQuestionNum">${currentQuestionIndex + 1}</span> of 20)`;
+            } else {
+                btn.innerText = "🌐 ภาษา: ไทย (TH)";
+                sumTitle.innerText = "💡 สรุปเนื้อหาและกระบวนการคิด (Math Concept & Thinking Process)";
+                quizTitle.innerHTML = `ทำแบบทดสอบ (ข้อที่ <span id="activeQuestionNum">${currentQuestionIndex + 1}</span> จาก 20)`;
+            }
+            renderQuestion();
+        }
+
+        // Whiteboard Implementation (Canvas Drawing)
+        const canvas = document.getElementById('whiteboardCanvas');
+        const ctx = canvas.getContext('2d');
+        let isDrawing = false;
+        let penColor = '#1e293b';
+
+        function resizeCanvas() {
+            const rect = canvas.parentElement.getBoundingClientRect();
+            canvas.width = rect.width;
+            canvas.height = rect.height;
+            ctx.lineWidth = 2;
+            ctx.lineCap = 'round';
+            ctx.strokeStyle = penColor;
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+        window.addEventListener('load', () => {
+            resizeCanvas();
+            initQuizSet();
+        });
+
+        function setPenColor(color) {
+            penColor = color;
+            ctx.strokeStyle = penColor;
+        }
+
+        function clearWhiteboard() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        // Pointer Events for Whiteboard Drawing
+        canvas.addEventListener('pointerdown', (e) => {
+            isDrawing = true;
+            ctx.beginPath();
+            ctx.moveTo(e.offsetX, e.offsetY);
+        });
+
+        canvas.addEventListener('pointermove', (e) => {
+            if (!isDrawing) return;
+            ctx.lineTo(e.offsetX, e.offsetY);
+            ctx.stroke();
+        });
+
+        canvas.addEventListener('pointerup', () => {
+            isDrawing = false;
+        });
+
+        canvas.addEventListener('pointerleave', () => {
+            isDrawing = false;
+        });
+
+    </script>
+</body>
+</html>
