@@ -193,6 +193,8 @@
             cursor: pointer;
             transition: 0.3s;
             box-shadow: 0 4px 10px rgba(235, 77, 75, 0.4);
+            position: relative;
+            z-index: 10;
         }
 
         .btn:hover {
@@ -210,7 +212,11 @@
             background: rgba(0,0,0,0.7);
             justify-content: center;
             align-items: center;
-            z-index: 1000;
+            z-index: 9999;
+        }
+
+        .modal.show {
+            display: flex;
         }
 
         .modal-content {
@@ -297,7 +303,7 @@
         ];
 
         const taunts = [
-            "ฮิር... เปิดผิดอีกแล้วเหรอเจ้าหนู เจ้าช่างความจำสั้นเสียจริง!",
+            "ฮิิ... เปิดผิดอีกแล้วเหรอเจ้าหนู เจ้าช่างความจำสั้นเสียจริง!",
             "ช้าเป็นเต่าแบบนี้ อีกร้อยปีก็ไม่จบหรอก หึหึหึ!",
             "จำคำศัพท์ ป.2 แค่นี้ไม่ได้เหรอเนี่ย น่าขำสิ้นดี!",
             "มือไม้อ่อนหรือไง เปิดหาคู่ไม่เจอเลยนะ ฮ่าๆๆ!",
@@ -322,7 +328,6 @@
 
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
-        // ระบบเสียงเอฟเฟกต์ (Web Audio API)
         function playSound(type) {
             if (audioCtx.state === 'suspended') { audioCtx.resume(); }
             const osc = audioCtx.createOscillator();
@@ -338,7 +343,6 @@
                 gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
                 osc.start(); osc.stop(audioCtx.currentTime + 0.1);
             } else if (type === 'punch') {
-                // เสียงต่อยดังปั้ง + เสียงร้องโอ้ย
                 osc.type = 'sawtooth';
                 osc.frequency.setValueAtTime(150, audioCtx.currentTime);
                 osc.frequency.exponentialRampToValueAtTime(40, audioCtx.currentTime + 0.2);
@@ -358,7 +362,6 @@
                     osc2.start(); osc2.stop(audioCtx.currentTime + 0.25);
                 }, 80);
             } else if (type === 'witch_laugh') {
-                // เสียงหัวเราะแม่มดเจ้าเล่ห์ (โทนเสียงสูงต่ำระรัวแบบแม่มด)
                 const laughNotes = [400, 350, 450, 380, 500, 420, 550];
                 laughNotes.forEach((freq, index) => {
                     let o = audioCtx.createOscillator();
@@ -372,7 +375,6 @@
                     o.stop(audioCtx.currentTime + (index * 0.12) + 0.12);
                 });
             } else if (type === 'cheer') {
-                // เสียงดีใจกรณีชนะ
                 const notes = [523.25, 659.25, 783.99, 1046.50];
                 notes.forEach((note, index) => {
                     let o = audioCtx.createOscillator();
@@ -389,6 +391,7 @@
 
         function initSelector() {
             const select = document.getElementById('setSelect');
+            select.innerHTML = '';
             vocabData.forEach((set, index) => {
                 let option = document.createElement('option');
                 option.value = index;
@@ -403,6 +406,9 @@
         }
 
         function startGame() {
+            // ปิด Modal ให้สนิทก่อนเริ่มเกมใหม่ทุกครั้ง
+            document.getElementById('resultModal').classList.remove('show');
+
             flipCount = 0;
             matchedPairs = 0;
             isPlaying = true;
@@ -413,7 +419,7 @@
             document.getElementById('flips').textContent = flipCount;
             document.getElementById('matches').textContent = matchedPairs;
 
-            setReaperTaunt("ยินดีต้อนรับ! เลือกเปิดการ์ดคู่แรกได้เลย ข้าจะคอยดูฟอร์มแกนะ ฮิฮิฮิ!");
+            setReaperTaunt("ยินดีต้อนรับ! เลือกเปิดการ์ดคู่แรกได้เลย ข้าจะคอยดูฟอร์มนะ ฮิฮิฮิ!");
             buildCards();
         }
 
@@ -454,4 +460,90 @@
                 const cardElement = document.createElement('div');
                 cardElement.classList.add('card');
                 cardElement.dataset.id = card.id;
-                cardElement.dataset.index
+                cardElement.dataset.index = index;
+
+                cardElement.innerHTML = `
+                    <div class="card-inner">
+                        <div class="card-front">💀</div>
+                        <div class="card-back">${card.text}</div>
+                    </div>
+                `;
+                cardElement.addEventListener('click', flipCard);
+                grid.appendChild(cardElement);
+            });
+        }
+
+        function flipCard() {
+            if (!isPlaying || lockBoard) return;
+            const clickedCard = this;
+
+            if (clickedCard.classList.contains('flipped') || clickedCard.classList.contains('matched')) return;
+
+            playSound('flip');
+            clickedCard.classList.add('flipped');
+            flippedCards.push(clickedCard);
+
+            if (flippedCards.length === 2) {
+                flipCount++;
+                document.getElementById('flips').textContent = flipCount;
+                checkForMatch();
+            }
+        }
+
+        function checkForMatch() {
+            const [card1, card2] = flippedCards;
+            const match = card1.dataset.id === card2.dataset.id;
+
+            if (match) {
+                playSound('punch');
+                triggerReaperHit();
+
+                card1.classList.add('matched');
+                card2.classList.add('matched');
+                matchedPairs++;
+                document.getElementById('matches').textContent = matchedPairs;
+                flippedCards = [];
+
+                if (matchedPairs === 10) {
+                    endGame();
+                }
+            } else {
+                tauntCounter++;
+                if (tauntCounter % 2 === 1) {
+                    triggerWitchLaughTaunt();
+                }
+
+                lockBoard = true;
+                setTimeout(() => {
+                    card1.classList.remove('flipped');
+                    card2.classList.remove('flipped');
+                    flippedCards = [];
+                    lockBoard = false;
+                }, 750);
+            }
+        }
+
+        function endGame() {
+            isPlaying = false;
+            playSound('cheer');
+
+            const modal = document.getElementById('resultModal');
+            const title = document.getElementById('modalTitle');
+            const text = document.getElementById('modalText');
+
+            title.textContent = "สุดยอด! คุณชนะท่านยมทูตแล้ว! 🎉";
+            text.textContent = `ยอดเยี่ยมมาก! เปิดการ์ดไปทั้งหมด ${flipCount} ครั้ง จับคู่ครบ 10 คู่เรียบร้อย!`;
+            setReaperTaunt("อ๊ากก! เจ้าเด็กนี่เก่งเกินไปแล้ว ข้าขอตัวยอมแพ้!");
+
+            modal.classList.add('show');
+        }
+
+        function closeModal() {
+            startGame();
+        }
+
+        initSelector();
+        startGame();
+    </script>
+</body>
+</html>
