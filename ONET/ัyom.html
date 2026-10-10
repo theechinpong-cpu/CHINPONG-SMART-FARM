@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>เกมจับคู่คำศัพท์ ป.2 เทอม 2 (ท้าทายยมทูต)</title>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Prompt', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #2d3436, #636e72);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #2d3436;
+            padding: 20px;
+        }
+
+        .game-container {
+            background: #ffffff;
+            padding: 25px;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+            width: 100%;
+            max-width: 700px;
+            text-align: center;
+        }
+
+        h1 {
+            color: #d63031;
+            margin-bottom: 5px;
+            font-size: 24px;
+        }
+
+        /* ส่วนของยมทูตจอมกวน */
+        .grim-reaper-area {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #ffeaa7;
+            border: 3px dashed #fdcb6e;
+            border-radius: 15px;
+            padding: 10px;
+            margin-bottom: 15px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .reaper-avatar {
+            font-size: 45px;
+            transition: transform 0.1s ease;
+            cursor: pointer;
+        }
+
+        .reaper-avatar.hit {
+            transform: scale(1.3) rotate(-15deg);
+            filter: hue-rotate(90deg);
+        }
+
+        .speech-bubble {
+            background: white;
+            border: 2px solid #d63031;
+            padding: 8px 15px;
+            border-radius: 15px;
+            margin-left: 15px;
+            font-size: 15px;
+            font-weight: 600;
+            color: #d63031;
+            position: relative;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            max-width: 350px;
+            text-align: left;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            background: #f1f2f6;
+            padding: 10px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            font-weight: 600;
+            font-size: 15px;
+        }
+
+        .stats span {
+            color: #d63031;
+        }
+
+        .set-selector {
+            margin-bottom: 15px;
+        }
+
+        .set-selector select {
+            padding: 6px 12px;
+            border-radius: 8px;
+            border: 2px solid #dfe6e9;
+            font-size: 15px;
+            font-family: 'Prompt', sans-serif;
+            outline: none;
+            cursor: pointer;
+        }
+
+        /* ตารางการ์ด */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        @media (max-width: 650px) {
+            .grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+
+        .card {
+            aspect-ratio: 3/4;
+            perspective: 1000px;
+            cursor: pointer;
+        }
+
+        .card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.4s;
+            transform-style: preserve-3d;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .card.flipped .card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .card.matched .card-inner {
+            transform: rotateY(180deg);
+            box-shadow: 0 0 15px #00b894;
+        }
+
+        .card-front, .card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            padding: 4px;
+            user-select: none;
+        }
+
+        .card-front {
+            background: linear-gradient(135deg, #d63031, #ff7675);
+            color: white;
+            font-size: 22px;
+        }
+
+        .card-back {
+            background: #dfe6e9;
+            color: #2d3436;
+            transform: rotateY(180deg);
+            border: 2px solid #b2bec3;
+        }
+
+        .card.matched .card-back {
+            background: #55efc4;
+            color: #00b894;
+            border-color: #00b894;
+        }
+
+        .btn {
+            background: #d63031;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: 0.3s;
+            box-shadow: 0 4px 10px rgba(214, 48, 49, 0.4);
+        }
+
+        .btn:hover {
+            background: #e17055;
+        }
+
+        /* Modal แจ้งผลลัพธ์ */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            animation: popUp 0.4s ease-in-out;
+        }
+
+        @keyframes popUp {
+            0% { transform: scale(0.7); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="game-container">
+        <h1>💀 เกมจับคู่คำศัพท์ท้าทายยมทูต ป.2 💀</h1>
+        
+        <!-- โซนยมทูตจอมกวน -->
+        <div class="grim-reaper-area">
+            <div class="reaper-avatar" id="reaperAvatar">👻</div>
+            <div class="speech-bubble" id="reaperSpeech">
+                "แน่จริงก็จับคู่ให้ครบสิ เจ้าหนู! ข้าจะรอหัวเราะเยาะแกอยู่ตรงนี้แหละ! ฮ่าๆๆ"
+            </div>
+        </div>
+
+        <div class="set-selector">
+            <label for="setSelect">เลือกชุดคำศัพท์ (10 คู่):</label>
+            <select id="setSelect" onchange="changeSet()">
+                <!-- สร้าง Option อัตโนมัติ -->
+            </select>
+        </div>
+
+        <div class="stats">
+            <div>เวลา: <span id="timer">0</span> วินาที</div>
+            <div>เปิดไปแล้ว: <span id="flips">0</span> ครั้ง</div>
+            <div>จับคู่แล้ว: <span id="matches">0</span>/10</div>
+        </div>
+
+        <div class="grid" id="cardGrid"></div>
+
+        <button class="btn" onclick="startGame()">เริ่มเกมใหม่ / สับการ์ด</button>
+    </div>
+
+    <!-- Modal หน้าต่างแจ้งผลลัพธ์ -->
+    <div class="modal" id="resultModal">
+        <div class="modal-content">
+            <h2 id="modalTitle">ยมทูตชนะ!</h2>
+            <p id="modalText">ฮ่าๆๆ ฝีมือแค่นี้ยังห่างไกลนัก!</p>
+            <button class="btn" onclick="closeModal()">แก้ตัวอีกรอบ</button>
+        </div>
+    </div>
+
+    <script>
+        const vocabData = [
+            // ชุดที่ 1
+            [
+                { en: "Apple", th: "แอปเปิ้ล" }, { en: "Book", th: "หนังสือ" },
+                { en: "Cat", th: "แมว" }, { en: "Dog", th: "สุนัข" },
+                { en: "Egg", th: "ไข่" }, { en: "Fish", th: "ปลา" },
+                { en: "Girl", th: "เด็กผู้หญิง" }, { en: "Hat", th: "หมวก" },
+                { en: "Ice", th: "น้ำแข็ง" }, { en: "Juice", th: "น้ำผลไม้" }
+            ],
+            // ชุดที่ 2
+            [
+                { en: "Kite", th: "ว่าว" }, { en: "Lion", th: "สิงโต" },
+                { en: "Milk", th: "นม" }, { en: "Nest", th: "รังนก" },
+                { en: "Pen", th: "ปากกา" }, { en: "Queen", th: "ราชินี" },
+                { en: "Rose", th: "ดอกกุหลาบ" }, { en: "Sun", th: "ดวงอาทิตย์" },
+                { en: "Tree", th: "ต้นไม้" }, { en: "Umbrella", th: "ร่ม" }
+            ],
+            // ชุดที่ 3
+            [
+                { en: "Van", th: "รถตู้" }, { en: "Water", th: "น้ำ" },
+                { en: "Box", th: "กล่อง" }, { en: "Yellow", th: "สีเหลือง" },
+                { en: "Zoo", th: "สวนสัตว์" }, { en: "Bird", th: "นก" },
+                { en: "Chair", th: "เก้าอี้" }, { en: "Desk", th: "โต๊ะเรียน" },
+                { en: "Eraser", th: "ยางลบ" }, { en: "Flower", th: "ดอกไม้" }
+            ]
+        ];
+
+        const taunts = [
+            "ฮ่าๆๆ ช้าเป็นเต่าเลยนะเจ้าหนู!",
+            "จำคำศัพท์ภาษาอังกฤษแค่นี้ไม่ได้เหรอเนี่ย โง่เขลาจริงๆ!",
+            "ใกล้หมดเวลาแล้ว แกแพ้แน่ๆ ฮ่าๆๆ!",
+            "มือไม้อ่อนหรือไง เปิดผิดตลอดเลย!",
+            "ข้าจะรอเก็บวิญญาณคนแพ้แถวนี้แหละ!"
+        ];
+
+        const punchQuotes = [
+            "โอ๊ย! เจ็บนะเว้ย ใครต่อยหน้าข้าเนี่ย!",
+            "ฮỰก! มือหนักเป็นบ้าเลย หยุดนะ!",
+            "โอ๊ยๆๆ หน้าฉันเสียโฉมหมดแล้ว!",
+            "ฝากไว้ก่อนเถอะไอ้เด็กแสบ!"
+        ];
+
+        let currentSetIndex = 0;
+        let cards = [];
+        let flippedCards = [];
+        let matchedPairs = 0;
+        let flipCount = 0;
+        let timer = 0;
+        let timerInterval = null;
+        let isPlaying = false;
+        let lockBoard = false;
+
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        // ระบบเสียงเอฟเฟกต์สังเคราะห์ (Web Audio API)
+        function playSound(type) {
+            if (audioCtx.state === 'suspended') { audioCtx.resume(); }
+            const osc = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            osc.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+
+            if (type === 'flip') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(400, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(600, audioCtx.currentTime + 0.1);
+                gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.1);
+            } else if (type === 'punch') {
+                // เสียงต่อยดังปั้ง + เสียงร้องโอ้ย
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(150, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(40, audioCtx.currentTime + 0.2);
+                gainNode.gain.setValueAtTime(0.4, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.2);
+
+                // เสียงร้องโอ้ยแหลมๆ ตามหลังทันที
+                setTimeout(() => {
+                    let osc2 = audioCtx.createOscillator();
+                    let gain2 = audioCtx.createGain();
+                    osc2.type = 'triangle';
+                    osc2.frequency.setValueAtTime(700, audioCtx.currentTime);
+                    osc2.frequency.exponentialRampToValueAtTime(300, audioCtx.currentTime + 0.25);
+                    osc2.connect(gain2); gain2.connect(audioCtx.destination);
+                    gain2.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                    gain2.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.25);
+                    osc2.start(); osc2.stop(audioCtx.currentTime + 0.25);
+                }, 80);
+            } else if (type === 'laugh') {
+                // เสียงหัวเราะเยาะของยมทูต (ฮ่าๆๆ โทนต่ำสั่นๆ)
+                const freqs = [200, 160, 200, 150, 180, 120];
+                freqs.forEach((freq, index) => {
+                    let o = audioCtx.createOscillator();
+                    let g = audioCtx.createGain();
+                    o.type = 'sawtooth';
+                    o.connect(g); g.connect(audioCtx.destination);
+                    o.frequency.setValueAtTime(freq, audioCtx.currentTime + (index * 0.15));
+                    g.gain.setValueAtTime(0.2, audioCtx.currentTime + (index * 0.15));
+                    g.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + (index * 0.15) + 0.15);
+                    o.start(audioCtx.currentTime + (index * 0.15));
+                    o.stop(audioCtx.currentTime + (index * 0.15) + 0.15);
+                });
+            } else if (type === 'cheer') {
+                // เสียงดีใจกรณีเด็กชนะ
+                const notes = [523.25, 659.25, 783.99, 1046.50];
+                notes.forEach((note, index) => {
+                    let o = audioCtx.createOscillator();
+                    let g = audioCtx.createGain();
+                    o.connect(g); g.connect(audioCtx.destination);
+                    o.frequency.setValueAtTime(note, audioCtx.currentTime + (index * 0.12));
+                    g.gain.setValueAtTime(0.2, audioCtx.currentTime + (index * 0.12));
+                    g.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + (index * 0.12) + 0.2);
+                    o.start(audioCtx.currentTime + (index * 0.12));
+                    o.stop(audioCtx.currentTime + (index * 0.12) + 0.2);
+                });
+            }
+        }
+
+        function initSelector() {
+            const select = document.getElementById('setSelect');
+            vocabData.forEach((set, index) => {
+                let option = document.createElement('option');
+                option.value = index;
+                option.textContent = `ชุดที่ ${index + 1} (คำศัพท์ ป.2 เทอม 2)`;
+                select.appendChild(option);
+            });
+        }
+
+        function changeSet() {
+            currentSetIndex = document.getElementById('setSelect').value;
+            startGame();
+        }
+
+        function startGame() {
+            clearInterval(timerInterval);
+            timer = 0;
+            flipCount = 0;
+            matchedPairs = 0;
+            isPlaying = true;
+            lockBoard = false;
+            flippedCards = [];
+
+            document.getElementById('timer').textContent = timer;
+            document.getElementById('flips').textContent = flipCount;
+            document.getElementById('matches').textContent = matchedPairs;
+
+            setReaperTaunt("ยินดีต้อนรับสู่สุสานคำศัพท์! แน่จริงก็จับคู่ให้ครบสิ ฮ่าๆๆ");
+
+            timerInterval = setInterval(() => {
+                if (isPlaying) {
+                    timer++;
+                    document.getElementById('timer').textContent = timer;
+                    
+                    // สุ่มพูดคำท้าทายทุกๆ 8 วินาที
+                    if (timer % 8 === 0) {
+                        randomTaunt();
+                    }
+
+                    // เงื่อนไขแพ้ (เวลาเกิน 55 วินาที)
+                    if (timer >= 55 && matchedPairs < 10) {
+                        endGame(false);
+                    }
+                }
+            }, 1000);
+
+            buildCards();
+        }
+
+        function setReaperTaunt(text) {
+            document.getElementById('reaperSpeech').textContent = `"${text}"`;
+        }
+
+        function randomTaunt() {
+            const randomIndex = Math.floor(Math.random() * taunts.length);
+            setReaperTaunt(taunts[randomIndex]);
+        }
+
+        function triggerReaperHit() {
+            const avatar = document.getElementById('reaperAvatar');
+            avatar.classList.add('hit');
+            setTimeout(() => {
+                avatar.classList.remove('hit');
+            }, 300);
+
+            const randomPunch = punchQuotes[Math.floor(Math.random() * punchQuotes.length)];
+            setReaperTaunt(randomPunch);
+        }
+
+        function buildCards() {
+            const currentVocab = vocabData[currentSetIndex];
+            cards = [];
+            currentVocab.forEach((item, index) => {
+                cards.push({ id: index, text: item.en, type: 'en' });
+                cards.push({ id: index, text: item.th, type: 'th' });
+            });
+            cards.sort(() => Math.random() - 0.5);
+
+            const grid = document.getElementById('cardGrid');
+            grid.innerHTML = '';
+
+            cards.forEach((card, index) => {
+                const cardElement = document.createElement('div');
+                cardElement.classList.add('card');
+                cardElement.dataset.id = card.id;
+                cardElement.dataset.index = index;
+
+                cardElement.innerHTML = `
+                    <div class="card-inner">
+                        <div class="card-front">💀</div>
+                        <div class="card-back">${card.text}</div>
+                    </div>
+                `;
+                cardElement.addEventListener('click', flipCard);
+                grid.appendChild(cardElement);
+            });
+        }
+
+        function flipCard() {
+            if (!isPlaying || lockBoard) return;
+            const clickedCard = this;
+
+            if (clickedCard.classList.contains('flipped') || clickedCard.classList.contains('matched')) return;
+
+            playSound('flip');
+            clickedCard.classList.add('flipped');
+            flippedCards.push(clickedCard);
+
+            if (flippedCards.length === 2) {
+                flipCount++;
+                document.getElementById('flips').textContent = flipCount;
+                checkForMatch();
+            }
+        }
+
+        function checkForMatch() {
+            const [card1, card2] = flippedCards;
+            const match = card1.dataset.id === card2.dataset.id;
+
+            if (match) {
+                // เมื่อเด็กจับคู่ถูก: ยมทูตโดนต่อย ร้องโอ้ย!
+                playSound('punch');
+                triggerReaperHit();
+
+                card1.classList.add('matched');
+                card2.classList.add('matched');
+                matchedPairs++;
+                document.getElementById('matches').textContent = matchedPairs;
+                flippedCards = [];
+
+                if (matchedPairs === 10) {
+                    endGame(true);
+                }
+            } else {
+                lockBoard = true;
+                setTimeout(() => {
+                    card1.classList.remove('flipped');
+                    card2.classList.remove('flipped');
+                    flippedCards = [];
+                    lockBoard = false;
+                }, 750);
+            }
+        }
+
+        function endGame(isWin) {
+            isPlaying = false;
+            clearInterval(timerInterval);
+
+            const modal = document.getElementById('resultModal');
+            const title = document.getElementById('modalTitle');
+            const text = document.getElementById('modalText');
+
+            if (isWin) {
+                playSound('cheer');
+                title.style.color = '#00b894';
+                title.textContent = "สุดยอด! คุณชนะยมทูตแล้ว! 🎉";
+                text.textContent = `เยี่ยมมาก! ใช้เวลาไป ${timer} วินาที ยมทูตหมอบกราบแล้ว!`;
+                setReaperTaunt("อ๊ากกก! ฝากไว้ก่อนเถอะ เจ้าเด็กมือหนัก!");
+            } else {
+                playSound('laugh');
+                title.style.color = '#d63031';
+                title.textContent = "ยมทูตหัวเราะเยาะ! 👻💀";
+                text.textContent = `หมดเวลาแล้ว! คุณแพ้ให้กับยมทูต ฮ่าๆๆ!`;
+                setReaperTaunt("ฮ่าๆๆๆ โง่จริง ๆ วิญญาณนี้ข้าขอละกันนะ!");
+            }
+
+            modal.style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('resultModal').style.display = 'none';
+            startGame();
+        }
+
+        initSelector();
+        startGame();
+    </script>
+</body>
+</html>
