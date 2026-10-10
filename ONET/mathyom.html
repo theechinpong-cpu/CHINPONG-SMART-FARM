@@ -3,494 +3,396 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>สอบเข้า ม.1 วิชาคณิตศาสตร์ - โรงเรียนเบ็ญจมราชูทิศ</title>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <!-- MathJax for rendering LaTeX formulas -->
-    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
-    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <title>ระบบข้อสอบ Interactive - กลุ่มจำนวนและการดำเนินการ ม.1</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap');
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --success-color: #2ecc71;
+            --danger-color: #e74c3c;
+            --bg-color: #f8f9fa;
+            --card-bg: #ffffff;
+            --text-color: #333333;
+        }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
         body {
-            font-family: 'Sarabun', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            z-index: 10;
+        }
+        header h1 {
+            font-size: 1.2rem;
+        }
+        .header-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        button {
+            padding: 6px 12px;
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+        button:hover {
+            opacity: 0.9;
+        }
+        .summary-section {
+            background: #ffffff;
+            padding: 20px;
+            border-bottom: 1px solid #ddd;
+            overflow-y: auto;
+            max-height: 250px;
+        }
+        .summary-section h2 {
+            font-size: 1.1rem;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+        .summary-section p, .summary-section ul {
+            font-size: 0.9rem;
+            line-height: 1.6;
+            margin-bottom: 8px;
+        }
+        .summary-section ul {
+            padding-left: 20px;
+        }
+        .main-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+        .left-frame {
+            flex: 7;
+            background: var(--card-bg);
+            border-right: 1px solid #ddd;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            padding: 20px;
+        }
+        .right-frame {
+            flex: 3;
+            background: #ffffff;
+            display: flex;
+            flex-direction: column;
+            padding: 15px;
+            border-left: 1px solid #ddd;
+        }
+        .question-nav {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        .nav-btn {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #e0e0e0;
+            color: #333;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            border: none;
+            font-weight: bold;
+        }
+        .nav-btn.active {
+            border: 2px solid var(--primary-color);
+        }
+        .nav-btn.answered {
+            background-color: var(--success-color);
+            color: white;
+        }
+        .question-card {
+            display: none;
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+        .question-card.active {
+            display: block;
+        }
+        .question-title {
+            font-size: 1.05rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+        .options-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .option-item {
+            padding: 10px 15px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            cursor: pointer;
+            background: #fafafa;
+            transition: all 0.2s;
+            font-size: 0.95rem;
+        }
+        .option-item:hover {
+            background: #f0f0f0;
+            border-color: #999;
+        }
+        .option-item.selected {
+            background: #ebf5fb;
+            border-color: var(--secondary-color);
+        }
+        .option-item.correct {
+            background: #e8f8f5 !important;
+            border-color: var(--success-color) !important;
+            color: #117a65;
+            font-weight: bold;
+        }
+        .option-item.incorrect {
+            background: #f9ebea !important;
+            border-color: var(--danger-color) !important;
+            color: #922b21;
+        }
+        .clue-box {
+            background: #fff9e6;
+            border: 1px dashed #f1c40f;
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            font-size: 0.9rem;
+            display: none;
+        }
+        .explanation-box {
+            background: #f4f6f7;
+            border-left: 4px solid var(--secondary-color);
+            padding: 12px;
+            border-radius: 0 6px 6px 0;
+            margin-top: 15px;
+            font-size: 0.9rem;
+            display: none;
+        }
+        .whiteboard-container {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            height: 100%;
+        }
+        .whiteboard-tools {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+        }
+        .wb-btn {
+            padding: 5px 8px;
+            font-size: 0.8rem;
+            background: #7f8c8d;
+        }
+        canvas {
+            border: 1px solid #bdc3c7;
+            border-radius: 6px;
+            background: #fff;
+            flex: 1;
+            cursor: crosshair;
+            touch-action: none;
+        }
+        .footer-controls {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 15px;
+        }
+        #submit-exam-btn {
+            background-color: var(--success-color);
+            font-size: 1rem;
+            padding: 10px 20px;
+        }
+        .results-modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+        .results-content {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        @media(max-width: 768px) {
+            .main-container {
+                flex-direction: column;
+            }
+            .right-frame {
+                height: 250px;
+            }
         }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col justify-between">
+<body>
 
-    <!-- Header -->
-    <header class="bg-pink-800 text-white shadow-md py-4 px-6 sticky top-0 z-50">
-        <div class="max-w-4xl mx-auto flex flex-col sm:flex-row justify-between items-center">
-            <div>
-                <h1 class="text-xl font-bold">โรงเรียนเบ็ญจมราชูทิศ</h1>
-                <p class="text-sm text-pink-200">ข้อสอบคัดเลือกเข้าศึกษาต่อระดับชั้นมัธยมศึกษาปีที่ 1 วิชาคณิตศาสตร์</p>
-            </div>
-            <div id="timer-box" class="mt-2 sm:mt-0 bg-pink-900 px-4 py-1.5 rounded-lg text-sm font-semibold tracking-wide border border-pink-700 hidden">
-                เวลาที่เหลือ: <span id="time-display">60:00</span>
-            </div>
+<header>
+    <h1>ระบบข้อสอบ: กลุ่มจำนวนและการดำเนินการ ม.1</h1>
+    <div class="header-controls">
+        <button id="lang-btn" onclick="toggleLanguage()">Language: TH</button>
+        <button id="reset-btn" onclick="resetExam()" style="background-color: var(--danger-color);">Reset</button>
+    </div>
+</header>
+
+<!-- สรุปเนื้อหาบทเรียน (มากกว่า 500 คำ พร้อมเทคนิคการจำและกระบวนการคิด) -->
+<div class="summary-section">
+    <h2>สรุปเนื้อหา: กลุ่มจำนวนและการดำเนินการ (Numbers and Operations) สำหรับเตรียมสอบเข้า ม.1</h2>
+    <p>การศึกษาเรื่องกลุ่มจำนวนและการดำเนินการถือเป็นรากฐานที่สำคัญที่สุดในวิชาคณิตศาสตร์ระดับประถมศึกษาตอนปลาย เพื่อเตรียมความพร้อมในการศึกษาต่อในระดับมัธยมศึกษาปีที่ 1 นักเรียนจะต้องทำความเข้าใจเกี่ยวกับโครงสร้างของระบบจำนวน สมบัติของจำนวนเต็ม ห.ร.ม. และ ค.ร.น. รวมถึงเศษส่วนและทศนิยมอย่างลึกซึ้ง ระบบจำนวนประกอบด้วยจำนวนนับที่เริ่มต้นจาก 1, 2, 3 ไปเรื่อยๆ และจำนวนเต็มซึ่งแบ่งออกเป็นจำนวนเต็มบวก ศูนย์ และจำนวนเต็มลบ ซึ่งการบวก ลบ คูณ หาร จำนวนเต็มเหล่านี้มีกฎเกณฑ์ที่ต้องระมัดระวังเรื่องเครื่องหมายอย่างเคร่งครัด เช่น เครื่องหมายเหมือนกันคูณหรือหารกันได้บวก ส่วนเครื่องหมายต่างกันได้ลบ การคำนวณระคนจะต้องยึดถือลำดับขั้นการคำนวณ (Order of Operations) อย่างเคร่งครัด โดยทำในวงเล็บก่อน จากนั้นดำเนินการคูณและหารจากซ้ายไปขวา และปิดท้ายด้วยการบวกและลบตามลำดับ</p>
+    <p>นอกจากนี้ แนวคิดเรื่องจำนวนเฉพาะและจำนวนประกอบเป็นหัวข้อที่ออกสอบบ่อย จำนวนเฉพาะคือจำนวนเต็มบวกที่มีตัวหารที่เป็นบวกเพียงสองตัวคือ 1 และตัวมันเอง โดยเลข 2 เป็นจำนวนเฉพาะคู่ตัวเดียวในระบบจำนวน ส่วนจำนวนประกอบคือจำนวนที่มีตัวประกอบมากกว่าสองตัวขึ้นไป การหาตัวประกอบและการแยกตัวประกอบนำไปสู่เครื่องมือสำคัญในการคำนวณ ได้แก่ ตัวหารร่วมมาก (ห.ร.ม. หรือ GCD) และตัวคูณร่วมน้อย (ค.ร.น. หรือ LCM) ซึ่งมีความสัมพันธ์กันผ่านสูตร ผลคูณของจำนวนนับสองจำนวนเท่ากับผลคูณของ ห.ร.ม. และ ค.ร.น. ของสองจำนวนนั้นเสมอ การประยุกต์ใช้ ห.ร.ม. มักเกี่ยวข้องกับการแบ่งของให้เท่ากันและมีขนาดใหญ่ที่สุด ส่วน ค.ร.น. เกี่ยวข้องกับเหตุการณ์ที่จะเกิดขึ้นพร้อมกันอีกครั้งในอนาคต</p>
+    <p>ในส่วนของเศษส่วนและทศนิยม การคำนวณต้องอาศัยทักษะการทำตัวส่วนให้เท่ากันโดยใช้ ค.ร.น. ก่อนทำการบวกและลบ ขณะที่การคูณและการหารเศษส่วนสามารถคำนวณได้โดยตรงหรือใช้หลักการคูณด้วยส่วนกลับ การแปลงเศษส่วนให้เป็นทศนิยมทำได้โดยการหารยาวหรือการทำตัวส่วนให้เป็นเลขยกกำลังของสิบ ทักษะเหล่านี้ช่วยให้การแก้โจทย์ปัญหาระดับประถมศึกษาตอนปลายมีความแม่นยำและรวดเร็วมากยิ่งขึ้น</p>
+    
+    <h3 style="margin-top: 10px; font-size: 1rem; color: var(--secondary-color);">💡 กล่องเทคนิคการจำและกระบวนการคิด (Memory Tricks & Thought Processes)</h3>
+    <ul>
+        <li><b>เทคนิคจำจำนวนเฉพาะ 1 ถึง 100:</b> ท่องจำชุดตัวเลขสำคัญและจำหลักง่ายๆ ว่าจำนวนเฉพาะที่เป็นเลขคู่มีเพียงตัวเดียวคือ 2 นอกนั้นเป็นเลขคี่ทั้งหมด และตัวที่ลงท้ายด้วย 5 จะไม่เป็นจำนวนเฉพาะยกเว้นตัว 5 เอง</li>
+        <li><b>กระบวนการคิดโจทย์ ห.ร.ม. vs ค.ร.น.:</b> ถามหาการแบ่งของเท่าๆ กันหรือตัดให้ยาวที่สุด $\rightarrow$ ใช้ <b>ห.ร.ม.</b> ถามหาเหตุการณ์เกิดพร้อมกันอีกครั้ง $\rightarrow$ ใช้ <b>ค.ร.น.</b></li>
+        <li><b>เทคนิคการคำนวณเครื่องหมายระคน:</b> ท่องกฎเหล็ก "เจอวงเล็บทำก่อน, ไม่มีวงเล็บทำ คูณ/หาร ก่อน บวก/ลบ" และระวังเครื่องหมายลบชนกันจะกลายเป็นบวกเสมอ</li>
+    </ul>
+</div>
+
+<div class="main-container">
+    <!-- ฝั่งซ้าย: ข้อสอบ 30 ข้อ -->
+    <div class="left-frame">
+        <div class="question-nav" id="question-nav"></div>
+        <div id="questions-container"></div>
+        
+        <div class="footer-controls">
+            <button onclick="prevQuestion()" id="prev-btn">ข้อก่อนหน้า</button>
+            <button onclick="submitExam()" id="submit-exam-btn">ส่งข้อสอบทั้งหมด</button>
+            <button onclick="nextQuestion()" id="next-btn">ข้อถัดไป</button>
         </div>
-    </header>
+    </div>
 
-    <!-- Main Container -->
-    <main class="max-w-3xl w-full mx-auto px-4 py-8 flex-grow">
-
-        <!-- Start Screen -->
-        <div id="start-screen" class="bg-white rounded-2xl shadow-lg p-8 text-center border border-slate-100">
-            <div class="w-16 h-16 bg-pink-100 text-pink-700 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl font-bold">
-                BM
-            </div>
-            <h2 class="text-2xl font-bold text-slate-900 mb-2">แบบทดสอบจำลองสอบเข้า ม.1 คณิตศาสตร์</h2>
-            <p class="text-slate-600 mb-6 max-w-lg mx-auto">
-                ข้อสอบจำนวน 20 ข้อ ระบบมีมาตรการป้องกันการเดา: 
-                <span class="text-pink-700 font-semibold">เมื่อเลือกคำตอบแล้วจะไม่สามารถเปลี่ยนแปลงได้ และจะแสดงเฉลยพร้อมคำอธิบายทันที</span>
-            </p>
-            <div class="bg-pink-50 border border-pink-200 rounded-xl p-4 text-left mb-6 text-sm text-pink-900">
-                <p class="font-bold mb-1">📌 กติกาการสอบ:</p>
-                <ul class="list-disc list-inside space-y-1">
-                    <li>มีทั้งหมด 20 ข้อ (แบบปรนัย 4 ตัวเลือก)</li>
-                    <li>เลือกคำตอบได้เพียงครั้งเดียวต่อข้อ</li>
-                    <li>ระบบจะบันทึกคะแนนและสรุปผลเมื่อทำครบทุกข้อ</li>
-                </ul>
-            </div>
-            <button onclick="startQuiz()" class="bg-pink-700 hover:bg-pink-800 text-white font-bold py-3 px-8 rounded-xl shadow-lg transition duration-200 cursor-pointer">
-                เริ่มทำข้อสอบ
-            </button>
+    <!-- ฝั่งขวา: Whiteboard สำหรับทดเลข -->
+    <div class="right-frame">
+        <h3 style="font-size: 0.95rem; margin-bottom: 8px;">กระดานทดเลข / Whiteboard</h3>
+        <div class="whiteboard-tools">
+            <button class="wb-btn" onclick="setPenColor('#333333')">ดำ</button>
+            <button class="wb-btn" onclick="setPenColor('#e74c3c')">แดง</button>
+            <button class="wb-btn" onclick="setPenColor('#3498db')">น้ำเงิน</button>
+            <button class="wb-btn" onclick="clearWhiteboard()" style="background-color: var(--danger-color);">ล้างกระดาน</button>
         </div>
-
-        <!-- Quiz Screen -->
-        <div id="quiz-screen" class="hidden">
-            <!-- Progress & Stats Bar -->
-            <div class="flex justify-between items-center mb-4 text-sm font-medium text-slate-600">
-                <span id="question-counter">ข้อที่ 1 จาก 20</span>
-                <span id="score-counter" class="text-pink-700 font-bold">คะแนนสะสม: 0 / 0</span>
-            </div>
-            <div class="w-full bg-slate-200 h-2 rounded-full mb-6 overflow-hidden">
-                <div id="progress-bar" class="bg-pink-700 h-full transition-all duration-300" style="width: 5%"></div>
-            </div>
-
-            <!-- Question Card -->
-            <div class="bg-white rounded-2xl shadow-lg p-6 sm:p-8 border border-slate-100 mb-6">
-                <h3 id="question-text" class="text-lg sm:text-xl font-semibold text-slate-900 mb-6 leading-relaxed">
-                    <!-- Question injected here -->
-                </h3>
-
-                <!-- Options List -->
-                <div id="options-container" class="space-y-3">
-                    <!-- Options injected here -->
-                </div>
-
-                <!-- Explanation Box -->
-                <div id="explanation-box" class="mt-6 p-4 rounded-xl hidden border">
-                    <h4 id="explanation-title" class="font-bold text-sm mb-1"></h4>
-                    <p id="explanation-text" class="text-sm leading-relaxed"></p>
-                </div>
-            </div>
-
-            <!-- Navigation Button -->
-            <div class="flex justify-end">
-                <button id="next-btn" onclick="nextQuestion()" class="bg-slate-800 hover:bg-slate-900 text-white font-semibold py-2.5 px-6 rounded-xl shadow transition duration-200 hidden cursor-pointer">
-                    ข้อถัดไป
-                </button>
-            </div>
+        <div class="whiteboard-container">
+            <canvas id="wb-canvas"></canvas>
         </div>
+    </div>
+</div>
 
-        <!-- Result Screen -->
-        <div id="result-screen" class="bg-white rounded-2xl shadow-lg p-8 text-center border border-slate-100 hidden">
-            <div class="w-20 h-20 bg-pink-100 text-pink-700 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl font-bold" id="result-icon">
-                🎉
-            </div>
-            <h2 class="text-2xl font-bold text-slate-900 mb-2">สรุปผลคะแนนสอบ</h2>
-            <p class="text-slate-600 mb-6">คุณได้ทำแบบทดสอบครบทั้ง 20 ข้อแล้ว</p>
-            
-            <div class="bg-slate-50 border border-slate-200 rounded-2xl p-6 max-w-sm mx-auto mb-6">
-                <p class="text-sm text-slate-500 mb-1">คะแนนรวมที่คุณทำได้</p>
-                <p class="text-4xl font-extrabold text-pink-700"><span id="final-score">0</span> <span class="text-xl text-slate-400">/ 20</span></p>
-                <p id="result-remark" class="text-sm font-medium mt-3 text-slate-700"></p>
-            </div>
+<!-- Modal แสดงผลคะแนนและวิเคราะห์ -->
+<div class="results-modal" id="results-modal">
+    <div class="results-content">
+        <h2>ผลการประเมินและวิเคราะห์ผลสอบ</h2>
+        <div id="results-details" style="margin: 15px 0; line-height: 1.6;"></div>
+        <button onclick="closeModal()">ปิดหน้าต่าง</button>
+    </div>
+</div>
 
-            <button onclick="restartQuiz()" class="bg-pink-700 hover:bg-pink-800 text-white font-bold py-3 px-8 rounded-xl shadow-lg transition duration-200 cursor-pointer">
-                ทำแบบทดสอบอีกครั้ง
-            </button>
-        </div>
-
-    </main>
-
-    <!-- Footer -->
-    <footer class="text-center py-4 text-xs text-slate-400">
-        &copy; 2026 ระบบข้อสอบจำลองเตรียมสอบเข้า ม.1 โรงเรียนเบ็ญจมราชูทิศ
-    </footer>
-
-    <!-- Quiz Data & Logic Script -->
-    <script>
-        const quizData = [
-            {
-                question: "กำหนดให้ $A = \\{1, 2, 3, 4, 5\\}$ และ $B = \\{3, 4, 5, 6, 7\\}$ สมาชิกของเซต $(A - B) \\cup (B - A)$ มีทั้งหมดกี่ตัว?",
-                options: [
-                    "2 ตัว",
-                    "4 ตัว",
-                    "6 ตัว",
-                    "10 ตัว"
-                ],
-                correct: 1,
-                hint: "หาผลต่างของเซตแต่ละคู่ก่อน แล้วนำมารวมกัน (ยูเนียน)",
-                rationale: "$A - B = \\{1, 2\\}$ และ $B - A = \\{6, 7\\}$ ดังนั้น $(A - B) \\cup (B - A) = \\{1, 2, 6, 7\\}$ ซึ่งมีสมาชิกทั้งหมด 4 ตัว"
-            },
-            {
-                question: "ผลลัพธ์ของค่า $x$ จากสมการ $\\dfrac{2x - 3}{3} + \\dfrac{x + 1}{2} = 4$ ตรงกับข้อใด?",
-                options: [
-                    "$x = 2$",
-                    "$x = 3$",
-                    "$x = \\dfrac{27}{7}$",
-                    "$x = 4$"
-                ],
-                correct: 2,
-                hint: "คูณไขว้หรือหา ค.ร.น. ของตัวส่วนคือ 6 เพื่อกำจัดเศษส่วน",
-                rationale: "คูณตลอดด้วย $6$ จะได้ $2(2x - 3) + 3(x + 1) = 24 \\implies 4x - 6 + 3x + 3 = 24 \\implies 7x - 3 = 24 \\implies 7x = 27 \\implies x = \\dfrac{27}{7}$"
-            },
-            {
-                question: "ห.ร.ม. และ ค.ร.น. ของจำนวนสองจำนวนคือ $12$ และ $252$ ตามลำดับ ถ้าจำนวนหนึ่งคือ $84$ อีกจำนวนหนึ่งคือเท่าใด?",
-                options: [
-                    "$24$",
-                    "$36$",
-                    "$48$",
-                    "$72$"
-                ],
-                correct: 1,
-                hint: "ใช้สูตร: ผลคูณของจำนวนสองจำนวนเท่ากับผลคูณของ ห.ร.ม. และ ค.ร.น.",
-                rationale: "จากสูตร ผลคูณสองจำนวน = ห.ร.ม. $\\times$ ค.ร.น. ให้จำนวนที่สองเป็น $y$ จะได้ $84 \\times y = 12 \\times 252 \\implies y = \\dfrac{12 \\times 252}{84} = 36$"
-            },
-            {
-                question: "ถ้า $2^{x+1} = 32$ แล้วค่าของ $3^{x-1}$ ตรงกับข้อใด?",
-                options: [
-                    "$3$",
-                    "$9$",
-                    "$27$",
-                    "$81$"
-                ],
-                correct: 2,
-                hint: "แปลง $32$ ให้เป็นรูปเลขยกกำลังฐาน $2$ เพื่อหาค่า $x$ ก่อน",
-                rationale: "จาก $2^{x+1} = 2^5$ จะได้ $x + 1 = 5 \\implies x = 4$ แทนค่า $x = 4$ ใน $3^{x-1}$ ได้ $3^{4-1} = 3^3 = 27$"
-            },
-            {
-                question: "รูปสามเหลี่ยมมุมฉากรูปหนึ่งมีด้านประกอบมุมฉากยาว $6$ เซนติเมตร และ $8$ เซนติเมตร ความยาวรอบรูปของรูปสามเหลี่ยมนี้เท่ากับกี่เซนติเมตร?",
-                options: [
-                    "$20$ เซนติเมตร",
-                    "$22$ เซนติเมตร",
-                    "$24$ เซนติเมตร",
-                    "$26$ เซนติเมตร"
-                ],
-                correct: 2,
-                hint: "ใช้ทฤษฎีบทพีทาโกรัสหาความยาวด้านตรงข้ามมุมฉาก",
-                rationale: "ด้านตรงข้ามมุมฉากคือ $\\sqrt{6^2 + 8^2} = \\sqrt{36 + 64} = \\sqrt{100} = 10$ เซนติเมตร ดังนั้นความยาวรอบรูปคือ $6 + 8 + 10 = 24$ เซนติเมตร"
-            },
-            {
-                question: "ซื้อจักรยานมาราคา $2,500$ บาท ขายต่อให้เพื่อนขาดทุน $15\\%$ จะต้องขายจักรยานราคาเท่าใด?",
-                options: [
-                    "$2,050$ บาท",
-                    "$2,125$ บาท",
-                    "$2,175$ บาท",
-                    "$2,200$ บาท"
-                ],
-                correct: 1,
-                hint: "คำนวณราคาขายโดยหา $85\\%$ ของราคาต้นทุน",
-                rationale: "ราคาขาย = $\\dfrac{100 - 15}{100} \\times 2500 = \\dfrac{85}{100} \\times 2500 = 85 \\times 25 = 2,125$ บาท"
-            },
-            {
-                question: "ถังน้ำทรงกระบอกใบหนึ่งมีรัศมีของปากถัง $7$ เซนติเมตร สูง $20$ เซนติเมตร จะมีความจุประมาณกี่ลูกบาศก์เซนติเมตร (กำหนดให้ $\\pi \\approx \\dfrac{22}{7}$)",
-                options: [
-                    "$2,080$ ลูกบาศก์เซนติเมตร",
-                    "$3,080$ ลูกบาศก์เซนติเมตร",
-                    "$4,160$ ลูกบาศก์เซนติเมตร",
-                    "$6,160$ ลูกบาศก์เซนติเมตร"
-                ],
-                correct: 1,
-                hint: "ใช้สูตรปริมาตรทรงกระบอก $V = \\pi r^2 h$",
-                rationale: "ปริมาตร = $\\dfrac{22}{7} \\times 7^2 \\times 20 = \\dfrac{22}{7} \\times 49 \\times 20 = 22 \\times 7 \\times 20 = 3,080$ ลูกบาศก์เซนติเมตร"
-            },
-            {
-                question: "ผลบวกของจำนวนคี่บวกสามจำนวนเรียงกันเท่ากับ $129$ จำนวนที่มากที่สุดมีค่าเท่าใด?",
-                options: [
-                    "$41$",
-                    "$43$",
-                    "$45$",
-                    "$47$"
-                ],
-                correct: 2,
-                hint: "ให้จำนวนคี่สามจำนวนคือ $x, x+2, x+4$",
-                rationale: "จะได้สมการ $x + (x+2) + (x+4) = 129 \\implies 3x + 6 = 129 \\implies 3x = 123 \\implies x = 41$ ดังนั้นจำนวนที่มากที่สุดคือ $41 + 4 = 45$"
-            },
-            {
-                question: "กำหนดให้เส้นตรง $L_1$ ขนานกับเส้นตรง $L_2$ ถ้ามุมแย้งมุมหนึ่งมีขนาด $68^\\circ$ มุมภายในที่อยู่บนข้างเดียวกันของเส้นตัดจะมีขนาดเท่าใด?",
-                options: [
-                    "$22^\\circ$",
-                    "$68^\\circ$",
-                    "$112^\\circ$",
-                    "$136^\\circ$"
-                ],
-                correct: 2,
-                hint: "มุมภายในที่อยู่บนข้างเดียวกันของเส้นตัดรวมกันได้ $180^\\circ$",
-                rationale: "มุมแย้งมีขนาดเท่ากันคือ $68^\\circ$ และมุมภายในที่อยู่บนข้างเดียวกันของเส้นตัดรวมกับมุมแย้งได้ $180^\\circ$ ดังนั้นมุมดังกล่าวคือ $180^\\circ - 68^\\circ = 112^\\circ$"
-            },
-            {
-                question: "ค่าของ $\\left( 1 - \\dfrac{1}{2} \\right) \\left( 1 - \\dfrac{1}{3} \\right) \\left( 1 - \\dfrac{1}{4} \\right) \\dots \\left( 1 - \\dfrac{1}{10} \\right)$ เท่ากับเท่าใด?",
-                options: [
-                    "$\\dfrac{1}{10}$",
-                    "$\\dfrac{1}{9}$",
-                    "$\\dfrac{9}{10}$",
-                    "$1$"
-                ],
-                correct: 0,
-                hint: "จัดรูปแต่ละวงเล็บให้อยู่ในรูปเศษส่วนอย่างต่ำแล้วสังเกตการตัดกัน",
-                rationale: "จะได้ $\\dfrac{1}{2} \\times \\dfrac{2}{3} \\times \\dfrac{3}{4} \\times \\dots \\times \\dfrac{9}{10}$ ตัวเลขบนและล่างจะตัดทอนกันหมดเหลือเพียง $\\dfrac{1}{10}$"
-            },
-            {
-                question: "อายุของพ่อปัจจุบันเป็น $3$ เท่าของลูก อีก $5$ ปีข้างหน้าพ่อจะมีอายุเป็น $2$ เท่าของลูก ปัจจุบันลูกมีอายุเท่าใด?",
-                options: [
-                    "$10$ ปี",
-                    "$12$ ปี",
-                    "$15$ ปี",
-                    "$18$ ปี"
-                ],
-                correct: 2,
-                hint: "ให้ปัจจุบันลูกอายุ $x$ ปี พ่ออายุ $3x$ ปี ตั้งสมการตามเงื่อนไขเวลา",
-                rationale: "อีก $5$ ปีข้างหน้า ลูกอายุ $x+5$ ปี พ่ออายุ $3x+5$ ปี จะได้สมการ $3x + 5 = 2(x + 5) \\implies 3x + 5 = 2x + 10 \\implies x = 5$ ปัจจุบันลูกมีอายุ $15$ ปี (พ่อมีอายุ $45$ ปี อีก $5$ ปีลูก $20$ ปี พ่อ $50$ ปี ซึ่ง $50 = 2 \\times 20$ พอดี)"
-            },
-            {
-                question: "กำหนดรูปสี่เหลี่ยมผืนผ้ามีความยาวรอบรูป $56$ เซนติเมตร และด้านกว้างสั้นกว่าด้านยาวอยู่ $6$ เซนติเมตร พื้นที่ของรูปสี่เหลี่ยมนี้เป็นเท่าใด?",
-                options: [
-                    "$160$ ตารางเซนติเมตร",
-                    "$187$ ตารางเซนติเมตร",
-                    "$210$ ตารางเซนติเมตร",
-                    "$247$ ตารางเซนติเมตร"
-                ],
-                correct: 1,
-                hint: "ความยาวรอบรูป = $2(\\text{กว้าง} + \\text{ยาว}) = 56$",
-                rationale: "ผลบวกด้านกว้างกับด้านยาวคือ $56 \\div 2 = 28$ ซม. ให้กว้าง $x$ ยาว $x+6$ จะได้ $x + (x+6) = 28 \\implies 2x = 22 \\implies x = 11$ กว้าง $11$ ซม. ยาว $17$ ซม. พื้นที่ = $11 \\times 17 = 187$ ตารางเซนติเมตร"
-            },
-            {
-                question: "ถ้ามุมภายในของรูป $n$ เหลี่ยมด้านเท่ามุมเท่า มีขนาดมุมละ $140^\\circ$ ค่าของ $n$ เท่ากับเท่าใด?",
-                options: [
-                    "$7$",
-                    "$8$",
-                    "$9$",
-                    "$10$"
-                ],
-                correct: 2,
-                hint: "ใช้สูตรขนาดมุมภายในรูป $n$ เหลี่ยมด้านเท่า = $\\dfrac{(n-2) \\times 180^\\circ}{n}$",
-                rationale: "จากสูตร $\\dfrac{(n-2) \\times 180}{n} = 140 \\implies 180n - 360 = 140n \\implies 40n = 360 \\implies n = 9$"
-            },
-            {
-                question: "ค่าเฉลี่ยเลขคณิตของข้อมูลชุดหนึ่งมี $5$ จำนวนเท่ากับ $12$ เมื่อเพิ่มข้อมูลอีก $1$ จำนวน ทำให้ค่าเฉลี่ยใหม่เป็น $14$ ข้อมูลที่เพิ่มเข้ามามีค่าเท่าใด?",
-                options: [
-                    "$18$",
-                    "$22$",
-                    "$24$",
-                    "$26$"
-                ],
-                correct: 2,
-                hint: "หาผลรวมของข้อมูล $5$ จำนวนเดิม และผลรวมของข้อมูล $6$ จำนวนใหม่",
-                rationale: "ผลรวม $5$ จำนวนเดิม = $5 \\times 12 = 60$, ผลรวม $6$ จำนวนใหม่ = $6 \\times 14 = 84$, ข้อมูลที่เพิ่มเข้ามาคือ $84 - 60 = 24$"
-            },
-            {
-                question: "ถ้า $a \\ast b = a^2 + b$ แล้วค่าของ $(2 \\ast 3) \\ast 1$ ตรงกับข้อใด?",
-                options: [
-                    "$42$",
-                    "$48$",
-                    "$50$",
-                    "$52$"
-                ],
-                correct: 2,
-                hint: "หาค่าของ $2 \\ast 3$ ก่อน จากนั้นนำผลลัพธ์ที่ได้มาคำนวณกับ $1$",
-                rationale: "$2 \\ast 3 = 2^2 + 3 = 4 + 3 = 7$ จากนั้นนำไปคำนวณต่อ $7 \\ast 1 = 7^2 + 1 = 49 + 1 = 50$"
-            },
-            {
-                question: "ถังน้ำใบหนึ่งมีน้ำอยู่ $\\dfrac{3}{5}$ ของถัง เติมน้ำเพิ่มอีก $18$ ลิตร ทำให้น้ำในถังเพิ่มเป็น $\\dfrac{3}{4}$ ของถัง ความจุทั้งหมดของถังนี้คือเท่าใด?",
-                options: [
-                    "$120$ ลิตร",
-                    "$150$ ลิตร",
-                    "$180$ ลิตร",
-                    "$240$ ลิตร"
-                ],
-                correct: 0,
-                hint: "หาเศษส่วนของน้ำที่เพิ่มขึ้นว่าต่างกันเท่าไร",
-                rationale: "ส่วนต่างของน้ำ = $\\dfrac{3}{4} - \\dfrac{3}{5} = \\dfrac{15 - 12}{20} = \\dfrac{3}{20}$ ของถัง ซึ่งเท่ากับ $18$ ลิตร ดังนั้นความจุทั้งหมด = $18 \\div \\dfrac{3}{20} = 18 \\times \\dfrac{20}{3} = 120$ ลิตร"
-            },
-            {
-                question: "กำหนดให้ $x$ และ $y$ เป็นจำนวนเต็มบวก ถ้า ห.ร.ม. ของ $x$ และ $y$ คือ $6$ และ ค.ร.น. คือ $120$ ข้อใดเป็นไปได้สำหรับผลบวก $x + y$?",
-                options: [
-                    "$42$",
-                    "$54$",
-                    "$66$",
-                    "$78$"
-                ],
-                correct: 1,
-                hint: "จากสมบัติ $xy = \\text{ห.ร.ม.} \\times \\text{ค.ร.น.}$ และตัวประกอบร่วม",
-                rationale: "$xy = 6 \\times 120 = 720$ และเนื่องจาก ห.ร.ม. เป็น $6$ ให้ $x = 6a, y = 6b$ โดยที่ ห.ร.ม.$(a,b) = 1$ จะได้ $(6a)(6b) = 720 \\implies ab = 20$ คู่ของ $(a,b)$ ที่เป็นไปได้คือ $(1, 20)$ และ $(4, 5)$ หากเลือก $a=4, b=5$ จะได้ $x=24, y=30$ ซึ่งผลบวก $x+y = 24 + 30 = 54$"
-            },
-            {
-                question: "พ่อค้าขายเสื้อตัวละ $360$ บาท ได้กำไร $20\\%$ ถ้าต้องการขายให้ได้กำไร $30\\%$ จะต้องตั้งราคาขายเสื้อตัวนี้กี่บาท?",
-                options: [
-                    "$390$ บาท",
-                    "$400$ บาท",
-                    "$410$ บาท",
-                    "$420$ บาท"
-                ],
-                correct: 0,
-                hint: "หาราคาต้นทุนก่อนโดยเทียบจากกำไร $20\\%$",
-                rationale: "ทุน $\\times 1.20 = 360 \\implies \\text{ทุน} = \\dfrac{360}{1.20} = 300$ บาท หากต้องการกำไร $30\\%$ ราคาขายใหม่ = $300 \\times 1.30 = 390$ บาท"
-            },
-            {
-                question: "กำหนดให้มุม $A$ และมุม $B$ เป็นมุมประกอบสองมุมฉาก ถ้ามุม $A$ มีขนาดเป็นสองเท่าของมุม $B$ ขนาดของมุม $A$ เท่ากับกี่องศา?",
-                options: [
-                    "$30^\\circ$",
-                    "$60^\\circ$",
-                    "$90^\\circ$",
-                    "$120^\\circ$"
-                ],
-                correct: 3,
-                hint: "มุมประกอบสองมุมฉากหมายถึงมุมทั้งสองรวมกันได้ $180^\\circ$",
-                rationale: "จะได้สมการ $A + B = 180^\\circ$ และ $A = 2B$ แทนค่าได้ $2B + B = 180^\\circ \\implies 3B = 180^\\circ \\implies B = 60^\\circ$ ดังนั้นมุม $A = 2(60^\\circ) = 120^\\circ$"
-            },
-            {
-                question: "สระน้ำทรงสี่เหลี่ยมมุมฉากกว้าง $5$ เมตร ยาว $10$ เมตร และลึก $2$ เมตร ถ้าเปิดน้ำใส่สระด้วยอัตราเร็ว $25$ ลูกบาศก์เมตรต่อชั่วโมง จะต้องใช้เวลานานเท่าใดจึงจะเต็มสระ?",
-                options: [
-                    "$3$ ชั่วโมง",
-                    "$4$ ชั่วโมง",
-                    "$5$ ชั่วโมง",
-                    "$6$ ชั่วโมง"
-                ],
-                correct: 1,
-                hint: "คำนวณปริมาตรสระน้ำทั้งหมดก่อน แล้วหารด้วยอัตราการไหลของน้ำ",
-                rationale: "ปริมาตรสระน้ำ = $5 \\times 10 \\times 2 = 100$ ลูกบาศก์เมตร เวลาที่ใช้ = $\\dfrac{100}{25} = 4$ ชั่วโมง"
-            }
-        ];
-
-        let currentQuestion = 0;
-        let score = 0;
-        let answered = false;
-
-        function startQuiz() {
-            document.getElementById('start-screen').classList.add('hidden');
-            document.getElementById('quiz-screen').classList.remove('hidden');
-            document.getElementById('timer-box').classList.remove('hidden');
-            loadQuestion();
-        }
-
-        function loadQuestion() {
-            answered = false;
-            const q = quizData[currentQuestion];
-            
-            document.getElementById('question-counter').innerText = `ข้อที่ ${currentQuestion + 1} จาก ${quizData.length}`;
-            document.getElementById('score-counter').innerText = `คะแนนสะสม: ${score} / ${currentQuestion}`;
-            document.getElementById('progress-bar').style.width = `${((currentQuestion + 1) / quizData.length) * 100}%`;
-            
-            document.getElementById('question-text').innerHTML = q.question;
-            
-            const optionsContainer = document.getElementById('options-container');
-            optionsContainer.innerHTML = '';
-
-            q.options.forEach((opt, index) => {
-                const btn = document.createElement('button');
-                btn.className = "w-full text-left p-4 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 transition duration-150 font-medium text-slate-700 flex items-center justify-between cursor-pointer";
-                btn.innerHTML = `<span>${opt}</span><span class="text-xs text-slate-400 font-normal">เลือก</span>`;
-                btn.onclick = () => selectOption(index);
-                optionsContainer.appendChild(btn);
-            });
-
-            document.getElementById('explanation-box').classList.add('hidden');
-            document.getElementById('next-btn').classList.add('hidden');
-
-            if (window.MathJax) {
-                MathJax.typeset();
-            }
-        }
-
-        function selectOption(selectedIndex) {
-            if (answered) return;
-            answered = true;
-
-            const q = quizData[currentQuestion];
-            const optionsContainer = document.getElementById('options-container');
-            const buttons = optionsContainer.getElementsByTagName('button');
-
-            for (let i = 0; i < buttons.length; i++) {
-                buttons[i].disabled = true;
-                buttons[i].classList.remove('hover:bg-slate-50', 'cursor-pointer');
-                buttons[i].classList.add('cursor-not-allowed', 'opacity-80');
-
-                if (i === q.correct) {
-                    buttons[i].classList.remove('bg-white', 'border-slate-200', 'text-slate-700');
-                    buttons[i].classList.add('bg-emerald-50', 'border-emerald-500', 'text-emerald-900', 'font-bold');
-                    buttons[i].querySelector('span:last-child').innerText = '✓ ถูกต้อง';
-                    buttons[i].querySelector('span:last-child').className = 'text-xs text-emerald-600 font-bold';
-                } else if (i === selectedIndex) {
-                    buttons[i].classList.remove('bg-white', 'border-slate-200', 'text-slate-700');
-                    buttons[i].classList.add('bg-rose-50', 'border-rose-500', 'text-rose-900');
-                    buttons[i].querySelector('span:last-child').innerText = '✗ ตอบผิด';
-                    buttons[i].querySelector('span:last-child').className = 'text-xs text-rose-600 font-bold';
-                }
-            }
-
-            if (selectedIndex === q.correct) {
-                score++;
-            }
-
-            document.getElementById('score-counter').innerText = `คะแนนสะสม: ${score} / ${currentQuestion + 1}`;
-
-            const expBox = document.getElementById('explanation-box');
-            const expTitle = document.getElementById('explanation-title');
-            const expText = document.getElementById('explanation-text');
-
-            if (selectedIndex === q.correct) {
-                expBox.className = "mt-6 p-4 rounded-xl border bg-emerald-50 border-emerald-200 text-emerald-900";
-                expTitle.innerText = "🎉 ถูกต้องครับ!";
-            } else {
-                expBox.className = "mt-6 p-4 rounded-xl border bg-rose-50 border-rose-200 text-rose-900";
-                expTitle.innerText = "💡 คำอธิบายและแนวคิด:";
-            }
-            expText.innerHTML = q.rationale;
-            expBox.classList.remove('hidden');
-
-            if (window.MathJax) {
-                MathJax.typeset();
-            }
-
-            document.getElementById('next-btn').classList.remove('hidden');
-        }
-
-        function nextQuestion() {
-            currentQuestion++;
-            if (currentQuestion < quizData.length) {
-                loadQuestion();
-            } else {
-                showResult();
-            }
-        }
-
-        function showResult() {
-            document.getElementById('quiz-screen').classList.add('hidden');
-            document.getElementById('timer-box').classList.add('hidden');
-            document.getElementById('result-screen').classList.remove('hidden');
-
-            document.getElementById('final-score').innerText = score;
-
-            let remark = "";
-            if (score >= 17) {
-                remark = "🌟 ยอดเยี่ยมมาก! มีโอกาสสูงมากที่จะสอบติดห้องเรียนพิเศษ/ห้องปกติ โรงเรียนเบ็ญจมราชูทิศ";
-            } else if (score >= 12) {
-                remark = "👍 ทำได้ดี! ทบทวนจุดที่ผิดอีกนิด สามารถสอบติดได้อย่างแน่นอน";
-            } else {
-                remark = "💪 พยายามอีกนิดนะ! ลองทบทวนเนื้อหาและฝึกทำโจทย์เพิ่มเติมบ่อย ๆ ครับ";
-            }
-            document.getElementById('result-remark').innerText = remark;
-        }
-
-        function restartQuiz() {
-            currentQuestion = 0;
-            score = 0;
-            document.getElementById('result-screen').classList.add('hidden');
-            document.getElementById('start-screen').classList.remove('hidden');
-        }
-    </script>
-</body>
-</html>
+<script>
+// ข้อมูลข้อสอบ 30 ข้อ รูปแบบประโยคสัญลักษณ์ (Mathematical Expressions)
+const rawQuestions = [
+    {
+        id: 1,
+        question: "กำหนดให้เซตของจำนวนเฉพาะคือ P พิจารณาเซตในข้อใดถูกต้องตามนิยาม P = {x | x > 0 และมีตัวประกอบบวกเพียง 2 ตัว}",
+        options: [
+            "P = {2, 3, 5, 7, 11, ...}",
+            "P = {1, 2, 3, 5, 7, ...}",
+            "P = {2, 4, 6, 8, 10, ...}",
+            "P = {1, 3, 5, 7, 9, ...}"
+        ],
+        answer: 0,
+        clue: "ตรวจสอบว่าเลข 1 เป็นจำนวนเฉพาะหรือไม่ และเลข 2 เป็นจำนวนเฉพาะหรือไม่",
+        explanation: "จำนวนเฉพาะเริ่มต้นจาก 2, 3, 5, 7, 11, ... โดยที่ 1 ไม่ใช่จำนวนเฉพาะ และ 2 เป็นจำนวนเฉพาะคู่ตัวเดียว ดังนั้นเซต P = {2, 3, 5, 7, 11, ...} จึงถูกต้อง"
+    },
+    {
+        id: 2,
+        question: "กำหนดให้ A = -15 + (-25) และ B = -40 - (-10) จงหาค่าของประโยคสัญลักษณ์ A + B",
+        options: [
+            "(-40) + (-30) = -70",
+            "(-40) + (-50) = -90",
+            "(-20) + (-30) = -50",
+            "(-40) + 30 = -10"
+        ],
+        answer: 0,
+        clue: "ระวังเครื่องหมายลบชนกันใน B: -(-10) = +10",
+        explanation: "คำนวณ A = -15 + (-25) = -40 และ B = -40 - (-10) = -40 + 10 = -30 ดังนั้น A + B = (-40) + (-30) = -70"
+    },
+    {
+        id: 3,
+        question: "กำหนดให้ GCD(48, 72, 108) คือตัวหารร่วมมากของ 48, 72 และ 108 ค่าของ GCD ในข้อใดถูกต้อง",
+        options: [
+            "GCD(48, 72, 108) = 2^2 x 3 = 12",
+            "GCD(48, 72, 108) = 2^3 x 3 = 24",
+            "GCD(48, 72, 108) = 2^2 x 3^2 = 36",
+            "GCD(48, 72, 108) = 2 x 3^2 = 18"
+        ],
+        answer: 0,
+        clue: "แยกตัวประกอบแล้วเลือกตัวประกอบร่วมที่ยกกำลังน้อยที่สุด",
+        explanation: "48 = 2^4 x 3, 72 = 2^3 x 3^2, 108 = 2^2 x 3^3 ตัวประกอบร่วมที่น้อยที่สุดคือ 2^2 x 3 = 12"
+    },
+    {
+        id: 4,
+        question: "กำหนดให้ LCM(12, 15, 20) คือตัวคูณร่วมน้อยของ 12, 15 และ 20 ค่าของ LCM ตรงกับข้อใด",
+        options: [
+            "LCM(12, 15, 20) = 2^2 x 3 x 5 = 60",
+            "LCM(12, 15, 20) = 2^3 x 3 x 5 = 120",
+            "LCM(12, 15, 20) = 2^2 x 3^2 x 5 = 180",
+            "LCM(12, 15, 20) = 2 x 3^2 x 5 = 90"
+        ],
+        answer: 0,
+        clue: "เลือกตัวประกอบทุกตัวที่ยกกำลังมากที่สุดมารวมกัน",
+        explanation: "12 = 2^2 x 3, 15 = 3 x 5, 20 = 2^2 x 5 ดังนั้น LCM = 2^2 x 3 x 5 = 60"
+    },
+    {
+        id: 5,
+        question: "กำหนดให้ประโยคสัญลักษณ์คือ (24 - 6 x 3) + (12 / 4) ผลลัพธ์มีค่าเท่าใด",
+        options: [
+            "(24 - 18) + 3 = 6 + 3 = 9",
+            "(18 x 3) + 3 = 54 + 3 = 57",
+            "(24 - 18) + 4 = 6 + 4 = 10",
+            "(24 - 12) + 3 = 12 + 3 = 15"
+        ],
+        answer: 0,
+        clue: "ทำในวงเล็บและคำนวณการคูณ/หารก่อนการบวก",
+        explanation: "คำนวณในวงเล็บแรก 6 x 3 = 18 แล้วนำไปลบออกจาก 24 ได้ 6 ส่วนวงเล็บหลัง 12 / 4 = 3 นำมาบวกกันจะได้ 6 + 3 = 9"
+    },
+    {
+        id: 6,
+        question: "กำหนดเซต A = {17, 2
