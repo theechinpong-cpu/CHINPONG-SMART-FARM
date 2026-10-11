@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>เกมส์คำศัพท์ ม.1 เทอม 2 - English Flashcards & Quiz</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Font: Prompt -->
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Confetti Library for Celebrations -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        body { font-family: 'Prompt', sans-serif; }
+        .perspective-1000 { perspective: 1000px; }
+        .transform-style-3d { transform-style: preserve-3d; }
+        .backface-hidden { backface-visibility: hidden; }
+        .rotate-y-180 { transform: rotateY(180deg); }
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-8px); }
+        }
+        .animate-float { animation: float 3s ease-in-out infinite; }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 min-h-screen text-slate-100 flex flex-col justify-between selection:bg-pink-500 selection:text-white">
+
+    <!-- Header Navigation -->
+    <header class="bg-black/30 backdrop-blur-md border-b border-white/10 sticky top-0 z-50">
+        <div class="max-w-4xl mx-auto px-4 py-3 flex flex-col sm:flex-row justify-between items-center gap-3">
+            <div class="flex items-center space-x-3">
+                <span class="text-3xl animate-bounce">⚡</span>
+                <div>
+                    <h1 class="text-lg font-bold bg-gradient-to-r from-pink-400 via-purple-300 to-indigo-300 bg-clip-text text-transparent">M.1 Sem 2 Vocab Arena</h1>
+                    <p class="text-xs text-purple-200">ฝึกคำศัพท์ภาษาอังกฤษ ม.1 เทอม 2 แบบสนุกมีเสียงประกอบ</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2 bg-white/10 px-4 py-1.5 rounded-full border border-white/10 text-sm">
+                <span>🔥 Streak: <strong id="streak-val" class="text-pink-400">0</strong></span>
+                <span class="text-white/30">|</span>
+                <span>🏆 คะแนน: <strong id="score-val" class="text-emerald-400">0</strong></span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="max-w-xl w-full mx-auto px-4 py-6 flex-1 flex flex-col justify-center items-center">
+        
+        <!-- Mode Switcher Tabs -->
+        <div class="flex bg-white/10 p-1.5 rounded-2xl mb-6 backdrop-blur-sm border border-white/10 w-full max-w-sm">
+            <button onclick="switchMode('flashcard')" id="tab-flashcard" class="flex-1 py-2 text-sm font-semibold rounded-xl transition bg-pink-600 text-white shadow-lg">
+                🎴 แฟลชการ์ด
+            </button>
+            <button onclick="switchMode('quiz')" id="tab-quiz" class="flex-1 py-2 text-sm font-semibold rounded-xl transition text-purple-200 hover:text-white">
+                🎯 โหมดทดสอบ (Quiz)
+            </button>
+        </div>
+
+        <!-- Category Selector Filter -->
+        <div class="w-full mb-5 flex items-center justify-between gap-2 overflow-x-auto pb-2 scrollbar-none">
+            <button onclick="filterCategory('all')" id="cat-all" class="px-3 py-1.5 rounded-xl text-xs font-medium whitespace-nowrap bg-pink-600 text-white transition shadow-sm">
+                🌈 ทั้งหมด (54 คำ)
+            </button>
+            <button onclick="filterCategory(1)" id="cat-1" class="px-3 py-1.5 rounded-xl text-xs font-medium whitespace-nowrap bg-white/10 hover:bg-white/20 text-purple-200 transition">
+                ⛅ อากาศ
+            </button>
+            <button onclick="filterCategory(2)" id="cat-2" class="px-3 py-1.5 rounded-xl text-xs font-medium whitespace-nowrap bg-white/10 hover:bg-white/20 text-purple-200 transition">
+                🥗 อาหาร & สุขภาพ
+            </button>
+            <button onclick="filterCategory(3)" id="cat-3" class="px-3 py-1.5 rounded-xl text-xs font-medium whitespace-nowrap bg-white/10 hover:bg-white/20 text-purple-200 transition">
+                ✈️ เดินทาง
+            </button>
+            <button onclick="filterCategory(4)" id="cat-4" class="px-3 py-1.5 rounded-xl text-xs font-medium whitespace-nowrap bg-white/10 hover:bg-white/20 text-purple-200 transition">
+                🎉 เทศกาล
+            </button>
+            <button onclick="filterCategory(5)" id="cat-5" class="px-3 py-1.5 rounded-xl text-xs font-medium whitespace-nowrap bg-white/10 hover:bg-white/20 text-purple-200 transition">
+                ⚡ กริยา
+            </button>
+            <button onclick="filterCategory(6)" id="cat-6" class="px-3 py-1.5 rounded-xl text-xs font-medium whitespace-nowrap bg-white/10 hover:bg-white/20 text-purple-200 transition">
+                ✨ คุณศัพท์
+            </button>
+        </div>
+
+        <!-- Flashcard View -->
+        <div id="view-flashcard" class="w-full flex flex-col items-center">
+            <div class="w-full flex justify-between items-center mb-3 px-1 text-xs text-purple-300">
+                <span id="card-counter">การ์ดที่ 1 / 54</span>
+                <button onclick="shuffleCards()" class="hover:text-white flex items-center gap-1 transition">
+                    🔀 สับการ์ดสุ่ม
+                </button>
+            </div>
+
+            <!-- Flashcard 3D Element -->
+            <div class="w-full perspective-1000 h-80 cursor-pointer group mb-6 animate-float" onclick="flipCard()">
+                <div id="flashcard" class="relative w-full h-full duration-500 transform-style-3d shadow-2xl rounded-3xl border border-white/20">
+                    
+                    <!-- Front Side -->
+                    <div class="absolute inset-0 w-full h-full bg-gradient-to-br from-slate-900/90 to-indigo-950/90 backdrop-blur-xl rounded-3xl p-8 flex flex-col justify-between backface-hidden shadow-xl">
+                        <div class="flex justify-between items-center">
+                            <span id="fc-cat-badge" class="px-3 py-1 bg-pink-500/20 text-pink-300 border border-pink-500/30 rounded-full text-xs font-medium">หมวดสภาพอากาศ</span>
+                            <span class="text-xs text-purple-400 animate-pulse">คลิกเพื่อพลิกการ์ด 🔄</span>
+                        </div>
+                        
+                        <div class="text-center my-auto">
+                            <h2 id="fc-front" class="text-4xl sm:text-5xl font-extrabold text-white tracking-wide mb-2">Climate</h2>
+                            <p id="fc-pos" class="text-sm text-pink-400 font-medium">(Noun)</p>
+                        </div>
+
+                        <div class="text-center bg-white/5 py-2 px-4 rounded-2xl border border-white/10">
+                            <p class="text-xs text-purple-300">แตะการ์ดเพื่อดูคำแปลภาษาไทย</p>
+                        </div>
+                    </div>
+
+                    <!-- Back Side -->
+                    <div class="absolute inset-0 w-full h-full bg-gradient-to-br from-purple-900/90 to-pink-950/90 backdrop-blur-xl text-white rounded-3xl p-8 flex flex-col justify-between backface-hidden rotate-y-180 shadow-inner border border-white/20">
+                        <div class="flex justify-between items-center">
+                            <span class="px-3 py-1 bg-white/20 text-white rounded-full text-xs font-medium">คำแปลภาษาไทย</span>
+                            <span class="text-xs text-purple-200">พลิกกลับ 🔄</span>
+                        </div>
+
+                        <div class="text-center my-auto">
+                            <h3 id="fc-back" class="text-4xl sm:text-5xl font-bold tracking-tight mb-2 text-pink-200">ภูมิอากาศ</h3>
+                            <p class="text-xs text-purple-300">M.1 Semester 2 Vocabulary</p>
+                        </div>
+
+                        <div class="text-center bg-white/10 py-2 px-4 rounded-2xl backdrop-blur-sm border border-white/20">
+                            <p class="text-xs text-emerald-300 font-medium">สู้ๆ ท่องศัพท์วันละนิด เก่งแน่นอน!</p>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Flashcard Action Buttons -->
+            <div class="w-full grid grid-cols-2 gap-4">
+                <button onclick="markCard(false)" class="py-3 px-4 bg-white/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/30 rounded-2xl font-semibold transition active:scale-95 flex items-center justify-center gap-2 shadow-lg">
+                    <span>❌</span> ยังไม่ค่อยแม่น
+                </button>
+                <button onclick="markCard(true)" class="py-3 px-4 bg-emerald-600 hover:bg-emerald-500 text-white rounded-2xl font-semibold shadow-lg shadow-emerald-900/50 transition active:scale-95 flex items-center justify-center gap-2">
+                    <span>✅</span> จำได้แล้ว!
+                </button>
+            </div>
+
+            <!-- Navigation Bar -->
+            <div class="w-full flex justify-between items-center mt-5 px-2">
+                <button onclick="prevCard()" class="text-xs text-purple-300 hover:text-white font-medium flex items-center gap-1 transition">
+                    ⬅️ คำก่อนหน้า
+                </button>
+                <button onclick="nextCard()" class="text-xs text-purple-300 hover:text-white font-medium flex items-center gap-1 transition">
+                    คำถัดไป ➡️
+                </button>
+            </div>
+        </div>
+
+        <!-- Quiz View (Hidden by default) -->
+        <div id="view-quiz" class="w-full hidden flex-col items-center">
+            <div class="w-full bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-6 shadow-2xl relative overflow-hidden">
+                
+                <div class="flex justify-between items-center mb-4">
+                    <span id="quiz-progress" class="text-xs font-semibold px-3 py-1 bg-purple-500/20 text-purple-300 rounded-full border border-purple-500/30">คำถามที่ 1</span>
+                    <span id="quiz-category-tag" class="text-xs text-pink-300 font-medium">หมวดคำศัพท์</span>
+                </div>
+
+                <div class="text-center my-6">
+                    <p class="text-xs text-purple-300 mb-1">คำศัพท์ภาษาอังกฤษนี้แปลว่าอะไร?</p>
+                    <h2 id="quiz-question-word" class="text-4xl font-extrabold text-white tracking-wide">Loading...</h2>
+                </div>
+
+                <!-- Multiple Choice Options -->
+                <div id="quiz-options" class="grid grid-cols-1 gap-3 mb-4">
+                    <!-- Dynamic Options injected here -->
+                </div>
+
+                <div id="quiz-feedback" class="text-center text-sm font-semibold h-6 mb-2"></div>
+
+                <button id="quiz-next-btn" onclick="nextQuizQuestion()" class="w-full py-3 bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-500 hover:to-purple-500 text-white rounded-2xl font-bold shadow-lg transition hidden">
+                    ข้อถัดไป ➡️
+                </button>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="text-center py-4 text-xs text-purple-300/60 border-t border-white/10 bg-black/20">
+        Interactive Flashcard & Audio Engine • M.1 Semester 2 English
+    </footer>
+
+    <!-- Audio & Game Logic JavaScript -->
+    <script>
+        // --- Web Audio API Synthesizer Sound Effects ---
+        let audioCtx = null;
+
+        function getAudioContext() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            return audioCtx;
+        }
+
+        function playSound(type) {
+            try {
+                const ctx = getAudioContext();
+                const osc = ctx.createOscillator();
+                const gainNode = ctx.createGain();
+                osc.connect(gainNode);
+                gainNode.connect(ctx.destination);
+
+                const now = ctx.currentTime;
+
+                if (type === 'flip') {
+                    // Quick pop whoosh
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(300, now);
+                    osc.frequency.exponentialRampToValueAtTime(150, now + 0.1);
+                    gainNode.gain.setValueAtTime(0.15, now);
+                    gainNode.gain.linearRampToValueAtTime(0.01, now + 0.1);
+                    osc.start(now);
+                    osc.stop(now + 0.1);
+                } else if (type === 'correct') {
+                    // Happy chime chord sequence
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(523.25, now); // C5
+                    osc.frequency.setValueAtTime(659.25, now + 0.08); // E5
+                    osc.frequency.setValueAtTime(783.99, now + 0.16); // G5
+                    osc.frequency.setValueAtTime(1046.50, now + 0.24); // C6
+                    gainNode.gain.setValueAtTime(0.2, now);
+                    gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+                    osc.start(now);
+                    osc.stop(now + 0.5);
+                } else if (type === 'incorrect') {
+                    // Soft low buzz
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(160, now);
+                    osc.frequency.setValueAtTime(120, now + 0.15);
+                    gainNode.gain.setValueAtTime(0.15, now);
+                    gainNode.gain.linearRampToValueAtTime(0.01, now + 0.3);
+                    osc.start(now);
+                    osc.stop(now + 0.3);
+                } else if (type === 'streak') {
+                    // Fanfare jingle
+                    const notes = [440, 554.37, 659.25, 880];
+                    notes.forEach((freq, idx) => {
+                        const o = ctx.createOscillator();
+                        const g = ctx.createGain();
+                        o.connect(g);
+                        g.connect(ctx.destination);
+                        o.type = 'sine';
+                        o.frequency.setValueAtTime(freq, now + idx * 0.08);
+                        g.gain.setValueAtTime(0.2, now + idx * 0.08);
+                        g.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.08 + 0.25);
+                        o.start(now + idx * 0.08);
+                        o.stop(now + idx * 0.08 + 0.25);
+                    });
+                }
+            } catch (e) {
+                console.log("Audio Context prevented or not supported yet.", e);
+            }
+        }
+
+        // --- Vocabulary Dataset (All 54 items across 6 categories) ---
+        const vocabData = [
+            // Category 1: Weather & Seasons
+            { front: "Climate", back: "ภูมิอากาศ", pos: "(n.)", catId: 1, catName: "หมวดสภาพอากาศและฤดูกาล" },
+            { front: "Forecast", back: "การพยากรณ์, พยากรณ์อากาศ", pos: "(n./v.)", catId: 1, catName: "หมวดสภาพอากาศและฤดูกาล" },
+            { front: "Temperature", back: "อุณหภูมิ", pos: "(n.)", catId: 1, catName: "หมวดสภาพอากาศและฤดูกาล" },
+            { front: "Degree", back: "องศา", pos: "(n.)", catId: 1, catName: "หมวดสภาพอากาศและฤดูกาล" },
+            { front: "Humid", back: "ชื้น, อบอ้าว", pos: "(adj.)", catId: 1, catName: "หมวดสภาพอากาศและฤดูกาล" },
+            { front: "Breeze", back: "ลมโชย, ลมพัดเบาๆ", pos: "(n.)", catId: 1, catName: "หมวดสภาพอากาศและฤดูกาล" },
+            { front: "Blizzard", back: "พายุหิมะ", pos: "(n.)", catId: 1, catName: "หมวดสภาพอากาศและฤดูกาล" },
+            { front: "Drizzle", back: "ฝนปรอยๆ", pos: "(n./v.)", catId: 1, catName: "หมวดสภาพอากาศและฤดูกาล" },
+            { front: "Thunderstorm", back: "พายุฝนฟ้าคะนอง", pos: "(n.)", catId: 1, catName: "หมวดสภาพอากาศและฤดูกาล" },
+
+            // Category 2: Food, Drinks & Health
+            { front: "Ingredient", back: "ส่วนผสม (ในการทำอาหาร)", pos: "(n.)", catId: 2, catName: "หมวดอาหาร เครื่องดื่ม และสุขภาพ" },
+            { front: "Recipe", back: "ตำรับยา, สูตรอาหาร", pos: "(n.)", catId: 2, catName: "หมวดอาหาร เครื่องดื่ม และสุขภาพ" },
+            { front: "Nutritious", back: "มีคุณค่าทางโภชนาการ, มีประโยชน์", pos: "(adj.)", catId: 2, catName: "หมวดอาหาร เครื่องดื่ม และสุขภาพ" },
+            { front: "Balanced diet", back: "อาหารที่ครบ 5 หมู่ / อาหารสมดุล", pos: "(n.)", catId: 2, catName: "หมวดอาหาร เครื่องดื่ม และสุขภาพ" },
+            { front: "Symptom", back: "อาการ (ของโรค)", pos: "(n.)", catId: 2, catName: "หมวดอาหาร เครื่องดื่ม และสุขภาพ" },
+            { front: "Medicine", back: "ยา", pos: "(n.)", catId: 2, catName: "หมวดอาหาร เครื่องดื่ม และสุขภาพ" },
+            { front: "Pharmacy", back: "ร้านขายยา", pos: "(n.)", catId: 2, catName: "หมวดอาหาร เครื่องดื่ม และสุขภาพ" },
+            { front: "Ache", back: "อาการปวด", pos: "(n./v.)", catId: 2, catName: "หมวดอาหาร เครื่องดื่ม และสุขภาพ" },
+            { front: "Recover", back: "ฟื้นไข้, หายจากป่วย", pos: "(v.)", catId: 2, catName: "หมวดอาหาร เครื่องดื่ม และสุขภาพ" },
+
+            // Category 3: Travel & Places
+            { front: "Destination", back: "จุดหมายปลายทาง", pos: "(n.)", catId: 3, catName: "หมวดการเดินทางและสถานที่" },
+            { front: "Journey", back: "การเดินทาง", pos: "(n.)", catId: 3, catName: "หมวดการเดินทางและสถานที่" },
+            { front: "Luggage / Baggage", back: "กระเป๋าเดินทาง", pos: "(n.)", catId: 3, catName: "หมวดการเดินทางและสถานที่" },
+            { front: "Departure", back: "การออกเดินทาง", pos: "(n.)", catId: 3, catName: "หมวดการเดินทางและสถานที่" },
+            { front: "Arrival", back: "การมาถึง", pos: "(n.)", catId: 3, catName: "หมวดการเดินทางและสถานที่" },
+            { front: "Passenger", back: "ผู้โดยสาร", pos: "(n.)", catId: 3, catName: "หมวดการเดินทางและสถานที่" },
+            { front: "Accommodation", back: "ที่พักอาศัย", pos: "(n.)", catId: 3, catName: "หมวดการเดินทางและสถานที่" },
+            { front: "Direction", back: "ทิศทาง", pos: "(n.)", catId: 3, catName: "หมวดการเดินทางและสถานที่" },
+            { front: "Sightseeing", back: "การเที่ยวชมสถานที่ต่างๆ", pos: "(n.)", catId: 3, catName: "หมวดการเดินทางและสถานที่" },
+
+            // Category 4: Festivals, Holidays & Hobbies
+            { front: "Celebration", back: "การเฉลิมฉลอง", pos: "(n.)", catId: 4, catName: "หมวดเทศกาล วันสำคัญ และงานอดิเรก" },
+            { front: "Tradition", back: "ประเพณี, ธรรมเนียม", pos: "(n.)", catId: 4, catName: "หมวดเทศกาล วันสำคัญ และงานอดิเรก" },
+            { front: "Custom", back: "ขนบธรรมเนียม", pos: "(n.)", catId: 4, catName: "หมวดเทศกาล วันสำคัญ และงานอดิเรก" },
+            { front: "Decoration", back: "การตกแต่ง, เครื่องประดับ", pos: "(n.)", catId: 4, catName: "หมวดเทศกาล วันสำคัญ และงานอดิเรก" },
+            { front: "Firework", back: "ดอกไม้ไฟ", pos: "(n.)", catId: 4, catName: "หมวดเทศกาล วันสำคัญ และงานอดิเรก" },
+            { front: "Performance", back: "การแสดง", pos: "(n.)", catId: 4, catName: "หมวดเทศกาล วันสำคัญ และงานอดิเรก" },
+            { front: "Leisure", back: "เวลาว่าง", pos: "(n.)", catId: 4, catName: "หมวดเทศกาล วันสำคัญ และงานอดิเรก" },
+            { front: "Collect", back: "สะสม", pos: "(v.)", catId: 4, catName: "หมวดเทศกาล วันสำคัญ และงานอดิเรก" },
+            { front: "Exhibition", back: "นิทรรศการ", pos: "(n.)", catId: 4, catName: "หมวดเทศกาล วันสำคัญ และงานอดิเรก" },
+
+            // Category 5: Important Verbs
+            { front: "Compare", back: "เปรียบเทียบ", pos: "(v.)", catId: 5, catName: "หมวดคำกริยาสำคัญ" },
+            { front: "Describe", back: "บรรยาย, พรรณนา", pos: "(v.)", catId: 5, catName: "หมวดคำกริยาสำคัญ" },
+            { front: "Express", back: "แสดงออก, แสดงความรู้สึก", pos: "(v.)", catId: 5, catName: "หมวดคำกริยาสำคัญ" },
+            { front: "Improve", back: "ทำให้ดีขึ้น, พัฒนา", pos: "(v.)", catId: 5, catName: "หมวดคำกริยาสำคัญ" },
+            { front: "Invent", back: "ประดิษฐ์คิดค้น", pos: "(v.)", catId: 5, catName: "หมวดคำกริยาสำคัญ" },
+            { front: "Prevent", back: "ป้องกัน", pos: "(v.)", catId: 5, catName: "หมวดคำกริยาสำคัญ" },
+            { front: "Recommend", back: "แนะนำ", pos: "(v.)", catId: 5, catName: "หมวดคำกริยาสำคัญ" },
+            { front: "Survive", back: "เอาชีวิตรอด", pos: "(v.)", catId: 5, catName: "หมวดคำกริยาสำคัญ" },
+            { front: "Translate", back: "แปล", pos: "(v.)", catId: 5, catName: "หมวดคำกริยาสำคัญ" },
+
+            // Category 6: Adjectives
+            { front: "Ancient", back: "โบราณ, เก่าแก่มาก", pos: "(adj.)", catId: 6, catName: "หมวดคำคุณศัพท์" },
+            { front: "Convenient", back: "สะดวกสบาย", pos: "(adj.)", catId: 6, catName: "หมวดคำคุณศัพท์" },
+            { front: "Crowded", back: "แออัด, ผู้คนหนาแน่น", pos: "(adj.)", catId: 6, catName: "หมวดคำคุณศัพท์" },
+            { front: "Exciting", back: "น่าตื่นเต้น", pos: "(adj.)", catId: 6, catName: "หมวดคำคุณศัพท์" },
+            { front: "Fascinating", back: "น่าหลงใหล, น่าสนใจมาก", pos: "(adj.)", catId: 6, catName: "หมวดคำคุณศัพท์" },
+            { front: "Harmful", back: "เป็นอันตราย", pos: "(adj.)", catId: 6, catName: "หมวดคำคุณศัพท์" },
+            { front: "Polluted", back: "ซึ่งมีมลพิษ", pos: "(adj.)", catId: 6, catName: "หมวดคำคุณศัพท์" },
+            { front: "Relaxing", back: "ผ่อนคลาย", pos: "(adj.)", catId: 6, catName: "หมวดคำคุณศัพท์" },
+            { front: "Unforgettable", back: "น่าจดจำไม่รู้ลืม", pos: "(adj.)", catId: 6, catName: "หมวดคำคุณศัพท์" }
+        ];
+
+        // --- Game State Variables ---
+        let currentFilter = 'all';
+        let activeCards = [...vocabData];
+        let currentIndex = 0;
+        let isFlipped = false;
+        let score = parseInt(localStorage.getItem('m1_vocab_score') || '0');
+        let streak = parseInt(localStorage.getItem('m1_vocab_streak') || '0');
+        let currentMode = 'flashcard'; // 'flashcard' or 'quiz'
+        let quizCurrentItem = null;
+        let quizQuestionCount = 0;
+
+        // Initialize display stats
+        document.getElementById('score-val').innerText = score;
+        document.getElementById('streak-val').innerText = streak;
+
+        // --- Mode Switcher ---
+        function switchMode(mode) {
+            currentMode = mode;
+            playSound('flip');
+            const fcTab = document.getElementById('tab-flashcard');
+            const qzTab = document.getElementById('tab-quiz');
+            const fcView = document.getElementById('view-flashcard');
+            const qzView = document.getElementById('view-quiz');
+
+            if (mode === 'flashcard') {
+                fcTab.className = "flex-1 py-2 text-sm font-semibold rounded-xl transition bg-pink-600 text-white shadow-lg";
+                qzTab.className = "flex-1 py-2 text-sm font-semibold rounded-xl transition text-purple-200 hover:text-white";
+                fcView.classList.remove('hidden');
+                fcView.classList.add('flex');
+                qzView.classList.remove('flex');
+                qzView.classList.add('hidden');
+                updateFlashcardDisplay();
+            } else {
+                qzTab.className = "flex-1 py-2 text-sm font-semibold rounded-xl transition bg-purple-600 text-white shadow-lg";
+                fcTab.className = "flex-1 py-2 text-sm font-semibold rounded-xl transition text-purple-200 hover:text-white";
+                qzView.classList.remove('hidden');
+                qzView.classList.add('flex');
+                fcView.classList.remove('flex');
+                fcView.classList.add('hidden');
+                loadQuizQuestion();
+            }
+        }
+
+        // --- Category Filter ---
+        function filterCategory(catId) {
+            playSound('flip');
+            currentFilter = catId;
+            
+            // Update button styles
+            ['all', 1, 2, 3, 4, 5, 6].forEach(id => {
+                const btn = document.getElementById(`cat-${id}`);
+                if (btn) {
+                    if (id === catId) {
+                        btn.className = "px-3 py-1.5 rounded-xl text-xs font-medium whitespace-nowrap bg-pink-600 text-white transition shadow-sm";
+                    } else {
+                        btn.className = "px-3 py-1.5 rounded-xl text-xs font-medium whitespace-nowrap bg-white/10 hover:bg-white/20 text-purple-200 transition";
+                    }
+                }
+            });
+
+            if (catId === 'all') {
+                activeCards = [...vocabData];
+            } else {
+                activeCards = vocabData.filter(item => item.catId === catId);
+            }
+            currentIndex = 0;
+
+            if (currentMode === 'flashcard') {
+                updateFlashcardDisplay();
+            } else {
+                loadQuizQuestion();
+            }
+        }
+
+        // --- Flashcard Logic ---
+        function updateFlashcardDisplay() {
+            if (activeCards.length === 0) return;
+            const card = activeCards[currentIndex];
+            document.getElementById('fc-front').innerText = card.front;
+            document.getElementById('fc-back').innerText = card.back;
+            document.getElementById('fc-pos').innerText = card.pos;
+            document.getElementById('fc-cat-badge').innerText = card.catName;
+            document.getElementById('card-counter').innerText = `การ์ดที่ ${currentIndex + 1} / ${activeCards.length}`;
+
+            if (isFlipped) {
+                flipCard(true);
+            }
+        }
+
+        function flipCard(forceReset = false) {
+            const cardEl = document.getElementById('flashcard');
+            if (forceReset) {
+                isFlipped = false;
+                cardEl.classList.remove('rotate-y-180');
+            } else {
+                playSound('flip');
+                isFlipped = !isFlipped;
+                if (isFlipped) {
+                    cardEl.classList.add('rotate-y-180');
+                } else {
+                    cardEl.classList.remove('rotate-y-180');
+                }
+            }
+        }
+
+        function nextCard() {
+            playSound('flip');
+            currentIndex = (currentIndex + 1) % activeCards.length;
+            updateFlashcardDisplay();
+        }
+
+        function prevCard() {
+            playSound('flip');
+            currentIndex = (currentIndex - 1 + activeCards.length) % activeCards.length;
+            updateFlashcardDisplay();
+        }
+
+        function shuffleCards() {
+            playSound('streak');
+            for (let i = activeCards.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [activeCards[i], activeCards[j]] = [activeCards[j], activeCards[i]];
+            }
+            currentIndex = 0;
+            updateFlashcardDisplay();
+        }
+
+        function markCard(known) {
+            if (known) {
+                score += 10;
+                streak += 1;
+                playSound('correct');
+                if (streak % 5 === 0) {
+                    confetti({ particleCount: 80, spread: 60, origin: { y: 0.6 } });
+                }
+            } else {
+                playSound('incorrect');
+                streak = 0;
+            }
+            localStorage.setItem('m1_vocab_score', score);
+            localStorage.setItem('m1_vocab_streak', streak);
+            document.getElementById('score-val').innerText = score;
+            document.getElementById('streak-val').innerText = streak;
+            nextCard();
+        }
+
+        // --- Quiz Mode Logic ---
+        function loadQuizQuestion() {
+            quizQuestionCount++;
+            document.getElementById('quiz-progress').innerText = `คำถามข้อที่ ${quizQuestionCount}`;
+            
+            // Pick a random item from active cards
+            const randomIndex = Math.floor(Math.random() * activeCards.length);
+            quizCurrentItem = activeCards[randomIndex];
+
+            document.getElementById('quiz-question-word').innerText = quizCurrentItem.front + " " + quizCurrentItem.pos;
+            document.getElementById('quiz-category-tag').innerText = quizCurrentItem.catName;
+            document.getElementById('quiz-feedback').innerText = "";
+            document.getElementById('quiz-next-btn').classList.add('hidden');
+
+            // Generate 3 wrong choices + 1 correct choice
+            let options = [quizCurrentItem.back];
+            while (options.length < 4 && vocabData.length >= 4) {
+                const randItem = vocabData[Math.floor(Math.random() * vocabData.length)];
+                if (!options.includes(randItem.back)) {
+                    options.push(randItem.back);
+                }
+            }
+            // Shuffle options
+            options.sort(() => Math.random() - 0.5);
+
+            const optionsContainer = document.getElementById('quiz-options');
+            optionsContainer.innerHTML = "";
+
+            options.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = "w-full py-3.5 px-4 bg-white/10 hover:bg-white/20 border border-white/20 rounded-2xl text-left font-medium transition text-white shadow-sm flex justify-between items-center";
+                btn.innerHTML = `<span>${opt}</span> <span class="text-xs text-purple-300">เลือกตอบ</span>`;
+                btn.onclick = () => checkQuizAnswer(opt, btn);
+                optionsContainer.appendChild(btn);
+            });
+        }
+
+        function checkQuizAnswer(selectedAnswer, btnElement) {
+            const allBtns = document.getElementById('quiz-options').querySelectorAll('button');
+            allBtns.forEach(b => b.disabled = true);
+
+            const feedback = document.getElementById('quiz-feedback');
+
+            if (selectedAnswer === quizCurrentItem.back) {
+                playSound('correct');
+                score += 15;
+                streak += 1;
+                btnElement.className = "w-full py-3.5 px-4 bg-emerald-600 border border-emerald-400 rounded-2xl text-left font-bold text-white shadow-lg flex justify-between items-center";
+                feedback.innerHTML = "<span class='text-emerald-400'>🎉 ถูกต้องเก่งมากครับ! (+15 คะแนน)</span>";
+                confetti({ particleCount: 70, spread: 70, origin: { y: 0.6 } });
+            } else {
+                playSound('incorrect');
+                streak = 0;
+                btnElement.className = "w-full py-3.5 px-4 bg-rose-600 border border-rose-400 rounded-2xl text-left font-bold text-white shadow-lg flex justify-between items-center";
+                feedback.innerHTML = `<span class='text-rose-400'>❌ ผิดครับ ที่ถูกต้องคือ: <strong>${quizCurrentItem.back}</strong></span>`;
+                
+                // Highlight correct one
+                allBtns.forEach(b => {
+                    if (b.innerText.includes(quizCurrentItem.back)) {
+                        b.className = "w-full py-3.5 px-4 bg-emerald-600/60 border border-emerald-400 rounded-2xl text-left font-bold text-white flex justify-between items-center";
+                    }
+                });
+            }
+
+            localStorage.setItem('m1_vocab_score', score);
+            localStorage.setItem('m1_vocab_streak', streak);
+            document.getElementById('score-val').innerText = score;
+            document.getElementById('streak-val').innerText = streak;
+
+            document.getElementById('quiz-next-btn').classList.remove('hidden');
+        }
+
+        function nextQuizQuestion() {
+            playSound('flip');
+            loadQuizQuestion();
+        }
+
+        // Initialize first view
+        updateFlashcardDisplay();
+    </script>
+</body>
+</html>
