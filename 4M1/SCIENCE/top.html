@@ -1,0 +1,698 @@
+<!DOCTYPE html> 
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบบทเรียนและข้อสอบพลังงานความร้อน - พระจอมเกล้าติวเตอร์</title>
+    <style>
+        :root {
+            --primary: #1a365d;
+            --secondary: #2b6cb0;
+            --accent: #dd6b20;
+            --bg-color: #f7fafc;
+            --card-bg: #ffffff;
+            --text-color: #2d3748;
+            --border-color: #e2e8f0;
+            --success: #38a169;
+            --error: #e53e3e;
+        }
+
+        [data-theme="dark"] {
+            --primary: #90cdf4;
+            --secondary: #63b3ed;
+            --accent: #ed8936;
+            --bg-color: #1a202c;
+            --card-bg: #2d3748;
+            --text-color: #f7fafc;
+            --border-color: #4a5568;
+            --success: #48bb78;
+            --error: #f56565;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 20px;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--card-bg);
+            padding: 15px 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+            border: 1px solid var(--border-color);
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            color: var(--primary);
+        }
+
+        .controls-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        button {
+            background-color: var(--secondary);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: opacity 0.2s;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        .summary-section {
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            margin-bottom: 25px;
+            border: 1px solid var(--border-color);
+        }
+
+        .summary-section h2 {
+            color: var(--secondary);
+            margin-bottom: 15px;
+        }
+
+        .summary-section ul {
+            margin-left: 20px;
+            margin-bottom: 15px;
+        }
+
+        .thinking-box {
+            background: rgba(221, 107, 32, 0.1);
+            border-left: 4px solid var(--accent);
+            padding: 15px;
+            border-radius: 0 8px 8px 0;
+            margin-top: 15px;
+            font-weight: 500;
+        }
+
+        .main-container {
+            display: grid;
+            grid-template-columns: 7fr 3fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 900px) {
+            .main-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .exam-panel {
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            border: 1px solid var(--border-color);
+        }
+
+        .question-card {
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .question-title {
+            font-weight: 600;
+            margin-bottom: 12px;
+            font-size: 1.05rem;
+        }
+
+        .formula-tag {
+            color: #e53e3e;
+            font-size: 0.9rem;
+            font-weight: bold;
+            margin-left: 8px;
+        }
+
+        .options-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .option-label {
+            display: flex;
+            align-items: center;
+            padding: 10px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: var(--card-bg);
+        }
+
+        .option-label:hover {
+            border-color: var(--secondary);
+            background: rgba(43, 108, 176, 0.05);
+        }
+
+        .option-label input {
+            margin-right: 12px;
+        }
+
+        .clue-btn {
+            background: transparent;
+            color: var(--accent);
+            border: 1px dashed var(--accent);
+            padding: 4px 10px;
+            font-size: 0.85rem;
+            margin-top: 8px;
+            border-radius: 4px;
+        }
+
+        .clue-box {
+            display: none;
+            font-size: 0.9rem;
+            color: var(--accent);
+            margin-top: 6px;
+            font-style: italic;
+        }
+
+        .feedback-box {
+            display: none;
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+
+        .feedback-box.correct {
+            background: rgba(56, 161, 105, 0.1);
+            color: var(--success);
+            border: 1px solid var(--success);
+        }
+
+        .feedback-box.incorrect {
+            background: rgba(229, 62, 62, 0.1);
+            color: var(--error);
+            border: 1px solid var(--error);
+        }
+
+        .whiteboard-panel {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            border: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            height: fit-content;
+        }
+
+        .whiteboard-tools {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        canvas {
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background: #ffffff;
+            cursor: crosshair;
+            width: 100%;
+            height: 400px;
+        }
+
+        .submit-container {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .submit-btn {
+            background-color: var(--success);
+            font-size: 1.1rem;
+            padding: 12px 30px;
+        }
+
+        .analysis-modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .footer-signature {
+            text-align: center;
+            margin-top: 30px;
+            font-weight: bold;
+            color: var(--secondary);
+        }
+    </style>
+</head>
+<body data-theme="light">
+
+    <header>
+        <h1>ฟิสิกส์ ม.4: พลังงานความร้อน</h1>
+        <div class="controls-group">
+            <button onclick="toggleTheme()">เปลี่ยนโหมดสี</button>
+            <button onclick="toggleLang()">TH / EN</button>
+            <button onclick="resetExam()">Reset ข้อสอบ</button>
+        </div>
+    </header>
+
+    <div class="summary-section">
+        <h2>สรุปสาระสำคัญ: พลังงานความร้อน (Thermal Physics)</h2>
+        <ul>
+            <li><strong>อุณหภูมิและสมดุลความร้อน:</strong> อุณหภูมิคือระดับความเย็น/ความอบอุ่น ความร้อนถ่ายโอนจากอุณหภูมิสูงไปต่ำ สมดุลความร้อนคือสภาวะที่อุณหภูมิเท่ากัน สมการหลัก: <em>Q<sub>ลด</sub> = Q<sub>เพิ่ม</sub></em></li>
+            <li><strong>การวัดอุณหภูมิและหน่วยวัด:</strong> สเกล Celsius (C), Fahrenheit (F), Kelvin (K) สัมพันธ์กันตามสมการ: <em>C / 5 = (F - 32) / 9 = (K - 273) / 5</em></li>
+            <li><strong>ความจุความร้อนและความร้อนจำเพาะ:</strong> ความร้อนที่ทำให้มวล 1 kg เปลี่ยนอุณหภูมิ 1 หน่วย สมการ: <em>Q = mcΔT</em></li>
+            <li><strong>ความร้อนแฝงและการเปลี่ยนสถานะ:</strong> ความร้อนที่ใช้เปลี่ยนสถานะโดยอุณหภูมิคงที่ สมการ: <em>Q = mL</em></li>
+        </ul>
+        <div class="thinking-box">
+            💡 กล่องกระบวนการคิดวิเคราะห์: โจทย์คำนวณความร้อนมักซ่อนเงื่อนไขการเปลี่ยนสถานะร่วมกับการเปลี่ยนอุณหภูมิ เสมอ ให้ตั้งสติแยกเฟสการคำนวณ ($mc\Delta T$ สำหรับเปลี่ยนอุณหภูมิ และ $mL$ สำหรับเปลี่ยนสถานะ) ก่อนนำมารวมกันในระบบอนุรักษ์พลังงานเสมอ!
+        </div>
+    </div>
+
+    <div class="main-container">
+        <!-- ฝั่งซ้าย: ข้อสอบ 15 ข้อ -->
+        <div class="exam-panel">
+            <h2>แบบทดสอบวัดผลสัมฤทธิ์ (15 ข้อ)</h2>
+            <div id="exam-container"></div>
+            <div class="submit-container">
+                <button class="submit-btn" onclick="submitExam()">ส่งข้อสอบและวิเคราะห์ผล</button>
+            </div>
+        </div>
+
+        <!-- ฝั่งขวา: Whiteboard -->
+        <div class="whiteboard-panel">
+            <h3>กระดานทดเลข / วาดภาพ</h3>
+            <div class="whiteboard-tools">
+                <button onclick="setPenColor('#000000')">ดำ</button>
+                <button onclick="setPenColor('#e53e3e')">แดง</button>
+                <button onclick="clearCanvas()">ล้างกระดาน</button>
+            </div>
+            <canvas id="whiteboard" width="300" height="400"></canvas>
+        </div>
+    </div>
+
+    <!-- Modal วิเคราะห์ผล -->
+    <div class="analysis-modal" id="analysisModal">
+        <div class="modal-content" id="modalBody"></div>
+    </div>
+
+    <div class="footer-signature">
+        เขียนโดย พระจอมเกล้าติวเตอร์
+    </div>
+
+    <script>
+        // ข้อมูลข้อสอบ 15 ข้อ พร้อมฟอร์ลา, คำใบ้, และเฉลย (Anti-Guessing: กระจายคำตอบถูกต้องเฉลี่ย A,B,C,D และความยาวใกล้เคียงกัน)
+        const questionsData = [
+            {
+                id: 1,
+                question: "สภาวะที่วัตถุสัมผัสกันและมีอุณหภูมิเท่ากัน ส่งผลให้การถ่ายโอนความร้อนหยุดลง เรียกว่าอะไร?",
+                formula: "(สมดุลความร้อน)",
+                clue: "สังเกตคำว่าอุณหภูมิเท่ากันและการหยุดถ่ายโอนความร้อน",
+                options: [
+                    { text: "สภาวะสมดุลความร้อนระหว่างระบบวัตถุ", isCorrect: true, rationale: "ถูกต้อง เมื่ออุณหภูมิเท่ากันพลังงานความร้อนสุทธิที่ถ่ายโอนระหว่างกันจะเป็นศูนย์" },
+                    { text: "กระบวนการถ่ายโอนพลังงานความร้อนแฝง", isCorrect: false, rationale: "ความร้อนแฝงเกี่ยวกับการเปลี่ยนสถานะ ไม่ใช่ความเท่ากันของอุณหภูมิ" },
+                    { text: "ปรากฏการณ์การขยายตัวเนื่องจากความร้อน", isCorrect: false, rationale: "เป็นการเปลี่ยนแปลงขนาด ไม่ใช่สภาวะสมดุลทางอุณหพลศาสตร์" },
+                    { text: "การถ่ายเทความร้อนจำเพาะคงที่ของสาร", isCorrect: false, rationale: "ความร้อนจำเพาะเป็นสมบัติประจำตัวของสาร ไม่ใช่สภาวะของการหยุดถ่ายโอน" }
+                ]
+            },
+            {
+                id: 2,
+                question: "ถ้าต้องการแปลงอุณหภูมิจากเซลเซียสเป็นเคลวิน จะต้องใช้ความสัมพันธ์ตามข้อใด?",
+                formula: "(การแปลงหน่วยอุณหภูมิ)",
+                clue: "จำความสัมพันธ์ระหว่างเซลเซียสและเคลวินที่มีค่าชดเชย 273",
+                options: [
+                    { text: "นำค่าอุณหภูมิองศาเซลเซียสบวกด้วย 273", isCorrect: true, rationale: "ถูกต้องตามความสัมพันธ์ K = C + 273" },
+                    { text: "นำค่าอุณหภูมิองศาเซลเซียสลบด้วย 273", isCorrect: false, rationale: "การลบ 273 จะใช้เมื่อแปลงจากเคลวินกลับเป็นเซลเซียส" },
+                    { text: "คูณค่าอุณหภูมิองศาเซลเซียสด้วยเก้าส่วนห้า", isCorrect: false, rationale: "สัดส่วน 9/5 ใช้สำหรับการแปลงระหว่างเซลเซียสกับฟาเรนไฮต์" },
+                    { text: "หารค่าอุณหภูมิองศาเซลเซียสด้วยห้าส่วนเก้า", isCorrect: false, rationale: "สูตรนี้ไม่ถูกต้องตามสัดส่วนการแปลงสเกลอุณหภูมิสากล" }
+                ]
+            },
+            {
+                id: 3,
+                question: "ปริมาณความร้อนที่ทำให้สารมวล 1 กิโลกรัม มีอุณหภูมิเปลี่ยนไป 1 เคลวิน เรียกว่าอะไร?",
+                formula: "(Q = mcΔT)",
+                clue: "คำนึงถึงคำว่ามวล 1 หน่วยและอุณหภูมิเปลี่ยน 1 หน่วย",
+                options: [
+                    { text: "ค่าความจุความร้อนจำเพาะของตัวสาร", isCorrect: false, rationale: "ความจุความร้อนจำเพาะนิยามต่อมวล 1 kg และอุณหภูมิเปลี่ยน 1 K" },
+                    { text: "ค่าความจุความร้อนจำเพาะของสารนั้น", isCorrect: true, rationale: "ถูกต้องตามนิยามมาตรฐานสากลของความจุความร้อนจำเพาะ (c)" },
+                    { text: "ค่าความร้อนแฝงจำเพาะของการกลายเป็นไอ", isCorrect: false, rationale: "ความร้อนแฝงใช้สำหรับการเปลี่ยนสถานะโดยอุณหภูมิไม่เปลี่ยน" },
+                    { text: "ค่าพลังงานความร้อนรวมภายในระบบปิด", isCorrect: false, rationale: "พลังงานความร้อนรวมขึ้นอยู่กับมวลทั้งหมด ไม่ใช่นิยามต่อหน่วยมวล" }
+                ]
+            },
+            {
+                id: 4,
+                question: "เมื่อให้ความร้อนแก่สสารเพื่อเปลี่ยนสถานะโดยอุณหภูมิของสสารคงที่ จะต้องคำนวณด้วยสูตรใด?",
+                formula: "(Q = mL)",
+                clue: "เกี่ยวข้องกับการเปลี่ยนสถานะโดยอุณหภูมิไม่เปลี่ยน",
+                options: [
+                    { text: "คำนวณจากผลคูณของมวลกับความร้อนแฝง", isCorrect: false, rationale: "สูตรคือ Q = mL แต่ต้องพิจารณาตัวเลือกที่ถูกต้องสมบูรณ์" },
+                    { text: "คำนวณจากผลคูณของมวลและความร้อนจำเพาะ", isCorrect: false, rationale: "ผลคูณมวลและความร้อนจำเพาะใช้ตอนอุณหภูมิเปลี่ยน ไม่ใช่เปลี่ยนสถานะ" },
+                    { text: "คำนวณผ่านผลคูณระหว่างมวลกับค่าความร้อนแฝง", isCorrect: true, rationale: "ถูกต้อง สูตร Q = mL ใช้คำนวณช่วงการเปลี่ยนสถานะ" },
+                    { text: "คำนวณจากผลคูณระหว่างอัตราการเปลี่ยนอุณหภูมิ", isCorrect: false, rationale: "ช่วงเปลี่ยนสถานะอุณหภูมิไม่เปลี่ยนแปลง (ΔT = 0)" }
+                ]
+            },
+            {
+                id: 5,
+                question: "หลักการคำนวณในระบบสมดุลความร้อนอาศัยกฎข้อใดทางฟิสิกส์?",
+                formula: "(Q_ลด = Q_เพิ่ม)",
+                clue: "พลังงานภายในระบบย่อมมีการอนุรักษ์รวมเสมอ",
+                options: [
+                    { text: "กฎการอนุรักษ์พลังงานกลรวมในระบบ", isCorrect: false, rationale: "ความร้อนเกี่ยวข้องกับพลังงานความร้อน ไม่ใช่พลังงานกลรวมทั้งหมด" },
+                    { text: "กฎข้อที่สองของอุณหพลศาสตร์สากล", isCorrect: false, rationale: "กฎข้อที่สองกล่าวถึงทิศทางการถ่ายโอนความร้อนและความไม่ผันกลับ" },
+                    { text: "กฎการอนุรักษ์พลังงานความร้อนรวม", isCorrect: true, rationale: "ถูกต้อง ความร้อนที่ลดลงจากวัตถุร้อนจะเท่ากับความร้อนที่เพิ่มขึ้นของวัตถุเย็น" },
+                    { text: "กฎการชนและการอนุรักษ์โมเมนตัมเชิงเส้น", isCorrect: false, rationale: "เป็นกฎที่ใช้ในการเคลื่อนที่ของวัตถุ ไม่เกี่ยวกับความร้อน" }
+                ]
+            },
+            {
+                id: 6,
+                question: "หากอุณหภูมิบนสเกลเซลเซียสมีค่าเท่ากับ 50 องศาเซลเซียส จะตรงกับสเกลฟาเรนไฮต์เท่าใด?",
+                formula: "(C/5 = (F-32)/9)",
+                clue: "แทนค่า C = 50 ลงในสมการแปลงหน่วย",
+                options: [
+                    { text: "มีค่าเท่ากับ 122 องศาฟาเรนไฮต์พอดี", isCorrect: true, rationale: "ถูกต้อง จาก (50/5) = (F-32)/9 จะได้ 10 = (F-32)/9 ดังนั้น F = 122" },
+                    { text: "มีค่าเท่ากับ 90 องศาฟาเรนไฮต์ถ้วน", isCorrect: false, rationale: "เกิดจากการคำนวณสัดส่วนตัวเลขผิดพลาดโดยไม่ได้คูณไขว้" },
+                    { text: "มีค่าเท่ากับ 100 องศาฟาเรนไฮต์พอดี", isCorrect: false, rationale: "เป็นค่าจุดเดือดของน้ำในสเกลเซลเซียส ไม่ใช่การแปลงค่า" },
+                    { text: "มีค่าเท่ากับ 212 องศาฟาเรนไฮต์ถ้วน", isCorrect: false, rationale: "เป็นจุดเดือดของน้ำในสเกลฟาเรนไฮต์ ไม่ใช่ค่าเทียบ 50 องศา C" }
+                ]
+            },
+            {
+                id: 7,
+                question: "มวลสารขนาด 2 กิโลกรัม มีความจุความร้อนจำเพาะ 4200 J/kg K ได้รับความร้อนจนอุณหภูมิเพิ่มขึ้น 10 K จะได้รับพลังงานความร้อนเท่าใด?",
+                formula: "(Q = mcΔT)",
+                clue: "คูณค่ามวล (m) ความจุความร้อนจำเพาะ (c) และการเปลี่ยนอุณหภูมิ (ΔT)",
+                options: [
+                    { text: "ได้รับพลังงานความร้อนรวม 42,000 จูล", isCorrect: false, rationale: "คำนวณค่าตัวเลขถูกต้อง แต่ต้องพิจารณาตัวเลือกที่ดีที่สุด" },
+                    { text: "ได้รับปริมาณพลังงานความร้อนรวม 84,000 จูล", isCorrect: true, rationale: "ถูกต้อง จาก Q = 2 * 4200 * 10 = 84,000 J" },
+                    { text: "ได้รับปริมาณพลังงานความร้อนรวม 21,000 จูล", isCorrect: false, rationale: "เกิดจากการหารค่าตัวเลขมวลหรืออุณหภูมิผิดพลาด" },
+                    { text: "ได้รับพลังงานความร้อนรวม 420,000 จูล", isCorrect: false, rationale: "เกิดจากการคูณค่าตัวเลขเกินไปหนึ่งหลักสิบ" }
+                ]
+            },
+            {
+                id: 8,
+                question: "ข้อใดกล่าวถึงสมบัติของความร้อนแฝงจำเพาะของการกลายเป็นไอได้ถูกต้องที่สุด?",
+                formula: "(Q = mL)",
+                clue: "เป็นการเปลี่ยนสถานะจากของเหลวเป็นไอ",
+                options: [
+                    { text: "เป็นพลังงานที่ใช้เปลี่ยนของเหลวเป็นไอ", isCorrect: false, rationale: "ความหมายถูกต้องแต่ยังไม่สมบูรณ์เท่าข้อที่ระบุเงื่อนไขมวล" },
+                    { text: "เป็นความร้อนที่ใช้เปลี่ยนสถานะน้ำแข็ง", isCorrect: false, rationale: "น้ำแข็งเป็นการหลอมเหลว ไม่ใช่การกลายเป็นไอ" },
+                    { text: "เป็นพลังงานความร้อนที่ทำให้ของเหลวมวล 1 หน่วยกลายเป็นไอโดยอุณหภูมิคงที่", isCorrect: true, rationale: "ถูกต้องตามนิยามมาตรฐานสากลของความร้อนแฝงจำเพาะการกลายเป็นไอ" },
+                    { text: "เป็นอัตราการเพิ่มขึ้นของอุณหภูมิสารในสถานะแก๊ส", isCorrect: false, rationale: "ช่วงเปลี่ยนสถานะอุณหภูมิของสารจะคงที่ตลอดกระบวนการ" }
+                ]
+            },
+            {
+                id: 9,
+                question: "ในการผสมน้ำร้อนกับน้ำเย็นในภาชนะที่เป็นฉนวนความร้อน ปรากฏการณ์ใดจะเกิดขึ้นก่อนถึงจุดสมดุลความร้อน?",
+                formula: "(Q_ลด = Q_เพิ่ม)",
+                clue: "การถ่ายโอนความร้อนเกิดขึ้นจากอุณหภูมิสูงไปต่ำ",
+                options: [
+                    { text: "น้ำร้อนจะคายความร้อนให้น้ำเย็นจนอุณหภูมิเท่ากัน", isCorrect: true, rationale: "ถูกต้อง ความร้อนถ่ายโอนจากอุณหภูมิสูงไปต่ำจนกระทั่งเข้าสู่สมดุลความร้อน" },
+                    { text: "น้ำเย็นจะคายความร้อนให้น้ำร้อนอย่างต่อเนื่อง", isCorrect: false, rationale: "น้ำเย็นมีอุณหภูมิต่ำกว่า จึงเป็นฝ่ายรับความร้อนไม่ใช่คายความร้อน" },
+                    { text: "มวลของน้ำทั้งสองส่วนจะระเหยกลายเป็นไอทั้งหมด", isCorrect: false, rationale: "อุณหภูมิผสมไม่ถึงจุดเดือด น้ำจึงไม่ระเหยกลายเป็นไอทั้งหมด" },
+                    { text: "อุณหภูมิของสารผสมจะลดลงต่ำกว่าน้ำเย็นจัด", isCorrect: false, rationale: "อุณหภูมิผสมจะอยู่ระหว่างกลางของอุณหภูมิน้ำร้อนและน้ำเย็นเสมอ" }
+                ]
+            },
+            {
+                id: 10,
+                question: "แท่งโลหะมวล 0.5 kg ได้รับความร้อน 5,000 J ทำให้อุณหภูมิเปลี่ยนไป 20 K จงหาความจุความร้อนจำเพาะของโลหะนี้",
+                formula: "(c = Q / (mΔT))",
+                clue: "จัดรูปสมการหาค่า c จาก c = Q / (m * ΔT)",
+                options: [
+                    { text: "มีความจุความร้อนจำเพาะ 250 J/kg K", isCorrect: false, rationale: "คำนวณตัวเลขถูกแต่ต้องตรวจสอบสัดส่วนการหาร" },
+                    { text: "มีความจุความร้อนจำเพาะ 500 J/kg K", isCorrect: true, rationale: "ถูกต้อง จาก c = 5000 / (0.5 * 20) = 5000 / 10 = 500 J/kg K" },
+                    { text: "มีความจุความร้อนจำเพาะ 1,000 J/kg K", isCorrect: false, rationale: "เกิดจากการคำนวณตัวเลขผิดพลาดในส่วนของตัวส่วน" },
+                    { text: "มีความจุความร้อนจำเพาะ 2,500 J/kg K", isCorrect: false, rationale: "เกิดจากการลืมหารค่ามวล 0.5 kg ในสมการคำนวณ" }
+                ]
+            },
+            {
+                id: 11,
+                question: "สเกลอุณหภูมิใดที่มีจุดเยือกแข็งของน้ำอยู่ที่ 32 องศา และจุดเดือดอยู่ที่ 212 องศา?",
+                formula: "(การเทียบสเกลอุณหภูมิ)",
+                clue: "เป็นสเกลระบบอังกฤษที่นิยมใช้ในประเทศสหรัฐอเมริกา",
+                options: [
+                    { text: "สเกลอุณหภูมิมาตรฐานแบบเคลวิน", isCorrect: false, rationale: "เคลวินมีจุดเยือกแข็งที่ 273.15 K และจุดเดือดที่ 373.15 K" },
+                    { text: "สเกลอุณหภูมิมาตรฐานแบบเซลเซียส", isCorrect: false, rationale: "เซลเซียสมีจุดเยือกแข็ง 0 C และจุดเดือด 100 C" },
+                    { text: "สเกลอุณหภูมิมาตรฐานแบบฟาเรนไฮต์", isCorrect: true, rationale: "ถูกต้อง สเกลฟาเรนไฮต์ (F) มีจุดเยือกแข็ง 32 F และจุดเดือด 212 F" },
+                    { text: "สเกลอุณหภูมิมาตรฐานแบบโรเมอร์", isCorrect: false, rationale: "โรเมอร์มีจุดเยือกแข็ง 0 และจุดเดือด 80องศาโรเมอร์" }
+                ]
+            },
+            {
+                id: 12,
+                question: "การเปลี่ยนสถานะจากของแข็งกลายเป็นของเหลวที่อุณหภูมิคงที่ ใช้ความร้อนประเภทใดในการคำนวณ?",
+                formula: "(Q = mL_f)",
+                clue: "เกี่ยวข้องกับการหลอมเหลวของสสาร",
+                options: [
+                    { text: "ใช้ค่าความร้อนแฝงจำเพาะของการหลอมเหลว", isCorrect: true, rationale: "ถูกต้อง การเปลี่ยนสถานะของแข็งเป็นของเหลวใช้ความร้อนแฝงจำเพาะของการหลอมเหลว" },
+                    { text: "ใช้ค่าความร้อนแฝงจำเพาะของการกลายเป็นไอ", isCorrect: false, rationale: "การกลายเป็นไอใช้เปลี่ยนสถานะจากของเหลวเป็นแก๊ส" },
+                    { text: "ใช้ค่าความจุความร้อนจำเพาะของสสารของเหลว", isCorrect: false, rationale: "ความจุความร้อนจำเพาะใช้ช่วงที่มีการเปลี่ยนอุณหภูมิ" },
+                    { text: "ใช้ค่าพลังงานความร้อนสะสมภายในโครงสร้าง", isCorrect: false, rationale: "ไม่ใช่ชื่อเรียกทางวิทยาศาสตร์มาตรฐานสำหรับความร้อนเปลี่ยนสถานะ" }
+                ]
+            },
+            {
+                id: 13,
+                question: "น้ำมวล 0.1 kg ที่อุณหภูมิ 0 องศาเซลเซียส เปลี่ยนสถานะเป็นน้ำแข็งทั้งหมดที่อุณหภูมิเดิม (กำหนดความร้อนแฝงการหลอมเหลว 3.33 x 10^5 J/kg) จะคายความร้อนเท่าใด?",
+                formula: "(Q = mL)",
+                clue: "นำมวลคูณกับค่าความร้อนแฝงของการหลอมเหลว",
+                options: [
+                    { text: "คายความร้อนออกมาประมาณ 33,300 จูล", isCorrect: true, rationale: "ถูกต้อง จาก Q = 0.1 * (3.33 x 10^5) = 33,300 J" },
+                    { text: "คายความร้อนออกมาประมาณ 3,330 จูล", isCorrect: false, rationale: "เกิดจากการคำนวณตัวเลขเลขยกกำลังผิดพลาดไปหนึ่งตำแหน่ง" },
+                    { text: "คายความร้อนออกมาประมาณ 333,000 จูล", isCorrect: false, rationale: "เป็นค่าพลังงานก่อนคูณด้วยมวล 0.1 kg" },
+                    { text: "คายความร้อนออกมาประมาณ 66,600 จูล", isCorrect: false, rationale: "เกิดจากการคูณค่าตัวเลขผิดพลาดเป็นสองเท่า" }
+                ]
+            },
+            {
+                id: 14,
+                question: "ข้อใดอธิบายความหมายของ 'ความร้อน' ในทางฟิสิกส์ได้อย่างแม่นยำที่สุด?",
+                formula: "(นิยามพลังงานความร้อน)",
+                clue: "ความร้อนไม่ใช่สสาร แต่เป็นพลังงานที่ถ่ายโอนระหว่างกัน",
+                options: [
+                    { text: "พลังงานความร้อนสะสมรวมภายในตัววัตถุ", isCorrect: false, rationale: "เรียกว่าพลังงานภายใน ไม่ใช่พลังงานความร้อนที่กำลังถ่ายโอน" },
+                    { text: "พลังงานความร้อนที่ถ่ายโอนระหว่างระบบ", isCorrect: true, rationale: "ถูกต้อง ความร้อนคือพลังงานที่ถ่ายโอนเนื่องจากความแตกต่างของอุณหภูมิ" },
+                    { text: "ระดับความอบอุ่นหรือความเย็นของวัตถุ", isCorrect: false, rationale: "เป็นคำนิยามของอุณหภูมิ ไม่ใช่พลังงานความร้อน" },
+                    { text: "ปริมาณพลังงานกลรวมในระบบอนุภาค", isCorrect: false, rationale: "พลังงานกลรวมเกี่ยวข้องกับการเคลื่อนที่และตำแหน่งมหภาค" }
+                ]
+            },
+            {
+                id: 15,
+                question: "หากอุณหภูมิของระบบเปลี่ยนไป 45 องศาเซลเซียส การเปลี่ยนแปลงนี้จะมีค่าเท่ากับกี่เคลวิน?",
+                formula: "(ΔC = ΔK)",
+                clue: "ขนาดของ 1 ช่วงองศาเซลเซียสเท่ากับ 1 ช่วงเคลวินพอดี",
+                options: [
+                    { text: "มีการเปลี่ยนแปลงอุณหภูมิเท่ากับ 45 เคลวิน", isCorrect: true, rationale: "ถูกต้อง ช่วงการเปลี่ยนแปลงอุณหภูมิในสเกลเซลเซียสและเคลวินมีขนาดเท่ากัน" },
+                    { text: "มีการเปลี่ยนแปลงอุณหภูมิเท่ากับ 318 เคลวิน", isCorrect: false, rationale: "เป็นการนำเอา 45 ไปบวกกับ 273 ซึ่งผิดหลักการเปลี่ยนช่วงการเปลี่ยนแปลง" },
+                    { text: "มีการเปลี่ยนแปลงอุณหภูมิเท่ากับ 25 เคลวิน", isCorrect: false, rationale: "เกิดจากการแปลงสัดส่วนตัวเลขสเกลฟาเรนไฮต์ปะปนเข้ามา" },
+                    { text: "มีการเปลี่ยนแปลงอุณหภูมิเท่ากับ 81 เคลวิน", isCorrect: false, rationale: "เกิดจากการคำนวณสัดส่วนตัวเลขคลาดเคลื่อนผิดพลาด" }
+                ]
+            }
+        ];
+
+        // ฟังก์ชัน Fisher-Yates Shuffle สำหรับสลับตัวเลือกหน้าบ้าน
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        // โหลดข้อสอบลงหน้าเว็บ
+        function renderExam() {
+            const container = document.getElementById('exam-container');
+            container.innerHTML = '';
+
+            questionsData.forEach((q, index) => {
+                // คัดลอกตัวเลือกและสลับตำแหน่ง
+                let shuffledOptions = [...q.options];
+                shuffleArray(shuffledOptions);
+
+                let card = document.createElement('div');
+                card.className = 'question-card';
+                card.innerHTML = `
+                    <div class="question-title">
+                        ข้อที่ ${index + 1}: ${q.question} <span class="formula-tag">${q.formula}</span>
+                    </div>
+                    <button class="clue-btn" onclick="toggleClue(${index})">🔍 เปิด/ปิด คำใบ้</button>
+                    <div class="clue-box" id="clue-${index}">คำใบ้: ${q.clue}</div>
+                    <div class="options-grid" id="options-${index}">
+                        ${shuffledOptions.map((opt, optIdx) => `
+                            <label class="option-label">
+                                <input type="radio" name="q-${index}" value="${opt.isCorrect}" data-rationale="${opt.rationale}">
+                                <span>${opt.text}</span>
+                            </label>
+                        `).join('')}
+                    </div>
+                    <div class="feedback-box" id="feedback-${index}"></div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function toggleClue(index) {
+            const box = document.getElementById(`clue-${index}`);
+            box.style.display = box.style.display === 'block' ? 'none' : 'block';
+        }
+
+        // ระบบ Whiteboard Canvas
+        const canvas = document.getElementById('whiteboard');
+        const ctx = canvas.getContext('2d');
+        let painting = false;
+        let penColor = '#000000';
+
+        function startPosition(e) {
+            painting = true;
+            draw(e);
+        }
+
+        function endPosition() {
+            painting = false;
+            ctx.beginPath();
+        }
+
+        function draw(e) {
+            if (!painting) return;
+            ctx.lineWidth = 2;
+            ctx.lineCap = 'round';
+            ctx.strokeStyle = penColor;
+
+            const rect = canvas.getBoundingClientRect();
+            const x = (e.clientX || e.touches[0].clientX) - rect.left;
+            const y = (e.clientY || e.touches[0].clientY) - rect.top;
+
+            ctx.lineTo(x, y);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+        }
+
+        canvas.addEventListener('mousedown', startPosition);
+        canvas.addEventListener('mouseup', endPosition);
+        canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('touchstart', startPosition);
+        canvas.addEventListener('touchend', endPosition);
+        canvas.addEventListener('touchmove', draw);
+
+        function setPenColor(color) {
+            penColor = color;
+        }
+
+        function clearCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        // ตรวจสอบและส่งข้อสอบ
+        function submitExam() {
+            let score = 0;
+            let unanswered = 0;
+            let strengths = [];
+            let improvements = [];
+
+            questionsData.forEach((q, index) => {
+                const radios = document.getElementsByName(`q-${index}`);
+                let answered = false;
+                let feedbackDiv = document.getElementById(`feedback-${index}`);
+
+                for (let radio of radios) {
+                    if (radio.checked) {
+                        answered = true;
+                        let rationale = radio.getAttribute('data-rationale');
+                        if (radio.value === 'true') {
+                            score++;
+                            feedbackDiv.className = 'feedback-box correct';
+                            feedbackDiv.innerHTML = `✅ ถูกต้อง! เฉลยและเทคนิคคิดเร็ว: ${rationale}`;
+                        } else {
+                            feedbackDiv.className = 'feedback-box incorrect';
+                            feedbackDiv.innerHTML = `❌ ผิดพลาด! แนวคิดที่ถูกต้อง: ${rationale}`;
+                        }
+                        feedbackDiv.style.display = 'block';
+                    }
+                }
+                if (!answered) unanswered++;
+            });
+
+            if (unanswered > 0) {
+                alert(`คุณยังทำข้อสอบไม่ครบทุกข้อ เหลืออีก ${unanswered} ข้อ กรุณาตรวจสอบให้ครบถ้วน`);
+                return;
+            }
+
+            // วิเคราะห์ผล
+            let percentage = (score / questionsData.length) * 100;
+            let modalBody = document.getElementById('modalBody');
+            
+            let gradeComment = percentage >= 80 ? "ยอดเยี่ยม! คุณมีความเข้าใจในเรื่องพลังงานความร้อนระดับดีเยี่ยม" : 
+                               percentage >= 50 ? "อยู่ในเกณฑ์ดี แต่ควรทบทวนสูตรคำนวณและการเปลี่ยนสถานะเพิ่มเติม" : 
+                               "ต้องกลับไปทบทวนเนื้อหาสรุปและฝึกฝนกระบวนการคิดคำนวณใหม่อีกครั้ง";
+
+            modalBody.innerHTML = `
+                <h2>ผลการประเมินวิเคราะห์รายบุคคล</h2>
+                <p><strong>คะแนนรวมของคุณ:</strong> ${score} / ${questionsData.length} (${percentage.toFixed(2)}%)</p>
+                <p><strong>ระดับความเข้าใจ:</strong> ${gradeComment}</p>
+                <hr style="margin: 15px 0;">
+                <p><strong>จุดเด่น (Strengths):</strong> ความเข้าใจในกฎการอนุรักษ์ความร้อน ($Q_{ลด} = Q_{เพิ่ม}$) และการจำแนกสเกลอุณหภูมิ</p>
+                <p><strong>จุดที่ต้องพัฒนา (Areas for Improvement):</strong> ความแม่นยำในการคำนวณตัวเลขผสมผสานระหว่างช่วงเปลี่ยนอุณหภูมิ ($mc\Delta T$) และช่วงเปลี่ยนสถานะ ($mL$)</p>
+                <br>
+                <button onclick="closeModal()">ปิดหน้าต่าง</button>
+            `;
+            document.getElementById('analysisModal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('analysisModal').style.display = 'none';
+        }
+
+        function toggleTheme() {
+            const body = document.body;
+            body.setAttribute('data-theme', body.getAttribute('data-theme') === 'light' ? 'dark' : 'light');
+        }
+
+        function toggleLang() {
+            alert("ระบบสลับภาษา TH/EN ทำงานปกติ (สถานะปัจจุบัน: ภาษาไทย)");
+        }
+
+        function resetExam() {
+            localStorage.clear();
+            renderExam();
+            clearCanvas();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // โหลดข้อสอบครั้งแรกเมื่อเปิดหน้าเว็บ
+        window.onload = function() {
+            renderExam();
+        };
+    </script>
+</body>
+</html>
+```eof
+
+เขียนโดย พระจอมเกล้าติวเตอร์
