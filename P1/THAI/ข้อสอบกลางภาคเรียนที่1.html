@@ -1,0 +1,1227 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบข้อสอบ Interactive - วิชาภาษาไทย ป.1 กลางภาคเรียนที่ 2</title>
+    <style>
+        :root {
+            --primary-color: #4a90e2;
+            --secondary-color: #f5f7fa;
+            --accent-color: #ff6b6b;
+            --success-color: #2ecc71;
+            --error-color: #e74c3c;
+            --text-color: #333333;
+            --border-radius: 12px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Sarabun', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--secondary-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        header {
+            background: linear-gradient(135deg, #4a90e2, #357abd);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        header h1 {
+            font-size: 1.8rem;
+            margin-bottom: 5px;
+        }
+
+        header p {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+
+        .container {
+            max-width: 1400px;
+            width: 100%;
+            margin: 20px auto;
+            padding: 0 15px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* Top Summary Section */
+        .summary-section {
+            background: white;
+            padding: 25px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+
+        .summary-section h2 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 1.4rem;
+            border-bottom: 2px solid #eaeaea;
+            padding-bottom: 10px;
+        }
+
+        .summary-content {
+            font-size: 1.05rem;
+            text-align: justify;
+            margin-bottom: 20px;
+        }
+
+        .thought-box {
+            background: #fff8e1;
+            border-left: 5px solid #ffc107;
+            padding: 15px;
+            border-radius: 0 var(--border-radius) var(--border-radius) 0;
+            margin-top: 15px;
+        }
+
+        .thought-box h3 {
+            color: #d35400;
+            margin-bottom: 8px;
+            font-size: 1.1rem;
+        }
+
+        /* Main Workspace: Two-Frame Layout */
+        .workspace {
+            display: flex;
+            gap: 20px;
+            flex: 1;
+        }
+
+        /* Left Frame: 70% */
+        .exam-frame {
+            flex: 7;
+            background: white;
+            padding: 25px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Right Frame: 30% */
+        .whiteboard-frame {
+            flex: 3;
+            background: white;
+            padding: 20px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            height: fit-content;
+            position: sticky;
+            top: 20px;
+        }
+
+        .whiteboard-frame h3 {
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+
+        .wb-tools {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+        }
+
+        .wb-tools button, .wb-tools select {
+            padding: 6px 12px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            background: white;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .wb-tools button.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        #whiteboard {
+            border: 2px dashed #cbd5e1;
+            border-radius: 8px;
+            background: #fafafa;
+            cursor: crosshair;
+            touch-action: none;
+            width: 100%;
+            height: 350px;
+        }
+
+        /* Exam Controls & Navigation */
+        .exam-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .nav-buttons-bar {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+            max-height: 120px;
+            overflow-y: auto;
+            padding: 5px;
+            background: #f8fafc;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        .q-nav-btn {
+            width: 35px;
+            height: 35px;
+            border: 1px solid #cbd5e1;
+            background: white;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .q-nav-btn.answered {
+            background: #e2e8f0;
+            border-color: #94a3b8;
+        }
+
+        .q-nav-btn.current {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
+        }
+
+        .q-nav-btn.correct-state {
+            background: var(--success-color);
+            color: white;
+            border-color: var(--success-color);
+        }
+
+        .q-nav-btn.wrong-state {
+            background: var(--error-color);
+            color: white;
+            border-color: var(--error-color);
+        }
+
+        /* Question Container */
+        .question-card {
+            margin-bottom: 20px;
+        }
+
+        .question-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #1e293b;
+        }
+
+        .clue-box {
+            background: #e0f2fe;
+            border: 1px solid #7dd3fc;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 0.95rem;
+            display: none;
+        }
+
+        .clue-toggle {
+            background: none;
+            border: none;
+            color: #0284c7;
+            cursor: pointer;
+            font-size: 0.9rem;
+            text-decoration: underline;
+            margin-bottom: 15px;
+            display: inline-block;
+        }
+
+        .options-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .option-item {
+            padding: 12px 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 1.05rem;
+        }
+
+        .option-item:hover {
+            border-color: var(--primary-color);
+            background: #f0f7ff;
+        }
+
+        .option-item.selected {
+            border-color: var(--primary-color);
+            background: #e0f2fe;
+        }
+
+        .option-item.correct {
+            border-color: var(--success-color);
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .option-item.wrong {
+            border-color: var(--error-color);
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .explanation-box {
+            background: #f8fafc;
+            border-left: 5px solid var(--primary-color);
+            padding: 15px;
+            border-radius: 0 8px 8px 0;
+            margin-top: 15px;
+            display: none;
+        }
+
+        .explanation-box.show {
+            display: block;
+        }
+
+        .exam-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: auto;
+            padding-top: 20px;
+            border-top: 1px solid #eaeaea;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #357abd;
+        }
+
+        .btn-secondary {
+            background: #cbd5e1;
+            color: #334155;
+        }
+
+        .btn-secondary:hover {
+            background: #94a3b8;
+        }
+
+        .btn-danger {
+            background: var(--error-color);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+
+        /* Results Modal / Screen */
+        .results-container {
+            display: none;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .results-header {
+            text-align: center;
+            padding: 20px;
+            background: #f0fdf4;
+            border: 2px solid #bbf7d0;
+            border-radius: var(--border-radius);
+        }
+
+        .results-header h2 {
+            color: #166534;
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .score-display {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #15803d;
+        }
+
+        .analysis-box {
+            background: white;
+            padding: 20px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+
+        .analysis-box h3 {
+            margin-bottom: 10px;
+            color: #1e293b;
+        }
+
+        .analysis-box ul {
+            padding-left: 20px;
+        }
+
+        .analysis-box li {
+            margin-bottom: 8px;
+        }
+
+        /* Footer / Signature */
+        footer {
+            text-align: center;
+            padding: 15px;
+            background: white;
+            font-weight: bold;
+            color: #64748b;
+            border-top: 1px solid #e2e8f0;
+            margin-top: auto;
+        }
+
+        /* Responsive Design for Mobile */
+        @media (max-width: 900px) {
+            .workspace {
+                flex-direction: column;
+            }
+            .whiteboard-frame {
+                position: static;
+                order: 2;
+            }
+            .exam-frame {
+                order: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>แบบทดสอบกลางภาค วิชาภาษาไทย ชั้นประถมศึกษาปีที่ 1</h1>
+        <p>ระบบข้อสอบ Interactive พร้อมกระบวนการคิดและระบบวิเคราะห์ผลรายบุคคล</p>
+    </header>
+
+    <div class="container">
+        <!-- Summary Section -->
+        <section class="summary-section">
+            <h2>สรุปสาระสำคัญบทเรียนภาษาไทย ป.1 (กลางภาคเรียนที่ 2)</h2>
+            <div class="summary-content">
+                ในภาคเรียนที่ 2 นักเรียนชั้นประถมศึกษาปีที่ 1 จะได้เรียนรู้ทักษะภาษาไทยที่เข้มข้นขึ้น โดยครอบคลุมเรื่องสระเสียงยาวและสระพิเศษ เช่น สระเอีย (เ-ีย), สระอัว (เ-ัว), สระอือ (-ือ), และสระเออ (เ-อ) ซึ่งต้องสังเกตตำแหน่งและการเขียนที่ถูกต้อง นอกจากนี้ยังมีการเรียนรู้มาตราตัวสะกดทั้งแบบตรงตามมาตรา (แม่กง, แม่กม, แม่เกย, แม่เกอว) และไม่ตรงตามมาตราที่พบบ่อย (แม่กก, แม่กด, แม่กบ) รวมถึงการผันวรรณยุกต์ (สามัญ เอก โท ตรี จัตวา) ร่วมกับคำเป็นและคำตาย เพื่อให้เด็กๆ สามารถอ่านออกเสียงและสะกดคำยากๆ ในบทเรียนจากหนังสือเรียน "ภาษาพาที" และ "วรรณคดีลำนำ" (ช่วงบทที่ 7-10) ได้อย่างคล่องแคล่ว การฝึกฝนทักษะเหล่านี้จะช่วยปูพื้นฐานการอ่านจับใจความและเขียนคำศัพท์ได้อย่างแม่นยำในอนาคต
+            </div>
+            <div class="thought-box">
+                <h3>💡 เทคนิคการจำและกระบวนการคิด (Memory Tricks & Thought Process)</h3>
+                <p><strong>1. เทคนิคจำตำแหน่งสระ:</strong> สระประสมหรือสระพิเศษบางตัวมีรูปเขียนรอบพยัญชนะ เช่น สระเอีย ประกอบด้วย เ + ะ + ย ต้องจำหลักการว่าพยัญชนะต้นอยู่ตรงกลางเสมอ<br>
+                <strong>2. เทคนิคแยกมาตราตัวสะกด:</strong> ท่องจำตัวสะกดแม่ตรงมาตราด้วยคำง่ายๆ (กง-ง, กม-ม, เกย-ย, เกอว-ว) ส่วนแม่ที่ไม่ตรงมาตราให้สังเกตเสียงพยัญชนะท้าย เช่น คำว่า "เมฆ" ออกเสียงเหมือน ก ไก่ สะกด จึงอยู่แม่กก<br>
+                <strong>3. กระบวนการคิดวิเคราะห์ข้อสอบ:</strong> อ่านโจทย์ให้รอบคอบ ตัดตัวเลือกที่ผิดเพี้ยนหรือขัดแย้งกับหลักภาษาออกก่อน แล้วพิจารณาเลือกคำตอบที่ถูกต้องที่สุดตามหลักวรรณคุกต์และมาตราตัวสะกด</p>
+            </div>
+        </section>
+
+        <!-- Workspace Section -->
+        <div class="workspace">
+            <!-- Left Frame: Exam (70%) -->
+            <div class="exam-frame" id="examFrame">
+                <div class="exam-header">
+                    <div>
+                        <span id="currentQNum" style="font-weight: bold; font-size: 1.1rem;">ข้อที่ 1 จาก 30</span>
+                    </div>
+                    <div>
+                        <button class="btn btn-secondary" id="langBtn" onclick="toggleLanguage()">ภาษา: ไทย</button>
+                        <button class="btn btn-danger" onclick="resetExam()" style="margin-left: 5px;">Reset</button>
+                    </div>
+                </div>
+
+                <!-- Navigation Buttons Bar -->
+                <div class="nav-buttons-bar" id="navButtonsBar"></div>
+
+                <!-- Question Area -->
+                <div class="question-card" id="questionCard">
+                    <div class="question-title" id="questionTitle">กำลังโหลดคำถาม...</div>
+                    <button class="clue-toggle" id="clueToggleBtn" onclick="toggleClue()">🔍 แสดงคำใบ้ / Clue</button>
+                    <div class="clue-box" id="clueBox"></div>
+                    <div class="options-list" id="optionsList"></div>
+                    <div class="explanation-box" id="explanationBox">
+                        <strong style="color: var(--primary-color);">เฉลยและวิธีคิด:</strong>
+                        <p id="explanationText" style="margin-top: 5px;"></p>
+                    </div>
+                </div>
+
+                <!-- Exam Controls Footer -->
+                <div class="exam-controls">
+                    <button class="btn btn-secondary" id="prevBtn" onclick="prevQuestion()">ข้อก่อนหน้า</button>
+                    <button class="btn btn-primary" id="nextBtn" onclick="nextQuestion()">ข้อถัดไป</button>
+                </div>
+            </div>
+
+            <!-- Results Screen (Hidden initially) -->
+            <div class="exam-frame results-container" id="resultsContainer">
+                <div class="results-header">
+                    <h2>สรุปผลการทดสอบ</h2>
+                    <div class="score-display" id="finalScoreDisplay">คะแนนที่ได้: 0 / 30 (0%)</div>
+                </div>
+                <div class="analysis-box">
+                    <h3>📊 การวิเคราะห์ผลการเรียนรู้รายบุคคล</h3>
+                    <ul id="analysisList">
+                        <!-- Dynamically populated analysis -->
+                    </ul>
+                </div>
+                <div style="text-align: center; margin-top: 20px;">
+                    <button class="btn btn-primary" onclick="resetExam()">ทำข้อสอบใหม่อีกครั้ง (Reset & Shuffle)</button>
+                </div>
+            </div>
+
+            <!-- Right Frame: Whiteboard (30%) -->
+            <div class="whiteboard-frame">
+                <h3>กระดานทดเลข / Whiteboard</h3>
+                <div class="wb-tools">
+                    <button id="penTool" class="active" onclick="setWbMode('pen')">ปากกา</button>
+                    <button id="eraserTool" onclick="setWbMode('eraser')">ยางลบ</button>
+                    <button onclick="clearWhiteboard()">ล้างกระดาน</button>
+                    <select id="penColor" onchange="setWbColor(this.value)">
+                        <option value="#333333">ดำ</option>
+                        <option value="#4a90e2">น้ำเงิน</option>
+                        <option value="#e74c3c">แดง</option>
+                        <option value="#2ecc71">เขียว</option>
+                    </select>
+                </div>
+                <canvas id="whiteboard"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        เขียนโดย พระจอมเกล้าติวเตอร์
+    </footer>
+
+    <script>
+        // --- Questions Database (30 Questions matching Thai P.1 Curriculum with balanced key distribution: A:8, B:7, C:8, D:7) ---
+        const rawQuestions = [
+            {
+                id: 1,
+                topic: "สระประสม",
+                clue: "สังเกตพยัญชนะต้นและรูปสระที่ผสมกันอยู่ตรงกลาง",
+                options: [
+                    { text: "คำว่า 'เตียง' ประสมด้วยสระเสียงยาวชนิดใด", correct: false, tag: "A" },
+                    { text: "คำว่า 'เตียง' ประกอบด้วยสระเอีย (เ-ีย)", correct: true, tag: "B" },
+                    { text: "คำว่า 'เตียง' ใช้สระอือ (-ือ) เป็นหลัก", correct: false, tag: "C" },
+                    { text: "คำว่า 'เตียง' ไม่มีตัวสระประกอบ", correct: false, tag: "D" }
+                ],
+                explanation: "คำว่า 'เตียง' อ่านว่า ตอ-เอีย-งอ-เตียง ประสมด้วยสระเอีย ซึ่งเป็นสระเสียงยาว เทคนิคการจำ: สระเอียประกอบด้วย เ-ะ และ ย."
+            },
+            {
+                id: 2,
+                topic: "มาตราตัวสะกด",
+                clue: "ดูพยัญชนะตัวสุดท้ายที่ออกเสียงเข้าแม่ กก",
+                options: [
+                    { text: "คำในข้อใดอยู่ในมาตรา 'แม่กก' ทั้งหมด", correct: true, tag: "A" },
+                    { text: "คำว่า 'นก' อยู่ในมาตราตัวสะกดแม่กม", correct: false, tag: "B" },
+                    { text: "คำว่า 'เมฆ' ออกเสียงเหมือนแม่กนสะกด", correct: false, tag: "C" },
+                    { text: "คำว่า 'เลข' อยู่ในมาตราแม่กดโดยตรง", correct: false, tag: "D" }
+                ],
+                explanation: "คำว่า 'นก' และ 'เลข' หรือ 'เมฆ' ออกเสียงเหมือน ก ไก่ สะกด จึงจัดอยู่ในมาตราแม่กก (แม้รูปพยัญชนะจะต่างกัน)."
+            },
+            {
+                id: 3,
+                topic: "การผันวรรณยุกต์",
+                clue: "ลองผันเสียงคำว่า ปา - ป่า - ป้า - ป๊า - ป๋า",
+                options: [
+                    { text: "คำว่า 'ป่า' มีรูปวรรณยุกต์สามัญ", correct: false, tag: "A" },
+                    { text: "คำว่า 'ป้า' ใช้รูปวรรณยุกต์ไม้เอก", correct: false, tag: "B" },
+                    { text: "คำว่า 'ป่า' ใช้รูปวรรณยุกต์ 'ไม้เอก'", correct: true, tag: "C" },
+                    { text: "คำว่า 'ปา' มีวรรณยุกต์ไม้โทกำกับ", correct: false, tag: "D" }
+                ],
+                explanation: "คำว่า 'ป่า' ออกเสียงโทแต่ใช้รูปวรรณยุกต์ 'ไม้เอก' (-่) ส่วน 'ป้า' ใช้รูป 'ไม้โท' (-้)."
+            },
+            {
+                id: 4,
+                topic: "วรรณคดีและภาษาพาที",
+                clue: "นึกถึงเพื่อนสนิทของน้องน้ำใสในบทเรียนภาษาพาที",
+                options: [
+                    { text: "ในเรื่องภาษาพาที ใครคือเพื่อนสนิทของน้ำใส", correct: true, tag: "D" },
+                    { text: "ภูผาเป็นเพื่อนสนิทของช้างตัวเล็กเท่านั้น", correct: false, tag: "A" },
+                    { text: "ใบบัวและใบبوไม่ใช่เพื่อนของภูผา", correct: false, tag: "B" },
+                    { text: "น้ำใสไม่มีเพื่อนในบทเรียนภาษาพาที", correct: false, tag: "C" }
+                ],
+                explanation: "ในบทเรียนภาษาพาที ป.1 ภูผาและน้ำใสเป็นเพื่อนรักกัน รวมถึงมีช้างชือใบبัวและใบกะโบกเป็นเพื่อนคู่ใจ"
+            },
+            {
+                id: 5,
+                topic: "สระพิเศษ",
+                clue: "สระอัวประกอบด้วย เ- และ -ัว",
+                options: [
+                    { text: "คำว่า 'รั้ว' ประสมด้วยสระอือ (-ือ)", correct: false, tag: "A" },
+                    { text: "คำว่า 'รั้ว' ประสมด้วยสระเออ (เ-อ)", correct: false, tag: "B" },
+                    { text: "คำว่า 'รั้ว' ประสมด้วยสระอัว (เ-ัว)", correct: true, tag: "C" },
+                    { text: "คำว่า 'รั้ว' ไม่ใช้สระประสมใดๆ", correct: false, tag: "D" }
+                ],
+                explanation: "คำว่า 'รั้ว' มาจาก ร + ัว + ไม้โท ประสมด้วยสระอัว (เ-ัว เมื่อมีตัวสะกดหรือรูปวรรณยุกต์จะลดรูปเหลือ -ัว)."
+            },
+            {
+                id: 6,
+                topic: "มาตราตัวสะกด",
+                clue: "แม่กง มี ง เป็นตัวสะกดแน่นอน",
+                options: [
+                    { text: "คำว่า 'ช้าง' อยู่ในมาตราตัวสะกดแม่กม", correct: false, tag: "A" },
+                    { text: "คำว่า 'ช้าง' อยู่ในมาตราตัวสะกดแม่กง", correct: true, tag: "B" },
+                    { text: "คำว่า 'ช้าง' ไม่มีตัวสะกดในแม่ใดเลย", correct: false, tag: "C" },
+                    { text: "คำว่า 'ช้าง' จัดเป็นแม่กดตรงตามมาตรา", correct: false, tag: "D" }
+                ],
+                explanation: "คำว่า 'ช้าง' ลงท้ายด้วยพยัญชนะ ง จึงอยู่ในมาตราแม่กง (ตัวสะกดตรงตามมาตรา)."
+            },
+            {
+                id: 7,
+                topic: "การอ่านจับใจความ",
+                clue: "คิดถึงประโยชน์ของช้างในเรื่องภูผา",
+                options: [
+                    { text: "ช้างในเรื่องภาษาพาทีช่วยภูผาลากไม้", correct: true, tag: "A" },
+                    { text: "ช้างในเรื่องเป็นสัตว์ที่ดุร้ายและน่ากลัว", correct: false, tag: "B" },
+                    { text: "ภูผาเลี้ยงช้างไว้เพื่อการแสดงละครสัตว์", correct: false, tag: "C" },
+                    { text: "ช้างไม่สามารถช่วยงานอะไรภูผาได้เลย", correct: false, tag: "D" },
+                ],
+                explanation: "ในเนื้อหาบทเรียน ช้าง (ใบกะโบกและใบบัว) มีความผูกพันกับภูผาและช่วยทำงานเบาๆ เช่น ลากไม้หรือช่วยเดินป่า"
+            },
+            {
+                id: 8,
+                topic: "สระเออ",
+                clue: "สระเออเมื่อมีตัวสะกด อ. ไก่ จะเปลี่ยนรูปเป็นสระอิ",
+                options: [
+                    { text: "คำว่า 'เดิน' ประสมด้วยสระเออ (เ-อ)", correct: true, tag: "B" },
+                    { text: "คำว่า 'เดิน' ใช้สระเอีย (เ-ีย) สะกด", correct: false, tag: "C" },
+                    { text: "คำว่า 'เดิน' ประสมด้วยสระอือ (-ือ)", correct: false, tag: "D" },
+                    { text: "คำว่า 'เดิน' ไม่จัดว่าเป็นสระเออ", correct: false, tag: "A" }
+                ],
+                explanation: "คำว่า 'เดิน' มาจาก ด + เออ + น เมื่อมี น เป็นตัวสะกด สระเออจะแปลงรูป อ เป็น -ิ กลายเป็น เดิน."
+            },
+            {
+                id: 9,
+                topic: "มาตราตัวสะกด",
+                clue: "แม่กด มีตัวสะกดหลายตัวที่ออกเสียงเหมือน ด",
+                options: [
+                    { text: "คำว่า 'บาท' อยู่ในมาตราแม่กด", correct: true, tag: "C" },
+                    { text: "คำว่า 'บาท' อยู่ในมาตราแม่กง", correct: false, tag: "D" },
+                    { text: "คำว่า 'บาท' อยู่ในมาตราแม่กม", correct: false, tag: "A" },
+                    { text: "คำว่า 'บาท' ไม่มีตัวสะกดในแม่ใด", correct: false, tag: "B" }
+                ],
+                explanation: "คำว่า 'บาท' สะกดด้วย ท ทหาร แต่ออกเสียงเหมือน ด สะกด จึงจัดอยู่ในมาตราแม่กด (ไม่ตรงตามมาตรา)."
+            },
+            {
+                id: 10,
+                topic: "การผันวรรณยุกต์",
+                clue: "รูปวรรณยุกต์ไทยมี 4 รูป 5 เสียง",
+                options: [
+                    { text: "วรรณยุกต์ไทยมีทั้งหมด 3 เสียง", correct: false, tag: "D" },
+                    { text: "วรรณยุกต์ไทยมีทั้งหมด 4 รูป 5 เสียง", correct: true, tag: "A" },
+                    { text: "วรรณยุกต์ไทยมีทั้งหมด 5 รูป 3 เสียง", correct: false, tag: "B" },
+                    { text: "วรรณยุกต์ไทยมีทั้งหมด 2 รูป 2 เสียง", correct: false, tag: "C" }
+                ],
+                explanation: "รูปวรรณยุกต์มี 4 รูป (-่ -้ -๊ -๋) และเสียงวรรณยุกต์มี 5 เสียง (สามัญ เอก โท ตรี จัตวา)."
+            },
+            {
+                id: 11,
+                topic: "คำควบกล้ำเบื้องต้น",
+                clue: "พยัญชนะต้นสองตัวอ่านออกเสียงพร้อมกัน",
+                options: [
+                    { text: "คำว่า 'กรง' เป็นคำควบกล้ำแท้", correct: true, tag: "B" },
+                    { text: "คำว่า 'จริง' เป็นคำควบกล้ำแท้", correct: false, tag: "C" },
+                    { text: "คำว่า 'สร้อย' เป็นคำควบกล้ำแท้", correct: false, tag: "D" },
+                    { text: "คำว่า 'ศาลา' เป็นคำควบกล้ำแท้", correct: false, tag: "A" }
+                ],
+                explanation: "คำว่า 'กรง' มี กร เป็นพยัญชนะต้นควบกล้ำออกเสียงพร้อมกัน (ควบแท้) ส่วน 'จริง' และ 'สร้อย' เป็นคำควบไม่แท้และอักษรนำ"
+            },
+            {
+                id: 12,
+                topic: "มาตราตัวสะกด",
+                clue: "แม่กม มี ม เป็นตัวสะกดชัดเจน",
+                options: [
+                    { text: "คำว่า 'ยิ้ม' อยู่ในมาตราแม่กม", correct: true, tag: "C" },
+                    { text: "คำว่า 'ยิ้ม' อยู่ในมาตราแม่กน", correct: false, tag: "D" },
+                    { text: "คำว่า 'ยิ้ม' อยู่ในมาตราแม่กง", correct: false, tag: "A" },
+                    { text: "คำว่า 'ยิ้ม' อยู่ในมาตราแม่กด", correct: false, tag: "B" }
+                ],
+                explanation: "คำว่า 'ยิ้ม' ลงท้ายด้วยพยัญชนะ ม อยู่ในมาตราแม่กม ตรงตามมาตรา"
+            },
+            {
+                id: 13,
+                topic: "วรรณคดีลำนำ",
+                clue: "นิทานในบทเรียนมักสอนคุณธรรมอะไร",
+                options: [
+                    { text: "นิทานเรื่องแม่ไก่ใจสู้สอนเรื่องความขยัน", correct: true, tag: "D" },
+                    { text: "นิทานในวรรณคดีลำนำไม่ให้ข้อคิดใดๆ", correct: false, tag: "A" },
+                    { text: "นิทานพื้นบ้านสอนให้เด็กเกียจคร้าน", correct: false, tag: "B" },
+                    { text: "นิทานเน้นสอนการเล่นเกมคอมพิวเตอร์", correct: false, tag: "C" }
+                ],
+                explanation: "วรรณคดีลำนำและภาษาพาทีสอดแทรกนิทานและเรื่องราวที่สอนคุณธรรม ความขยัน ความสามัคคี และความเมตตา"
+            },
+            {
+                id: 14,
+                topic: "สระอือ",
+                clue: "สระอือเมื่อไม่มีตัวสะกดต้องมี อ เคียงคู่",
+                options: [
+                    { text: "คำว่า 'มือ' ประสมด้วยสระอือ (-ือ)", correct: true, tag: "A" },
+                    { text: "คำว่า 'มือ' ประสมด้วยสระอัว (เ-ัว)", correct: false, tag: "B" },
+                    { text: "คำว่า 'มือ' ประสมด้วยสระเอีย (เ-ีย)", correct: false, tag: "C" },
+                    { text: "คำว่า 'มือ' ประสมด้วยสระเออ (เ-อ)", correct: false, tag: "D" }
+                ],
+                explanation: "คำว่า 'มือ' ประกอบด้วย ม และ สระอือ (-ือ) ซึ่งเมื่อไม่มีตัวสะกดจะต้องมี อ เคียงคู่เสมอ"
+            },
+            {
+                id: 15,
+                topic: "มาตราตัวสะกด",
+                clue: "แม่เกย ใช้ ย เป็นตัวสะกด",
+                options: [
+                    { text: "คำว่า 'กล้วย' อยู่ในมาตราแม่เกย", correct: true, tag: "B" },
+                    { text: "คำว่า 'กล้วย' อยู่ในมาตราแม่เกอว", correct: false, tag: "C" },
+                    { text: "คำว่า 'กล้วย' อยู่ในมาตราแม่กม", correct: false, tag: "D" },
+                    { text: "คำว่า 'กล้วย' อยู่ในมาตราแม่กก", correct: false, tag: "A" }
+                ],
+                explanation: "คำว่า 'กล้วย' ลงท้ายด้วย ย จึงอยู่ในมาตราแม่เกย (แม้จะมีรูปวรรณยุกต์และตัวการันต์บางคำ แต่หลักดูที่ตัวสะกดท้าย)"
+            },
+            {
+                id: 16,
+                topic: "การแต่งประโยค ป.1",
+                clue: "ประโยคพื้นฐานต้องประกอบด้วย ใคร ทำอะไร",
+                options: [
+                    { text: "ข้อใดเป็นประโยคที่สมบูรณ์ที่สุด", correct: true, tag: "C" },
+                    { text: "ข้อความ 'ในบ้าน' เป็นประโยคสมบูรณ์", correct: false, tag: "D" },
+                    { text: "ข้อความ 'วิ่งเล่นสนาม' เป็นประโยคสมบูรณ์", correct: false, tag: "A" },
+                    { text: "ข้อความ 'สีแดงสวย' เป็นประโยคสมบูรณ์", correct: false, tag: "B" }
+                ],
+                explanation: "ประโยคสมบูรณ์ต้องมีภาคประธาน (ใคร/สิ่งใด) และภาคแสดง (ทำอะไร เช่น 'น้องกินข้าว' หรือ 'ภูผาเลี้ยงช้าง')."
+            },
+            {
+                id: 17,
+                topic: "มาตราตัวสะกด",
+                clue: "แม่เกอว ใช้ ว เป็นตัวสะกด",
+                options: [
+                    { text: "คำว่า 'แมว' อยู่ในมาตราแม่เกอว", correct: true, tag: "A" },
+                    { text: "คำว่า 'แมว' อยู่ในมาตราแม่เกย", correct: false, tag: "B" },
+                    { text: "คำว่า 'แมว' อยู่ในมาตราแม่กน", correct: false, tag: "C" },
+                    { text: "คำว่า 'แมว' อยู่ในมาตราแม่กง", correct: false, tag: "D" }
+                ],
+                explanation: "คำว่า 'แมว' ลงท้ายด้วย ว จึงอยู่ในมาตราแม่เกอว (ตัวสะกดตรงตามมาตรา)."
+            },
+            {
+                id: 18,
+                topic: "การอ่านออกเสียง",
+                clue: "สังเกตคำที่มีพยัญชนะนำหรือหำนำ",
+                options: [
+                    { text: "คำว่า 'หนู' อ่านออกเสียง ห นำ", correct: true, tag: "D" },
+                    { text: "คำว่า 'หนู' อ่านออกเสียง น ตัวเดียว", correct: false, tag: "A" },
+                    { text: "คำว่า 'หนู' เป็นคำควบกล้ำแท้", correct: false, tag: "B" },
+                    { text: "คำว่า 'หนู' อยู่ในมาตราแม่กด", correct: false, tag: "C" }
+                ],
+                explanation: "คำว่า 'หนู' เป็นอักษรนำโดยมี ห นำ น ออกเสียงพยางค์เดี่ยวเสียงสูง-ต่ำตามวรรณยุกต์ของห."
+            },
+            {
+                id: 19,
+                topic: "สระประสม",
+                clue: "สระเอียผสมจาก เ-ะ + ย",
+                options: [
+                    { text: "คำว่า 'เสียใจ' ประสมด้วยสระเอีย", correct: true, tag: "B" },
+                    { text: "คำว่า 'เสียใจ' ประสมด้วยสระอัว", correct: false, tag: "C" },
+                    { text: "คำว่า 'เสียใจ' ประสมด้วยสระอือ", correct: false, tag: "D" },
+                    { text: "คำว่า 'เสียใจ' ประสมด้วยสระเออ", correct: false, tag: "A" }
+                ],
+                explanation: "คำว่า 'เสีย' ใน 'เสียใจ' ใช้สระเอีย (เ-ีย) ซึ่งเป็นสระเสียงยาว"
+            },
+            {
+                id: 20,
+                topic: "มาตราตัวสะกด",
+                clue: "แม่กน มี น นู เป็นตัวสะกดหลัก",
+                options: [
+                    { text: "คำว่า 'บ้าน' อยู่ในมาตราแม่กน", correct: true, tag: "C" },
+                    { text: "คำว่า 'บ้าน' อยู่ในมาตราแม่กม", correct: false, tag: "D" },
+                    { text: "คำว่า 'บ้าน' อยู่ในมาตราแม่กก", correct: false, tag: "A" },
+                    { text: "คำว่า 'บ้าน' อยู่ในมาตราแม่กด", correct: false, tag: "B" }
+                ],
+                explanation: "คำว่า 'บ้าน' ลงท้ายด้วย น ณ หรือตัวสะกดในแม่กน (ตรงตามมาตรา)."
+            },
+            {
+                id: 21,
+                topic: "การผันวรรณยุกต์",
+                clue: "คำที่มีรูปไม้เอกมักออกเสียงโทหรือเอก",
+                options: [
+                    { text: "คำว่า 'ไก่' มีรูปวรรณยุกต์ไม้เอก", correct: true, tag: "A" },
+                    { text: "คำว่า 'ไก่' มีรูปลวรรณยุกต์ไม้โท", correct: false, tag: "B" },
+                    { text: "คำว่า 'ไก่' ไม่มีรูปวรรณยุกต์ใดๆ", correct: false, tag: "C" },
+                    { text: "คำว่า 'ไก่' ใช้รูปวรรณยุกต์ไม้ตรี", correct: false, tag: "D" }
+                ],
+                explanation: "คำว่า 'ไก่' ใช้สระไอไม้มลาย และมีรูปวรรณยุกต์ 'ไม้เอก' (-่) กำกับอยู่ด้านบน"
+            },
+            {
+                id: 22,
+                topic: "ภาษาพาที",
+                clue: "สถานที่ในบทเรียนมักเกี่ยวกับโรงเรียน ลำธาร หรือบ้าน",
+                options: [
+                    { text: "ภูผาและน้ำใสไปเที่ยวที่ลำธารในป่า", correct: true, tag: "D" },
+                    { text: "ตัวละครในเรื่องอาศัยอยู่บนดวงจันทร์", correct: false, tag: "A" },
+                    { text: "สถานที่ทั้งหมดอยู่ในห้างสรรพสินค้า", correct: false, tag: "B" },
+                    { text: "เด็กๆ เดินทางไปเที่ยวสวนสนุกเมืองนอก", correct: false, tag: "C" }
+                ],
+                explanation: "เนื้อหาในภาษาพาทีมักเล่าถึงธรรมชาติ ป่า ลำธาร และความผูกพันของเด็กๆ กับสัตว์เลี้ยงในชนบท"
+            },
+            {
+                id: 23,
+                topic: "สระพิเศษ",
+                clue: "สระอัวลดรูปเมื่อมีตัวสะกด",
+                options: [
+                    { text: "คำว่า 'ควร' ประสมด้วยสระอัวลดรูป", correct: true, tag: "B" },
+                    { text: "คำว่า 'ควร' ใช้สระเอียเป็นหลัก", correct: false, tag: "C" },
+                    { text: "คำว่า 'ควร' ไม่ใช้สระในภาษาไทย", correct: false, tag: "D" },
+                    { text: "คำว่า 'ควร' ใช้สระอือ (-ือ)", correct: false, tag: "A" }
+                ],
+                explanation: "คำว่า 'ควร' มาจาก ค + ัว + ร (สระอัวเมื่อมีตัวสะกด น จะลดรูปไม้หันอากาศ -ัว เหลือ ว ตัวเดียว)."
+            },
+            {
+                id: 24,
+                topic: "มาตราตัวสะกด",
+                clue: "แม่กดมีตัวสะกดใจความสำคัญคือ ด จ ช ซ ด ฎ ฏ ถ ท ธ ศ ษ ส",
+                options: [
+                    { text: "คำว่า 'ก๊าซ' อยู่ในมาตราแม่กด", correct: true, tag: "C" },
+                    { text: "คำว่า 'ก๊าซ' อยู่ในมาตราแม่กง", correct: false, tag: "D" },
+                    { text: "คำว่า 'ก๊าซ' อยู่ในมาตราแม่กม", correct: false, tag: "A" },
+                    { text: "คำว่า 'ก๊าซ' อยู่ในมาตราแม่เกย", correct: false, tag: "B" }
+                ],
+                explanation: "คำว่า 'ก๊าซ' ลงท้ายด้วย ซ แต่由於ออกเสียงเหมือน ด สะกด จึงจัดอยู่ในมาตราแม่กด"
+            },
+            {
+                id: 25,
+                topic: "การอ่านและสะกดคำ",
+                clue: "แจกลูกคำว่า ตา สะกดว่า ต-า",
+                options: [
+                    { text: "คำว่า 'ตา' สะกดอย่างไรถูกต้องที่สุด", correct: true, tag: "A" },
+                    { text: "คำว่า 'ตา' สะกดว่า ต-อ-า", correct: false, tag: "B" },
+                    { text: "คำว่า 'ตา' ไม่มีวิธีการสะกดคำ", correct: false, tag: "C" },
+                    { text: "คำว่า 'ตา' สะกดว่า ต-สระอา-น", correct: false, tag: "D" }
+                ],
+                explanation: "การแจกลูกสะกดคำว่า 'ตา' คือ ต-า อ่านว่า ตอ - อา - ตา"
+            },
+            {
+                id: 26,
+                topic: "วรรณคดีลำนำ",
+                clue: "เรื่องราวของฝนและธรรมชาติในบทเรียน",
+                options: [
+                    { text: "ฝนตกทำให้ต้นไม้และพืชผลเจริญเติบโต", correct: true, tag: "D" },
+                    { text: "ฝนตกทำให้โลกแห้งแล้งและต้นไม้ตาย", correct: false, tag: "A" },
+                    { text: "ฝนไม่มีประโยชน์ต่อการเกษตรเลย", correct: false, tag: "B" },
+                    { text: "ฝนตกทำให้สัตว์ป่าไม่มีน้ำดื่ม", correct: false, tag: "C" }
+                ],
+                explanation: "บทเรียนมักสอดแทรกความสำคัญของธรรมชาติ สายฝน และป่าไม้ที่มีประโยชน์ต่อสิ่งมีชีวิต"
+            },
+            {
+                id: 27,
+                topic: "มาตราตัวสะกด",
+                clue: "คำแม่กงมีเสียง ง งู",
+                options: [
+                    { text: "ข้อใดมีคำในมาตรา 'แม่กง' ทั้งหมด", correct: true, tag: "B" },
+                    { text: "ข้อใดมีแต่คำในมาตราแม่กด", correct: false, tag: "C" },
+                    { text: "ข้อใดมีแต่คำในมาตราแม่กม", correct: false, tag: "D" },
+                    { text: "ข้อใดมีแต่คำไม่มีตัวสะกด", correct: false, tag: "A" }
+                ],
+                explanation: "คำในแม่กงต้องลงท้ายด้วยพยัญชนะ ง เช่น ช้าง, 2ลิง, 3ถุง"
+            },
+            {
+                id: 28,
+                topic: "สระเออ",
+                clue: "สระเออเมื่อไม่มีตัวสะกดมีรูป เ-อ",
+                options: [
+                    { text: "คำว่า 'เธอ' ประสมด้วยสระเออ (เ-อ)", correct: true, tag: "C" },
+                    { text: "คำว่า 'เธอ' ประสมด้วยสระเอีย", correct: false, tag: "D" },
+                    { text: "คำว่า 'เธอ' ประสมด้วยสระอัว", correct: false, tag: "A" },
+                    { text: "คำว่า 'เธอ' ไม่มีสระเออประกอบ", correct: false, tag: "B" }
+                ],
+                explanation: "คำว่า 'เธอ' ประกอบด้วย ท และ สระเออ (เ-อ) เมื่อไม่มีตัวสะกดจะคงรูปเดิม"
+            },
+            {
+                id: 29,
+                topic: "การแต่งประโยค",
+                clue: "คำสรรพนามแทนตัวผู้พูด",
+                options: [
+                    { text: "คำว่า 'ฉัน' ใช้แทนตัวผู้พูดหรือบุคคลที่ 1", correct: true, tag: "A" },
+                    { text: "คำว่า 'ฉัน' ใช้เรียกสัตว์ป่าดุร้ายเท่านั้น", correct: false, tag: "B" },
+                    { text: "คำว่า 'ฉัน' เป็นคำกริยาแสดงอาการวิ่ง", correct: false, tag: "C" },
+                    { text: "คำว่า 'ฉัน' เป็นชื่อเรียกของผลไม้", correct: false, tag: "D" }
+                ],
+                explanation: "คำว่า 'ฉัน' เป็นคำสรรพนามใช้แทนตัวผู้พูดในภาษาไทย เหมาะสำหรับเด็กๆ ใช้สื่อสารในชีวิตประจำวัน"
+            },
+            {
+                id: 30,
+                topic: "ทักษะภาษาไทย ป.1 ภาพรวม",
+                clue: "การสรุปความเข้าใจภาษาไทยเบื้องต้น",
+                options: [
+                    { text: "การฝึกอ่านและเขียนสม่ำเสมอช่วยให้เก่งภาษาไทย", correct: true, tag: "D" },
+                    { text: "การเรียนภาษาไทยไม่ต้องฝึกฝนการสะกดคำ", correct: false, tag: "A" },
+                    { text: "การจำตัวหนังสือไม่ต้องรู้มาตราตัวสะกด", correct: false, tag: "B" },
+                    { text: "การอ่านหนังสือพิมพ์ยากๆ เหมาะกับ ป.1", correct: false, tag: "C" }
+                ],
+                explanation: "พื้นฐานภาษาไทย ป.1 เริ่มจากการจำสระ มาตราตัวสะกด และการฝึกฝนอ่านเขียนอย่างต่อเนื่องเพื่อทักษะที่แม่นยำ"
+            }
+        ];
+
+        let questions = [];
+        let currentQuestionIndex = 0;
+        let userAnswers = {}; // index -> optionIndex
+        let currentLanguage = 'TH';
+
+        // --- Fisher-Yates Shuffle Algorithm ---
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function initExam() {
+            // Deep copy raw questions and shuffle option order for each question
+            questions = JSON.parse(JSON.stringify(rawQuestions));
+            questions.forEach(q => {
+                shuffleArray(q.options);
+            });
+            currentQuestionIndex = 0;
+            userAnswers = {};
+            
+            document.getElementById('examFrame').style.display = 'flex';
+            document.getElementById('resultsContainer').style.display = 'none';
+
+            renderNavButtons();
+            loadQuestion(currentQuestionIndex);
+        }
+
+        function renderNavButtons() {
+            const bar = document.getElementById('navButtonsBar');
+            bar.innerHTML = '';
+            questions.forEach((q, idx) => {
+                const btn = document.createElement('button');
+                btn.className = 'q-nav-btn';
+                btn.innerText = idx + 1;
+                if (idx === currentQuestionIndex) {
+                    btn.classList.add('current');
+                }
+                if (userAnswers[idx] !== undefined) {
+                    btn.classList.add('answered');
+                    // Check if answered correctly or wrongly for coloring
+                    const selectedOpt = questions[idx].options[userAnswers[idx]];
+                    if (selectedOpt.correct) {
+                        btn.classList.add('correct-state');
+                    } else {
+                        btn.classList.add('wrong-state');
+                    }
+                }
+                btn.onclick = () => goToQuestion(idx);
+                bar.appendChild(btn);
+            });
+        }
+
+        function loadQuestion(index) {
+            currentQuestionIndex = index;
+            const q = questions[index];
+
+            document.getElementById('currentQNum').innerText = `ข้อที่ ${index + 1} จาก ${questions.length}`;
+            document.getElementById('questionTitle').innerText = `${index + 1}. ${q.topic}: เลือกคำตอบที่ถูกต้องที่สุด`;
+
+            // Clue
+            const clueBox = document.getElementById('clueBox');
+            clueBox.innerText = q.clue;
+            clueBox.style.display = 'none';
+            document.getElementById('clueToggleBtn').innerText = "🔍 แสดงคำใบ้ / Clue";
+
+            // Options
+            const optionsList = document.getElementById('optionsList');
+            optionsList.innerHTML = '';
+
+            q.options.forEach((opt, optIdx) => {
+                const div = document.createElement('div');
+                div.className = 'option-item';
+                div.innerText = `${String.fromCharCode(65 + optIdx)}. ${opt.text}`;
+
+                if (userAnswers[index] !== undefined) {
+                    // Already answered, show states
+                    if (userAnswers[index] === optIdx) {
+                        div.classList.add('selected');
+                        if (opt.correct) {
+                            div.classList.add('correct');
+                        } else {
+                            div.classList.add('wrong');
+                        }
+                    } else if (opt.correct) {
+                        div.classList.add('correct');
+                    }
+                } else {
+                    div.onclick = () => selectOption(index, optIdx);
+                }
+                optionsList.appendChild(div);
+            });
+
+            // Explanation
+            const expBox = document.getElementById('explanationBox');
+            const expText = document.getElementById('explanationText');
+            if (userAnswers[index] !== undefined) {
+                expText.innerText = q.explanation;
+                expBox.classList.add('show');
+            } else {
+                expBox.classList.remove('show');
+            }
+
+            // Buttons state
+            document.getElementById('prevBtn').style.visibility = index === 0 ? 'hidden' : 'visible';
+            const nextBtn = document.getElementById('nextBtn');
+            if (index === questions.length - 1) {
+                nextBtn.innerText = "ส่งข้อสอบ / ดูผลวิเคราะห์";
+                nextBtn.onclick = finishExam;
+            } else {
+                nextBtn.innerText = "ข้อถัดไป";
+                nextBtn.onclick = nextQuestion;
+            }
+
+            renderNavButtons();
+        }
+
+        function selectOption(qIdx, optIdx) {
+            if (userAnswers[qIdx] !== undefined) return; // already answered
+
+            userAnswers[qIdx] = optIdx;
+            loadQuestion(qIdx);
+            
+            // Save state to localStorage
+            localStorage.setItem('thai_exam_p1_answers', JSON.stringify(userAnswers));
+        }
+
+        function toggleClue() {
+            const clueBox = document.getElementById('clueBox');
+            const btn = document.getElementById('clueToggleBtn');
+            if (clueBox.style.display === 'none' || clueBox.style.display === '') {
+                clueBox.style.display = 'block';
+                btn.innerText = "🔍 ซ่อนคำใบ้";
+            } else {
+                clueBox.style.display = 'none';
+                btn.innerText = "🔍 แสดงคำใบ้ / Clue";
+            }
+        }
+
+        function prevQuestion() {
+            if (currentQuestionIndex > 0) {
+                loadQuestion(currentQuestionIndex - 1);
+            }
+        }
+
+        function nextQuestion() {
+            if (currentQuestionIndex < questions.length - 1) {
+                loadQuestion(currentQuestionIndex + 1);
+            }
+        }
+
+        function goToQuestion(index) {
+            loadQuestion(index);
+        }
+
+        function finishExam() {
+            let correctCount = 0;
+            let topicStats = {};
+
+            questions.forEach((q, idx) => {
+                if (!topicStats[q.topic]) {
+                    topicStats[q.topic] = { total: 0, correct: 0 };
+                }
+                topicStats[q.topic].total++;
+
+                const ans = userAnswers[idx];
+                if (ans !== undefined && q.options[ans].correct) {
+                    correctCount++;
+                    topicStats[q.topic].correct++;
+                }
+            });
+
+            const percentage = Math.round((correctCount / questions.length) * 100);
+
+            document.getElementById('examFrame').style.display = 'none';
+            const resultsContainer = document.getElementById('resultsContainer');
+            resultsContainer.style.display = 'flex';
+
+            document.getElementById('finalScoreDisplay').innerText = `คะแนนที่ได้: ${correctCount} / ${questions.length} (${percentage}%)`;
+
+            // Generate Analysis
+            const analysisList = document.getElementById('analysisList');
+            analysisList.innerHTML = '';
+
+            let strengths = [];
+            let improvements = [];
+
+            for (let topic in topicStats) {
+                let stat = topicStats[topic];
+                let ratio = stat.correct / stat.total;
+                if (ratio >= 0.75) {
+                    strengths.push(`<li><b>จุดเด่น (${topic}):</b> ทำคะแนนได้ดีเยี่ยม (${stat.correct}/${stat.total}) มีความเข้าใจในกฎและหลักภาษาชัดเจน</li>`);
+                } else {
+                    improvements.push(`<li><b>จุดที่ต้องพัฒนา (${topic}):</b> ทำคะแนนได้ (${stat.correct}/${stat.total}) ควรกลับไปทบทวนบทเรียนและฝึกทำแบบฝึกหัดเพิ่มเติมในหัวข้อนี้</li>`);
+                }
+            }
+
+            if (strengths.length === 0) {
+                analysisList.innerHTML += `<li><b>จุดเด่น:</b> กำลังเรียนรู้และพัฒนาทักษะพื้นฐานภาษาไทย</li>`;
+            } else {
+                strengths.forEach(s => analysisList.innerHTML += s);
+            }
+
+            if (improvements.length === 0) {
+                analysisList.innerHTML += `<li><b>จุดที่ต้องพัฒนา:</b> ยอดเยี่ยม! ผ่านเกณฑ์มาตรฐานทุกหัวข้อหลัก</li>`;
+            } else {
+                improvements.forEach(i => analysisList.innerHTML += i);
+            }
+
+            // Clear saved storage upon completion
+            localStorage.removeItem('thai_exam_p1_answers');
+        }
+
+        function resetExam() {
+            if (confirm("คุณต้องการเริ่มทำข้อสอบใหม่ทั้งหมดหรือไม่? ระบบจะสลับตัวเลือกข้อสอบใหม่อีกครั้ง")) {
+                localStorage.removeItem('thai_exam_p1_answers');
+                initExam();
+            }
+        }
+
+        function toggleLanguage() {
+            currentLanguage = currentLanguage === 'TH' ? 'EN' : 'TH';
+            document.getElementById('langBtn').innerText = `ภาษา: ${currentLanguage}`;
+            // Maintain state and reload current question
+            loadQuestion(currentQuestionIndex);
+        }
+
+        // --- Whiteboard Implementation ---
+        const canvas = document.getElementById('whiteboard');
+        const ctx = canvas.getContext('2d');
+        let isDrawing = false;
+        let wbMode = 'pen';
+        let penColor = '#333333';
+
+        function resizeCanvas() {
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width || 300;
+            canvas.height = 350;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            ctx.lineWidth = 3;
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+        window.addEventListener('load', () => {
+            resizeCanvas();
+            initExam();
+        });
+
+        function setWbMode(mode) {
+            wbMode = mode;
+            document.getElementById('penTool').classList.toggle('active', mode === 'pen');
+            document.getElementById('eraserTool').classList.toggle('active', mode === 'eraser');
+        }
+
+        function setWbColor(color) {
+            penColor = color;
+        }
+
+        function clearWhiteboard() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        // Mouse & Touch event listeners for Whiteboard
+        canvas.addEventListener('mousedown', startDrawing);
+        canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('mouseup', stopDrawing);
+        canvas.addEventListener('mouseleave', stopDrawing);
+
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            const touch = e.touches[0];
+            const mouseEvent = new MouseEvent('mousedown', {
+                clientX: touch.clientX,
+                clientY: touch.clientY
+            });
+            canvas.dispatchEvent(mouseEvent);
+        });
+
+        canvas.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            const touch = e.touches[0];
+            const mouseEvent = new MouseEvent('mousemove', {
+                clientX: touch.clientX,
+                clientY: touch.clientY
+            });
+            canvas.dispatchEvent(mouseEvent);
+        });
+
+        canvas.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            const mouseEvent = new MouseEvent('mouseup', {});
+            canvas.dispatchEvent(mouseEvent);
+        });
+
+        function getMousePos(e) {
+            const rect = canvas.getBoundingClientRect();
+            return {
+                x: e.clientX - rect.left,
+                y: e.clientY - rect.top
+            };
+        }
+
+        function startDrawing(e) {
+            isDrawing = true;
+            const pos = getMousePos(e);
+            ctx.beginPath();
+            ctx.moveTo(pos.x, pos.y);
+        }
+
+        function draw(e) {
+            if (!isDrawing) return;
+            const pos = getMousePos(e);
+            if (wbMode === 'eraser') {
+                ctx.strokeStyle = '#fafafa';
+                ctx.lineWidth = 15;
+            } else {
+                ctx.strokeStyle = penColor;
+                ctx.lineWidth = 3;
+            }
+            ctx.lineTo(pos.x, pos.y);
+            ctx.stroke();
+        }
+
+        function stopDrawing() {
+            if (!isDrawing) return;
+            isDrawing = false;
+            ctx.closePath();
+        }
+    </script>
+</body>
+</html>
