@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบสอบคัดเลือกเข้า ม.1 วิชาดาราศาสตร์และวิทยาศาสตร์ - พระจอมเกล้าติวเตอร์</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --success: #27ae60;
+            --danger: #c0392b;
+            --light: #f8f9fa;
+            --dark: #2c3e50;
+            --border: #dcdde1;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #f1f2f6; color: #333; line-height: 1.6; }
+        header { background: var(--primary); color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; }
+        header h1 { font-size: 1.5rem; }
+        .controls-top { display: flex; gap: 10px; align-items: center; }
+        button { background: var(--secondary); color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-size: 0.9rem; transition: background 0.2s; }
+        button:hover { background: #2980b9; }
+        button.danger { background: var(--danger); }
+        button.danger:hover { background: #a93226; }
+        
+        .container { max-width: 1400px; margin: 20px auto; padding: 0 15px; }
+        
+        /* สรุปเนื้อหาด้านบน */
+        .summary-section { background: white; padding: 25px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        .summary-section h2 { color: var(--primary); margin-bottom: 15px; font-size: 1.3rem; }
+        .summary-section p { margin-bottom: 12px; text-align: justify; }
+        .mind-trick-box { background: #e8f4f8; border-left: 5px solid var(--secondary); padding: 15px; margin-top: 15px; border-radius: 0 8px 8px 0; }
+        .mind-trick-box h3 { color: #2980b9; margin-bottom: 8px; font-size: 1.1rem; }
+
+        /* สรุปผลวิเคราะห์ตอนส่งข้อสอบ */
+        #result-view { display: none; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 20px; text-align: center; }
+        #result-view h2 { color: var(--primary); margin-bottom: 15px; }
+        .score-display { font-size: 2.5rem; color: var(--success); font-weight: bold; margin: 15px 0; }
+        .analysis-box { text-align: left; margin-top: 20px; padding: 20px; background: #fdfefe; border: 1px solid var(--border); border-radius: 6px; }
+
+        /* สองเฟรมหลักด้านล่าง */
+        .main-layout { display: flex; gap: 20px; align-items: flex-start; }
+        .exam-frame { flex: 7; background: white; padding: 25px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .whiteboard-frame { flex: 3; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); position: sticky; top: 20px; }
+        
+        /* ข้อสอบ UI */
+        .question-card { margin-bottom: 30px; border-bottom: 1px solid var(--border); padding-bottom: 25px; }
+        .question-title { font-weight: bold; font-size: 1.05rem; margin-bottom: 12px; color: var(--dark); }
+        .question-image { max-width: 100%; height: auto; border-radius: 6px; margin-bottom: 12px; border: 1px solid var(--border); display: block; }
+        .options-group { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
+        .option-label { display: flex; align-items: center; padding: 10px 12px; background: var(--light); border: 1px solid var(--border); border-radius: 6px; cursor: pointer; transition: all 0.2s; }
+        .option-label:hover { background: #eef2f7; }
+        .option-label input { margin-right: 10px; }
+        
+        .clue-btn { background: #f39c12; font-size: 0.8rem; padding: 4px 8px; margin-bottom: 8px; }
+        .clue-btn:hover { background: #d35400; }
+        .clue-content { display: none; background: #fef9e7; border: 1px dashed #f39c12; padding: 10px; font-size: 0.85rem; border-radius: 4px; margin-bottom: 10px; color: #7f6000; }
+        
+        .explanation { display: none; margin-top: 10px; padding: 12px; background: #eafaf1; border-left: 4px solid var(--success); font-size: 0.9rem; border-radius: 0 4px 4px 0; }
+        .explanation.incorrect { background: #fdedec; border-left-color: var(--danger); }
+
+        /* Whiteboard UI */
+        .whiteboard-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .wb-tools { display: flex; gap: 5px; }
+        canvas { width: 100%; height: 350px; border: 1px solid var(--border); border-radius: 4px; background: #fff; cursor: crosshair; }
+
+        .submit-container { text-align: center; margin-top: 30px; }
+        .submit-btn { background: var(--success); font-size: 1.2rem; padding: 12px 30px; }
+        .submit-btn:hover { background: #219653; }
+
+        .footer-credit { text-align: center; margin-top: 25px; font-size: 0.9rem; color: #7f8c8d; font-weight: bold; }
+
+        @media (max-width: 900px) {
+            .main-layout { flex-direction: column; }
+            .whiteboard-frame { position: static; width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>ระบบสอบคัดเลือกเข้า ม.1 - พระจอมเกล้าติวเตอร์</h1>
+    <div class="controls-top">
+        <button id="lang-btn" onclick="toggleLanguage()">เปลี่ยนภาษา (TH/EN)</button>
+        <button class="danger" onclick="resetExam()">Reset ระบบข้อสอบ</button>
+    </div>
+</header>
+
+<div class="container">
+    <!-- ส่วนสรุปเนื้อหา (500 คำขึ้นไป) -->
+    <section class="summary-section">
+        <h2 id="sum-title">สรุปเนื้อหาเข้มข้น: วิทยาศาสตร์ระดับประถมศึกษาตอนปลาย (เตรียมสอบเข้า ม.1)</h2>
+        <p id="sum-p1">การเตรียมตัวสอบเข้าศึกษาต่อในระดับชั้นมัธยมศึกษาปีที่ 1 (ม.1) ในรายวิชาวิทยาศาสตร์ จำเป็นต้องอาศัยความเข้าใจเชิงบูรณาการทั้งในด้านชีววิทยา เคมี ฟิสิกส์ และโลกศาสตร์-อวกาศ เนื้อหาในระดับประถมศึกษาตอนปลายจะเน้นการเชื่อมโยงทฤษฎีเข้ากับปรากฏการณ์ธรรมชาติรอบตัว เช่น การลำเลียงสารในพืชผ่านท่อไซเล็ม (Xylem) และโฟลเอ็ม (Phloem) กระบวนการสังเคราะห์ด้วยแสง การจำแนกสารตามสถานะและเนื้อสาร การเกิดวัฏจักรของน้ำ การหมุนรอบตัวเองของโลกที่ส่งผลให้เกิดปรากฏการณ์กลางวันกลางคืน ทิศทางลมบกและลมทะเล รวมถึงระบบอวัยวะภายในร่างกายมนุษย์ เช่น ระบบย่อยอาหาร ระบบหมุนเวียนเลือด และระบบหายใจ ซึ่งล้วนเป็นหัวใจสำคัญออกข้อสอบบ่อยครั้งในลักษณะโจทย์สถานการณ์ปัญหาและการประยุกต์ใช้ความรู้ทางคำนวณพื้นฐาน เช่น ความหนาแน่นของสสาร แรงลัพธ์ และอัตราเร็วของวัตถุ</p>
+        <p id="sum-p2">นอกจากนี้ ผู้เรียนควรให้ความสำคัญกับการวิเคราะห์ข้อมูลจากกราฟ ตารางทดลอง และแผนภาพทางวิทยาศาสตร์ การทำความเข้าใจตัวแปรต้น ตัวแปรตาม และตัวแปรควบคุมถือเป็นทักษะกระบวนการทางวิทยาศาสตร์ที่ขาดไม่ได้ การฝึกทำโจทย์อย่างสม่ำเสมอจะช่วยให้ผู้เรียนเกิดความคุ้นเคยกับรูปแบบคำถามเชิงวิเคราะห์ที่มีความซับซ้อนมากกว่าการท่องจำคำศัพท์เพียงอย่างเดียว การทำความเข้าใจโครงสร้างของเซลล์พืชและเซลล์สัตว์ หน้าที่ของออร์แกเนลล์ เช่น คลอโรพลาสต์ (Chloroplast) และไมโทคอนเดรีย (Mitochondria) ตลอดจนการถ่ายทอดลักษณะทางพันธุกรรมผ่านยีนและโครโมโซม จะช่วยเสริมสร้างความแข็งแกร่งทางความคิดและเพิ่มโอกาสในการทำคะแนนสอบแข่งขันได้อย่างมีประสิทธิภาพสูงสุดในทุกสนามสอบทั่วประเทศ</p>
+        <p id="sum-p3">ในส่วนของวิชาเคมีและฟิสิกส์ ผู้เรียนควรทำความเข้าใจเรื่องสถานะของสสาร การเปลี่ยนสถานะ จุดเดือด จุดหลอมเหลว การแยกสารด้วยวิธีต่างๆ เช่น การกลั่น การตกกระกอน และการกรอง รวมถึงกฎการอนุรักษ์พลังงาน แรงเสียดทาน แรงโน้มถ่วง และวงจรไฟฟ้าเบื้องต้น การวิเคราะห์โจทย์คำนวณต้องอาศัยการตีโจทย์อย่างเป็นระบบ การแทนค่าสูตรทางวิทยาศาสตร์อย่างแม่นยำ และการตรวจสอบหน่วยวัดให้ถูกต้องสม่ำเสมอ เพื่อลดข้อผิดพลาดจากการคำนวณในการสอบแข่งขันจริง</p>
+        
+        <div class="mind-trick-box">
+            <h3 id="trick-title">กล่องเทคนิคการจำและกระบวนการคิด (Memory Tricks & Thought Process)</h3>
+            <p id="trick-desc">1. <b>เทคนิคแยกท่อลำเลียงพืช:</b> "X-Up, P-Down" (Xylem ลำเลียงน้ำและแร่ธาตุขึ้นสู่ยอด, Phloem ลำเลียงอาหารลงสู่รากและส่วนต่างๆ)<br>
+            2. <b>เทคนิคเซลล์พืชและเซลล์สัตว์:</b> "พืชมีผนังเซลล์และคลอโรพลาสต์ แต่สัตว์ไม่มีผนังเซลล์และคลอโรพลาสต์"<br>
+            3. <b>กระบวนการคิดวิเคราะห์โจทย์คำนวณ:</b> ให้เขียนสิ่งที่โจทย์กำหนด (Given) สิ่งที่โจทย์ถาม (Find) และเลือกสูตรคำนวณที่เหมาะสมทุกครั้ง ห้ามเดาตัวเลขเด็ดขาด</p>
+        </div>
+    </section>
+
+    <!-- มุมมองผลลัพธ์หลังส่งข้อสอบ -->
+    <div id="result-view">
+        <h2 id="res-title">ผลการประเมินการทดสอบ</h2>
+        <div class="score-display" id="final-score">0 / 30</div>
+        <p id="res-percent">เปอร์เซ็นต์ความถูกต้อง: 0%</p>
+        <div class="analysis-box" id="analysis-content">
+            <h3>การวิเคราะห์ผลรายบุคคล (Diagnostic Analysis)</h3>
+            <p id="analysis-text">กำลังประเมินผล...</p>
+        </div>
+        <button style="margin-top:20px;" onclick="location.reload()">ทำข้อสอบใหม่อีกครั้ง</button>
+    </div>
+
+    <!-- ส่วนเนื้อหาข้อสอบและไวท์บอร์ด -->
+    <div class="main-layout" id="exam-container-wrapper">
+        <div class="exam-frame">
+            <h2 style="margin-bottom: 20px; color: var(--primary);" id="exam-main-heading">ชุดข้อสอบวิทยาศาสตร์ (30 ข้อ)</h2>
+            <div id="questions-list">
+                <!-- ข้อสอบจะถูกเรนเดอร์ด้วย JavaScript ทั้ง 30 ข้อ -->
+            </div>
+            
+            <div class="submit-container">
+                <button class="submit-btn" onclick="submitExam()">ส่งข้อสอบและตรวจผลคะแนน</button>
+            </div>
+        </div>
+
+        <div class="whiteboard-frame">
+            <div class="whiteboard-header">
+                <h3 id="wb-title" style="font-size: 1.0rem; color: var(--primary);">กระดานทดเลข</h3>
+                <div class="wb-tools">
+                    <button onclick="setPenColor('#2c3e50')" style="background:#2c3e50; width:25px; height:25px; padding:0; border-radius:50%;" title="ปากกา"></button>
+                    <button onclick="setPenColor('#e74c3c')" style="background:#e74c3c; width:25px; height:25px; padding:0; border-radius:50%;" title="สีแดง"></button>
+                    <button onclick="clearWhiteboard()" class="danger" style="padding:4px 8px; font-size:0.75rem;">ล้าง</button>
+                </div>
+            </div>
+            <canvas id="wb-canvas"></canvas>
+        </div>
+    </div>
+</div>
+
+<div class="footer-credit">
+    เขียนโดย พระจอมเกล้าติวเตอร์
+</div>
+
+<script>
+    let currentLang = 'th';
+
+    // ฐานข้อมูลข้อสอบ 30 ข้อครบถ้วนตามหลักการป้องกันการเดา (Anti-Guessing Engine)
+    const rawQuestions = [
+        {
+            id: 1,
+            question: { th: "1. โครงสร้างใดของเซลล์พืชทำหน้าที่ในการสังเคราะห์ด้วยแสงและมีสารสีเขียวอยู่ภายใน?", en: "1. Which plant cell structure is responsible for photosynthesis and contains green pigment?" },
+            image: "https://images.unsplash.com/photo-1530595467537-0b5996c41f2d?auto=format&fit=crop&w=600&q=80",
+            clue: { th: "สังเกตออร์แกเนลล์ที่มีเยื่อหุ้ม 2 ชั้น พบในเซลล์พืชเท่านั้น", en: "Look for double-membraned organelles found only in plant cells." },
+            options: [
+                { text: { th: "คลอโรพลาสต์ (Chloroplast)", en: "Chloroplast" }, isCorrect: true },
+                { text: { th: "ไมโทคอนเดรีย (Mitochondria)", en: "Mitochondria" }, isCorrect: false },
+                { text: { th: "แวคิวโอล (Vacuole)", en: "Vacuole" }, isCorrect: false },
+                { text: { th: "ไรโบโซม (Ribosome)", en: "Ribosome" }, isCorrect: false }
+            ],
+            explanation: { th: "คลอโรพลาสต์ (Chloroplast) มีสารคลอโรฟิลด์ทำหน้าที่ดูดกลืนพลังงานแสงเพื่อใช้ในกระบวนการสังเคราะห์ด้วยแสง", en: "Chloroplast contains chlorophyll to absorb light energy for photosynthesis." }
+        },
+        {
+            id: 2,
+            question: { th: "2. ท่อลำเลียงน้ำและแร่ธาตุจากรากขึ้นสู่ลำต้นและใบของพืชคือข้อใด?", en: "2. Which vessel transports water and minerals from roots to stems and leaves?" },
+            image: "",
+            clue: { th: "จำง่ายๆ ว่า X-Up (ไซเล็มพุ่งขึ้น)", en: "Remember X-Up rule for water transport." },
+            options: [
+                { text: { th: "ไซเล็ม (Xylem)", en: "Xylem" }, isCorrect: true },
+                { text: { th: "โฟลเอ็ม (Phloem)", en: "Phloem" }, isCorrect: false },
+                { text: { th: "แคมเบียม (Cambium)", en: "Cambium" }, isCorrect: false },
+                { text: { th: "คอร์เทกซ์ (Cortex)", en: "Cortex" }, isCorrect: false }
+            ],
+            explanation: { th: "ไซเล็ม (Xylem) ทำหน้าที่ลำเลียงน้ำและแร่ธาตุ ส่วนโฟลเอ็มลำเลียงอาหาร", en: "Xylem transports water/minerals while phloem transports food." }
+        },
+        {
+            id: 3,
+            question: { th: "3. ข้อใดกล่าวถึงสมบัติของสารละลายกรดได้ถูกต้องที่สุด?", en: "3. Which statement correctly describes the properties of acidic solutions?" },
+            image: "",
+            clue: { th: "เปลี่ยนกระดาษลิตมัสจากสีน้ำเงินเป็นสีแดง มีค่า pH น้อยกว่า 7", en: "Turns blue litmus red and has pH less than 7." },
+            options: [
+                { text: { th: "มีค่า pH น้อยกว่า 7 และเปลี่ยนกระดาษลิตมัส", en: "Has pH less than 7 and changes litmus" }, isCorrect: true },
+                { text: { th: "มีค่า pH มากกว่า 7 และเปลี่ยนกระดาษลิตมัส", en: "Has pH greater than 7 and changes litmus" }, isCorrect: false },
+                { text: { th: "มีค่า pH เท่ากับ 7 และเปลี่ยนกระดาษลิตมัส", en: "Has pH equal to 7 and changes litmus" }, isCorrect: false },
+                { text: { th: "ไม่เปลี่ยนสีกระดาษลิตมัสและ pH เป็นกลาง", en: "Does not change litmus and is neutral" }, isCorrect: false }
+            ],
+            explanation: { th: "กรดมีค่า pH < 7 ทำปฏิกิริยากับโลหะ และเปลี่ยนสีกระดาษลิตมัสจากน้ำเงินเป็นแดง", en: "Acids have pH < 7, react with metals, and turn blue litmus red." }
+        },
+        {
+            id: 4,
+            question: { th: "4. การเปลี่ยนสถานะของสสารจากของแข็งกลายเป็นแก๊สโดยไม่ผ่านของเหลวเรียกว่าอะไร?", en: "4. What is the phase change from solid directly to gas called?" },
+            image: "",
+            clue: { th: "ตัวอย่างเช่น ลูกเหม็นระเหิดในตู้เสื้อผ้า", en: "Example: Mothballs sublimating in a closet." },
+            options: [
+                { text: { th: "การระเหิด (Sublimation)", en: "Sublimation" }, isCorrect: true },
+                { text: { th: "การหลอมเหลว (Melting)", en: "Melting" }, isCorrect: false },
+                { text: { th: "การระเหย (Evaporation)", en: "Evaporation" }, isCorrect: false },
+                { text: { th: "การควบแน่น (Condensation)", en: "Condensation" }, isCorrect: false }
+            ],
+            explanation: { th: "การระเหิด (Sublimation) คือกระบวนการที่สสารเปลี่ยนสถานะจากของแข็งเป็นแก๊สโดยตรง", en: "Sublimation is the direct transition from solid to gas." }
+        },
+        {
+            id: 5,
+            question: { th: "5. อวัยวะใดทำหน้าที่หลักในการย่อยอาหารและดูดซึมสารอาหารมากที่สุดในร่างกายมนุษย์?", en: "5. Which organ is primarily responsible for nutrient digestion and absorption?" },
+            image: "",
+            clue: { th: "มีความยาวประมาณ 6-7 เมตร มีวิลลี่ (Villi) ช่วยดูดซึม", en: "About 6-7 meters long containing villi for absorption." },
+            options: [
+                { text: { th: "ลำไส้เล็ก (Small intestine)", en: "Small intestine" }, isCorrect: true },
+                { text: { th: "ลำไส้ใหญ่ (Large intestine)", en: "Large intestine" }, isCorrect: false },
+                { text: { th: "กระเพาะอาหาร (Stomach)", en: "Stomach" }, isCorrect: false },
+                { text: { th: "ตับอ่อน (Pancreas)", en: "Pancreas" }, isCorrect: false }
+            ],
+            explanation: { th: "ลำไส้เล็กเป็นบริเวณที่มีการย่อยอาหารสมบูรณ์และดูดซึมสารอาหารเข้าสู่กระแสเลือดมากที่สุด", en: "Small intestine is the main site for complete digestion and nutrient absorption." }
+        },
+        {
+            id: 6,
+            question: { th: "6. ปรากฏการณ์ลมบกและลมทะเลเกิดขึ้นเนื่องมาจากสาเหตุหลักในข้อใด?", en: "6. What is the main cause of land and sea breezes?" },
+            image: "",
+            clue: { th: "อุณหภูมิและความดันอากาศระหว่างพื้นดินกับพื้นน้ำแตกต่างกัน", en: "Temperature and pressure differences between land and water." },
+            options: [
+                { text: { th: "ความแตกต่างอัตราการรับความร้อนน้ำและดิน", en: "Difference in heat absorption rates of water and land" }, isCorrect: true },
+                { text: { th: "แรงดึงดูดของดวงจันทร์และดวงอาทิตย์ร่วมกัน", en: "Combined gravitational pull of moon and sun" }, isCorrect: false },
+                { text: { th: "การหมุนรอบตัวเองของโลกจากทิศตะวันตกสู่ตะวันออก", en: "Earth rotation from west to east" }, isCorrect: false },
+                { text: { th: "การเปลี่ยนแปลงความชื้นสัมพัทธ์ในบรรยากาศ", en: "Changes in relative humidity in the atmosphere" }, isCorrect: false }
+            ],
+            explanation: { th: "ดินรับและคายความร้อนได้เร็วกว่าน้ำ ทำให้อากาศมีความดันแตกต่างกันเกิดเป็นลม", en: "Land absorbs/releases heat faster than water, creating pressure differences." }
+        },
+        {
+            id: 7,
+            question: { th: "7. หน่วยพื้นฐานที่เล็กที่สุดของสิ่งมีชีวิตทุกชนิดคือข้อใด?", en: "7. What is the smallest basic unit of all living organisms?" },
+            image: "",
+            clue: { th: "โรเบิร์ต ฮุก เป็นผู้ค้นพบครั้งแรกโดยใช้กล้องจุลทรรศน์", en: "First discovered by Robert Hooke using a microscope." },
+            options: [
+                { text: { th: "เซลล์ (Cell)", en: "Cell" }, isCorrect: true },
+                { text: { th: "เนื้อเยื่อ (Tissue)", en: "Tissue" }, isCorrect: false },
+                { text: { th: "ออร์แกเนลล์ (Organelle)", en: "Organelle" }, isCorrect: false },
+                { text: { th: "อะตอม (Atom)", en: "Atom" }, isCorrect: false }
+            ],
+            explanation: { th: "เซลล์ (Cell) เป็นหน่วยโครงสร้างและหน้าที่พื้นฐานที่สุดของสิ่งมีชีวิตทุกชนิด", en: "Cell is the basic structural and functional unit of life." }
+        },
+        {
+            id: 8,
+            question: { th: "8. ดาวเคราะห์ดวงใดในระบบสุริยะที่มีขนาดใหญ่ที่สุดและมีจุดแดงใหญ่?", en: "8. Which planet in our solar system is the largest and has a Great Red Spot?" },
+            image: "",
+            clue: { th: "ดาวเคราะห์ยักษ์ก๊าซลำดับที่ 5 จากดวงอาทิตย์", en: "The 5th gas giant planet from the Sun." },
+            options: [
+                { text: { th: "ดาวพฤหัสบดี (Jupiter)", en: "Jupiter" }, isCorrect: true },
+                { text: { th: "ดาวเสาร์ (Saturn)", en: "Saturn" }, isCorrect: false },
+                { text: { th: "ดาวยูเรนัส (Uranus)", en: "Uranus" }, isCorrect: false },
+                { text: { th: "ดาวเนปจูน (Neptune)", en: "Neptune" }, isCorrect: false }
+            ],
+            explanation: { th: "ดาวพฤหัสบดีเป็นดาวเคราะห์แก๊สยักษ์ใหญ่ที่สุดในระบบสุริยะ", en: "Jupiter is the largest gas giant planet in the solar system." }
+        },
+        {
+            id: 9,
+            question: { th: "9. กระบวนการใดที่พืชคายน้ำออกมาสู่อากาศผ่านทางใบ?", en: "9. Through which plant structure does transpiration mainly occur?" },
+            image: "",
+            clue: { th: "โครงสร้างที่มีเซลล์คุม (Guard cell) เปิดปิดอยู่บริเวณผิวใบ", en: "Structure with guard cells controlling opening/closing on leaf surface." },
+            options: [
+                { text: { th: "ปากใบ (Stomata)", en: "Stomata" }, isCorrect: true },
+                { text: { th: "คิวทิเคิล (Cuticle)", en: "Cuticle" }, isCorrect: false },
+                { text: { th: "เลนทิเซล (Lenticel)", en: "Lenticel" }, isCorrect: false },
+                { text: { th: "เส้นใบ (Vein)", en: "Vein" }, isCorrect: false }
+            ],
+            explanation: { th: "ปากใบ (Stomata) ทำหน้าที่แลกเปลี่ยนแก๊สและคายน้ำของพืช", en: "Stomata are responsible for gas exchange and transpiration in plants." }
+        },
+        {
+            id: 10,
+            question: { th: "10. แรงโน้มถ่วงของโลกที่กระทำต่อวัตถุก่อให้เกิดปริมาณทางฟิสิกส์ใด?", en: "10. What physical quantity is produced by Earth's gravity acting on an object?" },
+            image: "",
+            clue: { th: "มีหน่วยเป็นนิวตัน (N) หาได้จากมวลคูณความเร่งโน้มถ่วง", en: "Measured in Newtons (N), calculated by mass times gravity." },
+            options: [
+                { text: { th: "น้ำหนัก (Weight)", en: "Weight" }, isCorrect: true },
+                { text: { th: "มวลของวัตถุ (Mass)", en: "Mass" }, isCorrect: false },
+                { text: { th: "ความหนาแน่น (Density)", en: "Density" }, isCorrect: false },
+                { text: { th: "ปริมาตร (Volume)", en: "Volume" }, isCorrect: false }
+            ],
+            explanation: { th: "น้ำหนักคือแรงดึงดูดของโลกที่กระทำต่อมวลของวัตถุ มีทิศทางพุ่งเข้าสู่ศูนย์กลางโลก", en: "Weight is the gravitational force acting on an object's mass." }
+        },
+        {
+            id: 11,
+            question: { th: "11. หินอัคนีแทรกซึมที่เย็นตัวลงอย่างช้าๆ ใต้เปลือกโลกมักมีลักษณะอย่างไร?", en: "11. Intrusive igneous rocks cooled slowly beneath the Earth's crust typically show what texture?" },
+            image: "",
+            clue: { th: "การเย็นตัวช้าทำให้ผลึกแร่มีขนาดใหญ่พอมองเห็นได้ด้วยตาเปล่า", en: "Slow cooling allows mineral crystals to grow large enough to see." },
+            options: [
+                { text: { th: "มีผลึกแร่ขนาดใหญ่และมองเห็นได้ชัดเจน", en: "Coarse-grained with visible mineral crystals" }, isCorrect: true },
+                { text: { th: "มีเนื้อแก้วละเอียดและไม่มีผลึกแร่เลย", en: "Fine-grained glass texture with no crystals" }, isCorrect: false },
+                { text: { th: "มีรูพรุนจำนวนมากเนื่องจากแก๊สระเหยออก", en: "Porous texture due to escaping gas bubbles" }, isCorrect: false },
+                { text: { th: "เรียงตัวเป็นชั้นบางๆ ขนานกันอย่างชัดเจน", en: "Layered and banded parallel structure" }, isCorrect: false }
+            ],
+            explanation: { th: "หินอัคนีแทรกซึม เย็นตัวช้า ทำให้แร่ตกผลึกใหญ่ เช่น หินแกรนิต", en: "Intrusive igneous rocks cool slowly, forming large mineral crystals." }
+        },
+        {
+            id: 12,
+            question: { th: "12. เมฆชนิดใดที่มีลักษณะเป็นก้อนหนาทึบและมักก่อให้เกิดพายุฝนฟ้าคะนอง?", en: "12. Which cloud type is dense, towering, and typically produces thunderstorms?" },
+            image: "",
+            clue: { th: "ชื่อเมฆประกอบด้วยคำว่า คิวมูลัส และ นิมบัส", en: "Cloud name combines cumulus and nimbus." },
+            options: [
+                { text: { th: "เมฆคิวมูโลนิมบัส (Cumulonimbus)", en: "Cumulonimbus" }, isCorrect: true },
+                { text: { th: "เมฆสเตรตัส (Stratus)", en: "Stratus" }, isCorrect: false },
+                { text: { th: "เมฆเซอร์รัส (Cirrus)", en: "Cirrus" }, isCorrect: false },
+                { text: { th: "เมฆอัลโตคิวมูลัส (Altocumulus)", en: "Altocumulus" }, isCorrect: false }
+            ],
+            explanation: { th: "เมฆคิวมูโลนิมบัสเป็นเมฆฝนฟ้าคะนองขนาดใหญ่แนวตั้ง", en: "Cumulonimbus clouds are large vertical thunderstorm clouds." }
+        },
+        {
+            id: 13,
+            question: { th: "13. ข้อใดคือสมบัติของสารเนื้อเดียว (Homogeneous substance)?", en: "13. What is a property of a homogeneous substance?" },
+            image: "",
+            clue: { th: "มีเนื้อสารและสมบัติเหมือนกันทุกส่วนตลอดทั้งตัวอย่าง", en: "Uniform composition and properties throughout." },
+            options: [
+                { text: { th: "มีลักษณะเนื้อเดียวกันและสัดส่วนสมบัติเท่ากันทุกส่วน", en: "Uniform composition and identical properties throughout" }, isCorrect: true },
+                { text: { th: "สามารถมองเห็นส่วนประกอบแยกออกจากกันได้ชัดเจน", en: "Components can be visually distinguished with naked eye" }, isCorrect: false },
+                { text: { th: "มีจุดเดือดและจุดหลอมเหลวไม่คงที่แปรผันตามปริมาณ", en: "Variable melting and boiling points depending on amount" }, isCorrect: false },
+                { text: { th: "ประกอบด้วยสารบริสุทธิ์ชนิดเดียวเท่านั้นเสมอ", en: "Always consists of only one pure substance" }, isCorrect: false }
+            ],
+            explanation: { th: "สารเนื้อเดียวจะมีเนื้อสารและสมบัติทางกายภาพสม่ำเสมอทั่วกัน เช่น น้ำเกลือ ทองเหลือง", en: "Homogeneous mixtures have uniform appearance and properties." }
+        },
+        {
+            id: 14,
+            question: { th: "14. ส่วนประกอบใดของเลือดทำหน้าที่ในการลำเลียงออกซิเจนไปยังเซลล์ต่างๆ?", en: "14. Which blood component transports oxygen to cells?" },
+            image: "",
+            clue: { th: "มีสารฮีโมโกลบินเป็นองค์ประกอบหลักทำให้เลือดมีสีแดง", en: "Contains hemoglobin which gives blood its red color." },
+            options: [
+                { text: { th: "เซลล์เม็ดเลือดแดง (Red blood cell)", en: "Red blood cell" }, isCorrect: true },
+                { text: { th: "เซลล์เม็ดเลือดขาว (White blood cell)", en: "White blood cell" }, isCorrect: false },
+                { text: { th: "เกล็ดเลือด (Platelet)", en: "Platelet" }, isCorrect: false },
+                { text: { th: "น้ำพลาสมา (Plasma)", en: "Plasma" }, isCorrect: false }
+            ],
+            explanation: { th: "เซลล์เม็ดเลือดแดงมีฮีโมโกลบินทำหน้าที่จับและลำเลียงออกซิเจน", en: "Red blood cells contain hemoglobin to transport oxygen." }
+        },
+        {
+            id: 15,
+            question: { th: "15. พลังงานรูปใดที่สะสมอยู่ในอาหารและสามารถปลดปล่อยออกมาได้?", en: "15. What form of energy is stored in food and released?" },
+            image: "",
+            clue: { th: "เป็นพลังงานที่เกี่ยวข้องกับพันธะเคมีภายในโมเลกุลสารอาหาร", en: "Energy stored in chemical bonds of nutrient molecules." },
+            options: [
+                { text: { th: "พลังงานเคมี (Chemical energy)", en: "Chemical energy" }, isCorrect: true },
+                { text: { th: "พลังงานความร้อน (Thermal energy)", en: "Thermal energy" }, isCorrect: false },
+                { text: { th: "พลังงานจลน์ (Kinetic energy)", en: "Kinetic energy" }, isCorrect: false },
+                { text: { th: "พลังงานศักย์ (Potential energy)", en: "Potential energy" }, isCorrect: false }
+            ],
+            explanation: { th: "พลังงานเคมีในอาหารถูกเปลี่ยนรูปเป็นพลังงาน ATP ผ่านกระบวนการหายใจ", en: "Chemical energy in food is converted to ATP during respiration." }
+        },
+        {
+            id: 16,
+            question: { th: "16. ปรากฏการณ์สุริยุปราคาเกิดขึ้นเมื่อตำแหน่งของวัตถุท้องฟ้าเรียงตัวกันอย่างไร?", en: "16. A solar eclipse occurs when celestial bodies align in which order?" },
+            image: "",
+            clue: { th: "ดวงจันทร์เคลื่อนที่มาอยู่กึ่งกลางระหว่างโลกกับดวงอาทิตย์", en: "The Moon moves directly between the Earth and the Sun." },
+            options: [
+                { text: { th: "ดวงอาทิตย์ - ดวงจันทร์ - โลก อยู่ในแนวเส้นตรงเดียวกัน", en: "Sun - Moon - Earth in a straight line" }, isCorrect: true },
+                { text: { th: "ดวงอาทิตย์ - โลก - ดวงจันทร์ อยู่ในแนวเส้นตรงเดียวกัน", en: "Sun - Earth - Moon in a straight line" }, isCorrect: false },
+                { text: { th: "โลก - ดวงอาทิตย์ - ดวงจันทร์ อยู่ในแนวตั้งฉากกัน", en: "Earth - Sun - Moon at right angles" }, isCorrect: false },
+                { text: { th: "ดวงจันทร์ - โลก - ดวงอาทิตย์ อยู่ในแนวเส้นตรงเดียวกัน", en: "Moon - Earth - Sun in a straight line" }, isCorrect: false }
+            ],
+            explanation: { th: "สุริยุปราคาเกิดจากดวงจันทร์บังแสงดวงอาทิตย์เมื่ออยู่ระหว่างโลกกับดวงอาทิตย์", en: "Solar eclipse happens when the Moon blocks sunlight between Earth and Sun." }
+        },
+        {
+            id: 17,
+            question: { th: "17. การแยกสารผสมระหว่างผงเหล็กกับผงกำมะถันวิธีใดมีความเหมาะสมที่สุด?", en: "17. What is the most appropriate method to separate iron filings from sulfur powder?" },
+            image: "",
+            clue: { th: "เหล็กมีสมบัติทางแม่เหล็กในขณะที่กำมะถันไม่มี", en: "Iron is magnetic while sulfur is not." },
+            options: [
+                { text: { th: "ใช้แม่เหล็กดูดผงเหล็กแยกออกจากผงกำมะถัน", en: "Using a magnet to attract the iron filings" }, isCorrect: true },
+                { text: { th: "เติมน้ำแล้วกรองผ่านกระดาษกรองเนื้อสาร", en: "Adding water and filtering through filter paper" }, isCorrect: false },
+                { text: { th: "กลั่นลำดับส่วนด้วยความร้อนสูงจัด", en: "Fractional distillation using high heat" }, isCorrect: false },
+                { text: { th: "สกัดด้วยตัวทำละลายอินทรีย์ระเหยง่าย", en: "Extraction using volatile organic solvent" }, isCorrect: false }
+            ],
+            explanation: { th: "ใช้แม่เหล็กดึงดูดผงเหล็กเนื่องจากเหล็กมีสมบัติทางแม่เหล็ก", en: "A magnet easily attracts and separates iron filings from sulfur." }
+        },
+        {
+            id: 18,
+            question: { th: "18. อวัยวะใดในระบบขับถ่ายปัสสาวะทำหน้าที่กรองของเสียออกจากเลือด?", en: "18. Which organ in the urinary system filters waste from blood?" },
+            image: "",
+            clue: { th: "มีรูปร่างคล้ายเมล็ดถั่วแดง อยู่บริเวณบั้นเอวทั้งสองข้าง", en: "Bean-shaped organs located in the lower back." },
+            options: [
+                { text: { th: "ไต (Kidney)", en: "Kidney" }, isCorrect: true },
+                { text: { th: "ท่อไต (Ureter)", en: "Ureter" }, isCorrect: false },
+                { text: { th: "กระเพาะปัสสาวะ (Urinary bladder)", en: "Urinary bladder" }, isCorrect: false },
+                { text: { th: "ท่อปัสสาวะ (Urethra)", en: "Urethra" }, isCorrect: false }
+            ],
+            explanation: { th: "ไตทำหน้าที่กรองยูเรียและของเสียออกจากเลือดเพื่อขับออกเป็นปัสสาวะ", en: "Kidneys filter urea and waste products from blood to form urine." }
+        },
+        {
+            id: 19,
+            question: { th: "19. ข้อใดจัดเป็นทรัพยากรธรรมชาติประเภทหมุนเวียน (Renewable resource)?", en: "19. Which is classified as a renewable natural resource?" },
+            image: "",
+            clue: { th: "สามารถเกิดขึ้นทดแทนใหม่ได้ตามธรรมชาติในเวลาอันสั้น", en: "Can be naturally replenished over a short period." },
+            options: [
+                { text: { th: "น้ำและอากาศในบรรยากาศธรรมชาติ", en: "Water and atmospheric air" }, isCorrect: true },
+                { text: { th: "น้ำมันดิบใต้พื้นดินลึก", en: "Deep underground crude oil" }, isCorrect: false },
+                { text: { th: "ถ่านหินหินชั้นโบราณ", en: "Ancient sedimentary coal" }, isCorrect: false },
+                { text: { th: "แร่ธาตุโลหะและก๊าซธรรมชาติ", en: "Metallic minerals and natural gas" }, isCorrect: false }
+            ],
+            explanation: { th: "น้ำและอากาศจัดเป็นทรัพยากรหมุนเวียนที่หมุนเวียนในวัฏจักรธรรมชาติ", en: "Water and air are renewable resources cycling through nature." }
+        },
+        {
+            id: 20,
+            question: { th: "20. ข้อใดแสดงถึงการถ่ายโอนความร้อนโดยการนำความร้อน (Conduction)?", en: "20. Which example demonstrates heat transfer by conduction?" },
+            image: "",
+            clue: { th: "ความร้อนเคลื่อนที่ผ่านตัวกลางที่เป็นของแข็งโดยโมเลกุลไม่เคลื่อนที่", en: "Heat moves through solid medium without bulk molecular movement." },
+            options: [
+                { text: { th: "ช้อนโลหะร้อนขึ้นเมื่อคนกาแฟร้อน", en: "Metal spoon gets hot when stirring hot coffee" }, isCorrect: true },
+                { text: { th: "การเกิดกระแสลมพัดผ่านเหนือน้ำทะเล", en: "Sea breeze blowing over ocean surface" }, isCorrect: false },
+                { text: { th: "ความร้อนจากดวงอาทิตย์มายังโลกผ่านอวกาศ", en: "Heat from sun reaching Earth through space" }, isCorrect: false },
+                { text: { th: "การต้มน้ำในหม้อเดือดพล่านทั่วใบ", en: "Boiling water rolling in a pot" }, isCorrect: false }
+            ],
+            explanation: { th: "การนำความร้อนเกิดขึ้นในตัวกลางที่เป็นของแข็งโดยการชนกันของโมเลกุล", en: "Conduction occurs in solids through direct molecular collision." }
+        },
+        {
+            id: 21,
+            question: { th: "21. หน่วยของแรงในระบบเอสไอ (SI Unit) ตรงกับข้อใด?", en: "21. What is the SI unit for force?" },
+            image: "",
+            clue: { th: "ตั้งชื่อตามเซอร์ไอแซก นิวตัน นักฟิสิกส์ชื่อดัง", en: "Named after Sir Isaac Newton." },
+            options: [
+                { text: { th: "นิวตัน (Newton)", en: "Newton" }, isCorrect: true },
+                { text: { th: "จูล (Joule)", en: "Joule" }, isCorrect: false },
+                { text: { th: "วัตต์ (Watt)", en: "Watt" }, isCorrect: false },
+                { text: { th: "ปาสคาล (Pascal)", en: "Pascal" }, isCorrect: false }
+            ],
+            explanation: { th: "แรงมีหน่วยในระบบเอสไอคือนิวตัน (N) ซึ่งมีค่าเท่ากับ kg*m/s^2", en: "The SI unit of force is the Newton (N)." }
+        },
+        {
+            id: 22,
+            question: { th: "22. วิตามินชนิดใดละลายได้ดีในไขมันและช่วยบำรุงสายตา?", en: "22. Which vitamin is fat-soluble and helps maintain good vision?" },
+            image: "",
+            clue: { th: "พบมากในแครอต ฟักทอง และตับสัตว์", en: "Found abundantly in carrots, pumpkin, and liver." },
+            options: [
+                { text: { th: "วิตามินเอ (Vitamin A)", en: "Vitamin A" }, isCorrect: true },
+                { text: { th: "วิตามินซี (Vitamin C)", en: "Vitamin C" }, isCorrect: false },
+                { text: { th: "วิตามินบี 1 (Vitamin B1)", en: "Vitamin B1" }, isCorrect: false },
+                { text: { th: "วิตามินบี 12 (Vitamin B12)", en: "Vitamin B12" }, isCorrect: false }
+            ],
+            explanation: { th: "วิตามินเอเป็นวิตามินละลายในไขมัน มีบทบาทสำคัญในการมองเห็นและสุขภาพผิว", en: "Vitamin A is fat-soluble and essential for vision and skin health." }
+        },
+        {
+            id: 23,
+            question: { th: "23. การผสมพันธุ์ของดอกไม้ที่มีเกสรเพศผู้และเกสรเพศเมียอยู่ในดอกเดียวกันเรียกว่าอะไร?", en: "23. What is a flower called when it has both male and female reproductive organs?" },
+            image: "",
+            clue: { th: "เรียกว่าดอกสมบูรณ์เพศ", en: "Known as a perfect or complete flower." },
+            options: [
+                { text: { th: "ดอกสมบูรณ์เพศ (Perfect flower)", en: "Perfect flower" }, isCorrect: true },
+                { text: { th: "ดอกไม่สมบูรณ์เพศ (Imperfect flower)", en: "Imperfect flower" }, isCorrect: false },
+                { text: { th: "ดอกไม่สมบูรณ์ (Incomplete flower)", en: "Incomplete flower" }, isCorrect: false },
+                { text: { th: "ดอกเดี่ยวสมบูรณ์ (Complete solitary flower)", en: "Complete solitary flower" }, isCorrect: false }
+            ],
+            explanation: { th: "ดอกสมบูรณ์เพศคือดอกที่มีทั้งเกสรเพศผู้และเกสรเพศเมียในดอกเดียวกัน", en: "A perfect flower contains both male and female organs in the same flower." }
+        },
+        {
+            id: 24,
+            question: { th: "24. ข้อใดกล่าวถึงสมบัติของแก๊สได้ถูกต้องที่สุดตามทฤษฎีจลน์?", en: "24. Which statement correctly describes the properties of gases according to kinetic theory?" },
+            image: "",
+            clue: { th: "อนุภาคเคลื่อนที่อย่างอิสระและฟุ้งกระจายเต็มภาชนะ", en: "Particles move freely and fill the entire container." },
+            options: [
+                { text: { th: "อนุภาคเคลื่อนที่เร็วและฟุ้งกระจายเต็มภาชนะที่บรรจุ", en: "Particles move fast and fill the entire container" }, isCorrect: true },
+                { text: { th: "อนุภาคเรียงชิดติดกันมีแรงยึดเหนี่ยวระหว่างโมเลกุลสูง", en: "Particles are closely packed with strong intermolecular forces" }, isCorrect: false },
+                { text: { th: "มีปริมาตรคงที่แต่รูปร่างเปลี่ยนไปตามภาชนะที่ใส่", en: "Has fixed volume but changes shape to fit container" }, isCorrect: false },
+                { text: { th: "อนุภาคสั่นอยู่กับที่และไม่สามารถเคลื่อนที่ไปมาได้", en: "Particles vibrate in place and cannot move around" }, isCorrect: false }
+            ],
+            explanation: { th: "แก๊สมีอนุภาคอยู่ห่างกันมาก เคลื่อนที่ได้อิสระทุกทิศทางและฟุ้งกระจายเต็มภาชนะ", en: "Gas particles are far apart, moving freely to fill any container." }
+        },
+        {
+            id: 25,
+            question: { th: "25. ข้อใดคือตัวการสำคัญที่ทำให้เกิดปรากฏการณ์เรือนกระจกขั้นรุนแรง?", en: "25. What is the major contributor to severe greenhouse effect?" },
+            image: "",
+            clue: { th: "แก๊สที่เกิดจากการเผาไหม้เชื้อเพลิงฟอสซิลและสะสมในชั้นบรรยากาศ", en: "Gas produced by burning fossil fuels accumulating in the atmosphere." },
+            options: [
+                { text: { th: "แก๊สคาร์บอนไดออกไซด์ (Carbon dioxide)", en: "Carbon dioxide" }, isCorrect: true },
+                { text: { th: "แก๊สออกซิเจนบริสุทธิ์ (Pure oxygen)", en: "Pure oxygen" }, isCorrect: false },
+                { text: { th: "แก๊สไนโตรเจนในบรรยากาศ (Nitrogen)", en: "Nitrogen" }, isCorrect: false },
+                { text: { th: "แก๊สฮีเลียมน้ำหนักเบา (Helium)", en: "Helium" }, isCorrect: false }
+            ],
+            explanation: { th: "แก๊สคาร์บอนไดออกไซด์เป็นแก๊สเรือนกระจกหลักที่เกิดจากกิจกรรมของมนุษย์", en: "Carbon dioxide is the primary greenhouse gas from human activities." }
+        },
+        {
+            id: 26,
+            question: { th: "26. อุปกรณ์อิเล็กทรอนิกส์ใดในวงจรไฟฟ้าทำหน้าที่ตัดต่อวงจรเมื่อมีกระแสไฟฟ้าเกิน?", en: "26. Which electrical device safely breaks a circuit when current is too high?" },
+            image: "",
+            clue: { th: "มีลวดโลหะผสมจุดหลอมเหลวต่ำอยู่ภายในจะหลอมขาดทันที", en: "Contains a low-melting-point wire that melts when overheated." },
+            options: [
+                { text: { th: "ฟิวส์ไฟฟ้า (Electrical fuse)", en: "Electrical fuse" }, isCorrect: true },
+                { text: { th: "ตัวต้านทาน (Resistor)", en: "Resistor" }, isCorrect: false },
+                { text: { th: "ไดโอดเปล่งแสง (LED)", en: "LED" }, isCorrect: false },
+                { text: { th: "ตัวเก็บประจุไฟฟ้า (Capacitor)", en: "Capacitor" }, isCorrect: false }
+            ],
+            explanation: { th: "ฟิวส์ทำหน้าที่ป้องกันกระแสไฟฟ้าเกินโดยการหลอมละลายเพื่อตัดวงจร", en: "A fuse protects against overcurrent by melting to break the circuit." }
+        },
+        {
+            id: 27,
+            question: { th: "27. หินประเภทใดเกิดจากการทับถมและการประสานตัวของตะกอนต่างๆ?", en: "27. Which rock type is formed from the accumulation and cementation of sediments?" },
+            image: "",
+            clue: { th: "มักพบซากดึกดำบรรพ์ (Fossils) ฝังอยู่ภายในเนื้อหิน", en: "Frequently contains fossils embedded within its layers." },
+            options: [
+                { text: { th: "หินตะกอนหรือหินชั้น (Sedimentary rock)", en: "Sedimentary rock" }, isCorrect: true },
+                { text: { th: "หินอัคนีพุหรือหินภูเขาไฟ (Extrusive igneous)", en: "Extrusive igneous" }, isCorrect: false },
+                { text: { th: "หินอัคนีแทรกซึมใต้เปลือกโลก (Intrusive igneous)", en: "Intrusive igneous" }, isCorrect: false },
+                { text: { th: "หินแปรสภาพด้วยความร้อนสูง (Metamorphic rock)", en: "Metamorphic rock" }, isCorrect: false }
+            ],
+            explanation: { th: "หินตะกอนเกิดจากการทับถมและอัดตัวของตะกอนผ่านกาลเวลานาน", en: "Sedimentary rocks form from accumulated compressed sediments." }
+        },
+        {
+            id: 28,
+            question: { th: "28. ส่วนใดของระบบประสาทส่วนกลางทำหน้าที่ควบคุมการทรงตัวและการเคลื่อนไหว?", en: "28. Which part of the central nervous system controls balance and coordination?" },
+            image: "",
+            clue: { th: "อยู่บริเวณสมองส่วนท้าย มีรอยหยักละเอียดเรียกว่าสมองน้อย", en: "Located in the hindbrain, known as the little brain." },
+            options: [
+                { text: { th: "ซีรีเบลลัมหรือสมองน้อย (Cerebellum)", en: "Cerebellum" }, isCorrect: true },
+                { text: { th: "ซีรีบรัมหรือสมองส่วนหน้า (Cerebrum)", en: "Cerebrum" }, isCorrect: false },
+                { text: { th: "ก้านสมองส่วนกลาง (Brainstem)", en: "Brainstem" }, isCorrect: false },
+                { text: { th: "ไขสันหลังส่วนเอว (Spinal cord)", en: "Spinal cord" }, isCorrect: false }
+            ],
+            explanation: { th: "ซีรีเบลลัมควบคุมการทรงตัวและการทำงานประสานกันของกล้ามเนื้อ", en: "Cerebellum coordinates voluntary movements and balance." }
+        },
+        {
+            id: 29,
+            question: { th: "29. ข้อใดคือสมบัติทางกายภาพของโลหะบริสุทธิ์ทั่วไป?", en: "29. What is a physical property of typical pure metals?" },
+            image: "",
+            clue: { th: "สามารถนำไฟฟ้าและนำความร้อนได้ดีเยี่ยม", en: "Excellent conductors of heat and electricity." },
+            options: [
+                { text: { th: "นำไฟฟ้าและนำความร้อนได้ดี มีจุดหลอมเหลวสูง", en: "Good conductors of heat/electricity with high melting points" }, isCorrect: true },
+                { text: { th: "มีสถานะเป็นแก๊สที่อุณหภูมิห้องและเปราะแตกหักง่าย", en: "Gaseous at room temperature and very brittle" }, isCorrect: false },
+                { text: { th: "เป็นฉนวนไฟฟ้าที่ดีและไม่ยอมให้ความร้อนผ่าน", en: "Good electrical insulators blocking heat transmission" }, isCorrect: false },
+                { text: { th: "มีความหนาแน่นต่ำมากและเบากว่าอากาศทั่วไป", en: "Very low density and lighter than ordinary air" }, isCorrect: false }
+            ],
+            explanation: { th: "โลหะมีสมบัตินำความร้อนและนำไฟฟ้าได้ดี มีผิวมันวาว และจุดหลอมเหลวสูง", en: "Metals are good conductors, lustrous, and have high melting points." },
+        },
+        {
+            id: 30,
+            question: { th: "30. ปรากฏการณ์ข้างขึ้นข้างแรม (Moon phases) เกิดจากสาเหตุใด?", en: "30. What causes the phases of the Moon?" },
+            image: "",
+            clue: { th: "มุมมองของดวงจันทร์ที่สะท้อนแสงอาทิตย์เปลี่ยนแปลงไปตามตำแหน่งโคจร", en: "Changing view of sunlight reflected off the Moon as it orbits Earth." },
+            options: [
+                { text: { th: "มุมมองแสงสะท้อนจากดวงจันทร์เปลี่ยนตามตำแหน่งโคจร", en: "Changing perspective of reflected sunlight during orbit" }, isCorrect: true },
+                { text: { th: "เงาของโลกทอดลงบนพื้นผิวดวงจันทร์ในแต่ละคืน", en: "Earth casting shadows onto the lunar surface nightly" }, isCorrect: false },
+                { text: { th: "การหมุนรอบตัวเองของดวงจันทร์หยุดชะงักชั่วคราว", en: "Temporary halting of the Moon's rotation axis" }, isCorrect: false },
+                { text: { th: "เมฆในชั้นบรรยากาศบังแสงสว่างของดวงจันทร์", en: "Atmospheric clouds obscuring lunar illumination" }, isCorrect: false }
+            ],
+            explanation: { th: "ข้างขึ้นข้างแรมเกิดจากการโคจรของดวงจันทร์รอบโลกทำให้เห็นส่วนสว่างต่างกัน", en: "Moon phases result from its orbit changing our view of its illuminated half." }
+        }
+    ];
+
+    // Fisher-Yates Shuffle Algorithm สำหรับสลับลำดับตัวเลือก
+    function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    }
+
+    let shuffledQuestions = [];
+
+    function initExam() {
+        // คัดลอกและสลับตัวเลือกของแต่ละข้อด้วย Fisher-Yates Shuffle
+        shuffledQuestions = rawQuestions.map(q => {
+            let clonedOptions = [...q.options];
+            shuffleArray(clonedOptions);
+            return {
+                ...q,
+                shuffledOptions: clonedOptions
+            };
+        });
+
+        const container = document.getElementById('questions-list');
+        container.innerHTML = '';
+
+        shuffledQuestions.forEach((q, index) => {
+            const card = document.createElement('div');
+            card.className = 'question-card';
+            card.id = `q-card-${index}`;
+
+            let imgHtml = q.image ? `<img src="${q.image}" class="question-image" alt="Question Image">` : '';
+
+            let optionsHtml = '';
+            q.shuffledOptions.forEach((opt, optIdx) => {
+                const optLetter = ['A', 'B', 'C', 'D'][optIdx];
+                const text = currentLang === 'th' ? opt.text.th : opt.text.en;
+                optionsHtml += `
+                    <label class="option-label">
+                        <input type="radio" name="question_${index}" value="${opt.isCorrect}" data-qindex="${index}" onclick="checkAnswerInstant(${index}, this)">
+                        <span><b>${optLetter}.</b> ${text}</span>
+                    </label>
+                `;
+            });
+
+            const clueText = currentLang === 'th' ? q.clue.th : q.clue.en;
+            const clueBtnText = currentLang === 'th' ? '💡 เปิดคำใบ้ช่วยคิด' : '💡 Show Clue';
+            const titleText = currentLang === 'th' ? q.question.th : q.question.en;
+
+            card.innerHTML = `
+                <div class="question-title">${titleText}</div>
+                ${imgHtml}
+                <button class="clue-btn" onclick="toggleClue(${index})">${clueBtnText}</button>
+                <div class="clue-content" id="clue-${index}">${clueText}</div>
+                <div class="options-group">${optionsHtml}</div>
+                <div class="explanation" id="exp-${index}"></div>
+            `;
+            container.appendChild(card);
+        });
+    }
+
+    function toggleClue(index) {
+        const clueEl = document.getElementById(`clue-${index}`);
+        clueEl.style.display = clueEl.style.display === 'block' ? 'none' : 'block';
+    }
+
+    function checkAnswerInstant(qIndex, radioInput) {
+        const isCorrect = radioInput.value === 'true';
+        const expDiv = document.getElementById(`exp-${qIndex}`);
+        const qData = shuffledQuestions[qIndex];
+        const expText = currentLang === 'th' ? qData.explanation.th : qData.explanation.en;
+
+        expDiv.style.display = 'block';
+        if (isCorrect) {
+            expDiv.className = 'explanation';
+            expDiv.innerHTML = `<b>✅ ถูกต้อง!</b> ${expText}`;
+        } else {
+            expDiv.className = 'explanation incorrect';
+            expDiv.innerHTML = `<b>❌ ยังไม่ถูกต้อง!</b> แนวคิดและคำตอบที่ถูกต้อง: ${expText}`;
+        }
+
+        // ล็อกตัวเลือกข้อนั้นๆ ไม่ให้เปลี่ยนซ้ำ
+        const radios = document.querySelectorAll(`input[name="question_${qIndex}"]`);
+        radios.forEach(r => r.disabled = true);
+    }
+
+    function submitExam() {
+        let score = 0;
+        let total = shuffledQuestions.length;
+        let unanswered = 0;
+
+        shuffledQuestions.forEach((q, index) => {
+            const selected = document.querySelector(`input[name="question_${index}"]:checked`);
+            if (!selected) {
+                unanswered++;
+            } else if (selected.value === 'true') {
+                score++;
+            }
+        });
+
+        if (unanswered > 0 && confirm(`คุณยังไม่ได้ตอบข้อสอบ ${unanswered} ข้อ ต้องการส่งข้อสอบเลยหรือไม่?`)) {
+            // ดำเนินการต่อ
+        } else if (unanswered > 0) {
+            return;
+        }
+
+        document.getElementById('exam-container-wrapper').style.display = 'none';
+        document.querySelector('.summary-section').style.display = 'none';
+        
+        const resultView = document.getElementById('result-view');
+        resultView.style.display = 'block';
+
+        document.getElementById('final-score').innerText = `${score} / ${total}`;
+        const percent = Math.round((score / total) * 100);
+        document.getElementById('res-percent').innerText = currentLang === 'th' ? `เปอร์เซ็นต์ความถูกต้อง: ${percent}%` : `Accuracy Percentage: ${percent}%`;
+
+        let analysisText = '';
+        if (percent >= 80) {
+            analysisText = currentLang === 'th' ? 
+                "ยอดเยี่ยมมาก! คุณมีความเข้าใจในเนื้อหาวิทยาศาสตร์ระดับประถมศึกษาตอนปลายในเกณฑ์ดีเยี่ยม พร้อมสำหรับการสอบเข้า ม.1 ในโรงเรียนชั้นนำอย่างมั่นใจ ควรทบทวนโจทย์คำนวณและข้อสอบวิเคราะห์สถานการณ์เพิ่มเติมเพื่อรักษามาตรฐาน" :
+                "Excellent! You have a strong grasp of upper primary science and are well-prepared for middle school entrance exams.";
+        } else if (percent >= 50) {
+            analysisText = currentLang === 'th' ? 
+                "ทำได้ดีในระดับปานกลาง แต่ยังมีจุดที่ต้องพัฒนาในบางหมวดหมู่ เช่น ชีววิทยาโครงสร้างพืช และหลักการคำนวณทางฟิสิกส์ แนะนำให้กลับไปทบทวนเนื้อหาและฝึกทำโจทย์ซ้ำในหัวข้อที่ตอบผิด" :
+                "Moderate performance. Focus on reviewing plant biology and physics calculation principles to improve.";
+        } else {
+            analysisText = currentLang === 'th' ? 
+                "ควรเพิ่มความพยายามในการทบทวนเนื้อหาพื้นฐานทางวิทยาศาสตร์อย่างละเอียด ทั้งระบบอวัยวะ เซลล์พืช-สัตว์ และสมบัติของสสาร แนะนำให้ศึกษาคำอธิบายเฉลยในแต่ละข้ออย่างถี่ถ้วน" :
+                "Needs improvement in foundational science concepts. Please review the detailed explanations carefully.";
+        }
+        document.getElementById('analysis-text').innerText = analysisText;
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function toggleLanguage() {
+        currentLang = currentLang === 'th' ? 'en' : 'th';
+        document.getElementById('lang-btn').innerText = currentLang === 'th' ? 'เปลี่ยนภาษา (TH/EN)' : 'Switch Language (TH/EN)';
+        document.getElementById('sum-title').innerText = currentLang === 'th' ? 'สรุปเนื้อหาเข้มข้น: วิทยาศาสตร์ระดับประถมศึกษาตอนปลาย (เตรียมสอบเข้า ม.1)' : 'Intensive Summary: Upper Primary Science (Exam Preparation)';
+        document.getElementById('exam-main-heading').innerText = currentLang === 'th' ? 'ชุดข้อสอบวิทยาศาสตร์ (30 ข้อ)' : 'Science Examination Set (30 Questions)';
+        document.getElementById('wb-title').innerText = currentLang === 'th' ? 'กระดานทดเลข' : 'Scratchpad Whiteboard';
+        initExam();
+    }
+
+    function resetExam() {
+        if (confirm(currentLang === 'th' ? 'ต้องการเริ่มทำข้อสอบใหม่และสลับตัวเลือกทั้งหมดหรือไม่?' : 'Do you want to reset and shuffle all questions?')) {
+            location.reload();
+        }
+    }
+
+    // Whiteboard Script (ระบบกระดานทดเลข)
+    const canvas = document.getElementById('wb-canvas');
+    const ctx = canvas.getContext('2d');
+    let isDrawing = false;
+    let penColor = '#2c3e50';
+
+    function resizeCanvas() {
+        const rect = canvas.getBoundingClientRect();
+        canvas.width = rect.width;
+        canvas.height = 350;
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+    window.addEventListener('load', resizeCanvas);
+    window.addEventListener('resize', resizeCanvas);
+
+    canvas.addEventListener('mousedown', startDraw);
+    canvas.addEventListener('mousemove', draw);
+    canvas.addEventListener('mouseup', stopDraw);
+    canvas.addEventListener('mouseleave', stopDraw);
+
+    canvas.addEventListener('touchstart', (e) => {
+        const touch = e.touches[0];
+        const mouseEvent = new MouseEvent('mousedown', {
+            clientX: touch.clientX,
+            clientY: touch.clientY
+        });
+        canvas.dispatchEvent(mouseEvent);
+        e.preventDefault();
+    });
+
+    canvas.addEventListener('touchmove', (e) => {
+        const touch = e.touches[0];
+        const mouseEvent = new MouseEvent('mousemove', {
+            clientX: touch.clientX,
+            clientY: touch.clientY
+        });
+        canvas.dispatchEvent(mouseEvent);
+        e.preventDefault();
+    });
+
+    canvas.addEventListener('touchend', (e) => {
+        const mouseEvent = new MouseEvent('mouseup', {});
+        canvas.dispatchEvent(mouseEvent);
+        e.preventDefault();
+    });
+
+    function startDraw(e) {
+        isDrawing = true;
+        ctx.beginPath();
+        const rect = canvas.getBoundingClientRect();
+        ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
+    }
+
+    function draw(e) {
+        if (!isDrawing) return;
+        const rect = canvas.getBoundingClientRect();
+        ctx.lineWidth = 2;
+        ctx.lineCap = 'round';
+        ctx.strokeStyle = penColor;
+        ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
+        ctx.stroke();
+    }
+
+    function stopDraw() {
+        isDrawing = false;
+    }
+
+    function setPenColor(color) {
+        penColor = color;
+    }
+
+    function clearWhiteboard() {
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+
+    // เริ่มต้นโหลดข้อสอบครั้งแรก
+    window.onload = function() {
+        resizeCanvas();
+        initExam();
+    };
+</script>
+
+</body>
+</html>
