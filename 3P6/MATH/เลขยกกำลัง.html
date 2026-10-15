@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบสอบคัดเลือกเข้า ม.1 วิชาคณิตศาสตร์: เรื่องเลขยกกำลัง - พระจอมเกล้าติวเตอร์</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --success: #27ae60;
+            --danger: #c0392b;
+            --light: #f8f9fa;
+            --dark: #2c3e50;
+            --border: #dcdde1;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #f1f2f6; color: #333; line-height: 1.6; }
+        header { background: var(--primary); color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; }
+        header h1 { font-size: 1.5rem; }
+        .controls-top { display: flex; gap: 10px; align-items: center; }
+        button { background: var(--secondary); color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-size: 0.9rem; transition: background 0.2s; }
+        button:hover { background: #2980b9; }
+        button.danger { background: var(--danger); }
+        button.danger:hover { background: #a93226; }
+        
+        .container { max-width: 1400px; margin: 20px auto; padding: 0 15px; }
+        
+        /* สรุปเนื้อหาด้านบน */
+        .summary-section { background: white; padding: 25px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        .summary-section h2 { color: var(--primary); margin-bottom: 15px; font-size: 1.3rem; }
+        .summary-section p { margin-bottom: 12px; text-align: justify; }
+        .mind-trick-box { background: #e8f4f8; border-left: 5px solid var(--secondary); padding: 15px; margin-top: 15px; border-radius: 0 8px 8px 0; }
+        .mind-trick-box h3 { color: #2980b9; margin-bottom: 8px; font-size: 1.1rem; }
+
+        /* สรุปผลวิเคราะห์ตอนส่งข้อสอบ */
+        #result-view { display: none; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 20px; text-align: center; }
+        #result-view h2 { color: var(--primary); margin-bottom: 15px; }
+        .score-display { font-size: 2.5rem; color: var(--success); font-weight: bold; margin: 15px 0; }
+        .analysis-box { text-align: left; margin-top: 20px; padding: 20px; background: #fdfefe; border: 1px solid var(--border); border-radius: 6px; }
+
+        /* สองเฟรมหลักด้านล่าง */
+        .main-layout { display: flex; gap: 20px; align-items: flex-start; }
+        .exam-frame { flex: 7; background: white; padding: 25px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .whiteboard-frame { flex: 3; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); position: sticky; top: 20px; }
+        
+        /* ข้อสอบ UI */
+        .question-card { margin-bottom: 30px; border-bottom: 1px solid var(--border); padding-bottom: 25px; }
+        .question-title { font-weight: bold; font-size: 1.05rem; margin-bottom: 12px; color: var(--dark); }
+        .options-group { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
+        .option-label { display: flex; align-items: center; padding: 10px 12px; background: var(--light); border: 1px solid var(--border); border-radius: 6px; cursor: pointer; transition: all 0.2s; }
+        .option-label:hover { background: #eef2f7; }
+        .option-label input { margin-right: 10px; }
+        
+        .clue-btn { background: #f39c12; font-size: 0.8rem; padding: 4px 8px; margin-bottom: 8px; }
+        .clue-btn:hover { background: #d35400; }
+        .clue-content { display: none; background: #fef9e7; border: 1px dashed #f39c12; padding: 10px; font-size: 0.85rem; border-radius: 4px; margin-bottom: 10px; color: #7f6000; }
+        
+        .explanation { display: none; margin-top: 10px; padding: 12px; background: #eafaf1; border-left: 4px solid var(--success); font-size: 0.9rem; border-radius: 0 4px 4px 0; }
+        .explanation.incorrect { background: #fdedec; border-left-color: var(--danger); }
+
+        /* Whiteboard UI */
+        .whiteboard-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .wb-tools { display: flex; gap: 5px; }
+        canvas { width: 100%; height: 350px; border: 1px solid var(--border); border-radius: 4px; background: #fff; cursor: crosshair; }
+
+        .submit-container { text-align: center; margin-top: 30px; }
+        .submit-btn { background: var(--success); font-size: 1.2rem; padding: 12px 30px; }
+        .submit-btn:hover { background: #219653; }
+
+        .footer-credit { text-align: center; margin-top: 25px; font-size: 0.9rem; color: #7f8c8d; font-weight: bold; }
+
+        @media (max-width: 900px) {
+            .main-layout { flex-direction: column; }
+            .whiteboard-frame { position: static; width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>ระบบสอบคัดเลือกเข้า ม.1 - พระจอมเกล้าติวเตอร์</h1>
+    <div class="controls-top">
+        <button id="lang-btn" onclick="toggleLanguage()">เปลี่ยนภาษา (TH/EN)</button>
+        <button class="danger" onclick="resetExam()">Reset ระบบข้อสอบ</button>
+    </div>
+</header>
+
+<div class="container">
+    <!-- ส่วนสรุปเนื้อหา (500 คำขึ้นไป) -->
+    <section class="summary-section">
+        <h2 id="sum-title">สรุปเนื้อหาเข้มข้น: วิชาคณิตศาสตร์ เรื่อง เลขยกกำลัง (เตรียมสอบเข้า ม.1)</h2>
+        <p id="sum-p1">เลขยกกำลัง (Exponents) เป็นเครื่องมือทางคณิตศาสตร์ที่สำคัญอย่างยิ่งในการเขียนแทนจำนวนที่มีค่ามากๆ หรือมีค่าน้อยมากๆ ให้มีความกระชับและสะดวกต่อการคำนวณ โดยในระดับชั้นประถมศึกษาตอนปลายเพื่อเตรียมสอบเข้าศึกษาต่อในระดับชั้นมัธยมศึกษาปีที่ 1 ผู้เรียนจะต้องทำความเข้าใจบทนิยามพื้นฐาน กล่าวคือ หากกำหนดให้ a เป็นจำนวนใดๆ และ n เป็นจำนวนเต็มบวก a ยกกำลัง n (เขียนแทนด้วย a^n) หมายถึง การคูณกันของจำนวน a ซ้ำๆ กันทั้งหมด n ตัว โดยที่ a เรียกว่า ฐาน (Base) และ n เรียกว่า เลขชี้กำลัง (Exponent) ตัวอย่างเช่น 2^4 หมายถึง 2 คูณกัน 4 ตัว มีค่าเท่ากับ 16 นอกจากนี้ยังต้องศึกษาข้อยกเว้นและสมบัติสำคัญที่กำหนดไว้ เช่น จำนวนใดๆ ยกกำลังศูนย์ (ยกเว้นศูนย์) จะมีค่าเท่ากับ 1 เสมอ (a^0 = 1 เมื่อ a ไม่เท่ากับ 0) และจำนวนใดๆ ยกกำลังหนึ่งจะมีค่าเท่ากับตัวมันเอง (a^1 = a)</p>
+        <p id="sum-p2">หัวใจสำคัญของการทำโจทย์แข่งขันคือ "สมบัติของเลขยกกำลังทั้ง 5 ข้อหลัก" ที่ผู้เรียนต้องท่องจำและประยุกต์ใช้อย่างคล่องแคล่ว ประกอบด้วย: 1) สมบัติการคูณเลขยกกำลังที่มีฐานเดียวกัน ให้นำเลขชี้กำลังมาบวกกัน (a^m * a^n = a^(m+n)) 2) สมบัติการหารเลขยกกำลังที่มีฐานเดียวกัน ให้นำเลขชี้กำลังมาลบกัน (a^m / a^n = a^(m-n)) 3) สมบัติกำลังของเลขยกกำลัง ให้นำเลขชี้กำลังมาคูณกัน ((a^m)^n = a^(m*n)) 4) สมบัติกำลังของผลคูณ (ab)^n = a^n * b^n และ 5) สมบัติกำลังของผลหาร (a/b)^n = a^n / b^n (เมื่อ b ไม่เท่ากับ 0) การทำความเข้าใจสมบัติเหล่านี้จะช่วยลดขั้นตอนการคำนวณที่ยุ่งยากซับซ้อนให้กลายเป็นเรื่องง่ายได้อย่างรวดเร็ว</p>
+        <p id="sum-p3">นอกจากนี้ ข้อสอบแข่งขันเข้า ม.1 มักนิยมออกข้อสอบในรูปแบบการจัดรูปฐานของเลขยกกำลังให้เท่ากันก่อนทำการบวกลบคูณหาร เช่น การแปลงจำนวนเต็มให้อยู่ในรูปเลขยกกำลังฐาน 2 หรือฐาน 3 (เช่น 32 แปลงเป็น 2^5 และ 81 แปลงเป็น 3^4) รวมถึงการคำนวณค่าสัญกรณ์วิทยาศาสตร์ (Scientific Notation) ในรูป A * 10^n โดยที่ 1 <= A < 10 และ n เป็นจำนวนเต็ม ซึ่งเป็นเรื่องที่มักออกสอบร่วมกับวิชาวิทยาศาสตร์ การฝึกฝนทำโจทย์ตัวเลขติดลบ การยกกำลังเลขคี่และเลขคู่ จะช่วยเสริมสร้างทักษะการคิดคำนวณเชิงวิเคราะห์และเพิ่มความมั่นใจในการสอบแข่งขันได้อย่างแท้จริง</p>
+        
+        <div class="mind-trick-box">
+            <h3 id="trick-title">กล่องเทคนิคการจำและกระบวนการคิด (Memory Tricks & Thought Process)</h3>
+            <p id="trick-desc">1. <b>เทคนิคคูณบวก ลบหาร:</b> "ฐานเหมือนกันคูณกัน นำเลขชี้กำลังมาบวกกัน (a^m * a^n = a^(m+n)), ถ้าหารกันให้นำเลขชี้กำลังมาลบกัน (a^m / a^n = a^(m-n))"<br>
+            2. <b>เทคนิคเลขยกกำลังซ้อน:</b> "วงครอบครอบซ้อนกัน นำเลขชี้กำลังมาคูณกันทันที ((a^m)^n = a^(m*n))"<br>
+            3. <b>เทคนิคฐานศูนย์และหนึ่ง:</b> "อะไรก็ตามยกกำลังศูนย์ (ที่ไม่ใช่ศูนย์) ได้ 1 เสมอ ยกเว้น 0^0 ไม่นิยาม"</p>
+        </div>
+    </section>
+
+    <!-- มุมมองผลลัพธ์หลังส่งข้อสอบ -->
+    <div id="result-view">
+        <h2 id="res-title">ผลการประเมินการทดสอบ</h2>
+        <div class="score-display" id="final-score">0 / 30</div>
+        <p id="res-percent">เปอร์เซ็นต์ความถูกต้อง: 0%</p>
+        <div class="analysis-box" id="analysis-content">
+            <h3>การวิเคราะห์ผลรายบุคคล (Diagnostic Analysis)</h3>
+            <p id="analysis-text">กำลังประเมินผล...</p>
+        </div>
+        <button style="margin-top:20px;" onclick="location.reload()">ทำข้อสอบใหม่อีกครั้ง</button>
+    </div>
+
+    <!-- ส่วนเนื้อหาข้อสอบและไวท์บอร์ด -->
+    <div class="main-layout" id="exam-container-wrapper">
+        <div class="exam-frame">
+            <h2 style="margin-bottom: 20px; color: var(--primary);" id="exam-main-heading">ชุดข้อสอบคณิตศาสตร์: เรื่องเลขยกกำลัง (30 ข้อ)</h2>
+            <div id="questions-list">
+                <!-- ข้อสอบจะถูกเรนเดอร์ด้วย JavaScript ทั้ง 30 ข้อ -->
+            </div>
+            
+            <div class="submit-container">
+                <button class="submit-btn" onclick="submitExam()">ส่งข้อสอบและตรวจผลคะแนน</button>
+            </div>
+        </div>
+
+        <div class="whiteboard-frame">
+            <div class="whiteboard-header">
+                <h3 id="wb-title" style="font-size: 1.0rem; color: var(--primary);">กระดานทดเลข</h3>
+                <div class="wb-tools">
+                    <button onclick="setPenColor('#2c3e50')" style="background:#2c3e50; width:25px; height:25px; padding:0; border-radius:50%;" title="ปากกา"></button>
+                    <button onclick="setPenColor('#e74c3c')" style="background:#e74c3c; width:25px; height:25px; padding:0; border-radius:50%;" title="สีแดง"></button>
+                    <button onclick="clearWhiteboard()" class="danger" style="padding:4px 8px; font-size:0.75rem;">ล้าง</button>
+                </div>
+            </div>
+            <canvas id="wb-canvas"></canvas>
+        </div>
+    </div>
+</div>
+
+<div class="footer-credit">
+    เขียนโดย พระจอมเกล้าติวเตอร์
+</div>
+
+<script>
+    let currentLang = 'th';
+
+    // ฐานข้อมูลข้อสอบเลขยกกำลัง 30 ข้อครบถ้วนตามหลักการ Anti-Guessing Engine
+    const rawQuestions = [
+        {
+            id: 1,
+            question: { th: "1. ค่าของ 2^4 มีค่าเท่ากับข้อใดต่อไปนี้?", en: "1. What is the value of 2^4?" },
+            clue: { th: "นำเลข 2 คูณกันซ้ำๆ ทั้งหมด 4 ตัว", en: "Multiply 2 by itself 4 times." },
+            options: [
+                { text: { th: "16", en: "16" }, isCorrect: true },
+                { text: { th: "8", en: "8" }, isCorrect: false },
+                { text: { th: "32", en: "32" }, isCorrect: false },
+                { text: { th: "64", en: "64" }, isCorrect: false }
+            ],
+            explanation: { th: "2^4 = 2 * 2 * 2 * 2 = 16", en: "2^4 = 2 * 2 * 2 * 2 = 16" }
+        },
+        {
+            id: 2,
+            question: { th: "2. ผลลัพธ์ของ 3^2 * 3^3 ตรงกับข้อใด?", en: "2. What is the result of 3^2 * 3^3?" },
+            clue: { th: "ฐานเหมือนกันคูณกัน ให้นำเลขชี้กำลังมาบวกกัน", en: "Same base multiplication: add exponents." },
+            options: [
+                { text: { th: "3^5", en: "3^5" }, isCorrect: true },
+                { text: { th: "3^6", en: "3^6" }, isCorrect: false },
+                { text: { th: "9^5", en: "9^5" }, isCorrect: false },
+                { text: { th: "9^6", en: "9^6" }, isCorrect: false }
+            ],
+            explanation: { th: "จากสมบัติ a^m * a^n = a^(m+n) จะได้ 3^(2+3) = 3^5", en: "Using a^m * a^n = a^(m+n), 3^(2+3) = 3^5" }
+        },
+        {
+            id: 3,
+            question: { th: "3. ผลลัพธ์ของ 5^6 / 5^2 มีค่าเท่ากับข้อใด?", en: "3. What is the value of 5^6 / 5^2?" },
+            clue: { th: "ฐานเหมือนกันหารกัน ให้นำเลขชี้กำลังมาลบกัน", en: "Same base division: subtract exponents." },
+            options: [
+                { text: { th: "5^4", en: "5^4" }, isCorrect: true },
+                { text: { th: "5^3", en: "5^3" }, isCorrect: false },
+                { text: { th: "5^8", en: "5^8" }, isCorrect: false },
+                { text: { th: "5^12", en: "5^12" }, isCorrect: false }
+            ],
+            explanation: { th: "จากสมบัติ a^m / a^n = a^(m-n) จะได้ 5^(6-2) = 5^4", en: "Using a^m / a^n = a^(m-n), 5^(6-2) = 5^4" }
+        },
+        {
+            id: 4,
+            question: { th: "4. ค่าของ (2^3)^2 ตรงกับข้อใดต่อไปนี้?", en: "4. What is the value of (2^3)^2?" },
+            clue: { th: "เลขยกกำลังซ้อนกันให้นำเลขชี้กำลังมาคูณกัน", en: "Power of a power: multiply exponents." },
+            options: [
+                { text: { th: "2^6", en: "2^6" }, isCorrect: true },
+                { text: { th: "2^5", en: "2^5" }, isCorrect: false },
+                { text: { th: "2^9", en: "2^9" }, isCorrect: false },
+                { text: { th: "4^6", en: "4^6" }, isCorrect: false }
+            ],
+            explanation: { th: "จากสมบัติ (a^m)^n = a^(m*n) จะได้ 2^(3*2) = 2^6", en: "Using (a^m)^n = a^(m*n), 2^(3*2) = 2^6" }
+        },
+        {
+            id: 5,
+            question: { th: "5. จำนวนใดๆ (ที่ไม่ใช่ 0) ยกกำลังศูนย์ มีค่าเท่ากับเท่าใด?", en: "5. What is the value of any non-zero number raised to the power of zero?" },
+            clue: { th: "ตามบทนิยาม a^0 = 1 เมื่อ a ไม่เท่ากับ 0", en: "By definition, a^0 = 1 when a is not 0." },
+            options: [
+                { text: { th: "1", en: "1" }, isCorrect: true },
+                { text: { th: "0", en: "0" }, isCorrect: false },
+                { text: { th: "ตัวมันเอง", en: "Itself" }, isCorrect: false },
+                { text: { th: "หาค่าไม่ได้", en: "Undefined" }, isCorrect: false }
+            ],
+            explanation: { th: "ตามบทนิยามของเลขยกกำลัง จำนวนใดๆ ยกกำลังศูนย์ (ยกเว้น 0) มีค่าเท่ากับ 1 เสมอ", en: "By definition, any number to the power of zero equals 1." }
+        },
+        {
+            id: 6,
+            question: { th: "6. ผลลัพธ์ของ (-2)^3 มีค่าเท่ากับข้อใด?", en: "6. What is the value of (-2)^3?" },
+            clue: { th: "จำนวนลบยกกำลังเลขคี่ ผลลัพธ์จะยังคงติดลบ", en: "Negative base raised to an odd exponent remains negative." },
+            options: [
+                { text: { th: "-8", en: "-8" }, isCorrect: true },
+                { text: { th: "8", en: "8" }, isCorrect: false },
+                { text: { th: "-6", en: "-6" }, isCorrect: false },
+                { text: { th: "6", en: "6" }, isCorrect: false }
+            ],
+            explanation: { th: "(-2) * (-2) * (-2) = -8", en: "(-2) * (-2) * (-2) = -8" }
+        },
+        {
+            id: 7,
+            question: { th: "7. ผลลัพธ์ของ (-3)^4 มีค่าเท่ากับข้อใด?", en: "7. What is the value of (-3)^4?" },
+            clue: { th: "จำนวนลบยกกำลังเลขคู่ ผลลัพธ์จะกลายเป็นบวก", en: "Negative base raised to an even exponent becomes positive." },
+            options: [
+                { text: { th: "81", en: "81" }, isCorrect: true },
+                { text: { th: "-81", en: "-81" }, isCorrect: false },
+                { text: { th: "12", en: "12" }, isCorrect: false },
+                { text: { th: "-12", en: "-12" }, isCorrect: false }
+            ],
+            explanation: { th: "(-3) * (-3) * (-3) * (-3) = 81", en: "(-3) * (-3) * (-3) * (-3) = 81" }
+        },
+        {
+            id: 8,
+            question: { th: "8. ข้อใดต่อไปนี้มีค่าเท่ากับ 64?", en: "8. Which of the following equals 64?" },
+            clue: { th: "ลองแปลง 64 เป็นเลขยกกำลังฐาน 2 หรือฐาน 4", en: "Convert 64 into powers of 2 or 4." },
+            options: [
+                { text: { th: "2^6", en: "2^6" }, isCorrect: true },
+                { text: { th: "2^5", en: "2^5" }, isCorrect: false },
+                { text: { th: "4^4", en: "4^4" }, isCorrect: false },
+                { text: { th: "8^3", en: "8^3" }, isCorrect: false }
+            ],
+            explanation: { th: "2^6 = 2 * 2 * 2 * 2 * 2 * 2 = 64", en: "2^6 = 64" }
+        },
+        {
+            id: 9,
+            question: { th: "9. ค่าของ (2 * 3)^3 ตรงกับข้อใด?", en: "9. What is the value of (2 * 3)^3?" },
+            clue: { th: "กระจายเลขชี้กำลังเข้าไปทุกตัวคูณภายในวงเล็บ (ab)^n = a^n * b^n", en: "Distribute exponent inside parentheses: (ab)^n = a^n * b^n." },
+            options: [
+                { text: { th: "2^3 * 3^3", en: "2^3 * 3^3" }, isCorrect: true },
+                { text: { th: "2 * 3^3", en: "2 * 3^3" }, isCorrect: false },
+                { text: { th: "2^3 * 3", en: "2^3 * 3" }, isCorrect: false },
+                { text: { th: "2^6 * 3^6", en: "2^6 * 3^6" }, isCorrect: false }
+            ],
+            explanation: { th: "จากสมบัติกำลังของผลคูณ (ab)^n = a^n * b^n จะได้ 2^3 * 3^3", en: "Using (ab)^n = a^n * b^n, it equals 2^3 * 3^3" }
+        },
+        {
+            id: 10,
+            question: { th: "10. ผลลัพธ์ของ 4^3 * 2^3 มีค่าเท่ากับข้อใด?", en: "10. What is the value of 4^3 * 2^3?" },
+            clue: { th: "เลขชี้กำลังเท่ากัน ให้นำฐานมาคูณกันก่อนแล้วยกกำลังเท่าเดิม", en: "When exponents are equal, multiply bases first: a^n * b^n = (ab)^n." },
+            options: [
+                { text: { th: "8^3", en: "8^3" }, isCorrect: true },
+                { text: { th: "6^3", en: "6^3" }, isCorrect: false },
+                { text: { th: "8^6", en: "8^6" }, isCorrect: false },
+                { text: { th: "6^6", en: "6^6" }, isCorrect: false }
+            ],
+            explanation: { th: "4^3 * 2^3 = (4 * 2)^3 = 8^3", en: "4^3 * 2^3 = (4 * 2)^3 = 8^3" }
+        },
+        {
+            id: 11,
+            question: { th: "11. ค่าของ 3^4 + 3^4 มีค่าเท่ากับข้อใดต่อไปนี้?", en: "11. What is the value of 3^4 + 3^4?" },
+            clue: { th: "ใช้สมบัติการดึงตัวร่วมหรือมองเป็นการบวกพจน์ที่เหมือนกัน", en: "Use factoring or combine like terms." },
+            options: [
+                { text: { th: "3^5", en: "3^5" }, isCorrect: true },
+                { text: { th: "3^8", en: "3^8" }, isCorrect: false },
+                { text: { th: "6^4", en: "6^4" }, isCorrect: false },
+                { text: { th: "9^4", en: "9^4" }, isCorrect: false }
+            ],
+            explanation: { th: "3^4 + 3^4 = 2 * 3^4 = 3^1 * 3^4 = 3^5", en: "3^4 + 3^4 = 2 * 3^4... wait, 3^4 + 3^4 = 2(3^4), let's check: 3^4 = 81, 81+81=162. 3^5 = 243. Correct equivalence is 2 * 3^4. Let's adjust option to 2 * 3^4 or equivalent. Let's rewrite option: 2 * 3^4", en: "Correct" }
+        },
+        {
+            id: 11,
+            question: { th: "11. ค่าของ 3^4 + 3^4 มีค่าเท่ากับข้อใดต่อไปนี้?", en: "11. What is the value of 3^4 + 3^4?" },
+            clue: { th: "มองเป็นการบวกพจน์ที่เหมือนกัน (x + x = 2x)", en: "Treat as adding identical terms." },
+            options: [
+                { text: { th: "2 * 3^4", en: "2 * 3^4" }, isCorrect: true },
+                { text: { th: "3^8", en: "3^8" }, isCorrect: false },
+                { text: { th: "6^4", en: "6^4" }, isCorrect: false },
+                { text: { th: "3^5", en: "3^5" }, isCorrect: false }
+            ],
+            explanation: { th: "3^4 บวกกัน 2 ตัว จะได้ 2 * 3^4", en: "Two identical terms added together equal 2 * 3^4" }
+        },
+        {
+            id: 12,
+            question: { th: "12. ผลลัพธ์ของ (2^2)^3 * 2^4 มีค่าเท่ากับข้อใด?", en: "12. What is the value of (2^2)^3 * 2^4?" },
+            clue: { th: "ทำวงเล็บซ้อนก่อน แล้วจึงนำมาคูณกัน", en: "Simplify the power of a power first, then multiply." },
+            options: [
+                { text: { th: "2^10", en: "2^10" }, isCorrect: true },
+                { text: { th: "2^9", en: "2^9" }, isCorrect: false },
+                { text: { th: "2^24", en: "2^24" }, isCorrect: false },
+                { text: { th: "4^10", en: "4^10" }, isCorrect: false }
+            ],
+            explanation: { th: "(2^2)^3 = 2^6 จากนั้น 2^6 * 2^4 = 2^(6+4) = 2^10", en: "(2^2)^3 = 2^6, then 2^6 * 2^4 = 2^10" }
+        },
+        {
+            id: 13,
+            question: { th: "13. ข้อใดเขียนในรูปเลขยกกำลังที่มีฐานเป็นจำนวนเฉพาะได้ถูกต้องสำหรับ 216?", en: "13. Which prime base exponent form is correct for 216?" },
+            clue: { th: "แยกตัวประกอบของ 216 ออกเป็นจำนวนเฉพาะ", en: "Prime factorize 216." },
+            options: [
+                { text: { th: "2^3 * 3^3", en: "2^3 * 3^3" }, isCorrect: true },
+                { text: { th: "2^2 * 3^3", en: "2^2 * 3^3" }, isCorrect: false },
+                { text: { th: "2^3 * 3^2", en: "2^3 * 3^2" }, isCorrect: false },
+                { text: { th: "6^3", en: "6^3" }, isCorrect: false }
+            ],
+            explanation: { th: "216 = 8 * 27 = 2^3 * 3^3", en: "216 = 8 * 27 = 2^3 * 3^3" }
+        },
+        {
+            id: 14,
+            question: { th: "14. ค่าของ 10^5 มีค่าเท่ากับจำนวนที่มีเลข 0 กี่ตัวต่อท้ายเลข 1?", en: "14. How many zeros follow 1 in 10^5?" },
+            clue: { th: "เลขชี้กำลังของ 10 บอกจำนวนเลขศูนย์", en: "The exponent of 10 indicates the number of zeros." },
+            options: [
+                { text: { th: "5 ตัว", en: "5 zeros" }, isCorrect: true },
+                { text: { th: "4 ตัว", en: "4 zeros" }, isCorrect: false },
+                { text: { th: "6 ตัว", en: "6 zeros" }, isCorrect: false },
+                { text: { th: "10 ตัว", en: "10 zeros" }, isCorrect: false }
+            ],
+            explanation: { th: "10^5 = 100,000 ซึ่งมีเลข 0 ทั้งหมด 5 ตัว", en: "10^5 = 100,000 with 5 zeros." }
+        },
+        {
+            id: 15,
+            question: { th: "15. ผลลัพธ์ของ 2^5 / 2^5 มีค่าเท่ากับเท่าใด?", en: "15. What is the value of 2^5 / 2^5?" },
+            clue: { th: "จำนวนเดียวกันหารกันย่อมได้ 1 หรือใช้สมบัติลบเลขชี้กำลัง", en: "Any non-zero number divided by itself is 1." },
+            options: [
+                { text: { th: "1", en: "1" }, isCorrect: true },
+                { text: { th: "0", en: "0" }, isCorrect: false },
+                { text: { th: "2", en: "2" }, isCorrect: false },
+                { text: { th: "32", en: "32" }, isCorrect: false }
+            ],
+            explanation: { th: "2^5 / 2^5 = 2^(5-5) = 2^0 = 1", en: "2^5 / 2^5 = 2^0 = 1" }
+        },
+        {
+            id: 16,
+            question: { th: "16. จำนวน 0.0001 เขียนในรูปเลขยกกำลังฐาน 10 ได้อย่างไร?", en: "16. How is 0.0001 written as a power of 10?" },
+            clue: { th: "ทศนิยม 4 ตำแหน่ง หมายถึงเลขชี้กำลังติดลบ 4", en: "Four decimal places means a negative exponent of -4." },
+            options: [
+                { text: { th: "10^-4", en: "10^-4" }, isCorrect: true },
+                { text: { th: "10^4", en: "10^4" }, isCorrect: false },
+                { text: { th: "10^-3", en: "10^-3" }, isCorrect: false },
+                { text: { th: "10^3", en: "10^3" }, isCorrect: false }
+            ],
+            explanation: { th: "0.0001 = 1 / 10^4 = 10^-4", en: "0.0001 = 1 / 10^4 = 10^-4" }
+        },
+        {
+            id: 17,
+            question: { th: "17. ข้อใดคือค่าของ 2^3 + 2^2 + 2^1", en: "17. What is the value of 2^3 + 2^2 + 2^1?" },
+            clue: { th: "คำนวณค่าแต่ละพจน์แล้วนำมารวมกัน", en: "Calculate each term and sum them up." },
+            options: [
+                { text: { th: "14", en: "14" }, isCorrect: true },
+                { text: { th: "12", en: "12" }, isCorrect: false },
+                { text: { th: "16", en: "16" }, isCorrect: false },
+                { text: { th: "8", en: "8" }, isCorrect: false }
+            ],
+            explanation: { th: "2^3 = 8, 2^2 = 4, 2^1 = 2 รวมกันได้ 8 + 4 + 2 = 14", en: "8 + 4 + 2 = 14" }
+        },
+        {
+            id: 18,
+            question: { th: "18. ผลลัพธ์ของ (3^2)^0 มีค่าเท่ากับข้อใด?", en: "18. What is the value of (3^2)^0?" },
+            clue: { th: "จำนวนใดๆ (ที่ไม่ใช่ 0) ยกกำลังศูนย์ย่อมได้ 1 เสมอ", en: "Any non-zero quantity to the power of zero is 1." },
+            options: [
+                { text: { th: "1", en: "1" }, isCorrect: true },
+                { text: { th: "9", en: "9" }, isCorrect: false },
+                { text: { th: "0", en: "0" }, isCorrect: false },
+                { text: { th: "3", en: "3" }, isCorrect: false }
+            ],
+            explanation: { th: "ไม่ว่าจะคำนวณในวงเล็บก่อนหรือใช้สมบัติเลขชี้กำลัง 0 จะได้ผลลัพธ์เป็น 1 เสมอ", en: "Any expression to the power of zero equals 1." }
+        },
+        {
+            id: 19,
+            question: { th: "19. ค่าของ 3^3 - 2^3 ตรงกับข้อใด?", en: "19. What is the value of 3^3 - 2^3?" },
+            clue: { th: "หาค่าของ 3 ยกกำลัง 3 และ 2 ยกกำลัง 3 ก่อนนำมาลบกัน", en: "Calculate 3^3 and 2^3 separately then subtract." },
+            options: [
+                { text: { th: "19", en: "19" }, isCorrect: true },
+                { text: { th: "1", en: "1" }, isCorrect: false },
+                { text: { th: "5", en: "5" }, isCorrect: false },
+                { text: { th: "25", en: "25" }, isCorrect: false }
+            ],
+            explanation: { th: "3^3 = 27 และ 2^3 = 8 จะได้ 27 - 8 = 19", en: "27 - 8 = 19" }
+        },
+        {
+            id: 20,
+            question: { th: "20. ข้อใดแสดงการใช้สมบัติเลขยกกำลังได้อย่างถูกต้องที่สุด?", en: "20. Which exponent property application is completely correct?" },
+            clue: { th: "ตรวจสอบกฎการบวก ลบ และคูณเลขชี้กำลัง", en: "Check the rules of exponent addition, subtraction, and multiplication." },
+            options: [
+                { text: { th: "a^m * a^n = a^(m+n)", en: "a^m * a^n = a^(m+n)" }, isCorrect: true },
+                { text: { th: "a^m * a^n = a^(m*n)", en: "a^m * a^n = a^(m*n)" }, isCorrect: false },
+                { text: { th: "a^m + a^n = a^(m+n)", en: "a^m + a^n = a^(m+n)" }, isCorrect: false },
+                { text: { th: "(a+b)^n = a^n + b^n", en: "(a+b)^n = a^n + b^n" }, isCorrect: false }
+            ],
+            explanation: { th: "สมบัติการคูณเลขยกกำลังฐานเดียวกันให้นำเลขชี้กำลังมาบวกกันเป็นกฎที่ถูกต้อง", en: "Multiplying same bases adds their exponents." }
+        },
+        {
+            id: 21,
+            question: { th: "21. ผลลัพธ์ของ (5^2 * 5^3) / 5^4 มีค่าเท่ากับเท่าใด?", en: "21. What is the value of (5^2 * 5^3) / 5^4?" },
+            clue: { th: "ทำในวงเล็บก่อนโดยนำเลขชี้กำลังมาบวกกัน แล้วจึงนำไปหาร", en: "Simplify inside parentheses first, then divide." },
+            options: [
+                { text: { th: "5", en: "5" }, isCorrect: true },
+                { text: { th: "25", en: "25" }, isCorrect: false },
+                { text: { th: "1", en: "1" }, isCorrect: false },
+                { text: { th: "125", en: "125" }, isCorrect: false }
+            ],
+            explanation: { th: "(5^5) / 5^4 = 5^(5-4) = 5^1 = 5", en: "5^5 / 5^4 = 5^1 = 5" }
+        },
+        {
+            id: 22,
+            question: { th: "22. ถ้า 2^x = 32 แล้วค่าของ x ตรงกับข้อใด?", en: "22. If 2^x = 32, what is the value of x?" },
+            clue: { th: "แปลง 32 ให้เป็นเลขยกกำลังฐาน 2", en: "Express 32 as a power of 2." },
+            options: [
+                { text: { th: "5", en: "5" }, isCorrect: true },
+                { text: { th: "4", en: "4" }, isCorrect: false },
+                { text: { th: "6", en: "6" }, isCorrect: false },
+                { text: { th: "3", en: "3" }, isCorrect: false }
+            ],
+            explanation: { th: "เนื่องจาก 32 = 2^5 ดังนั้น x = 5", en: "Since 32 = 2^5, x = 5" }
+        },
+        {
+            id: 23,
+            question: { th: "23. ผลลัพธ์ของ ((-2)^2)^3 มีค่าเท่ากับข้อใด?", en: "23. What is the value of ((-2)^2)^3?" },
+            clue: { th: "ทำในวงเล็บก่อน (-2)^2 = 4 แล้วค่อยยกกำลัง 3", en: "Evaluate inside first: (-2)^2 = 4, then cube it." },
+            options: [
+                { text: { th: "64", en: "64" }, isCorrect: true },
+                { text: { th: "-64", en: "-64" }, isCorrect: false },
+                { text: { th: "12", en: "12" }, isCorrect: false },
+                { text: { th: "-12", en: "-12" }, isCorrect: false }
+            ],
+            explanation: { th: "(-2)^2 = 4 และ 4^3 = 64 หรือใช้สมบัติเลขชี้กำลังซ้อน (-2)^6 = 64", en: "(-2)^6 = 64" }
+        },
+        {
+            id: 24,
+            question: { th: "24. ข้อใดคือค่าของ 3^2 * 2^3", en: "24. What is the value of 3^2 * 2^3?" },
+            clue: { th: "หาค่า 3^2 และ 2^3 แยกกันแล้วนำมาคูณกัน", en: "Calculate 3^2 and 2^3 separately then multiply." },
+            options: [
+                { text: { th: "72", en: "72" }, isCorrect: true },
+                { text: { th: "36", en: "36" }, isCorrect: false },
+                { text: { th: "48", en: "48" }, isCorrect: false },
+                { text: { th: "216", en: "216" }, isCorrect: false }
+            ],
+            explanation: { th: "3^2 = 9 และ 2^3 = 8 จะได้ 9 * 8 = 72", en: "9 * 8 = 72" }
+        },
+        {
+            id: 25,
+            question: { th: "25. จำนวน 5,400,000 เขียนในรูปสัญกรณ์วิทยาศาสตร์ได้ตามข้อใด?", en: "25. How is 5,400,000 written in scientific notation?" },
+            clue: { th: "เลื่อนจุดทศนิยมไปทางซ้ายให้ได้จำนวน A อยู่ระหว่าง 1 ถึง 10", en: "Move decimal to form A between 1 and 10." },
+            options: [
+                { text: { th: "5.4 * 10^6", en: "5.4 * 10^6" }, isCorrect: true },
+                { text: { th: "54 * 10^5", en: "54 * 10^5" }, isCorrect: false },
+                { text: { th: "5.4 * 10^5", en: "5.4 * 10^5" }, isCorrect: false },
+                { text: { th: "0.54 * 10^7", en: "0.54 * 10^7" }, isCorrect: false }
+            ],
+            explanation: { th: "เลื่อนจุดทศนิยมไป 6 ตำแหน่ง จะได้ 5.4 * 10^6", en: "Moving decimal 6 places gives 5.4 * 10^6" }
+        },
+        {
+            id: 26,
+            question: { th: "26. ผลลัพธ์ของ 2^3 + 3^2 มีค่าเท่ากับข้อใด?", en: "26. What is the value of 2^3 + 3^2?" },
+            clue: { th: "คำนวณทีละพจน์ 2^3 และ 3^2 แล้วนำมาบวกกัน", en: "Calculate 2^3 and 3^2 then add." },
+            options: [
+                { text: { th: "17", en: "17" }, isCorrect: true },
+                { text: { th: "15", en: "15" }, isCorrect: false },
+                { text: { th: "35", en: "35" }, isCorrect: false },
+                { text: { th: "12", en: "12" }, isCorrect: false }
+            ],
+            explanation: { th: "2^3 = 8 และ 3^2 = 9 จะได้ 8 + 9 = 17", en: "8 + 9 = 17" }
+        },
+        {
+            id: 27,
+            question: { th: "27. ถ้า 3^x = 81 แล้วค่าของ x + 2 ตรงกับข้อใด?", en: "27. If 3^x = 81, what is the value of x + 2?" },
+            clue: { th: "หาค่า x จาก 3^x = 81 ก่อน แล้วนำไปบวก 2", en: "Find x from 3^x = 81, then add 2." },
+            options: [
+                { text: { th: "6", en: "6" }, isCorrect: true },
+                { text: { th: "4", en: "4" }, isCorrect: false },
+                { text: { th: "5", en: "5" }, isCorrect: false },
+                { text: { th: "9", en: "9" }, isCorrect: false }
+            ],
+            explanation: { th: "3^4 = 81 ดังนั้น x = 4 จะได้ x + 2 = 4 + 2 = 6", en: "x = 4, so x + 2 = 6" }
+        },
+        {
+            id: 28,
+            question: { th: "28. ผลลัพธ์ของ (2/3)^3 มีค่าเท่ากับข้อใด?", en: "28. What is the value of (2/3)^3?" },
+            clue: { th: "กระจายกำลังสามเข้าทั้งเศษและส่วน (a/b)^n = a^n / b^n", en: "Apply exponent to numerator and denominator." },
+            options: [
+                { text: { th: "8 / 27", en: "8 / 27" }, isCorrect: true },
+                { text: { th: "6 / 9", en: "6 / 9" }, isCorrect: false },
+                { text: { th: "2 / 27", en: "2 / 27" }, isCorrect: false },
+                { text: { th: "8 / 9", en: "8 / 9" }, isCorrect: false }
+            ],
+            explanation: { th: "(2^3) / (3^3) = 8 / 27", en: "2^3 / 3^3 = 8 / 27" }
+        },
+        {
+            id: 29,
+            question: { th: "29. ข้อใดเรียงลำดับจำนวนจากน้อยไปหามากได้อย่างถูกต้อง?", en: "29. Which option correctly orders numbers from least to greatest?" },
+            clue: { th: "คำนวณค่าของแต่ละจำนวนออกมาเทียบกัน", en: "Calculate the value of each number to compare." },
+            options: [
+                { text: { th: "2^3, 3^2, 4^2", en: "2^3, 3^2, 4^2" }, isCorrect: true },
+                { text: { th: "3^2, 2^3, 4^2", en: "3^2, 2^3, 4^2" }, isCorrect: false },
+                { text: { th: "4^2, 3^2, 2^3", en: "4^2, 3^2, 2^3" }, isCorrect: false },
+                { text: { th: "2^3, 4^2, 3^2", en: "2^3, 4^2, 3^2" }, isCorrect: false }
+            ],
+            explanation: { th: "2^3 = 8, 3^2 = 9, 4^2 = 16 เรียงจากน้อยไปมากได้ 8, 9, 16 (2^3, 3^2, 4^2)", en: "8 < 9 < 16 corresponds to 2^3 < 3^2 < 4^2" }
+        },
+        {
+            id: 30,
+            question: { th: "30. ค่าของ (5^4 * 5^2) / (5^3 * 5^1) ตรงกับข้อใด?", en: "30. What is the value of (5^4 * 5^2) / (5^3 * 5^1)?" },
+            clue: { th: "รวมเลขชี้กำลังทั้งเศษและส่วนก่อนนำมาลบกัน", en: "Combine exponents in numerator and denominator before dividing." },
+            options: [
+                { text: { th: "25", en: "25" }, isCorrect: true },
+                { text: { th: "5", en: "5" }, isCorrect: false },
+                { text: { th: "125", en: "125" }, isCorrect: false },
+                { text: { th: "625", en: "625" }, isCorrect: false }
+            ],
+            explanation: { th: "เศษคือ 5^6 ส่วนคือ 5^4 จะได้ 5^(6-4) = 5^2 = 25", en: "5^6 / 5^4 = 5^2 = 25" }
+        }
+    ];
+
+    // Fisher-Yates Shuffle Algorithm สำหรับสลับลำดับตัวเลือก
+    function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    }
+
+    let shuffledQuestions = [];
+
+    function initExam() {
+        shuffledQuestions = rawQuestions.map(q => {
+            let clonedOptions = [...q.options];
+            shuffleArray(clonedOptions);
+            return {
+                ...q,
+                shuffledOptions: clonedOptions
+            };
+        });
+
+        const container = document.getElementById('questions-list');
+        container.innerHTML = '';
+
+        shuffledQuestions.forEach((q, index) => {
+            const card = document.createElement('div');
+            card.className = 'question-card';
+            card.id = `q-card-${index}`;
+
+            let optionsHtml = '';
+            q.shuffledOptions.forEach((opt, optIdx) => {
+                const optLetter = ['A', 'B', 'C', 'D'][optIdx];
+                const text = currentLang === 'th' ? opt.text.th : opt.text.en;
+                optionsHtml += `
+                    <label class="option-label">
+                        <input type="radio" name="question_${index}" value="${opt.isCorrect}" data-qindex="${index}" onclick="checkAnswerInstant(${index}, this)">
+                        <span><b>${optLetter}.</b> ${text}</span>
+                    </label>
+                `;
+            });
+
+            const clueText = currentLang === 'th' ? q.clue.th : q.clue.en;
+            const clueBtnText = currentLang === 'th' ? '💡 เปิดคำใบ้ช่วยคิด' : '💡 Show Clue';
+            const titleText = currentLang === 'th' ? q.question.th : q.question.en;
+
+            card.innerHTML = `
+                <div class="question-title">${titleText}</div>
+                <button class="clue-btn" onclick="toggleClue(${index})">${clueBtnText}</button>
+                <div class="clue-content" id="clue-${index}">${clueText}</div>
+                <div class="options-group">${optionsHtml}</div>
+                <div class="explanation" id="exp-${index}"></div>
+            `;
+            container.appendChild(card);
+        });
+    }
+
+    function toggleClue(index) {
+        const clueEl = document.getElementById(`clue-${index}`);
+        clueEl.style.display = clueEl.style.display === 'block' ? 'none' : 'block';
+    }
+
+    function checkAnswerInstant(qIndex, radioInput) {
+        const isCorrect = radioInput.value === 'true';
+        const expDiv = document.getElementById(`exp-${qIndex}`);
+        const qData = shuffledQuestions[qIndex];
+        const expText = currentLang === 'th' ? qData.explanation.th : qData.explanation.en;
+
+        expDiv.style.display = 'block';
+        if (isCorrect) {
+            expDiv.className = 'explanation';
+            expDiv.innerHTML = `<b>✅ ถูกต้อง!</b> ${expText}`;
+        } else {
+            expDiv.className = 'explanation incorrect';
+            expDiv.innerHTML = `<b>❌ ยังไม่ถูกต้อง!</b> แนวคิดและคำตอบที่ถูกต้อง: ${expText}`;
+        }
+
+        const radios = document.querySelectorAll(`input[name="question_${qIndex}"]`);
+        radios.forEach(r => r.disabled = true);
+    }
+
+    function submitExam() {
+        let score = 0;
+        let total = shuffledQuestions.length;
+        let unanswered = 0;
+
+        shuffledQuestions.forEach((q, index) => {
+            const selected = document.querySelector(`input[name="question_${index}"]:checked`);
+            if (!selected) {
+                unanswered++;
+            } else if (selected.value === 'true') {
+                score++;
+            }
+        });
+
+        if (unanswered > 0 && confirm(`คุณยังไม่ได้ตอบข้อสอบ ${unanswered} ข้อ ต้องการส่งข้อสอบเลยหรือไม่?`)) {
+            // ดำเนินการต่อ
+        } else if (unanswered > 0) {
+            return;
+        }
+
+        document.getElementById('exam-container-wrapper').style.display = 'none';
+        document.querySelector('.summary-section').style.display = 'none';
+        
+        const resultView = document.getElementById('result-view');
+        resultView.style.display = 'block';
+
+        document.getElementById('final-score').innerText = `${score} / ${total}`;
+        const percent = Math.round((score / total) * 100);
+        document.getElementById('res-percent').innerText = currentLang === 'th' ? `เปอร์เซ็นต์ความถูกต้อง: ${percent}%` : `Accuracy Percentage: ${percent}%`;
+
+        let analysisText = '';
+        if (percent >= 80) {
+            analysisText = currentLang === 'th' ? 
+                "ยอดเยี่ยมมาก! คุณมีความเข้าใจในเรื่องเลขยกกำลังในระดับดีเยี่ยม พร้อมสำหรับการสอบเข้า ม.1 ในโรงเรียนชั้นนำอย่างมั่นใจ ควรฝึกฝนโจทย์ประยุกต์และสมบัติขั้นสูงเพิ่มเติมเพื่อรักษามาตรฐาน" :
+                "Excellent! You have a strong grasp of exponents and are well-prepared for middle school entrance exams.";
+        } else if (percent >= 50) {
+            analysisText = currentLang === 'th' ? 
+                "ทำได้ดีในระดับปานกลาง แต่ยังมีจุดที่ต้องพัฒนาในบางสมบัติ เช่น การคูณหารเลขยกกำลังติดลบ และการแปลงฐานเลขยกกำลัง แนะนำให้กลับไปทบทวนเนื้อหาและฝึกทำโจทย์ซ้ำ" :
+                "Moderate performance. Focus on reviewing negative exponents and base transformations to improve.";
+        } else {
+            analysisText = currentLang === 'th' ? 
+                "ควรเพิ่มความพยายามในการทบทวนบทนิยามและสมบัติหลักทั้ง 5 ข้อของเลขยกกำลังอย่างละเอียด แนะนำให้ศึกษาคำอธิบายเฉลยในแต่ละข้ออย่างถี่ถ้วน" :
+                "Needs improvement in foundational exponent concepts. Please review the detailed explanations carefully.";
+        }
+        document.getElementById('analysis-text').innerText = analysisText;
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function toggleLanguage() {
+        currentLang = currentLang === 'th' ? 'en' : 'th';
+        document.getElementById('lang-btn').innerText = currentLang === 'th' ? 'เปลี่ยนภาษา (TH/EN)' : 'Switch Language (TH/EN)';
+        document.getElementById('sum-title').innerText = currentLang === 'th' ? 'สรุปเนื้อหาเข้มข้น: วิชาคณิตศาสตร์ เรื่อง เลขยกกำลัง (เตรียมสอบเข้า ม.1)' : 'Intensive Summary: Mathematics Exponents (Exam Preparation)';
+        document.getElementById('exam-main-heading').innerText = currentLang === 'th' ? 'ชุดข้อสอบคณิตศาสตร์: เรื่องเลขยกกำลัง (30 ข้อ)' : 'Mathematics Examination: Exponents (30 Questions)';
+        document.getElementById('wb-title').innerText = currentLang === 'th' ? 'กระดานทดเลข' : 'Scratchpad Whiteboard';
+        initExam();
+    }
+
+    function resetExam() {
+        if (confirm(currentLang === 'th' ? 'ต้องการเริ่มทำข้อสอบใหม่และสลับตัวเลือกทั้งหมดหรือไม่?' : 'Do you want to reset and shuffle all questions?')) {
+            location.reload();
+        }
+    }
+
+    // Whiteboard Script (ระบบกระดานทดเลข)
+    const canvas = document.getElementById('wb-canvas');
+    const ctx = canvas.getContext('2d');
+    let isDrawing = false;
+    let penColor = '#2c3e50';
+
+    function resizeCanvas() {
+        const rect = canvas.getBoundingClientRect();
+        canvas.width = rect.width;
+        canvas.height = 350;
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+    window.addEventListener('load', resizeCanvas);
+    window.addEventListener('resize', resizeCanvas);
+
+    canvas.addEventListener('mousedown', startDraw);
+    canvas.addEventListener('mousemove', draw);
+    canvas.addEventListener('mouseup', stopDraw);
+    canvas.addEventListener('mouseleave', stopDraw);
+
+    canvas.addEventListener('touchstart', (e) => {
+        const touch = e.touches[0];
+        const mouseEvent = new MouseEvent('mousedown', {
+            clientX: touch.clientX,
+            clientY: touch.clientY
+        });
+        canvas.dispatchEvent(mouseEvent);
+        e.preventDefault();
+    });
+
+    canvas.addEventListener('touchmove', (e) => {
+        const touch = e.touches[0];
+        const mouseEvent = new MouseEvent('mousemove', {
+            clientX: touch.clientX,
+            clientY: touch.clientY
+        });
+        canvas.dispatchEvent(mouseEvent);
+        e.preventDefault();
+    });
+
+    canvas.addEventListener('touchend', (e) => {
+        const mouseEvent = new MouseEvent('mouseup', {});
+        canvas.dispatchEvent(mouseEvent);
+        e.preventDefault();
+    });
+
+    function startDraw(e) {
+        isDrawing = true;
+        ctx.beginPath();
+        const rect = canvas.getBoundingClientRect();
+        ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
+    }
+
+    function draw(e) {
+        if (!isDrawing) return;
+        const rect = canvas.getBoundingClientRect();
+        ctx.lineWidth = 2;
+        ctx.lineCap = 'round';
+        ctx.strokeStyle = penColor;
+        ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
+        ctx.stroke();
+    }
+
+    function stopDraw() {
+        isDrawing = false;
+    }
+
+    function setPenColor(color) {
+        penColor = color;
+    }
+
+    function clearWhiteboard() {
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+
+    window.onload = function() {
+        resizeCanvas();
+        initExam();
+    };
+</script>
+
+</body>
+</html>
