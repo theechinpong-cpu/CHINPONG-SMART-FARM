@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>แบบฝึกหัดคณิตศาสตร์ ป.2 เทอม 2 - พระจอมเกล้าติวเตอร์</title>
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-hover: #4338ca;
+            --bg-color: #f8fafc;
+            --text-color: #1e293b;
+            --border-color: #cbd5e1;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: Tahoma, sans-serif; }
+        body { background-color: var(--bg-color); color: var(--text-color); min-height: 100vh; display: flex; flex-direction: column; }
+        header { background-color: var(--primary); color: white; padding: 1rem 2rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+        .header-content { max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+        .btn { background: rgba(255,255,255,0.2); border: none; color: white; padding: 0.5rem 1rem; border-radius: 0.375rem; cursor: pointer; font-weight: bold; transition: background 0.2s; }
+        .btn:hover { background: rgba(255,255,255,0.3); }
+        .btn-danger { background: #e11d48; }
+        .btn-danger:hover { background: #be123c; }
+        .btn-success { background: #059669; color: white; padding: 0.75rem 2rem; font-size: 1.1rem; border-radius: 0.5rem; cursor: pointer; border: none; font-weight: bold; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .btn-success:hover { background: #047857; }
+        main { max-width: 1200px; width: 100%; margin: 2rem auto; padding: 0 1rem; flex-grow: 1; display: flex; flex-direction: column; gap: 1.5rem; }
+        .layout-grid { display: grid; grid-template-columns: 1fr; gap: 1.5rem; }
+        @media(min-width: 1024px) { .layout-grid { grid-template-columns: 7fr 3fr; } }
+        .quiz-section { display: flex; flex-direction: column; gap: 1rem; }
+        .status-bar { background: white; padding: 1rem; border-radius: 0.75rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); display: flex; justify-content: space-between; font-weight: bold; color: #334155; }
+        .question-card { background: white; border-radius: 0.75rem; padding: 1.25rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border: 1px solid #e2e8f0; }
+        .question-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem; }
+        .question-title { font-weight: bold; color: #1e293b; font-size: 1rem; }
+        .hint-btn { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem; cursor: pointer; }
+        .hint-btn:hover { background: #fde68a; }
+        .hint-content { font-size: 0.8rem; background: #fffbeb; padding: 0.5rem; border-radius: 0.25rem; margin-bottom: 0.75rem; border-left: 3px solid #f59e0b; color: #b45309; display: none; }
+        .options-grid { display: grid; grid-template-columns: 1fr; gap: 0.5rem; }
+        @media(min-width: 640px) { .options-grid { grid-template-columns: 1fr 1fr; } }
+        .option-btn { text-align: left; padding: 0.65rem 1rem; border-radius: 0.5rem; border: 1px solid var(--border-color); background: white; font-size: 0.9rem; cursor: pointer; transition: all 0.2s; display: flex; justify-content: space-between; align-items: center; }
+        .option-btn:hover:not(:disabled) { background: #eef2ff; border-color: #818cf8; }
+        .option-selected { border: 2px solid var(--primary) !important; background: #eef2ff !important; font-weight: bold; }
+        .option-correct { border: 2px solid #059669 !important; background: #ecfdf5 !important; font-weight: bold; color: #065f46; }
+        .option-incorrect { border: 2px solid #e11d48 !important; background: #fff1f2 !important; font-weight: bold; color: #9f1239; }
+        .explanation { font-size: 0.8rem; padding: 0.75rem; border-radius: 0.375rem; margin-top: 0.75rem; background: #f8fafc; border: 1px solid #e2e8f0; display: none; }
+        .whiteboard-container { background: white; border-radius: 0.75rem; padding: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); height: 550px; display: flex; flex-direction: column; position: sticky; top: 1rem; }
+        .whiteboard-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; font-weight: bold; font-size: 0.9rem; color: #475569; }
+        .canvas-box { flex-grow: 1; border: 1px solid #cbd5e1; border-radius: 0.5rem; background: white; cursor: crosshair; overflow: hidden; position: relative; }
+        canvas { width: 100%; height: 100%; display: block; touch-action: none; }
+        .analysis-card { background: white; border-radius: 0.75rem; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border-top: 5px solid #059669; display: none; margin-top: 1rem; }
+        footer { background: #1e293b; color: #94a3b8; text-align: center; padding: 1.5rem; font-size: 0.85rem; margin-top: auto; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="header-content">
+            <div>
+                <h1 style="font-size: 1.25rem; font-weight: bold;">คลังข้อสอบอัจฉริยะ: คณิตศาสตร์ ป.2 เทอม 2</h1>
+                <p style="font-size: 0.85rem; opacity: 0.8;">แบบฝึกหัด 20 ข้อ พร้อมระบบฝึกฝนและกระดานทด</p>
+            </div>
+            <div style="display: flex; gap: 0.5rem;">
+                <button onclick="resetQuiz()" class="btn btn-danger">รีเซ็ตข้อสอบ</button>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <div class="layout-grid">
+            <!-- ฝั่งซ้าย: ข้อสอบ -->
+            <div class="quiz-section">
+                <div class="status-bar">
+                    <span id="progressText">ความคืบหน้า: 0 / 20 ข้อ</span>
+                    <span id="scoreText" style="color: var(--primary);">คะแนน: 0 คะแนน</span>
+                </div>
+
+                <div id="questionsContainer" style="display: flex; flex-direction: column; gap: 1rem;">
+                    <!-- เรนเดอร์คำถามผ่าน JavaScript -->
+                </div>
+
+                <div style="text-align: center; margin: 1.5rem 0;">
+                    <button onclick="submitQuiz()" class="btn-success" id="submitBtn">ส่งคำตอบทั้งหมด</button>
+                </div>
+
+                <!-- ผลวิเคราะห์รายบุคคล -->
+                <div id="analysisSection" class="analysis-card">
+                    <h3 style="font-size: 1.1rem; color: #1e293b; margin-bottom: 0.75rem;">ผลการวิเคราะห์ประสิทธิภาพรายบุคคล</h3>
+                    <div id="analysisContent" style="font-size: 0.9rem; color: #475569; line-height: 1.6;"></div>
+                </div>
+            </div>
+
+            <!-- ฝั่งขวา: กระดานทด Whiteboard -->
+            <div>
+                <div class="whiteboard-container">
+                    <div class="whiteboard-header">
+                        <span>กระดานทดเลข (Whiteboard)</span>
+                        <button onclick="clearCanvas()" class="btn" style="background: #e2e8f0; color: #334155; font-size: 0.75rem; padding: 0.25rem 0.5rem;">ล้างกระดาน</button>
+                    </div>
+                    <div class="canvas-box">
+                        <canvas id="whiteboard"></canvas>
+                    </div>
+                    <p style="font-size: 0.75rem; color: #94a3b8; text-align: center; margin-top: 0.5rem;">ใช้เมาส์หรือนิ้วลากเส้นเพื่อทดคำนวณ</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>เขียนโดย พระจอมเกล้าติวเตอร์</p>
+    </footer>
+
+    <script>
+        let userAnswers = {};
+        let shuffledQuestions = [];
+
+        // 20 ข้อสอบคณิตศาสตร์ ป.2 เทอม 2 (กระจายคำตอบถูกต้อง A, B, C, D อย่างสมดุล)
+        const rawQuestions = [
+            { id: 1, text: "ผลคูณของ 5 คูณ 6 คือข้อใด?", options: ["30", "25", "35", "24"], correct: 0, hint: "ท่องสูตรคูณแม่ 5 หรือแม่ 6", rationale: "5 x 6 = 30" },
+            { id: 2, text: "ข้อใดคือผลลัพธ์ของ 42 หารด้วย 6?", options: ["6", "7", "8", "9"], correct: 1, hint: "คิดว่า 6 คูณอะไรได้ 42", rationale: "6 x 7 = 42 ดังนั้น 42 / 6 = 7" },
+            { id: 3, text: "เชือกเส้นหนึ่งยาว 2 เมตร 50 เซนติเมตร ยาวเท่ากับกี่เซนติเมตร?", options: ["205 เซนติเมตร", "215 เซนติเมตร", "250 เซนติเมตร", "300 เซนติเมตร"], correct: 2, hint: "1 เมตร เท่ากับ 100 เซนติเมตร", rationale: "2 เมตร = 200 เซนติเมตร รวมกับ 50 เซนติเมตร เป็น 250 เซนติเมตร" },
+            { id: 4, text: "แตงโมหนัก 3 กิโลกรัม 4 ขีด คิดเป็นกี่ขีด?", options: ["30 ขีด", "32 ขีด", "35 ขีด", "34 ขีด"], correct: 3, hint: "1 กิโลกรัม เท่ากับ 10 ขีด", rationale: "3 กิโลกรัม = 30 ขีด รวมกับ 4 ขีด เป็น 34 ขีด" },
+            { id: 5, text: "เข็มสั้นชี้ที่เลข 3 และเข็มยาวชี้ที่เลข 12 เป็นเวลากี่นาฬิกา?", options: ["3 นาฬิกา", "12 นาฬิกา", "6 นาฬิกา", "9 นาฬิกา"], correct: 0, hint: "เข็มสั้นบอกชั่วโมง เข็มยาวที่เลข 12 คือเริ่มต้นชั่วโมงใหม่", rationale: "เข็มสั้นชี้เลข 3 คือ 3 นาฬิกา" },
+            { id: 6, text: "มีเงินอยู่ 100 บาท ซื้อขนมราคา 35 บาท จะเหลือเงินทอนเท่าไร?", options: ["55 บาท", "65 บาท", "75 บาท", "45 บาท"], correct: 1, hint: "นำเงินทั้งหมดลบด้วยราคาสินค้า", rationale: "100 - 35 = 65 บาท" },
+            { id: 7, text: "ผลลัพธ์ของ (12 + 8) คูณ 2 คือข้อใด?", options: ["28", "30", "40", "48"], correct: 2, hint: "ทำในวงเล็บก่อนแล้วค่อยคูณ", rationale: "12 + 8 = 20 จากนั้นนำ 20 x 2 = 40" },
+            { id: 8, text: "เดือนใดมีจำนวนวันน้อยที่สุดใน 1 ปี?", options: ["มีนาคม", "เมษายน", "มกราคม", "กุมภาพันธ์"], correct: 3, hint: "เป็นเดือนสุดท้ายของไตรมาสแรกที่มี 28 หรือ 29 วัน", rationale: "เดือนกุมภาพันธ์มี 28 หรือ 29 วัน ซึ่งน้อยที่สุดในบรรดา 12 เดือน" },
+            { id: 9, text: "ข้อใดเรียงลำดับหน่วยความยาวจากน้อยไปมากได้ถูกต้อง?", options: ["เซนติเมตร เมตร กิโลเมตร", "เมตร เซนติเมตร กิโลเมตร", "กิโลเมตร เมตร เซนติเมตร", "เซนติเมตร กิโลเมตร เมตร"], correct: 0, hint: "หน่วยเล็กไปหน่วยใหญ่", rationale: "เซนติเมตรเล็กที่สุด รองลงมาคือเมตร และกิโลเมตรใหญ่ที่สุด" },
+            { id: 10, text: "ถ้า 7 คูณอะไรได้ 56 ตัวเลขในช่องว่างคือข้อใด?", options: ["6", "8", "9", "7"], correct: 1, hint: "ท่องสูตรคูณแม่ 7", rationale: "7 x 8 = 56" },
+            { id: 11, text: "ส้มราคาผลละ 4 บาท ซื้อส้ม 9 ผล ต้องจ่ายเงินกี่บาท?", options: ["32 บาท", "34 บาท", "36 บาท", "40 บาท"], correct: 2, hint: "นำจำนวนส้มคูณราคาต่อผล", rationale: "4 x 9 = 36 บาท" },
+            { id: 12, text: "น้ำตาลทรายถุงหนึ่งหนัก 1 กิโลกรัม ถ้าตักออกไป 3 ขีด จะเหลือหนักกี่ขีด?", options: ["5 ขีด", "6 ขีด", "8 ขีด", "7 ขีด"], correct: 3, hint: "1 กิโลกรัมเท่ากับ 10 ขีด", rationale: "1 กิโลกรัม = 10 ขีด ลบออก 3 ขีด เหลือ 7 ขีด" },
+            { id: 13, text: "เข็มยาวเดินครบ 1 รอบ (60 นาที) คิดเป็นเวลาเท่ากับกี่ชั่วโมง?", options: ["1 ชั่วโมง", "2 ชั่วโมง", "3 ชั่วโมง", "ครึ่งชั่วโมง"], correct: 0, hint: "60 นาที เท่ากับ...", rationale: "60 นาที เท่ากับ 1 ชั่วโมง" },
+            { id: 14, text: "แม่มีเงิน 200 บาท ซื้อเสื้อ 120 บาท และซื้อสมุด 30 บาท แม่จะเหลือเงินกี่บาท?", options: ["40 บาท", "50 บาท", "60 บาท", "70 บาท"], correct: 1, hint: "นำเงินตั้งต้นลบราคาสินค้าทีละอย่างหรือรวมราคาก่อนลบ", rationale: "ซื้อของรวม 120 + 30 = 150 บาท เหลือเงิน 200 - 150 = 50 บาท" },
+            { id: 15, text: "ผลลัพธ์ของ 48 หารด้วย 8 แล้วบวกด้วย 5 คือข้อใด?", options: ["10", "8", "11", "12"], correct: 2, hint: "ทำหารก่อนแล้วค่อยบวก", rationale: "48 / 8 = 6 จากนั้น 6 + 5 = 11" },
+            { id: 16, text: "ข้อใดคือความสัมพันธ์ของการคูณและการหารที่ถูกต้อง เมื่อกำหนดว่า 6 คูณ 7 เท่ากับ 42?", options: ["42 หาร 6 ได้ 8", "42 หาร 7 ได้ 5", "42 หาร 6 ได้ 6", "42 หาร 7 ได้ 6"], correct: 3, hint: "ผลคูณตั้งหารด้วยตัวคูณหนึ่งตัวจะได้อีกตัวหนึ่ง", rationale: "42 / 7 = 6" },
+            { id: 17, text: "ผลไม้หนักเป็นกิโลกรัมและขีด ข้อใดคือหน่วยน้ำหนักที่ย่อยกว่ากิโลกรัม?", options: ["ขีด", "เมตร", "ลิตร", "บาท"], correct: 0, hint: "หน่วยย่อยของน้ำหนัก", rationale: "ขีดเป็นหน่วยย่อยกว่ากิโลกรัม (10 ขีด = 1 กิโลกรัม)" },
+            { id: 18, text: "เวลา 13.30 น. เข็มยาวจะชี้ที่ตัวเลขใดบนหน้าปัดนาฬิกา?", options: ["เลข 3", "เลข 6", "เลข 9", "เลข 12"], correct: 1, hint: "30 นาที คือครึ่งรอบของหน้าปัด", rationale: "30 นาที เข็มยาวจะชี้ที่เลข 6" },
+            { id: 19, text: "ถ้าวันนี้เป็นวันอังคาร พรุ่งนี้จะเป็นวันอะไร?", options: ["วันอาทิตย์", "วันจันทร์", "วันพุธ", "วันพฤหัสบดี"], correct: 2, hint: "วันถัดไปจากวันอังคาร", rationale: "วันต่อจากวันอังคารคือวันพุธ" },
+            { id: 20, text: "มีขนม 24 ชิ้น จัดใส่จานจานละ 4 ชิ้น จะได้ขนมกี่จาน?", options: ["4 จาน", "5 จาน", "7 จาน", "6 จาน"], correct: 3, hint: "นำจำนวนขนมทั้งหมดหารด้วยจำนวนขนมในแต่ละจาน", rationale: "24 / 4 = 6 จาน" }
+        ];
+
+        // Fisher-Yates Shuffle Algorithm
+        function fisherYatesShuffle(array) {
+            let arr = [...array];
+            for (let i = arr.length - 1; i > 0; i--) {
+                let j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        function initQuiz() {
+            shuffledQuestions = rawQuestions.map(q => {
+                let optionsWithIdx = q.options.map((opt, idx) => ({ text: opt, originalIdx: idx }));
+                let shuffledOpts = fisherYatesShuffle(optionsWithIdx);
+                let newCorrect = shuffledOpts.findIndex(o => o.originalIdx === q.correct);
+                return {
+                    ...q,
+                    options: shuffledOpts.map(o => o.text),
+                    correct: newCorrect
+                };
+            });
+            renderQuiz();
+        }
+
+        function renderQuiz() {
+            const container = document.getElementById('questionsContainer');
+            container.innerHTML = '';
+
+            shuffledQuestions.forEach((q, index) => {
+                let card = document.createElement('div');
+                card.className = 'question-card';
+                card.innerHTML = `
+                    <div class="question-header">
+                        <span class="question-title">ข้อที่ ${index + 1}: ${q.text}</span>
+                        <button onclick="toggleHint(${index})" class="hint-btn">💡 คำใบ้</button>
+                    </div>
+                    <div id="hint-${index}" class="hint-content">
+                        <strong>คำใบ้:</strong> ${q.hint}
+                    </div>
+                    <div class="options-grid" id="options-${index}">
+                        ${q.options.map((opt, oIdx) => `
+                            <button onclick="selectAnswer(${index},${oIdx})" id="q${index}-opt${oIdx}" class="option-btn option-btn-${index}">
+                                <span>${opt}</span>
+                            </button>
+                        `).join('')}
+                    </div>
+                    <div id="explanation-${index}" class="explanation"></div>
+                `;
+                container.appendChild(card);
+            });
+            updateProgress();
+        }
+
+        function toggleHint(index) {
+            let hintEl = document.getElementById(`hint-${index}`);
+            hintEl.style.display = hintEl.style.display === 'block' ? 'none' : 'block';
+        }
+
+        function selectAnswer(qIdx, optIdx) {
+            userAnswers[qIdx] = optIdx;
+            let optButtons = document.querySelectorAll(`.option-btn-${qIdx}`);
+            optButtons.forEach((btn, idx) => {
+                if (idx === optIdx) {
+                    btn.classList.add('option-selected');
+                } else {
+                    btn.classList.remove('option-selected');
+                }
+            });
+            updateProgress();
+        }
+
+        function updateProgress() {
+            let answeredCount = Object.keys(userAnswers).length;
+            document.getElementById('progressText').innerText = `ความคืบหน้า: ${answeredCount} / 20 ข้อ`;
+        }
+
+        function submitQuiz() {
+            let score = 0;
+            shuffledQuestions.forEach((q, index) => {
+                let userAns = userAnswers[index];
+                let optButtons = document.querySelectorAll(`.option-btn-${index}`);
+                let expEl = document.getElementById(`explanation-${index}`);
+                expEl.style.display = 'block';
+
+                optButtons.forEach((btn, idx) => {
+                    btn.disabled = true;
+                    btn.classList.remove('option-selected');
+                    if (idx === q.correct) {
+                        btn.classList.add('option-correct');
+                    } else if (idx === userAns && userAns !== q.correct) {
+                        btn.classList.add('option-incorrect');
+                    }
+                });
+
+                if (userAns === q.correct) {
+                    score++;
+                    expEl.innerHTML = `<strong style="color: #059669;">✓ ถูกต้อง!</strong> ${q.rationale}`;
+                } else {
+                    expEl.innerHTML = `<strong style="color: #e11d48;">✗ ยังไม่ถูกต้อง</strong> ${q.rationale}`;
+                }
+            });
+
+            document.getElementById('scoreText').innerText = `คะแนน: ${score} / 20 คะแนน`;
+
+            let analysisSection = document.getElementById('analysisSection');
+            let analysisContent = document.getElementById('analysisContent');
+            let percentage = (score / 20) * 100;
+            let strength = percentage >= 80 ? "มีความเข้าใจพื้นฐานคณิตศาสตร์ ป.2 เทอม 2 เป็นอย่างดีเยี่ยม" : percentage >= 50 ? "ทำได้ดีพอสมควร แต่ควรทบทวนเรื่องการคำนวณเพิ่มเติม" : "ควรทบทวนสูตรคูณและการแปลงหน่วยการวัดต่าง ๆ ให้แม่นยำยิ่งขึ้น";
+
+            analysisContent.innerHTML = `
+                <p><strong>คะแนนรวมของคุณ:</strong> ${score} จาก 20 คะแนน (${percentage.toFixed(1)}%)</p>
+                <p><strong>จุดเด่น:</strong> ${strength}</p>
+                <p><strong>จุดที่ควรพัฒนา:</strong> แนะนำให้ฝึกฝนการท่องสูตรคูณและทบทวนโจทย์ปัญหาการบวก ลบ คูณ หารระคน</p>
+            `;
+            analysisSection.style.display = 'block';
+            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+        }
+
+        function resetQuiz() {
+            userAnswers = {};
+            document.getElementById('analysisSection').style.display = 'none';
+            document.getElementById('scoreText').innerText = 'คะแนน: 0 คะแนน';
+            initQuiz();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Whiteboard Canvas
+        const canvas = document.getElementById('whiteboard');
+        const ctx = canvas.getContext('2d');
+        let painting = false;
+
+        function resizeCanvas() {
+            const rect = canvas.parentElement.getBoundingClientRect();
+            canvas.width = rect.width;
+            canvas.height = rect.height;
+            ctx.strokeStyle = '#1e293b';
+            ctx.lineWidth = 2;
+            ctx.lineCap = 'round';
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+        window.addEventListener('load', resizeCanvas);
+
+        function startDraw(e) {
+            painting = true;
+            draw(e);
+        }
+
+        function endDraw() {
+            painting = false;
+            ctx.beginPath();
+        }
+
+        function draw(e) {
+            if (!painting) return;
+            const rect = canvas.getBoundingClientRect();
+            let x = (e.clientX || e.touches[0].clientX) - rect.left;
+            let y = (e.clientY || e.touches[0].clientY) - rect.top;
+
+            ctx.lineTo(x, y);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+        }
+
+        canvas.addEventListener('mousedown', startDraw);
+        canvas.addEventListener('mouseup', endDraw);
+        canvas.addEventListener('mousemove', draw);
+
+        canvas.addEventListener('touchstart', startDraw);
+        canvas.addEventListener('touchend', endDraw);
+        canvas.addEventListener('touchmove', draw);
+
+        function clearCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        initQuiz();
+    </script>
+</body>
+</html>
