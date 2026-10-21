@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ข้อสอบการอ่านจับใจความ - พระจอมเกล้าติวเตอร์</title>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-hover: #4338ca;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --success: #10b981;
+            --error: #ef4444;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            background: var(--card-bg);
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+        h1 {
+            color: var(--primary);
+            margin-bottom: 5px;
+            font-size: 1.8rem;
+        }
+        .tutor-name {
+            font-weight: bold;
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+        .summary-box {
+            background: #eef2ff;
+            border-left: 5px solid var(--primary);
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            font-size: 1rem;
+        }
+        .memory-tricks {
+            background: #ecfdf5;
+            border-left: 5px solid var(--success);
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+        .story-box {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            margin-bottom: 30px;
+            font-style: italic;
+            color: #334155;
+        }
+        .question-card {
+            background: var(--card-bg);
+            border-radius: 10px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            border: 1px solid var(--border);
+        }
+        .question-title {
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+        }
+        .options-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .option-item {
+            margin-bottom: 10px;
+        }
+        .option-label {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: #fafafa;
+        }
+        .option-label:hover {
+            background: #f1f5f9;
+            border-color: var(--primary);
+        }
+        .option-label input {
+            margin-right: 12px;
+            accent-color: var(--primary);
+            transform: scale(1.2);
+        }
+        .explanation {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 8px;
+            background: #f8fafc;
+            border: 1px solid var(--border);
+            display: none;
+            font-size: 0.95rem;
+        }
+        .explanation.correct-bg {
+            background: #f0fdf4;
+            border-color: #bbf7d0;
+            color: #166534;
+        }
+        .explanation.incorrect-bg {
+            background: #fef2f2;
+            border-color: #fecaca;
+            color: #991b1b;
+        }
+        .submit-container {
+            text-align: center;
+            margin: 40px 0;
+        }
+        .btn-submit {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 14px 32px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+            box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.3);
+        }
+        .btn-submit:hover {
+            background-color: var(--primary-hover);
+        }
+        #result-section {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 30px;
+            margin-top: 30px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            display: none;
+            text-align: center;
+        }
+        .score-display {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--primary);
+            margin: 15px 0;
+        }
+        .weakness-analysis {
+            text-align: left;
+            margin-top: 20px;
+            padding: 20px;
+            background: #fffbeb;
+            border: 1px solid #fde68a;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <header>
+        <h1>แบบทดสอบการอ่านจับใจความภาษาอังกฤษ (Reading Comprehension Test)</h1>
+        <div class="tutor-name">จัดทำโดย: พระจอมเกล้าติวเตอร์</div>
+    </header>
+
+    <!-- 400-word Summary & Subject Matter -->
+    <div class="summary-box">
+        <h3>📖 สรุปสาระสำคัญของเนื้อหา (Summary & Subject Matter)</h3>
+        <p>
+            บทความนี้เป็นเรื่องราวสั้น ๆ ที่แต่งขึ้นโดยเน้นการใช้คำศัพท์เฉพาะกลุ่มเพื่อฝึกทักษะการอ่านจับใจความ (Reading Comprehension) ของนักเรียนระดับมัธยมศึกษา เล่าถึงตัวละครหลักคือ <strong>Ben</strong> หมีสีน้ำตาลตัวใหญ่ (Big brown bear) ที่อาศัยอยู่ในป่าสีเขียวที่สวยงาม (Beautiful green forest) กิจวัตรประจำวันของเบนคือการตื่นนอนในยามเช้าพร้อมรอยยิ้มเมื่อแสงอาทิตย์ส่องสว่าง (The sun would shine brightly, wake up with a big smile) และชื่นชอบการกินอาหารโปรด ได้แก่ แอปเปิ้ลสีแดงรสหวาน (Sweet red apples) และกล้วยสีเหลือง (Yellow bananas) นอกจากนี้ เนื้อหายังขยายความถึงช่วงเวลาเย็น (Every evening) ที่เบนเดินเล่นภายใต้แสงแดดอันสดใส ปลุกกบสีเขียว (Green frog) และนกสีน้ำตาลตัวใหญ่ (Big brown bird) รวมถึงปฏิสัมพันธ์ซ้ำ ๆ เพื่อเน้นย้ำโครงสร้างประโยค คำศัพท์ และรูปประโยคบอกเล่าในอดีตกาล/กิจวัตรต่อเนื่อง การทำความเข้าใจเนื้อหานี้จึงต้องอาศัยการสังเกตรายละเอียดจำเพาะ เช่น สีของวัตถุ ชนิดของสัตว์ ช่วงเวลาเช้าและเย็น รวมถึงความสัมพันธ์ของคำศัพท์แต่ละคำในบริบทที่กำหนดอย่างแม่นยำ
+        </p>
+    </div>
+
+    <!-- Memory Tricks & Thought Processes -->
+    <div class="memory-tricks">
+        <h3>💡 เทคนิคการจำและกระบวนการคิด (Memory Tricks & Thought Processes)</h3>
+        <ul>
+            <li><strong>จำแยกตามหมวดหมู่ (Categorization):</strong> ให้แบ่งคำออกเป็น 3 กลุ่มหลัก คือ <em>ตัวละครและสัตว์</em> (Ben, green frog, big brown bird), <em>สถานที่และเวลา</em> (Green forest, morning, evening, sun) และ <em>อาหาร</em> (Sweet red apples, yellow bananas, big apples)</li>
+            <li><strong>เทคนิคสังเกตคำคุณศัพท์ (Adjective Pairing):</strong> สสังเกตคำขยายสีและขนาดให้แม่นยำ เช่น หมีเป็น <em>big brown</em>, ป่าเป็น <em>beautiful green</em>, แอปเปิ้ลเป็น <em>sweet red</em> และกล้วยเป็น <em>yellow</em> ห้ามสลับคำคุณศัพท์เด็ดขาด</li>
+            <li><strong>กระบวนการคิดวิเคราะห์ (Analytical Thinking):</strong> เมื่ออ่านคำถาม ให้ย้อนกลับมาตรวจสอบคีย์เวิร์ดในเนื้อเรื่องทีละประโยค วิเคราะห์ว่าเหตุการณ์เกิดขึ้นตอนเช้าหรือตอนเย็น และสัตว์ตัวใดทำอะไร เพื่อป้องกันความสับสนระหว่างบริบทตอนเช้าและตอนเย็น</li>
+        </ul>
+    </div>
+
+    <!-- Story Reference -->
+    <div class="story-box">
+        <strong>เนื้อเรื่องต้นฉบับ:</strong><br>
+        Once upon a time, there was a big brown bear named Ben. Ben lived in a beautiful green forest. Every morning, the sun would shine brightly, and Ben would wake up with a big smile. He loved to eat sweet red apples and yellow bananas. Every evening, the big brown bear Ben walked under the bright sun in the beautiful green forest. Ben would wake up a green frog and a big brown bird. The bright sun would shine on the sweet red apples, yellow bananas, and green trees. Ben, the big brown bear, would smile and eat sweet red apples, yellow bananas, and sweet bananas. Every morning, Ben lived in the green forest and smiled at the bright sun. The big brown bear would eat sweet red apples, yellow bananas, and big apples in the green forest. Ben loved the sweet red apples and yellow bananas in the beautiful green forest.
+    </div>
+
+    <!-- Quiz Form -->
+    <form id="exam-form">
+        <!-- Question 1 -->
+        <div class="question-card" data-category="Character Details">
+            <div class="question-title">1. What is the name of the big brown bear in the story?</div>
+            <ul class="options-list">
+                <li class="option-item"><label class="option-label"><input type="radio" name="q1" value="A"> A) Max</label></li>
+                <li class="option-item"><label class="option-label"><input type="radio" name="q1" value="B"> B) Ben</label></li>
+                <li class="option-item"><label class="option-label"><input type="radio" name="q1" value="C"> C) Bob</label></li>
+                <li class="option-item"><label class="option-label"><input type="radio" name="q1" value="D"> D) Bruno</label></li>
+            </ul>
+            <div class="explanation" id="exp-q1"><strong>เฉลย:</strong> ข้อ B) Ben<br><strong>คำอธิบาย:</strong> จากประโยค "there was a big brown bear named Ben" ระบุชื่อตัวละครไว้อย่างชัดเจนว่าเป็น Ben</div>
+        </div>
+
+        <!-- Question 2 -->
+        <div class="question-card" data-category="Character Details">
+            <div class="question-title">2. What color and size is the bear, Ben?</div>
+            <ul class="options-list">
+                <li class="option-item"><label class="option-label"><input type="radio" name="q2" value="A"> A) Small black bear</label></li>
+                <li class="option-item"><label class="option-label"><input type="radio" name="q2" value="B"> B) Big green bear</label></li>
+                <li class="option-item"><label class="option-label"><input type="radio" name="q2" value="C"> C) Big brown bear</label></li>
+                <li class="option-item"><label class="option-label"><input type="radio" name="q2" value="D"> D) Small brown bear</label></li>
+            </ul>
+            <div class="explanation" id="exp-q2"><strong>เฉลย:</strong> ข้อ C) Big brown bear<br><strong>คำอธิบาย:</strong> ข้อความระบุซ้ำหลายครั้งว่า "the big brown bear named Ben"</div>
+        </div>
+
+        <!-- Question 3 -->
+        <div class="question-card" data-category="Setting">
+            <div class="question-title">3. Where does Ben live?</div>
+            <ul class="options-list">
+                <li class="option-item"><label class="option-label"><input type="radio" name="q3" value="A"> A) In a beautiful green forest</label></li>
+                <li class="option-item"><label class="option-label"><input type="radio" name="q3" value="B"> B) In a dark brown cave</label></li>
+                <li class="option-item"><label class="option-label"><input type="radio" name="q3" value="C"> C) On a high green mountain</label></li>
+                <li class="option-item"><label class="option-label"><input type="radio" name="q3" value="D"> D) Near a bright blue river</label></li>
+            </ul>
+            <div class="explanation" id="exp-q3"><strong>เฉลย:</strong> ข้อ A) In a beautiful green forest<br><strong>คำอธิบาย:</strong> เนื้อเรื่องระบุว่า "Ben lived in a beautiful green forest."</div>
+        </div>
+
+        <!-- Question 4 -->
+        <div class="question-card" data-category="Time & Routines">
+            <div class="question-title">4. What happens every morning in the story?</div>
+            <ul class="options-list">
+                <li class="option-item"><label class="option-label"><input type="radio" name="q4" value="A"> A) The rain would fall heavily</label></li>
+                <li class="option-item"><label class="option-label"><input type="radio" name="q4" value="B"> B) The sun would shine brightly</label></li>
+                <li class="option-item"><label class="option-label"><input type="radio" name="q4" value="C"> C) The moon would shine brightly</label></li>
+                <li class="option-item"><label class="option-label"><input type="radio" name="q4" value="D"> D) The wind would blow strongly</label></li>
+            </ul>
+            <div class="explanation" id="exp-q4"><strong>เฉลย:</strong> ข้อ B) The sun would shine brightly<br><strong>คำอธิบาย:</strong> ข้อความกล่าวไว้ว่า "Every morning, the sun would shine brightly..."</div>
+        </div>
+
+        <!-- Question 5 -->
+        <div class="question-card" data-category="Time & Routines">
+            <div class="question-title">5. How does Ben wake up every morning?</div>
+            <ul class="options-list">
+                <li class="option-item"><label class="option-label"><input type="radio" name="q5" value="A"> A) With a big smile</label></li>
+                <li class="option-item"><label class="option-label"><input type="radio" name="q5" value="B"> B) With a loud roar</label></li>
+                <li class="option-item"><label class="option-label"><input type="radio" name="q5" value="C"> C) With sleepy eyes and sadness</label></li>
+                <li class="option-item"><label class="option-label"><input type="radio" name="q5" value="D"> D) With green apples</label></li>
+            </ul>
+            <div class="explanation" id="exp-q5"><strong>เฉลย:</strong> ข้อ A) With a big smile<br><strong>คำอธิบาย:</strong> เนื้อเรื่องบอกว่า "...and Ben would wake up with a big smile."</div>
+        </div>
+
+        <!-- Question 6 -->
+        <div class="question-card" data-category="Diet & Food">
+            <div class="question-title">6. What fruits does Ben love to eat?</div>
+            <ul class="options-list">
+                <li class="option-item"><label class="option-label"><input type="radio" name="q6" value="A"> A) Sweet red apples and yellow bananas</label></li>
+                <li class="option-item"><label class="option-label"><input type="radio" name="q6" value="B"> B) Green bananas and brown apples</label></li>
+                <li class="option-item"><label class="option-label"><input type="radio" name="q6" value="C"> C) Big red bananas and sweet green apples</label></li>
+                <li class="option-item"><label class="option-label"><input type="radio" name="q6" value="D"> D) Yellow apples and red bananas</label></li>
+            </ul>
+            <div class="explanation" id="exp-q6"><strong>เฉลย:</strong> ข้อ A) Sweet red apples and yellow bananas<br><strong>คำอธิบาย:</strong> รายละเอียดอาหารโปรดระบุชัดเจนว่า "sweet red apples and yellow bananas"</div>
+        </div>
+
+        <!-- Question 7 -->
+        <div class="question-card" data-category="Time & Routines">
+            <div class="question-title">7. What does Ben do every evening?</div>
+            <ul class="options-list">
+                <li class="option-item"><label class="option-label"><input type="radio" name="q7" value="A"> A) Walked under the bright sun in the beautiful green forest</label></li>
+                <li class="option-item"><label class="option-label"><input type="radio" name="q7" value="B"> B) Slept inside a dark cave</label></li>
+                <li class="option-item"><label class="option-label"><input type="radio" name="q7" value="C"> C) Swam across a green river</label></li>
+                <li class="option-item"><label class="option-label"><input type="radio" name="q7" value="D"> D) Climbed up a tall brown tree</label></li>
+            </ul>
+            <div class="explanation" id="exp-q7"><strong>เฉลย:</strong> ข้อ A) Walked under the bright sun in the beautiful green forest<br><strong>คำอธิบาย:</strong> ข้อความกล่าวว่า "Every evening, the big brown bear Ben walked under the bright sun in the beautiful green forest."</div>
+        </div>
+
+        <!-- Question 8 -->
+        <div class="question-card" data-category="Secondary Characters">
+            <div class="question-title">8. Who does Ben wake up during his evening walk?</div>
+            <ul class="options-list">
+                <li class="option-item"><label class="option-label"><input type="radio" name="q8" value="A"> A) A green frog and a big brown bird</label></li>
+                <li class="option-item"><label class="option-label"><input type="radio" name="q8" value="B"> B) A brown frog and a green bird</label></li>
+                <li class="option-item"><label class="option-label"><input type="radio" name="q8" value="C"> C) A sweet red frog and a yellow bird</label></li>
+                <li class="option-item"><label class="option-label"><input type="radio" name="q8" value="D"> D) A big green bear and a little frog</label></li>
+            </ul>
+            <div class="explanation" id="exp-q8"><strong>เฉลย:</strong> ข้อ A) A green frog and a big brown bird<br><strong>คำอธิบาย:</strong> เนื้อความระบุไว้ว่า "Ben would wake up a green frog and a big brown bird."</div>
+        </div>
+
+        <!-- Question 9 -->
+        <div class="question-card" data-category="Environment">
+            <div class="question-title">9. What does the bright sun shine on in the middle of the story?</div>
+            <ul class="options-list">
+                <li class="option-item"><label class="option-label"><input type="radio" name="q9" value="A"> A) Sweet red apples, yellow bananas, and green trees</label></li>
+                <li class="option-item"><label class="option-label"><input type="radio" name="q9" value="B"> B) Brown bears, green frogs, and brown birds</label></li>
+                <li class="option-item"><label class="option-label"><input type="radio" name="q9" value="C"> C) Blue rivers, high mountains, and dark caves</label></li>
+                <li class="option-item"><label class="option-label"><input type="radio" name="q9" value="D"> D) Yellow bananas and sweet green leaves</label></li>
+            </ul>
+            <div class="explanation" id="exp-q9"><strong>เฉลย:</strong> ข้อ A) Sweet red apples, yellow bananas, and green trees<br><strong>คำอธิบาย:</strong> จากประโยค "The bright sun would shine on the sweet red apples, yellow bananas, and green trees."</div>
+        </div>
+
+        <!-- Question 10 -->
+        <div class="question-card" data-category="Actions & Behavior">
+            <div class="question-title">10. What does Ben do besides smiling during his activities?</div>
+            <ul class="options-list">
+                <li class="option-item"><label class="option-label"><input type="radio" name="q10" value="A"> A) Eat sweet red apples, yellow bananas, and sweet bananas</label></li>
+                <li class="option-item"><label class="option-label"><input type="radio" name="q10" value="B"> B) Catch fish in the green river</label></li>
+                <li class="option-item"><label class="option-label"><input type="radio" name="q10" value="C"> C) Sing songs to the green frog</label></li>
+                <li class="option-item"><label class="option-label"><input type="radio" name="q10" value="D"> D) Run away from the bright sun</label></li>
+            </ul>
+            <div class="explanation" id="exp-q10"><strong>เฉลย:</strong> ข้อ A) Eat sweet red apples, yellow bananas, and sweet bananas<br><strong>คำอธิบาย:</strong> เนื้อเรื่องระบุการกินซ้ำว่า "...would smile and eat sweet red apples, yellow bananas, and sweet bananas."</div>
+        </div>
+
+        <!-- Question 11 -->
+        <div class="question-card" data-category="Time & Routines">
+            <div class="question-title">11. What does Ben do every morning in the latter part of the story?</div>
+            <ul class="options-list">
+                <li class="option-item"><label class="option-label"><input type="radio" name="q11" value="A"> A) Lived in the green forest and smiled at the bright sun</label></li>
+                <li class="option-item"><label class="option-label"><input type="radio" name="q11" value="B"> B) Slept under the green trees</label></li>
+                <li class="option-item"><label class="option-label"><input type="radio" name="q11" value="C"> C) Gathered yellow bananas with the big brown bird</label></li>
+                <li class="option-item"><label class="option-label"><input type="radio" name="q11" value="D"> D) Walked out of the beautiful green forest</label></li>
+            </ul>
+            <div class="explanation" id="exp-q11"><strong>เฉลย:</strong> ข้อ A) Lived in the green forest and smiled at the bright sun<br><strong>คำอธิบาย:</strong> จากประโยค "Every morning, Ben lived in the green forest and smiled at the bright sun."</div>
+        </div>
+
+        <!-- Question 12 -->
+        <div class="question-card" data-category="Diet & Food">
+            <div class="question-title">12. Besides sweet red apples and yellow bananas, what other type of apples does Ben eat?</div>
+            <ul class="options-list">
+                <li class="option-item"><label class="option-label"><input type="radio" name="q12" value="A"> A) Big apples</label></li>
+                <li class="option-item"><label class="option-label"><input type="radio" name="q12" value="B"> B) Green apples</label></li>
+                <li class="option-item"><label class="option-label"><input type="radio" name="q12" value="C"> C) Small brown apples</label></li>
+                <li class="option-item"><label class="option-label"><input type="radio" name="q12" value="D"> D) Sweet yellow apples</label></li>
+            </ul>
+            <div class="explanation" id="exp-q12"><strong>เฉลย:</strong> ข้อ A) Big apples<br><strong>คำอธิบาย:</strong> เนื้อความระบุว่า "...and big apples in the green forest."</div>
+        </div>
+
+        <!-- Question 13 -->
+        <div class="question-card" data-category="Reading Comprehension & Detail">
+            <div class="question-title">13. Which of the following is repeated as being loved by Ben in the story?</div>
+            <ul class="options-list">
+                <li class="option-item"><label class="option-label"><input type="radio" name="q13" value="A"> A) The sweet red apples and yellow bananas</label></li>
+                <li class="option-item"><label class="option-label"><input type="radio" name="q13" value="B"> B) The big brown bird and green frog</label></li>
+                <li class="option-item"><label class="option-label"><input type="radio" name="q13" value="C"> C) The bright sun in the evening</label></li>
+                <li class="option-item"><label class="option-label"><input type="radio" name="q13" value="D"> D) The tall green trees</label></li>
+            </ul>
+            <div class="explanation" id="exp-q13"><strong>เฉลย:</strong> ข้อ A) The sweet red apples and yellow bananas<br><strong>คำอธิบาย:</strong> ตอนท้ายเรื่องเน้นย้ำว่า "Ben loved the sweet red apples and yellow bananas..."</div>
+        </div>
+
+        <!-- Question 14 -->
+        <div class="question-card" data-category="Vocabulary & Descriptive Words">
+            <div class="question-title">14. What adjective describes the forest where Ben lives?</div>
+            <ul class="options-list">
+                <li class="option-item"><label class="option-label"><input type="radio" name="q14" value="A"> A) Beautiful green</label></li>
+                <li class="option-item"><label class="option-label"><input type="radio" name="q14" value="B"> B) Dark brown</label></li>
+                <li class="option-item"><label class="option-label"><input type="radio" name="q14" value="C"> C) Sweet bright</label></li>
+                <li class="option-item"><label class="option-label"><input type="radio" name="q14" value="D"> D) Big yellow</label></li>
+            </ul>
+            <div class="explanation" id="exp-q14"><strong>เฉลย:">ข้อ A) Beautiful green<br><strong>คำอธิบาย:</strong> คำศัพท์ที่ใช้ขยาย forest คือ "beautiful green forest"</div>
+        </div>
+
+        <!-- Question 15 -->
+        <div class="question-card" data-category="Vocabulary & Descriptive Words">
+            <div class="question-title">15. How is the sun described when Ben walks in the evening?</div>
+            <ul class="options-list">
+                <li class="option-item"><label class="option-label"><input type="radio" name="q15" value="A"> A) Bright sun</label></li>
+                <li class="option-item"><label class="option-label"><input type="radio" name="q15" value="B"> B) Sweet sun</label></li>
+                <li class="option-item"><label class="option-label"><input type="radio" name="q15" value="C"> C) Big brown sun</label></li>
+                <li class="option-item"><label class="option-label"><input type="radio" name="q15" value="D"> D) Green sun</label></li>
+            </ul>
+            <div class="explanation" id="exp-q15"><strong>เฉลย:</strong> ข้อ A) Bright sun<br><strong>คำอธิบาย:</strong> ข้อความระบุว่า "...walked under the bright sun..." และ "The bright sun would shine..."</div>
+        </div>
+
+        <!-- Question 16 -->
+        <div class="question-card" data-category="Character Details">
+            <div class="question-title">16. What color is the bird mentioned in the story?</div>
+            <ul class="options-list">
+                <li class="option-item"><label class="option-label"><input type="radio" name="q16" value="A"> A) Brown</label></li>
+                <li class="option-item"><label class="option-label"><input type="radio" name="q16" value="B"> B) Green</label></li>
+                <li class="option-item"><label class="option-label"><input type="radio" name="q16" value="C"> C) Red</label></li>
+                <li class="option-item"><label class="option-label"><input type="radio" name="q16" value="D"> D) Yellow</label></li>
+            </ul>
+            <div class="explanation" id="exp-q16"><strong>เฉลย:</strong> ข้อ A) Brown<br><strong>คำอธิบาย:</strong> นกในเรื่องถูกระบุว่าเป็น "a big brown bird"</div>
+        </div>
+
+        <!-- Question 17 -->
+        <div class="question-card" data-category="Character Details">
+            <div class="question-title">17. What color is the frog mentioned in the story?</div>
+            <ul class="options-list">
+                <li class="option-item"><label class="option-label"><input type="radio" name="q17" value="A"> A) Green</label></li>
+                <li class="option-item"><label class="option-label"><input type="radio" name="q17" value="B"> B) Brown</label></li>
+                <li class="option-item"><label class="option-label"><input type="radio" name="q17" value="C"> C) Red</label></li>
+                <li class="option-item"><label class="option-label"><input type="radio" name="q17" value="D"> D) Yellow</label></li>
+            </ul>
+            <div class="explanation" id="exp-q17"><strong>เฉลย:</strong> ข้อ A) Green<br><strong>คำอธิบาย:</strong> กบในเรื่องถูกระบุว่าเป็น "a green frog"</div>
+        </div>
+
+        <!-- Question 18 -->
+        <div class="question-card" data-category="Environment">
+            <div class="question-title">18. What color are the trees in the forest according to the text?</div>
+            <ul class="options-list">
+                <li class="option-item"><label class="option-label"><input type="radio" name="q18" value="A"> A) Green</label></li>
+                <li class="option-item"><label class="option-label"><input type="radio" name="q18" value="B"> B) Brown</label></li>
+                <li class="option-item"><label class="option-label"><input type="radio" name="q18" value="C"> C) Red</label></li>
+                <li class="option-item"><label class="option-label"><input type="radio" name="q18" value="D"> D) Yellow</label></li>
+            </ul>
+            <div class="explanation" id="exp-q18"><strong>เฉลย:</strong> ข้อ A) Green<br><strong>คำอธิบาย:</strong> ข้อความกล่าวถึง "green trees"</div>
+        </div>
+
+        <!-- Question 19 -->
+        <div class="question-card" data-category="Reading Comprehension & Detail">
+            <div class="question-title">19. Which expression is used to describe the apples Ben loves to eat?</div>
+            <ul class="options-list">
+                <li class="option-item"><label class="option-label"><input type="radio" name="q19" value="A"> A) Sweet red apples</label></li>
+                <li class="option-item"><label class="option-label"><input type="radio" name="q19" value="B"> B) Yellow sweet apples</label></li>
+                <li class="option-item"><label class="option-label"><input type="radio" name="q19" value="C"> C) Big green apples</label></li>
+                <li class="option-item"><label class="option-label"><input type="radio" name="q19" value="D"> D) Brown sweet apples</label></li>
+            </ul>
+            <div class="explanation" id="exp-q19"><strong>เฉลย:</strong> ข้อ A) Sweet red apples<br><strong>คำอธิบาย:</strong> คำคุณศัพท์ที่ใช้คู่กับ apples คือ "sweet red"</div>
+        </div>
+
+        <!-- Question 20 -->
+        <div class="question-card" data-category="Overall Story Logic">
+            <div class="question-title">20. Overall, what is the main routine and life of Ben the bear described in the story?</div>
+            <ul class="options-list">
+                <li class="option-item"><label class="option-label"><input type="radio" name="q20" value="A"> A) Living happily in a green forest, waking up to the bright sun, smiling, walking, and eating sweet fruits</label></li>
+                <li class="option-item"><label class="option-label"><input type="radio" name="q20" value="B"> B) Traveling across mountains and rivers to find new caves</label></li>
+                <li class="option-item"><label class="option-label"><input type="radio" name="q20" value="C"> C) Fighting with other brown bears in the forest</label></li>
+                <li class="option-item"><label class="option-label"><input type="radio" name="q20" value="D"> D) Hiding from the bright sun and sleeping all day</label></li>
+            </ul>
+            <div class="explanation" id="exp-q20"><strong>เฉลย:</strong> ข้อ A) Living happily in a green forest, waking up to the bright sun, smiling, walking, and eating sweet fruits<br><strong>คำอธิบาย:</strong> สรุปภาพรวมทั้งหมดของเนื้อหาเล่าถึงชีวิตประจำวันของเบนในการอยู่อาศัยในป่า ตื่นมารับแสงแดด ยิ้ม เดินเล่น และกินผลไม้รสหวาน</div>
+        </div>
+
+        <div class="submit-container">
+            <button type="button" class="btn-submit" onclick="submitExam()">ส่งข้อสอบและตรวจคำตอบ</button>
+        </div>
+    </form>
+
+    <!-- Result Section -->
+    <div id="result-section">
+        <h2>ผลการสอบของคุณ</h2>
+        <div class="score-display" id="score-text">0 / 20</div>
+        <p id="feedback-message"></p>
+        <div class="weakness-analysis" id="weakness-box">
+            <h3>📊 การวิเคราะห์จุดอ่อน (Weakness Analysis)</h3>
+            <p id="weakness-content">กำลังวิเคราะห์ผลการสอบของคุณ...</p>
+        </div>
+    </div>
+</div>
+
+<script>
+    function submitExam() {
+        let score = 0;
+        let incorrectCategories = {};
+        const totalQuestions = 20;
+
+        // Correct answers mapping
+        const answers = {
+            q1: 'B', q2: 'C', q3: 'A', q4: 'B', q5: 'A',
+            q6: 'A', q7: 'A', q8: 'A', q9: 'A', q10: 'A',
+            q11: 'A', q12: 'A', q13: 'A', q14: 'A', q15: 'A',
+            q16: 'A', q17: 'A', q18: 'A', q19: 'A', q20: 'A'
+        };
+
+        for (let i = 1; i <= totalQuestions; i++) {
+            const qName = 'q' + i;
+            const selected = document.querySelector(`input[name="${qName}"]:checked`);
+            const card = document.querySelector(`input[name="${qName}"]`).closest('.question-card');
+            const category = card.getAttribute('data-category');
+            const expDiv = document.getElementById('exp-' + qName);
+
+            expDiv.style.display = 'block';
+
+            if (selected && selected.value === answers[qName]) {
+                score++;
+                expDiv.className = 'explanation correct-bg';
+            } else {
+                expDiv.className = 'explanation incorrect-bg';
+                if (!incorrectCategories[category]) {
+                    incorrectCategories[category] = 0;
+                }
+                incorrectCategories[category]++;
+            }
+        }
+
+        // Show score result
+        const resultSection = document.getElementById('result-section');
+        resultSection.style.display = 'block';
+        document.getElementById('score-text').innerText = `${score} / ${totalQuestions}`;
+
+        let feedback = "";
+        if (score === 20) {
+            feedback = "ยอดเยี่ยมมาก! คุณทำคะแนนเต็ม แสดงว่ามีความเข้าใจและจับใจความเนื้อหาได้อย่างสมบูรณ์แบบ";
+        } else if (score >= 15) {
+            feedback = "ทำได้ดีมาก! คุณมีความเข้าใจเนื้อหาในระดับที่ดีเยี่ยม";
+        } else if (score >= 10) {
+            feedback = "ทำได้ปานกลาง ลองทบทวนรายละเอียดเกี่ยวกับคำศัพท์และเหตุการณ์ในเรื่องอีกนิดเพื่อความแม่นยำ";
+        } else {
+            feedback = "ควรกลับไปอ่านทบทวนเนื้อหาสรุปและเทคนิคการจำด้านบนใหม่อีกครั้งเพื่อเสริมสร้างความเข้าใจ";
+        }
+        document.getElementById('feedback-message').innerText = feedback;
+
+        // Weakness Analysis
+        const weaknessBox = document.getElementById('weakness-content');
+        const keys = Object.keys(incorrectCategories);
+        if (keys.length === 0) {
+            weaknessBox.innerHTML = "เยี่ยมยอด! คุณไม่มีหมวดหมู่เนื้อหาใดที่อ่อนแอเลย ทำได้ดีมากครับ";
+        } else {
+            let weaknessHtml = "จากผลการทดสอบ พบว่าหมวดหมู่ที่คุณควรทบทวนและฝึกฝนเพิ่มเติมมีดังนี้:<br><ul>";
+            for (let cat of keys) {
+                weaknessHtml += `<li><strong>${cat}</strong> (ตอบผิด ${incorrectCategories[cat]} ข้อ) - แนะนำให้กลับไปตรวจสอบรายละเอียดและฝึกสมาธิในการจับคู่คำศัพท์เฉพาะในหมวดนี้</li>`;
+            }
+            weaknessHtml += "</ul>";
+            weaknessBox.innerHTML = weaknessHtml;
+        }
+
+        // Scroll to result
+        resultSection.scrollIntoView({ behavior: 'smooth' });
+    }
+</script>
+</body>
+</html>
