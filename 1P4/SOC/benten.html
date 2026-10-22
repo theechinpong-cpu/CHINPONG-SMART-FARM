@@ -1,0 +1,1544 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบคลังข้อสอบ Interactive - วิชาสังคมศึกษา ป.2 โดย พระจอมเกล้าติวเตอร์</title>
+    <style>
+        :root {
+            --primary-color: #2b6cb0;
+            --secondary-color: #4299e1;
+            --accent-color: #319795;
+            --bg-color: #f7fafc;
+            --card-bg: #ffffff;
+            --text-color: #2d3748;
+            --border-color: #e2e8f0;
+            --success-color: #38a169;
+            --error-color: #e53e3e;
+            --warning-color: #dd6b20;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        header h1 {
+            font-size: 1.8rem;
+            margin-bottom: 5px;
+        }
+
+        header p {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 20px auto;
+            padding: 0 15px;
+            width: 100%;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* Summary Section (Top Frame) */
+        .summary-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            border-top: 5px solid var(--accent-color);
+        }
+
+        .summary-card h2 {
+            color: var(--primary-color);
+            margin-bottom: 15px;
+            font-size: 1.4rem;
+        }
+
+        .summary-content {
+            font-size: 1.05rem;
+            color: #4a5568;
+            text-align: justify;
+            margin-bottom: 15px;
+        }
+
+        .thinking-box {
+            background: #ebf8ff;
+            border-left: 4px solid var(--secondary-color);
+            padding: 15px;
+            border-radius: 0 8px 8px 0;
+            margin-top: 15px;
+        }
+
+        .thinking-box h3 {
+            color: var(--primary-color);
+            font-size: 1.1rem;
+            margin-bottom: 8px;
+        }
+
+        /* Two-Frame Layout (Bottom) */
+        .main-workspace {
+            display: grid;
+            grid-template-columns: 7fr 3fr;
+            gap: 20px;
+            align-items: start;
+        }
+
+        @media (max-width: 968px) {
+            .main-workspace {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Left Frame: Quiz (70%) */
+        .quiz-container {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        .quiz-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
+
+        .nav-btn {
+            width: 35px;
+            height: 35px;
+            border: 1px solid var(--border-color);
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+
+        .nav-btn.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .nav-btn.answered {
+            background: #c6f6d5;
+            border-color: #9ae6b4;
+            color: #22543d;
+        }
+
+        .question-box {
+            margin-bottom: 20px;
+        }
+
+        .question-title {
+            font-size: 1.15rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: var(--text-color);
+        }
+
+        .clue-toggle {
+            background: #feebc8;
+            color: #7b341e;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .clue-content {
+            background: #fffaf0;
+            border: 1px dashed #fbd38d;
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+            display: none;
+        }
+
+        .options-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .option-item {
+            padding: 12px 15px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: white;
+            font-size: 1rem;
+        }
+
+        .option-item:hover {
+            border-color: var(--secondary-color);
+            background: #f7fafc;
+        }
+
+        .option-item.selected {
+            border-color: var(--primary-color);
+            background: #ebf8ff;
+        }
+
+        .option-item.correct {
+            border-color: var(--success-color);
+            background: #c6f6d5;
+            color: #22543d;
+        }
+
+        .option-item.incorrect {
+            border-color: var(--error-color);
+            background: #fed7d7;
+            color: #742a2a;
+        }
+
+        .explanation-box {
+            background: #f7fafc;
+            border-left: 4px solid var(--primary-color);
+            padding: 15px;
+            border-radius: 0 8px 8px 0;
+            margin-top: 15px;
+            display: none;
+        }
+
+        .action-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+            border-top: 1px solid var(--border-color);
+            padding-top: 15px;
+        }
+
+        .btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+
+        .btn:hover {
+            background: #234e52;
+        }
+
+        .btn-secondary {
+            background: #718096;
+        }
+
+        .btn-secondary:hover {
+            background: #4a5568;
+        }
+
+        /* Right Frame: Whiteboard (30%) */
+        .whiteboard-container {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .whiteboard-header {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .wb-tools {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+        }
+
+        .wb-tool-btn {
+            padding: 5px 10px;
+            font-size: 0.85rem;
+            border: 1px solid var(--border-color);
+            background: white;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .wb-tool-btn.active {
+            background: var(--secondary-color);
+            color: white;
+            border-color: var(--secondary-color);
+        }
+
+        #whiteboard {
+            border: 2px dashed var(--border-color);
+            border-radius: 8px;
+            background: #fff;
+            cursor: crosshair;
+            touch-action: none;
+            flex: 1;
+            min-height: 400px;
+            width: 100%;
+        }
+
+        /* Results Modal / Screen */
+        .results-container {
+            display: none;
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            text-align: center;
+        }
+
+        .results-container h2 {
+            color: var(--primary-color);
+            margin-bottom: 20px;
+        }
+
+        .score-display {
+            font-size: 3rem;
+            font-weight: bold;
+            color: var(--accent-color);
+            margin-bottom: 20px;
+        }
+
+        .analysis-section {
+            text-align: left;
+            margin-top: 20px;
+            background: #f7fafc;
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        .analysis-section h3 {
+            margin-bottom: 10px;
+            color: var(--primary-color);
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: #718096;
+            font-size: 0.9rem;
+            border-top: 1px solid var(--border-color);
+            margin-top: auto;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>ระบบคลังข้อสอบและสื่อการสอนเชิงโต้ตอบ</h1>
+        <p>วิชาสังคมศึกษา ศาสนา และวัฒนธรรม ป.2 เทอม 2 | พัฒนาโดย พระจอมเกล้าติวเตอร์</p>
+    </header>
+
+    <div class="container">
+        <!-- Top Frame: Summary & Thinking Process -->
+        <div class="summary-card" id="summary-section">
+            <h2>สรุปเนื้อหาสาระสำคัญ: สังคมศึกษา ป.2 เทอม 2</h2>
+            <div class="summary-content">
+                วิชาสังคมศึกษา ศาสนา และวัฒนธรรม ชั้นประถมศึกษาปีที่ 2 ในภาคเรียนที่ 2 นี้ มุ่งเน้นการหล่อหลอมเยาวชนให้มีความรู้ความเข้าใจในรากฐานทางวัฒนธรรม การปฏิบัติตนตามหลักธรรมคำสอนของศาสนาที่ตนเคารพ การเป็นสมาชิกที่ดีของครอบครัวและโรงเรียน ตลอดจนการรู้เท่าทันระบบเศรษฐกิจพอเพียง การบริหารจัดการรายรับรายจ่ายในชีวิตประจำวัน การรู้จักใช้ทรัพยากรธรรมชาติอย่างคุ้มค่า และการเรียนรู้เครื่องมือทางภูมิศาสตร์เบื้องต้นเพื่อความเข้าใจสิ่งแวดล้อมรอบตัว การศึกษาในระดับนี้ไม่ได้เน้นเพียงแค่การท่องจำข้อเท็จจริง แต่เน้นกระบวนการเชื่อมโยงเหตุและผล การวิเคราะห์สถานการณ์จำลองในชีวิตจริง เพื่อสร้างทักษะการเป็นพลเมืองตื่นรู้ (Active Citizen) ที่สามารถปรับตัวและอยู่ร่วมกับผู้อื่นในสังคมพหุวัฒนธรรมได้อย่างมีความสุขและยั่งยืน
+            </div>
+            <div class="thinking-box">
+                <h3>💡 เทคนิคการจำและกระบวนการคิดวิเคราะห์ (Thinking Process & Memory Tricks)</h3>
+                <p>1. <strong>หลักการจำหมวดศาสนา:</strong> โอวาท 3 ให้จำง่ายๆ ว่า "ละ (ความชั่ว) - ทำ (ความดี) - ทำจิตใจให้บริสุทธิ์" วันสำคัญทางศาสนาให้เชื่อมโยงกับกิจกรรมหลัก เช่น มาฆบูชาคือการทำบุญใหญ่และแสดงธรรม วิสาขบูชาคือวันประสูติ ตรัสรู้ปรินิพพาน<br>
+                2. <strong>หลักการคิดด้านหน้าที่พลเมือง:</strong> ทุกสิทธิมาพร้อมกับหน้าที่ หากเราอยากได้ความปลอดภัยบนท้องถนน เราต้องเริ่มจากการปฏิบัติตามกฎจราจรและข้ามถนนตรงทางม้าลายเสมอ<br>
+                3. <strong>หลักการเศรษฐกิจพอเพียง:</strong> แยกแยะความต้องการ (Want) กับความจำเป็น (Need) โดยตั้งคำถามว่า "ถ้าไม่มีสิ่งนี้เราจะมีชีวิตอยู่ได้หรือไม่" หากอยู่ได้แสดงว่าเป็นความต้องการ</p>
+            </div>
+        </div>
+
+        <!-- Main Workspace (Bottom Frame) -->
+        <div class="main-workspace" id="workspace-section">
+            <!-- Left Frame: Quiz (70%) -->
+            <div class="quiz-container" id="quiz-frame">
+                <div class="quiz-header">
+                    <div>
+                        <span id="current-q-num" style="font-weight: bold; color: var(--primary-color);">ข้อที่ 1 จาก 25</span>
+                    </div>
+                    <div>
+                        <button class="btn btn-secondary" id="lang-btn" onclick="toggleLanguage()">🌐 ภาษาไทย (TH)</button>
+                        <button class="btn" onclick="resetQuiz()" style="background-color: var(--warning-color);">🔄 เริ่มใหม่ (Reset)</button>
+                    </div>
+                </div>
+
+                <div class="nav-buttons" id="nav-buttons-container"></div>
+
+                <div id="active-question-container">
+                    <div class="question-box">
+                        <div class="question-title" id="question-text"></div>
+                        <button class="clue-toggle" onclick="toggleClue()">🔍 เปิด/ปิด คำใบ้ (Clue)</button>
+                        <div class="clue-content" id="clue-text"></div>
+                        <div class="options-list" id="options-container"></div>
+                        <div class="explanation-box" id="explanation-container">
+                            <strong>เฉลยและเทคนิคคิดลัด:</strong> <span id="explanation-text"></span>
+                        </div>
+                    </div>
+
+                    <div class="action-bar">
+                        <button class="btn btn-secondary" id="prev-btn" onclick="prevQuestion()">⬅️ ย้อนกลับ</button>
+                        <button class="btn" id="next-btn" onclick="nextQuestion()">ถัดไป ➡️</button>
+                    </div>
+                </div>
+
+                <!-- Results Screen inside Quiz Container -->
+                <div class="results-container" id="results-screen">
+                    <h2>🎉 ทำแบบทดสอบครบทุกข้อแล้ว!</h2>
+                    <div class="score-display" id="final-score-display">0 / 25</div>
+                    <p id="score-percentage" style="font-size: 1.2rem; margin-bottom: 20px;"></p>
+                    
+                    <div class="analysis-section">
+                        <h3>📊 ผลการวิเคราะห์สมรรถนะรายบุคคล</h3>
+                        <p id="strength-analysis"><strong>จุดเด่น (Strengths):</strong> กำลังประมวลผล...</p>
+                        <p id="improvement-analysis" style="margin-top: 10px;"><strong>จุดที่ต้องพัฒนา (Areas for Improvement):</strong> กำลังประมวลผล...</p>
+                    </div>
+
+                    <button class="btn" onclick="resetQuiz()" style="margin-top: 25px;">ทำแบบทดสอบอีกครั้ง</button>
+                </div>
+            </div>
+
+            <!-- Right Frame: Whiteboard (30%) -->
+            <div class="whiteboard-container">
+                <div class="whiteboard-header">
+                    <span>📝 กระดานทดเลข/วาดภาพ</span>
+                    <span style="font-size: 0.8rem; font-weight: normal; color: #718096;">Whiteboard</span>
+                </div>
+                <div class="wb-tools">
+                    <button class="wb-tool-btn active" id="pen-btn" onclick="setWbTool('pen')">✍️ ปากกา</button>
+                    <button class="wb-tool-btn" id="eraser-btn" onclick="setWbTool('eraser')">🧹 ยางลบ</button>
+                    <button class="wb-tool-btn" onclick="clearWhiteboard()" style="background-color: var(--error-color); color: white;">🗑️ ล้างกระดาน</button>
+                </div>
+                <canvas id="whiteboard"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        เขียนโดย พระจอมเกล้าติวเตอร์
+    </footer>
+
+    <script>
+        // Raw Data & Quiz State Management with Anti-Guessing Engine (Fisher-Yates Shuffle)
+        const rawQuestions = [
+            {
+                id: 1,
+                category: "ศาสนา ศีลธรรม",
+                question: {
+                    th: "หลักคำสอนสูงสุดหรือโอวาท 3 ในพระพุทธศาสนา ข้อใดมีความหมายตรงกับการทำความดีตามหลักสากล?",
+                    en: "Which core principle of Ovadarat 3 directly aligns with doing good deeds?"
+                },
+                clue: {
+                    th: "คิดถึงหลักการละชั่ว ทำดี และทำจิตใจให้ผ่องใส",
+                    en: "Think about avoiding evil, doing good, and purifying the mind."
+                },
+                options: {
+                    th: [
+                        "การละเว้นความชั่ว การทำความดี และการทำจิตใจให้บริสุทธิ์",
+                        "การศึกษาเล่าเรียน การประกอบอาชีพ และการออมทรัพย์",
+                        "การเคารพกฎหมาย การเสียภาษี และการเลือกตั้ง",
+                        "การดูแลสุขภาพ การออกกำลังกาย และการพักผ่อน"
+                    ],
+                    en: [
+                        "Avoiding evil, doing good, and purifying the mind",
+                        "Studying, working, and saving money",
+                        "Respecting law, paying taxes, and voting",
+                        "Exercising, dieting, and resting"
+                    ]
+                },
+                correctIndex: 0,
+                explanation: {
+                    th: "โอวาท 3 ประกอบด้วย 1. การไม่ทำบาปทั้งปวง 2. การทำกุศลให้ถึงพร้อม 3. การทำจิตใจของตนให้ผ่องใส ซึ่งเป็นหัวใจสำคัญของชาวพุทธ",
+                    en: "Ovadarat 3 consists of avoiding all sins, doing good deeds, and purifying the mind."
+                }
+            },
+            {
+                id: 2,
+                category: "ศาสนา ศีลธรรม",
+                question: {
+                    th: "วันสำคัญทางพระพุทธศาสนาข้อใดเกี่ยวข้องกับการแสดงโอวาทปาติโมกข์แก่พระสงฆ์ 1,250 รูปโดยมิได้นัดหมาย?",
+                    en: "Which Buddhist holy day is associated with the delivery of Ovadapatimokkha to 1,250 monks?"
+                },
+                clue: {
+                    th: "เป็นวันเพ็ญเดือน 3 มีการเวียนเทียนและทำบุญใหญ่",
+                    en: "It is the full moon day of the 3rd lunar month with candlelit processions."
+                },
+                options: {
+                    th: [
+                        "วันมาฆบูชา",
+                        "วันวิสาขบูชา",
+                        "วันอัฏฐมีบูชา",
+                        "วันอาสาฬหบูชา"
+                    ],
+                    en: [
+                        "Makha Bucha Day",
+                        "Visakha Bucha Day",
+                        "Asalha Bucha Day",
+                        "Atthami Bucha Day"
+                    ]
+                },
+                correctIndex: 0,
+                explanation: {
+                    th: "เทคนิคคิดลัด: มาฆบูชา = วันเพ็ญเดือน 3 มีพระสงฆ์ชุมนุมพร้อมเพรียงโดยมิได้นัดหมาย 1,250 รูป",
+                    en: "Makha Bucha commemorates the spontaneous gathering of 1,250 enlightened monks."
+                }
+            },
+            {
+                id: 3,
+                category: "ศาสนา ศีลธรรม",
+                question: {
+                    th: "บุคคลในข้อใดปฏิบัติตนเป็นศาสนิกชนที่ดีในการร่วมศาสนพิธีที่วัด?",
+                    en: "Who demonstrates proper etiquette as a good Buddhist follower at a temple?"
+                },
+                clue: {
+                    th: "การแต่งกายสุภาพ สำรวมกิริยาวาจา และมีความเคารพ",
+                    en: "Dressing politely, behaving quietly, and showing respect."
+                },
+                options: {
+                    th: [
+                        "แต่งกายด้วยชุดสุภาพเรียบร้อย สำรวมกิริยา และร่วมฟังธรรมอย่างสงบ",
+                        "ส่งเสียงดังพูดคุยโทรศัพท์มือถือระหว่างพระสงฆ์สวดมนต์",
+                        "สวมใส่รองเท้าผ้าใบเดินเหยียบย่ำบนอาสนะและแท่นบูชา",
+                        "วิ่งเล่นไล่จับกันภายในศาลาการเปรียญเพื่อความสนุกสนาน"
+                    ],
+                    en: [
+                        "Dressing politely, behaving quietly, and listening to sermons peacefully",
+                        "Talking loudly on mobile phones while monks are chanting",
+                        "Wearing shoes on sacred seats and platforms",
+                        "Running and playing around the pavilion for fun"
+                    ]
+                },
+                correctIndex: 0,
+                explanation: {
+                    th: "การแต่งกายสุภาพและสำรวมวาจาคือพื้นฐานของมารยาทชาวพุทธที่ดี",
+                    en: "Proper attire and respectful behavior form the foundation of Buddhist etiquette."
+                }
+            },
+            {
+                id: 4,
+                category: "หน้าที่พลเมือง",
+                question: {
+                    th: "ข้อใดคือบทบาทและหน้าที่สำคัญของนักเรียนในฐานะสมาชิกที่ดีของโรงเรียน?",
+                    en: "What is the key role and duty of a student as a good member of the school?"
+                },
+                clue: {
+                    th: "หน้าที่หลักของเด็กนักเรียนคือการศึกษาเล่าเรียนและรักษากฎระเบียบ",
+                    en: "The primary duty of a student is studying and following rules."
+                },
+                options: {
+                    th: [
+                        "ตั้งใจศึกษาเล่าเรียน เชื่อฟังคำสั่งสอนของครู และรักษาความสะอาดห้องเรียน",
+                        "เดินทางมาสายเป็นประจำเพื่อให้เพื่อนๆ ช่วยจดบันทึกการบ้านให้",
+                        "หลบหนีคาบเรียนวิชาที่ตนเองไม่ชื่นชอบเพื่อไปเล่นกีฬา",
+                        "ขีดเขียนข้อความลงบนโต๊ะเรียนเพื่อแสดงความคิดสร้างสรรค์ส่วนตัว"
+                    ],
+                    en: [
+                        "Studying diligently, obeying teachers, and keeping the classroom clean",
+                        "Arriving late regularly to let friends take notes",
+                        "Skipping disliked classes to play sports",
+                        "Drawing and writing on desks to express personal creativity"
+                    ]
+                },
+                correctIndex: 0,
+                explanation: {
+                    th: "นักเรียนมีหน้าที่หลักในการเรียนหนังสือและดูแลรักษาความเป็นระเบียบเรียบร้อยในโรงเรียน",
+                    en: "Students' main duty is to study and maintain order in school."
+                }
+            },
+            {
+                id: 5,
+                category: "หน้าที่พลเมือง",
+                question: {
+                    th: "หากนักเรียนต้องการข้ามถนนอย่างปลอดภัยควรปฏิบัติตามข้อใดมากที่สุด?",
+                    en: "What is the safest way for a student to cross the street?"
+                },
+                clue: {
+                    th: "มองซ้ายมองขวา และใช้ทางข้ามที่จัดไว้",
+                    en: "Look left and right, and use designated crossings."
+                },
+                options: {
+                    th: [
+                        "ใช้ทางม้าลายหรือสะพานลอย พร้อมทั้งมองซ้ายมองขวาก่อนข้ามเสมอ",
+                        "วิ่งตัดหน้ารถยนต์ที่กำลังเคลื่อนที่อย่างรวดเร็วเพื่อให้ทันเวลา",
+                        "ก้มหน้าเล่นโทรศัพท์มือถือขณะเดินข้ามถนนใจกลางเมือง",
+                        "เดินหลับตาข้ามถนนโดยอาศัยความรู้สึกเชื่อมั่นส่วนตัว"
+                    ],
+                    en: [
+                        "Use zebra crossings or pedestrian bridges while looking left and right",
+                        "Run quickly in front of moving cars to save time",
+                        "Look down at a mobile phone while crossing downtown streets",
+                        "Walk across blindfolded relying on personal intuition"
+                    ]
+                },
+                correctIndex: 0,
+                explanation: {
+                    th: "กฎจราจรเบื้องต้นระบุให้ใช้ทางม้าลายหรือสะพานลอยเพื่อป้องกันอุบัติเหตุ",
+                    en: "Basic traffic rules require using zebra crossings or bridges to prevent accidents."
+                }
+            },
+            {
+                id: 6,
+                category: "หน้าที่พลเมือง",
+                question: {
+                    th: "การยอมรับความแตกต่างและความสามารถของผู้อื่นในห้องเรียนส่งผลดีอย่างไร?",
+                    en: "What are the benefits of accepting differences and abilities of others in class?"
+                },
+                clue: {
+                    th: "ทำให้ทุกคนอยู่ร่วมกันได้อย่างสงบสุขและสามัคคี",
+                    en: "It helps everyone live together peacefully and harmoniously."
+                },
+                options: {
+                    th: [
+                        "ทำให้ทุกคนสามารถทำกิจกรรมร่วมกันได้อย่างมีความสุขและเกิดความสามัคคี",
+                        "ทำให้เกิดการแบ่งแยกกลุ่มเพื่อนตามฐานะทางเศรษฐกิจ",
+                        "ทำให้ไม่มีใครกล้าแสดงความคิดเห็นที่แตกต่างกันอีกเลย",
+                        "ทำให้เกิดการแข่งขันกันเอาชนะคะคานโดยไม่คำนึงถึงน้ำใจ"
+                    ],
+                    en: [
+                        "Enables everyone to participate happily and build harmony",
+                        "Causes social division based on economic status",
+                        "Prevents anyone from expressing different opinions",
+                        "Fosters aggressive competition without sportsmanship"
+                    ]
+                },
+                correctIndex: 0,
+                explanation: {
+                    th: "สังคมในห้องเรียนประกอบด้วยบุคคลหลากหลาย การยอมรับความแตกต่างสร้างบรรยากาศแห่งความสุข",
+                    en: "Classrooms consist of diverse individuals; acceptance builds a joyful atmosphere."
+                }
+            },
+            {
+                id: 7,
+                category: "เศรษฐศาสตร์",
+                question: {
+                    th: "ข้อใดจัดเป็นสินค้าประเภท 'ปัจจัย 4' ที่มีความจำเป็นต่อการดำรงชีวิตประจำวันมากที่สุด?",
+                    en: "Which item is classified as a necessity (Factor 4) for daily survival?"
+                },
+                clue: {
+                    th: "ปัจจัย 4 ได้แก่ อาหาร เครื่องนุ่งห่ม ที่อยู่อาศัย และยารักษาโรค",
+                    en: "The four necessities are food, clothing, shelter, and medicine."
+                },
+                options: {
+                    th: [
+                        "ข้าวสุกและน้ำดื่มสะอาด",
+                        "โทรศัพท์สมาร์ตโฟนรุ่นใหม่ล่าสุด",
+                        "เครื่องเล่นเกมคอนโซลพกพา",
+                        "รองเท้าผ้าใบแบรนด์เนมราคาแพง"
+                    ],
+                    en: [
+                        "Cooked rice and clean drinking water",
+                        "The latest smartphone model",
+                        "A portable video game console",
+                        "Expensive brand-name sneakers"
+                    ]
+                },
+                correctIndex: 0,
+                explanation: {
+                    th: "อาหารและน้ำเป็นปัจจัย 4 หมวดอาหาร ซึ่งขาดไม่ได้ในการดำรงชีวิต",
+                    en: "Food and water belong to the necessities required for survival."
+                }
+            },
+            {
+                id: 8,
+                category: "เศรษฐศาสตร์",
+                question: {
+                    th: "เด็กชาย A ได้รับเงินมาโรงเรียนวันละ 50 บาท ซื้อขนม 20 บาท และเก็บหยอดกระปุกออมสิน 30 บาท พฤติกรรมนี้สะท้อนถึงสิ่งใด?",
+                    en: "Boy A gets 50 baht daily, spends 20 baht, and saves 30 baht. What does this reflect?"
+                },
+                clue: {
+                    th: "มีการบริหารจัดการเงินและฝึกนิสัยการออม",
+                    en: "Good money management and saving habits."
+                },
+                options: {
+                    th: [
+                        "การรู้จักวางแผนการใช้จ่ายและการฝึกนิสัยรักการออม",
+                        "การใช้จ่ายเงินเกินตัวจนทำให้เกิดหนี้สินล้นพ้นตัว",
+                        "การบริโภคสินค้าฟุ่มเฟือยโดยไม่คำนึงถึงความจำเป็น",
+                        "การปฏิเสธการใช้จ่ายเงินในชีวิตประจำวันอย่างสิ้นเชิง"
+                    ],
+                    en: [
+                        "Knowing how to plan expenses and cultivating saving habits",
+                        "Overspending leading to severe debt",
+                        "Consuming luxury goods without necessity",
+                        "Completely refusing to spend money in daily life"
+                    ]
+                },
+                correctIndex: 0,
+                explanation: {
+                    th: "การแบ่งเงินส่วนหนึ่งมาออมทุกวันแสดงถึงวินัยทางการเงินที่ดีเยี่ยมตามหลักเศรษฐกิจพอเพียง",
+                    en: "Saving money daily demonstrates great financial discipline under sufficiency economy."
+                }
+            },
+            {
+                id: 9,
+                category: "เศรษฐศาสตร์",
+                question: {
+                    th: "ข้อใดคือประโยชน์ของการทำบันทึกรายรับ-รายจ่ายประจำวันของตนเอง?",
+                    en: "What is the benefit of keeping a daily income-expense record?"
+                },
+                clue: {
+                    th: "ช่วยให้รู้ว่าเรามีเงินเหลือเก็บเท่าไหร่และใช้จ่ายกับอะไรบ้าง",
+                    en: "Helps track remaining savings and spending patterns."
+                },
+                options: {
+                    th: [
+                        "ทำให้ทราบพฤติกรรมการใช้เงินของตนเองและช่วยควบคุมการซื้อของที่ไม่จำเป็น",
+                        "ทำให้มีชื่อเสียงโด่งดังในฐานะนักบัญชีรุ่นเยาว์ประจำโรงเรียน",
+                        "ทำให้ได้รับเงินสนับสนุนพิเศษจากรัฐบาลทุกสิ้นเดือน",
+                        "ทำให้ราคาสินค้าในท้องตลาดปรับตัวลดลงทันที"
+                    ],
+                    en: [
+                        "Helps understand personal spending habits and control unnecessary purchases",
+                        "Makes one famous as the school's young accountant",
+                        "Qualifies one for special government financial support",
+                        "Causes market prices of goods to drop immediately"
+                    ]
+                },
+                correctIndex: 0,
+                explanation: {
+                    th: "บันทึกรายรับ-รายจ่ายช่วยให้เราเห็นภาพรวมการใช้เงินและปรับปรุงนิสัยการซื้อของได้",
+                    en: "Expense records give an overview of spending and help improve shopping habits."
+                }
+            },
+            {
+                id: 10,
+                category: "ประวัติศาสตร์",
+                question: {
+                    th: "อุปกรณ์ในข้อใดใช้สำหรับตรวจสอบวัน เดือน ปี และช่วยบอกเหตุการณ์ตามปฏิทินสุริยคติหรือจันทรคติ?",
+                    en: "Which tool is used to check days, months, years, and track calendar events?"
+                },
+                clue: {
+                    th: "แขวนไว้ที่ผนังหรือตั้งไว้บนโต๊ะเพื่อดูวันสำคัญต่างๆ",
+                    en: "Hung on walls or placed on desks to check important dates."
+                },
+                options: {
+                    th: [
+                        "ปฏิทินตั้งโต๊ะหรือปฏิทินแขวนผนัง",
+                        "นาฬิกาดิจิทัลบอกเวลาเป็นวินาที",
+                        "เข็มทิศแม่เหล็กบอกทิศเหนือ-ใต้",
+                        "เครื่องคิดเลขคำนวณตัวเลขพื้นฐาน"
+                    ],
+                    en: [
+                        "Desk or wall calendar",
+                        "Digital clock showing seconds",
+                        "Magnetic compass showing directions",
+                        "Basic electronic calculator"
+                    ]
+                },
+                correctIndex: 0,
+                explanation: {
+                    th: "ปฏิทินเป็นเครื่องมือบอกวัน เดือน ปี และวันสำคัญทางศาสนาหรือราชการ",
+                    en: "Calendars are tools to track days, months, years, and holidays."
+                }
+            },
+            {
+                id: 11,
+                category: "ประวัติศาสตร์",
+                question: {
+                    th: "คำว่า 'อดีต ปัจจุบัน และอนาคต' มีความสัมพันธ์กับการศึกษาประวัติศาสตร์ในเรื่องใดมากที่สุด?",
+                    en: "How do 'past, present, and future' relate most to the study of history?"
+                },
+                clue: {
+                    th: "การเรียงลำดับเหตุการณ์ตามช่วงเวลาที่เกิดขึ้นก่อนและหลัง",
+                    en: "Chronological ordering of events from before and after."
+                },
+                options: {
+                    th: [
+                        "การเรียงลำดับเหตุการณ์ตามกาลเวลาเพื่อเข้าใจความเป็นมาและการเปลี่ยนแปลง",
+                        "การทำนายโชคชะตาอนาคตล่วงหน้าของมนุษย์ทุกคน",
+                        "การเดินทางย้อนเวลากลับไปแก้ไขข้อผิดพลาดในวัยเด็ก",
+                        "การวัดอุณหภูมิความร้อนหนาวของสภาพอากาศในแต่ละฤดูกาล"
+                    ],
+                    en: [
+                        "Chronological ordering of events to understand origins and changes",
+                        "Predicting the future destiny of all humans",
+                        "Traveling back in time to fix childhood mistakes",
+                        "Measuring temperature and climate changes in seasons"
+                    ]
+                },
+                correctIndex: 0,
+                explanation: {
+                    th: "ประวัติศาสตร์ศึกษาเรื่องราวจากอดีตส่งผลถึงปัจจุบันและเป็นรากฐานสู่อนาคต",
+                    en: "History studies past events affecting the present and laying foundations for the future."
+                }
+            },
+            {
+                id: 12,
+                category: "ประวัติศาสตร์",
+                question: {
+                    th: "หากนักเรียนต้องการสืบค้นประวัติความเป็นมาของครอบครัวตนเอง ควรเริ่มต้นจากวิธีใดเหมาะสมที่สุด?",
+                    en: "What is the best way for a student to research their family history?"
+                },
+                clue: {
+                    th: "สอบถามจากผู้สูงอายุหรือคุณพ่อคุณแม่ในบ้าน",
+                    en: "Asking elderly relatives or parents at home."
+                },
+                options: {
+                    th: [
+                        "สอบถามข้อมูลจากคุณพ่อคุณแม่ ปู่ย่า หรือตายายผู้สูงอายุในครอบครัว",
+                        "ค้นหาข้อมูลดาราภาพยนตร์ชื่อดังในนิตยสารบันเทิงยอดฮิต",
+                        "อ่านหนังสือพิมพ์รายวันหน้าข่าวอาชญากรรมท้องถิ่น",
+                        "เปิดดูแผนที่ดาวเทียมสำรวจบ้านเรือนในทวีปยุโรป"
+                    ],
+                    en: [
+                        "Asking parents, grandparents, or elderly family members",
+                        "Searching for famous movie stars in entertainment magazines",
+                        "Reading daily local crime news in newspapers",
+                        "Browsing satellite maps of houses in Europe"
+                    ]
+                },
+                correctIndex: 0,
+                explanation: {
+                    th: "การสอบถามผู้รู้ในครอบครัวเป็นวิธีสืบค้นประวัติศาสตร์ท้องถิ่นและครอบครัวที่ตรงและน่าเชื่อถือที่สุด",
+                    en: "Asking knowledgeable family members is the most direct and reliable research method."
+                }
+            },
+            {
+                id: 13,
+                category: "ภูมิศาสตร์",
+                question: {
+                    th: "ข้อใดจัดเป็นสิ่งแวดล้อมทางธรรมชาติที่เกิดขึ้นเองโดยไม่มีมนุษย์สร้างขึ้น?",
+                    en: "Which is classified as a natural environment created without human intervention?"
+                },
+                clue: {
+                    th: "ภูเขา แม่น้ำ ป่าไม้ และน้ำตก",
+                    en: "Mountains, rivers, forests, and waterfalls."
+                },
+                options: {
+                    th: [
+                        "ป่าไม้ธรรมชาติและแม่น้ำลำธาร",
+                        "ถนนคอนกรีตเสริมเหล็กสายหลัก",
+                        "อาคารเรียนโรงเรียนประถมศึกษา",
+                        "สะพานข้ามแม่น้ำขนาดใหญ่"
+                    ],
+                    en: [
+                        "Natural forests and streams",
+                        "Main reinforced concrete roads",
+                        "Elementary school buildings",
+                        "Large river crossing bridges"
+                    ]
+                },
+                correctIndex: 0,
+                explanation: {
+                    th: "ป่าไม้และแม่น้ำเป็นทรัพยากรธรรมชาติที่เกิดขึ้นเองตามธรรมชาติ ต่างจากตึกและถนนที่มนุษย์สร้าง",
+                    en: "Forests and rivers are natural resources unlike human-made buildings and roads."
+                }
+            },
+            {
+                id: 14,
+                category: "ภูมิศาสตร์",
+                question: {
+                    th: "เครื่องมือทางภูมิศาสตร์ในข้อใดช่วยให้เราสามารถมองเห็นภาพรวมของพื้นผิวโลกลักษณะทรงกลมจำลองได้ดีที่สุด?",
+                    en: "Which geographic tool best shows the overall spherical surface of the Earth?"
+                },
+                clue: {
+                    th: "มีลักษณะเป็นทรงกลมหมุนได้รอบแกน",
+                    en: "It is spherical and rotates on an axis."
+                },
+                options: {
+                    th: [
+                        "ลูกโลกจำลอง",
+                        "แผนผังห้องเรียน",
+                        "แผนที่ท่องเที่ยวจังหวัด",
+                        "เข็มทิศบอกทิศทาง"
+                    ],
+                    en: [
+                        "Globe",
+                        "Classroom floor plan",
+                        "Provincial tourist map",
+                        "Directional compass"
+                    ]
+                },
+                correctIndex: 0,
+                explanation: {
+                    th: "ลูกโลกจำลอง (Globe) จำลองลักษณะทรงกลมของโลกเราทำให้เห็นสัดส่วนพื้นดินและน้ำชัดเจน",
+                    en: "A globe simulates the spherical shape of the Earth, showing land and water proportions."
+                }
+            },
+            {
+                id: 15,
+                category: "ภูมิศาสตร์",
+                question: {
+                    th: "ปรากฏการณ์ธรรมชาติในข้อใดเกิดจากการหมุนรอบตัวเองของโลกทำให้เกิดกลางวันและกลางคืน?",
+                    en: "Which natural phenomenon is caused by the Earth's rotation creating day and night?"
+                },
+                clue: {
+                    th: "ด้านที่หันรับแสงอาทิตย์จะเป็นกลางวัน ด้านตรงข้ามเป็นกลางคืน",
+                    en: "The side facing the sun is day; the opposite side is night."
+                },
+                options: {
+                    th: [
+                        "การหมุนรอบตัวเองของโลกทำให้มีเวลากลางวันและกลางคืนสลับกัน",
+                        "ดวงจันทร์โคจรรอบโลกครบหนึ่งรอบในแต่ละเดือน",
+                        "ลมพัดผ่านภูเขาสูงทำให้เกิดฝนตกหนักในฤดูร้อน",
+                        "แผ่นดินไหวใต้ท้องทะเลทำให้เกิดคลื่นยักษ์สนามิ"
+                    ],
+                    en: [
+                        "The Earth's rotation causes alternating day and night",
+                        "The moon orbits the Earth once a month",
+                        "Wind blowing over high mountains causes heavy rain",
+                        "Undersea earthquakes cause huge tsunami waves"
+                    ]
+                },
+                correctIndex: 0,
+                explanation: {
+                    th: "โลกหมุนรอบตัวเอง 1 รอบ ใช้เวลา 24 ชั่วโมง ด้านที่รับแสงอาทิตย์คือกลางวัน ด้านตรงข้ามคือกลางคืน",
+                    en: "Earth rotates once in 24 hours; the side facing the sun is day, the other is night."
+                }
+            },
+            {
+                id: 16,
+                category: "ศาสนา ศีลธรรม",
+                question: {
+                    th: "การฝึกสมาธิเบื้องต้นก่อนนอนมีประโยชน์อย่างไรต่อเด็กนักเรียน ป.2?",
+                    en: "What is the benefit of basic pre-bed meditation for 2nd-grade students?"
+                    
+                },
+                clue: {
+                    th: "ช่วยให้จิตใจสงบ มีสมาธิในการเรียน และนอนหลับสบาย",
+                    en: "Helps calm the mind, improves focus, and promotes good sleep."
+                },
+                options: {
+                    th: [
+                        "ช่วยให้จิตใจสงบ มีสมาธิ และนอนหลับพักผ่อนได้อย่างสนิท",
+                        "ทำให้ร่างกายเจริญเติบโตสูงขึ้นวันละ 5 เซนติเมตร",
+                        "ช่วยรักษาอาการเจ็บป่วยจากโรคร้ายแรงทุกชนิดได้ทันที",
+                        "ทำให้มีความสามารถพิเศษในการมองเห็นสิ่งลี้ลับ"
+                    ],
+                    en: [
+                        "Helps calm the mind, improves focus, and ensures deep sleep",
+                        "Makes the body grow 5 centimeters taller daily",
+                        "Immediately cures all severe illnesses",
+                        "Grants special supernatural vision abilities"
+                    ]
+                },
+                correctIndex: 0,
+                explanation: {
+                    th: "การทำสมาธิช่วยผ่อนคลายสมองและส่งเสริมคุณภาพการนอนหลับและการเรียนรู้",
+                    en: "Meditation relaxes the brain and enhances sleep quality and learning."
+                }
+            },
+            {
+                id: 17,
+                category: "หน้าที่พลเมือง",
+                question: {
+                    th: "ข้อตกลงและกฎระเบียบภายในห้องเรียนมีความสำคัญอย่างไรต่อการอยู่ร่วมกัน?",
+                    en: "Why are classroom rules and agreements important for living together?"
+                },
+                clue: {
+                    th: "ช่วยความเป็นระเบียบเรียบร้อย ลดความขัดแย้ง",
+                    en: "Maintains order and reduces conflicts."
+                },
+                options: {
+                    th: [
+                        "ช่วยให้สมาชิกทุกคนอยู่ร่วมกันอย่างเป็นระเบียบเรียบร้อยและมีความสุข",
+                        "ทำให้ห้องเรียนมีความมืดและเงียบสงบตลอดเวลาเรียน",
+                        "ทำให้คุณครูไม่ต้องเหนื่อยในการอบรมสั่งสอนนักเรียนอีกต่อไป",
+                        "ทำให้โรงเรียนได้รับรางวัลชนะเลิศสถานศึกษายอดเยี่ยม"
+                    ],
+                    en: [
+                        "Helps all members live together orderly and happily",
+                        "Keeps the classroom dark and quiet during lessons",
+                        "Relieves teachers from lecturing students forever",
+                        "Wins the school an outstanding institution award"
+                    ]
+                },
+                correctIndex: 0,
+                explanation: {
+                    th: "กฎระเบียบช่วยสร้างความเป็นระเบียบและลดปัญหาความขัดแย้งในสังคมส่วนรวม",
+                    en: "Rules maintain order and reduce conflicts in public communities."
+                }
+            },
+            {
+                id: 18,
+                category: "เศรษฐศาสตร์",
+                question: {
+                    th: "ข้อใดเป็นการใช้ทรัพยากรธรรมชาติในโรงเรียนตามแนวทางเศรษฐกิจพอเพียงที่ถูกต้องที่สุด?",
+                    en: "What is the most correct way to use school natural resources sufficiency-wise?"
+                },
+                clue: {
+                    th: "ปิดน้ำและปิดไฟทุกครั้งเมื่อเลิกใช้งาน ประหยัดและคุ้มค่า",
+                    en: "Turn off water and lights when not in use; save and value them."
+                },
+                options: {
+                    th: [
+                        "ปิดก๊อกน้ำและปิดไฟทุกครั้งหลังเลิกใช้งานเพื่อไม่ให้สิ้นเปลืองพลังงาน",
+                        "เปิดน้ำทิ้งไว้ที่อ่างล้างหน้าตลอดทั้งวันเพื่อความเพลิดเพลิน",
+                        "เปิดพัดลมและหลอดไฟทิ้งไว้ในห้องเรียนที่ไม่มีคนอยู่",
+                        "ฉีกกระดาษสมุดทิ้งเล่นอย่างไร้ค่าในห้องเรียนจำนวนมาก"
+                    ],
+                    en: [
+                        "Turn off taps and lights after use to prevent energy waste",
+                        "Leave faucets running all day long for fun",
+                        "Leave fans and lights on in empty classrooms",
+                        "Tear up and waste notebook paper in large quantities"
+                    ]
+                },
+                correctIndex: 0,
+                explanation: {
+                    th: "การปิดน้ำปิดไฟเมื่อไม่ใช้เป็นการประหยัดทรัพยากรและพลังงานตามหลักพอเพียง",
+                    en: "Turning off unused utilities conserves resources and energy."
+                }
+            },
+            {
+                id: 19,
+                category: "ประวัติศาสตร์",
+                question: {
+                    th: "เหตุการณ์ใดจัดเป็นเหตุการณ์ที่เกิดขึ้นใน 'อดีต' สำหรับเด็กนักเรียนชั้น ป.2 ในปัจจุบัน?",
+                    en: "Which event is considered 'past' for current 2nd-grade students?"
+                },
+                clue: {
+                    th: "เหตุการณ์ที่ผ่านมาแล้ว เช่น ตอนเรียนชั้นอนุบาล",
+                    en: "Events that already happened, like kindergarten years."
+                },
+                options: {
+                    th: [
+                        "ช่วงเวลาที่นักเรียนกำลังศึกษาอยู่ในระดับชั้นอนุบาลปีที่ 3",
+                        "การสอบปลายภาคเรียนที่ 2 ของชั้นประถมศึกษาปีที่ 2 สัปดาห์หน้า",
+                        "การเดินทางไปทัศนศึกษาของโรงเรียนในวันพรุ่งนี้เช้า",
+                        "การรับประทานอาหารกลางวันในคาบเรียนถัดไปของวันนี้"
+                    ],
+                    en: [
+                        "The time when students were in kindergarten 3",
+                        "Next week's 2nd-grade final exams",
+                        "Tomorrow morning's school field trip",
+                        "Today's upcoming lunch break"
+                    ]
+                },
+                correctIndex: 0,
+                explanation: {
+                    th: "ช่วงชั้นอนุบาลผ่านพ้นมาแล้วจึงจัดเป็นอดีตเทียบกับปัจจุบันที่อยู่ชั้น ป.2",
+                    en: "Kindergarten is in the past compared to the present 2nd-grade status."
+                }
+            },
+            {
+                id: 20,
+                category: "ภูมิศาสตร์",
+                question: {
+                    th: "ทิศหลักทั้ง 4 ทิศในเบื้องต้น หากเรายืนหันหน้าไปทางทิศตะวันออก ด้านหลังของเราคือทิศใด?",
+                    en: "Among the 4 cardinal directions, if you face East, what is behind you?"
+                },
+                clue: {
+                    th: "ทิศตะวันออกอยู่ตรงข้ามกับทิศตะวันตกเสมอ",
+                    en: "East is always opposite to West."
+                },
+                options: {
+                    th: [
+                        "ทิศตะวันตก",
+                        "ทิศเหนือ",
+                        "ทิศใต้",
+                        "ทิศตะวันออกเฉียงเหนือ"
+                    ],
+                    en: [
+                        "West",
+                        "North",
+                        "South",
+                        "Northeast"
+                    ]
+                },
+                correctIndex: 0,
+                explanation: {
+                    th: "เทคนิคคิดลิศ: พระอาทิตย์ขึ้นทางทิศตะวันออก ด้านหลังที่ตรงข้ามกันคือทิศตะวันตก",
+                    en: "The sun rises in the east; directly behind you is the west."
+                }
+            },
+            {
+                id: 21,
+                category: "ศาสนา ศีลธรรม",
+                question: {
+                    th: "การปฏิบัติตนต่อพ่อแม่และผู้มีพระคุณในครอบครัวด้วยความกตัญญูกตเวทีแสดงออกอย่างไรที่เหมาะสม?",
+                    en: "How should one appropriately show gratitude and filial piety to parents?"
+                },
+                clue: {
+                    th: "เชื่อฟังคำสั่งสอนและช่วยเหลืองานบ้านเล็กๆ น้อยๆ",
+                    en: "Obeying instructions and helping with light chores."
+                },
+                options: {
+                    th: [
+                        "ช่วยเหลืองานบ้านตามกำลังความสามารถและเชื่อฟังคำสั่งสอนด้วยความเคารพ",
+                        "ปฏิเสธการทำความสะอาดบ้านและเรียกร้องของเล่นราคาแพง",
+                        "หลีกเลี่ยงการพูดคุยกับผู้สูงอายุในบ้านเพื่อไม่ให้เกิดความรำคาญ",
+                        "ตะโกนโต้เถียงเมื่อพ่อแม่ตักเตือนด้วยความหวังดี"
+                    ],
+                    en: [
+                        "Helping with chores and obeying teachings respectfully",
+                        "Refusing chores and demanding expensive toys",
+                        "Avoiding talking to elderly family members",
+                        "Youting and arguing when parents advise"
+                    ]
+                },
+                correctIndex: 0,
+                explanation: {
+                    th: "ความกตัญญูกตเวทีต่อพ่อแม่แสดงออกได้ผ่านการเชื่อฟังและการช่วยเหลืองานบ้าน",
+                    en: "Gratitude to parents is shown through obedience and helping with housework."
+                }
+            },
+            {
+                id: 22,
+                category: "หน้าที่พลเมือง",
+                question: {
+                    th: "การบำเพ็ญประโยชน์ต่อส่วนรวมในชุมชน เช่น การช่วยกันเก็บขยะบริเวณสวนสาธารณะ มีข้อดีอย่างไร?",
+                    en: "What are the benefits of community service like cleaning public parks?"
+                },
+                clue: {
+                    th: "ทำให้ชุมชนสะอาดน่าอยู่และสร้างความร่วมมือ",
+                    en: "Makes the community clean and builds cooperation."
+                },
+                options: {
+                    th: [
+                        "ทำให้ชุมชนมีความสะอาด ร่มรื่น และสร้างความสามัคคีระหว่างสมาชิกในชุมชน",
+                        "ทำให้ขยะล้นเมืองและเกิดมลพิษทางอากาศเพิ่มขึ้น",
+                        "ทำให้ประชาชนในชุมชนเกิดความหวาดระแวงซึ่งกันและกัน",
+                        "ทำให้สถานที่สาธารณะถูกปิดปรับปรุงถาวร"
+                    ],
+                    en: [
+                        "Makes the community clean, pleasant, and builds member unity",
+                        "Increases urban waste and air pollution",
+                        "Creates suspicion among community members",
+                        "Causes public places to be closed permanently"
+                    ]
+                },
+                correctIndex: 0,
+                explanation: {
+                    th: "การบำเพ็ญประโยชน์ช่วยพัฒนาสิ่งแวดล้อมชุมชนและสร้างความร่วมมือกลมเกลียว",
+                    en: "Community service improves environment and fosters harmony."
+                }
+            },
+            {
+                id: 23,
+                category: "เศรษฐศาสตร์",
+                question: {
+                    th: "สินค้าในข้อใดจัดเป็นความต้องการ (Want) ที่ไม่ใช่ปัจจัยสำคัญในการดำรงชีวิต?",
+                    en: "Which item is classified as a 'Want' rather than a necessity for survival?"
+                },
+                clue: {
+                    th: "เป็นสิ่งอำนวยความสะดวกหรือความบันเทิงส่วนตัว",
+                    en: "It is an amenity or personal entertainment item."
+                },
+                options: {
+                    th: [
+                        "ตุ๊กตาของเล่นสะสมราคาแพง",
+                        "ข้าวสวยร้อนๆ",
+                        "เสื้อนกันหนาวสวมใส่กันลม",
+                        "ยารักษาโรคสามัญประจำบ้าน"
+                    ],
+                    en: [
+                        "Expensive collectible toy dolls",
+                        "Hot cooked rice",
+                        "Warm winter jacket",
+                        "Common household medicine"
+                    ]
+                },
+                correctIndex: 0,
+                explanation: {
+                    th: "ของเล่นเป็นสินค้าสนองความต้องการความเพลิดเพลิน ไม่ใช่ปัจจัย 4 ที่จำเป็นต่อชีวิต",
+                    en: "Toys satisfy recreational wants, not basic survival necessities."
+                }
+            },
+            {
+                id: 24,
+                category: "ประวัติศาสตร์",
+                question: {
+                    th: "การศึกษาเรื่องราวในท้องถิ่นหรือชุมชนของตนเองมีประโยชน์ต่อตัวนักเรียนอย่างไร?",
+                    en: "What are the benefits of studying local community history for students?"
+                },
+                clue: {
+                    th: "ทำให้เกิดความภาคภูมิใจและรู้จักรากเหง้าความเป็นมา",
+                    en: "Instills pride and understanding of local roots."
+                },
+                options: {
+                    th: [
+                        "ทำให้เกิดความภาคภูมิใจและรักในท้องถิ่นกำเนิดของตนเอง",
+                        "ทำให้จำชื่อถนนทุกสายบนโลกใบนี้ได้ทั้งหมดทันที",
+                        "ทำให้ไม่ต้องสอบวิชาอื่นๆ อีกต่อไปตลอดปีการศึกษา",
+                        "ทำให้ได้รับรางวัลนักประวัติศาสตร์ดีเด่นระดับโลก"
+                    ],
+                    en: [
+                        "Instills pride and love for one's hometown",
+                        "Enables instant memorization of all world streets",
+                        "Exempts students from all other subjects",
+                        "Wins a world-class historian award"
+                    ]
+                },
+                correctIndex: 0,
+                explanation: {
+                    th: "การรู้ประวัติชุมชนสร้างความผูกพัน ความภาคภูมิใจ และความเข้าใจรากเหง้าวัฒนธรรม",
+                    en: "Knowing local history builds attachment, pride, and cultural roots understanding."
+                }
+            },
+            {
+                id: 25,
+                category: "ภูมิศาสตร์",
+                question: {
+                    th: "สิ่งแวดล้อมที่มนุษย์สร้างขึ้นในโรงเรียนตรงกับข้อใดมากที่สุด?",
+                    en: "Which represents a human-made environment in a school?"
+                },
+                clue: {
+                    th: "อาคารเรียน สนามกีฬา โต๊ะเก้าอี้",
+                    en: "School buildings, sports fields, desks and chairs."
+                },
+                options: {
+                    th: [
+                        "อาคารเรียน ห้องคอมพิวเตอร์ และสนามเด็กเล่น",
+                        "ภูเขาหินธรรมชาติหลังโรงเรียน",
+                        "แม่น้ำสายใหญ่ที่ไหลผ่านชุมชนใกล้เคียง",
+                        "แสงแดดและกลุ่มเมฆบนท้องฟ้า"
+                    ],
+                    en: [
+                        "School buildings, computer labs, and playgrounds",
+                        "Natural rock mountains behind school",
+                        "Large rivers flowing nearby",
+                        "Sunlight and clouds in the sky"
+                    ]
+                },
+                correctIndex: 0,
+                explanation: {
+                    th: "อาคารเรียนและสนามเด็กเล่นเป็นสิ่งปลูกสร้างที่มนุษย์สร้างขึ้นเพื่อประโยชน์ใช้สอย",
+                    en: "School buildings and playgrounds are human-made structures for functional use."
+                }
+            }
+        ];
+
+        let currentLang = 'th';
+        let currentQuestionIndex = 0;
+        let userAnswers = {}; // { questionIndex: selectedOptionIndex }
+        let shuffledOptionsMap = {}; // { questionIndex: [shuffled indices] }
+
+        // Fisher-Yates Shuffle Algorithm for Anti-Guessing Engine
+        function fisherYatesShuffle(array) {
+            let arr = [...array];
+            for (let i = arr.length - 1; i > 0; i--) {
+                let j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        // Initialize Shuffled Options for each question on load/reset
+        function initShuffledOptions() {
+            shuffledOptionsMap = {};
+            rawQuestions.forEach((q, qIdx) => {
+                let originalIndices = [0, 1, 2, 3];
+                shuffledOptionsMap[qIdx] = fisherYatesShuffle(originalIndices);
+            });
+        }
+
+        function initQuiz() {
+            initShuffledOptions();
+            userAnswers = {};
+            currentQuestionIndex = 0;
+            document.getElementById('results-screen').style.display = 'none';
+            document.getElementById('active-question-container').style.display = 'block';
+            renderNavButtons();
+            loadQuestion(currentQuestionIndex);
+        }
+
+        function renderNavButtons() {
+            const container = document.getElementById('nav-buttons-container');
+            container.innerHTML = '';
+            rawQuestions.forEach((_, idx) => {
+                const btn = document.createElement('button');
+                btn.className = 'nav-btn';
+                if (idx === currentQuestionIndex) btn.classList.add('active');
+                if (userAnswers[idx] !== undefined) btn.classList.add('answered');
+                btn.innerText = idx + 1;
+                btn.onclick = () => goToQuestion(idx);
+                container.appendChild(btn);
+            });
+        }
+
+        function loadQuestion(idx) {
+            currentQuestionIndex = idx;
+            const q = rawQuestions[idx];
+            
+            // Header number
+            document.getElementById('current-q-num').innerText = 
+                currentLang === 'th' ? `ข้อที่ ${idx + 1} จาก ${rawQuestions.length}` : `Question ${idx + 1} of ${rawQuestions.length}`;
+
+            // Question text
+            document.getElementById('question-text').innerText = `${idx + 1}. ${q.question[currentLang]}`;
+
+            // Clue
+            document.getElementById('clue-text').innerText = q.clue[currentLang];
+            document.getElementById('clue-text').style.display = 'none';
+
+            // Options rendering using shuffled mapping
+            const optionsContainer = document.getElementById('options-container');
+            optionsContainer.innerHTML = '';
+            
+            const shuffledIndices = shuffledOptionsMap[idx];
+            shuffledIndices.forEach((origOptIdx) => {
+                const optDiv = document.createElement('div');
+                optDiv.className = 'option-item';
+                optDiv.innerText = q.options[currentLang][origOptIdx];
+                
+                // Check if already answered
+                if (userAnswers[idx] !== undefined) {
+                    const selectedOrigIdx = userAnswers[idx];
+                    if (origOptIdx === q.correctIndex) {
+                        optDiv.classList.add('correct');
+                    }
+                    if (selectedOrigIdx === origOptIdx && origOptIdx !== q.correctIndex) {
+                        optDiv.classList.add('incorrect');
+                    }
+                    if (selectedOrigIdx === origOptIdx) {
+                        optDiv.classList.add('selected');
+                    }
+                } else {
+                    optDiv.onclick = () => selectOption(origOptIdx);
+                }
+                optionsContainer.appendChild(optDiv);
+            });
+
+            // Explanation box
+            const expContainer = document.getElementById('explanation-container');
+            if (userAnswers[idx] !== undefined) {
+                document.getElementById('explanation-text').innerText = q.explanation[currentLang];
+                expContainer.style.display = 'block';
+            } else {
+                expContainer.style.display = 'none';
+            }
+
+            // Navigation buttons state
+            document.getElementById('prev-btn').style.display = idx === 0 ? 'none' : 'block';
+            document.getElementById('next-btn').innerText = idx === rawQuestions.length - 1 ? (currentLang === 'th' ? '🏁 ส่งคำตอบและดูผลวิเคราะห์' : '🏁 Submit & View Results') : (currentLang === 'th' ? 'ถัดไป ➡️' : 'Next ➡️');
+
+            renderNavButtons();
+        }
+
+        function toggleClue() {
+            const clueBox = document.getElementById('clue-text');
+            clueBox.style.display = clueBox.style.display === 'block' ? 'none' : 'block';
+        }
+
+        function selectOption(origOptIdx) {
+            if (userAnswers[currentQuestionIndex] !== undefined) return; // Already answered
+
+            userAnswers[currentQuestionIndex] = origOptIdx;
+            
+            // Save to localStorage
+            localStorage.setItem('social_quiz_answers', JSON.stringify(userAnswers));
+
+            loadQuestion(currentQuestionIndex);
+
+            // Check if all answered
+            if (Object.keys(userAnswers).length === rawQuestions.length) {
+                // Optional auto-show results or let user click next
+            }
+        }
+
+        function nextQuestion() {
+            if (currentQuestionIndex < rawQuestions.length - 1) {
+                loadQuestion(currentQuestionIndex + 1);
+            } else {
+                showResults();
+            }
+        }
+
+        function prevQuestion() {
+            if (currentQuestionIndex > 0) {
+                loadQuestion(currentQuestionIndex - 1);
+            }
+        }
+
+        function goToQuestion(idx) {
+            loadQuestion(idx);
+        }
+
+        function showResults() {
+            document.getElementById('active-question-container').style.display = 'none';
+            document.getElementById('nav-buttons-container').style.display = 'none';
+            document.getElementById('current-q-num').style.display = 'none';
+            
+            let score = 0;
+            let categoryScores = {};
+
+            rawQuestions.forEach((q, idx) => {
+                if (!categoryScores[q.category]) {
+                    categoryScores[q.category] = { total: 0, correct: 0 };
+                }
+                categoryScores[q.category].total++;
+                if (userAnswers[idx] === q.correctIndex) {
+                    score++;
+                    categoryScores[q.category].correct++;
+                }
+            });
+
+            const percentage = ((score / rawQuestions.length) * 100).toFixed(1);
+            document.getElementById('final-score-display').innerText = `${score} / ${rawQuestions.length}`;
+            document.getElementById('score-percentage').innerText = currentLang === 'th' ? `คิดเป็นร้อยละ ${percentage}%` : `Percentage: ${percentage}%`;
+
+            // Analysis generation
+            let strengths = [];
+            let improvements = [];
+
+            for (let cat in categoryScores) {
+                let ratio = categoryScores[cat].correct / categoryScores[cat].total;
+                if (ratio >= 0.75) {
+                    strengths.push(cat);
+                } else {
+                    improvements.push(cat);
+                }
+            }
+
+            const strengthText = strengths.length > 0 ? strengths.join(', ') : (currentLang === 'th' ? 'ทำได้ดีในภาพรวม' : 'Good overall performance');
+            const improvementText = improvements.length > 0 ? improvements.join(', ') : (currentLang === 'th' ? 'ไม่มีจุดที่ต้องกังวลเป็นพิเศษเยี่ยมมาก!' : 'No major weaknesses identified!');
+
+            document.getElementById('strength-analysis').innerHTML = `<strong>จุดเด่น (Strengths):</strong> ทำคะแนนได้ดีเยี่ยมในหมวดสาระ: ${strengthText}`;
+            document.getElementById('improvement-analysis').innerHTML = `<strong>จุดที่ต้องพัฒนา (Areas for Improvement):</strong> ควรทบทวนเนื้อหาเพิ่มเติมในหมวดสาระ: ${improvementText} เพื่อความเข้าใจที่สมบูรณ์ยิ่งขึ้น`;
+
+            document.getElementById('results-screen').style.display = 'block';
+        }
+
+        function resetQuiz() {
+            localStorage.removeItem('social_quiz_answers');
+            document.getElementById('nav-buttons-container').style.display = 'flex';
+            document.getElementById('current-q-num').style.display = 'block';
+            initQuiz();
+        }
+
+        function toggleLanguage() {
+            currentLang = currentLang === 'th' ? 'en' : 'th';
+            document.getElementById('lang-btn').innerText = currentLang === 'th' ? '🌐 ภาษาไทย (TH)' : '🌐 English (EN)';
+            loadQuestion(currentQuestionIndex);
+        }
+
+        // Whiteboard Logic
+        const canvas = document.getElementById('whiteboard');
+        const ctx = canvas.getContext('2d');
+        let isDrawing = false;
+        let currentWbTool = 'pen';
+
+        function resizeCanvas() {
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width;
+            canvas.height = rect.height || 400;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+        window.addEventListener('load', () => {
+            resizeCanvas();
+            initQuiz();
+            // Load from localStorage if available
+            const saved = localStorage.getItem('social_quiz_answers');
+            if (saved) {
+                try {
+                    userAnswers = JSON.parse(saved);
+                } catch(e) {
+                    userAnswers = {};
+                }
+            }
+        });
+
+        function setWbTool(tool) {
+            currentWbTool = tool;
+            document.getElementById('pen-btn').classList.toggle('active', tool === 'pen');
+            document.getElementById('eraser-btn').classList.toggle('active', tool === 'eraser');
+        }
+
+        function clearWhiteboard() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        function getMousePos(e) {
+            const rect = canvas.getBoundingClientRect();
+            let clientX = e.clientX;
+            let clientY = e.clientY;
+            if (e.touches && e.touches.length > 0) {
+                clientX = e.touches[0].clientX;
+                clientY = e.touches[0].clientY;
+            }
+            return {
+                x: clientX - rect.left,
+                y: clientY - rect.top
+            };
+        }
+
+        function startDrawing(e) {
+            isDrawing = true;
+            const pos = getMousePos(e);
+            ctx.beginPath();
+            ctx.moveTo(pos.x, pos.y);
+            e.preventDefault();
+        }
+
+        function draw(e) {
+            if (!isDrawing) return;
+            const pos = getMousePos(e);
+            if (currentWbTool === 'pen') {
+                ctx.strokeStyle = '#2b6cb0';
+                ctx.lineWidth = 3;
+            } else {
+                ctx.strokeStyle = '#f7fafc';
+                ctx.lineWidth = 20;
+            }
+            ctx.lineTo(pos.x, pos.y);
+            ctx.stroke();
+            e.preventDefault();
+        }
+
+        function stopDrawing() {
+            isDrawing = false;
+            ctx.beginPath();
+        }
+
+        canvas.addEventListener('mousedown', startDrawing);
+        canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('mouseup', stopDrawing);
+        canvas.addEventListener('mouseleave', stopDrawing);
+
+        canvas.addEventListener('touchstart', startDrawing);
+        canvas.addEventListener('touchmove', draw);
+        canvas.addEventListener('touchend', stopDrawing);
+    </script>
+</body>
+</html>
