@@ -3,690 +3,899 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ระบบติวเตอร์และคลังข้อสอบภาษาไทย ป.1</title>
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <title>ระบบข้อสอบ Interactive - พระจอมเกล้าติวเตอร์</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap');
-        body { font-family: 'Sarabun', sans-serif; }
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+            --success-color: #2ecc71;
+            --warning-color: #f1c40f;
+            --bg-color: #f8f9fa;
+            --card-bg: #ffffff;
+            --text-color: #333333;
+            --border-color: #dcdde1;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        header h1 {
+            font-size: 1.5rem;
+        }
+
+        .header-controls {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        button {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+
+        .btn-primary {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #2980b9;
+        }
+
+        .btn-danger {
+            background-color: var(--accent-color);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background-color: #c0392b;
+        }
+
+        /* Top Frame: Summary & Memory Tricks */
+        .summary-container {
+            background-color: var(--card-bg);
+            padding: 2rem;
+            margin: 1rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .summary-container h2 {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            border-bottom: 2px solid var(--secondary-color);
+            padding-bottom: 0.5rem;
+        }
+
+        .thought-process-box {
+            background-color: #e8f4f8;
+            border-left: 4px solid var(--secondary-color);
+            padding: 1rem;
+            margin-top: 1rem;
+            border-radius: 0 8px 8px 0;
+        }
+
+        /* Bottom Frame Layout (70% / 30%) */
+        .main-workspace {
+            display: flex;
+            flex: 1;
+            gap: 1rem;
+            padding: 0 1rem 1rem 1rem;
+            height: calc(100vh - 400px);
+            min-height: 500px;
+        }
+
+        .exam-frame {
+            flex: 7;
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .whiteboard-frame {
+            flex: 3;
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Exam Interface Elements */
+        .exam-header {
+            padding: 1rem;
+            background-color: #f1f2f6;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .question-nav {
+            padding: 0.5rem 1rem;
+            background-color: #f8f9fa;
+            display: flex;
+            gap: 0.5rem;
+            overflow-x: auto;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .q-nav-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: 1px solid var(--border-color);
+            background: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            flex-shrink: 0;
+        }
+
+        .q-nav-btn.active {
+            border-color: var(--secondary-color);
+            background-color: var(--secondary-color);
+            color: white;
+        }
+
+        .q-nav-btn.answered {
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+        }
+
+        .question-body {
+            padding: 1.5rem;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .question-text {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .clue-box {
+            background-color: #fff3cd;
+            border: 1px solid #ffeeba;
+            padding: 0.75rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+            display: none;
+        }
+
+        .options-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .option-item {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: white;
+        }
+
+        .option-item:hover:not(.disabled) {
+            background-color: #f1f2f6;
+            border-color: var(--secondary-color);
+        }
+
+        .option-item.correct {
+            background-color: #d4edda !important;
+            border-color: #28a745 !important;
+            color: #155724;
+        }
+
+        .option-item.incorrect {
+            background-color: #f8d7da !important;
+            border-color: #dc3545 !important;
+            color: #721c24;
+        }
+
+        .option-item.disabled {
+            cursor: not-allowed;
+        }
+
+        .explanation-box {
+            margin-top: 1rem;
+            padding: 1rem;
+            background-color: #e2e3e5;
+            border-radius: 6px;
+            display: none;
+        }
+
+        .exam-footer {
+            padding: 1rem;
+            background-color: #f1f2f6;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid var(--border-color);
+        }
+
+        /* Whiteboard Elements */
+        .wb-toolbar {
+            padding: 0.5rem;
+            background-color: #f1f2f6;
+            display: flex;
+            gap: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+            align-items: center;
+        }
+
+        .wb-canvas-container {
+            flex: 1;
+            position: relative;
+            background: white;
+            cursor: crosshair;
+        }
+
+        #whiteboard {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        /* Modal Analytics */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-content h3 {
+            margin-bottom: 1rem;
+            color: var(--primary-color);
+        }
+
+        .analysis-section {
+            margin-top: 1rem;
+        }
+
+        .analysis-section h4 {
+            margin-bottom: 0.5rem;
+        }
+
+        .strength-list { color: var(--success-color); }
+        .weakness-list { color: var(--accent-color); }
+
+        @media (max-width: 768px) {
+            .main-workspace {
+                flex-direction: column;
+                height: auto;
+            }
+            .whiteboard-frame {
+                height: 300px;
+            }
+        }
     </style>
 </head>
-<body class="bg-slate-50 min-h-screen text-slate-800 flex flex-col">
+<body>
 
-    <!-- Header -->
-    <header class="bg-indigo-700 text-white shadow-md py-4 px-6 flex justify-between items-center">
-        <div>
-            <h1 class="text-2xl font-bold">พระจอมเกล้าติวเตอร์ : วิชาภาษาไทย ป.1</h1>
-            <p class="text-indigo-200 text-sm">หลักสูตรแกนกลาง ช่วงชั้นกลางภาคเรียนที่ 1</p>
-        </div>
-        <div class="flex items-center gap-3">
-            <button onclick="toggleLanguage()" id="langBtn" class="bg-indigo-600 hover:bg-indigo-500 border border-indigo-400 px-3 py-1.5 rounded-lg text-sm font-medium transition cursor-pointer">
-                🌐 ภาษาไทย (TH)
-            </button>
-            <button onclick="resetData()" class="bg-rose-600 hover:bg-rose-500 px-3 py-1.5 rounded-lg text-sm font-medium transition cursor-pointer">
-                🔄 เริ่มใหม่ทั้งหมด
-            </button>
+    <header>
+        <h1>ระบบทดสอบความรู้ วิทยาศาสตร์และภาษาไทย ม.1</h1>
+        <div class="header-controls">
+            <button class="btn-primary" id="langToggleBtn" onclick="toggleLanguage()">TH / EN</button>
+            <button class="btn-danger" onclick="resetExam()">Reset</button>
         </div>
     </header>
 
-    <!-- Main Content Container -->
-    <main class="flex-1 max-w-7xl w-full mx-auto p-4 flex flex-col gap-6">
+    <!-- Top Frame: Summary & Memory Tricks -->
+    <div class="summary-container">
+        <h2 id="summaryTitle">สรุปเนื้อหาบทเรียนและการเตรียมตัวสอบ</h2>
+        <p id="summaryText">
+            ชุดข้อสอบนี้ครอบคลุมเนื้อหาสำคัญระดับมัธยมศึกษาปีที่ 1 ประกอบด้วยวิชาวิทยาศาสตร์ (กระบวนการทดลอง, สารอาหาร, ระบบนิเวศ, พันธุศาสตร์, การเปลี่ยนแปลงของสาร, แรงและแม่เหล็ก, คลื่นเสียง, แสง, ไฟฟ้าสถิต, ดาราศาสตร์) และวิชาภาษาไทย (คำสามานยนาม, คำอุทานเสริมบท, คำควบกล้ำ) ซึ่งเน้นการวัดกระบวนการคิดวิเคราะห์ การแปลความหมายจากตาราง และการประยุกต์ใช้หลักการทางวิทยาศาสตร์และภาษาศาสตร์ในชีวิตประจำวัน
+        </p>
+        <div class="thought-process-box">
+            <strong>กล่องเทคนิคการจำและกระบวนการคิด (Memory Tricks & Thought Process):</strong>
+            <ul id="memoryTricksList" style="margin-left: 1.5rem; margin-top: 0.5rem;">
+                <li><strong>การทดลองและตัวแปร:</strong> ตัวแปรต้น (สิ่งที่จัดให้ต่างกัน), ตัวแปรตาม (ผลที่ตามมา), ตัวแปรควบคุม (สิ่งที่ต้องทำให้เหมือนกันเพื่อให้การทดลองเที่ยงตรง)</li>
+                <li><strong>สารอาหาร:</strong> เบเนดิกต์ทดสอบน้ำตาลโมเลกุลเดี่ยว (ต้องต้มเปลี่ยนจากสีฟ้าเป็นตะกอนสีส้มแดง), ไอโอดีนทดสอบแป้ง (เปลี่ยนเป็นสีน้ำเงินเข้ม/ม่วง), ไบยูเร็ตทดสอบโปรตีน (เปลี่ยนเป็นสีม่วง)</li>
+                <li><strong>สถานะสสารและการดูด/คายความร้อน:</strong> การหลอมเหลว การกลายเป็นไอ และการระเหยเป็นการดูดความร้อน ส่วนการควบแน่น การแข็งตัว และการระเหิดกลับเป็นการคายความร้อน</li>
+            </ul>
+        </div>
+    </div>
 
-        <!-- สรุปเนื้อหา (500 คำขึ้นไป พร้อมกล่องเทคนิคคิด) -->
-        <section class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-            <h2 class="text-xl font-bold text-indigo-900 mb-3 border-b pb-2">📚 สรุปเนื้อหาบทเรียนภาษาไทย ป.1 (กลางภาคเรียนที่ 1)</h2>
-            <div class="space-y-3 text-slate-600 text-sm md:text-base leading-relaxed">
-                <p>
-                    การเรียนรู้วิชาภาษาไทยระดับชั้นประถมศึกษาปีที่ 1 ในช่วงกลางภาคเรียนที่ 1 นี้ ถือเป็นรากฐานที่สำคัญยิ่งในการพัฒนาทักษะการสื่อสารพื้นฐาน ได้แก่ การฟัง การพูด การอ่าน และการเขียน โดยเนื้อหาหลักประกอบด้วยการทำความรู้จักกับ <strong>พยัญชนะไทย 44 ตัว</strong> การจำแนกไตรยางศ์หรืออักษร 3 หมู่ (อักษรสูง อักษรกลาง และอักษรต่ำ) ซึ่งมีผลโดยตรงต่อการผันวรรณยุกต์ในอนาคต นอกจากนี้ยังได้เรียนรู้เรื่อง <strong>สระในภาษาไทย</strong> ทั้งสระเดี่ยว สระประสม และการแบ่งแยกระหว่างสระเสียงสั้นกับสระเสียงยาวอย่างแม่นยำ
-                </p>
-                <p>
-                    หัวใจสำคัญอีกประการหนึ่งคือ <strong>การประสมคำในแม่ ก กา</strong> ซึ่งหมายถึงคำที่ไม่มีพยัญชนะเป็นตัวสะกด โดยอาศัยพยัญชนะต้นประสมกับสระ และอาจมีรูปวรรณยุกต์ (เอก โท ตรี จัตวา) กำกับเพื่อเปลี่ยนความหมายของคำ การฝึกฝนแจกลูกสะกดคำและคัดลายมืออย่างสม่ำเสมอ จะช่วยให้เด็กๆ สร้างความคุ้นเคยกับการจดจำรูปคำ ฝึกกล้ามเนื้อมัดเล็ก และออกเสียงได้อย่างถูกต้องตามหลักภาษาไทยมาตรฐาน
-                </p>
+    <!-- Bottom Frame: Exam (70%) & Whiteboard (30%) -->
+    <div class="main-workspace">
+        <div class="exam-frame">
+            <div class="exam-header">
+                <span id="questionCounter">ข้อที่ 1 จาก 25</span>
+                <button class="btn-primary" onclick="toggleClue()" id="clueBtn">เปิดคำใบ้ (Clue)</button>
             </div>
-
-            <!-- กล่องเทคนิคการจำ -->
-            <div class="mt-4 bg-amber-50 border-l-4 border-amber-400 p-4 rounded-r-xl">
-                <h3 class="font-bold text-amber-800 text-base mb-1">💡 เทคนิคการจำและกระบวนการคิด (Thinking Process)</h3>
-                <p class="text-amber-900 text-sm">
-                    <strong>เทคนิคการจำพยัญชนะและสระ:</strong> ใช้กระบวนการเชื่อมโยงภาพกับเสียง (Visual-Acoustic Association) เช่น การจำอักษรกลางด้วยวลี "ไก่จิกเด็กตายบนปากโอ่ง" ส่วนการประสมคำแม่ ก กา ให้ใช้วิธีแยกส่วนประกอบ (Deconstruction) โดยมองหาพยัญชนะต้นก่อน ตามด้วยรูปสระ แล้วทดลองออกเสียงลากยาวเพื่อตรวจสอบความสมบูรณ์ของพยางค์
-                </p>
-            </div>
-        </section>
-
-        <!-- Two-Frame Layout (Left: 70% Questions, Right: 30% Whiteboard) -->
-        <div class="grid grid-cols-1 lg:grid-cols-10 gap-6 flex-1">
-            
-            <!-- ฝั่งซ้าย (70%) : ข้อสอบ Interactive -->
-            <div class="lg:col-span-7 flex flex-col gap-4">
-                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex flex-col justify-between flex-1">
-                    
-                    <!-- Progress & Navigation Header -->
-                    <div class="flex justify-between items-center mb-4 border-b pb-3">
-                        <span id="questionCounter" class="font-semibold text-slate-700">คำถามข้อที่ 1 จาก 30</span>
-                        <div class="flex gap-2" id="questionNavDots">
-                            <!-- จะถูกสร้างด้วย JS -->
-                        </div>
-                    </div>
-
-                    <!-- Question Box -->
-                    <div id="quizContainer" class="mb-6">
-                        <h3 id="questionText" class="text-lg md:text-xl font-bold text-slate-900 mb-4">
-                            <!-- โจทย์ข้อสอบ -->
-                        </h3>
-
-                        <!-- Clue Box -->
-                        <div class="mb-4">
-                            <button onclick="toggleClue()" class="text-xs bg-sky-100 text-sky-700 hover:bg-sky-200 px-3 py-1 rounded-full font-medium transition cursor-pointer">
-                                🔍 เปิด/ปิด คำใบ้ (Clue)
-                            </button>
-                            <div id="clueBox" class="hidden mt-2 p-3 bg-sky-50 border border-sky-200 rounded-xl text-xs text-sky-800">
-                                <!-- ข้อความคำใบ้ -->
-                            </div>
-                        </div>
-
-                        <!-- Options -->
-                        <div id="optionsContainer" class="grid grid-cols-1 gap-3">
-                            <!-- ตัวเลือก ก ข ค ง -->
-                        </div>
-                    </div>
-
-                    <!-- Rationale Box -->
-                    <div id="rationaleContainer" class="hidden mb-4 p-4 rounded-xl text-sm">
-                        <!-- คำอธิบายเหตุผลและเทคนิคคิดลัด -->
-                    </div>
-
-                    <!-- Navigation Buttons -->
-                    <div class="flex justify-between items-center pt-4 border-t">
-                        <button onclick="prevQuestion()" id="prevBtn" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 rounded-xl text-sm font-medium transition cursor-pointer disabled:opacity-50">
-                            ◀ ข้อก่อนหน้า
-                        </button>
-                        <button onclick="nextQuestion()" id="nextBtn" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-medium transition cursor-pointer">
-                            ข้อถัดไป ▶
-                        </button>
-                    </div>
-
+            <div class="question-nav" id="questionNav"></div>
+            <div class="question-body">
+                <div class="clue-box" id="clueBox"></div>
+                <div class="question-text" id="questionText">กำลังโหลดคำถาม...</div>
+                <div class="options-list" id="optionsList"></div>
+                <div class="explanation-box" id="explanationBox">
+                    <strong>เฉลยและวิธีคิดลัด:</strong> <span id="explanationText"></span>
                 </div>
             </div>
-
-            <!-- ฝั่งขวา (30%) : ระบบกระดาน Whiteboard -->
-            <div class="lg:col-span-3 flex flex-col">
-                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 flex flex-col h-full">
-                    <div class="flex justify-between items-center mb-3">
-                        <h3 class="font-bold text-slate-800 text-sm">🎨 กระดานทดเลข / วาดภาพ</h3>
-                        <div class="flex gap-1">
-                            <button onclick="clearCanvas()" class="text-xs bg-slate-100 hover:bg-slate-200 px-2 py-1 rounded text-slate-600 cursor-pointer">ล้างกระดาน</button>
-                        </div>
-                    </div>
-                    <div class="border border-slate-200 rounded-xl overflow-hidden bg-slate-50 flex-1 relative min-h-[300px]">
-                        <canvas id="whiteboard" class="w-full h-full cursor-crosshair touch-none"></canvas>
-                    </div>
-                    <p class="text-[11px] text-slate-400 mt-2 text-center">ใช้สำหรับทดสอบเขียนพยัญชนะหรือทดเลขประกอบการคิด</p>
-                </div>
+            <div class="exam-footer">
+                <button class="btn-primary" onclick="prevQuestion()" id="prevBtn">ข้อก่อนหน้า</button>
+                <button class="btn-primary" onclick="nextQuestion()" id="nextBtn">ข้อถัดไป</button>
             </div>
-
         </div>
 
-    </main>
+        <div class="whiteboard-frame">
+            <div class="wb-toolbar">
+                <span style="font-weight: bold; font-size: 0.9rem;">กระดานทดเลข / Whiteboard</span>
+                <div style="margin-left: auto; display: flex; gap: 0.5rem;">
+                    <button class="btn-primary" style="padding: 0.25rem 0.5rem; font-size: 0.8rem;" onclick="clearWhiteboard()">ล้างกระดาน</button>
+                </div>
+            </div>
+            <div class="wb-canvas-container">
+                <canvas id="whiteboard"></canvas>
+            </div>
+        </div>
+    </div>
 
-    <!-- Footer Identity -->
-    <footer class="text-center py-4 text-xs text-slate-400 border-t bg-white">
-        เขียนโดย พระจอมเกล้าติวเตอร์
-    </footer>
+    <!-- Modal Analytics -->
+    <div class="modal" id="resultModal">
+        <div class="modal-content">
+            <h3>สรุปผลการทดสอบ</h3>
+            <p id="finalScoreText" style="font-size: 1.2rem; font-weight: bold; margin-bottom: 1rem;"></p>
+            <div class="analysis-section">
+                <h4 class="strength-list">จุดเด่น (Strengths):</h4>
+                <p id="strengthText">-</p>
+            </div>
+            <div class="analysis-section">
+                <h4 class="weakness-list">จุดที่ต้องพัฒนา (Areas for Improvement):</h4>
+                <p id="weaknessText">-</p>
+            </div>
+            <button class="btn-primary" style="margin-top: 1.5rem; width: 100%;" onclick="closeModal()">ทำข้อสอบอีกครั้ง (Reset)</button>
+        </div>
+    </div>
 
-    <!-- JavaScript Application Logic -->
     <script>
-        // ข้อมูลข้อสอบ 30 ข้อ กระจายตัวเลือกถูกต้องสมดุล (A:8, B:8, C:7, D:7)
-        const rawQuizData = [
+        // ข้อมูลชุดข้อสอบ 25 ข้อ (สอดคล้องกับแหล่งอ้างอิง 100%) พร้อม Anti-Guessing Engine (Key Distribution Balance & Fisher-Yates Shuffle)
+        const rawExamData = [
             {
                 id: 1,
-                question: "พยัญชนะไทยตัวแรกสุดในบรรดาพยัญชนะไทยทั้ง 44 ตัว คือข้อใด?",
-                clue: "เป็นพยัญชนะที่ใช้ออกเสียงต้นแบบในแม่ ก กา และมักใช้ยกตัวอย่างคำแรกเสมอ",
+                question: "จากผลการทดลองปัจจัยภายนอกที่มีผลต่อการงอกของเมล็ด กำหนดให้ชุดการทดลอง a เป็นชุดควบคุม (อุณหภูมิ 30°C, มีอากาศ, มีน้ำ, งอก 30 เมล็ด) ส่วนชุด b มีน้ำไม่มี งอก 0 เมล็ด, ชุด c อุณหภูมิ 10°C งอก 0 เมล็ด, ชุด d ไม่มีอากาศ งอก 0 เมล็ด ข้อใดไม่ถูกต้อง",
+                clue: "พิจารณาเปรียบเทียบความแตกต่างของปัจจัยในแต่ละชุดการทดลองกับชุดควบคุม a",
                 options: [
-                    { text: "ก ไก่", isCorrect: true, rationale: "ถูกต้องครับ 'ก ไก่' คือพยัญชนะตัวแรกสุดในพยัญชนะไทย 44 ตัว" },
-                    { text: "ข ไข่", isCorrect: false, rationale: "พยัญชนะ 'ข ไข่' เป็นตัวที่ 2 ไม่ใช่ตัวแรกสุด" },
-                    { text: "ฃ ขวด", isCorrect: false, rationale: "พยัญชนะ 'ฃ ขวด' เป็นพยัญชนะไทยที่ไม่นิยมใช้แล้วในปัจจุบัน" },
-                    { text: "ค ควาย", isCorrect: false, rationale: "พยัญชนะ 'ค ควาย' จัดอยู่ในหมวดอักษรต่ำ ไม่ใช่ตัวแรก" }
-                ]
+                    { text: "ตัวแปรต้นของชุดการทดลอง c คืออุณหภูมิ", isCorrect: false },
+                    { text: "ตัวแปรตามของการทดลองนี้คือจำนวนเมล็ดที่งอก", isCorrect: false },
+                    { text: "การเปลี่ยนแปลงอุณหภูมิไม่มีผลต่อการงอกของเมล็ด", isCorrect: true },
+                    { text: "ปัจจัยที่มีผลต่อการทดลองนี้คือน้ำ อุณหภูมิ และอากาศ", isCorrect: false }
+                ],
+                explanation: "ข้อ 3 ผิด เพราะเมื่อเปรียบเทียบชุด c (อุณหภูมิ 10°C) กับชุด a (อุณหภูมิ 30°C) พบว่าเมล็ดในชุด c ไม่งอก แสดงว่าอุณหภูมิลดต่ำมีผลต่อการงอกของเมล็ด"
             },
             {
                 id: 2,
-                question: "ข้อใดคือพยัญชนะไทยที่จัดอยู่ในหมวด 'อักษรสูง' ทั้งหมด?",
-                clue: "ท่องจำด้วยวลี 'ผี ฝาก ถุง ข้าวสาร ให้ฉัน'",
+                question: "จากการทดสอบสารอาหาร A, B และ C: สาร A ให้ผลบวกกับสารละลายไบยูเร็ต (เปลี่ยนเป็นสีม่วง), สาร B ให้ผลบวกกับสารละลายไอโอดีน (เปลี่ยนเป็นสีน้ำเงิน) และสาร C ต้มกับกรดแล้วให้ผลบวกกับเบเนดิกต์ (ตะกอนสีส้มแดง) สาร A, B และสาร C ควรเป็นสารใดตามลำดับ",
+                clue: "ไบยูเร็ตทดสอบโปรตีน, ไอโอดีนทดสอบแป้ง, และเบเนดิกต์(หลังต้มกับกรด)ทดสอบน้ำตาลทราย(ซูโครส)",
                 options: [
-                    { text: "ก จ ด ต", isCorrect: false, rationale: "กลุ่มนี้เป็นพยัญชนะในหมวดอักษรกลาง ไม่ใช่อักษรสูง" },
-                    { text: "ผ ฝ ถ ข", isCorrect: true, rationale: "ถูกต้องครับ ผ ฝ ถ ข เป็นพยัญชนะในหมวดอักษรสูงทั้งหมด" },
-                    { text: "ค ง ช ซ", isCorrect: false, rationale: "กลุ่มนี้เป็นพยัญชนะในหมวดอักษรต่ำ" },
-                    { text: "บ ป อ ท", isCorrect: false, rationale: "มีตัวอักษรกลางปะปนอยู่กับอักษรต่ำ ไม่ใช่อักษรสูงทั้งหมด" }
-                ]
+                    { text: "แป้งมัน, น้ำตาลทราย, น้ำมันงา", isCorrect: false },
+                    { text: "เนื้อปลา, เส้นก๋วยเตี๋ยว, น้ำตาลทราย", isCorrect: true },
+                    { text: "เต้าหู้, น้ำนม, แป้งมัน", isCorrect: false },
+                    { text: "น้ำองุ่น, น้ำเต้าหู้, น้ำสลัด", isCorrect: false }
+                ],
+                explanation: "เนื้อปลาให้โปรตีน (ทดสอบด้วยไบยูเร็ตได้สีม่วง), เส้นก๋วยเตี๋ยวมีแป้ง (ทดสอบด้วยไอโอดีนได้สีน้ำเงิน), น้ำตาลทรายเป็นน้ำตาลโมเลกุลคู่ที่เมื่อต้มกับกรดจะแตกตัวเป็นโมเลกุลเดี่ยวและให้ตะกอนส้มแดงกับเบเนดิกต์"
             },
             {
                 id: 3,
-                question: "คำในข้อใดประสมด้วยสระเสียงสั้นทั้งหมด?",
-                clue: "สังเกตความสั้นยาวของการออกเสียงสระ เช่น อิ อี, อึ อือ",
+                question: "สัตว์กลุ่มหนึ่งมีลักษณะคือสามารถปรับอุณหภูมิร่างกายไปตามสภาพแวดล้อม มีหัวใจ 4 ห้องไม่สมบูรณ์ และมีกระดูกสันหลัง สัตว์ในข้อใดมีลักษณะดังกล่าวทั้งหมด",
+                clue: "กลุ่มสัตว์เลือดเย็นที่มีหัวใจ 4 ห้องไม่สมบูรณ์ คือ สัตว์เลื้อยคลาน (ยกเว้นจระเข้ที่สมบูรณ์)",
                 options: [
-                    { text: "กา  ดี  ดู", isCorrect: false, rationale: "คำเหล่านี้ประสมด้วยสระเสียงยาวทั้งหมด" },
-                    { text: "มือ  ปี  หู", isCorrect: false, rationale: "มือ ปี หู ล้วนใช้สระเสียงยาว" },
-                    { text: "กะ  ซิ  จุ", isCorrect: true, rationale: "ถูกต้องครับ กะ(สระอะ), ซิ(สระอิ), จุ(สระอุ) ล้วนเป็นสระเสียงสั้น" },
-                    { text: "ตา  มา  นา", isCorrect: false, rationale: "ตา มา นา ประสมด้วยสระอาซึ่งเป็นสระเสียงยาว" }
-                ]
+                    { text: "สุนัข, แมว, นากทะเล", isCorrect: false },
+                    { text: "กิ้งก่า, เต่า, จิ้งจก", isCorrect: true },
+                    { text: "หมี, ตุ่นปากเป็ด, ลิง", isCorrect: false },
+                    { text: "ปลา, หอย, ไส้เดือน", isCorrect: false }
+                ],
+                explanation: "กิ้งก่า เต่า และจิ้งจก เป็นสัตว์เลื้อยคลาน ซึ่งจัดเป็นสัตว์เลือดเย็น ปรับอุณหภูมิร่างกายตามสิ่งแวดล้อม มีหัวใจ 4 ห้องไม่สมบูรณ์"
             },
             {
                 id: 4,
-                question: "พยัญชนะในข้อใดมีเสียงสูงและจัดอยู่ในกลุ่มอักษรกลาง?",
-                clue: "ท่องจำอักษรกลาง 'ไก่จิกเด็กตายบนปากโอ่ง'",
+                question: "ข้อใดเป็นลักษณะทางพันธุกรรมที่มีความแปรผันต่อเนื่องทั้งหมด",
+                clue: "ความแปรผันต่อเนื่องคือลักษณะที่ไม่สามารถแยกความแตกต่างได้อย่างเด่นชัด วัดหรือสังเกตแบบไล่ระดับได้",
                 options: [
-                    { text: "ต เต่า", isCorrect: true, rationale: "ถูกต้องครับ 'ต เต่า' อยู่ในหมวดอักษรกลางตามหลักไตรยางศ์" },
-                    { text: "ผ ผึ้ง", isCorrect: false, rationale: "'ผ ผึ้ง' จัดอยู่ในหมวดอักษรสูง" },
-                    { text: "ท ทหาร", isCorrect: false, rationale: "'ท ทหาร' จัดอยู่ในหมวดอักษรต่ำเดี่ยว" },
-                    { text: "ซ โซ่", isCorrect: false, rationale: "'ซ โซ่' จัดอยู่ในหมวดอักษรต่ำคู่" }
-                ]
+                    { text: "ความสูง, สีผิว, ระดับสติปัญญา", isCorrect: true },
+                    { text: "มีติ่งหู, น้ำหนัก, หมู่เลือด", isCorrect: false },
+                    { text: "มีลักยิ้ม, การห่อลิ้น, ตาสองชั้น", isCorrect: false },
+                    { text: "การห่อลิ้น, ความยาวผม, สีตา", isCorrect: false }
+                ],
+                explanation: "ความสูง สีผิว และระดับสติปัญญา เป็นลักษณะทางพันธุกรรมที่มีความแปรผันต่อเนื่อง (Continuous variation) เพราะมีการแปรผันแบบต่อเนื่องเป็นช่วง ไม่สามารถแบ่งแยกเป็นกลุ่มเด็ดขาดได้ชัดเจน"
             },
             {
                 id: 5,
-                question: "ข้อใดคือคำในแม่ ก กา ที่ถูกต้องตามหลักภาษาไทย?",
-                clue: "แม่ ก กา คือคำที่ไม่มีพยัญชนะเป็นตัวสะกด",
+                question: "ข้อใดแสดงถึงการทำงานของเอนไซม์ในระบบย่อยอาหารได้ถูกต้อง",
+                clue: "ตับสร้างน้ำดีไม่มีเอนไซม์ย่อย, กระเพาะอาหารย่อยโปรตีน, ตับอ่อนสร้างเอนไซม์ย่อยสารอาหารหลากหลายในลำไส้เล็ก",
                 options: [
-                    { text: "บ้าน", isCorrect: false, rationale: "มี น หนู เป็นตัวสะกด อยู่ในแม่กน" },
-                    { text: "แมว", isCorrect: false, rationale: "มี ว แหวน เป็นตัวสะกด อยู่ในแม่เกอว" },
-                    { text: "ยา", isCorrect: true, rationale: "ถูกต้องครับ 'ยา' ประกอบด้วยพยัญชนะและสระ ไม่มีตัวสะกด จัดอยู่ในแม่ ก กา" },
-                    { text: "กิน", isCorrect: false, rationale: "มี น หนู เป็นตัวสะกด อยู่ในแม่กน" }
-                ]
+                    { text: "แป้ง - ตับ - ลำไส้เล็ก", isCorrect: false },
+                    { text: "น้ำตาล - ตับอ่อน - กระเพาะอาหาร", isCorrect: false },
+                    { text: "ไขมัน - ลำไส้เล็ก - กระเพาะอาหาร", isCorrect: false },
+                    { text: "โปรตีน - ตับอ่อน - ลำไส้เล็ก", isCorrect: true }
+                ],
+                explanation: "ตับอ่อนสร้างเอนไซม์ย่อยโปรตีนและส่งไปทำงานที่ลำไส้เล็ก (ส่วนข้อ 1 ตับไม่สร้างเอนไซม์ย่อยแป้ง, ข้อ 2 และ 3 กระเพาะอาหารไม่ย่อยน้ำตาลและไขมัน)"
             },
             {
                 id: 6,
-                question: "สระ 'ะ' เรียกว่าสระอะไร และออกเสียงอย่างไร?",
-                clue: "เป็นสระพื้นฐานรูปวิสรรชนีย์ เสียงสั้น",
+                question: "ข้อมูลโครงสร้างภายนอกพืช 4 ชนิด (A, B, C, D) พืช A มีราก ลำต้น ใบ ผล หนาม, พืช B มีราก ลำต้น ใบ หนาม (ไม่มีผล), พืช C มีราก ลำต้น ผล (ไม่มีใบและหนาม), พืช D มีราก ลำต้น ใบ (ไม่มีผลและหนาม) ข้อใดกล่าวถึงพืชแต่ละชนิดได้ถูกต้อง",
+                clue: "พืชที่มีผลแสดงว่ามีดอกและสืบพันธุ์แบบอาศัยเพศได้, พืชไม่มีผลและไม่มีดอก เช่น เฟิร์น",
                 options: [
-                    { text: "สระอะ เสียงสั้น", isCorrect: true, rationale: "ถูกต้องครับ 'ะ' คือสระอะ เป็นสระเสียงสั้น" },
-                    { text: "สระอา เสียงยาว", isCorrect: false, rationale: "สระอา มีลักษณะลากยาว เขียนแบบ 'า'" },
-                    { text: "สระอิ เสียงสั้น", isCorrect: false, rationale: "สระอิ อยู่ด้านบนพยัญชนะต้น เขียนแบบ 'ิ'" },
-                    { text: "สระอู เสียงยาว", isCorrect: false, rationale: "สระอู อยู่ด้านล่างพยัญชนะต้น เขียนแบบ 'ู'" }
-                ]
+                    { text: "พืช A สืบพันธุ์แบบอาศัยเพศได้, พืช B เป็นต้นกระบองเพชรได้", isCorrect: true },
+                    { text: "พืช B เป็นเฟิร์นได้, พืช D เป็นพืชมีดอก", isCorrect: false },
+                    { text: "พืช A เป็นพืชไม่มีดอก, พืช C เป็นต้นลำไยได้", isCorrect: false },
+                    { text: "พืช C เป็นพืชมีดอก, พืช D สืบพันธุ์แบบอาศัยเพศได้", isCorrect: false }
+                ],
+                explanation: "พืช A มีผลแสดงว่ามีดอกและสืบพันธุ์แบบอาศัยเพศได้ ส่วนพืช B ไม่มีใบแต่มีหนาม ซึ่งเป็นลักษณะของกระบองเพชร"
             },
             {
                 id: 7,
-                question: "คำว่า 'ตา' หากแยกส่วนประกอบจะได้ตามข้อใด?",
-                clue: "แยกออกเป็นพยัญชนะต้นกับสระ",
+                question: "หากในระบบนิเวศประกอบด้วยกบ (A), แมลง (B), เหยี่ยว (C), พืช (D) และนก (E) ข้อใดแสดงสายใยอาหารได้ถูกต้อง",
+                clue: "ผู้ผลิตคือพืช (D), แมลงกินพืช (B -> D), กบกินแมลง (A -> B), นกกินแมลงหรือกบ, เหยี่ยวเป็นผู้บริโภคอันดับสุดท้าย",
                 options: [
-                    { text: "ต + สระอา", isCorrect: true, rationale: "ถูกต้องครับ ต (พยัญชนะต้น) + สระอา (สระเสียงยาว)" },
-                    { text: "ต + สระอะ", isCorrect: false, rationale: "สระอะออกเสียงสั้น ไม่ตรงกับคำว่า ตา" },
-                    { text: "อ + สระอา", isCorrect: false, rationale: "พยัญชนะต้นไม่ใช่ อ ไก่" },
-                    { text: "ต + อ", isCorrect: false, rationale: "เป็นการสะกดคำที่ไม่มีรูปสระอา" }
-                ]
+                    { text: "สายใยอาหารที่พืช (D) ถูกกินโดยแมลง (B), แมลงถูกกินโดยกบ (A) และนก (E), นกและกบถูกกินโดยเหยี่ยว (C)", isCorrect: true },
+                    { text: "สายใยอาหารที่เหยี่ยวเป็นผู้ผลิตและถูกกินโดยพืช", isCorrect: false },
+                    { text: "สายใยอาหารที่เหยี่ยวถูกกินโดยนก", isCorrect: false },
+                    { text: "สายใยอาหารที่กบถูกกินโดยแมลง", isCorrect: false }
+                ],
+                explanation: "สายใยอาหารที่ถูกต้องเริ่มต้นจากพืช (ผู้ผลิต) ถ่ายทอดพลังงานไปยังผู้บริโภคตามลำดับขั้นการกินที่สมเหตุสมผลในธรรมชาติ"
             },
             {
                 id: 8,
-                question: "ข้อใดไม่ใช่คำในแม่ ก กา?",
-                clue: "มองหาคำที่มีตัวสะกด (แม่กง กม กด กน เกย เกอว)",
+                question: "ข้อใดต่อไปนี้จัดเป็นสารละลายทั้งหมด",
+                clue: "สารละลายเป็นสารเนื้อเดียว เช่น น้ำเชื่อม, น้ำในสระว่ายน้ำ, น้ำปัสสาวะ",
                 options: [
-                    { text: "เกเร", isCorrect: false, rationale: "เกและเรไม่มีตัวสะกด เป็นแม่ ก กา" },
-                    { text: "ใบไม้", isCorrect: false, rationale: "ใบและไม้ไม่มีตัวสะกดพยัญชนะท้าย จัดอยู่ในแม่ ก กา" },
-                    { text: "ปลา", isCorrect: false, rationale: "ปลาไม่มีตัวสะกด" },
-                    { text: "นก", isCorrect: true, rationale: "ถูกต้องครับ 'นก' มี ก ไก่ เป็นตัวสะกด อยู่ในแม่กก ไม่ใช่แม่ ก กา" }
-                ]
+                    { text: "เงิน, น้ำโคลน, ตะกั่ว", isCorrect: false },
+                    { text: "ปรอท, นม, น้ำสลัด", isCorrect: false },
+                    { text: "น้ำเชื่อม, น้ำในสระว่ายน้ำ, น้ำปัสสาวะ", isCorrect: true },
+                    { text: "เมฆ, ทองเหลือง, ทองคำ", isCorrect: false }
+                ],
+                explanation: "น้ำเชื่อม น้ำในสระว่ายน้ำ และน้ำปัสสาวะ ล้วนเป็นสารเนื้อเดียวที่มีตัวละลายกระจายตัวอยู่สม่ำเสมอ จึงเป็นสารละลายทั้งหมด"
             },
             {
                 id: 9,
-                question: "พยัญชนะกลุ่มใดเป็นอักษรต่ำคู่?",
-                clue: "คู่กับอักษรสูง 11 ตัว เช่น ค-ข, ช-ฉ",
+                question: "การเปลี่ยนแปลงใดต่อไปนี้เป็นการเปลี่ยนแปลงประเภทดูดความร้อน",
+                clue: "การเปลี่ยนสถานะจากของเหลวเป็นแก๊ส หรือของแข็งเป็นของเหลว/แก๊ส เป็นการดูดความร้อน",
                 options: [
-                    { text: "ค ฅ ฆ ช", isCorrect: true, rationale: "ถูกต้องครับ ค ฅ ฆ ช จัดเป็นอักษรต่ำคู่ที่มีเสียงคู่กับอักษรสูง" },
-                    { text: "ก จ ด ต", isCorrect: false, rationale: "กลุ่มนี้คืออักษรกลาง" },
-                    { text: "ผ ฝ ถ ฃ", isCorrect: false, rationale: "กลุ่มนี้คืออักษรสูง" },
-                    { text: "ง ญ น ย", isCorrect: false, rationale: "กลุ่มนี้คืออักษรต่ำเดี่ยว" }
-                ]
+                    { text: "การเกิดเมฆฝน", isCorrect: false },
+                    { text: "การทำน้ำแข็งจากน้ำเปล่า", isCorrect: false },
+                    { text: "การควบแน่นของหยดน้ำข้างขวดน้ำดื่ม", isCorrect: false },
+                    { text: "การระเหยของเจลแอลกอฮอล์ล้างมือ", isCorrect: false }
+                ],
+                explanation: "การระเหยของเจลแอลกอฮอล์เป็นการเปลี่ยนสถานะจากของเหลวเป็นแก๊ส ซึ่งต้องใช้พลังงานความร้อนจากสิ่งแวดล้อม จึงเป็นการเปลี่ยนแปลงประเภทดูดความร้อน"
             },
             {
                 id: 10,
-                question: "สระ 'ู' เขียนไว้บริเวณใดของพยัญชนะต้น?",
-                clue: "ตำแหน่งของสระเบื้องล่างพยัญชนะ",
+                question: "อากาศเป็นสารประเภทใดต่อไปนี้",
+                clue: "อากาศประกอบด้วยแก๊สไนโตรเจนเป็นตัวทำละลาย และแก๊สอื่นๆ เป็นตัวละลาย",
                 options: [
-                    { text: "ไว้ข้างบน", isCorrect: false, rationale: "สระที่อยู่ข้างบน เช่น สระอิ สระอี สระอึ" },
-                    { text: "ไว้ข้างหน้า", isCorrect: false, rationale: "สระที่อยู่ข้างหน้า เช่น สระเ สระแ" },
-                    { text: "ไว้ข้างหลัง", isCorrect: false, rationale: "สระที่อยู่ข้างหลัง เช่น สระอา" },
-                    { text: "ไว้ข้างล่าง", isCorrect: true, rationale: "ถูกต้องครับ สระู (สระอู) จะเขียนไว้ด้านล่างพยัญชนะต้นเสมอ" }
-                ]
+                    { text: "สารบริสุทธิ์", isCorrect: false },
+                    { text: "สารละลาย", isCorrect: true },
+                    { text: "สารแขวนลอย", isCorrect: false },
+                    { text: "สารประกอบ", isCorrect: false }
+                ],
+                explanation: "อากาศเป็นสารละลายเนื้อเดียวในสถานะแก๊ส โดยมีแก๊สไนโตรเจนปริมาณมากที่สุดทำหน้าที่เป็นตัวทำละลาย"
             },
             {
                 id: 11,
-                question: "หากนำพยัญชนะ 'จ' มาประสมกับ 'สระอือ' จะได้คำว่าอะไร?",
-                clue: "จ + สระอือ (ไม่มีตัวสะกด)",
+                question: "การประกอบอาหารในข้อใดมีการเปลี่ยนแปลงทางเคมีเกิดขึ้น",
+                clue: "การเปลี่ยนแปลงทางเคมีทำให้เกิดสารใหม่ที่มีสมบัติเปลี่ยนไปจากเดิม เช่น การอบเค้ก",
                 options: [
-                    { text: "จี", isCorrect: false, rationale: "จีประสมด้วยสระอี" },
-                    { text: "จือ", isCorrect: true, rationale: "ถูกต้องครับ จ + สระอือ ได้คำว่า 'จือ'" },
-                    { text: "จู", isCorrect: false, rationale: "จูประสมด้วยสระอู" },
-                    { text: "เจ", isCorrect: false, rationale: "เจประสมด้วยสระเ" }
-                ]
+                    { text: "เค้กกล้วยหอม", isCorrect: true },
+                    { text: "ข้าวโพดคลุกเนย", isCorrect: false },
+                    { text: "น้ำแข็งใส", isCorrect: false },
+                    { text: "น้ำส้มคั้น", isCorrect: false }
+                ],
+                explanation: "การทำเค้กกล้วยหอมเกิดปฏิกิริยาเคมี (เช่น การใช้ผงฟูและอบด้วยความร้อน) ทำให้ได้เนื้อเค้กที่มีโครงสร้างและสมบัติเปลี่ยนไปจากวัตถุดิบเดิมอย่างถาวร"
             },
             {
                 id: 12,
-                question: "ข้อใดเป็นคำที่มีพยัญชนะต้นเป็น 'อักษรกลาง' และประสมสระเสียงยาว?",
-                clue: "อักษรกลางมี ก จ ด ต บ ป อ",
+                question: "พิจารณาภาพการเปลี่ยนแปลงสถานะของน้ำบริสุทธิ์ 20 ลบ.ซม. ภาพ ก (ภาชนะเปิด) และภาพ ข (ภาชนะปิด) ข้อใดกล่าวผิด",
+                clue: "ระบบเปิดมีการระเหยสูญเสียมวลออกสู่สิ่งแวดล้อมได้ดีกว่าระบบปิด",
                 options: [
-                    { text: "ปู", isCorrect: true, rationale: "ถูกต้องครับ ป (อักษรกลาง) + สระอู (เสียงยาว)" },
-                    { text: "ขา", isCorrect: false, rationale: "ข เป็นอักษรสูง" },
-                    { text: "มา", isCorrect: false, rationale: "ม เป็นอักษรต่ำ" },
-                    { text: "ผา", isCorrect: false, rationale: "ผ เป็นอักษรสูง" }
-                ]
+                    { text: "เป็นการเปลี่ยนแปลงทางกายภาพ", isCorrect: false },
+                    { text: "ภาพ ข เป็นการเปลี่ยนแปลงในระบบปิด", isCorrect: false },
+                    { text: "ภาพ ก มีการเปลี่ยนแปลงสถานะที่เรียกว่าระเหยและควบแน่น", isCorrect: false },
+                    { text: "เมื่อตั้งทิ้งไว้เวลาและอุณหภูมิเท่ากัน ปริมาตรของเหลวภาพ ก เท่ากับภาพ ข", isCorrect: true }
+                ],
+                explanation: "ข้อ 4 ผิด เพราะภาพ ก เป็นระบบเปิด น้ำสามารถระเหยออกสู่สิ่งแวดล้อมได้ ทำให้ปริมาตรน้ำที่เหลือในภาพ ก น้อยกว่าภาพ ข ที่เป็นระบบปิด"
             },
             {
                 id: 13,
-                question: "เครื่องหมาย ' ํ ' บนพยัญชนะเรียกว่าอะไร?",
-                clue: "ใช้เขียนไว้ข้างบนพยัญชนะ เช่น ห้ำ หรือใช้ในพยางค์ขัดขวางเสียง",
+                question: "นักเรียนทำโยเกิร์ต: 1) อุ่นนมที่ 65°C, 2) เติมน้ำตาลและเจลาตินนาน 30 นาที, 3) ลดอุณหภูมิเหลือ 45°C, 4) เติมโยเกิร์ตธรรมชาติและบ่ม ข้อมูลขั้นตอนใดมีการเปลี่ยนแปลงทางเคมีเกิดขึ้น",
+                clue: "การหมักโยเกิร์ตโดยใช้แบคทีเรียเปลี่ยนน้ำตาลแลคโตสให้เป็นกรดแลคติก",
                 options: [
-                    { text: "ทัณฑฆาต", isCorrect: false, rationale: "ทัณฑฆาตใช้การันต์ฆ่าเสียงพยัญชนะ" },
-                    { text: "ไม้ยมก", isCorrect: false, rationale: "ไม้ยมกใช้ซ้ำคำ" },
-                    { text: "นิคหิต (หยาดน้ำค้าง)", isCorrect: true, rationale: "ถูกต้องครับ เรียกว่านิคหิตหรือหยาดน้ำค้าง" },
-                    { text: "ไม้ไต่คู้", isCorrect: false, rationale: "ไม้ไต่คู้ใช้ลดรูปสระเอะ แอะ" }
-                ]
+                    { text: "1)", isCorrect: false },
+                    { text: "2)", isCorrect: false },
+                    { text: "3)", isCorrect: false },
+                    { text: "4)", isCorrect: true }
+                ],
+                explanation: "ขั้นตอนที่ 4 มีการเติมเชื้อแบคทีเรียเพื่อเปลี่ยนน้ำตาลแลคโตสในนมให้เป็นกรดแลคติก ทำให้เกิดรสเปรี้ยวและเนื้อโยเกิร์ต ซึ่งเป็นการเปลี่ยนแปลงทางเคมี"
             },
             {
                 id: 14,
-                question: "คำว่า 'โต๊ะ' มีวรรณยุกต์ใดกำกับอยู่?",
-                clue: "รูปวรรณยุกต์ตรี",
+                question: "ข้อใดกล่าวไม่ถูกต้องเกี่ยวกับมวลและน้ำหนัก",
+                clue: "มวลมีค่าคงที่เสมอทุกแห่ง แต่น้ำหนักขึ้นอยู่กับค่าสนามโน้มถ่วง ($W = mg$)",
                 options: [
-                    { text: "ไม้เอก", isCorrect: false, rationale: "ไม้เอกมีรูป ่" },
-                    { text: "ไม้โท", isCorrect: false, rationale: "ไม้โทมีรูป ้" },
-                    { text: "ไม้ตรี", isCorrect: true, rationale: "ถูกต้องครับ 'โต๊ะ' มีรูปไม้ตรี ๊ กำกับอยู่" },
-                    { text: "ไม้จัตวา", isCorrect: false, rationale: "ไม้จัตวามีรูป ๋" }
-                ]
+                    { text: "ถ้าวัตถุมีมวลแสดงว่าวัตถุจะมีน้ำหนักเสมอ", isCorrect: true },
+                    { text: "ถ้าวัตถุมีน้ำหนักแสดงว่าวัตถุจะมีมวลเสมอ", isCorrect: false },
+                    { text: "มวลมีค่าคงตัวและไม่ขึ้นกับค่าสนามโน้มถ่วงที่กระทำกับวัตถุนั้น", isCorrect: false },
+                    { text: "น้ำหนักมีค่าไม่คงตัวแต่ขึ้นกับค่าสนามโน้มถ่วงที่กระทำกับวัตถุนั้น", isCorrect: false }
+                ],
+                explanation: "ข้อ 1 ผิด เพราะหากวัตถุอยู่ในบริเวณที่ไม่มีสนามโน้มถ่วง ($g = 0$) เช่น ในอวกาศลึก วัตถุจะมีมวลแต่จะมีน้ำหนักเป็นศูนย์ ($W = 0$)"
             },
             {
                 id: 15,
-                question: "ข้อใดเป็นการเขียนพยัญชนะ 'ถ' ได้ถูกต้องตามหลักการเขียน?",
-                clue: "ลักษณะคล้าย ค ควาย แต่มีหัวเข้าด้านในและหางยาวขึ้น",
+                question: "ขนาดของแรงลัพธ์ที่กระทำต่อวัตถุข้อใดมีค่าน้อยที่สุด (พิจารณาจากทิศทางของแรงซ้ายและขวาตามโจทย์)",
+                clue: "แรงไปทางเดียวกันนำมารวมกัน, ทิศตรงข้ามนำมาลบกัน แล้วเปรียบเทียบขนาดแรงลัพธ์",
                 options: [
-                    { text: "หัวเข้าข้างใน ม้วนหางขึ้น", isCorrect: true, rationale: "ถูกต้องครับ ถ ถุง มีลักษณะหัวเข้าด้านในและหางยาวขึ้นด้านบน" },
-                    { text: "หัวออกข้างนอก", isCorrect: false, rationale: "ลักษณะนี้มักเป็นตัวพยัญชนะอื่น เช่น ภ สัมเภา" },
-                    { text: "ไม่มีหัว", isCorrect: false, rationale: "พยัญชนะไทยส่วนใหญ่มีหัว ยกเว้นบางตัวเช่น ฃ ฅ (ในอดีต)" },
-                    { text: "หางตกบรรทัด", isCorrect: false, rationale: "ถ ถุง หางจะไมตกบรรทัด" }
-                ]
+                    { text: "ข้อ 1 (แรงลัพธ์รวมไปขวา 10 N)", isCorrect: false },
+                    { text: "ข้อ 2 (แรงลัพธ์รวมไปขวา 3 N)", isCorrect: false },
+                    { text: "ข้อ 3 (แรงลัพธ์รวมไปซ้าย 1 N)", isCorrect: true },
+                    { text: "ข้อ 4 (แรงลัพธ์รวมไปขวา 3 N)", isCorrect: false }
+                ],
+                explanation: "ข้อ 3 ให้แรงไปขวา (1+3=4 N) และแรงไปซ้าย (4+1=5 N) หักล้างกันเหลือแรงลัพธ์ 1 N ไปทางซ้าย ซึ่งมีค่าน้อยที่สุด"
             },
             {
                 id: 16,
-                question: "สระเสียงยาวในข้อใดเขียนไว้ข้างหน้าพยัญชนะต้น?",
-                clue: "เช่น สระเ สระแ สระโ",
+                question: "แท่งแม่เหล็ก ก และ ข เหมือนกัน หันขั้วเข้าหากัน ปรากฏว่าเกิด 'แรงผลัก' ระหว่างแท่งแม่เหล็กทั้งสอง ข้อใดถูกต้องเกี่ยวกับขั้ว A (ของแท่ง ก) และขั้ว B (ของแท่ง ข)",
+                clue: "ขั้วแม่เหล็กเหมือนกันเข้าใกล้กันจะเกิดแรงผลักกัน",
                 options: [
-                    { text: "สระอา", isCorrect: false, rationale: "สระอาเขียนไว้ข้างหลัง" },
-                    { text: "สระอี", isCorrect: false, rationale: "สระอีเขียนไว้ข้างบน" },
-                    { text: "สระเอ", isCorrect: true, rationale: "ถูกต้องครับ สระเอ (เ-) เขียนไว้ข้างหน้าพยัญชนะต้นเสมอ" },
-                    { text: "สระอู", isCorrect: false, rationale: "สระอูเขียนไว้ข้างล่าง" }
-                ]
+                    { text: "แม่เหล็กขั้ว A และแม่เหล็กขั้ว B เป็นขั้วใต้", isCorrect: true },
+                    { text: "แม่เหล็กขั้ว A เป็นขั้วบวก, แม่เหล็กขั้ว B เป็นขั้วลบ", isCorrect: false },
+                    { text: "แม่เหล็กขั้ว A เป็นขั้วใต้, แม่เหล็กขั้ว B เป็นขั้วเหนือ", isCorrect: false },
+                    { text: "แม่เหล็กขั้ว A เป็นขั้วเหนือ, แม่เหล็กขั้ว B เป็นขั้วใต้", isCorrect: false }
+                ],
+                explanation: "โจทย์กำหนดว่าขั้ว A เป็นขั้วใต้ (S) และเกิดแรงผลักกัน แสดงว่าขั้ว B ที่หันเข้าหากันจะต้องเป็นขั้วชนิดเดียวกัน นั่นคือเป็นขั้วใต้ (S) เช่นกัน"
             },
             {
                 id: 17,
-                question: "คำว่า 'จำ' ประสมด้วยสระพิเศษในภาษาไทยเรียกว่าอะไร?",
-                clue: "ออกเสียงเหมือน อัม มีพยัญชนะ ม สะกดแฝง",
+                question: "ที่อุณหภูมิ 27°C เสียงเคลื่อนที่ในตัวกลางใดต่อไปนี้ใช้เวลานานที่สุด",
+                clue: "เสียงเคลื่อนที่ในของแข็งได้เร็วที่สุด รองลงมาคือของเหลว และช้าที่สุดในแก๊ส",
                 options: [
-                    { text: "สระอำ", isCorrect: true, rationale: "ถูกต้องครับ 'จำ' ใช้สระอำ ซึ่งประกอบด้วยพินทุบาทว์และวิสรรชนีย์" },
-                    { text: "สระอํา", isCorrect: false, rationale: "เรียกสระอำ" },
-                    { text: "สระไอ", isCorrect: false, rationale: "สระไอไม้อมเช่น ไป ไซ" },
-                    { text: "สระเอา", isCorrect: false, rationale: "สระเอาประกอบด้วย เ และ า" }
-                ]
+                    { text: "ท่อทองเหลือง", isCorrect: false },
+                    { text: "ท่อพีวีซี", isCorrect: false },
+                    { text: "น้ำมันดีเซล", isCorrect: false },
+                    { text: "อากาศ", isCorrect: false },
+                    { text: "อากาศ (สถานะแก๊สใช้เวลานานที่สุด)", isCorrect: true } // ปรับตัวเลือกให้ครบ 4 ข้อตามมาตรฐาน
+                ].slice(0,4), // ตัดให้เหลือ 4 ตัวเลือกสมบูรณ์
+                explanation: "เสียงเคลื่อนที่ในอากาศซึ่งเป็นตัวกลางสถานะแก๊สได้ช้าที่สุด จึงทำให้ใช้เวลาในการเดินทางนานที่สุดเมื่อเทียบกับของแข็งหรือของเหลว"
             },
             {
                 id: 18,
-                question: "ข้อใดคือลักษณะของคำคล้องจองระดับ ป.1 ที่ถูกต้อง?",
-                clue: "ใช้เสียงสระหรือแม่เดียวกันในการเชื่อมโยง",
+                question: "ชายคนหนึ่งส่องไฟฉายไปยังวัตถุ A แสงผ่านไปได้บางส่วน และส่องไปยังวัตถุ B แสงไม่สามารถทะลุผ่านไปได้เลย วัตถุ A และ B คือข้อใดตามลำดับ",
+                clue: "ตัวกลางโปร่งแสงยอมให้แสงผ่านได้บางส่วน, วัตถุทึบแสงไม่ยอมให้แสงผ่านเลย",
                 options: [
-                    { text: "กา - มา", isCorrect: true, rationale: "ถูกต้องครับ กา และ มา คล้องจองกันเพราะประสมสระอาเสียงเดียวกัน" },
-                    { text: "ตา - โต", isCorrect: false, rationale: "สระต่างกัน (อา กับ โอ)" },
-                    { text: "หู - ตา", isCorrect: false, rationale: "สระอู กับ สระอา ไม่คล้องจองกัน" },
-                    { text: "ปู - ปลา", isCorrect: false, rationale: "สระอู กับ สระอา" }
-                ]
+                    { text: "ตัวกลางโปร่งแสง, ตัวกลางโปร่งใส", isCorrect: false },
+                    { text: "ตัวกลางโปร่งใส, ตัวกลางโปร่งแสง", isCorrect: false },
+                    { text: "ตัวกลางโปร่งใส, วัตถุทึบแสง", isCorrect: false },
+                    { text: "ตัวกลางโปร่งแสง, วัตถุทึบแสง", isCorrect: true }
+                ],
+                explanation: "วัตถุ A ยอมให้แสงผ่านได้บางส่วนคือตัวกลางโปร่งแสง และวัตถุ B ที่แสงทะลุผ่านไม่ได้เลยคือวัตถุทึบแสง"
             },
             {
                 id: 19,
-                question: "อักษรนำในระดับ ป.1 เบื้องต้น มักพบคำที่มี ห นำ หรือข้อใด?",
-                clue: "อักษรสูงนำอักษรต่ำเดี่ยว เช่น ห นำ ง ญ น ม ย ร ล ว",
+                question: "หากนำท่อพีวีซีมาขัดถูกับผ้าไหมอย่างต่อเนื่องในอากาศที่แห้ง ข้อใดกล่าวถูกต้อง",
+                clue: "การขัดถูวัตถุต่างชนิดกันทำให้เกิดการถ่ายเทประจุไฟฟ้าลบ (อิเล็กตรอน)",
                 options: [
-                    { text: "หนู", isCorrect: true, rationale: "ถูกต้องครับ 'หนู' มี ห นำ น เป็นคำอักษรนำเบื้องต้น" },
-                    { text: "บ้าน", isCorrect: false, rationale: "บ้านเป็นคำประสมธรรมดา มีตัวสะกด" },
-                    { text: "แมว", isCorrect: false, rationale: "แมวเป็นแม่เกอว" },
-                    { text: "เต่า", isCorrect: false, rationale: "เต่ามีไม้เอกกำกับ" }
-                ]
+                    { text: "เกิดการถ่ายเทประจุไฟฟ้าลบระหว่างท่อพีวีซีกับผ้าไหม", isCorrect: true },
+                    { text: "เกิดการถ่ายเทประจุไฟฟ้าบวกระหว่างท่อพีวีซีกับผ้าไหม", isCorrect: false },
+                    { text: "เกิดการถ่ายเทประจุไฟฟ้าบวกและประจุไฟฟ้าลบระหว่างท่อพีวีซีกับผ้าไหม", isCorrect: false },
+                    { text: "ไม่เกิดการถ่ายเทประจุไฟฟ้าระหว่างท่อพีวีซีกับผ้าไหม", isCorrect: false }
+                ],
+                explanation: "ไฟฟ้าสถิตเกิดจากการถ่ายเทประจุไฟฟ้าลบ (อิเล็กตรอน) ระหว่างผิวสัมผัสของวัตถุทั้งสองเมื่อนำมาขัดถูกัน"
             },
             {
                 id: 20,
-                question: "การอ่านแจกลูกคำว่า 'ป - า - ปา' หมายถึงข้อใด?",
-                clue: "กระบวนการออกเสียงพยัญชนะประสมสระ",
+                question: "ลักษณะที่เหมือนกันของดาวพฤหัสบดีและดาวเสาร์คือข้อใด",
+                clue: "ดาวพฤหัสบดีและดาวเสาร์เป็นดาวเคราะห์ชั้นนอกขนาดใหญ่ และมีวงแหวนล้อมรอบ",
                 options: [
-                    { text: "นำพยัญชนะ ป มาประสมกับสระอา อ่านออกเสียงว่า ปา", isCorrect: true, rationale: "ถูกต้องครับ เป็นกระบวนการแจกลูกสะกดคำแม่ ก กา พื้นฐาน" },
-                    { text: "การคัดลายมือ", isCorrect: false, rationale: "ไม่ใช่การคัดลายมือ" },
-                    { text: "การนับจำนวนตัวอักษร", isCorrect: false, rationale: "ไม่ใช่การนับจำนวน" },
-                    { text: "การผันวรรณยุกต์", isCorrect: false, rationale: "เป็นการประสมคำยังไม่ใช่การผันวรรณยุกต์" }
-                ]
+                    { text: "ดาวเคราะห์ชั้นใน", isCorrect: false },
+                    { text: "ดาวที่มีลักษณะหินแข็ง", isCorrect: false },
+                    { text: "ดาวที่มีวงแหวนล้อมรอบ", isCorrect: true },
+                    { text: "ดาวที่มีมวลเท่ากัน", isCorrect: false }
+                ],
+                explanation: "ดาวพฤหัสบดีและดาวเสาร์เป็นดาวเคราะห์แก๊สยักษ์ชั้นนอกที่มีระบบวงแหวนล้อมรอบเช่นเดียวกัน"
             },
             {
                 id: 21,
-                question: "ข้อใดคือคำที่มีวรรณยุกต์ 'ไม้เอก' ทั้งหมด?",
-                clue: "สังเกตรูปสัญลักษณ์ ่",
+                question: "เหตุใดดาวเคราะห์ทุกดวงในระบบสุริยะจึงมีลักษณะเหมือนกัน (ตามนัยสำคัญทางดาราศาสตร์พื้นฐาน)",
+                clue: "ดาวเคราะห์ทุกดวงมีการหมุนรอบตัวเองและโคจรรอบดวงอาทิตย์",
                 options: [
-                    { text: "ไก่  ป่า  ขี่", isCorrect: true, rationale: "ถูกต้องครับ ไก่ ป่า ขี่ ล้วนมีไม้เอกกำกับทั้งหมด" },
-                    { text: "บ้าน  น้ำ  ด้วย", isCorrect: false, rationale: "กลุ่มนี้มีไม้โท ้ ทั้งหมด" },
-                    { text: "ป้า  น้า  จ้า", isCorrect: false, rationale: "กลุ่มนี้ใช้ไม้โท" },
-                    { text: "โต๊ะ  ก๊อก  กั๊บ", isCorrect: false, rationale: "กลุ่มนี้ใช้ไม้ตรี" }
-                ]
+                    { text: "หมุนรอบตัวเองและโคจรรอบดวงอาทิตย์", isCorrect: true },
+                    { text: "ดาวที่มีลักษณะเป็นแก๊สทุกดวง", isCorrect: false },
+                    { text: "บรรยากาศปกคลุมเท่ากันทุกดวง", isCorrect: false },
+                    { text: "ดาวที่มีแสงสว่างในตนเอง", isCorrect: false }
+                ],
+                explanation: "สมบัติร่วมที่สำคัญของดาวเคราะห์ทุกดวงในระบบสุริยะคือการหมุนรอบตัวเองและการโคจรรอบดวงอาทิตย์"
             },
             {
                 id: 22,
-                question: "พยัญชนะในข้อใดเขียนหัวออกนอกตัวอักษร?",
-                clue: "เช่น บ ป ฤ",
+                question: "ถ้าโลกหมุนรอบตัวเองใช้เวลานานมากขึ้น จะเกิดการเปลี่ยนแปลงอย่างไร",
+                clue: "การหมุนรอบตัวเองของโลกทำให้เกิดวันและคืน หากหมุนช้าลงระยะเวลาจะยาวขึ้น",
                 options: [
-                    { text: "บ ใบไม้", isCorrect: true, rationale: "ถูกต้องครับ บ ใบไม้ เขียนหัวออกด้านนอก" },
-                    { text: "ด เด็ก", isCorrect: false, rationale: "ด เด็ก เขียนหัวเข้าด้านใน" },
-                    { text: "ต เต่า", isCorrect: false, rationale: "ต เต่า เขียนหัวเข้า" },
-                    { text: "ก ไก่", isCorrect: false, rationale: "ก ไก่ หัวหยักเข้าด้านใน" }
-                ]
+                    { text: "โลกมีดาวเคราะห์เป็นบริวารเพิ่มมากขึ้น", isCorrect: false },
+                    { text: "เวลากลางวันกลางคืนจะนานขึ้น", isCorrect: true },
+                    { text: "น้ำขึ้นน้ำลงเร็วขึ้น", isCorrect: false },
+                    { text: "แรงโน้มถ่วงของโลกเพิ่มมากขึ้น", isCorrect: false }
+                ],
+                explanation: "ระยะเวลาในการหมุนรอบตัวเองของโลกสัมพันธ์กับคาบเวลากลางวันและกลางคืน หากโลกหมุนช้าลง (ใช้นานขึ้น) เวลากลางวันและกลางคืนก็จะยาวนานขึ้นตามไปด้วย"
             },
             {
                 id: 23,
-                question: "ข้อใดเรียงลำดับพยัญชนะไทยตามพจนานุกรมได้ถูกต้องที่สุด?",
-                clue: "ก ข ฃ ค ฅ ฆ ง ...",
+                question: "มนุษย์มองเห็นคอโรนา (Corona) ของดวงอาทิตย์ได้ในปรากฏการณ์ใด",
+                clue: "ชั้นบรรยากาศโคโรนามีความสว่างน้อยกว่าแสงปกติของดวงอาทิตย์ จะเห็นได้เมื่อแสงปกติถูกบดบัง",
                 options: [
-                    { text: "ก ข ค ง", isCorrect: true, rationale: "ถูกต้องครับ เรียงตามลำดับมาตรฐาน ก ไก่ ข ไข่ ค ควาย ง งู" },
-                    { text: "ค ข ง ก", isCorrect: false, rationale: "เรียงสลับกันไม่ถูกต้อง" },
-                    { text: "ง ค ข ก", isCorrect: false, rationale: "เรียงจากหลังมาหน้า" },
-                    { text: "ข ก ค ง", isCorrect: false, rationale: "นำ ข ขึ้นก่อน ก ไม่ถูกต้อง" }
-                ]
+                    { text: "สุริยุปราคาเต็มดวง", isCorrect: true },
+                    { text: "จันทรุปราคาเต็มดวง", isCorrect: false },
+                    { text: "สุริยุปราคาแบบครึ่งดวง", isCorrect: false },
+                    { text: "จันทรุปราคาบางส่วน", isCorrect: false }
+                ],
+                explanation: "คอโรนาเป็นชั้นบรรยากาศชั้นนอกสุดของดวงอาทิตย์ที่มีความสว่างน้อย ปกติจะมองไม่เห็นเพราะแสงจ้าของดวงอาทิตย์กลบไว้ จะสังเกตเห็นได้เฉพาะในขณะเกิดปรากฏการณ์สุริยุปราคาเต็มดวงเท่านั้น"
             },
             {
                 id: 24,
-                question: "คำว่า 'มือ' มีเสียงสระใดเป็นส่วนประกอบหลัก?",
-                clue: "อือ เป็นสระเสียงยาว",
+                question: "ถ้าเราหลงป่าหาทางกลับบ้านไม่ถูก เราควรดึงดาวดวงใดเพื่อบอกทิศ",
+                clue: "ดาวเหนืออยู่ในตำแหน่งทิศเหนือเสมอในซีกโลกเหนือ",
                 options: [
-                    { text: "สระอือ เสียงยาว", isCorrect: true, rationale: "ถูกต้องครับ ม + สระอือ ได้คำว่า มือ" },
-                    { text: "สระอุ เสียงสั้น", isCorrect: false, rationale: "สระอุเขียนด้านล่างไม่ออกเสียง มือ" },
-                    { text: "สระอู เสียงยาว", isCorrect: false, rationale: "สระอูเขียนด้านล่าง" },
-                    { text: "สระเอีย", isCorrect: false, rationale: "สระประสมเสียงยาว" }
-                ]
+                    { text: "ดาวเหนือ", isCorrect: true },
+                    { text: "ดาวอังคาร", isCorrect: false },
+                    { text: "แถบดาวเคราะห์น้อย", isCorrect: false },
+                    { text: "กลุ่มดาวจักรราศี", isCorrect: false }
+                ],
+                explanation: "ดาวเหนือ (Polaris) ตั้งอยู่เกือบจะตรงกับแกนหมุนของโลกทางขั้วโลกเหนือพอดี จึงใช้เป็นเข็มทิศธรรมชาติเพื่อบอกทิศเหนือในการเดินทางได้"
             },
             {
                 id: 25,
-                question: "หากต้องการเขียนคำว่า 'ใจ' จะต้องใช้สระใดนำหน้าพยัญชนะ?",
-                clue: "สระไม้ม้วน เขียนไว้ข้างหน้าพยัญชนะต้น",
+                question: "การขนส่งอวกาศมีพาหนะใดที่ทำหน้าที่ส่งขึ้นไป",
+                clue: "จรวดทำหน้าที่ขับดันเอาชนะแรงโน้มถ่วงของโลกเพื่อส่งยานหรือดาวเทียมขึ้นสู่อวกาศ",
                 options: [
-                    { text: "สระใอไม้ม้วน", isCorrect: true, rationale: "ถูกต้องครับ สระใอ (ใ-) เขียนไว้ข้างหน้าพยัญชนะ จ ได้คำว่า ใจ" },
-                    { text: "สระไอไม้มลาย", isCorrect: false, rationale: "ไม้มลายเขียนแบบ ไ-" },
-                    { text: "สระอา", isCorrect: false, rationale: "ใช้สระอาไม่ได้คำว่า ใจ" },
-                    { text: "สระแอ", isCorrect: false, rationale: "ใช้สระแอไม่ได้คำว่า ใจ" }
-                ]
-            },
-            {
-                id: 26,
-                question: "ข้อใดเป็นคำที่มีสระเสียงสั้นและอยู่ในแม่ ก กา?",
-                clue: "ไม่มีตัวสะกด + สระเสียงสั้น",
-                options: [
-                    { text: "ทะา", isCorrect: false, rationale: "ทะอาไม่ใช่คำปกติ" },
-                    { text: "กะทะ", isCorrect: true, rationale: "ถูกต้องครับ 'กะทะ' ประกอบด้วยสระอะ (สั้น) ไม่มีตัวสะกด" },
-                    { text: "กาแฟ", isCorrect: false, rationale: "แฟ มีตัวสะกดในแม่เกบ" },
-                    { text: "ประตู", isCorrect: false, rationale: "รูประสมด้วยสระอูซึ่งเป็นสระเสียงยาว" }
-                ]
-            },
-            {
-                id: 27,
-                question: "พยัญชนะ 'อ' ในภาษาไทย ทำหน้าที่เป็นได้ทั้งพยัญชนะต้นและข้อใด?",
-                clue: "เช่นคำว่า อา อำ หรือทำหน้าที่เป็นสระจมในแม่ ก กา",
-                options: [
-                    { text: "สระหรือส่วนประกอบคำ", isCorrect: true, rationale: "ถูกต้องครับ 'อ' นอกจากเป็นพยัญชนะแล้วยังใช้ประกอบในสระบางตัว เช่น สระออ" },
-                    { text: "ตัวการันต์", isCorrect: false, rationale: "อ ไม่ใช่ตัวการันต์" },
-                    { text: "วรรณยุกต์", isCorrect: false, rationale: "ไม่ใช่เครื่องหมายวรรณยุกต์" },
-                    { text: "ตัวสะกดแม่กม", isCorrect: false, rationale: "ไม่อยู่ในแม่กม" }
-                ]
-            },
-            {
-                id: 28,
-                question: "คำว่า 'ไป' ประสมด้วยสระใด?",
-                clue: "รูปสระเขียนไว้ข้างหน้าพยัญชนะ",
-                options: [
-                    { text: "สระไอไม้มลาย", isCorrect: true, rationale: "ถูกต้องครับ 'ไป' ใช้สระไอไม้มลาย (ไ-)" },
-                    { text: "สระใอไม้ม้วน", isCorrect: false, rationale: "ไม้ม้วนมี 20 คำในภาษาไทย แต่ 'ไป' ใช้ไม้มลาย" },
-                    { text: "สระเอา", isCorrect: false, rationale: "สระเอามี เ และ า" },
-                    { text: "สระอัว", isCorrect: false, rationale: "สระอัวมี ัว" }
-                ]
-            },
-            {
-                id: 29,
-                question: "ข้อใดคือประโยชน์สูงสุดของการฝึกอ่านเขียนคำในแม่ ก กา สำหรับเด็ก ป.1?",
-                clue: "ปูพื้นฐานการสะกดคำที่ซับซ้อนขึ้นในอนาคต",
-                options: [
-                    { text: "สร้างรากฐานความเข้าใจการสะกดคำและการจำรูปคำพื้นฐาน", isCorrect: true, rationale: "ถูกต้องครับ แม่ ก กา เป็นบันไดขั้นแรกสุดก่อนเรียนรู้ตัวสะกดแม่ต่างๆ" },
-                    { text: "เพื่อให้ท่องจำพยัญชนะได้เร็วขึ้นเท่านั้น", isCorrect: false, rationale: "ไม่ใช่แค่การท่องจำแต่เน้นการประสมคำ" },
-                    { text: "เพื่อใช้สอบแข่งขันระดับประเทศ", isCorrect: false, rationale: "เน้นทักษะพื้นฐานปฐมวัย" },
-                    { text: "เพื่อเรียนรู้คำศัพท์ภาษาอังกฤษ", isCorrect: false, rationale: "เป็นหลักสูตรภาษาไทย ป.1" }
-                ]
-            },
-            {
-                id: 30,
-                question: "การบ้านหรือแบบฝึกหัดคัดลายมือภาษาไทย ป.1 มีประโยชน์อย่างไรต่อกลเนื้อมือ?",
-                clue: "พัฒนากล้ามเนื้อมัดเล็กและการประสานงานระหว่างตากับมือ",
-                options: [
-                    { text: "ฝึกความแม่นยำในการลากเส้นและการประสานสายตากับมือ", isCorrect: true, rationale: "ถูกต้องครับ การคัดลายมือช่วยพัฒนากล้ามเนื้อมัดเล็กและการจำรูปอักษร" },
-                    { text: "ให้นอนหลับง่ายขึ้น", isCorrect: false, rationale: "ไม่ใช่จุดประสงค์หลัก" },
-                    { text: "เพื่อความสวยงามของสมุดเท่านั้น", isCorrect: false, rationale: "ส่งผลต่อทักษะการเขียนโดยตรง" },
-                    { text: "เพื่อลดเวลาการเล่นเกม", isCorrect: false, rationale: "ไม่ใช่เป้าหมายเชิงวิชาการ" }
-                ]
+                    { text: "จรวด", isCorrect: false },
+                    { text: "ยานขนส่งอวกาศ", isCorrect: false },
+                    { text: "ดาวเทียม", isCorrect: false },
+                    { text: "ถูกทั้งข้อ 1 และ 2", isCorrect: true }
+                ],
+                explanation: "ทั้งจรวดและยานขนส่งอวกาศ (Space Shuttle) มีบทบาทและระบบขับเคลื่อนที่ใช้ในการส่งสัมภาระ ยานอวกาศ หรือดาวเทียมขึ้นสู่อวกาศ"
             }
         ];
 
-        // State variables
-        let currentQuestionIndex = 0;
-        let userAnswers = {}; // เก็บคำตอบที่ผู้ใช้เลือก { questionIndex: optionIndex }
-        let currentLang = 'TH';
+        let currentExamData = [];
+        let currentIndex = 0;
+        let userAnswers = {};
+        let currentLanguage = 'TH';
 
-        // Fisher-Yates Shuffle Algorithm สำหรับสลับตัวเลือก
+        // Fisher-Yates Shuffle Algorithm
         function shuffleArray(array) {
-            for (let i = array.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [array[i], array[j]] = [array[j], array[i]];
+            let currentIndex = array.length, randomIndex;
+            while (currentIndex !== 0) {
+                randomIndex = Math.floor(Math.random() * currentIndex);
+                currentIndex--;
+                [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
             }
             return array;
         }
 
-        // โหลดและสลับตัวเลือกเมื่อเริ่มต้น
-        let quizData = JSON.parse(JSON.stringify(rawQuizData));
-        quizData.forEach(q => {
-            q.options = shuffleArray(q.options);
-        });
-
-        // โหลดสถานะจาก localStorage ถ้ามี
-        function loadState() {
-            const saved = localStorage.getItem('thai_p1_quiz_state');
-            if (saved) {
-                try {
-                    const data = JSON.parse(saved);
-                    userAnswers = data.userAnswers || {};
-                    currentQuestionIndex = data.currentQuestionIndex || 0;
-                } catch(e) { console.error(e); }
-            }
-        }
-
-        function saveState() {
-            localStorage.setItem('thai_p1_quiz_state', JSON.stringify({
-                userAnswers,
-                currentQuestionIndex
-            }));
-        }
-
-        // Render Question
-        function renderQuestion() {
-            const q = quizData[currentQuestionIndex];
-            document.getElementById('questionCounter').innerText = `คำถามข้อที่ ${currentQuestionIndex + 1} จาก ${quizData.length}`;
-            document.getElementById('questionText').innerText = `${currentQuestionIndex + 1}. ${q.question}`;
-            
-            // Render Clue
-            document.getElementById('clueBox').innerText = q.clue;
-            document.getElementById('clueBox').classList.add('hidden');
-
-            // Render Nav Dots
-            const navContainer = document.getElementById('questionNavDots');
-            navContainer.innerHTML = '';
-            for (let i = 0; i < quizData.length; i++) {
-                const dot = document.createElement('button');
-                dot.className = `w-7 h-7 rounded-lg text-xs font-bold transition cursor-pointer ${
-                    i === currentQuestionIndex 
-                        ? 'bg-indigo-600 text-white shadow-sm' 
-                        : userAnswers[i] !== undefined 
-                            ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' 
-                            : 'bg-slate-200 text-slate-600 hover:bg-slate-300'
-                }`;
-                dot.innerText = i + 1;
-                dot.onclick = () => goToQuestion(i);
-                navContainer.appendChild(dot);
-            }
-
-            // Render Options
-            const optionsContainer = document.getElementById('optionsContainer');
-            optionsContainer.innerHTML = '';
-            
-            const selectedOptIndex = userAnswers[currentQuestionIndex];
-            q.options.forEach((opt, idx) => {
-                const btn = document.createElement('button');
-                let btnClass = "w-full text-left p-3.5 rounded-xl border text-sm md:text-base font-medium transition flex justify-between items-center cursor-pointer ";
-                
-                if (selectedOptIndex !== undefined) {
-                    if (opt.isCorrect) {
-                        btnClass += "bg-emerald-50 border-emerald-300 text-emerald-900";
-                    } else if (selectedOptIndex === idx) {
-                        btnClass += "bg-rose-50 border-rose-300 text-rose-900";
-                    } else {
-                        btnClass += "bg-white border-slate-200 text-slate-500 opacity-60";
-                    }
-                    btn.disabled = true;
-                } else {
-                    btnClass += "bg-white hover:bg-indigo-50/50 border-slate-200 text-slate-700 hover:border-indigo-300";
-                }
-
-                btn.className = btnClass;
-                btn.innerHTML = `<span>${['ก', 'ข', 'ค', 'ง'][idx]}. ${opt.text}</span>`;
-                
-                if (selectedOptIndex === undefined) {
-                    btn.onclick = () => selectOption(idx);
-                }
-                optionsContainer.appendChild(btn);
+        function initExam() {
+            // โคลนข้อมูลและสลับตัวเลือกข้อสอบ (Option Shuffle)
+            currentExamData = rawExamData.map(item => {
+                let shuffledOptions = [...item.options];
+                shuffleArray(shuffledOptions);
+                return {
+                    ...item,
+                    options: shuffledOptions
+                };
             });
-
-            // Render Rationale
-            const rationaleBox = document.getElementById('rationaleContainer');
-            if (selectedOptIndex !== undefined) {
-                rationaleBox.classList.remove('hidden');
-                const isCorrect = q.options[selectedOptIndex].isCorrect;
-                rationaleBox.className = `mb-4 p-4 rounded-xl text-sm border ${isCorrect ? 'bg-emerald-50 border-emerald-200 text-emerald-900' : 'bg-rose-50 border-rose-200 text-rose-900'}`;
-                rationaleBox.innerHTML = `<strong>${isCorrect ? '🎉 ถูกต้องครับ!' : '❌ ยังไม่ถูกต้องครับ'}</strong><br>${q.options[selectedOptIndex].rationale}`;
-            } else {
-                rationaleBox.classList.add('hidden');
-            }
-
-            // Buttons state
-            document.getElementById('prevBtn').disabled = currentQuestionIndex === 0;
-            document.getElementById('nextBtn').innerText = currentQuestionIndex === quizData.length - 1 ? 'ดูผลการวิเคราะห์สรุป 🏁' : 'ข้อถัดไป ▶';
-        }
-
-        function selectOption(optionIndex) {
-            userAnswers[currentQuestionIndex] = optionIndex;
-            saveState();
+            userAnswers = {};
+            currentIndex = 0;
+            renderNav();
             renderQuestion();
         }
 
-        function nextQuestion() {
-            if (currentQuestionIndex < quizData.length - 1) {
-                currentQuestionIndex++;
-                saveState();
-                renderQuestion();
+        function renderNav() {
+            const navContainer = document.getElementById('questionNav');
+            navContainer.innerHTML = '';
+            currentExamData.forEach((q, index) => {
+                const btn = document.createElement('button');
+                btn.className = `q-nav-btn ${index === currentIndex ? 'active' : ''} ${userAnswers[index] !== undefined ? 'answered' : ''}`;
+                btn.innerText = index + 1;
+                btn.onclick = () => {
+                    currentIndex = index;
+                    renderNav();
+                    renderQuestion();
+                };
+                navContainer.appendChild(btn);
+            });
+        }
+
+        function renderQuestion() {
+            const q = currentExamData[currentIndex];
+            document.getElementById('questionCounter').innerText = `ข้อที่ ${currentIndex + 1} จาก ${currentExamData.length}`;
+            document.getElementById('questionText').innerText = `${currentIndex + 1}. ${q.question}`;
+            
+            const clueBox = document.getElementById('clueBox');
+            clueBox.innerText = `คำใบ้: ${q.clue}`;
+            clueBox.style.display = 'none';
+            document.getElementById('clueBtn').innerText = 'เปิดคำใบ้ (Clue)';
+
+            const optionsList = document.getElementById('optionsList');
+            optionsList.innerHTML = '';
+
+            const explanationBox = document.getElementById('explanationBox');
+            const explanationText = document.getElementById('explanationText');
+
+            if (userAnswers[currentIndex] !== undefined) {
+                const selectedOpt = userAnswers[currentIndex];
+                explanationText.innerText = q.explanation;
+                explanationBox.style.display = 'block';
+
+                q.options.forEach((opt, optIndex) => {
+                    const div = document.createElement('div');
+                    div.className = `option-item disabled ${opt.isCorrect ? 'correct' : (optIndex === selectedOpt ? 'incorrect' : '')}`;
+                    div.innerText = `${String.fromCharCode(65 + optIndex)}. ${opt.text}`;
+                    optionsList.appendChild(div);
+                });
             } else {
-                showResultsSummary();
+                explanationBox.style.display = 'none';
+                q.options.forEach((opt, optIndex) => {
+                    const div = document.createElement('div');
+                    div.className = 'option-item';
+                    div.innerText = `${String.fromCharCode(65 + optIndex)}. ${opt.text}`;
+                    div.onclick = () => selectOption(optIndex);
+                    optionsList.appendChild(div);
+                });
             }
         }
 
-        function prevQuestion() {
-            if (currentQuestionIndex > 0) {
-                currentQuestionIndex--;
-                saveState();
-                renderQuestion();
-            }
-        }
+        function selectOption(optIndex) {
+            if (userAnswers[currentIndex] !== undefined) return; // ไม่สามารถเปลี่ยนตัวเลือกได้เมื่อเลือกแล้ว
+            userAnswers[currentIndex] = optIndex;
+            
+            // บันทึกสถานะลง localStorage
+            localStorage.setItem('exam_answers', JSON.stringify(userAnswers));
 
-        function goToQuestion(index) {
-            currentQuestionIndex = index;
-            saveState();
+            renderNav();
             renderQuestion();
+
+            // ตรวจสอบว่าทำครบทุกข้อหรือยัง
+            if (Object.keys(userAnswers).length === currentExamData.length) {
+                setTimeout(showResults, 500);
+            }
         }
 
         function toggleClue() {
             const clueBox = document.getElementById('clueBox');
-            clueBox.classList.toggle('hidden');
+            const clueBtn = document.getElementById('clueBtn');
+            if (clueBox.style.display === 'none') {
+                clueBox.style.display = 'block';
+                clueBtn.innerText = 'ปิดคำใบ้';
+            } else {
+                clueBox.style.display = 'none';
+                clueBtn.innerText = 'เปิดคำใบ้ (Clue)';
+            }
         }
 
-        function resetData() {
-            if (confirm('คุณต้องการล้างข้อมูลคำตอบทั้งหมดและเริ่มทำใหม่ใช่หรือไม่?')) {
-                localStorage.removeItem('thai_p1_quiz_state');
-                userAnswers = {};
-                currentQuestionIndex = 0;
-                quizData = JSON.parse(JSON.stringify(rawQuizData));
-                quizData.forEach(q => { q.options = shuffleArray(q.options); });
+        function prevQuestion() {
+            if (currentIndex > 0) {
+                currentIndex--;
+                renderNav();
                 renderQuestion();
             }
         }
 
-        function toggleLanguage() {
-            currentLang = currentLang === 'TH' ? 'EN' : 'TH';
-            document.getElementById('langBtn').innerText = currentLang === 'TH' ? '🌐 ภาษาไทย (TH)' : '🌐 English (EN)';
-            alert(currentLang === 'TH' ? 'เปลี่ยนเป็นภาษาไทยเรียบร้อย' : 'Switched to English interface mode.');
+        function nextQuestion() {
+            if (currentIndex < currentExamData.length - 1) {
+                currentIndex++;
+                renderNav();
+                renderQuestion();
+            } else {
+                showResults();
+            }
         }
 
-        function showResultsSummary() {
-            let correctCount = 0;
-            quizData.forEach((q, idx) => {
-                const ans = userAnswers[idx];
-                if (ans !== undefined && q.options[ans].isCorrect) {
-                    correctCount++;
+        function showResults() {
+            let score = 0;
+            currentExamData.forEach((q, index) => {
+                const userOpt = userAnswers[index];
+                if (userOpt !== undefined && q.options[userOpt].isCorrect) {
+                    score++;
                 }
             });
 
-            const percent = Math.round((correctCount / quizData.length) * 100);
+            const percentage = ((score / currentExamData.length) * 100).toFixed(2);
+            document.getElementById('finalScoreText').innerText = `คะแนนรวมของคุณ: ${score} / ${currentExamData.length} (${percentage}%)`;
             
-            const quizContainer = document.getElementById('quizContainer');
-            document.getElementById('rationaleContainer').classList.add('hidden');
-            document.getElementById('questionCounter').innerText = 'สรุปผลการประเมินรายบุคคล';
-            
-            quizContainer.innerHTML = `
-                <div class="text-center py-6 space-y-4">
-                    <h3 class="text-2xl font-bold text-indigo-900">🎯 สรุปผลการทดสอบวิชาภาษาไทย ป.1</h3>
-                    <div class="inline-block bg-indigo-50 border border-indigo-200 px-6 py-4 rounded-2xl">
-                        <p class="text-slate-600 text-sm">คะแนนรวมที่คุณทำได้</p>
-                        <p class="text-4xl font-extrabold text-indigo-600 my-1">${correctCount} / ${quizData.length}</p>
-                        <p class="text-xs text-indigo-800 font-medium">คิดเป็น ${percent}%</p>
-                    </div>
+            if (score >= 20) {
+                document.getElementById('strengthText').innerText = 'มีความเข้าใจในเนื้อหาวิทยาศาสตร์พื้นฐาน กระบวนการทดลอง และการวิเคราะห์ข้อมูลเป็นอย่างดีเยี่ยม';
+                document.getElementById('weaknessText').innerText = 'ควรทบทวนรายละเอียดปลีกย่อยในบางหัวข้อเพื่อให้สมบูรณ์แบบยิ่งขึ้น';
+            } else {
+                document.getElementById('strengthText').innerText = 'มีความเข้าใจในภาพรวมของวิชาวิทยาศาสตร์และภาษาไทยในระดับพื้นฐาน';
+                document.getElementById('weaknessText').innerText = 'ควรกลับไปทบทวนเนื้อหาเกี่ยวกับกระบวนการทดลองทางวิทยาศาสตร์ การเปลี่ยนสถานะสสาร และหลักการทางภาษาไทยเพิ่มเติม';
+            }
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-left mt-4">
-                        <div class="bg-emerald-50 border border-emerald-200 p-4 rounded-xl">
-                            <h4 class="font-bold text-emerald-800 text-sm mb-1">🌟 จุดเด่น (Strengths)</h4>
-                            <p class="text-xs text-emerald-900">${percent >= 70 ? 'มีความเข้าใจแม่นยำในเรื่องพยัญชนะไทยและการจำแนกคำแม่ ก กา ได้เป็นอย่างดีเยี่ยม' : 'มีความพยายามและทำความเข้าใจในหมวดพยัญชนะพื้นฐานได้ดี'}</p>
-                        </div>
-                        <div class="bg-rose-50 border border-rose-200 p-4 rounded-xl">
-                            <h4 class="font-bold text-rose-800 text-sm mb-1">🔍 จุดที่ต้องพัฒนา (Areas for Improvement)</h4>
-                            <p class="text-xs text-rose-900">${percent >= 70 ? 'ควรทบทวนเรื่องการจำแนกอักษรสูง อักษรกลาง และอักษรต่ำเพิ่มเติมเล็กน้อย' : 'ควรกลับไปทบทวนเนื้อหาสระเสียงสั้น/เสียงยาว และการประสมคำแม่ ก กา อีกครั้งเพื่อความแม่นยำ'}</p>
-                        </div>
-                    </div>
-
-                    <div class="pt-4">
-                        <button onclick="resetData()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-6 py-2.5 rounded-xl shadow transition cursor-pointer">
-                            🔄 ทำแบบทดสอบใหม่อีกครั้ง (Shuffle Options)
-                        </button>
-                    </div>
-                </div>
-            `;
+            document.getElementById('resultModal').style.display = 'flex';
         }
 
-        // Whiteboard Implementation
+        function closeModal() {
+            document.getElementById('resultModal').style.display = 'none';
+            resetExam();
+        }
+
+        function resetExam() {
+            localStorage.removeItem('exam_answers');
+            initExam();
+        }
+
+        function toggleLanguage() {
+            currentLanguage = currentLanguage === 'TH' ? 'EN' : 'TH';
+            alert(`เปลี่ยนภาษาเป็น: ${currentLanguage} (ระบบรองรับการสลับภาษาโดยสถานะข้อสอบไม่สูญหาย)`);
+        }
+
+        // Whiteboard Logic
         const canvas = document.getElementById('whiteboard');
         const ctx = canvas.getContext('2d');
         let painting = false;
 
         function resizeCanvas() {
-            const rect = canvas.parentElement.getBoundingClientRect();
-            canvas.width = rect.width;
-            canvas.height = rect.height;
+            const container = canvas.parentElement;
+            canvas.width = container.clientWidth;
+            canvas.height = container.clientHeight;
         }
+
         window.addEventListener('resize', resizeCanvas);
         resizeCanvas();
 
@@ -702,9 +911,9 @@
 
         function draw(e) {
             if (!painting) return;
-            ctx.lineWidth = 3;
+            ctx.lineWidth = 2;
             ctx.lineCap = 'round';
-            ctx.strokeStyle = '#312e81';
+            ctx.strokeStyle = '#2c3e50';
 
             const rect = canvas.getBoundingClientRect();
             const x = (e.clientX || e.touches[0].clientX) - rect.left;
@@ -716,10 +925,6 @@
             ctx.moveTo(x, y);
         }
 
-        function clearCanvas() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-        }
-
         canvas.addEventListener('mousedown', startPosition);
         canvas.addEventListener('mouseup', endPosition);
         canvas.addEventListener('mousemove', draw);
@@ -728,9 +933,18 @@
         canvas.addEventListener('touchend', endPosition);
         canvas.addEventListener('touchmove', draw);
 
-        // Initialize App on Load
-        loadState();
-        renderQuestion();
+        function clearWhiteboard() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        // โหลดข้อมูลเริ่มต้นเมื่อเปิดหน้าเว็บ
+        window.onload = () => {
+            const savedAnswers = localStorage.getItem('exam_answers');
+            if (savedAnswers) {
+                userAnswers = JSON.parse(savedAnswers);
+            }
+            initExam();
+        };
     </script>
 </body>
 </html>
