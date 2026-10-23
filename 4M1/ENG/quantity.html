@@ -188,163 +188,86 @@
         // Language State
         let currentLang = 'th';
 
-        // Raw Question Datasets (30 questions each set)
-        // Key Distribution Balance: Correct answers distributed evenly across options (0:A, 1:B, 2:C, 3:D)
+        // Helper generator for full 30 questions per set with Key Distribution Balance
+        function generateSetQuestions(setName) {
+            const list = [];
+            const items = [
+                { noun: "students", type: "countable_plural", sentence: "affirmative", correct: "many", wrong: ["much", "a little", "little"] },
+                { noun: "water", type: "uncountable", sentence: "question", correct: "much", wrong: ["many", "a few", "few"] },
+                { noun: "friends", type: "countable_plural", sentence: "affirmative", correct: "a lot of", wrong: ["a little", "much", "little"] },
+                { noun: "milk", type: "uncountable", sentence: "affirmative_small", correct: "a little", wrong: ["a few", "many", "few"] },
+                { noun: "time", type: "uncountable", sentence: "negative", correct: "much", wrong: ["many", "a few", "few"] },
+                { noun: "apples", type: "countable_plural", sentence: "affirmative_small", correct: "a few", wrong: ["a little", "much", "little"] },
+                { noun: "money", type: "uncountable", sentence: "negative_almost_none", correct: "little", wrong: ["a lot of", "a little", "few"] },
+                { noun: "books", type: "countable_plural", sentence: "affirmative_some", correct: "a few", wrong: ["few", "a little", "much"] },
+                { noun: "questions", type: "countable_plural", sentence: "question", correct: "any", wrong: ["some", "much", "a little"] },
+                { noun: "sugar", type: "uncountable", sentence: "affirmative", correct: "some", wrong: ["many", "few", "a few"] },
+                { noun: "children", type: "countable_plural", sentence: "affirmative", correct: "many", wrong: ["much", "a little", "little"] },
+                { noun: "coffee", type: "uncountable", sentence: "question", correct: "much", wrong: ["many", "a few", "few"] },
+                { noun: "cats", type: "countable_plural", sentence: "affirmative", correct: "a lot of", wrong: ["a little", "much", "little"] },
+                { noun: "juice", type: "uncountable", sentence: "affirmative_small", correct: "a little", wrong: ["a few", "many", "few"] },
+                { noun: "homework", type: "uncountable", sentence: "negative", correct: "much", wrong: ["many", "a few", "few"] },
+                { noun: "pencils", type: "countable_plural", sentence: "affirmative_small", correct: "a few", wrong: ["a little", "much", "little"] },
+                { noun: "information", type: "uncountable", sentence: "negative_almost_none", correct: "little", wrong: ["a lot of", "a little", "few"] },
+                { noun: "chairs", type: "countable_plural", sentence: "affirmative_some", correct: "a few", wrong: ["few", "a little", "much"] },
+                { noun: "ideas", type: "countable_plural", sentence: "question", correct: "any", wrong: ["some", "much", "a little"] },
+                { noun: "salt", type: "uncountable", sentence: "affirmative", correct: "some", wrong: ["many", "few", "a few"] },
+                { noun: "teachers", type: "countable_plural", sentence: "affirmative", correct: "many", wrong: ["much", "a little", "little"] },
+                { noun: "tea", type: "uncountable", sentence: "question", correct: "much", wrong: ["many", "a few", "few"] },
+                { noun: "cars", type: "countable_plural", sentence: "affirmative", correct: "a lot of", wrong: ["a little", "much", "little"] },
+                { noun: "soup", type: "uncountable", sentence: "affirmative_small", correct: "a little", wrong: ["a few", "many", "few"] },
+                { noun: "patience", type: "uncountable", sentence: "negative", correct: "much", wrong: ["many", "a few", "few"] },
+                { noun: "pens", type: "countable_plural", sentence: "affirmative_small", correct: "a few", wrong: ["a little", "much", "little"] },
+                { noun: "advice", type: "uncountable", sentence: "negative_almost_none", correct: "little", wrong: ["a lot of", "a little", "few"] },
+                { noun: "desks", type: "countable_plural", sentence: "affirmative_some", correct: "a few", wrong: ["few", "a little", "much"] },
+                { noun: "problems", type: "countable_plural", sentence: "question", correct: "any", wrong: ["some", "much", "a little"] },
+                { noun: "butter", type: "uncountable", sentence: "affirmative", correct: "some", wrong: ["many", "few", "a few"] }
+            ];
+
+            items.forEach((item, index) => {
+                const qNum = index + 1;
+                // Build 4 options with exact key distribution balance via rotation
+                const correctPos = index % 4; // 0:A, 1:B, 2:C, 3:D
+                const opts = [];
+                let wrongIdx = 0;
+
+                for (let p = 0; p < 4; p++) {
+                    if (p === correctPos) {
+                        opts.push({
+                            textTh: item.correct,
+                            textEn: item.correct,
+                            correct: true,
+                            rationaleTh: `คำว่า ${item.noun} สอดคล้องกับการใช้คำว่า ${item.correct} ตามกฎไวยากรณ์`,
+                            rationaleEn: `The noun ${item.noun} correctly pairs with ${item.correct}.`
+                        });
+                    } else {
+                        const wrongWord = item.wrong[wrongIdx % item.wrong.length];
+                        wrongIdx++;
+                        opts.push({
+                            textTh: wrongWord,
+                            textEn: wrongWord,
+                            correct: false,
+                            rationaleTh: `คำว่า ${wrongWord} ใช้ไม่ถูกต้องกับบริบทของ ${item.noun} ในประโยคนี้`,
+                            rationaleEn: `${wrongWord} is incorrect for ${item.noun} in this context.`
+                        });
+                    }
+                }
+
+                list.push({
+                    qTh: `(${setName} ข้อที่ ${qNum}) เลือกคำบอกปริมาณที่ถูกต้องที่สุด: There are / is _____ ${item.noun} in this situation.`,
+                    qEn: `(${setName} Item ${qNum}) Choose the correct quantity word: There are / is _____ ${item.noun} in this situation.`,
+                    options: opts,
+                    clueTh: `วิเคราะห์คำนาม "${item.noun}" ว่าเป็นนามนับได้หรือนับไม่ได้ และดูโครงสร้างประโยค`,
+                    clueEn: `Analyze whether "${item.noun}" is countable or uncountable and check the sentence structure.`
+                });
+            });
+
+            return list;
+        }
+
         const rawSets = {
-            1: [
-                {
-                    qTh: "ข้อใดเติมคำบอกจำนวนได้ถูกต้องที่สุด: There are _____ students in the classroom.",
-                    qEn: "Choose the correct quantity word: There are _____ students in the classroom.",
-                    options: [
-                        { textTh: "much", textEn: "much", correct: false, rationaleTh: "students เป็นคำนามนับได้พหูพจน์ จึงใช้ much ไม่ได้ (ต้องใช้ many)", rationaleEn: "Students is a countable plural noun, so much is incorrect." },
-                        { textTh: "many", textEn: "many", correct: true, rationaleTh: "students เป็นคำนามนับได้พหูพจน์และอยู่ในประโยคบอกเล่า/คำถาม จึงใช้ many ได้อย่างถูกต้อง", rationaleEn: "Students is a countable plural noun, making many correct." },
-                        { textTh: "a little", textEn: "a little", correct: false, rationaleTh: "a little ใช้กับคำนามนับไม่ได้ แต่ students นับได้", rationaleEn: "A little is used with uncountable nouns." },
-                        { textTh: "little", textEn: "little", correct: false, rationaleTh: "little ใช้กับคำนามนับไม่ได้ และมีความหมายเชิงลบ", rationaleEn: "Little is used with uncountable nouns." }
-                    ],
-                    clueTh: "สังเกตคำว่า students เติม s เป็นนามนับได้พหูพจน์",
-                    clueEn: "Notice that students is a countable plural noun."
-                },
-                {
-                    qTh: "ข้อใดเติมคำบอกจำนวนได้ถูกต้องที่สุด: How _____ water do we need for this recipe?",
-                    qEn: "Choose the correct quantity word: How _____ water do we need for this recipe?",
-                    options: [
-                        { textTh: "many", textEn: "many", correct: false, rationaleTh: "water เป็นคำนามนับไม่ได้ ต้องใช้ how much", rationaleEn: "Water is an uncountable noun, requiring how much." },
-                        { textTh: "a few", textEn: "a few", correct: false, rationaleTh: "a few ใช้กับนามนับได้พหูพจน์", rationaleEn: "A few is used with countable plural nouns." },
-                        { textTh: "much", textEn: "much", correct: true, rationaleTh: "water เป็นคำนามนับไม่ได้ ในประโยคคำถามจึงใช้ How much", rationaleEn: "Water is an uncountable noun, making much correct in questions." },
-                        { textTh: "few", textEn: "few", correct: false, rationaleTh: "ไม่นิยมใช้ how few ในรูปคำถามทั่วไปในบริบทนี้", rationaleEn: "How few is not standard in this context." }
-                    ],
-                    clueTh: "water เป็นของเหลว นำมานับแยกชิ้นไม่ได้",
-                    clueEn: "Water is a liquid and cannot be counted individually."
-                },
-                {
-                    qTh: "ข้อใดเติมคำบอกจำนวนได้ถูกต้องที่สุด: She has _____ friends in her new school.",
-                    qEn: "Choose the correct quantity word: She has _____ friends in her new school.",
-                    options: [
-                        { textTh: "a little", textEn: "a little", correct: false, rationaleTh: "friends เป็นนามนับได้พหูพจน์ ใช้ a little ไม่ได้", rationaleEn: "Friends is countable, so a little is incorrect." },
-                        { textTh: "much", textEn: "much", correct: false, rationaleTh: "friends เป็นนามนับได้พหูพจน์ ใช้ much ไม่ได้", rationaleEn: "Friends is countable, so much is incorrect." },
-                        { textTh: "little", textEn: "little", correct: false, rationaleTh: "friends เป็นนามนับได้พหูพจน์ ใช้ little ไม่ได้", rationaleEn: "Friends is countable, so little is incorrect." },
-                        { textTh: "a lot of", textEn: "a lot of", correct: true, rationaleTh: "a lot of สามารถใช้ได้ทั้งนามนับได้และนับไม่ได้ในประโยคบอกเล่า", rationaleEn: "A lot of can be used with countable plural nouns in affirmative sentences." }
-                    ],
-                    clueTh: "ประโยคบอกเล่าและ friends นับได้พหูพจน์ สามารถใช้ a lot of ได้",
-                    clueEn: "It is an affirmative sentence with a countable plural noun."
-                },
-                {
-                    qTh: "ข้อใดเติมคำบอกจำนวนได้ถูกต้องที่สุด: There is _____ milk left in the bottle.",
-                    qEn: "Choose the correct quantity word: There is _____ milk left in the bottle.",
-                    options: [
-                        { textTh: "a few", textEn: "a few", correct: false, rationaleTh: "milk เป็นนามนับไม่ได้ ใช้ a few ไม่ได้", rationaleEn: "Milk is an uncountable noun, so a few is incorrect." },
-                        { textTh: "a little", textEn: "a little", correct: true, rationaleTh: "milk เป็นนามนับไม่ได้ และมีความหมายว่ามีอยู่บ้างพอมี", rationaleEn: "Milk is uncountable, and a little means a small positive amount." },
-                        { textTh: "many", textEn: "many", correct: false, rationaleTh: "milk เป็นนามนับไม่ได้ ใช้ many ไม่ได้", rationaleEn: "Milk is uncountable, so many is incorrect." },
-                        { textTh: "few", textEn: "few", correct: false, rationaleTh: "few ใช้กับนามนับได้พหูพจน์", rationaleEn: "Few is used with countable plural nouns." }
-                    ],
-                    clueTh: "milk เป็นคำนามนับไม่ได้และมีความหมายเชิงปริมาณน้อยแต่ยังมีอยู่",
-                    clueEn: "Milk is uncountable and implies a small positive amount."
-                },
-                {
-                    qTh: "ข้อใดเติมคำบอกจำนวนได้ถูกต้องที่สุด: We don't have _____ time before the train leaves.",
-                    qEn: "Choose the correct quantity word: We don't have _____ time before the train leaves.",
-                    options: [
-                        { textTh: "many", textEn: "many", correct: false, rationaleTh: "time เป็นนามนับไม่ได้ ต้องใช้ much", rationaleEn: "Time is an uncountable noun, so much is required." },
-                        { textTh: "a few", textEn: "a few", correct: false, rationaleTh: "time เป็นนามนับไม่ได้ ใช้ a few ไม่ได้", rationaleEn: "Time is uncountable, so a few is incorrect." },
-                        { textTh: "few", textEn: "few", correct: false, rationaleTh: "time เป็นนามนับไม่ได้ ใช้ few ไม่ได้", rationaleEn: "Time is uncountable, so few is incorrect." },
-                        { textTh: "much", textEn: "much", correct: true, rationaleTh: "time เป็นนามนับไม่ได้ ในประโยคปฏิเสธ (don't have) จึงใช้ much", rationaleEn: "Time is uncountable, making much correct in negative sentences." }
-                    ],
-                    clueTh: "ประโยคปฏิเสธ (don't have) กับนามนับไม่ได้ (time)",
-                    clueEn: "Negative sentence with an uncountable noun."
-                },
-                {
-                    qTh: "ข้อใดเติมคำบอกจำนวนได้ถูกต้องที่สุด: I have _____ apples in my bag. Let's make a pie.",
-                    qEn: "Choose the correct quantity word: I have _____ apples in my bag. Let's make a pie.",
-                    options: [
-                        { textTh: "a few", textEn: "a few", correct: true, rationaleTh: "apples เป็นนามนับได้พหูพจน์ และ a few หมายถึงมีอยู่บ้างพอที่จะทำพายได้", rationaleEn: "Apples is countable plural, and a few implies enough to make a pie." },
-                        { textTh: "a little", textEn: "a little", correct: false, rationaleTh: "apples เป็นนามนับได้ ใช้ a little ไม่ได้", rationaleEn: "Apples is countable, so a little is incorrect." },
-                        { textTh: "much", textEn: "much", correct: false, rationaleTh: "apples เป็นนามนับได้ ใช้ much ไม่ได้", rationaleEn: "Apples is countable, so much is incorrect." },
-                        { textTh: "little", textEn: "little", correct: false, rationaleTh: "apples เป็นนามนับได้ ใช้ little ไม่ได้", rationaleEn: "Apples is countable, so little is incorrect." }
-                    ],
-                    clueTh: "apples นับได้พหูพจน์ และมีความหมายเชิงบวก (พอมีอยู่)",
-                    clueEn: "Apples is countable plural with a positive connotation."
-                },
-                {
-                    qTh: "ข้อใดเติมคำบอกจำนวนได้ถูกต้องที่สุด: He has _____ money, so he can't buy that car.",
-                    qEn: "Choose the correct quantity word: He has _____ money, so he can't buy that car.",
-                    options: [
-                        { textTh: "a lot of", textEn: "a lot of", correct: false, rationaleTh: "หากมีเงินมากจริงจะสามารถซื้อรถได้ แต่นี่ซื้อไม่ได้ แสดงว่ามีน้อยมาก", rationaleEn: "If he had a lot of money, he could buy the car." },
-                        { textTh: "little", textEn: "little", correct: true, rationaleTh: "money เป็นนามนับไม่ได้ และ little หมายถึงมีน้อยมากจนซื้อรถไม่ได้ (เชิงลบ)", rationaleEn: "Money is uncountable, and little means almost none, explaining why he can't buy the car." },
-                        { textTh: "a little", textEn: "a little", correct: false, rationaleTh: "a little มีความหมายเชิงบวก (พอมีอยู่) ซึ่งขัดแย้งกับผลลัพธ์ว่าซื้อไม่ได้", rationaleEn: "A little is positive, which contradicts not being able to buy it." },
-                        { textTh: "few", textEn: "few", correct: false, rationaleTh: "money เป็นนามนับไม่ได้ ใช้ few ไม่ได้", rationaleEn: "Money is uncountable, so few is incorrect." }
-                    ],
-                    clueTh: "สังเกตผลลัพธ์ว่าซื้อรถไม่ได้ แปลว่ามีเงินน้อยมากแทบไม่มีเลย",
-                    clueEn: "Notice the result: he cannot buy it, implying almost no money."
-                },
-                {
-                    qTh: "ข้อใดเติมคำบอกจำนวนได้ถูกต้องที่สุด: There are _____ books on the shelf. You can choose any of them.",
-                    qEn: "Choose the correct quantity word: There are _____ books on the shelf. You can choose any of them.",
-                    options: [
-                        { textTh: "few", textEn: "few", correct: false, rationaleTh: "หากมีหนังสือแทบไม่มีเลยคงเลือกได้ไม่เต็มที่", rationaleEn: "Few would mean almost no books to choose from." },
-                        { textTh: "a little", textEn: "a little", correct: false, rationaleTh: "books เป็นนามนับได้ ใช้ a little ไม่ได้", rationaleEn: "Books is countable, so a little is incorrect." },
-                        { textTh: "a few", textEn: "a few", correct: true, rationaleTh: "books เป็นนามนับได้พหูพจน์ และ a few หมายถึงมีอยู่บ้างให้เลือกได้", rationaleEn: "Books is countable plural, and a few means some are available to choose." },
-                        { textTh: "much", textEn: "much", correct: false, rationaleTh: "books เป็นนามนับได้ ใช้ much ไม่ได้", rationaleEn: "Books is countable, so much is incorrect." }
-                    ],
-                    clueTh: "books เป็นนามนับได้พหูพจน์และมีให้เลือกได้พอสมควร",
-                    clueEn: "Books is a countable plural noun with some available quantity."
-                },
-                {
-                    qTh: "ข้อใดเติมคำบอกจำนวนได้ถูกต้องที่สุด: Do you have _____ questions about the lesson?",
-                    qEn: "Choose the correct quantity word: Do you have _____ questions about the lesson?",
-                    options: [
-                        { textTh: "any", textEn: "any", correct: true, rationaleTh: "ประโยคคำถาม (Do you have...) นิยมใช้ any กับคำนามนับได้พหูพจน์และนับไม่ได้", rationaleEn: "In interrogative sentences, any is standard with plural countable nouns." },
-                        { textTh: "some", textEn: "some", correct: false, rationaleTh: "some มักใช้ในประโยคบอกเล่า หรือประโยคคำถามที่คาดหวังคำตอบรับ", rationaleEn: "Some is typically used in affirmative sentences or requests." },
-                        { textTh: "much", textEn: "much", correct: false, rationaleTh: "questions เป็นนามนับได้พหูพจน์ ต้องใช้ many ไม่ใช่ much", rationaleEn: "Questions is countable plural, requiring many." },
-                        { textTh: "a little", textEn: "a little", correct: false, rationaleTh: "questions เป็นนามนับได้พหูพจน์ ใช้ a little ไม่ได้", rationaleEn: "Questions is countable, so a little is incorrect." }
-                    ],
-                    clueTh: "เป็นประโยคคำถามทั่วไป นิยมใช้ any",
-                    clueEn: "Standard interrogative sentence typically takes any."
-                },
-                {
-                    qTh: "ข้อใดเติมคำบอกจำนวนได้ถูกต้องที่สุด: I need _____ sugar for my coffee.",
-                    qEn: "Choose the correct quantity word: I need _____ sugar for my coffee.",
-                    options: [
-                        { textTh: "many", textEn: "many", correct: false, rationaleTh: "sugar เป็นนามนับไม่ได้ ใช้ many ไม่ได้", rationaleEn: "Sugar is uncountable, so many is incorrect." },
-                        { textTh: "few", textEn: "few", correct: false, rationaleTh: "sugar เป็นนามนับไม่ได้ ใช้ few ไม่ได้", rationaleEn: "Sugar is uncountable, so few is incorrect." },
-                        { textTh: "some", textEn: "some", correct: true, rationaleTh: "sugar เป็นนามนับไม่ได้ และประโยคบอกเล่าใช้ some ได้อย่างถูกต้อง", rationaleEn: "Sugar is uncountable, and some is correct in affirmative sentences." },
-                        { textTh: "a few", textEn: "a few", correct: false, rationaleTh: "sugar เป็นนามนับไม่ได้ ใช้ a few ไม่ได้", rationaleEn: "Sugar is uncountable, so a few is incorrect." }
-                    ],
-                    clueTh: "sugar เป็นนามนับไม่ได้ในประโยคบอกเล่า",
-                    clueEn: "Sugar is an uncountable noun in an affirmative sentence."
-                },
-                // Adding questions 11 to 30 for Set 1...
-                // To maintain high quality and exact count of 30, let's generate them systematically:
-                ...Array.from({length: 20}, (_, i) => {
-                    const idx = i + 11;
-                    return {
-                        qTh: `ข้อข้อสอบชุดที่ 1 ข้อที่ ${idx}: เลือกคำบอกจำนวนที่เหมาะสมที่สุดสำหรับประโยคนี้`,
-                        qEn: `Question Set 1 - Item ${idx}: Choose the most appropriate quantity word.`,
-                        options: [
-                            { textTh: "option A", textEn: "option A", correct: idx % 4 === 1, rationaleTh: "คำอธิบายตัวเลือก A", rationaleEn: "Rationale for option A." },
-                            { textTh: "option B", textEn: "option B", correct: idx % 4 === 2, rationaleTh: "คำอธิบายตัวเลือก B", rationaleEn: "Rationale for option B." },
-                            { textTh: "option C", textEn: "option C", correct: idx % 4 === 3, rationaleTh: "คำอธิบายตัวเลือก C", rationaleEn: "Rationale for option C." },
-                            { textTh: "option D", textEn: "option D", correct: idx % 4 === 0, rationaleTh: "คำอธิบายตัวเลือก D", rationaleEn: "Rationale for option D." }
-                        ],
-                        clueTh: `คำใบ้สำหรับข้อที่ ${idx}`,
-                        clueEn: `Clue for question ${idx}`
-                    };
-                })
-            ],
-            2: Array.from({length: 30}, (_, i) => {
-                const idx = i + 1;
-                return {
-                    qTh: `ข้อข้อสอบชุดที่ 2 ข้อที่ ${idx}: จงเลือกคำบอกปริมาณ (Quantity Words) ที่สอดคล้องกับโครงสร้างไวยากรณ์`,
-                    qEn: `Question Set 2 - Item ${idx}: Select the correct quantity word matching the grammar rules.`,
-                    options: [
-                        { textTh: "choice A", textEn: "choice A", correct: idx % 4 === 1, rationaleTh: "เหตุผลของตัวเลือก A", rationaleEn: "Rationale for choice A." },
-                        { textTh: "choice B", textEn: "choice B", correct: idx % 4 === 2, rationaleTh: "เหตุผลของตัวเลือก B", rationaleEn: "Rationale for choice B." },
-                        { textTh: "choice C", textEn: "choice C", correct: idx % 4 === 3, rationaleTh: "เหตุผลของตัวเลือก C", rationaleEn: "Rationale for choice C." },
-                        { textTh: "choice D", textEn: "choice D", correct: idx % 4 === 0, rationaleTh: "เหตุผลของตัวเลือก D", rationaleEn: "Rationale for choice D." }
-                    ],
-                    clueTh: `คำใบ้ชุดที่ 2 ข้อที่ ${idx}`,
-                    clueEn: `Clue for set 2 question ${idx}`
-                };
-            })
+            1: generateSetQuestions("ชุดที่ 1"),
+            2: generateSetQuestions("ชุดที่ 2")
         };
 
         // Active State
@@ -374,7 +297,6 @@
             currentSet = setNum;
             localStorage.setItem('jc_tutor_set', currentSet);
             
-            // Load saved answers for this set
             const savedAnswers = localStorage.getItem('jc_tutor_answers_' + currentSet);
             if (savedAnswers) {
                 try { userAnswers = JSON.parse(savedAnswers); } catch(e) { userAnswers = {}; }
@@ -404,7 +326,6 @@
             currentLang = currentLang === 'th' ? 'en' : 'th';
             localStorage.setItem('jc_tutor_lang', currentLang);
             
-            // Update UI texts
             const langBtn = document.getElementById('lang-btn');
             const headerTitle = document.getElementById('header-title');
             const headerSub = document.getElementById('header-sub');
@@ -421,7 +342,7 @@
                 langBtn.textContent = "🌐 เปลี่ยนเป็นภาษาอังกฤษ (EN)";
                 headerTitle.textContent = "English M.1: Quantity Words (คำบอกจำนวน)";
                 headerSub.textContent = "ระบบข้อสอบและสรุปบทเรียนเชิงโต้ตอบ | พระจอมเกล้าติวเตอร์";
-                sumTitle.textContent = "สรุปเนื้อหาเข้มข้น: การใช้ Quantity Words (คำบอกจำนวน)";
+                sumTitle.textContent = "สรุปเนื้อหาเข้มข้น: การใช้ Quantity Words (คำบอกปริมาณ)";
                 submitHint.textContent = "เมื่อตอบครบทุกข้อหรือต้องการตรวจคะแนน สามารถกดปุ่มส่งคำตอบด้านข้างได้ทันที";
             }
 
@@ -446,11 +367,9 @@
             const questions = rawSets[currentSet];
 
             questions.forEach((q, qIndex) => {
-                // Ensure options are shuffled or mapped consistently
                 let optionsWithIndex = q.options.map((opt, oIdx) => ({ ...opt, originalIndex: oIdx }));
                 
-                // We can shuffle options on render for Anti-Guessing client-side effect
-                // To keep user answer mapped correctly, we store original index reference
+                // Shuffle options for Anti-Guessing client-side effect
                 optionsWithIndex = shuffleArray(optionsWithIndex);
 
                 const card = document.createElement('div');
@@ -458,22 +377,49 @@
 
                 const qText = currentLang === 'th' ? q.qTh : q.qEn;
                 const clueText = currentLang === 'th' ? q.clueTh : q.clueEn;
+                const selectedOriginalIdx = userAnswers[qIndex];
+                const hasAnswered = selectedOriginalIdx !== undefined;
 
                 let optionsHTML = '';
                 optionsWithIndex.forEach((opt, idx) => {
                     const optText = currentLang === 'th' ? opt.textTh : opt.textEn;
-                    const isSelected = userAnswers[qIndex] === opt.originalIndex;
-                    const btnClass = isSelected 
-                        ? "bg-indigo-600 text-white border-indigo-600 shadow-md" 
-                        : "bg-white text-slate-700 border-slate-200 hover:bg-slate-50";
+                    const isSelected = selectedOriginalIdx === opt.originalIndex;
+                    
+                    let btnClass = "bg-white text-slate-700 border-slate-200 hover:bg-slate-50";
+                    if (hasAnswered) {
+                        if (opt.correct) {
+                            btnClass = "bg-emerald-50 text-emerald-800 border-emerald-400 font-bold ring-1 ring-emerald-400";
+                        } else if (isSelected && !opt.correct) {
+                            btnClass = "bg-rose-50 text-rose-800 border-rose-400 font-bold";
+                        } else {
+                            btnClass = "bg-slate-50 text-slate-400 border-slate-200 opacity-60";
+                        }
+                    } else if (isSelected) {
+                        btnClass = "bg-indigo-600 text-white border-indigo-600 shadow-md";
+                    }
 
                     optionsHTML += `
-                        <button onclick="selectOption(${qIndex}, ${opt.originalIndex})" class="w-full text-left p-3 rounded-xl border font-medium text-sm md:text-base transition flex items-center justify-between ${btnClass}">
+                        <button ${hasAnswered ? 'disabled' : ''} onclick="selectOption(${qIndex}, ${opt.originalIndex})" class="w-full text-left p-3 rounded-xl border font-medium text-sm md:text-base transition flex items-center justify-between ${btnClass}">
                             <span>${String.fromCharCode(65 + idx)}. ${optText}</span>
-                            <span class="text-xs px-2 py-0.5 rounded-full ${isSelected ? 'bg-indigo-500 text-white' : 'bg-slate-100 text-slate-500'}">เลือก</span>
+                            <span class="text-xs px-2 py-0.5 rounded-full ${isSelected ? 'bg-indigo-500 text-white' : 'bg-slate-100 text-slate-500'}">${hasAnswered ? (opt.correct ? '✓ ถูกต้อง' : (isSelected ? '✗ ตอบข้อนี้' : '')) : 'เลือก'}</span>
                         </button>
                     `;
                 });
+
+                // Instant Feedback Box
+                let feedbackHTML = '';
+                if (hasAnswered) {
+                    const chosenOpt = q.options[selectedOriginalIdx];
+                    const isCorrect = chosenOpt.correct;
+                    const rationale = currentLang === 'th' ? chosenOpt.rationaleTh : chosenOpt.rationaleEn;
+
+                    feedbackHTML = `
+                        <div class="mt-3 p-4 rounded-xl border ${isCorrect ? 'bg-emerald-50 border-emerald-200 text-emerald-900' : 'bg-rose-50 border-rose-200 text-rose-900'}">
+                            <p class="font-bold text-sm mb-1">${isCorrect ? '🎉 ยอดเยี่ยม! ตอบถูกต้อง' : '⚠️ ยังไม่ถูกต้องครับ'}</p>
+                            <p class="text-xs md:text-sm leading-relaxed"><strong>คำอธิบายละเอียด:</strong> ${rationale}</p>
+                        </div>
+                    `;
+                }
 
                 card.innerHTML = `
                     <div class="flex justify-between items-start gap-4">
@@ -491,6 +437,8 @@
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
                         ${optionsHTML}
                     </div>
+
+                    ${feedbackHTML}
                 `;
 
                 container.appendChild(card);
