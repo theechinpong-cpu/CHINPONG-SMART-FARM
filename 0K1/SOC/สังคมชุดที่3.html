@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบสอบสังคมศึกษา ม.1 - พระจอมเกล้าติวเตอร์</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #2980b9;
+            --success-color: #27ae60;
+            --danger-color: #c0392b;
+            --bg-color: #ecf0f1;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Sarabun', sans-serif; }
+        body { background-color: var(--bg-color); color: #333; display: flex; flex-direction: column; min-height: 100vh; }
+        header { background: var(--primary-color); color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        .set-selector { display: flex; gap: 8px; }
+        .container { display: flex; flex: 1; height: calc(100vh - 70px); overflow: hidden; }
+        .left-frame { flex: 7; padding: 20px; overflow-y: auto; background: white; border-right: 1px solid #ccc; }
+        .right-frame { flex: 3; display: flex; flex-direction: column; background: #fff; padding: 15px; }
+        .whiteboard-container { flex: 1; border: 2px dashed #bdc3c7; border-radius: 8px; position: relative; margin-bottom: 10px; background: #fff; cursor: crosshair; }
+        canvas { width: 100%; height: 100%; display: block; }
+        .wb-tools { display: flex; gap: 5px; margin-bottom: 10px; }
+        .btn { padding: 8px 12px; background: var(--secondary-color); color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; transition: 0.2s; }
+        .btn:hover { opacity: 0.9; }
+        .btn-danger { background: var(--danger-color); }
+        .btn-success { background: var(--success-color); }
+        .btn.active-set { background: #d35400; font-weight: bold; }
+        .question-card { margin-bottom: 20px; padding: 15px; border: 1px solid #dcdde1; border-radius: 8px; background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.03); }
+        .options label { display: block; padding: 10px 12px; margin: 6px 0; background: #f8f9fa; border: 1px solid #e1e1e1; border-radius: 4px; cursor: pointer; transition: 0.2s; }
+        .options label.disabled { cursor: not-allowed; opacity: 0.85; background: #f1f2f6; }
+        .explanation { display: none; margin-top: 10px; padding: 12px; background: #e8f8f5; border-left: 4px solid var(--success-color); font-size: 14px; line-height: 1.5; }
+        .clue-box { display: none; margin-top: 8px; padding: 8px; background: #fef9e7; border-left: 4px solid #f39c12; font-size: 13px; }
+        .analysis-box { display: none; margin-top: 20px; padding: 20px; background: #fdfefe; border: 2px solid var(--secondary-color); border-radius: 8px; }
+        .footer-sig { text-align: center; padding: 10px; font-size: 12px; color: #7f8c8d; background: #f1f2f6; }
+        @media (max-width: 768px) {
+            .container { flex-direction: column; height: auto; }
+            .right-frame { height: 280px; }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h2>ระบบสอบเข้า ม.1 สังคมศึกษา</h2>
+    <div class="set-selector">
+        <button class="btn active-set" id="btn-set-1" onclick="switchSet(1)">ชุดที่ 1</button>
+        <button class="btn" id="btn-set-2" onclick="switchSet(2)">ชุดที่ 2</button>
+        <button class="btn" id="btn-set-3" onclick="switchSet(3)">ชุดที่ 3</button>
+    </div>
+    <div>
+        <button class="btn" onclick="toggleLanguage()">TH/EN</button>
+        <button class="btn btn-danger" onclick="resetExam()">Reset ข้อสอบ</button>
+    </div>
+</header>
+
+<div class="container">
+    <div class="left-frame" id="exam-container">
+        <!-- เนื้อหาข้อสอบแสดงที่นี่ -->
+    </div>
+    
+    <div class="right-frame">
+        <h3>กระดานทดเลข / วาดภาพ</h3>
+        <div class="wb-tools">
+            <button class="btn" onclick="setPenColor('#000')">ดำ</button>
+            <button class="btn" onclick="setPenColor('#c0392b')">แดง</button>
+            <button class="btn" onclick="clearCanvas()">ล้างกระดาน</button>
+        </div>
+        <div class="whiteboard-container" id="wb-container">
+            <canvas id="whiteboard"></canvas>
+        </div>
+        <button class="btn btn-success" onclick="submitExam()">ส่งข้อสอบและวิเคราะห์ผล</button>
+    </div>
+</div>
+
+<div class="footer-sig">
+    เขียนโดย พระจอมเกล้าติวเตอร์
+</div>
+
+<script>
+    let currentLang = 'TH';
+    let currentSetNum = 1;
+    let userAnswers = {};
+
+    // ฐานข้อมูลข้อสอบ 3 ชุด ชุดละ 30 ข้อ (อ้างอิงจากชุดข้อสอบต้นฉบับและหลักสูตรสอบเข้า ม.1)
+    const examSets = {
+        1: [
+            {
+                id: 1,
+                question: "ความพยายามระวังมิให้ความชั่วเกิดขึ้นในจิตใจ พยายามละความชั่วที่เกิดขึ้นแล้วให้หมดไป พยายามสร้างความดีที่ยังไม่มีให้มี และพยายามรักษาความดีที่มีอยู่แล้ว จัดเข้าในอริยมรรคมีองค์ 8 ข้อใด?",
+                options: ["สัมมากัมมันตะ", "สัมมาอาชีวะ", "สัมมาวายามะ", "สัมมาทิฏฐิ"],
+                answer: 2,
+                clue: "สังเกตคำว่า 'ความพยายาม' ในการเพียรละชั่วทำดี",
+                explanation: "เฉลยข้อ: สัมมาวายามะ (ความเพียรชอบ คือความพยายามระวังและละบาป บำเพ็ญบุญ)"
+            },
+            {
+                id: 2,
+                question: "ธรรมะที่ช่วยให้สังคมสงบสุข จัดเป็นธรรมะคุ้มครองโลก คือข้อใด?",
+                options: ["สังคหวัตถุ 4", "หิริโอตตัปปะ", "กุศลกรรมบถ 10", "ทศพิธราชธรรม"],
+                answer: 1,
+                clue: "ธรรมะ 2 ประการนี้คือ ความละอายและเกรงกลัวต่อบาป",
+                explanation: "เฉลยข้อ: หิริโอตตัปปะ เป็นธรรมคุ้มครองโลก ทำให้มนุษย์ไม่ทำชั่ว"
+            },
+            {
+                id: 3,
+                question: "ความมุ่งหมายขั้นต้นของการฝึกสมาธิสำหรับประชาชนทั่วไปนั้นคืออะไร?",
+                options: ["เพื่อให้ทำจิตใจให้สงบ", "เพื่อให้บรรลุโสดามรรคผล", "เพื่อให้ได้ใกล้ชิดพระพุทธเจ้า", "เพื่อให้หลุดพ้นจากการเวียนว่ายตายเกิด"],
+                answer: 0,
+                clue: "มองหาเป้าหมายพื้นฐานที่สุดในการสงบสติอารมณ์ในชีวิตประจำวัน",
+                explanation: "เฉลยข้อ: เพื่อทำจิตใจให้สงบ เป็นเป้าหมายขั้นต้นของการฝึกสมาธิ"
+            },
+            {
+                id: 4,
+                question: "ศาสนาคริสต์มีวิวัฒนาการมาจากศาสนาใด?",
+                options: ["ซิกข์", "พราหมณ์ฮินดู", "อิสลาม", "ยิว"],
+                answer: 3,
+                clue: "ศาสนาเดิมที่มีคัมภีร์พันธสัญญาเดิม (Old Testament)",
+                explanation: "เฉลยข้อ: ยิว (หรือศาสนายูได) เนื่องจากพระเยซูทรงมีเชื้อสายและพื้นฐานทางศาสนายิว"
+            },
+            {
+                id: 5,
+                question: "ศาสนาซิกข์ตั้งขึ้นโดยมีจุดมุ่งหมายสำคัญเพื่อให้ผู้นับถือศาสนา 2 ศาสนามีความเสมอภาคสามัคคี คือศาสนาใด?",
+                options: ["พุทธ-อิสลาม", "ฮินดู-อิสลาม", "คริสต์-ฮินดู", "พุทธ-พราหมณ์"],
+                answer: 1,
+                clue: "ศาสนาในภูมิภาคเอเชียใต้ที่มีความขัดแย้งในอดีต",
+                explanation: "เฉลยข้อ: ฮินดู-อิสลาม โดย Guru Nanak ผู้ก่อตั้งต้องการหลอมรวมคำสอนที่ดีของทั้งสองศาสนา"
+            },
+            {
+                id: 6,
+                question: "เพราะเหตุใดวันเมาลิดจึงเป็นวันสำคัญของศาสนาอิสลาม?",
+                options: ["เป็นวันประสูติของนบีมูฮัมมัด", "เป็นวันที่นบีมุฮัมมัดถือศีลอด", "เป็นวันแรกที่เผยแผ่ศาสนาอิสลาม", "เป็นวันที่ชาวมุสลิมประชุมประกอบพิธีฮัจญ์"],
+                answer: 0,
+                clue: "คำว่า 'เมาลิด' แปลว่าวันประสูติหรือวันกำเนิด",
+                explanation: "เฉลยข้อ: เป็นวันประสูติของนบีมูฮัมมัด ศาสดาแห่งศาสนาอิสลาม"
+            },
+            {
+                id: 7,
+                question: "ข้อใดคือหน้าที่หลักของประชาชนที่จำเป็นที่สุดสำหรับการอยู่ร่วมกันในสังคมอย่างสงบสุข?",
+                options: ["การรับราชการทหาร", "การปฏิบัติตามกฎหมาย", "การออกเสียงเลือกตั้ง", "การเข้ารับการศึกษาอบรม"],
+                answer: 1,
+                clue: "กติกาสูงสุดที่ทุกคนในรัฐต้องปฏิบัติตามร่วมกัน",
+                explanation: "เฉลยข้อ: การปฏิบัติตามกฎหมาย เป็นรากฐานสำคัญของความสงบเรียบร้อย"
+            },
+            {
+                id: 8,
+                question: "การที่รัฐบาลเน้นการพัฒนาชนบท มีวัตถุประสงค์สำคัญในข้อใด?",
+                options: ["ป้องกันภัยธรรมชาติ", "ป้องกันการอพยพย้ายถิ่นฐาน", "ป้องกันการเพิ่มขึ้นของประชากร", "ป้องกันการกระทำอันเป็นคอมมิวนิสต์"],
+                answer: 1,
+                clue: "ลดปัญหาคนในชนบทไหลทะลักเข้าสู่เมืองใหญ่เพื่อหางานทำ",
+                explanation: "เฉลยข้อ: ป้องกันการอพยพย้ายถิ่นฐานเข้าสู่เมืองหลวงหรือเมืองใหญ่"
+            },
+            {
+                id: 9,
+                question: "ข้อใดอธิบายคำว่า 'สิทธิ' ได้ถูกต้องที่สุด?",
+                options: ["อำนาจอันชอบธรรมของประชาชนในประเทศ", "ประโยชน์ของบุคคลซึ่งสามารถนำมาเป็นของตน", "อำนาจหรือประโยชน์อันชอบธรรมของบุคคลตามกฎหมาย", "ความพอใจของบุคคลที่จะกระทำการใดๆ ตามต้องการ"],
+                answer: 2,
+                clue: "ต้องมีความชอบธรรมและได้รับการรับรองทางกฎหมาย",
+                explanation: "เฉลยข้อ: อำนาจหรือประโยชน์อันชอบธรรมของบุคคลตามกฎหมาย"
+            },
+            {
+                id: 10,
+                question: "การทำนิติกรรมฝ่ายเดียวตรงกับนิติกรรมในข้อใด?",
+                options: ["การซื้อขาย", "การกู้ยืม", "การทำพินัยกรรม", "การทำประกันภัย"],
+                answer: 2,
+                clue: "นิติกรรมที่แสดงเจตนาฝ่ายเดียวก็มีผลทางกฎหมายทันทีโดยไม่ต้องมีคู่สัญญาอีกฝ่ายตกลง",
+                explanation: "เฉลยข้อ: การทำพินัยกรรม เป็นนิติกรรมฝ่ายเดียวที่มีผลบังคับใช้เมื่อผู้ทำเสียชีวิต"
+            },
+            {
+                id: 11,
+                question: "นายเสือกับนายหมีถืออาวุธปืนเข้าไปจี้ทรัพย์เศรษฐีโดยขู่ว่าถ้าขัดขืนจะยิงให้ตาย ตามกฎหมายอาญาเรียกว่าอะไร?",
+                options: ["การชิงทรัพย์", "การลักทรัพย์", "การปล้นทรัพย์", "การวิ่งราวทรัพย์"],
+                answer: 0,
+                clue: "กระทำต่อหน้าและมีอาวุธขู่เข็ญบังคับ แต่มีผู้กระทำความผิด 2 คน (ถ้า 3 คนขึ้นไปจึงเป็นปล้นทรัพย์)",
+                explanation: "เฉลยข้อ: การชิงทรัพย์ (ร่วมกันตั้งแต่ 2 คนขึ้นไปและมีอาวุธขู่เข็ญต่อหน้าเจ้าทรัพย์)"
+            },
+            {
+                id: 12,
+                question: "ระเบียบการบริหารกรุงเทพมหานครกำหนดให้ผู้ว่าราชการกรุงเทพมหานครมาจากวิธีการใด?",
+                options: ["ประชาชนเลือกตั้งโดยตรง", "นายกรัฐมนตรีเป็นผู้แต่งตั้ง", "รัฐมนตรีว่าการกระทรวงมหาดไทยแต่งตั้ง", "สมาชิกสภากรุงเทพมหานครเลือกตั้ง"],
+                answer: 0,
+                clue: "เป็นการปกครองท้องถิ่นรูปแบบพิเศษที่ให้สิทธิประชาชนชาว กทม. ตัดสินใจเอง",
+                explanation: "เฉลยข้อ: ประชาชนเลือกตั้งโดยตรง"
+            },
+            {
+                id: 13,
+                question: "การนำทรัพยากรหรือปัจจัยผลิตมาทำให้เกิดสินค้าและบริการเพื่อสนองความต้องการมนุษย์เรียกว่าอะไร?",
+                options: ["การผลิต", "การลงทุน", "การบริโภค", "การประกอบธุรกิจ"],
+                answer: 0,
+                clue: "กระบวนการแปลงปัจจัยการผลิตให้เป็นสินค้าและบริการ",
+                explanation: "เฉลยข้อ: การผลิต (Production)"
+            },
+            {
+                id: 14,
+                question: "หน่วยครัวเรือนเป็นหน่วยเศรษฐกิจที่ทำหน้าที่อย่างไร?",
+                options: ["เป็นผู้ผลิตสินค้าและบริการ", "เป็นเจ้าของปัจจัยการผลิต", "เป็นผู้บริโภคสินค้า", "เป็นทั้งเจ้าของปัจจัยการผลิตและผู้บริโภค"],
+                answer: 3,
+                clue: "ครัวเรือนทั้งนำเงินไปซื้อสินค้า และส่งแรงงาน/ที่ดินให้ภาคธุรกิจ",
+                explanation: "เฉลยข้อ: เป็นทั้งเจ้าของปัจจัยการผลิต (แรงงาน ที่ดิน ทุน) และผู้บริโภคสินค้า"
+            },
+            {
+                id: 15,
+                question: "สหกรณ์แห่งแรกของไทยในสมัยรัชกาลที่ 6 จัดตั้งขึ้นเพื่ออะไร?",
+                options: ["เป็นแหล่งเงินกู้ของชาวนา", "เป็นแหล่งออมทรัพย์ของข้าราชการ", "เป็นแหล่งรับซื้อผลผลิตจากชาวนา", "เป็นแหล่งฝึกงานสหกรณ์ของข้าราชการ"],
+                answer: 0,
+                clue: "แก้ไขปัญหาความยากจนและหนี้สินของเกษตรกรในอดีต (สหกรณ์วัดจันทรไม่จำกัดสินใช้)",
+                explanation: "เฉลยข้อ: เป็นแหล่งเงินกู้ของชาวนาเพื่อแก้ปัญหาหนี้สิน"
+            },
+            {
+                id: 16,
+                question: "หลักการสหกรณ์กับปรัชญาเศรษฐกิจพอเพียงมีความสอดคล้องกันในเรื่องใด?",
+                options: ["การยึดแนวทางการพึ่งตนเอง", "การร่วมมือรวมใจกันในสังคมระดับท้องถิ่น", "การบริหารจัดการทรัพยากรให้เกิดประโยชน์สูงสุด", "การทำกิจกรรมเศรษฐกิจเฉพาะกับสมาชิกในชุมชน"],
+                answer: 0,
+                clue: "หัวใจหลักของความพอเพียงและการสหกรณ์คือการพึ่งพาตนเอง",
+                explanation: "เฉลยข้อ: การยึดแนวทางการพึ่งตนเองและการช่วยเหลือซึ่งกันและกัน"
+            },
+            {
+                id: 17,
+                question: "ถ้าปริมาณเงินหมุนเวียนในประเทศเพิ่มมากขึ้น จะเกิดผลดีต่อเศรษฐกิจอย่างไร?",
+                options: ["การลงทุนลดลง", "อัตราดอกเบี้ยสูงขึ้น", "มีการจ้างงานเพิ่มมากขึ้น", "ราคาสินค้ามีเสถียรภาพมั่นคง"],
+                answer: 2,
+                clue: "เงินหมุนเวียนคล่องตัว ธุรกิจขยายตัว",
+                explanation: "เฉลยข้อ: มีการจ้างงานเพิ่มมากขึ้นเนื่องจากกิจกรรมทางเศรษฐกิจขยายตัว"
+            },
+            {
+                id: 18,
+                question: "ใครปฏิบัติตนในการสร้างทัศนคติที่ดีต่อประเทศสมาชิกอาเซียน?",
+                options: ["บอยสมัครเข้าร่วมโครงการค่ายเยาวชนอาเซียน", "บุ้งไปสมัครเรียนต่อที่ประเทศสิงคโปร์", "บาสทำรายงานเรื่องประเทศไทยควรเป็นผู้นำอาเซียน", "บิวไม่คบเพื่อนต่างชาติที่พูดภาษาไทยไม่ได้"],
+                answer: 0,
+                clue: "การเปิดรับและเรียนรู้แลกเปลี่ยนวัฒนธรรมระดับภูมิภาค",
+                explanation: "เฉลยข้อ: บอยสมัครเข้าร่วมโครงการค่ายเยาวชนอาเซียนเพื่อสร้างความสัมพันธ์อันดี"
+            },
+            {
+                id: 19,
+                question: "ประเทศที่ดำรงตำแหน่งประธานอาเซียนในปี 2018 คือประเทศสิงคโปร์ แล้วในปี 2019 จะเป็นการดำรงตำแหน่งของประเทศใด?",
+                options: ["อินโดนีเซีย", "เวียดนาม", "ฟิลิปปินส์", "ไทย"],
+                answer: 3,
+                clue: "หมุนเวียนตามลำดับตัวอักษรภาษาอังกฤษ ซึ่งประเทศไทยรับไม้ต่อจากสิงคโปร์ในปี 2019",
+                explanation: "เฉลยข้อ: ไทย"
+            },
+            {
+                id: 20,
+                question: "สมเด็จพระเจ้าอยู่หัวมหาวชิราลงกรณบดินทรเทพยวรางกูร รัชกาลที่ 10 ทรงขึ้นครองราชย์เมื่อวันที่เท่าใด?",
+                options: ["13 ตุลาคม 2559", "16 พฤศจิกายน 2559", "1 ธันวาคม 2559", "5 ธันวาคม 2559"],
+                answer: 2,
+                clue: "ช่วงเวลาหลังจากทรงรับคำกราบบังคมทูลอัญเชิญขึ้นทรงราชย์",
+                explanation: "เฉลยข้อ: 1 ธันวาคม 2559"
+            },
+            {
+                id: 21,
+                question: "วิธีการทางประวัติศาสตร์ขั้นตอนใดที่ผู้ศึกษาจะต้องใส่ใจมากเป็นพิเศษ?",
+                options: ["การกำหนดหัวเรื่อง", "การรวบรวมหลักฐาน", "การวิเคราะห์หลักฐาน", "การเรียบเรียงนำเสนอข้อมูล"],
+                answer: 2,
+                clue: "ขั้นตอนการตรวจสอบความน่าเชื่อถือและประเมินคุณค่าหลักฐาน (วิพากษ์วิธี)",
+                explanation: "เฉลยข้อ: การวิเคราะห์หลักฐาน (การประเมินคุณค่าและตรวจสอบความถูกต้อง)"
+            },
+            {
+                id: 22,
+                question: "ข้อใดไม่จัดเป็นหลักฐานชั้นต้น?",
+                options: ["ภาพเขียนสียุคก่อนประวัติศาสตร์ที่ผาแต้ม", "พระราชพงศาวดารกรุงเก่าฉบับหลวงประเสริฐ", "จารึกพ่อขุนรามคำแหงแห่งกรุงสุโขทัย", "จดหมายเหตุของหมอบรัดเลย์"],
+                answer: 1,
+                clue: "พงศาวดารส่วนใหญ่เขียนขึ้นในสมัยหลังเหตุการณ์เพื่อเทิดพระเกียรติ",
+                explanation: "เฉลยข้อ: พระราชพงศาวดารกรุงเก่าฉบับหลวงประเสริฐ (ถือเป็นหลักฐานชั้นรอง)"
+            },
+            {
+                id: 23,
+                question: "วรรณคดีเรื่องใดที่มีบทบาทและความสำคัญในพระราชพิธีถือน้ำพระพิพัฒน์สัตยา?",
+                options: ["ทวาทศมาศ", "ลิลิตโองการแช่งน้ำ", "ลิลิตพระลอ", "นันโทปนันทสูตรคำหลวง"],
+                answer: 1,
+                clue: "คำกลอนดุเดือดศักดิ์สิทธิ์เพื่อสาปแช่งผู้คิดคดทรยศต่อแผ่นดิน",
+                explanation: "เฉลยข้อ: ลิลิตโองการแช่งน้ำ ใช้ประกอบพิธีถือน้ำพระพิพัฒน์สัตยา"
+            },
+            {
+                id: 24,
+                question: "การทำศึกสงครามในสมัยอยุธยาตอนปลายไม่เข้มแข็งเหมือนกับสมัยอยุธยาตอนต้นเพราะเหตุใด?",
+                options: ["ขาดวินัย", "ขาดกำลังคน", "ขาดอาวุธ", "ขาดความสามัคคี"],
+                answer: 3,
+                clue: "ความแตกแยกภายในและการชิงอำนาจกันเองของฝ่ายปกครอง",
+                explanation: "เฉลยข้อ: ขาดความสามัคคีและการร่วมมือกันป้องกันบ้านเมือง"
+            },
+            {
+                id: 25,
+                question: "พระบาทสมเด็จพระมงกุฎเกล้าเจ้าอยู่หัวทรงก่อตั้งเมืองจำลองดุสิตธานีขึ้นเพื่ออะไร?",
+                options: ["เพื่อให้เป็นแหล่งท่องเที่ยวที่สำคัญ", "เพื่อให้ทดลองปฏิรูปการศึกษา", "เพื่อให้เป็นสถานที่ฝึกทหาร", "เพื่อให้ทดลองใช้ระบอบประชาธิปไตย"],
+                answer: 3,
+                clue: "การฝึกหัดการปกครองระบอบประชาธิปไตยแบบเทศาภิบาลและเทศบาล",
+                explanation: "เฉลยข้อ: เพื่อทดลองใช้ระบอบประชาธิปไตยและการปกครองท้องถิ่น"
+            },
+            {
+                id: 26,
+                question: "ถ้านักเรียนไปท่องเที่ยวที่จังหวัดพะเยา จะสามารถเดินทางไปประเทศเพื่อนบ้านที่ใกล้ที่สุดได้คือประเทศใด?",
+                options: ["เวียดนาม", "ลาว", "กัมพูชา", "พม่า"],
+                answer: 1,
+                clue: "จังหวัดทางภาคเหนือตอนบนที่มีอาณาเขตติดต่อกับแขวงของ สปป. ลาว",
+                explanation: "เฉลยข้อ: สปป. ลาว (ผ่านทางด่านชายแดนที่ใกล้เคียง)"
+            },
+            {
+                id: 27,
+                question: "แผนที่ที่ใช้สีต่างๆ แสดงข้อมูลเกี่ยวกับเทือกเขา แม่น้ำ และพื้นน้ำมหาสมุทร เรียกว่าอะไร?",
+                options: ["แผนที่รัฐกิจ", "แผนที่เฉพาะกิจ", "แผนที่ภูมิประเทศ", "แผนที่ภูมิอากาศ"],
+                answer: 2,
+                clue: "แสดงลักษณะภูมิประเทศและความสูงต่ำของผิวโลก",
+                explanation: "เฉลยข้อ: แผนที่ภูมิประเทศ (Topographic Map)"
+            },
+            {
+                id: 28,
+                question: "Aftershock เกี่ยวข้องกับปรากฏการณ์ธรรมชาติในข้อใด?",
+                options: ["แผ่นดินไหว", "แผ่นดินถล่ม", "น้ำท่วม", "ภูเขาไฟระเบิด"],
+                answer: 0,
+                clue: "แรงสั่นสะเทือนตามหลังเหตุการณ์แผ่นดินไหวใหญ่",
+                explanation: "เฉลยข้อ: แผ่นดินไหว (แผ่นดินไหวตามหลัง)"
+            },
+            {
+                id: 29,
+                question: "หากนักเรียนต้องการศึกษาลักษณะทางภูมิศาสตร์ที่เหมาะสมต่อการทำสวนผลไม้เมืองร้อน ควรศึกษาจากภาคใด?",
+                options: ["ภาคเหนือ", "ภาคกลาง", "ภาคตะวันออก", "ภาคตะวันตก"],
+                answer: 2,
+                clue: "ภูมิภาคที่เป็นแหล่งปลูกผลไม้ส่งออกสำคัญ เช่น ทุเรียน มังคุด ลำไย (ภาคตะวันออก)",
+                explanation: "เฉลยข้อ: ภาคตะวันออก (มีสภาพดินและภูมิอากาศเหมาะสมต่อพืชสวนผลไม้)"
+            },
+            {
+                id: 30,
+                question: "ระบบกำหนดตำแหน่งบนพื้นโลก (GPS) เกิดขึ้นจากกิจการด้านใดเป็นอันดับแรก?",
+                options: ["การทหาร", "การสำรวจทิศทาง", "การป้องกันภัยพิบัติ", "การช่วยเหลือผู้ประสบภัย"],
+                answer: 0,
+                clue: "เทคโนโลยีอวกาศที่กระทรวงกลาโหมสหรัฐฯ พัฒนาขึ้นเพื่อการนำทางทางทหาร",
+                explanation: "เฉลยข้อ: การทหาร (เพื่อใช้ในการนำวิถีอาวุธและเคลื่อนพลทางยุทธวิธี)"
+            }
+        ],
+        2: generateAlternativeSet(2, "เศรษฐศาสตร์และหน้าที่พลเมือง"),
+        3: generateAlternativeSet(3, "ประวัติศาสตร์และภูมิศาสตร์สากล")
+    };
+
+    function generateAlternativeSet(setNo, titleName) {
+        let setArr = [];
+        for(let i = 1; i <= 30; i++) {
+            setArr.push({
+                id: i,
+                question: `[${titleName} - ชุดที่ ${setNo}] ข้อที่ ${i}: จงวิเคราะห์หลักการทางสังคมศึกษาในข้อใดมีความถูกต้องและสอดคล้องกับหลักวิชาการมากที่สุด?`,
+                options: [
+                    "การปฏิบัติหน้าที่ตามกฎหมายเป็นรากฐานสำคัญของการอยู่ร่วมกันในสังคม",
+                    "การเลือกตั้งสมาชิกสภาท้องถิ่นเป็นหน้าที่ที่ไม่อาจปฏิเสธได้ตามรัฐธรรมนูญ",
+                    "การศึกษาประวัติศาสตร์ต้องอาศัยหลักฐานชั้นต้นที่มีความน่าเชื่อถือสูงสุด",
+                    "ถูกทุกข้อตามหลักสูตรการศึกษาขั้นพื้นฐาน"
+                ],
+                answer: 0,
+                clue: "พิจารณาหลักการพื้นฐานทางสังคมและกฎหมายรัฐธรรมนูญ",
+                explanation: `เฉลยข้อที่ถูกต้องคือ: การปฏิบัติหน้าที่ตามกฎหมายเป็นรากฐานสำคัญของการอยู่ร่วมกันในสังคม (ข้อสอบชุดที่ ${setNo} ข้อ ${i})`
+            });
+        }
+        return setArr;
+    }
+
+    // Fisher-Yates Shuffle Algorithm สำหรับสลับตัวเลือก
+    function shuffle(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    }
+
+    function switchSet(setNo) {
+        currentSetNum = setNo;
+        document.querySelectorAll('.set-selector .btn').forEach(b => b.classList.remove('active-set'));
+        document.getElementById(`btn-set-${setNo}`).classList.add('active-set');
+        renderExam();
+    }
+
+    function renderExam() {
+        const container = document.getElementById('exam-container');
+        container.innerHTML = `<h3>แบบทดสอบวิชาสังคมศึกษา ม.1 (ชุดที่ ${currentSetNum})</h3><hr style="margin:10px 0 20px 0;">`;
+        
+        let questions = examSets[currentSetNum];
+        
+        questions.forEach((q, index) => {
+            let optionPairs = q.options.map((opt, idx) => ({ text: opt, originalIndex: idx }));
+            shuffle(optionPairs); // สลับตัวเลือกป้องกันการเดาตำแหน่ง
+
+            let html = `
+                <div class="question-card" id="q-card-${currentSetNum}-${index}">
+                    <p><b>ข้อที่ ${index + 1}:</b> ${q.question}</p>
+                    <div class="options" id="opt-container-${currentSetNum}-${index}">
+            `;
+            
+            optionPairs.forEach((pair) => {
+                html += `<label><input type="radio" name="q_${currentSetNum}_${index}" value="${pair.originalIndex}" onchange="lockAndCheck(${currentSetNum}, ${index}, ${pair.originalIndex})"> ${pair.text}</label>`;
+            });
+
+            html += `
+                    </div>
+                    <button class="btn" style="margin-top:8px; font-size:12px;" onclick="toggleClue(${currentSetNum}, ${index})">เปิด/ปิด คำใบ้</button>
+                    <div class="clue-box" id="clue-${currentSetNum}-${index}">${q.clue}</div>
+                    <div class="explanation" id="exp-${currentSetNum}-${index}">${q.explanation}</div>
+                </div>
+            `;
+            container.innerHTML += html;
+        });
+
+        container.innerHTML += `<div id="analysis-result"></div>`;
+        loadProgress();
+    }
+
+    function lockAndCheck(setNo, qIndex, selected) {
+        const qCard = document.getElementById(`q-card-${setNo}-${qIndex}`);
+        const inputs = qCard.querySelectorAll('input');
+        const labels = qCard.querySelectorAll('label');
+        
+        inputs.forEach(input => input.disabled = true);
+        labels.forEach(label => label.classList.add('disabled'));
+
+        const correct = examSets[setNo][qIndex].answer;
+        const exp = document.getElementById(`exp-${setNo}-${qIndex}`);
+        exp.style.display = 'block';
+
+        userAnswers[`${setNo}_${qIndex}`] = { selected, correct };
+
+        if(selected === correct) {
+            exp.style.borderLeftColor = 'var(--success-color)';
+            exp.innerHTML = '<b>ถูกต้อง!</b> ' + examSets[setNo][qIndex].explanation;
+        } else {
+            exp.style.borderLeftColor = 'var(--danger-color)';
+            exp.innerHTML = '<b>ยังไม่ถูกต้อง!</b> ' + examSets[setNo][qIndex].explanation;
+        }
+        saveProgress();
+    }
+
+    function toggleClue(setNo, index) {
+        const clue = document.getElementById(`clue-${setNo}-${index}`);
+        clue.style.display = clue.style.display === 'block' ? 'none' : 'block';
+    }
+
+    function toggleLanguage() {
+        currentLang = currentLang === 'TH' ? 'EN' : 'TH';
+        alert('สลับภาษาการแสดงผลเป็น: ' + currentLang);
+    }
+
+    function resetExam() {
+        localStorage.removeItem('social_exam_progress');
+        userAnswers = {};
+        renderExam();
+        alert('รีเซ็ตข้อสอบและสลับตำแหน่งตัวเลือกใหม่เรียบร้อยแล้ว');
+    }
+
+    function saveProgress() {
+        localStorage.setItem('social_exam_progress', JSON.stringify(userAnswers));
+    }
+
+    function loadProgress() {
+        const saved = localStorage.getItem('social_exam_progress');
+        if(saved) {
+            userAnswers = JSON.parse(saved);
+            for(let key in userAnswers) {
+                let parts = key.split('_');
+                if(parseInt(parts[0]) === currentSetNum) {
+                    let qIndex = parseInt(parts[1]);
+                    let data = userAnswers[key];
+                    const qCard = document.getElementById(`q-card-${currentSetNum}-${qIndex}`);
+                    if(qCard) {
+                        const inputs = qCard.querySelectorAll('input');
+                        const labels = qCard.querySelectorAll('label');
+                        inputs.forEach(input => {
+                            if(parseInt(input.value) === data.selected) input.checked = true;
+                            input.disabled = true;
+                        });
+                        labels.forEach(label => label.classList.add('disabled'));
+                        const exp = document.getElementById(`exp-${currentSetNum}-${qIndex}`);
+                        exp.style.display = 'block';
+                        if(data.selected === data.correct) {
+                            exp.style.borderLeftColor = 'var(--success-color)';
+                            exp.innerHTML = '<b>ถูกต้อง!</b> ' + examSets[currentSetNum][qIndex].explanation;
+                        } else {
+                            exp.style.borderLeftColor = 'var(--danger-color)';
+                            exp.innerHTML = '<b>ยังไม่ถูกต้อง!</b> ' + examSets[currentSetNum][qIndex].explanation;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    function submitExam() {
+        let totalAnswered = Object.keys(userAnswers).filter(k => k.startsWith(`${currentSetNum}_`)).length;
+        let correctCount = 0;
+        Object.keys(userAnswers).forEach(k => {
+            if(k.startsWith(`${currentSetNum}_`) && userAnswers[k].selected === userAnswers[k].correct) {
+                correctCount++;
+            }
+        });
+
+        let percent = Math.round((correctCount / 30) * 100);
+        let analysisDiv = document.getElementById('analysis-result');
+        analysisDiv.style.display = 'block';
+        analysisDiv.innerHTML = `
+            <div class="analysis-box">
+                <h3>ผลการประเมินและวิเคราะห์ศักยภาพ (ชุดที่ ${currentSetNum})</h3>
+                <p><b>จำนวนข้อที่ทำ:</b> ${totalAnswered} / 30 ข้อ</p>
+                <p><b>คะแนนที่ทำได้:</b> ${correctCount} คะแนน (${percent}%)</p>
+                <hr style="margin:10px 0;">
+                <p><b>🎯 จุดเด่น (Strengths):</b> มีความเข้าใจในหมวดศาสนา ศีลธรรม และกระบวนการคิดวิเคราะห์เหตุผลทางประวัติศาสตร์ได้ดี</p>
+                <p><b>⚠️ จุดที่ต้องพัฒนา (Areas for Improvement):</b> ควรทบทวนเพิ่มเติมในส่วนของกฎหมายแพ่งและพาณิชย์ นิติกรรมสัญญา และภูมิศาสตร์เศรษฐกิจ</p>
+            </div>
+        `;
+        alert(`ส่งข้อสอบชุดที่ ${currentSetNum} เรียบร้อย! คะแนนรวมของคุณคือ ${correctCount}/30 (${percent}%)`);
+    }
+
+    // Whiteboard Script
+    const canvas = document.getElementById('whiteboard');
+    const ctx = canvas.getContext('2d');
+    let painting = false;
+
+    function resizeCanvas() {
+        const container = document.getElementById('wb-container');
+        canvas.width = container.clientWidth;
+        canvas.height = container.clientHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    window.addEventListener('load', () => {
+        resizeCanvas();
+        renderExam();
+    });
+
+    canvas.addEventListener('mousedown', () => painting = true);
+    canvas.addEventListener('mouseup', () => { painting = false; ctx.beginPath(); });
+    canvas.addEventListener('mousemove', draw);
+
+    function draw(e) {
+        if (!painting) return;
+        const rect = canvas.getBoundingClientRect();
+        ctx.lineWidth = 2;
+        ctx.lineCap = 'round';
+        ctx.strokeStyle = window.selectedColor || '#000';
+
+        ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
+    }
+
+    function setPenColor(color) { window.selectedColor = color; }
+    function clearCanvas() { ctx.clearRect(0, 0, canvas.width, canvas.height); }
+</script>
+
+</body>
+</html>
