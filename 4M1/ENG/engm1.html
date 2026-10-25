@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบฝึกอ่านภาษาอังกฤษ ม.1 เทอม 2 - พระจอมเกล้าติวเตอร์</title>
+    <style>
+        :root {
+            --primary-color: #3b82f6;
+            --secondary-color: #1d4ed8;
+            --success-color: #16a34a;
+            --danger-color: #dc2626;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-color: #1e293b;
+            --tooltip-bg: #0f172a;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: var(--bg-color); color: var(--text-color); line-height: 1.8; padding: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        header { text-align: center; margin-bottom: 30px; background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); color: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        header h1 { font-size: 2rem; margin-bottom: 10px; }
+        header p { font-size: 1.1rem; opacity: 0.9; }
+
+        .card { background: var(--card-bg); padding: 30px; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 25px; }
+        .card h2 { color: var(--secondary-color); margin-bottom: 20px; font-size: 1.5rem; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; }
+        
+        /* Two-Frame Layout */
+        .main-layout { display: grid; grid-template-columns: 7fr 3fr; gap: 20px; align-items: start; }
+        @media(max-width: 900px) { .main-layout { grid-template-columns: 1fr; } }
+
+        /* Story & Tooltip Styles */
+        .story-text { font-size: 1.15rem; color: #334155; margin-bottom: 20px; text-align: justify; }
+        .story-text p { margin-bottom: 15px; }
+        
+        .vocab-word {
+            position: relative;
+            color: var(--secondary-color);
+            font-weight: bold;
+            cursor: pointer;
+            border-bottom: 2px dashed var(--primary-color);
+            background-color: #eff6ff;
+            padding: 0 4px;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+        .vocab-word:hover { background-color: #dbeafe; }
+        
+        .vocab-word .tooltip-bubble {
+            visibility: hidden;
+            width: 160px;
+            background-color: var(--tooltip-bg);
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 8px;
+            position: absolute;
+            z-index: 10;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 0.9rem;
+            font-weight: normal;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
+        .vocab-word .tooltip-bubble::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: var(--tooltip-bg) transparent transparent transparent;
+        }
+        .vocab-word:hover .tooltip-bubble { visibility: visible; opacity: 1; }
+
+        /* Question Styles */
+        .question-box { margin-bottom: 25px; padding-bottom: 20px; border-bottom: 1px solid #e2e8f0; }
+        .question-box h4 { font-size: 1.1rem; margin-bottom: 12px; color: var(--secondary-color); }
+        .options { display: flex; flex-direction: column; gap: 8px; }
+        .option-btn { text-align: left; padding: 10px 15px; border: 1px solid #cbd5e1; border-radius: 6px; background: white; cursor: pointer; transition: 0.2s; font-size: 1rem; }
+        .option-btn:hover { background: #f1f5f9; }
+        .option-btn.correct { background: #dcfce7 !important; border-color: var(--success-color); color: #166534; font-weight: bold; }
+        .option-btn.incorrect { background: #fee2e2 !important; border-color: var(--danger-color); color: #991b1b; }
+        
+        .clue-box { margin-top: 8px; font-size: 0.9rem; color: #64748b; font-style: italic; display: none; }
+        .toggle-clue { font-size: 0.85rem; color: var(--primary-color); cursor: pointer; background: none; border: none; margin-top: 5px; display: inline-block; }
+        .explanation { margin-top: 10px; padding: 12px; background: #f8fafc; border-left: 4px solid var(--primary-color); font-size: 0.95rem; display: none; }
+
+        /* Whiteboard Section (Right Frame 30%) */
+        .whiteboard-section { background: var(--card-bg); padding: 20px; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); position: sticky; top: 20px; }
+        .whiteboard-section h3 { margin-bottom: 10px; font-size: 1.2rem; color: var(--secondary-color); }
+        #wb-canvas { width: 100%; height: 350px; background: #ffffff; border: 2px dashed #cbd5e1; border-radius: 8px; cursor: crosshair; }
+        .wb-tools { display: flex; gap: 10px; margin-top: 10px; }
+        .wb-tools button { padding: 6px 12px; border: none; border-radius: 4px; background: #e2e8f0; cursor: pointer; font-size: 0.9rem; }
+        .wb-tools button.active { background: var(--primary-color); color: white; }
+
+        .footer-credit { text-align: center; margin-top: 40px; font-size: 0.9rem; color: #64748b; padding: 20px; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <header>
+        <h1>ระบบฝึกอ่านภาษาอังกฤษ ม.1 เทอม 2</h1>
+        <p>นิทานฝึกอ่านจับใจความพร้อมระบบคำศัพท์ Interactive และคำถามวัดความเข้าใจแบบเฉลยทันที</p>
+    </header>
+
+    <!-- Story Card -->
+    <div class="card">
+        <h2>Reading Story: The Unexpected Journey</h2>
+        <div class="story-text">
+            <p>
+                Last weekend, the <span class="vocab-word">weather <span class="tooltip-bubble">สภาพอากาศ</span></span> was quite unpredictable. In the morning, a thick fog covered the city, making our <span class="vocab-word">journey <span class="tooltip-bubble">การเดินทาง</span></span> to the countryside rather difficult. However, my family and I decided to continue our trip because we wanted to explore a new local market.
+            </p>
+            <p>
+                When we arrived at the destination, I felt a strong wave of <span class="vocab-word">excitement <span class="tooltip-bubble">ความตื่นเต้น</span></span>. The marketplace was vibrant and full of colorful items. My mother wanted to do some <span class="vocab-word">shopping <span class="tooltip-bubble">การช้อปปิ้ง / ซื้อของ</span></span> for traditional organic vegetables, while I looked for winter clothes to maintain good <span class="vocab-word">health <span class="tooltip-bubble">สุขภาพ</span></span> during the upcoming cold season.
+            </p>
+            <p>
+                Suddenly, dark clouds appeared in the sky, and heavy rain started to fall. We quickly ran for shelter under a big roof. Even though we got a bit wet, it was a memorable experience that taught us how to adapt to changing environments with cheerful <span class="vocab-word">feelings <span class="tooltip-bubble">ความรู้สึก</span></span>.
+            </p>
+        </div>
+    </div>
+
+    <!-- Two-Frame Layout: Questions (Left 70%) & Whiteboard (Right 30%) -->
+    <div class="main-layout">
+        <!-- Left Frame: Comprehension Questions -->
+        <div class="card" style="margin-bottom: 0;">
+            <h2>Reading Comprehension Questions</h2>
+            <div id="questions-container"></div>
+        </div>
+
+        <!-- Right Frame: Whiteboard -->
+        <div class="whiteboard-section">
+            <h3>กระดานทดเลข / โน้ตคำศัพท์</h3>
+            <canvas id="wb-canvas"></canvas>
+            <div class="wb-tools">
+                <button id="pen-btn" class="active" onclick="setTool('pen')">ปากกา</button>
+                <button id="eraser-btn" onclick="setTool('eraser')">ยางลบ</button>
+                <button onclick="clearCanvas()">ล้างกระดาน</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer-credit">
+        เขียนโดย พระจอมเกล้าติวเตอร์
+    </div>
+</div>
+
+<script>
+    // Raw Questions Data (Anti-Guessing & Length Parity Standards Applied)
+    const rawQuestions = [
+        {
+            q: "1. What was the weather like in the morning according to the story?",
+            options: [
+                "A thick fog covered the city completely",
+                "It was extremely hot and sunny all day",
+                "There was a heavy unexpected snowstorm",
+                "Strong wind blew away park trees"
+            ],
+            correct: 0,
+            clue: "สังเกตประโยคบอกสภาพอากาศในช่วงเช้าของเรื่อง",
+            exp: "วิธีคิด: จากย่อหน้าแรกระบุว่า 'In the morning, a thick fog covered the city' แสดงว่ามีหมอกหนาปกคลุมเมืองในตอนเช้า"
+        },
+        {
+            q: "2. Why did the family decide to continue their trip despite the bad start?",
+            options: [
+                "They wanted to explore a new local market",
+                "They had to meet their friends for lunch",
+                "Their car broke down on the main road",
+                "They forgot their heavy luggage at home"
+            ],
+            correct: 0,
+            clue: "มองหาเหตุผลที่ครอบครัวยังคงเดินทางต่อไปแม้จะเริ่มต้นไม่ดี",
+            exp: "วิธีคิด: เนื้อเรื่องระบุว่า 'because we wanted to explore a new local market' เพื่อต้องการสำรวจตลาดท้องถิ่นแห่งใหม่"
+        },
+        {
+            q: "3. What did the writer look for while shopping at the market?",
+            options: [
+                "Winter clothes for the cold season",
+                "Fresh organic fruits and seafood",
+                "Souvenirs for school teachers",
+                "Books and educational stationery"
+            ],
+            correct: 0,
+            clue: "จับใจความสิ่งที่ผู้เขียนต้องการซื้อเพื่อดูแลตัวเอง",
+            exp: "วิธีคิด: ผู้เขียนต้องการหาซื้อเสื้อผ้าหน้าหนาวเพื่อรักษาสุขภาพ 'while I looked for winter clothes to maintain good health'"
+        },
+        {
+            q: "4. How did the story end when heavy rain started to fall?",
+            options: [
+                "They ran for shelter and gained a memorable experience",
+                "They got very angry and went straight back home",
+                "They continued walking in the rain without protection",
+                "They stayed inside a restaurant all day long"
+            ],
+            correct: 0,
+            clue: "สังเกตเหตุการณ์ตอนฝนตกและบทสรุปของเรื่อง",
+            exp: "วิธีคิด: ตอนท้ายเรื่องระบุว่า 'We quickly ran for shelter under a big roof... it was a memorable experience'"
+        }
+    ];
+
+    // Fisher-Yates Shuffle Algorithm
+    function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    }
+
+    // Render Questions with Randomized Options
+    function renderQuestions() {
+        const container = document.getElementById('questions-container');
+        let html = '';
+
+        rawQuestions.forEach((item, qIndex) => {
+            let shuffledOpts = item.options.map((opt, idx) => ({ text: opt, originalIndex: idx }));
+            shuffledOpts = shuffleArray(shuffledOpts);
+
+            html += `
+                <div class="question-box" id="q-box-${qIndex}">
+                    <h4>${item.q}</h4>
+                    <div class="options">
+            `;
+
+            shuffledOpts.forEach((optObj, optIndex) => {
+                html += `<button class="option-btn" onclick="checkAnswer(${qIndex}, ${optObj.originalIndex}, ${item.correct}, this)">${String.fromCharCode(65 + optIndex)}. ${optObj.text}</button>`;
+            });
+
+            html += `
+                    </div>
+                    <button class="toggle-clue" onclick="toggleClue(${qIndex})">💡 แสดง/ซ่อนคำใบ้</button>
+                    <div class="clue-box" id="clue-${qIndex}">คำใบ้: ${item.clue}</div>
+                    <div class="explanation" id="exp-${qIndex}"><strong>เฉลยและวิธีคิด:</strong> ${item.exp}</div>
+                </div>
+            `;
+        });
+
+        container.innerHTML = html;
+    }
+
+    function toggleClue(index) {
+        const clueBox = document.getElementById(`clue-${index}`);
+        clueBox.style.display = clueBox.style.display === 'block' ? 'none' : 'block';
+    }
+
+    function checkAnswer(qIndex, selectedOriginalIdx, correctOriginalIdx, btnElement) {
+        const qBox = document.getElementById(`q-box-${qIndex}`);
+        const buttons = qBox.querySelectorAll('.option-btn');
+        const expBox = document.getElementById(`exp-${qIndex}`);
+
+        buttons.forEach(btn => {
+            btn.disabled = true;
+        });
+
+        buttons.forEach(btn => {
+            let isTargetCorrect = false;
+            rawQuestions[qIndex].options.forEach((optText, idx) => {
+                if (btn.innerText.substring(3).trim() === optText && idx === correctOriginalIdx) {
+                    isTargetCorrect = true;
+                }
+            });
+
+            if (isTargetCorrect) {
+                btn.classList.add('correct');
+            } else if (btn === btnElement && selectedOriginalIdx !== correctOriginalIdx) {
+                btn.classList.add('incorrect');
+            }
+        });
+
+        expBox.style.display = 'block';
+    }
+
+    // Whiteboard Scripting
+    const canvas = document.getElementById('wb-canvas');
+    const ctx = canvas.getContext('2d');
+    let painting = false;
+    let currentTool = 'pen';
+
+    function resizeCanvas() {
+        canvas.width = canvas.parentElement.clientWidth - 40;
+        canvas.height = 350;
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+    window.addEventListener('load', () => {
+        resizeCanvas();
+        renderQuestions();
+    });
+
+    canvas.addEventListener('mousedown', startPosition);
+    canvas.addEventListener('mouseup', endPosition);
+    canvas.addEventListener('mousemove', draw);
+
+    function startPosition(e) {
+        painting = true;
+        draw(e);
+    }
+    function endPosition() {
+        painting = false;
+        ctx.beginPath();
+    }
+    function draw(e) {
+        if (!painting) return;
+        const rect = canvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+
+        ctx.lineWidth = currentTool === 'eraser' ? 20 : 3;
+        ctx.lineCap = 'round';
+        ctx.strokeStyle = currentTool === 'eraser' ? '#ffffff' : '#1e293b';
+
+        ctx.lineTo(x, y);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+    }
+
+    function setTool(tool) {
+        currentTool = tool;
+        document.getElementById('pen-btn').classList.toggle('active', tool === 'pen');
+        document.getElementById('eraser-btn').classList.toggle('active', tool === 'eraser');
+    }
+
+    function clearCanvas() {
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+</script>
+</body>
+</html>
