@@ -1,0 +1,1213 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบสอบออนไลน์ - RAM1131: อารยธรรมมนุษย์</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #2980b9;
+            --accent-color: #e67e22;
+            --bg-color: #f8f9fa;
+            --card-bg: #ffffff;
+            --text-color: #333333;
+            --border-color: #dcdde1;
+            --success-color: #27ae60;
+            --error-color: #c0392b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 2rem 1rem;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        header h1 {
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+        }
+
+        header p {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1.5rem;
+        }
+
+        /* Summary Section */
+        .summary-section {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            border-top: 5px solid var(--secondary-color);
+        }
+
+        .summary-section h2 {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 0.5rem;
+        }
+
+        .summary-section h3 {
+            color: var(--secondary-color);
+            margin: 1.2rem 0 0.5rem 0;
+            font-size: 1.2rem;
+        }
+
+        .summary-section p, .summary-section li {
+            margin-bottom: 0.8rem;
+            text-align: justify;
+        }
+
+        .summary-section ul {
+            padding-left: 1.5rem;
+        }
+
+        .mind-trick-box {
+            background-color: #fdf3e7;
+            border-left: 4px solid var(--accent-color);
+            padding: 1.2rem;
+            margin: 1.5rem 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .mind-trick-box h4 {
+            color: #d35400;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Two-Frame Layout */
+        .main-layout {
+            display: flex;
+            gap: 1.5rem;
+            position: relative;
+        }
+
+        /* Left Frame: Quiz (70%) */
+        .quiz-frame {
+            flex: 0 0 70%;
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        /* Right Frame: Whiteboard & Controls (30%) */
+        .tool-frame {
+            flex: 0 0 calc(30% - 1.5rem);
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .card-panel {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        .card-panel h3 {
+            font-size: 1.1rem;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* Navigation Bar for Questions */
+        .q-nav-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 0.5rem;
+            max-height: 250px;
+            overflow-y: auto;
+            padding: 0.2rem;
+        }
+
+        .q-nav-btn {
+            aspect-ratio: 1;
+            background: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+        }
+
+        .q-nav-btn:hover {
+            border-color: var(--secondary-color);
+        }
+
+        .q-nav-btn.active {
+            border-color: var(--primary-color);
+            background: #ebf5fb;
+            color: var(--primary-color);
+        }
+
+        .q-nav-btn.answered {
+            background: #d4efdf;
+            border-color: var(--success-color);
+            color: #145a32;
+        }
+
+        /* Question Item Styling */
+        .question-card {
+            display: none;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        .question-card.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .question-title {
+            font-size: 1.15rem;
+            font-weight: 600;
+            margin-bottom: 1.2rem;
+            color: var(--primary-color);
+        }
+
+        .options-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .option-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.8rem;
+            padding: 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: var(--card-bg);
+        }
+
+        .option-item:hover {
+            background: #f8f9fa;
+            border-color: var(--secondary-color);
+        }
+
+        .option-item input[type="radio"] {
+            margin-top: 0.2rem;
+        }
+
+        .option-text {
+            flex: 1;
+            font-size: 1rem;
+        }
+
+        /* Clue Section */
+        .clue-box {
+            margin-bottom: 1.5rem;
+        }
+
+        .clue-toggle {
+            background: #fef9e7;
+            border: 1px solid #f9e79f;
+            color: #b7950b;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+
+        .clue-toggle:hover {
+            background: #f9e79f;
+        }
+
+        .clue-content {
+            display: none;
+            margin-top: 0.5rem;
+            padding: 0.8rem;
+            background: #fef9e7;
+            border-left: 3px solid var(--accent-color);
+            font-size: 0.95rem;
+            border-radius: 0 6px 6px 0;
+        }
+
+        /* Explanation Box */
+        .explanation-box {
+            display: none;
+            margin-top: 1.5rem;
+            padding: 1.2rem;
+            border-radius: 8px;
+            font-size: 0.95rem;
+        }
+
+        .explanation-box.correct-feedback {
+            background: #eafaf1;
+            border: 1px solid #a9dfbf;
+            color: #145a32;
+        }
+
+        .explanation-box.incorrect-feedback {
+            background: #f5b7b133;
+            border: 1px solid #f5b7b1;
+            color: #78281f;
+        }
+
+        .explanation-box h4 {
+            margin-bottom: 0.5rem;
+            font-size: 1.05rem;
+        }
+
+        /* Quiz Controls */
+        .quiz-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 2rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .btn {
+            background: var(--secondary-color);
+            color: white;
+            border: none;
+            padding: 0.6rem 1.5rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: background 0.2s;
+        }
+
+        .btn:hover {
+            background: var(--primary-color);
+        }
+
+        .btn:disabled {
+            background: var(--border-color);
+            cursor: not-allowed;
+        }
+
+        .btn-submit {
+            background: var(--success-color);
+        }
+        .btn-submit:hover {
+            background: #1e8449;
+        }
+
+        .btn-reset {
+            background: var(--error-color);
+        }
+        .btn-reset:hover {
+            background: #922b21;
+        }
+
+        /* Whiteboard Styling */
+        #whiteboard {
+            width: 100%;
+            height: 220px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background: white;
+            cursor: crosshair;
+            touch-action: none;
+        }
+
+        .wb-tools {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.8rem;
+        }
+
+        .wb-btn {
+            flex: 1;
+            padding: 0.4rem;
+            font-size: 0.85rem;
+            border: 1px solid var(--border-color);
+            background: var(--bg-color);
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .wb-btn.active {
+            background: var(--secondary-color);
+            color: white;
+            border-color: var(--secondary-color);
+        }
+
+        /* Results Panel */
+        #result-panel {
+            display: none;
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 2.5rem;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        #result-panel h2 {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+
+        .score-circle {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--secondary-color), var(--accent-color));
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            font-weight: bold;
+            margin: 1.5rem auto;
+            box-shadow: 0 4px 10px rgba(41, 128, 185, 0.3);
+        }
+
+        .analysis-box {
+            text-align: left;
+            margin-top: 1.5rem;
+            padding: 1.5rem;
+            background: var(--bg-color);
+            border-radius: 8px;
+        }
+
+        .analysis-box h4 {
+            color: var(--primary-color);
+            margin-bottom: 0.8rem;
+        }
+
+        .analysis-box ul {
+            padding-left: 1.2rem;
+        }
+
+        .analysis-box li {
+            margin-bottom: 0.5rem;
+        }
+
+        @media (max-width: 1024px) {
+            .main-layout {
+                flex-direction: column;
+            }
+            .quiz-frame, .tool-frame {
+                flex: 1 0 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>ระบบสอบออนไลน์ - พระจอมเกล้าติวเตอร์</h1>
+        <p>RAM1131: อารยธรรมมนุษย์ (Human Civilization) - ระดับยาก</p>
+    </header>
+
+    <div class="container">
+        <!-- สรุปเนื้อหาบทเรียน (500 คำขึ้นไป) -->
+        <section class="summary-section">
+            <h2>สรุปสาระสำคัญ: RAM1131 อารยธรรมมนุษย์</h2>
+            <p>วิชา RAM1131 มุ่งศึกษาพัฒนาการทางประวัติศาสตร์ สังคม วัฒนธรรม และภูมิปัญญาของมนุษยชาติตั้งแต่ยุคโบราณจนถึงยุคปัจจุบัน เพื่อให้เข้าใจรากเหง้าของอารยธรรมโลกและการสืบทอดทางวัฒนธรรม โดยเริ่มต้นจาก <strong>อารยธรรมเมโสโปเตเมีย</strong> ในดินแดนพระจันทร์เสี้ยวอันอุดมสมบูรณ์ ลุ่มแม่น้ำไทกริส-ยูเฟรติส ซึ่งมีชนชาติสุเมเรียนประดิษฐ์อักษรคูนีฟอร์ม (อักษรลิ่ม) บาบิโลนสร้างประมวลกฎหมายพระเจ้าฮัมมูราบี (ตาต่อตา ฟันต่อฟัน) และการสร้างซิกกูรัตเป็นศาสนสถาน ต่อมาคือ <strong>อารยธรรมอียิปต์โบราณ</strong> ลุ่มแม่น้ำไนล์ ซึ่งเฮโรโดตุสกล่าวว่าเป็นของขวัญแห่งแม่น้ำไนล์ โดดเด่นเรื่องการสร้างพีระมิด การทำมัมมี่ และอักษรเฮียโรกลิฟิกบนกระดาษปาปิรัส</p>
+            
+            <p>ในฝั่งตะวันตกยุคคลาสสิก เริ่มจาก <strong>อารยธรรมกรีกโบราณ</strong> ศูนย์กลางการปกครองแบบนครรัฐ (City-State) เช่น เอเธนส์ต้นกำเนิดประชาธิปไตย และสปาร์ตาร์รัฐทหาร พร้อมทั้งปรัชญาตะวันตก (โสคราตีส เพลโต อริสโตเติล) และกีฬาโอลิมปิก ถัดมาคือ <strong>อารยธรรมโรมัน</strong> ที่มีความโดดเด่นด้านวิศวกรรมโยธา เช่น ถนน ท่อส่งน้ำ โคลอสเซียม และระบบกฎหมายสิบสองโต๊ะที่เป็นรากฐานกฎหมายสากล เมื่อเข้าสู่ <strong>ยุคกลาง (Middle Ages)</strong> ยุโรปอยู่ภายใต้ระบบฟิวดัล (ศักดินาสวามิภักดิ์) และอิทธิพลสูงสุดของศาสนจักรคาทอลิก จนกระทั่งเกิดการฟื้นฟูศิลปวิทยาการ (Renaissance) และการปฏิรูปศาสนาในยุคใหม่</p>
+
+            <p>สำหรับฝั่งตะวันออก เริ่มจาก <strong>อารยธรรมจีน</strong> ลุ่มแม่น้ำฮวงโหและแยงซี โดดเด่นด้วยปรัชญาสำนักขงจื๊อ (เน้นกตัญญู ระเบียบวินัย) ลัทธิเต๋า (กลมกลืนธรรมชาติ) และสิ่งประดิษฐ์ 4 อย่าง (เข็มทิศ ดินปืน กระดาษ การพิมพ์) และ <strong>อารยธรรมอินเดีย</strong> ลุ่มแม่น้ำสินธุและคงคา แหล่งกำเนิดศาสนาพราหมณ์-ฮินดู พุทธศาสนา และระบบวรรณะ (พราหมณ์ กษัตริย์ แพศย์ ศูทร) ซึ่งทั้งหมดนี้หล่อหลอมโครงสร้างทางสังคมและภูมิปัญญาของโลกจปัจจุบันอย่างลึกซึ้ง</p>
+
+            <div class="mind-trick-box">
+                <h4>เทคนิคการจำและกระบวนการคิด (Memory Tricks & Thought Processes)</h4>
+                <ul>
+                    <li><strong>จำแม่น้ำคู่เมืองอารยธรรมโบราณ:</strong> เมโสโปเตเมีย = ไทกริส/ยูเฟรติส, อียิปต์ = ไนล์, จีน = ฮวงโห/แยงซี, อินเดีย = สินธุ/คงคา</li>
+                    <li><strong>แยกแยะมรดกกรีก-โรมัน:</strong> กรีกเด่นเรื่อง "ความคิด ปรัชญา ประชาธิปไตย ศิลปะ" ส่วนโรมันเด่นเรื่อง "การก่อสร้าง วิศวกรรม กฎหมาย การปกครองอาณาจักร"</li>
+                    <li><strong>จำระบบความเชื่อจีน:</strong> ขงจื๊อเน้นคนกับคน (หน้าที่ ความกตัญญู), เต๋าเน้นคนกับธรรมชาติ (เรียบง่าย ปล่อยวาง)</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Main Layout: 70% Quiz, 30% Tools -->
+        <div class="main-layout">
+            <!-- Left Frame: Quiz (70%) -->
+            <div class="quiz-frame">
+                <div id="quiz-container">
+                    <!-- Questions will be injected here via JavaScript -->
+                </div>
+
+                <div id="result-panel">
+                    <h2>ผลการประเมินการทดสอบ</h2>
+                    <div class="score-circle" id="score-display">0/30</div>
+                    <p id="score-percentage" style="font-size: 1.2rem; font-weight: bold; margin-bottom: 1rem;"></p>
+                    <div class="analysis-box" id="analysis-content">
+                        <!-- Analysis generated dynamically -->
+                    </div>
+                    <button class="btn btn-reset" style="margin-top: 1.5rem;" onclick="resetQuiz()">ทำแบบทดสอบใหม่อีกครั้ง</button>
+                </div>
+
+                <div class="quiz-controls" id="quiz-navigation-controls">
+                    <button class="btn" id="prev-btn" onclick="changeQuestion(-1)" disabled>ข้อก่อนหน้า</button>
+                    <span id="question-indicator" style="font-weight: 600;">ข้อ 1 จาก 30</span>
+                    <button class="btn" id="next-btn" onclick="changeQuestion(1)">ข้อถัดไป</button>
+                    <button class="btn btn-submit" id="submit-btn" style="display: none;" onclick="submitQuiz()">ส่งข้อสอบทั้งหมด</button>
+                </div>
+            </div>
+
+            <!-- Right Frame: Tools (30%) -->
+            <div class="tool-frame">
+                <!-- Question Navigation Panel -->
+                <div class="card-panel">
+                    <h3>
+                        <span>นำทางข้อสอบ</span>
+                        <span id="answered-counter" style="font-size: 0.85rem; color: var(--secondary-color);">ตอบแล้ว 0/30</span>
+                    </h3>
+                    <div class="q-nav-grid" id="q-nav-grid">
+                        <!-- Nav buttons generated via JS -->
+                    </div>
+                </div>
+
+                <!-- Whiteboard Panel -->
+                <div class="card-panel">
+                    <h3>กระดานทดเลข / วาดภาพ</h3>
+                    <canvas id="whiteboard"></canvas>
+                    <div class="wb-tools">
+                        <button class="wb-btn active" id="wb-pen" onclick="setWbTool('pen')">ปากกา</button>
+                        <button class="wb-btn" id="wb-eraser" onclick="setWbTool('eraser')">ยางลบ</button>
+                        <button class="wb-btn" onclick="clearWhiteboard()">ล้างกระดาน</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Data Store for 30 Questions (RAM1131) with Balanced Key Distribution (7-8 per option: A,B,C,D)
+        const rawQuestions = [
+            {
+                id: 1,
+                correct: 0, // A
+                question: "อารยธรรมโบราณใดที่ตั้งอยู่บริเวณลุ่มแม่น้ำไทกริสและยูเฟรติส และได้ชื่อว่าเป็นดินแดนพระจันทร์เสี้ยวอันอุดมสมบูรณ์?",
+                clue: "ดินแดนระหว่างแม่น้ำสองสายในตะวันออกกลางปัจจุบันคือประเทศอิรัก",
+                options: [
+                    "อารยธรรมเมโสโปเตเมีย (Mesopotamian Civilization)",
+                    "อารยธรรมอียิปต์โบราณ (Ancient Egyptian Civilization)",
+                    "อารยธรรมลุ่มแม่น้ำสินธุ (Indus Valley Civilization)",
+                    "อารยธรรมจีนโบราณ (Ancient Chinese Civilization)"
+                ],
+                explanation: "เฉลยข้อ A เมโสโปเตเมียตั้งอยู่ระหว่างแม่น้ำไทกริสและยูเฟรติสในดินแดนเฟอร์ไทล์ครีเซนต์ ส่วนลุ่มน้ำอื่นๆ อยู่ในภูมิภาคอื่น"
+            },
+            {
+                id: 2,
+                correct: 1, // B
+                question: "ชนชาติใดในเมโสโปเตเมียที่เป็นผู้ประดิษฐ์อักษรลิ่มหรือคูนีฟอร์ม (Cuneiform) ขึ้นเป็นครั้งแรกของโลก?",
+                clue: "กลุ่มชนเผ่าแรกที่สร้างนครรัฐขึ้นในเขตเมโสโปเตเมียตอนใต้",
+                options: [
+                    "ชาวบาบิโลเนียน (Babylonians)",
+                    "ชาวสุเมเรียน (Sumerians)",
+                    "ชาวอัสซีเรียน (Assyrians)",
+                    "ชาวเปอร์เซีย (Persians)"
+                ],
+                explanation: "เฉลยข้อ B ชาวสุเมเรียนเป็นผู้ประดิษฐ์อักษรคูนีฟอร์มโดยใช้แท่งไม้ปลายแหลมกดลงบนแผ่นดินเหนียว"
+            },
+            {
+                id: 3,
+                correct: 2, // C
+                question: "ประมวลกฎหมายพระเจ้าฮัมมูราบีของบาบิโลนยึดถือหลักการลงโทษที่สำคัญในข้อใด?",
+                clue: "หลักการความยุติธรรมแบบตาต่อตา ฟันต่อฟัน",
+                options: [
+                    "การจ่ายค่าปรับเป็นตัวเงินแทนการลงโทษทางร่างกายทุกกรณี",
+                    "การให้อภัยโทษแก่ผู้กระทำความผิดครั้งแรกสถานเบา",
+                    "หลักตาต่อตา ฟันต่อฟัน (Lex Talionis) เพื่อความเท่าเทียม",
+                    "การเนรเทศผู้กระทำผิดออกจากอาณาจักรไปยังดินแดนห่างไกล"
+                ],
+                explanation: "เฉลยข้อ C กฎหมายฮัมมูราบีใช้หลักตาต่อตา ฟันต่อฟัน (Lex Talionis) สะท้อนความรุนแรงแต่มีความเท่าเทียมตามชนชั้นในยุคนั้น"
+            },
+            {
+                id: 4,
+                correct: 3, // D
+                question: "นักประวัติศาสตร์ท่านใดที่กล่าวไว้ว่า 'อียิปต์คือของขวัญแห่งแม่น้ำไนล์' (Egypt is the gift of the Nile)?",
+                clue: "นักประวัติศาสตร์ชาวกรีกโบราณที่ได้ชื่อว่าเป็นบิดาแห่งประวัติศาสตร์",
+                options: [
+                    "ทูซิดิดีส (Thucydides)",
+                    "อริสโตเติล (Aristotle)",
+                    "เพลโต (Plato)",
+                    "เฮโรโดตุส (Herodotus)"
+                ],
+                explanation: "เฉลยข้อ D เฮโรโดตุสกล่าวคำนี้เพราะแม่น้ำไนล์หล่อเลี้ยงดินแดนอียิปต์ให้เจริญรุ่งเรืองท่ามกลางทะเลทราย"
+            },
+            {
+                id: 5,
+                correct: 0, // A
+                question: "กระดาษชนิดแรกของโลกที่ชาวอียิปต์โบราณประดิษฐ์ขึ้นจากต้นไม้ริมแม่น้ำไนล์เรียกว่าอะไร?",
+                clue: "วัสดุแผ่นบางที่ใช้จารึกอักษรเฮียโรกลิฟิก",
+                options: [
+                    "กระดาษปาปิรัส (Papyrus)",
+                    "กระดาษสา (Mulberry paper)",
+                    "แผ่นดินเหนียวเผา (Clay tablet)",
+                    "แผ่นหนังแกะ (Parchment)"
+                ],
+                explanation: "เฉลยข้อ A ปาปิรัสทำจากต้นอ้อปาปิรัสริมแม่น้ำไนล์ เป็นต้นแบบของคำว่า Paper ในภาษาอังกฤษ"
+            },
+            {
+                id: 6,
+                correct: 1, // B
+                question: "นครรัฐใดในกรีกโบราณที่เป็นต้นกำเนิดของระบอบการปกครองแบบประชาธิปไตยทางตรง?",
+                clue: "นครรัฐศูนย์กลางการค้าและศิลปวัฒนธรรมที่ให้ความสำคัญกับการศึกษา",
+                options: [
+                    "นครรัฐสปาร์ตาร์ (Sparta)",
+                    "นครรัฐเอเธนส์ (Athens)",
+                    "นครรัฐธีบส์ (Thebes)",
+                    "นครรัฐโครินธ์ (Corinth)"
+                ],
+                explanation: "เฉลยข้อ B เอเธนส์เป็นต้นกำเนิดประชาธิปไตยทางตรงที่พลเมืองชายมีสิทธิเข้าร่วมประชุมออกเสียง"
+            },
+            {
+                id: 7,
+                correct: 2, // C
+                question: "ลักษณะเด่นของนครรัฐสปาร์ตาร์ในอารยธรรมกรีกโบราณคือข้อใด?",
+                clue: "สังคมทหารที่เข้มงวดและเน้นการฝึกวินัยรบ",
+                options: [
+                    "การส่งเสริมปรัชญา การละคร และศิลปะขั้นสูง",
+                    "การปกครองด้วยระบอบประชาธิปไตยสภาประชาชน",
+                    "สังคมทหารที่มุ่งเน้นการฝึกวินัยและความแข็งแกร่งของร่างกาย",
+                    "การเป็นศูนย์กลางการค้าทางทะเลที่ใหญ่ที่สุดในทะเลเมดิเตอร์เรเนียน"
+                ],
+                explanation: "เฉลยข้อ C สปาร์ตาร์เน้นการสร้างรัฐทหารเพื่อความมั่นคงและควบคุมทาส (Helots) ไม่เน้นศิลปะเหมือนเอเธนส์"
+            },
+            {
+                id: 8,
+                correct: 3, // D
+                question: "มรดกทางสถาปัตยกรรมและวิศวกรรมชิ้นเอกของชาวโรมันที่ใช้เป็นสนามกีฬากลางแจ้งขนาดใหญ่คือข้อใด?",
+                clue: "สนามทรงรีที่มีอัฒจันทร์ล้อมรอบสำหรับชมการต่อสู้",
+                options: [
+                    "วิหารพาร์ทีนอน (Parthenon)",
+                    "พีระมิดแห่งกิซ่า (Pyramid of Giza)",
+                    "ซิกกูรัตแห่งอูร์ (Ziggurat of Ur)",
+                    "สนามกีฬาโคลอสเซียม (Colosseum)"
+                ],
+                explanation: "เฉลยข้อ D โคลอสเซียมเป็นสนามกีฬาโรมันโบราณที่ใช้วิศวกรรมซุ้มโค้งและคอนกรีตอันล้ำสมัย"
+            },
+            {
+                id: 9,
+                correct: 0, // A
+                question: "กฎหมายลายลักษณ์อักษรฉบับแรกของโรมันที่ถูกจารึกไว้บนแผ่นทองแดง 12 แผ่นคือข้อใด?",
+                clue: "กฎหมายที่ติดไว้ที่ลานฟอรัมเพื่อให้ประชาชนรับรู้เท่าเทียมกัน",
+                options: [
+                    "กฎหมายสิบสองโต๊ะ (Law of the Twelve Tables)",
+                    "ประมวลกฎหมายจัสติเนียน (Corpus Juris Civilis)",
+                    "กฎหมายบัตรสนเทوة (Lex Romana)",
+                    "ประมวลกฎหมายฮัมมูราบี (Code of Hammurabi)"
+                ],
+                explanation: "เฉลยข้อ A กฎหมายสิบสองโต๊ะเป็นรากฐานกฎหมายโรมันที่ช่วยปกป้องสิทธิของสามัญชนจากการถูกเอารัดเอาเปรียบ"
+            },
+            {
+                id: 10,
+                correct: 1, // B
+                question: "ปรัชญาจีนสำนักใดที่เน้นย้ำเรื่องความกตัญญูต่อบรรพบุรุษ การเคารพผู้อาวุโส และการทำหน้าที่ตามลำดับชั้นทางสังคม?",
+                clue: "คำสอนของท่านขงจื๊อ (Confucius)",
+                options: [
+                    "ลัทธิเต๋า (Taoism)",
+                    "ลัทธิขงจื๊อ (Confucianism)",
+                    "ลัทธินิติศาสตร์ (Legalism)",
+                    "พุทธศาสนานิกายเซน (Zen Buddhism)"
+                ],
+                explanation: "เฉลยข้อ B ขงจื๊อเน้นจริยธรรม ศีลธรรม และระเบียบวินัยในครอบครัวและสังคมเพื่อความสงบสุข"
+            },
+            {
+                id: 11,
+                correct: 2, // C
+                question: "คำสอนสำคัญของลัทธิเต๋า (Taoism) ในอารยธรรมจีนสอดคล้องกับแนวคิดในข้อใดมากที่สุด?",
+                clue: "การใช้ชีวิตเรียบง่ายสอดคล้องกับธรรมชาติและวิถีแห่งเต๋า",
+                options: [
+                    "การสร้างกฎหมายที่เข้มงวดและบทลงโทษรุนแรงเพื่อควบคุมราษฎร",
+                    "การประกอบพิธีกรรมทางศาสนาอย่างเคร่งครัดตามจารีตประเพณี",
+                    "การใช้ชีวิตเรียบง่าย ปล่อยวาง และกลมกลืนเป็นหนึ่งเดียวกับธรรมชาติ",
+                    "การเร่งขยายดินแดนและอำนาจทางการทหารเพื่อความยิ่งใหญ่ของจักรวรรดิ"
+                ],
+                explanation: "เฉลยข้อ C ลัทธิเต๋าของเล่าจื๊อเน้นหลัก 'อูเวย์' (Wu Wei) คือการกระทำโดยไม่ฝืนธรรมชาติ ดำเนินชีวิตเรียบง่าย"
+            },
+            {
+                id: 12,
+                correct: 3, // D
+                question: "สิ่งประดิษฐ์โบราณ 4 อย่าง (Four Great Inventions) ของจีนโบราณประกอบด้วยอะไรบ้าง?",
+                clue: "เข็มทิศ ดินปืน กระดาษ และอีกหนึ่งสิ่งเกี่ยวกับการพิมพ์",
+                options: [
+                    "คันไถเหล็ก, ล้อเกวียน, กระจกเงา, และร่มกระดาษ",
+                    "ผ้าไหม, ชาจีน, เครื่องเคลือบดินเผา, และกำแพงเมืองจีน",
+                    "นาฬิกาน้ำ, ลูกคิด, ยาสสมุนไพร, และเกราะเหล็ก",
+                    "เข็มทิศ, ดินปืน, กระดาษ, และแท่นพิมพ์ (Printing)"
+                ],
+                explanation: "เฉลยข้อ D สิ่งประดิษฐ์ 4 อย่างของจีนคือ เข็มทิศ ดินปืน กระดาษ และการพิมพ์ ซึ่งเปลี่ยนโฉมหน้าอารยธรรมโลก"
+            },
+            {
+                id: 13,
+                correct: 0, // A
+                question: "ระบบวรรณะ (Varna) ในอารยธรรมอินเดียโบราณแบ่งสังคมออกเป็นกี่วรรณะหลัก และวรรณะใดอยู่สูงสุด?",
+                clue: "วรรณะนักบวชผู้ทำพิธีกรรมอยู่สูงสุดจาก 4 วรรณะหลัก",
+                options: [
+                    "4 วรรณะ ได้แก่ พราหมณ์ กษัตริย์ แพศย์ ศูทร (พราหมณ์สูงสุด)",
+                    "3 วรรณะ ได้แก่ กษัตริย์ พราหมณ์ แพศย์ (กษัตริย์สูงสุด)",
+                    "5 วรรณะ รวมวรรณะจัณฑาลเป็นวรรณะสูงสุด",
+                    "2 วรรณะ ได้แก่ ชนชั้นปกครองและชนชั้นผู้ใช้แรงงาน"
+                ],
+                explanation: "เฉลยข้อ A ระบบวรรณะอินเดียมี 4 วรรณะหลัก โดยวรรณะพราหมณ์ (นักบวช) อยู่สูงสุด รองลงมาคือ กษัตริย์ แพศย์ และศูทร"
+            },
+            {
+                id: 14,
+                correct: 1, // B
+                question: "ศาสนาพุทธและศาสนาพราหมณ์-ฮินดูมีถิ่นกำเนิดดั้งเดิมมาจากอารยธรรมใด?",
+                clue: "ดินแดนเอเชียใต้ลุ่มแม่น้ำสินธุและคงคา",
+                options: [
+                    "อารยธรรมเมโสโปเตเมีย",
+                    "อารยธรรมอินเดีย (Indian Civilization)",
+                    "อารยธรรมเปอร์เซียโบราณ",
+                    "อารยธรรมกรีก-โรมัน"
+                ],
+                explanation: "เฉลยข้อ B อินเดียเป็นแหล่งกำเนิดศาสนาสำคัญของโลก ทั้งศาสนาพราหมณ์-ฮินดู และศาสนาพุทธ"
+            },
+            {
+                id: 15,
+                correct: 2, // C
+                question: "ในยุคกลางของยุโรป (Middle Ages) ระบบเศรษฐกิจและการเมืองส่วนใหญ่ถูกครอบงำด้วยระบบใด?",
+                clue: "ระบบที่ขุนนางให้ที่ดินแลกกับความจงรักภักดีของอัศวินและชาวนาติดที่ดิน",
+                options: [
+                    "ระบบทุนนิยมเสรีอุตสาหกรรม (Capitalism)",
+                    "ระบบเศรษฐกิจแบบคอมมิวนิสต์ส่วนกลาง",
+                    "ระบบฟิวดัล หรือระบบศักดินาสวามิภักดิ์ (Feudalism)",
+                    "ระบบประชาธิปไตยแบบมีผู้แทนท้องถิ่น"
+                ],
+                explanation: "เฉลยข้อ C ยุคกลางยุโรปใช้ระบบฟิวดัล (Feudalism) ขุนนางมีอำนาจปกครองที่ดินและมีชาวนาติดที่ดิน (Serfs) เป็นแรงงาน"
+            },
+            {
+                id: 16,
+                correct: 3, // D
+                question: "สถาบันใดที่มีอำนาจสูงสุดและทรงอิทธิพลที่สุดทั้งด้านการเมือง สังคม และจิตใจในยุคกลางของยุโรป?",
+                clue: "องค์กรศาสนาคริสต์ที่มีพระสันตะปาปาเป็นประมุข",
+                options: [
+                    "จักรวรรดิโรมันอันศักดิ์สิทธิ์",
+                    "สภาขุนนางแห่งสหราชอาณาจักร",
+                    "สมาคมพ่อค้าเมืองเวนิส",
+                    "ศาสนจักรคาทอลิก (Catholic Church)"
+                ],
+                explanation: "เฉลยข้อ D ศาสนจักรคาทอลิกมีอิทธิพลเหนือทุกสถาบันในยุคกลาง กษัตริย์และขุนนางต้องอยู่ภายใต้การชี้นำของศาสนจักร"
+            },
+            {
+                id: 17,
+                correct: 0, // A
+                question: "เหตุการณ์ 'การฟื้นฟูศิลปวิทยาการ' (Renaissance) เริ่มต้นขึ้นครั้งแรกในประเทศใดของยุโรป?",
+                clue: "ดินแดนที่เป็นศูนย์กลางการค้าและอารยธรรมโรมันเดิม มีเมืองฟลอเรนซ์และเวนิส",
+                options: [
+                    "ประเทศอิตาลี (Italy)",
+                    "ประเทศฝรั่งเศส (France)",
+                    "ประเทศอังกฤษ (England)",
+                    "ประเทศเยอรมนี (Germany)"
+                ],
+                explanation: "เฉลยข้อ A เรเนซองส์เริ่มในอิตาลีช่วงคริสต์ศตวรรษที่ 14 เนื่องจากความรุ่งเรืองทางการค้าและการฟื้นฟูศิลปวิทยาการกรีก-โรมัน"
+            },
+            {
+                id: 18,
+                correct: 1, // B
+                question: "ใครคือผู้ริเริ่มการปฏิรูปศาสนา (Protestant Reformation) ในปี ค.ศ. 1517 ด้วยการปิดประกาศข้อประท้วง 95 ข้อ?",
+                clue: "บาทหลวงชาวเยอรมันผู้แปลคัมภีร์ไบเบิลเป็นภาษาเยอรมัน",
+                options: [
+                    "จอห์น กาลวิน (John Calvin)",
+                    "มาร์ติน ลูเทอร์ (Martin Luther)",
+                    "พระเจ้าเฮนรีที่ 8 (King Henry VIII)",
+                    "โทมัส อไควนัส (Thomas Aquinas)"
+                ],
+                explanation: "เฉลยข้อ B มาร์ติน ลูเทอร์ ประท้วงการขายใบไถ่บาปของศาสนจักร จนนำไปสู่การเกิดนิกายโปรเตสแตนต์"
+            },
+            {
+                id: 19,
+                correct: 2, // C
+                question: "การปฏิวัติวิทยาศาสตร์ (Scientific Revolution) ในคริสต์ศตวรรษที่ 16-17 มีจุดเปลี่ยนสำคัญมาจากแนวคิดใด?",
+                clue: "แนวคิดที่ว่าดวงอาทิตย์เป็นศูนย์กลางของระบบสุริยะ",
+                options: [
+                    "โลกแบนและเป็นศูนย์กลางของจักรวาลตามคัมภีร์โบราณ",
+                    "ดวงจันทร์หมุนรอบโลกและดวงอาทิตย์เป็นบริวาร",
+                    "ระบบสุริยะมีดวงอาทิตย์เป็นศูนย์กลาง (Heliocentric Model)",
+                    "กาแล็กซีทางช้างเผือกมีโลกเป็นจุดศูนย์กลางเอกภพ"
+                ],
+                explanation: "เฉลยข้อ C โคเปอร์นิคัสและกาลิเลโอเสนอแนวคิดดวงอาทิตย์เป็นศูนย์กลาง (Heliocentric) เปลี่ยนแปลงความเข้าใจทางวิทยาศาสตร์"
+            },
+            {
+                id: 20,
+                correct: 3, // D
+                question: "การปฏิวัติอุตสาหกรรม (Industrial Revolution) ครั้งแรกเกิดขึ้นในประเทศใด และใช้พลังงานใดเป็นหลัก?",
+                clue: "ชาติมหาอำนาจทางทะเลที่มีถ่านหินอุดมสมบูรณ์",
+                options: [
+                    "ประเทศฝรั่งเศส ใช้พลังงานไฟฟ้า",
+                    "ประเทศสหรัฐอเมริกา ใช้พลังงานน้ำมันปิโตรเลียม",
+                    "ประเทศเยอรมนี ใช้พลังงานก๊าซธรรมชาติ",
+                    "ประเทศอังกฤษ ใช้พลังงานไอน้ำจากถ่านหิน"
+                ],
+                explanation: "เฉลยข้อ D การปฏิวัติอุตสาหกรรมเริ่มในอังกฤษช่วงกลางศตวรรษที่ 18 โดยใช้เครื่องจักรไอน้ำและถ่านหินขับเคลื่อนการผลิต"
+            },
+            {
+                id: 21,
+                correct: 0, // A
+                question: "สงครามครูเสด (Crusades) ในยุคกลางส่งผลกระทบที่สำคัญที่สุดต่อทวีปยุโรปคือข้อใด?",
+                clue: "การฟื้นตัวของการค้าและการแลกเปลี่ยนอารยธรรมกับโลกตะวันออก",
+                options: [
+                    "การฟื้นตัวของการค้า การแลกเปลี่ยนวัฒนธรรม และความเจริญจากโลกตะวันออก",
+                    "การล่มสลายอย่างถาวรของศาสนาคริสต์ในทวีปยุโรปทั้งหมด",
+                    "การรวมอำนาจเบ็ดเสร็จของพระสันตะปาปาเหนือดินแดนเอเชีย",
+                    "การปิดตายเส้นทางสายไหมระหว่างยุโรปและจีนโดยสิ้นเชิง"
+                ],
+                explanation: "เฉลยข้อ A สงครามครูเสดทำให้ชาวยุโรปได้ติดต่อกับโลกตะวันออก กระตุ้นการค้าและนำวิทยาการกลับสู่ยุโรป"
+            },
+            {
+                id: 22,
+                correct: 1, // B
+                question: "นักปราชญ์ชาวกรีกโบราณท่านใดที่เป็นผู้ให้กำเนิดวิธีสอนแบบตั้งคำถาม (Socratic Method) เพื่อค้นหาความจริง?",
+                clue: "อาจารย์ของเพลโตผู้ถูกตัดสินประหารชีวิตด้วยการดื่มยาพิษเฮล็อก",
+                options: [
+                    "อริสโตเติล (Aristotle)",
+                    "โสคราตีส (Socrates)",
+                    "พีทาโกรัส (Pythagoras)",
+                    "ฮิปโปเครติส (Hippocrates)"
+                ],
+                explanation: "เฉลยข้อ B โสคราตีสเน้นการใช้คำถามกระตุ้นให้ผู้ฟังคิดหาเหตุผลด้วยตนเอง (Socratic Method)"
+            },
+            {
+                id: 23,
+                correct: 2, // C
+                question: "มรดกทางวัฒนธรรมชิ้นสำคัญของอารยธรรมเมโสโปเตเมียที่ใช้ในการประกอบพิธีกรรมทางศาสนาคือสิ่งใด?",
+                clue: "ศาสนสถานทรงปีระมิดขั้นบันไดขนาดใหญ่",
+                options: [
+                    "สุสานหลวงแห่งอูร์",
+                    "ประตูเมืองอิชตาร์",
+                    "ซิกกูรัต (Ziggurat)",
+                    "สวนลอยแห่งบาบิโลน"
+                ],
+                explanation: "เฉลยข้อ C ซิกกูรัตเป็นหอคอยสูงสร้างเป็นชั้นบันได สันนิษฐานว่าเป็นสะพานเชื่อมระหว่างสวรรค์กับโลกมนุษย์"
+            },
+            {
+                id: 24,
+                correct: 3, // D
+                question: "อารยธรรมลุ่มแม่น้ำสินธุ (Indus Valley Civilization) มีเมืองโบราณที่มีการวางผังเมืองอย่างเป็นระเบียบที่สุดสองเมืองคือข้อใด?",
+                clue: "เมืองโมเฮนโจดาโร และ...",
+                options: [
+                    "โรมและคาร์เทจ",
+                    "เอเธนส์และสปาร์ตาร์",
+                    "เมดิสันและบาบิโลน",
+                    "ฮารัปปาและโมเฮนโจดาโร (Harappa & Mohenjo-Daro)"
+                ],
+                explanation: "เฉลยข้อ D ฮารัปปาและโมเฮนโจดาโรเป็นเมืองโบราณลุ่มน้ำสินธุที่มีระบบระบายน้ำใต้ดินและผังเมืองเป็นตารางอย่างยอดเยี่ยม"
+            },
+            {
+                id: 25,
+                correct: 0, // A
+                question: "ปรัชญาสำนักนิติศาสตร์ (Legalism) ของจีนโบราณที่มีชื่อเสียงในยุคราชวงศ์ฉิน มีแนวคิดหลักในการปกครองอย่างไร?",
+                clue: "ใช้กฎหมายที่เด็ดขาดและบทลงโทษรุนแรงควบคุมราษฎร",
+                options: [
+                    "การใช้กฎหมายที่เข้มงวดและบทลงโทษรุนแรงเพื่อควบคุมพฤติกรรมมนุษย์",
+                    "การปกครองด้วยคุณธรรมและความเมตตาเหมือนบิดามารดาปกครองบุตร",
+                    "การปล่อยให้ประชาชนปกครองตนเองตามธรรมชาติโดยรัฐไม่ต้องแทรกแซง",
+                    "การยึดถือคำสอนทางศาสนาพุทธและพราหมณ์เป็นหลักบริหารแผ่นดิน"
+                ],
+                explanation: "เฉลยข้อ A นิติศาสตร์ (Legalism) เน้นกฎหมายอาญาที่เด็ดขาดและบทลงโทษรุนแรง เพื่อรวมอำนาจเข้าสู่ศูนย์กลาง"
+            },
+            {
+                id: 26,
+                correct: 1, // B
+                question: "เหตุการณ์ปฏิวัติฝรั่งเศส (French Revolution) ในปี ค.ศ. 1789 มีคำขวัญปฏิวัติที่สะท้อนอุดมการณ์เสรีประชาธิปไตยว่าอย่างไร?",
+                clue: "เสรีภาพ เสมอภาค ภราดรภาพ",
+                options: [
+                    "สันติภาพ ความมั่นคง ความมั่งคั่ง",
+                    "เสรีภาพ เสมอภาค ภราดรภาพ (Liberty, Equality, Fraternity)",
+                    "คุณธรรม วินัย ความเสียสละ",
+                    "ชาติ ศาสนา พระมหากษัตริย์"
+                ],
+                explanation: "เฉลยข้อ B คำขวัญปฏิวัติฝรั่งเศสคือ 'เสรีภาพ เสมอภาค ภราดรภาพ' ซึ่งกลายมาเป็นรากฐานประชาธิปไตยสมัยใหม่"
+            },
+            {
+                id: 27,
+                correct: 2, // C
+                question: "สิ่งมหัศจรรย์ของโลกยุคโบราณในอียิปต์ที่สร้างขึ้นเพื่อใช้เป็นสุสานฝังพระศพของฟาโรห์คืออะไร?",
+                clue: "สิ่งก่อสร้างรูปทรงเรขาคณิตสามเหลี่ยมขนาดมหึมาที่กิซ่า",
+                options: [
+                    "เสาหินสโตนเฮนจ์",
+                    "วิหารคาร์นัค",
+                    "พีระมิด (Pyramid)",
+                    "ประภาคารแห่งอะเล็กซานเดรีย"
+                ],
+                explanation: "เฉลยข้อ C พีระมิดสร้างขึ้นเป็นสุสานหินขนาดใหญ่ของฟาโรห์อียิปต์ แสดงถึงอำนาจและความเชื่อเรื่องชีวิตหลังความตาย"
+            },
+            {
+                id: 28,
+                correct: 3, // D
+                question: "การที่กรีกโบราณประกอบด้วยนครรัฐจำนวนมากและมีภูเขากั้นขวาง ส่งผลกระทบต่อรูปแบบการเมืองการปกครองอย่างไร?",
+                clue: "ทำให้แต่ละเมืองปกครองตนเองอย่างอิสระ ไม่รวมเป็นอาณาจักรใหญ่",
+                options: [
+                    "ทำให้เกิดการรวมอำนาจเข้าสู่ศูนย์กลางโดยกษัตริย์องค์เดียว",
+                    "ทำให้กรีกตกเป็นอาณานิคมของเปอร์เซียอย่างรวดเร็ว",
+                    "ทำให้การคมนาคมขนส่งทางบกสะดวกรวดเร็วตลอดทั่วดินแดน",
+                    "ทำให้นครรัฐแต่ละแห่งปกครองตนเองเป็นอิสระ (City-State)"
+                ],
+                explanation: "เฉลยข้อ D ภูมิประเทศกรีกเป็นภูเขาและเกาะแก่ง ทำให้รวมประเทศยาก แต่ละเมืองจึงพัฒนาเป็นนครรัฐอิสระ (Polis)"
+            },
+            {
+                id: 29,
+                correct: 0, // A
+                question: "จักรวรรดิโรมันล่มสลายลงอย่างเป็นทางการเมื่อใด และถือเป็นจุดสิ้นสุดของยุคใดในประวัติศาสตร์ตะวันตก?",
+                clue: "การรุกรานของชนเผ่าเยอรมันนี (Barbarians) ในปี ค.ศ. 476",
+                options: [
+                    "ค.ศ. 476 สิ้นสุดยุคประวัติศาสตร์โบราณเข้าสู่ยุคกลาง",
+                    "ค.ศ. 1453 สิ้นสุดยุคกลางเข้าสู่ยุคใหม่",
+                    "ค.ศ. 1789 สิ้นสุดยุคใหม่เข้าสู่ยุคปัจจุบัน",
+                    "ค.ศ. 1066 สิ้นสุดยุคมืดเข้าสู่ยุคเรเนซองส์"
+                ],
+                explanation: "เฉลยข้อ A จักรวรรดิโรมันตะวันตกพ่ายแพ้ต่อชนเผ่าเยอรมันนีในปี ค.ศ. 476 ถือเป็นหมุดหมายสิ้นสุดยุคโบราณ"
+            },
+            {
+                id: 30,
+                correct: 1, // B
+                question: "เป้าหมายสูงสุดของการศึกษาวิชา 'อารยธรรมมนุษย์' (Human Civilization) คือข้อใด?",
+                clue: "เข้าใจรากเหง้า พัฒนาการ และความต่อเนื่องทางวัฒนธรรมของมนุษยชาติ",
+                options: [
+                    "การจดจำรายชื่อกษัตริย์และปีศักราชสงครามทั้งหมดในอดีต",
+                    "การเข้าใจรากเหง้า พัฒนาการ และบทเรียนทางประวัติศาสตร์เพื่อเป็นแนวทางในอนาคต",
+                    "การคัดลอกรูปแบบการปกครองโบราณมาใช้ในยุคปัจจุบันโดยไม่ต้องปรับเปลี่ยน",
+                    "การเปรียบเทียบว่าอารยธรรมตะวันตกเหนือกว่าอารยธรรมตะวันออกทุกด้าน"
+                ],
+                explanation: "เฉลยข้อ B การศึกษาอารยธรรมช่วยให้เข้าใจพัฒนาการ ความเชื่อมโยงทางวัฒนธรรม และนำบทเรียนอดีตมาประยุกต์ใช้ในปัจจุบัน"
+            }
+        ];
+
+        let questions = [];
+        let currentQuestionIndex = 0;
+        let userAnswers = {};
+        let shuffledOptionsMap = {};
+
+        function shuffleArray(array) {
+            let currentIndex = array.length, randomIndex;
+            while (currentIndex !== 0) {
+                randomIndex = Math.floor(Math.random() * currentIndex);
+                currentIndex--;
+                [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+            }
+            return array;
+        }
+
+        function initQuiz() {
+            questions = rawQuestions.map((q) => {
+                let opts = q.options.map((optText, optIdx) => ({ text: optText, originalIdx: optIdx }));
+                shuffleArray(opts);
+                let newCorrectIdx = opts.findIndex(o => o.originalIdx === q.correct);
+                
+                return {
+                    id: q.id,
+                    question: q.question,
+                    clue: q.clue,
+                    options: opts,
+                    correct: newCorrectIdx,
+                    explanation: q.explanation
+                };
+            });
+
+            currentQuestionIndex = 0;
+            userAnswers = {};
+            renderNavGrid();
+            renderQuestion();
+            updateControls();
+        }
+
+        function renderNavGrid() {
+            const grid = document.getElementById('q-nav-grid');
+            grid.innerHTML = '';
+            questions.forEach((q, idx) => {
+                const btn = document.createElement('button');
+                btn.className = 'q-nav-btn';
+                if (idx === currentQuestionIndex) btn.classList.add('active');
+                if (userAnswers[q.id] !== undefined) btn.classList.add('answered');
+                btn.textContent = q.id;
+                btn.onclick = () => goToQuestion(idx);
+                grid.appendChild(btn);
+            });
+            
+            const answeredCount = Object.keys(userAnswers).length;
+            document.getElementById('answered-counter').textContent = `ตอบแล้ว ${answeredCount}/30`;
+        }
+
+        function renderQuestion() {
+            const container = document.getElementById('quiz-container');
+            container.innerHTML = '';
+
+            const q = questions[currentQuestionIndex];
+            const userAnswer = userAnswers[q.id];
+            const isAnswered = userAnswer !== undefined;
+
+            let html = `
+                <div class="question-card active">
+                    <div class="question-title">ข้อที่ ${q.id}. ${q.question}</div>
+                    
+                    <div class="clue-box">
+                        <button class="clue-toggle" onclick="toggleClue(${q.id})">💡 แสดง/ซ่อน คำใบ้</button>
+                        <div class="clue-content" id="clue-${q.id}">${q.clue}</div>
+                    </div>
+
+                    <div class="options-list">
+            `;
+
+            q.options.forEach((opt, optIdx) => {
+                const checked = userAnswer === optIdx ? 'checked' : '';
+                html += `
+                    <label class="option-item">
+                        <input type="radio" name="q-${q.id}" value="${optIdx}" ${checked} onclick="selectOption(${q.id}, ${optIdx})">
+                        <span class="option-text"><strong>${String.fromCharCode(65 + optIdx)}.</strong> ${opt.text}</span>
+                    </label>
+                `;
+            });
+
+            html += `
+                    </div>
+                    <div class="explanation-box ${isAnswered ? (userAnswer === q.correct ? 'correct-feedback' : 'incorrect-feedback') : ''}" id="explanation-${q.id}" style="display: ${isAnswered ? 'block' : 'none'};">
+                        <h4>${isAnswered && userAnswer === q.correct ? '✅ ถูกต้องเยี่ยมมาก!' : '❌ ยังไม่ถูกต้อง'}</h4>
+                        <p>${q.explanation}</p>
+                    </div>
+                </div>
+            `;
+
+            container.innerHTML = html;
+            document.getElementById('question-indicator').textContent = `ข้อ ${currentQuestionIndex + 1} จาก 30`;
+            renderNavGrid();
+        }
+
+        function toggleClue(qId) {
+            const clueEl = document.getElementById(`clue-${qId}`);
+            if (clueEl) {
+                clueEl.style.display = clueEl.style.display === 'block' ? 'none' : 'block';
+            }
+        }
+
+        function selectOption(qId, optIdx) {
+            userAnswers[qId] = optIdx;
+            
+            const q = questions[currentQuestionIndex];
+            const expBox = document.getElementById(`explanation-${qId}`);
+            if (expBox) {
+                expBox.style.display = 'block';
+                if (optIdx === q.correct) {
+                    expBox.className = 'explanation-box correct-feedback';
+                    expBox.innerHTML = `<h4>✅ ถูกต้องเยี่ยมมาก!</h4><p>${q.explanation}</p>`;
+                } else {
+                    expBox.className = 'explanation-box incorrect-feedback';
+                    expBox.innerHTML = `<h4>❌ ยังไม่ถูกต้อง</h4><p>${q.explanation}</p>`;
+                }
+            }
+            renderNavGrid();
+            updateControls();
+        }
+
+        function changeQuestion(direction) {
+            currentQuestionIndex += direction;
+            if (currentQuestionIndex < 0) currentQuestionIndex = 0;
+            if (currentQuestionIndex >= questions.length) currentQuestionIndex = questions.length - 1;
+            renderQuestion();
+            updateControls();
+        }
+
+        function goToQuestion(idx) {
+            currentQuestionIndex = idx;
+            renderQuestion();
+            updateControls();
+        }
+
+        function updateControls() {
+            const prevBtn = document.getElementById('prev-btn');
+            const nextBtn = document.getElementById('next-btn');
+            const submitBtn = document.getElementById('submit-btn');
+
+            prevBtn.disabled = currentQuestionIndex === 0;
+            
+            if (currentQuestionIndex === questions.length - 1) {
+                nextBtn.style.display = 'none';
+                submitBtn.style.display = 'inline-block';
+            } else {
+                nextBtn.style.display = 'inline-block';
+                submitBtn.style.display = 'none';
+            }
+        }
+
+        function submitQuiz() {
+            const answeredCount = Object.keys(userAnswers).length;
+            if (answeredCount < questions.length) {
+                if (!confirm(`คุณยังตอบไม่ครบทุกข้อ (${answeredCount}/30 ข้อ) ต้องการส่งข้อสอบเลยหรือไม่?`)) {
+                    return;
+                }
+            }
+
+            let score = 0;
+            let weakAreas = [];
+            let strongAreas = [];
+
+            questions.forEach(q => {
+                if (userAnswers[q.id] === q.correct) {
+                    score++;
+                }
+            });
+
+            const percentage = ((score / 30) * 100).toFixed(2);
+
+            document.getElementById('quiz-container').style.display = 'none';
+            document.getElementById('quiz-navigation-controls').style.display = 'none';
+            
+            const resultPanel = document.getElementById('result-panel');
+            resultPanel.style.display = 'block';
+
+            document.getElementById('score-display').textContent = `${score}/30`;
+            document.getElementById('score-percentage').textContent = `คิดเป็นร้อยละ ${percentage}%`;
+
+            let analysisHtml = `<h4>การวิเคราะห์จุดเด่นและจุดที่ต้องพัฒนา (Performance Analysis)</h4><ul>`;
+            if (score >= 24) {
+                strongAreas.push("มีความเข้าใจดีเยี่ยมในเนื้อหาอารยธรรมโบราณทั้งเมโสโปเตเมีย อียิปต์ กรีก และโรมัน");
+                strongAreas.push("เข้าใจพัฒนาการประวัติศาสตร์ยุคกลางและยุคใหม่ได้อย่างแม่นยำ");
+            } else if (score >= 18) {
+                strongAreas.push("มีความเข้าใจในระดับดีเกี่ยวกับอารยธรรมตะวันออกและตะวันตก");
+                weakAreas.push("ควรทบทวนรายละเอียดเหตุการณ์ประวัติศาสตร์ในยุคกลางและปรัชญาจีนเพิ่มเติม");
+            } else {
+                weakAreas.push("ควรกลับไปทบทวนเนื้อหาสรุปสาระสำคัญตั้งแต่ต้นอย่างละเอียด เนื่องจากคะแนนยังต่ำกว่าเกณฑ์มาตรฐาน");
+                weakAreas.push("ยังมีความสับสนในเรื่องมรดกทางวัฒนธรรมและแหล่งอารยธรรมลุ่มแม่น้ำต่างๆ");
+            }
+
+            analysisHtml += `<li><strong>จุดเด่น (Strengths):</strong> ${strongAreas.join(' / ')}</li>`;
+            if (weakAreas.length > 0) {
+                analysisHtml += `<li><strong>จุดที่ต้องพัฒนา (Areas for Improvement):</strong> ${weakAreas.join(' / ')} แนะนำให้ทบทวนสรุปสาระสำคัญด้านบนซ้ำอีกรอบ</li>`;
+            } else {
+                analysisHtml += `<li><strong>จุดที่ต้องพัฒนา (Areas for Improvement):</strong> ยอดเยี่ยมมาก! รักษามาตรฐานความรู้นี้ไว้สำหรับสอบจริง</li>`;
+            }
+            analysisHtml += `</ul>`;
+
+            document.getElementById('analysis-content').innerHTML = analysisHtml;
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function resetQuiz() {
+            document.getElementById('result-panel').style.display = 'none';
+            document.getElementById('quiz-container').style.display = 'block';
+            document.getElementById('quiz-navigation-controls').style.display = 'flex';
+            initQuiz();
+        }
+
+        const canvas = document.getElementById('whiteboard');
+        const ctx = canvas.getContext('2d');
+        let isDrawing = false;
+        let currentTool = 'pen';
+
+        function resizeWhiteboard() {
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width;
+            canvas.height = 220;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+        }
+
+        window.addEventListener('resize', resizeWhiteboard);
+        resizeWhiteboard();
+
+        canvas.addEventListener('mousedown', startDraw);
+        canvas.addEventListener('mousemove', drawing);
+        canvas.addEventListener('mouseup', stopDraw);
+        canvas.addEventListener('mouseleave', stopDraw);
+
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            const touch = e.touches[0];
+            const mouseEvent = new MouseEvent('mousedown', {
+                clientX: touch.clientX,
+                clientY: touch.clientY
+            });
+            canvas.dispatchEvent(mouseEvent);
+        });
+
+        canvas.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            const touch = e.touches[0];
+            const mouseEvent = new MouseEvent('mousemove', {
+                clientX: touch.clientX,
+                clientY: touch.clientY
+            });
+            canvas.dispatchEvent(mouseEvent);
+        });
+
+        canvas.addEventListener('touchend', (e) => {
+            const mouseEvent = new MouseEvent('mouseup', {});
+            canvas.dispatchEvent(mouseEvent);
+        });
+
+        function startDraw(e) {
+            isDrawing = true;
+            ctx.beginPath();
+            const rect = canvas.getBoundingClientRect();
+            ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
+        }
+
+        function drawing(e) {
+            if (!isDrawing) return;
+            const rect = canvas.getBoundingClientRect();
+            if (currentTool === 'pen') {
+                ctx.strokeStyle = '#2c3e50';
+                ctx.lineWidth = 2;
+            } else {
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 15;
+            }
+            ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
+            ctx.stroke();
+        }
+
+        function stopDraw() {
+            isDrawing = false;
+        }
+
+        function setWbTool(tool) {
+            currentTool = tool;
+            document.getElementById('wb-pen').classList.toggle('active', tool === 'pen');
+            document.getElementById('wb-eraser').classList.toggle('active', tool === 'eraser');
+        }
+
+        function clearWhiteboard() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        window.onload = () => {
+            initQuiz();
+        };
+    </script>
+</body>
+</html>
+เขียนโดย พระจอมเกล้าติวเตอร์
