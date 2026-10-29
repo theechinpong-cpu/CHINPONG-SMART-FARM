@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>เกมโยงเส้นคำศัพท์และคำแปล (Weather & Clothing Vocabulary Matching - Multi-Level)</title>
+    <!-- Tailwind CSS for modern styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter & Sarabun for bilingual support -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Canvas Confetti for winning celebration -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', 'Sarabun', sans-serif;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 50%, #bae6fd 100%);
+            min-height: 100vh;
+        }
+        .match-card {
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            user-select: none;
+        }
+        .match-card:hover:not(.matched):not(.disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+        }
+        .match-card.selected {
+            border-color: #3b82f6;
+            background-color: #eff6ff;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.4);
+            transform: scale(1.02);
+        }
+        .match-card.matched {
+            background-color: #f0fdf4;
+            border-color: #86efac;
+            color: #166534;
+            opacity: 0.85;
+            cursor: default;
+        }
+        .match-card.wrong {
+            animation: shake 0.4s ease-in-out;
+            background-color: #fef2f2;
+            border-color: #fca5a5;
+            color: #991b1b;
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-6px); }
+            40%, 80% { transform: translateX(6px); }
+        }
+    </style>
+</head>
+<body class="py-6 px-4 flex flex-col items-center justify-between min-h-screen">
+
+    <!-- Header / Navbar -->
+    <header class="w-full max-w-5xl bg-white/80 backdrop-blur-md rounded-2xl shadow-lg p-4 mb-6 flex flex-col sm:flex-row items-center justify-between border border-white/20 gap-4">
+        <div class="flex items-center space-x-3">
+            <div class="bg-blue-600 text-white p-3 rounded-xl shadow-md">
+                <i class="fa-solid fa-shirt text-2xl"></i>
+            </div>
+            <div>
+                <h1 class="text-xl sm:text-2xl font-bold text-slate-800">Weather & Clothing Match</h1>
+                <p class="text-xs sm:text-sm text-slate-500">เกมโยงเส้นคำศัพท์และคำแปล (แบ่งหน้าละ 10 คำ)</p>
+            </div>
+        </div>
+
+        <!-- Stats & Controls -->
+        <div class="flex items-center space-x-3 sm:space-x-4">
+            <div class="flex items-center space-x-1.5 bg-slate-100 px-3 py-2 rounded-xl text-slate-700 font-semibold text-xs sm:text-sm">
+                <i class="fa-solid fa-layer-group text-purple-500"></i>
+                <span>หน้า <span id="current-page-num">1</span>/<span id="total-pages-num">3</span></span>
+            </div>
+            <div class="flex items-center space-x-1.5 bg-slate-100 px-3 py-2 rounded-xl text-slate-700 font-semibold text-xs sm:text-sm">
+                <i class="fa-solid fa-trophy text-amber-500"></i>
+                <span id="score">0</span>/<span id="total-pairs">10</span>
+            </div>
+            <div class="flex items-center space-x-1.5 bg-slate-100 px-3 py-2 rounded-xl text-slate-700 font-semibold text-xs sm:text-sm">
+                <i class="fa-solid fa-stopwatch text-blue-500"></i>
+                <span id="timer">00:00</span>
+            </div>
+            <button onclick="resetCurrentPage()" class="bg-rose-500 hover:bg-rose-600 text-white px-3 py-2 rounded-xl font-medium text-xs shadow-md transition-all flex items-center space-x-1.5">
+                <i class="fa-solid fa-rotate-right"></i>
+                <span>เริ่มใหม่</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Game Container -->
+    <main class="w-full max-w-5xl bg-white/90 backdrop-blur-md rounded-3xl shadow-xl p-6 sm:p-8 border border-white/50 flex-grow flex flex-col justify-between">
+        
+        <!-- Instructions & Level Selectors -->
+        <div class="mb-6">
+            <div class="flex flex-col sm:flex-row items-center justify-between gap-4 mb-4">
+                <div id="instruction-banner" class="bg-blue-50 border border-blue-200 text-blue-700 px-4 py-2 rounded-xl text-xs sm:text-sm font-medium flex items-center space-x-2">
+                    <i class="fa-solid fa-hand-pointer text-blue-500 text-base"></i>
+                    <span>คลิกเลือกคำศัพท์ภาษาอังกฤษทางซ้าย แล้วคลิกคำแปลภาษาไทยทางขวาเพื่อโยงจับคู่</span>
+                </div>
+
+                <!-- Page Navigation Buttons -->
+                <div class="flex items-center space-x-2">
+                    <button onclick="changePage(-1)" id="prev-page-btn" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-3 py-2 rounded-xl text-xs font-bold transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center space-x-1">
+                        <i class="fa-solid fa-chevron-left"></i>
+                        <span>ก่อนหน้า</span>
+                    </button>
+                    <div id="level-buttons" class="flex space-x-1">
+                        <!-- Dynamic page buttons injected here -->
+                    </div>
+                    <button onclick="changePage(1)" id="next-page-btn" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-xl text-xs font-bold transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center space-x-1">
+                        <span>ถัดไป</span>
+                        <i class="fa-solid fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Matching Columns Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 relative my-auto">
+            
+            <!-- Left Column: English Terms -->
+            <div class="flex flex-col space-y-2.5">
+                <div class="flex items-center justify-between px-2">
+                    <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wider">English Vocabulary (คำศัพท์)</h2>
+                    <span id="left-count" class="text-xs text-slate-400 font-medium">10 คำ</span>
+                </div>
+                <div id="left-column" class="flex flex-col space-y-2.5">
+                    <!-- Dynamic Left Cards Generated via JS -->
+                </div>
+            </div>
+
+            <!-- Right Column: Thai Translations -->
+            <div class="flex flex-col space-y-2.5">
+                <div class="flex items-center justify-between px-2">
+                    <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Thai Translation (คำแปล)</h2>
+                    <span id="right-count" class="text-xs text-slate-400 font-medium">10 คำ</span>
+                </div>
+                <div id="right-column" class="flex flex-col space-y-2.5">
+                    <!-- Dynamic Right Cards Generated via JS -->
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Footer Info within Card -->
+        <div class="mt-8 pt-4 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 gap-2">
+            <div class="flex items-center space-x-2">
+                <i class="fa-solid fa-circle-info text-blue-500"></i>
+                <span id="page-category-desc">หมวดหมู่: สภาพอากาศหนาวจัดและเครื่องแต่งกายหน้าหนาว</span>
+            </div>
+            <div id="game-status" class="font-semibold text-slate-700">สถานะ: กำลังเล่นหน้าปัจจุบัน</div>
+        </div>
+
+    </main>
+
+    <!-- Page Completion Modal / Popup -->
+    <div id="win-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-3xl shadow-2xl p-8 max-w-md w-full text-center transform transition-all scale-95 opacity-0 animate-in" id="modal-content">
+            <div class="w-20 h-20 bg-amber-100 text-amber-500 rounded-full flex items-center justify-center mx-auto mb-5 text-4xl shadow-inner">
+                <i class="fa-solid fa-award"></i>
+            </div>
+            <h2 id="modal-title" class="text-2xl font-bold text-slate-800 mb-2">ยอดเยี่ยมมาก! ผ่านหน้านี้แล้ว 🎉</h2>
+            <p id="modal-subtitle" class="text-slate-600 text-sm mb-6">คุณจับคู่คำศัพท์ในหน้านี้สำเร็จครบถ้วนสมบูรณ์แล้ว</p>
+            
+            <div class="bg-slate-50 rounded-2xl p-4 mb-6 flex justify-around border border-slate-100">
+                <div>
+                    <span class="block text-xs text-slate-400 uppercase font-bold">เวลาที่ใช้</span>
+                    <span id="final-time" class="text-lg font-bold text-slate-700">00:00</span>
+                </div>
+                <div class="w-px bg-slate-200"></div>
+                <div>
+                    <span class="block text-xs text-slate-400 uppercase font-bold">คะแนนรวม</span>
+                    <span id="final-score" class="text-lg font-bold text-emerald-600">10/10</span>
+                </div>
+            </div>
+
+            <div class="flex space-x-3">
+                <button onclick="closeModal(); resetCurrentPage();" class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold py-3 px-4 rounded-xl transition-all text-sm">
+                    เล่นหน้านี้อีกครั้ง
+                </button>
+                <button id="next-level-btn" onclick="goToNextPageFromModal()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-xl shadow-lg shadow-blue-500/30 transition-all text-sm flex items-center justify-center space-x-2">
+                    <span>หน้าถัดไป</span>
+                    <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer Copyright -->
+    <footer class="mt-6 text-center text-xs text-slate-500">
+        Vocabulary Matching Learning Game &bull; ออกแบบเป็นหน้าละ 10 คำเพื่อการเรียนรู้ที่มีประสิทธิภาพ
+    </footer>
+
+    <!-- Audio Synthesis / Web Audio API for sound feedback -->
+    <script>
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playSound(type) {
+            if (!audioCtx) return;
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+
+            const osc = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            osc.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+
+            if (type === 'select') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(440, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(600, audioCtx.currentTime + 0.08);
+                gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.08);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.08);
+            } else if (type === 'correct') {
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(523.25, audioCtx.currentTime);
+                osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.08);
+                osc.frequency.setValueAtTime(783.99, audioCtx.currentTime + 0.16);
+                gainNode.gain.setValueAtTime(0.12, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.3);
+            } else if (type === 'wrong') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(200, audioCtx.currentTime);
+                osc.frequency.setValueAtTime(150, audioCtx.currentTime + 0.1);
+                gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.2);
+            } else if (type === 'win') {
+                const notes = [523.25, 587.33, 659.25, 698.46, 783.99, 880.00, 987.77, 1046.50];
+                notes.forEach((freq, index) => {
+                    setTimeout(() => {
+                        const winOsc = audioCtx.createOscillator();
+                        const winGain = audioCtx.createGain();
+                        winOsc.connect(winGain);
+                        winGain.connect(audioCtx.destination);
+                        winOsc.type = 'sine';
+                        winOsc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                        winGain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                        winGain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.2);
+                        winOsc.start();
+                        winOsc.stop(audioCtx.currentTime + 0.2);
+                    }, index * 80);
+                });
+            }
+        }
+    </script>
+
+    <!-- Main Game Logic with 10 items per page pagination -->
+    <script>
+        // Full dataset containing all vocabulary terms grouped into pages of 10 items
+        const pagesData = [
+            {
+                pageNumber: 1,
+                title: "❄️ หมวดหนาวจัด / หิมะตก (Freezing & Snowy)",
+                items: [
+                    { id: 1, term: 'Heavy coat', translation: 'เสื้อโค้ทหนา' },
+                    { id: 2, term: 'Woolen sweater', translation: 'เสื้อกันหนาวไหมพรม' },
+                    { id: 3, term: 'Thermal trousers', translation: 'กางเกงลองจอห์นกันหนาว' },
+                    { id: 4, term: 'Scarf', translation: 'ผ้าพันคอ' },
+                    { id: 5, term: 'Gloves', translation: 'ถุงมือ' },
+                    { id: 6, term: 'Beanie', translation: 'หมวกไหมพรม' },
+                    { id: 7, term: 'Thick boots', translation: 'รองเท้าบูทหนา' },
+                    { id: 8, term: 'Snow goggles', translation: 'แว่นตากันหิมะ' },
+                    { id: 9, term: 'Earmuffs', translation: 'ที่ปิดหูกันหนาว' },
+                    { id: 10, term: 'Thermal socks', translation: 'ถุงเท้ากันหนาว' }
+                ]
+            },
+            {
+                pageNumber: 2,
+                title: "🌧️ หมวดฝนตก / พายุ (Rainy & Stormy)",
+                items: [
+                    { id: 11, term: 'Raincoat', translation: 'เสื้อกันฝน' },
+                    { id: 12, term: 'Waterproof jacket', translation: 'เสื้อแจ็คเก็ตกันน้ำ' },
+                    { id: 13, term: 'Umbrella', translation: 'ร่ม' },
+                    { id: 14, term: 'Rubber boots', translation: 'รองเท้าบูทยาง' },
+                    { id: 15, term: 'Storm hat', translation: 'หมวกกันพายุ' },
+                    { id: 16, term: 'Waterproof pants', translation: 'กางเกงกันน้ำ' },
+                    { id: 17, term: 'Windbreaker', translation: 'เสื้อกันลม' },
+                    { id: 18, term: 'Hooded poncho', translation: 'เสื้อปอนโชมีฮู้ด' },
+                    { id: 19, term: 'Waterproof backpack', translation: 'กระเป๋าเป้กันน้ำ' },
+                    { id: 20, term: 'Quick-dry towel', translation: 'ผ้าขนหนูแห้งเร็ว' }
+                ]
+            },
+            {
+                pageNumber: 3,
+                title: "☀️ หมวดร้อนแดดจัด (Hot & Sunny)",
+                items: [
+                    { id: 21, term: 'T-shirt', translation: 'เสื้อยืด' },
+                    { id: 22, term: 'Shorts', translation: 'กางเกงขาสั้น' },
+                    { id: 23, term: 'Cotton dress', translation: 'ชุดเดรสผ้าฝ้าย' },
+                    { id: 24, term: 'Sleeveless top', translation: 'เสื้อกล้าม / เสื้อแขนกุด' },
+                    { id: 25, term: 'Sunglasses', translation: 'แว่นกันแดด' },
+                    { id: 26, term: 'Sunhat', translation: 'หมวกกันแดด' },
+                    { id: 27, term: 'Cap', translation: 'หมวกแก๊ป' },
+                    { id: 28, term: 'Sandals', translation: 'รองเท้าแตะ' },
+                    { id: 29, term: 'Linen shirt', translation: 'เสื้อผ้าลินิน' },
+                    { id: 30, term: 'Tank top', translation: 'เสื้อกล้ามชาย' }
+                ]
+            },
+            {
+                pageNumber: 4,
+                title: "🍃 หมวดเย็นสบาย (Cool & Breezy)",
+                items: [
+                    { id: 31, term: 'Cardigan', translation: 'เสื้อคาร์ดิแกน' },
+                    { id: 32, term: 'Light jacket', translation: 'เสื้อแจ็คเก็ตบาง' },
+                    { id: 33, term: 'Denim jeans', translation: 'กางเกงยีนส์เดนิม' },
+                    { id: 34, term: 'Sneakers', translation: 'รองเท้าผ้าใบ' },
+                    { id: 35, term: 'Wristwatch', translation: 'นาฬิกาข้อมือ' },
+                    { id: 36, term: 'Belt', translation: 'เข็มขัด' },
+                    { id: 37, term: 'Flannel shirt', translation: 'เสื้อเชิ้ตผ้าสักหลาด' },
+                    { id: 38, term: 'Hoodie', translation: 'เสื้อฮู้ดดี้' },
+                    { id: 39, term: 'Chinos pants', translation: 'กางเกงชิโน่' },
+                    { id: 40, term: 'Canvas shoes', translation: 'รองเท้าผ้าใบแคนวาส' }
+                ]
+            }
+        ];
+
+        let currentPageIndex = 0;
+        let leftItems = [];
+        let rightItems = [];
+        let selectedLeft = null;
+        let selectedRight = null;
+        let matchedCount = 0;
+        
+        let timerInterval = null;
+        let secondsElapsed = 0;
+        let gameStarted = false;
+
+        function shuffleArray(array) {
+            let currentIndex = array.length, randomIndex;
+            while (currentIndex !== 0) {
+                randomIndex = Math.floor(Math.random() * currentIndex);
+                currentIndex--;
+                [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+            }
+            return array;
+        }
+
+        function initGame() {
+            renderLevelButtons();
+            loadPage(currentPageIndex);
+        }
+
+        function renderLevelButtons() {
+            const container = document.getElementById('level-buttons');
+            container.innerHTML = '';
+            pagesData.forEach((page, idx) => {
+                const btn = document.createElement('button');
+                btn.className = `w-8 h-8 rounded-xl text-xs font-bold transition-all ${idx === currentPageIndex ? 'bg-blue-600 text-white shadow-sm' : 'bg-slate-200 text-slate-700 hover:bg-slate-300'}`;
+                btn.innerText = page.pageNumber;
+                btn.onclick = () => {
+                    currentPageIndex = idx;
+                    loadPage(currentPageIndex);
+                };
+                container.appendChild(btn);
+            });
+
+            document.getElementById('current-page-num').innerText = pagesData[currentPageIndex].pageNumber;
+            document.getElementById('total-pages-num').innerText = pagesData.length;
+        }
+
+        function loadPage(index) {
+            clearInterval(timerInterval);
+            secondsElapsed = 0;
+            gameStarted = false;
+            document.getElementById('timer').innerText = '00:00';
+            matchedCount = 0;
+            selectedLeft = null;
+            selectedRight = null;
+
+            currentPageIndex = index;
+            const currentData = pagesData[currentPageIndex];
+
+            document.getElementById('page-category-desc').innerText = `หมวดหมู่: ${currentData.title}`;
+            document.getElementById('current-page-num').innerText = currentData.pageNumber;
+            document.getElementById('total-pairs').innerText = currentData.items.length;
+            document.getElementById('left-count').innerText = `${currentData.items.length} คำ`;
+            document.getElementById('right-count').innerText = `${currentData.items.length} คำ`;
+            document.getElementById('game-status').innerText = 'สถานะ: กำลังเล่นหน้าปัจจุบัน';
+
+            // Navigation buttons state
+            document.getElementById('prev-page-btn').disabled = currentPageIndex === 0;
+            document.getElementById('next-page-btn').disabled = currentPageIndex === pagesData.length - 1;
+
+            renderLevelButtons();
+
+            // Prepare left items (English terms) and right items (Thai translations) separately and shuffle
+            leftItems = currentData.items.map(item => ({ id: item.id, text: item.term }));
+            rightItems = currentData.items.map(item => ({ id: item.id, text: item.translation }));
+
+            shuffleArray(leftItems);
+            shuffleArray(rightItems);
+
+            renderBoard();
+        }
+
+        function changePage(direction) {
+            const newIndex = currentPageIndex + direction;
+            if (newIndex >= 0 && newIndex < pagesData.length) {
+                loadPage(newIndex);
+            }
+        }
+
+        function resetCurrentPage() {
+            loadPage(currentPageIndex);
+        }
+
+        function renderBoard() {
+            const leftContainer = document.getElementById('left-column');
+            const rightContainer = document.getElementById('right-column');
+
+            leftContainer.innerHTML = '';
+            rightContainer.innerHTML = '';
+
+            leftItems.forEach(item => {
+                const card = document.createElement('div');
+                card.className = `match-card p-3 rounded-xl border-2 border-slate-200 bg-white font-medium text-slate-700 flex items-center justify-between cursor-pointer shadow-sm text-xs sm:text-sm`;
+                card.dataset.id = item.id;
+                card.dataset.type = 'left';
+                card.innerHTML = `
+                    <span>${item.text}</span>
+                    <i class="fa-solid fa-chevron-right text-xs text-slate-300"></i>
+                `;
+                card.addEventListener('click', () => handleCardClick(card, item, 'left'));
+                leftContainer.appendChild(card);
+            });
+
+            rightItems.forEach(item => {
+                const card = document.createElement('div');
+                card.className = `match-card p-3 rounded-xl border-2 border-slate-200 bg-white font-medium text-slate-700 flex items-center justify-between cursor-pointer shadow-sm text-xs sm:text-sm`;
+                card.dataset.id = item.id;
+                card.dataset.type = 'right';
+                card.innerHTML = `
+                    <i class="fa-solid fa-bookmark text-xs text-slate-300"></i>
+                    <span>${item.text}</span>
+                `;
+                card.addEventListener('click', () => handleCardClick(card, item, 'right'));
+                rightContainer.appendChild(card);
+            });
+        }
+
+        function startTimer() {
+            if (gameStarted) return;
+            gameStarted = true;
+            timerInterval = setInterval(() => {
+                secondsElapsed++;
+                const mins = Math.floor(secondsElapsed / 60).toString().padStart(2, '0');
+                const secs = (secondsElapsed % 60).toString().padStart(2, '0');
+                document.getElementById('timer').innerText = `${mins}:${secs}`;
+            }, 1000);
+        }
+
+        function handleCardClick(cardElement, item, type) {
+            if (cardElement.classList.contains('matched') || cardElement.classList.contains('wrong')) return;
+
+            startTimer();
+            playSound('select');
+
+            if (type === 'left') {
+                document.querySelectorAll('#left-column .match-card').forEach(c => c.classList.remove('selected'));
+                selectedLeft = { element: cardElement, id: item.id };
+                cardElement.classList.add('selected');
+            } else {
+                document.querySelectorAll('#right-column .match-card').forEach(c => c.classList.remove('selected'));
+                selectedRight = { element: cardElement, id: item.id };
+                cardElement.classList.add('selected');
+            }
+
+            if (selectedLeft && selectedRight) {
+                checkMatch();
+            }
+        }
+
+        function checkMatch() {
+            const leftEl = selectedLeft.element;
+            const rightEl = selectedRight.element;
+            const currentTotal = pagesData[currentPageIndex].items.length;
+
+            if (selectedLeft.id === selectedRight.id) {
+                playSound('correct');
+                leftEl.classList.remove('selected');
+                rightEl.classList.remove('selected');
+
+                leftEl.classList.add('matched');
+                rightEl.classList.add('matched');
+
+                leftEl.innerHTML = `<span>${leftEl.querySelector('span').innerText}</span> <i class="fa-solid fa-check text-emerald-500"></i>`;
+                rightEl.innerHTML = `<i class="fa-solid fa-check text-emerald-500"></i> <span>${rightEl.querySelector('span').innerText}</span>`;
+
+                matchedCount++;
+                document.getElementById('score').innerText = matchedCount;
+
+                selectedLeft = null;
+                selectedRight = null;
+
+                if (matchedCount === currentTotal) {
+                    clearInterval(timerInterval);
+                    document.getElementById('game-status').innerText = 'สถานะ: ผ่านหน้านี้แล้ว! 🎉';
+                    setTimeout(triggerWinCelebration, 400);
+                }
+            } else {
+                playSound('wrong');
+                leftEl.classList.remove('selected');
+                rightEl.classList.remove('selected');
+
+                leftEl.classList.add('wrong');
+                rightEl.classList.add('wrong');
+
+                setTimeout(() => {
+                    leftEl.classList.remove('wrong');
+                    rightEl.classList.remove('wrong');
+                }, 400);
+
+                selectedLeft = null;
+                selectedRight = null;
+            }
+        }
+
+        function triggerWinCelebration() {
+            playSound('win');
+            const finalTimeStr = document.getElementById('timer').innerText;
+            const currentTotal = pagesData[currentPageIndex].items.length;
+            document.getElementById('final-time').innerText = finalTimeStr;
+            document.getElementById('final-score').innerText = `${matchedCount}/${currentTotal}`;
+
+            const modal = document.getElementById('win-modal');
+            const modalContent = document.getElementById('modal-content');
+            
+            const nextBtn = document.getElementById('next-level-btn');
+            if (currentPageIndex === pagesData.length - 1) {
+                nextBtn.innerHTML = `<span>จบเกมทั้งหมด</span> <i class="fa-solid fa-flag-checkered"></i>`;
+            } else {
+                nextBtn.innerHTML = `<span>หน้าถัดไป</span> <i class="fa-solid fa-arrow-right"></i>`;
+            }
+
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modalContent.classList.remove('scale-95', 'opacity-0');
+                modalContent.classList.add('scale-100', 'opacity-100');
+            }, 10);
+
+            confetti({
+                particleCount: 120,
+                spread: 70,
+                origin: { y: 0.6 }
+            });
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('win-modal');
+            const modalContent = document.getElementById('modal-content');
+            modalContent.classList.remove('scale-100', 'opacity-100');
+            modalContent.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 200);
+        }
+
+        function goToNextPageFromModal() {
+            closeModal();
+            if (currentPageIndex < pagesData.length - 1) {
+                loadPage(currentPageIndex + 1);
+            } else {
+                // If last page, loop back to page 1 or reset
+                loadPage(0);
+            }
+        }
+
+        window.onload = function() {
+            initGame();
+        };
+    </script>
+</body>
+</html>
