@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="th" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ตารางคำศัพท์สภาพอากาศและเครื่องแต่งกาย</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Prompt', 'Inter', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-full flex flex-col justify-between">
+
+    <!-- Header Section -->
+    <header class="bg-gradient-to-r from-blue-600 to-indigo-700 text-white shadow-lg py-8 px-4 sm:px-6">
+        <div class="max-w-4xl mx-auto text-center">
+            <span class="inline-block bg-white/20 text-white text-xs px-3 py-1 rounded-full font-medium mb-3 backdrop-blur-sm">
+                <i class="fa-solid fa-cloud-sun-rain mr-1"></i> หมวดหมู่เสื้อผ้าตามสภาพอากาศ
+            </span>
+            <h1 class="text-2xl sm:text-4xl font-bold tracking-tight mb-2">ตารางคำศัพท์สภาพอากาศและเครื่องแต่งกาย</h1>
+            <p class="text-blue-100 text-sm sm:text-base font-light">คลิกที่ปุ่มลำโพงเพื่อฟังเสียงอ่านภาษาอังกฤษได้อย่างชัดเจน</p>
+            
+            <!-- Search Bar -->
+            <div class="mt-6 max-w-md mx-auto relative">
+                <span class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-slate-400">
+                    <i class="fa-solid fa-search"></i>
+                </span>
+                <input type="text" id="searchInput" placeholder="ค้นหาคำศัพท์ หรือ คำแปล (เช่น Coat, ร่ม)..." 
+                    class="w-full pl-11 pr-4 py-3 rounded-full text-slate-800 bg-white/95 backdrop-blur shadow focus:outline-none focus:ring-2 focus:ring-white transition-all text-sm sm:text-base">
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-grow max-w-4xl w-full mx-auto px-4 sm:px-6 py-8">
+        
+        <!-- Category Filter Pills -->
+        <div class="flex flex-wrap gap-2 justify-center mb-8" id="categoryFilters">
+            <button data-category="all" class="filter-btn active px-4 py-2 rounded-full text-xs sm:text-sm font-medium bg-blue-600 text-white shadow transition-all hover:bg-blue-700">
+                ทั้งหมด (All)
+            </button>
+            <button data-category="freezing" class="filter-btn px-4 py-2 rounded-full text-xs sm:text-sm font-medium bg-white text-slate-700 border border-slate-200 shadow-sm transition-all hover:bg-slate-100">
+                ❄️ Freezing / Snowy
+            </button>
+            <button data-category="rainy" class="filter-btn px-4 py-2 rounded-full text-xs sm:text-sm font-medium bg-white text-slate-700 border border-slate-200 shadow-sm transition-all hover:bg-slate-100">
+                🌧️ Rainy / Stormy
+            </button>
+            <button data-category="hot" class="filter-btn px-4 py-2 rounded-full text-xs sm:text-sm font-medium bg-white text-slate-700 border border-slate-200 shadow-sm transition-all hover:bg-slate-100">
+                ☀️ Hot & Sunny
+            </button>
+            <button data-category="cool" class="filter-btn px-4 py-2 rounded-full text-xs sm:text-sm font-medium bg-white text-slate-700 border border-slate-200 shadow-sm transition-all hover:bg-slate-100">
+                🍃 Cool & Breezy
+            </button>
+        </div>
+
+        <!-- Vocabulary Container -->
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-slate-100/70 border-b border-slate-200 text-slate-600 uppercase text-xs font-semibold tracking-wider">
+                            <th class="py-4 px-6 w-1/2">คำศัพท์ภาษาอังกฤษ (English Vocabulary)</th>
+                            <th class="py-4 px-6 w-1/2">คำแปลไทย (Thai Translation)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="vocabTableBody" class="divide-y divide-slate-100 text-sm sm:text-base">
+                        <!-- Content injected via JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+            <!-- Empty Search State -->
+            <div id="noResults" class="hidden py-12 text-center text-slate-500">
+                <i class="fa-regular fa-face-frown text-4xl mb-2"></i>
+                <p>ไม่พบคำศัพท์ที่คุณค้นหา กรุณาลองใหม่อีกครั้ง</p>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer Attribution -->
+    <footer class="bg-white border-t border-slate-200 py-6 mt-12 text-center text-slate-500 text-xs sm:text-sm">
+        <p>เขียนโดย พระจอมเกล้าติวเตอร์</p>
+    </footer>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        // Vocabulary dataset organized by categories
+        const vocabularyData = [
+            // Freezing / Snowy Category
+            { catKey: 'freezing', catTitle: 'Freezing / Snowy (หนาวจัด / หิมะตก)', en: 'Freezing / Snowy', th: 'หนาวจัด / หิมะตก', isHeader: true },
+            { catKey: 'freezing', en: 'Heavy coat', th: 'เสื้อโค้ทหนา' },
+            { catKey: 'freezing', en: 'Woolen sweater', th: 'เสื้อกันหนาวไหมพรม' },
+            { catKey: 'freezing', en: 'Thermal trousers', th: 'กางเกงฮีทเทคกันหนาว' },
+            { catKey: 'freezing', en: 'Scarf', th: 'ผ้าพันคอ' },
+            { catKey: 'freezing', en: 'Gloves', th: 'ถุงมือ' },
+            { catKey: 'freezing', en: 'Beanie', th: 'หมวกไหมพรม' },
+            { catKey: 'freezing', en: 'Thick boots', th: 'รองเท้าบูทหนา' },
+
+            // Rainy / Stormy Category
+            { catKey: 'rainy', catTitle: 'Rainy / Stormy (ฝนตก / พายุ)', en: 'Rainy / Stormy', th: 'ฝนตก / พายุ', isHeader: true },
+            { catKey: 'rainy', en: 'Raincoat', th: 'เสื้อกันฝน' },
+            { catKey: 'rainy', en: 'Waterproof jacket', th: 'เสื้อแจ็คเก็ตกันน้ำ' },
+            { catKey: 'rainy', en: 'Umbrella', th: 'ร่ม' },
+            { catKey: 'rainy', en: 'Rubber boots', th: 'รองเท้าบูทยาง' },
+
+            // Hot & Sunny Category
+            { catKey: 'hot', catTitle: 'Hot & Sunny (ร้อนแดดจัด)', en: 'Hot & Sunny', th: 'ร้อนแดดจัด', isHeader: true },
+            { catKey: 'hot', en: 'T-shirt', th: 'เสื้อยืด' },
+            { catKey: 'hot', en: 'Shorts', th: 'กางเกงขาสั้น' },
+            { catKey: 'hot', en: 'Cotton dress', th: 'ชุดเดรสผ้าฝ้าย' },
+            { catKey: 'hot', en: 'Sleeveless top', th: 'เสื้อกล้าม / เสื้อไม่มีแขน' },
+            { catKey: 'hot', en: 'Sunglasses', th: 'แว่นกันแดด' },
+            { catKey: 'hot', en: 'Sunhat', th: 'หมวกกันแดด' },
+            { catKey: 'hot', en: 'Cap', th: 'หมวกแก๊ป' },
+            { catKey: 'hot', en: 'Sandals', th: 'รองเท้าแตะ' },
+
+            // Cool & Breezy Category
+            { catKey: 'cool', catTitle: 'Cool & Breezy (เย็นสบาย)', en: 'Cool & Breezy', th: 'เย็นสบาย', isHeader: true },
+            { catKey: 'cool', en: 'Cardigan', th: 'เสื้อคาร์ดิแกน' },
+            { catKey: 'cool', en: 'Light jacket', th: 'เสื้อแจ็คเก็ตบาง' },
+            { catKey: 'cool', en: 'Denim jeans', th: 'กางเกงยีนส์' },
+            { catKey: 'cool', en: 'Sneakers', th: 'รองเท้าผ้าใบ' },
+            { catKey: 'cool', en: 'Wristwatch', th: 'นาฬิกาข้อมือ' },
+            { catKey: 'cool', en: 'Belt', th: 'เข็มขัด' }
+        ];
+
+        let currentCategory = 'all';
+        let searchQuery = '';
+
+        // Text-to-Speech Pronunciation function using Web Speech API
+        function speakWord(text) {
+            if ('speechSynthesis' in window) {
+                // Cancel ongoing speech to ensure immediate response
+                window.speechSynthesis.cancel();
+                
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'en-US';
+                utterance.rate = 0.9; // Slightly slower for better clarity
+                
+                // Try selecting an English voice if available
+                const voices = window.speechSynthesis.getVoices();
+                const englishVoice = voices.find(v => v.lang.startsWith('en-'));
+                if (englishVoice) {
+                    utterance.voice = englishVoice;
+                }
+
+                window.speechSynthesis.speak(utterance);
+            } else {
+                console.warn('Speech synthesis is not supported in this browser.');
+            }
+        }
+
+        // Render table based on current category and search filter
+        function renderTable() {
+            const tbody = document.getElementById('vocabTableBody');
+            const noResultsEl = document.getElementById('noResults');
+            tbody.innerHTML = '';
+
+            // Filter items
+            const filteredItems = vocabularyData.filter(item => {
+                const matchesCategory = (currentCategory === 'all' || item.catKey === currentCategory);
+                const matchesSearch = item.en.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                                      item.th.toLowerCase().includes(searchQuery.toLowerCase());
+                return matchesCategory && matchesSearch;
+            });
+
+            if (filteredItems.length === 0) {
+                noResultsEl.classList.remove('hidden');
+                return;
+            } else {
+                noResultsEl.classList.add('hidden');
+            }
+
+            let lastRenderedHeader = '';
+
+            filteredItems.forEach(item => {
+                // If showing all categories or search, we can inject section divider headers
+                if (currentCategory === 'all' && !searchQuery && item.isHeader) {
+                    const headerRow = document.createElement('tr');
+                    headerRow.className = 'bg-blue-50/60 font-semibold text-blue-900 border-t border-b border-blue-100';
+                    headerRow.innerHTML = `
+                        <td colspan="2" class="py-3 px-6 text-sm flex items-center gap-2">
+                            <i class="fa-solid fa-tag text-blue-500"></i> ${item.catTitle}
+                        </td>
+                    `;
+                    tbody.appendChild(headerRow);
+                    return;
+                }
+
+                // If user is searching or viewing a specific category, show appropriate header or list items cleanly
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-slate-50/80 transition-colors border-b border-slate-100 last:border-b-0';
+
+                if (item.isHeader) {
+                    // Skip standalone header items inside filtered search views unless needed, or style them distinctly
+                    if (searchQuery) {
+                        row.className = 'bg-indigo-50/50 font-medium text-indigo-900';
+                        row.innerHTML = `
+                            <td colspan="2" class="py-2.5 px-6 text-xs uppercase tracking-wider text-indigo-600">
+                                หมวดหมู่: ${item.th}
+                            </td>
+                        `;
+                        tbody.appendChild(row);
+                    }
+                    return;
+                }
+
+                row.innerHTML = `
+                    <td class="py-4 px-6 font-medium text-slate-800 flex items-center justify-between">
+                        <span>${item.en}</span>
+                        <button onclick="speakWord('${item.en.replace(/'/g, "\\'")}')" 
+                            class="ml-2 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-all text-xs font-medium shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 group"
+                            title="ฟังเสียงอ่าน">
+                            <i class="fa-solid fa-volume-high group-hover:scale-110 transition-transform"></i>
+                            <span class="hidden sm:inline">ฟังเสียง</span>
+                        </button>
+                    </td>
+                    <td class="py-4 px-6 text-slate-600 font-normal">
+                        ${item.th}
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // Event Listeners for Filters
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                document.querySelectorAll('.filter-btn').forEach(b => {
+                    b.classList.remove('bg-blue-600', 'text-white', 'shadow');
+                    b.classList.add('bg-white', 'text-slate-700', 'border', 'border-slate-200');
+                });
+                btn.classList.remove('bg-white', 'text-slate-700', 'border', 'border-slate-200');
+                btn.classList.add('bg-blue-600', 'text-white', 'shadow');
+
+                currentCategory = btn.getAttribute('data-category');
+                renderTable();
+            });
+        });
+
+        // Event Listener for Search Input
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            searchQuery = e.target.value.trim();
+            renderTable();
+        });
+
+        // Initial render on window load
+        window.onload = () => {
+            renderTable();
+            // Preload speech synthesis voices
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.getVoices();
+            }
+        };
+    </script>
+</body>
+</html>
