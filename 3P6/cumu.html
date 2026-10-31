@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบคลังข้อสอบออนไลน์ - เมฆทั้ง 10 ชนิดและรากศัพท์อุตุนิยมวิทยา โดย พระจอมเกล้าติวเตอร์</title>
+    <style>
+        :root {
+            --primary: #1e3a8a;
+            --primary-light: #3b82f6;
+            --accent: #0ea5e9;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-color: #1e293b;
+            --border-color: #cbd5e1;
+            --success: #16a34a;
+            --error: #dc2626;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: white;
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        header h1 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .summary-section {
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            margin-bottom: 30px;
+        }
+
+        .summary-section h2 {
+            color: var(--primary);
+            margin-bottom: 15px;
+            border-bottom: 2px solid var(--accent);
+            padding-bottom: 8px;
+        }
+
+        .summary-section p {
+            margin-bottom: 15px;
+            text-align: justify;
+        }
+
+        .technique-box {
+            background: #e0f2fe;
+            border-left: 5px solid var(--accent);
+            padding: 20px;
+            border-radius: 0 8px 8px 0;
+            margin-top: 20px;
+        }
+
+        .technique-box h3 {
+            color: #0369a1;
+            margin-bottom: 10px;
+        }
+
+        .main-layout {
+            display: flex;
+            gap: 20px;
+            position: relative;
+        }
+
+        .exam-container {
+            flex: 1;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .question-card {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .question-card.answered-correct {
+            border-color: var(--success);
+            background-color: #f0fdf4;
+        }
+
+        .question-card.answered-incorrect {
+            border-color: var(--error);
+            background-color: #fef2f2;
+        }
+
+        .question-title {
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            color: var(--primary);
+        }
+
+        .options-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .option-label {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s, border-color 0.2s;
+            background: #fff;
+        }
+
+        .option-label:hover {
+            background: #f1f5f9;
+            border-color: var(--primary-light);
+        }
+
+        .option-label input {
+            margin-right: 12px;
+            transform: scale(1.2);
+        }
+
+        .explanation {
+            margin-top: 15px;
+            padding: 12px;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            display: none;
+        }
+
+        .explanation.correct-exp {
+            background: #dcfce7;
+            color: #166534;
+            border: 1px solid #bbf7d0;
+        }
+
+        .explanation.incorrect-exp {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+
+        .controls {
+            text-align: center;
+            margin-top: 30px;
+            margin-bottom: 30px;
+        }
+
+        .btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 15px 35px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.3s, transform 0.1s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .btn:hover {
+            background-color: #1e40af;
+            transform: translateY(-2px);
+        }
+
+        .result-section {
+            display: none;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            margin-top: 30px;
+            text-align: center;
+        }
+
+        .result-section h2 {
+            color: var(--primary);
+            margin-bottom: 20px;
+        }
+
+        .score-display {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--accent);
+            margin-bottom: 20px;
+        }
+
+        .analysis-box {
+            text-align: left;
+            background: #f8fafc;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            margin-top: 20px;
+        }
+
+        .analysis-box h3 {
+            margin-bottom: 10px;
+            color: var(--primary);
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            color: #64748b;
+            font-size: 0.9rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            .exam-container {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>คลังข้อสอบออนไลน์: เมฆทั้ง 10 ชนิดและรากศัพท์อุตุนิยมวิทยา</h1>
+            <p>ระบบทดสอบความรู้ระดับมัธยมศึกษา พร้อมระบบวิเคราะห์ผลรายบุคคลทันที</p>
+        </header>
+
+        <section class="summary-section">
+            <h2>สรุปเนื้อหาบทเรียน: อุตุนิยมวิทยาและตระกูลเมฆ 10 ชนิด (ความยาว 400+ คำ)</h2>
+            <p>อุตุนิยมวิทยาเป็นวิทยาศาสตร์ที่ศึกษาเกี่ยวกับบรรยากาศของโลก โดยเฉพาะอย่างยิ่งสภาพอากาศและการเกิดเมฆ ซึ่งเมฆบนท้องฟ้าถูกจำแนกออกเป็น 10 ชนิดหลักตามระบบสากลขององค์การอุตุนิยมวิทยาโลก (WMO) โดยอาศัยระดับความสูงฐานของเมฆและลักษณะรูปร่างเป็นเกณฑ์หลักในการแบ่งหมวดหมู่ การทำความเข้าใจเรื่องเมฆไม่เพียงแต่ช่วยให้เราพยากรณ์อากาศเบื้องต้นได้ด้วยตนเอง แต่ยังเป็นรากฐานสำคัญในการทำความเข้าใจวัฏจักรของน้ำและพลวัตของบรรยากาศโลกอีกด้วย</p>
+            <p>รากศัพท์ในภาษากรีกและละตินที่เป็นหัวใจสำคัญในการจำแนกเมฆ ประกอบด้วยคำหลัก 5 คำ ได้แก่ <strong>Cirro</strong> (รากศัพท์หมายถึง ขนสัตว์หยิกหรือเป็นเส้นบางเบา ใช้เรียกเมฆชั้นสูง), <strong>Alto</strong> (รากศัพท์หมายถึง สูง แต่ในทางอุตุนิยมวิทยาใช้เรียกเมฆชั้นกลางที่มีระดับความสูงปานกลาง), <strong>Stratus</strong> (รากศัพท์หมายถึง แผ่นหรือชั้น ใช้เรียกเมฆที่มีลักษณะเป็นแผ่นยาวแผ่ปกคลุมท้องฟ้าในแนวนอน), <strong>Cumulus</strong> (รากศัพท์หมายถึง กอง สุม หรือสะสม ใช้เรียกเมฆที่มีลักษณะเป็นก้อนนูนหนาคล้ายสำליหรือกองภูเขา), และ <strong>Nimbus</strong> (รากศัพท์หมายถึง ฝน หรือเมฆฝน ใช้เติมท้ายหรือนำหน้าเมฆที่ก่อให้เกิดฝนฟ้าคะนองหรือหยาดน้ำฟ้าตกลงมา)</p>
+            <p>เมื่อนำรากศัพท์ทั้ง 5 นี้มาผสมผสานกันตามระดับความสูง (ชั้นสูง: สูงกว่า 6,000 เมตรขึ้นไป เช่น Cirrus, Cirrocumulus, Cirrostratus; ชั้นกลาง: 2,000 ถึง 6,000 เมตร เช่น Altocumulus, Altostratus; ชั้นต่ำ: ต่ำกว่า 2,000 เมตร เช่น Stratus, Stratocumulus, Nimbostratus; และเมฆพัฒนาในแนวตั้ง เช่น Cumulus และ Cumulonimbus) ทำให้เราสามารถเข้าใจโครงสร้างและพฤติกรรมของเมฆแต่ละชนิดได้อย่างแม่นยำ เมฆชั้นสูงมักประกอบด้วยผลึกน้ำแข็งเนื่องจากอุณหภูมิที่เย็นจัด เมฆชั้นกลางมักเป็นส่วนผสมของหยดน้ำและผลึกน้ำแข็ง ส่วนเมฆชั้นต่ำและเมฆแนวตั้งมักประกอบด้วยหยดน้ำขนาดเล็กที่พร้อมจะกลั่นตัวเป็นหยาดน้ำฟ้าตกลงสู่พื้นดิน</p>
+            
+            <div class="technique-box">
+                <h3>เทคนิคการจำและกระบวนการคิด (Memory Tricks & Thought Process)</h3>
+                <p><strong>1. เทคนิคจำรากศัพท์หลัก:</strong> ให้จำคำว่า "ซีร่อ-เส้นผม, อัลโต-กลาง, สแตตัส-แผ่น, คิวมูลัส-กอง, นิมบัส-ฝน" ท่องให้ขึ้นใจแล้วนำมาต่อกันเหมือนการต่อเลโก้ เช่น เจอคำว่า "Cirrocumulus" แปลว่า เมฆก้อนๆ (Cumulus) ที่เป็นเส้นบางๆ อยู่ชั้นสูง (Cirro) หรือถ้าเจอ "Nimbostratus" คือเมฆแผ่น (Stratus) ที่มีฝนตก (Nimbus)</p>
+                <p><strong>2. กระบวนการคิดวิเคราะห์ระดับความสูง:</strong> เวลาเจอโจทย์ถามว่าเมฆชนิดใดอยู่ชั้นไหน ให้มองที่คำนำหน้า หากขึ้นต้นด้วย Cirro มั่นใจได้ทันทีว่าเป็นชั้นสูง ถ้าขึ้นต้นด้วย Alto เป็นชั้นกลาง ถ้าไม่มีคำนำหน้าพิเศษและเป็นก้อนหรือแผ่นธรรมดา มักเป็นชั้นต่ำ ยกเว้นเมฆแนวตั้งที่มีฐานต่ำแต่ยอดสูงเสียดฟ้าอย่าง Cumulonimbus ซึ่งมีคำว่า Nimbus การันตีความเป็นเมฆฝนฟ้าคะนองรุนแรง</p>
+            </div>
+        </section>
+
+        <div class="main-layout">
+            <div class="exam-container" id="examForm">
+                <!-- ข้อสอบ 25 ข้อจะถูกเรนเดอร์ลงที่นี่พร้อมกัน -->
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="btn" onclick="submitExam()">ส่งคำตอบและวิเคราะห์ผล</button>
+        </div>
+
+        <div class="result-section" id="resultSection">
+            <h2>ผลการประเมินและวิเคราะห์จุดอ่อน</h2>
+            <div class="score-display" id="scoreDisplay">0 / 25</div>
+            <div class="analysis-box" id="analysisBox">
+                <!-- ผลวิเคราะห์จะแสดงที่นี่ -->
+            </div>
+        </div>
+
+        <footer>
+            เขียนโดย พระจอมเกล้าติวเตอร์
+        </footer>
+    </div>
+
+    <script>
+        // ชุดข้อมูลคำถาม 25 ข้อ ครอบคลุมเนื้อหารากศัพท์และเมฆ 10 ชนิด พร้อมจัดหมวดหมู่เพื่อวิเคราะห์จุดอ่อน
+        const rawQuestions = [
+            {
+                category: "รากศัพท์อุตุนิยมวิทยา",
+                question: "รากศัพท์ภาษาละตินคำว่า 'Cirro' มีความหมายตรงกับข้อใดมากที่สุดในทางอุตุนิยมวิทยา?",
+                options: [
+                    { text: "เส้นผมหรือขนสัตว์หยิกบางเบา", correct: true },
+                    { text: "แผ่นผ้าหรือชั้นที่แผ่ขยาย", correct: false },
+                    { text: "กองหรือสุมรวมกันเป็นกลุ่มก้อน", correct: false },
+                    { text: "หยาดน้ำฟ้าหรือฝนที่กำลังตกลงมา", correct: false }
+                ],
+                explanation: "Cirro มีรากศัพท์หมายถึงเส้นผมหรือขนสัตว์หยิก ซึ่งใช้เรียกเมฆชั้นสูงที่มีลักษณะบางเบาคล้ายเส้นไหมหรือขนนก"
+            },
+            {
+                category: "รากศัพท์อุตุนิยมวิทยา",
+                question: "คำว่า 'Stratus' ในชื่อเรียกเมฆ มีความหมายรากศัพท์ตรงกับข้อใด?",
+                options: [
+                    { text: "แผ่นหรือชั้นที่แผ่ขยายออกในแนวนอน", correct: true },
+                    { text: "ความสูงระดับปานกลางบนชั้นบรรยากาศ", correct: false },
+                    { text: "ความหนาแน่นของผลึกน้ำแข็งในก้อนเมฆ", correct: false },
+                    { text: "กระแสลมแรงที่พัดผ่านยอดเมฆในแนวตั้ง", correct: false }
+                ],
+                explanation: "Stratus แปลว่าแผ่นหรือชั้น (Layer) ใช้เรียกเมฆที่ก่อตัวแผ่ขยายออกไปเป็นแผ่นเรียบทับถมกันในแนวนอน"
+            },
+            {
+                category: "รากศัพท์อุตุนิยมวิทยา",
+                question: "หากนักเรียนพบคำว่า 'Cumulus' ในชื่อเมฆ รากศัพท์นี้สื่อถึงลักษณะทางกายภาพอย่างไร?",
+                options: [
+                    { text: "กอง สุม หรือสะสมตัวเป็นกลุ่มก้อนนูน", correct: true },
+                    { text: "ลักษณะเป็นเส้นบางยาวคล้ายขนนกสยาย", correct: false },
+                    { text: "แผ่นเรียบทับซ้อนกันเหมือนชั้นกระดาษ", correct: false },
+                    { text: "ลักษณะโปร่งแสงมองทะลุผ่านได้ง่าย", correct: false }
+                ],
+                explanation: "Cumulus มีความหมายว่ากองหรือสุม (Heap) ใช้เรียกเมฆที่มีลักษณะเป็นก้อนนูนหนา มีฐานแบนและยอดนูนคล้ายกะหล่ำปลี"
+            },
+            {
+                category: "รากศัพท์อุตุนิยมวิทยา",
+                question: "คำว่า 'Nimbus' เมื่อนำมาประกอบในชื่อเรียกเมฆ จะบ่งบอกถึงลักษณะสำคัญข้อใด?",
+                options: [
+                    { text: "การเกิดฝนหรือหยาดน้ำฟ้าตกลงสู่พื้น", correct: true },
+                    { text: "การอยู่ ณ ระดับความสูงมากกว่าหิโลเมตร", correct: false },
+                    { text: "การสะท้อนแสงอาทิตย์ได้ดีที่สุดในตอนเช้า", correct: false },
+                    { text: "การรวมตัวกันของผลึกน้ำแข็งบริสุทธิ์", correct: false }
+                ],
+                explanation: "Nimbus แปลว่าฝนหรือเมฆฝน ใช้เติมในชื่อเมฆเพื่อแสดงว่าเมฆชนิดนั้นกำลังทำให้เกิดฝนหรือหยาดน้ำฟ้าตกลงมา"
+            },
+            {
+                category: "รากศัพท์อุตุนิยมวิทยา",
+                question: "คำนำหน้าว่า 'Alto' ในชื่อเมฆชั้นกลาง มีความหมายดั้งเดิมว่าอย่างไร?",
+                options: [
+                    { text: "สูง (High) แต่ใช้กำหนดระดับปานกลางในโครงสร้างเมฆ", correct: true },
+                    { text: "ต่ำ (Low) อยู่ใกล้พื้นดินมากที่สุดในชั้นโทรโพสเฟียร์", correct: false },
+                    { text: "มืดทึบ (Dark) เนื่องจากปริมาณไอน้ำหนาแน่นมาก", correct: false },
+                    { text: "เคลื่อนที่เร็ว (Fast) ตามกระแสลมชั้นบน", correct: false }
+                ],
+                explanation: "Alto รากศัพท์หมายถึงสูง แต่ในระบบจัดหมวดหมู่เมฆ นำมาใช้เรียกเมฆในระดับความสูงปานกลาง (Medium level)"
+            },
+            {
+                category: "เมฆชั้นสูง",
+                question: "เมฆชนิดใดจัดเป็นเมฆชั้นสูงที่มีลักษณะเป็นริ้วบางเบาคล้ายขนนก และประกอบด้วยผลึกน้ำแข็งทั้งหมด?",
+                options: [
+                    { text: "เมฆเซอร์รัส (Cirrus)", correct: true },
+                    { text: "เมฆสเตรตัส (Stratus)", correct: false },
+                    { text: "เมฆคิวมูลัส (Cumulus)", correct: false },
+                    { text: "เมฆแอตโตคิวมูลัส (Altocumulus)", correct: false }
+                ],
+                explanation: "เมฆเซอร์รัส (Cirrus) เป็นเมฆชั้นสูงที่มีลักษณะเป็นเส้นใยบางเบาคล้ายขนนกหรือเส้นไหม สีขาวบริสุทธิ์เพราะประกอบด้วยผลึกน้ำแข็ง"
+            },
+            {
+                category: "เมฆชั้นสูง",
+                question: "เมฆชั้นสูงที่มีลักษณะเป็นแผ่นบางใสแผ่คลุมท้องฟ้าเป็นบริเวณกว้าง และมักทำให้เกิดปรากฏการณ์ทรงกลด (Halo) คือเมฆชนิดใด?",
+                options: [
+                    { text: "เมฆเซอร์โรสเตรตัส (Cirrostratus)", correct: true },
+                    { text: "เมฆเซอร์โรคิวมูลัส (Cirrocumulus)", correct: false },
+                    { text: "เมฆแอตโตสเตรตัส (Altostratus)", correct: false },
+                    { text: "เมฆนิมโบสเตรตัส (Nimbostratus)", correct: false }
+                ],
+                explanation: "Cirrostratus เป็นเมฆชั้นสูงแผ่นบาง คล้ายผ้าคลุมหน้าเจ้าสาว ทำให้แสงหักเหผ่านผลึกน้ำแข็งเกิดเป็นวงแหวนทรงกลดรอบดวงอาทิตย์หรือดวงจันทร์"
+            },
+            {
+                category: "เมฆชั้นสูง",
+                question: "ลักษณะเด่นของเมฆ 'เซอร์โรคิวมูลัส' (Cirrocumulus) ตรงกับข้อใดมากที่สุด?",
+                options: [
+                    { text: "เป็นก้อนเล็กๆ สีขาวเรียงตัวกันเป็นแถวคล้ายเกล็ดปลา", correct: true },
+                    { text: "เป็นแผ่นหนาทึบสีเทาปกคลุมทั่วท้องฟ้าและมีฝนตกปรอยๆ", correct: false },
+                    { text: "เป็นก้อนทรงกลมใหญ่หนาทึบและมีฐานเรียบเสมอกัน", correct: false },
+                    { text: "เป็นริ้วเส้นยาวเดี่ยวๆ พาดผ่านท้องฟ้าในทิศทางตะวันตก", correct: false }
+                ],
+                explanation: "Cirrocumulus เป็นเมฆชั้นสูงที่เป็นก้อนกลมเล็กๆ สีขาวติดกันถี่ๆ คล้ายเกล็ดปลาหรือระลอกคลื่นในน้ำ (Mackerel sky)"
+            },
+            {
+                category: "เมฆชั้นกลาง",
+                question: "เมฆชั้นกลางที่มีลักษณะเป็นแผ่นหรือชั้นสีเทาหรือฟ้าหม่น แผ่ปกคลุมท้องฟ้าจนมองเห็นดวงอาทิตย์เลือนรางคล้ายส่องผ่านกระจกฝ้า คือเมฆอะไร?",
+                options: [
+                    { text: "เมฆแอตโตสเตรตัส (Altostratus)", correct: true },
+                    { text: "เมฆเซอร์โรสเตรตัส (Cirrostratus)", correct: false },
+                    { text: "เมฆสเตรโตคิวมูลัส (Stratocumulus)", correct: false },
+                    { text: "เมฆคิวมูลัส (Cumulus)", correct: false }
+                ],
+                explanation: "Altostratus เป็นเมฆแผ่นชั้นกลางสีเทาหรืออมฟ้า ปกคลุมทั่วท้องฟ้า ทำให้แสงอาทิตย์ส่องลงมาได้แบบเลือนรางและไม่มีเงาบนพื้นดิน"
+            },
+            {
+                category: "เมฆชั้นกลาง",
+                question: "ข้อใดอธิบายลักษณะของเมฆ 'แอตโตคิวมูลัส' (Altocumulus) ได้ถูกต้องที่สุด?",
+                options: [
+                    { text: "เป็นก้อนกลมหรือแผ่นบางสีขาวและเทา เรียงตัวกันเป็นคลื่นหรือฝูงแกะ", correct: true },
+                    { text: "เป็นริ้วบางเบาสูงเสียดฟ้าและไม่มีเงาตกกระทบพื้นโลก", correct: false },
+                    { text: "เป็นแผ่นเรียบสีดำสนิทที่ก่อตัวต่ำและทำให้เกิดพายุฝนฟ้าคะนอง", correct: false },
+                    { text: "เป็นก้อนทรงพุ่มเดี่ยวขนาดใหญ่ที่มีฐานแบนราบชัดเจน", correct: false }
+                ],
+                explanation: "Altocumulus เป็นเมฆชั้นกลางที่เป็นก้อนกลมหรือเกล็ดเรียงตัวกันเป็นแถวหรือคลื่น มักเปรียบเหมือนฝูงแกะบนท้องฟ้า (Sheep's fleece)"
+            },
+            {
+                category: "เมฆชั้นต่ำ",
+                question: "เมฆชั้นต่ำชนิดใดมีลักษณะเป็นแผ่นเรียบหนาสีเทาแผ่ปกคลุมต่ำมากใกล้พื้นดิน คล้ายหมอกที่ลอยสูงขึ้นไปบนอากาศ?",
+                options: [
+                    { text: "เมฆสเตรตัส (Stratus)", correct: true },
+                    { text: "เมฆคิวมูลัส (Cumulus)", correct: false },
+                    { text: "เมฆเซอร์รัส (Cirrus)", correct: false },
+                    { text: "เมฆคิวมูลอนิมบัส (Cumulonimbus)", correct: false }
+                ],
+                explanation: "Stratus เป็นเมฆแผ่นชั้นต่ำที่ปกคลุมต่ำมาก ดูคล้ายหมอกแต่ลอยอยู่เหนือพื้นดินเล็กน้อย มักทำให้เกิดฝนละอองเบาบางได้"
+            },
+            {
+                category: "เมฆชั้นต่ำ",
+                question: "เมฆ 'สเตรโตคิวมูลัส' (Stratocumulus) มีลักษณะผสมผสานระหว่างเมฆสองชนิดตามข้อใด?",
+                options: [
+                    { text: "ลักษณะเป็นแผ่น (Stratus) ร่วมกับลักษณะเป็นก้อน (Cumulus)", correct: true },
+                    { text: "ลักษณะเป็นเส้น (Cirro) ร่วมกับลักษณะเป็นฝน (Nimbus)", correct: false },
+                    { text: "ลักษณะสูง (Alto) ร่วมกับลักษณะแผ่นเรียบ (Stratus)", correct: false },
+                    { text: "ลักษณะกองพุ่ม (Cumulus) ร่วมกับลักษณะพายุ (Nimbus)", correct: false }
+                ],
+                explanation: "Stratocumulus เป็นเมฆชั้นต่ำที่เป็นก้อนกลมมนต่อติดกันเป็นแผ่นหรือผืนกว้าง มีช่องว่างระหว่างก้อนเล็กน้อย สีเทาขาวสลับกัน"
+            },
+            {
+                category: "เมฆชั้นต่ำ",
+                question: "เมฆแผ่นหนาทึบสีเทาเข้มไร้รูปทรงชัดเจน ปกคลุมทั่วท้องฟ้าและทำให้เกิดฝนตกต่อเนื่องเป็นเวลานาน คือเมฆชนิดใด?",
+                options: [
+                    { text: "เมฆนิมโบสเตรตัส (Nimbostratus)", correct: true },
+                    { text: "เมฆแอตโตสเตรตัส (Altostratus)", correct: false },
+                    { text: "เมฆเซอร์โรสเตรตัส (Cirrostratus)", correct: false },
+                    { text: "เมฆคิวมูลัส (Cumulus)", correct: false }
+                ],
+                explanation: "Nimbostratus เป็นเมฆฝนชั้นต่ำที่เป็นแผ่นหนาทึบแผ่กว้าง ไม่มีขอบเขตชัดเจน เป็นสาเหตุของฝนตกต่อเนื่องยาวนานแบบไม่มีพายุฟ้าคะนองรุนแรง"
+            },
+            {
+                category: "เมฆแนวตั้ง",
+                question: "เมฆก้อนเดี่ยวที่มีฐานแบนราบและยอดนูนสูงขึ้นไปคล้ายดอกกะหล่ำหรือสำลี เป็นสัญลักษณ์ของอากาศดีในวันที่ท้องฟ้าแจ่มใส คือเมฆอะไร?",
+                options: [
+                    { text: "เมฆคิวมูลัส (Cumulus)", correct: true },
+                    { text: "เมฆสเตรตัส (Stratus)", correct: false },
+                    { text: "เมฆเซอร์รัส (Cirrus)", correct: false },
+                    { text: "เมฆนิมโบสเตรตัส (Nimbostratus)", correct: false }
+                ],
+                explanation: "Cumulus เป็นเมฆพัฒนาในแนวตั้งหรือก้อนเดี่ยวที่มีฐานแบนและยอดนูนเด่นชัด ปรากฏในวันที่อากาศดีท้องฟ้าโปร่งใส"
+            },
+            {
+                category: "เมฆแนวตั้ง",
+                question: "เมฆชนิดใดที่พัฒนาตัวในแนวตั้งอย่างรุนแรงจนยอดเมฆแผ่ออกเป็นรูปทั่งตีเหล็ก (Anvil) และก่อให้เกิดพายุฝนฟ้าคะนอง ฟ้าผ่า ลูกเห็บตก?",
+                options: [
+                    { text: "เมฆคิวมูลอนิมบัส (Cumulonimbus)", correct: true },
+                    { text: "เมฆเซอร์โรคิวมูลัส (Cirrocumulus)", correct: false },
+                    { text: "เมฆแอตโตคิวมูลัส (Altocumulus)", correct: false },
+                    { text: "เมฆสเตรโตคิวมูลัส (Stratocumulus)", correct: false }
+                ],
+                explanation: "Cumulonimbus คือเมฆฝนฟ้าคะนองขนาดใหญ่ (Thunderstorm cloud) พัฒนาจากเมฆคิวมูลัสจนยอดสูงขึ้นมากและชนกับชั้นโทรโพพาสจนแผ่ออกเป็นรูปทั่ง"
+            },
+            {
+                category: "ระดับความสูง",
+                question: "ตามมาตรฐานสากล WMO ระดับความสูงของฐานเมฆในกลุ่ม 'เมฆชั้นสูง' (High clouds) เริ่มต้นที่ประมาณเท่าใดขึ้นไป?",
+                options: [
+                    { text: "สูงกว่า 6,000 เมตร (20,000 ฟุต)", correct: true },
+                    { text: "สูงกว่า 2,000 เมตรถึง 6,000 เมตร", correct: false },
+                    { text: "ต่ำกว่า 2,000 เมตรลงมาถึงพื้นดิน", correct: false },
+                    { text: "สูงกว่า 12,000 เมตรในชั้นสตราโตสเฟียร์", correct: false }
+                ],
+                explanation: "เมฆชั้นสูงก่อตัวในระดับความสูงมากกว่า 6,000 เมตรขึ้นไป ซึ่งอุณหภูมิต่ำมากจนองค์ประกอบหลักเป็นผลึกน้ำแข็งทั้งหมด"
+            },
+            {
+                category: "ระดับความสูง",
+                question: "เมฆที่จัดอยู่ในกลุ่ม 'เมฆชั้นกลาง' (Middle clouds) มีช่วงความสูงของฐานเมฆอยู่ระหว่างกิโลเมตรใด?",
+                options: [
+                    { text: "2,000 ถึง 6,000 เมตร", correct: true },
+                    { text: "0 ถึง 2,000 เมตร", correct: false },
+                    { text: "6,000 ถึง 10,000 เมตร", correct: false },
+                    { text: "10,000 ถึง 15,000 เมตร", correct: false }
+                ],
+                explanation: "เมฆชั้นกลาง (Middle clouds) มีฐานเมฆอยู่ระหว่าง 2,000 ถึง 6,000 เมตร มักขึ้นต้นด้วยคำว่า Alto"
+            },
+            {
+                category: "ระดับความสูง",
+                question: "เมฆในกลุ่ม 'เมฆชั้นต่ำ' (Low clouds) มีเพดานความสูงของฐานเมฆอยู่ที่ไม่เกินกี่เมตร?",
+                options: [
+                    { text: "ไม่เกิน 2,000 เมตรจากพื้นดิน", correct: true },
+                    { text: "ไม่เกิน 4,000 เมตรจากระดับน้ำทะเล", correct: false },
+                    { text: "ไม่เกิน 6,000 เมตรในเขตเส้นศูนย์สูตร", correct: false },
+                    { text: "ไม่เกิน 500 เมตรในเขตขั้วโลกเหนือ", correct: false }
+                ],
+                explanation: "เมฆชั้นต่ำ (Low clouds) มีฐานเมฆต่ำกว่า 2,000 เมตร ประกอบด้วย Stratus, Stratocumulus และ Nimbostratus"
+            },
+            {
+                category: "ลักษณะและองค์ประกอบ",
+                question: "เหตุใดเมฆในกลุ่มเมฆชั้นสูง (Cirrus, Cirrocumulus, Cirrostratus) จึงมีสีขาวสว่างและประกอบด้วยผลึกน้ำแข็ง?",
+                options: [
+                    { text: "เพราะอยู่ในบรรยากาศชั้นบนที่มีอุณหภูมิต่ำกว่าจุดเยือกแข็งอย่างมาก", correct: true },
+                    { text: "เพราะได้รับแสงสะท้อนโดยตรงจากชั้นโอโซนในบรรยากาศสตราโตสเฟียร์", correct: false },
+                    { text: "เพราะมีความชื้นสัมพัทธ์ต่ำมากจนละอองน้ำระเหยกลายเป็นไอแห้ง", correct: false },
+                    { text: "เพราะกระแสลมกรด (Jet stream) พัดพาฝุ่นละอองสีขาวมารวมตัวกัน", correct: false }
+                ],
+                explanation: "เนื่องจากระดับความสูงมากกว่า 6 กม. อุณหภูมิจะต่ำกว่าจุดเยือกแข็ง ทำให้ไอน้ำระเหิดกลับกลายเป็นผลึกน้ำแข็งโดยตรง"
+            },
+            {
+                category: "ลักษณะและองค์ประกอบ",
+                question: "หากนักเรียนสังเกตเห็นเมฆที่มีลักษณะเป็นก้อนหนาขนาดใหญ่ มียอดสูงเสียดฟ้า และมีฟ้าแลบแปลบปลาด้านใน ควรระมัดระวังภัยจากข้อใดมากที่สุด?",
+                options: [
+                    { text: "พายุฝนฟ้าคะนอง ลมกระโชกแรง และฟ้าผ่า (Cumulonimbus)", correct: true },
+                    { text: "หมอกลงจัดทัศนวิสัยในการมองเห็นลดลงในยามเช้า", correct: false },
+                    { text: "อากาศแห้งแล้งจัดและเกิดอุณหภูมิสูงผิดปกติในตอนบ่าย", correct: false },
+                    { text: "ฝนละอองตกปรอยๆ ต่อเนื่องกันนานตลอดทั้งวัน", correct: false }
+                ],
+                explanation: "เมฆ Cumulonimbus เป็นแหล่งกำเนิดพายุฝนฟ้าคะนอง ลมกระโชกแรง ฟ้าผ่า และอาจมีลูกเห็บตก ซึ่งเป็นอันตรายต่อกิจกรรมกลางแจ้ง"
+            },
+            {
+                category: "การประยุกต์ความรู้",
+                question: "นักอุตุนิยมวิทยาต้องการศึกษาเมฆแผ่นหนาทึบที่ทำให้เกิดฝนตกต่อเนื่องตลอดทั้งวัน จะต้องพิจารณาเมฆในกลุ่มใด?",
+                options: [
+                    { text: "นิมโบสเตรตัส (Nimbostratus)", correct: true },
+                    { text: "เซอร์โรสเตรตัส (Cirrostratus)", correct: false },
+                    { text: "แอตโตคิวมูลัส (Altocumulus)", correct: false },
+                    { text: "คิวมูลัส (Cumulus)", correct: false }
+                ],
+                explanation: "Nimbostratus เป็นเมฆฝนแผ่นหนาที่ทำให้เกิดฝนตกต่อเนื่องเป็นบริเวณกว้างตามลักษณะของเมฆฝนชั้นต่ำถึงกลาง"
+            },
+            {
+                category: "การประยุกต์ความรู้",
+                question: "หากข้อสอบถามถึงเมฆที่ทำให้เกิดปรากฏการณ์ 'พระอาทิตย์ทรงกลด' นักเรียนควรเลือกตอบเมฆที่ประกอบด้วยรากศัพท์ใดผสมกัน?",
+                options: [
+                    { text: "Cirro + Stratus (เซอร์โรสเตรตัส)", correct: true },
+                    { text: "Alto + Cumulus (แอตโตคิวมูลัส)", correct: false },
+                    { text: "Nimbo + Stratus (นิมโบสเตรตัส)", correct: false },
+                    { text: "Cumulo + Nimbus (คิวมูลอนิมบัส)", correct: false }
+                ],
+                explanation: "ปรากฏการณ์ทรงกลดเกิดจากแสงอาทิตย์หักเหผ่านผลึกน้ำแข็งของเมฆแผ่นชั้นสูง คือ Cirrostratus"
+            },
+            {
+                category: "การประยุกต์ความรู้",
+                question: "คำว่า 'Mackerel Sky' (ท้องฟ้าลายปลาทูหรือเกล็ดปลา) ในภาษาอังกฤษ ใช้เรียกเมฆชนิดใดที่มีลักษณะเป็นก้อนเล็กๆ เรียงตัวกันถี่ๆ?",
+                options: [
+                    { text: "เซอร์โรคิวมูลัส (Cirrocumulus) หรือ แอตโตคิวมูลัส (Altocumulus)", correct: true },
+                    { text: "สเตรตัส (Stratus) และ นิมโบสเตรตัส (Nimbostratus)", correct: false },
+                    { text: "คิวมูลัส (Cumulus) และ คิวมูลอนิมบัส (Cumulonimbus)", correct: false },
+                    { text: "เซอร์รัส (Cirrus) และ เซอร์โรสเตรตัส (Cirrostratus)", correct: false }
+                ],
+                explanation: "ลักษณะเมฆที่เป็นก้อนเล็กๆ เรียงตัวคล้ายเกล็ดปลาทูหรือคลื่นน้ำ เรียกว่า Mackerel sky ซึ่งพบได้ใน Cirrocumulus และ Altocumulus"
+            },
+            {
+                category: "การประยุกต์ความรู้",
+                question: "ในการจัดจำแนกเมฆ 10 ชนิดหลัก เมฆชนิดใดที่ไม่อยู่ในเกณฑ์การแบ่งตามชั้นความสูงแบบมาตรฐาน แต่ถูกจัดอยู่ในกลุ่ม 'เมฆพัฒนาในแนวตั้ง'?",
+                options: [
+                    { text: "Cumulus และ Cumulonimbus", correct: true },
+                    { text: "Cirrus และ Stratus", correct: false },
+                    { text: "Altocumulus และ Altostratus", correct: false },
+                    { text: "Stratocumulus และ Nimbostratus", correct: false }
+                ],
+                explanation: "เมฆ Cumulus และ Cumulonimbus มีฐานเมฆอยู่ในชั้นต่ำ แต่ยอดเมฆเติบโตขึ้นไปถึงชั้นสูง จึงถูกจัดแยกลักษณะเป็นเมฆพัฒนาในแนวตั้ง (Vertical clouds)"
+            },
+            {
+                category: "การประยุกต์ความรู้",
+                question: "หากท่านเดินท่องเที่ยวบนภูเขาสูงแล้วพบว่าตนเองกำลังเดินทะลุผ่านกลุ่มเมฆสีขาวที่ลอยปกคลุมพื้นดินอยู่ ท่านกำลังสัมผัสกับเมฆชนิดใด?",
+                options: [
+                    { text: "เมฆสเตรตัส (Stratus) หรือหมอก (Fog)", correct: true },
+                    { text: "เมฆเซอร์รัส (Cirrus)", correct: false },
+                    { text: "เมฆคิวมูลอนิมบัส (Cumulonimbus)", correct: false },
+                    { text: "เมฆแอตโตสเตรตัส (Altostratus)", correct: false }
+                ],
+                explanation: "เมฆ Stratus ที่ก่อตัวระดับต่ำติดพื้นดินหรือบนยอดเขาสูง ก็คือหมอก (Fog) นั่นเอง เนื่องจากมีระดับความสูงสัมผัสกับพื้นผิวโลก"
+            }
+        ];
+
+        // ฟังก์ชันสลับตัวเลือกแบบ Fisher-Yates Shuffle เพื่อป้องกันการเดาทางตำแหน่ง
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        let processedQuestions = [];
+
+        // เตรียมข้อสอบและสลับช้อยส์เมื่อโหลดหน้าเว็บ
+        function initExam() {
+            const container = document.getElementById('examForm');
+            container.innerHTML = '';
+            
+            processedQuestions = rawQuestions.map((q, index) => {
+                // คัดลอกช้อยส์เดิมเพื่อมาสลับ
+                let shuffledOptions = [...q.options];
+                shuffleArray(shuffledOptions);
+                return {
+                    id: index + 1,
+                    category: q.category,
+                    question: q.question,
+                    options: shuffledOptions,
+                    explanation: q.explanation
+                };
+            });
+
+            // เรนเดอร์ข้อสอบทั้งหมดลงหน้าจอทันทีแบบพร้อมกัน
+            processedQuestions.forEach((q, index) => {
+                let optionsHtml = '';
+                q.options.forEach((opt, optIndex) => {
+                    const optLetter = ['ก', 'ข', 'ค', 'ง'][optIndex];
+                    optionsHtml += `
+                        <label class="option-label" onclick="selectOption(${index}, ${optIndex})">
+                            <input type="radio" name="question_${index}" value="${optIndex}">
+                            <span>${optLetter}. ${opt.text}</span>
+                        </label>
+                    `;
+                });
+
+                const cardHtml = `
+                    <div class="question-card" id="q-card-${index}">
+                        <div class="question-title">ข้อที่ ${index + 1} (${q.category}): ${q.question}</div>
+                        <div class="options-list">
+                            ${optionsHtml}
+                        </div>
+                        <div class="explanation" id="exp-${index}">
+                            <strong>เฉลยและวิธีคิด:</strong> ${q.explanation}
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += cardHtml;
+            });
+        }
+
+        // เมื่อผู้เรียนเลือกคำตอบ ให้แสดงเฉลยทันที (Immediate Feedback)
+        function selectOption(qIndex, optIndex) {
+            const q = processedQuestions[qIndex];
+            const selectedOpt = q.options[optIndex];
+            const card = document.getElementById(`q-card-${qIndex}`);
+            const expBox = document.getElementById(`exp-${qIndex}`);
+
+            // ลบสถานะเดิมก่อน
+            card.classList.remove('answered-correct', 'answered-incorrect');
+            
+            if (selectedOpt.correct) {
+                card.classList.add('answered-correct');
+                expBox.className = 'explanation correct-exp';
+                expBox.style.display = 'block';
+                expBox.innerHTML = `<strong>ถูกต้อง!</strong> ${q.explanation}`;
+            } else {
+                card.classList.add('answered-incorrect');
+                expBox.className = 'explanation incorrect-exp';
+                expBox.style.display = 'block';
+                expBox.innerHTML = `<strong>ยังไม่ถูกต้อง!</strong> ${q.explanation}`;
+            }
+
+            // บันทึกคำตอบลงใน Object เพื่อนำไปประมวลผลคะแนนรวม
+            q.userAnswerIndex = optIndex;
+            q.isCorrect = selectedOpt.correct;
+        }
+
+        // ประมวลผลคะแนนและวิเคราะห์จุดอ่อนเมื่อกดส่งคำตอบ
+        function submitExam() {
+            let score = 0;
+            let categoryStats = {};
+
+            processedQuestions.forEach((q) => {
+                if (!categoryStats[q.category]) {
+                    categoryStats[q.category] = { total: 0, correct: 0 };
+                }
+                categoryStats[q.category].total += 1;
+
+                if (q.isCorrect) {
+                    score += 1;
+                    categoryStats[q.category].correct += 1;
+                }
+            });
+
+            // แสดงผลคะแนนรวม
+            document.getElementById('scoreDisplayinnerText', 'scoreDisplay').innerText = `${score} / ${processedQuestions.length}`;
+            document.getElementById('scoreDisplay').innerText = `${score} / ${processedQuestions.length} คะแนน (${((score / processedQuestions.length) * 100).toFixed(1)}%)`;
+
+            // วิเคราะห์จุดเด่นและจุดอ่อนรายหมวดหมู่
+            let analysisHtml = `<h3>รายงานการวิเคราะห์ศักยภาพรายหมวดหมู่:</h3><ul>`;
+            let weakAreas = [];
+
+            for (let cat in categoryStats) {
+                let stat = categoryStats[cat];
+                let percentage = (stat.correct / stat.total) * 100;
+                analysisHtml += `<li><strong>${cat}:</strong> ทำได้ ${stat.correct}/${stat.total} ข้อ (${percentage.toFixed(0)}%)</li>`;
+                
+                if (percentage < 60) {
+                    weakAreas.push(cat);
+                }
+            }
+            analysisHtml += `</ul>`;
+
+            if (weakAreas.length > 0) {
+                analysisHtml += `<p style="margin-top: 15px; color: var(--error);"><strong>จุดที่ต้องพัฒนา (Areas for Improvement):</strong> พบว่าท่านยังมีความเข้าใจคลาดเคลื่อนในหมวดหมู่: <strong>${weakAreas.join(', ')}</strong> แนะนำให้กลับไปทบทวนเนื้อหารากศัพท์และระดับความสูงของกลุ่มเมฆดังกล่าวเพิ่มเติมเพื่อความแม่นยำสูงสุด</p>`;
+            } else {
+                analysisHtml += `<p style="margin-top: 15px; color: var(--success);"><strong>ยอดเยี่ยมมาก!</strong> ท่านมีความเข้าใจในเรื่องเมฆและรากศัพท์อุตุนิยมวิทยาครบถ้วนทุกหมวดหมู่อย่างดีเยี่ยม</p>`;
+            }
+
+            analysisHtml += `<p style="margin-top: 15px; font-style: italic; text-align: right;">เขียนโดย พระจอมเกล้าติวเตอร์</p>`;
+
+            document.getElementById('analysisBox').innerHTML = analysisHtml;
+            
+            // แสดงกล่องผลลัพธ์และเลื่อนหน้าจอลงไปดู
+            const resultSection = document.getElementById('resultSection');
+            resultSection.style.display = 'block';
+            resultSection.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // เริ่มต้นการทำงานเมื่อโหลดหน้าเว็บเสร็จ
+        window.onload = initExam;
+    </script>
+</body>
+</html>
