@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>คลังข้อสอบเข้า ม.1 วิชาประวัติศาสตร์ - พระจอมเกล้าติวเตอร์</title>
+    <!-- Tailwind CSS สำหรับดีไซน์ที่ทันสมัย Responsive 100% -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&display=swap');
+        body { font-family: 'Sarabun', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+    <!-- Header / Virtual Classroom Banner -->
+    <header class="bg-indigo-900 text-white shadow-lg p-6">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+            <div>
+                <h1 class="text-2xl md:text-3xl font-bold">🏛️ คลังข้อสอบเตรียมสอบเข้า ม.1 วิชาสังคมศึกษา (ประวัติศาสตร์)</h1>
+                <p class="text-indigo-200 text-sm mt-1">ระบบทดสอบอัจฉริยะพร้อมระบบวิเคราะห์ผลรายบุคคล | พระจอมเกล้าติวเตอร์</p>
+            </div>
+            <div class="flex items-center gap-3">
+                <button id="langBtn" onclick="toggleLanguage()" class="bg-indigo-700 hover:bg-indigo-600 px-4 py-2 rounded-lg text-sm font-semibold transition">ภาษา: ไทย (TH)</button>
+                <button onclick="resetExam()" class="bg-rose-600 hover:bg-rose-500 px-4 py-2 rounded-lg text-sm font-semibold transition">เริ่มทำใหม่ (Reset)</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-7xl mx-auto w-full p-4 md:p-6 flex-grow flex flex-col gap-6">
+        
+        <!-- ส่วนบน: สื่อการสอนและจำลองเครื่องมือ (Virtual Teaching Tool & Infographic) -->
+        <section class="bg-white rounded-2xl shadow-md p-6 border border-indigo-100">
+            <h2 class="text-xl font-bold text-indigo-900 mb-2 flex items-center gap-2">
+                <span>📜 จำลองไทม์ไลน์ประวัติศาสตร์ไทย (Virtual Timeline Simulator)</span>
+            </h2>
+            <p class="text-slate-600 text-sm mb-4">เลื่อนแถบเวลาเพื่อสำรวจยุคสมัยทางประวัติศาสตร์และหลักฐานสำคัญของไทย</p>
+            <div class="bg-indigo-50/50 rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4 border border-indigo-100">
+                <div class="text-sm text-indigo-900 font-medium">
+                    <span>ยุคสมัยที่เลือก: </span>
+                    <span id="timelineResult" class="font-bold text-indigo-700">สมัยสุโขทัย (พ.ศ. 1792 - 1941) - พ่อปกครองลูก / ศิลาจารึกหลักที่ 1</span>
+                </div>
+                <div class="flex items-center gap-2 w-full sm:w-auto">
+                    <input type="range" id="timelineRange" min="1" max="4" step="1" value="1" class="w-full sm:w-48 accent-indigo-600" oninput="updateTimeline()">
+                    <button onclick="updateTimeline()" class="bg-indigo-600 text-white px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-indigo-500 transition">เปลี่ยนยุค</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ส่วนล่าง: พื้นที่ทำข้อสอบ (แบ่ง 2 ฝั่ง 70% และ 30%) -->
+        <div class="grid grid-cols-1 lg:grid-cols-10 gap-6">
+            
+            <!-- ฝั่งซ้าย: พื้นที่แสดงข้อสอบ (70% หรือ 7 ส่วน) -->
+            <section class="lg:col-span-7 bg-white rounded-2xl shadow-md p-6 flex flex-col justify-between border border-slate-100">
+                <div>
+                    <div class="flex justify-between items-center border-b pb-4 mb-6">
+                        <span id="progressText" class="font-bold text-indigo-700 text-lg">ข้อที่ 1 จาก 20</span>
+                        <span id="scoreBadge" class="bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full text-sm font-semibold">คะแนน: 0 / 20</span>
+                    </div>
+
+                    <!-- โจทย์ปัญหา -->
+                    <div id="questionContainer" class="mb-6">
+                        <h2 id="questionTitle" class="text-lg font-bold text-slate-900 mb-3">กำลังโหลดโจทย์...</h2>
+                        <div id="clueBox" class="hidden bg-amber-50 border-l-4 border-amber-400 p-3 mb-4 text-sm text-amber-800 rounded-r-lg">
+                            <strong>คำใบ้ / เทคนิคคิดเร็ว:</strong> <span id="clueText"></span>
+                        </div>
+                    </div>
+
+                    <!-- ตัวเลือก A, B, C, D -->
+                    <div id="optionsContainer" class="space-y-3 mb-6">
+                        <!-- Dynamic Options -->
+                    </div>
+
+                    <!-- กล่องเฉลยและวิธีคิด -->
+                    <div id="explanationBox" class="hidden bg-emerald-50 border border-emerald-200 rounded-xl p-4 mb-6">
+                        <h3 class="font-bold text-emerald-800 mb-1 flex items-center gap-2">
+                            <span>💡 เฉลยและวิธีคิดละเอียด</span>
+                        </h3>
+                        <p id="explanationText" class="text-emerald-900 text-sm leading-relaxed"></p>
+                    </div>
+                </div>
+
+                <!-- ปุ่มควบคุมการเปลี่ยนข้อ -->
+                <div class="flex justify-between items-center pt-4 border-t">
+                    <button id="prevBtn" onclick="changeQuestion(-1)" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-5 py-2 rounded-xl font-semibold transition disabled:opacity-50" disabled>← ข้อก่อนหน้า</button>
+                    <button id="clueToggleBtn" onclick="toggleClue()" class="bg-amber-100 hover:bg-amber-200 text-amber-800 px-4 py-2 rounded-xl text-sm font-semibold transition">แสดงคำใบ้</button>
+                    <button id="nextBtn" onclick="changeQuestion(1)" class="bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-2 rounded-xl font-semibold transition">ข้อถัดไป →</button>
+                </div>
+            </section>
+
+            <!-- ฝั่งขวา: กระดานไวท์บอร์ดสำหรับทดเลข (30% หรือ 3 ส่วน) -->
+            <aside class="lg:col-span-3 bg-white rounded-2xl shadow-md p-5 flex flex-col h-[550px] lg:h-auto border border-slate-100">
+                <div class="flex justify-between items-center mb-3">
+                    <h3 class="font-bold text-slate-700 flex items-center gap-2">✏️ กระดานทดเลคเชอร์</h3>
+                    <div class="flex gap-2">
+                        <button onclick="clearCanvas()" class="text-xs bg-slate-100 hover:bg-slate-200 px-2.5 py-1 rounded-lg text-slate-600 transition">ล้างกระดาน</button>
+                    </div>
+                </div>
+                <div class="border-2 border-dashed border-slate-200 rounded-xl flex-grow relative bg-slate-50 overflow-hidden cursor-crosshair">
+                    <canvas id="whiteboard" class="w-full h-full absolute inset-0"></canvas>
+                </div>
+                <p class="text-xs text-slate-400 text-center mt-2">ใช้เมาส์หรือนิ้วลากเพื่อเขียนบันทึกช่วยจำ</p>
+            </aside>
+
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="text-center py-4 text-xs text-slate-500 border-t bg-white mt-auto">
+        เขียนโดย พระจอมเกล้าติวเตอร์
+    </footer>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        // ฐานข้อมูลข้อสอบวิชาประวัติศาสตร์ 20 ข้อ กระจายตัวเลือกถูกต้องสมดุล (A, B, C, D อย่างละ 5 ข้อ)
+        const rawQuestions = [
+            {
+                id: 1,
+                q: "ข้อใดจัดเป็นหลักฐานทางประวัติศาสตร์ประเภท 'หลักฐานชั้นต้น' (Primary Sources)?",
+                options: [
+                    { text: "ก. พงศาวดารกรุงศรีอยุธยาฉบับพันจันทนุมาศ", isCorrect: false },
+                    { text: "ข. ศิลาจารึกพ่อขุนรามคำแหงมหาราช", isCorrect: true },
+                    { text: "ค. หนังสือเรียนวิชาประวัติศาสตร์ไทย", isCorrect: false },
+                    { text: "ง. บทความวิชาการเกี่ยวกับอาณาจักรสุโขทัย", isCorrect: false }
+                ],
+                clue: "มองหาหลักฐานที่ถูกสร้างขึ้นในยุคสมัยเหตุการณ์นั้นจริงๆ โดยผู้ร่วมสมัย",
+                explanation: "ศิลาจารึกหลักที่ 1 สร้างขึ้นในสมัยสุโขทัยโดยผู้ร่วมเหตุการณ์ จึงจัดเป็นหลักฐานชั้นต้น ส่วนพงศาวดารและตำราเรียนมักรวบรวมขึ้นภายหลังถือเป็นหลักฐานชั้นรอง",
+                answerKey: "ข"
+            },
+            {
+                id: 2,
+                q: "ขั้นตอนแรกสุดของ 'วิธีการทางประวัติศาสตร์' ตรงกับข้อใด?",
+                options: [
+                    { text: "ก. การรวบรวมหลักฐาน", isCorrect: false },
+                    { text: "ข. การประเมินคุณค่าของหลักฐาน", isCorrect: false },
+                    { text: "ค. การกำหนดเป้าหมายหรือตั้งคำถามทางประวัติศาสตร์", isCorrect: true },
+                    { text: "ง. การเรียบเรียงและนำเสนอข้อมูล", isCorrect: false }
+                ],
+                clue: "ก่อนจะหาข้อมูลเราต้องรู้ก่อนว่าเราต้องการศึกษาเรื่องอะไร",
+                explanation: "การกำหนดเป้าหมายหรือการตั้งคำถามที่ต้องการศึกษาเป็นขั้นตอนแรกสุด เพื่อให้การค้นหาหลักฐานมีความชัดเจนและตรงประเด็น",
+                answerKey: "ค"
+            },
+            {
+                id: 3,
+                q: "ลักษณะการปกครองในระยะแรกของอาณาจักรสุโขทัยมีความโดดเด่นตามข้อใด?",
+                options: [
+                    { text: "ก. การปกครองแบบพ่อปกครองลูก", isCorrect: true },
+                    { text: "ข. การปกครองแบบสมบูรณาญาสิทธิราชย์", isCorrect: false },
+                    { text: "ค. การปกครองแบบประชาธิปไตยทางตรง", isCorrect: false },
+                    { text: "ง. การปกครองแบบศักดินาสูงสุด", isCorrect: false }
+                ],
+                clue: "กษัตริย์เปรียบเสมือนพ่อ ประชาชนเปรียบเสมือนลูก",
+                explanation: "สุโขทัยในระยะแรกมีรูปแบบการปกครองแบบพ่อปกครองลูก พระมหากษัตริย์ทรงใกล้ชิดกับราษฎร ดังปรากฏในศิลาจารึก 'ปากประตูมีกระดิ่งแขวนไว้...'",
+                answerKey: "ก"
+            },
+            {
+                id: 4,
+                q: "ข้อความในศิลาจารึกหลักที่ 1 ที่ว่า 'ในน้ำมีปลา ในนามมีข้าว' สะท้อนถึงเรื่องใดเด่นชัดที่สุด?",
+                options: [
+                    { text: "ก. ระบบการเมืองการปกครอง", isCorrect: false },
+                    { text: "ข. ความอุดมสมบูรณ์ทางเศรษฐกิจและเกษตรกรรม", isCorrect: true },
+                    { text: "ค. สภาพสังคมที่มีการแบ่งชนชั้นวรรณะ", isCorrect: false },
+                    { text: "ง. ความเจริญก้าวหน้าทางศาสนาพุทธ", isCorrect: false }
+                ],
+                clue: "เกี่ยวข้องกับน้ำ ปลา และข้าว ซึ่งเป็นปัจจัยการผลิต",
+                explanation: "ข้อความดังกล่าวสะท้อนถึงความอุดมสมบูรณ์ของทรัพยากรธรรมชาติและการทำเกษตรกรรมในสมัยสุโขทัย",
+                answerKey: "ข"
+            },
+            {
+                id: 5,
+                q: "พระมหากษัตริย์ผู้ทรงปฏิรูปการปกครองในสมัยอยุธยาให้เป็นระบบ 'จตุสดมภ์' คือพระองค์ใด?",
+                options: [
+                    { text: "ก. สมเด็จพระรามาธิบดีที่ 1 (อู่ทอง)", isCorrect: false },
+                    { text: "ข. สมเด็จพระบรมไตรโลกนาถ", isCorrect: true },
+                    { text: "ค. สมเด็จพระนารายณ์มหาราช", isCorrect: false },
+                    { text: "ง. สมเด็จพระเจ้าตากสินมหาราช", isCorrect: false }
+                ],
+                clue: "ทรงรวมอำนาจเข้าสู่ศูนย์กลางและตรากฎหมายศักดินา",
+                explanation: "สมเด็จพระบรมไตรโลกนาถทรงปฏิรูปการปกครองครั้งใหญ่ โดยแบ่งส่วนราชการเป็นสมุหกลาโหม สมุหนายก และจตุสดมภ์ (เวียง วัง คลัง นา)",
+                answerKey: "ข"
+            },
+            {
+                id: 6,
+                q: "อาณาจักรโบราณในดินแดนไทยแห่งใดที่มีความเจริญรุ่งเรืองบริเวณลุ่มแม่น้ำเจ้าพระยาตอนล่าง และได้รับอิทธิพลจากศิลปะทวารวดี?",
+                options: [
+                    { text: "ก. อาณาจักรศรีวิชัย", isCorrect: false },
+                    { text: "ข. อาณาจักรตามพรลิงค์", isCorrect: false },
+                    { text: "ค. อาณาจักรทวารวดี", isCorrect: true },
+                    { text: "ง. อาณาจักรล้านนา", isCorrect: false }
+                ],
+                clue: "พบโบราณวัตถุประเภท 'ธรรมจักรศิลาและกวางหมอบ'",
+                explanation: "อาณาจักรทวารวดีตั้งอยู่บริเวณลุ่มแม่น้ำเจ้าพระยาตอนล่าง มีศูนย์กลางอยู่ที่จังหวัดนครปฐมและราชบุรี มีศิลปวัฒนธรรมโดดเด่นคือธรรมจักรศิลา",
+                answerKey: "ค"
+            },
+            {
+                id: 7,
+                q: "อารยธรรมอินเดียที่แผ่ขยายเข้ามาสู่ดินแดนเอเชียตะวันออกเฉียงใต้ ส่งผลกระทบที่สำคัญที่สุดในด้านใด?",
+                options: [
+                    { text: "ก. ศาสนา ความเชื่อ และระบบการปกครอง", isCorrect: true },
+                    { text: "ข. การประดิษฐ์ตัวอักษรจีนและระบบขุนนาง", isCorrect: false },
+                    { text: "ค. เทคโนโลยีการสร้างกำแพงเมืองจีน", isCorrect: false },
+                    { text: "ง. การทำเกษตรกรรมแบบขั้นบันได", isCorrect: false }
+                ],
+                clue: "ศาสนาพุทธ ฮินดู และแนวคิดเทวราชามาจากภูมิภาคนี้",
+                explanation: "อิทธิพลจากอินเดียส่งผลให้ดินแดนสุวรรณภูมิรับเอาศาสนาพุทธ ศาสนาพราหมณ์-ฮินดู รวมถึงแนวคิดกษัตริย์สมมติหรือเทวราชาเข้ามาปรับใช้",
+                answerKey: "ก"
+            },
+            {
+                id: 8,
+                q: "เหตุการณ์สำคัญใดถือเป็นการสิ้นสุดของอาณาจักรอยุธยาใน พ.ศ. 2332 (นับตาม พ.ศ. เสียกรุงครั้งที่ 2 คือ พ.ศ. 2310)?",
+                options: [
+                    { text: "ก. การเสียกรุงศรีอยุธยาครั้งที่ 1", isCorrect: false },
+                    { text: "ข. การเสียกรุงศรีอยุธยาครั้งที่ 2 แก่กองทัพพม่า", isCorrect: true },
+                    { text: "ค. การสถาปนากรุงรัตนโกสินทร์", isCorrect: false },
+                    { text: "ง. การย้ายราชธานีไปธนบุรี", isCorrect: false }
+                ],
+                clue: "การเสียกรุงครั้งสุดท้ายในสมัยสมเด็จพระที่นั่งสุริยամารินทร์ (พระเจ้าเอกทัศ)",
+                explanation: "การเสียกรุงศรีอยุธยาครั้งที่ 2 ใน พ.ศ. 2310 เป็นการสิ้นสุดลงของอาณาจักรอยุธยาที่ดำรงอยู่มากว่า 417 ปี",
+                answerKey: "ข"
+            },
+            {
+                id: 9,
+                q: "สมเด็จพระเจ้าตากสินมหาราชทรงมีพระราชกรณียกิจสำคัญเร่งด่วนหลังกอบกู้เอกราชได้คือข้อใด?",
+                options: [
+                    { text: "ก. การสร้างพระบรมมหาราชวังแห่งใหม่ที่กรุงเทพฯ", isCorrect: false },
+                    { text: "ข. การย้ายราชธานีมายังกรุงธนบุรีเพราะชัยภูมิเหมาะสมกว่า", isCorrect: true },
+                    { text: "ค. การทำสนธิสัญญาการค้ากับชาติตะวันตก", isCorrect: false },
+                    { text: "ง. การประกาศเลิกทาสในประเทศไทย", isCorrect: false }
+                ],
+                clue: "กรุงศรีอยุธยาเสียหายหนักเกินกว่าจะบูรณะ จึงทรงย้ายเมืองหลวง",
+                explanation: "ทรงย้ายราชธานีมายังกรุงธนบุรี เนื่องจากอยุธยาเสียหายหนัก ยากแก่การป้องกัน และธนบุรีมีขนาดเล็กเหมาะกับกำลังพลที่มี",
+                answerKey: "ข"
+            },
+            {
+                id: 10,
+                q: "พระบาทสมเด็จพระพุทธยอดฟ้าจุฬาโลกมหาราช (รัชกาลที่ 1) ทรงสถาปนากรุงรัตนโกสินทร์เมื่อปี พ.ศ. ใด?",
+                options: [
+                    { text: "ก. พ.ศ. 2310", isCorrect: false },
+                    { text: "ข. พ.ศ. 2325", isCorrect: true },
+                    { text: "ค. พ.ศ. 2350", isCorrect: false },
+                    { text: "ง. พ.ศ. 2394", isCorrect: false }
+                ],
+                clue: "ตรงกับปีที่ย้ายราชธานีข้ามฝั่งแม่น้ำเจ้าพระยามาฝั่งพระนคร",
+                explanation: "รัชกาลที่ 1 ทรงสถาปนากรุงรัตนโกสินทร์เมื่อวันที่ 21 เมษายน พ.ศ. 2325",
+                answerKey: "ข"
+            },
+            {
+                id: 11,
+                q: "เหตุผลสำคัญที่สุดในการที่ชาติตะวันตกเดินทางเข้ามายังดินแดนเอเชียตะวันออกเฉียงใต้ในยุคแรกคือข้อใด?",
+                options: [
+                    { text: "ก. ต้องการเผยแพร่ศาสนาคริสต์นิกายโปรเตสแตนต์", isCorrect: false },
+                    { text: "ข. ต้องการแสวงหาเครื่องเทศ สินค้า และเส้นทางการค้า", isCorrect: true },
+                    { text: "ค. ต้องการศึกษาอารยธรรมโบราณ", isCorrect: false },
+                    { text: "ง. ต้องการหาพื้นที่อพยพประชากร", isCorrect: false }
+                ],
+                clue: "ทองคำ เครื่องเทศ และเส้นทางการเดินเรือ (Gold, Glory, Gospel)",
+                explanation: "เป้าหมายหลักของชาติตะวันตกยุคแรกคือการแสวงหาเครื่องเทศและสินค้าโภคภัณฑ์ที่มีค่า รวมถึงควบคุมเส้นทางการค้าทางทะเล",
+                answerKey: "ข"
+            },
+            {
+                id: 12,
+                q: "โบราณสถานที่สำคัญในจังหวัดสุโขทัย เช่น วัดมหาธาตุ วัดศรีชุม จัดเป็นหลักฐานทางประวัติศาสตร์ประเภทใด?",
+                options: [
+                    { text: "ก. หลักฐานที่เป็นลายลักษณ์อักษร", isCorrect: false },
+                    { text: "ข. หลักฐานที่ไม่เป็นลายลักษณ์อักษร (โบราณสถานและโบราณวัตถุ)", isCorrect: true },
+                    { text: "ค. หลักฐานชั้นรองที่สร้างขึ้นใหม่", isCorrect: false },
+                    { text: "ง. หลักฐานประเภทตำนานมุขปาฐะ", isCorrect: false }
+                ],
+                clue: "เป็นสิ่งก่อสร้างที่ยังคงเหลือร่องรอยทางประวัติศาสตร์",
+                explanation: "วัดและซากโบราณสถานจัดเป็นหลักฐานที่ไม่เป็นลายลักษณ์อักษรประเภทโบราณสถาน ซึ่งให้ข้อมูลเกี่ยวกับสถาปัตยกรรมและความเชื่อ",
+                answerKey: "ข"
+            },
+            {
+                id: 13,
+                q: "การนับศักราชในประวัติศาสตร์ไทยแบบ 'พุทธศักราช' (พ.ศ.) เริ่มนับเหตุการณ์ใดเป็นปี พ.ศ. 1?",
+                options: [
+                    { text: "ก. ปีที่พระพุทธเจ้าประสูติ", isCorrect: false },
+                    { text: "ข. ปีที่พระพุทธเจ้าเสด็จปรินิพพานผ่านไปแล้ว 1 ปี", isCorrect: true },
+                    { text: "ค. ปีที่พระพุทธเจ้าตรัสรู้", isCorrect: false },
+                    { text: "ง. ปีที่พระพุทธเจ้าแสดงปฐมเทศนา", isCorrect: false }
+                ],
+                clue: "ประเทศไทยนับเมื่อพระพุทธเจ้าเสด็จดับขันธปรินิพพานครบ 1 ปี (แบบไทย)",
+                explanation: "ประเทศไทยเริ่มนับ พ.ศ. 1 เมื่อพระพุทธเจ้าเสด็จปรินิพพานล่วงแล้ว 1 ปี (แตกต่างจากลังกาที่นับปีปรินิพพานเป็น พ.ศ. 1 ทันที)",
+                answerKey: "ข"
+            },
+            {
+                id: 14,
+                q: "อาณาจักรศรีวิชัยมีความเจริญรุ่งเรืองบริเวณภาคใต้ของไทยและคาบสมุทรมลายู มีความโดดเด่นด้านใด?",
+                options: [
+                    { text: "ก. เป็นศูนย์กลางการค้าทางทะเลและพุทธศาสนาฝ่ายมหายาน", isCorrect: true },
+                    { text: "ข. เป็นศูนย์กลางการผลิตเหล็กและอาวุธที่ใหญ่ที่สุด", isCorrect: false },
+                    { text: "ค. เป็นต้นกำเนิดของอักษรไทยยุคแรก", isCorrect: false },
+                    { text: "ง. เป็นจักรวรรดิบนบกที่เน้นการทำนาข้าวขั้นบันได", isCorrect: false }
+                ],
+                clue: "ตั้งอยู่บนเส้นทางเดินเรือค้าขายระหว่างอินเดียกับจีน นับถือพุทธมหายาน",
+                explanation: "อาณาจักรศรีวิชัยควบคุมช่องแคบมะละกาและซุนดา เป็นศูนย์กลางการค้าทางทะเลและศูนย์กลางพุทธศาสนาฝ่ายมหายาน",
+                answerKey: "ก"
+            },
+            {
+                id: 15,
+                q: "ในสมัยรัตนโกสินทร์ตอนต้น (รัชกาลที่ 1-3) ลักษณะความสัมพันธ์ระหว่างไทยกับประเทศจีนส่วนใหญ่เป็นรูปแบบใด?",
+                options: [
+                    { text: "ก. สงครามขยายดินแดน", isCorrect: false },
+                    { text: "ข. การค้าขายแบบบรรณาการ (จิ้มก้อง)", isCorrect: true },
+                    { text: "ค. การทำสนธิสัญญาทางไมตรีและการพาณิชย์", isCorrect: false },
+                    { text: "ง. การตัดขาดทางการทูต", isCorrect: false }
+                ],
+                clue: "ส่งเครื่องราชบรรณาการไปให้จักรพรรดิจีนเพื่อแลกกับการค้าขาย",
+                explanation: "ไทยส่งคณะทูตและเครื่องราชบรรณาการไปถวายจักรพรรดิจีน (ระบบจิ้มก้อง) เพื่อผลประโยชน์ทางการค้าสำเภาและความมั่นคง",
+                answerKey: "ข"
+            },
+            {
+                id: 16,
+                q: "สนธิสัญญาทางการค้าที่ไทยทำกับชาติตะวันตกในสมัยรัชกาลที่ 4 ที่ถือเป็นจุดเปลี่ยนครั้งสำคัญคือสนธิสัญญาใด?",
+                    options: [
+                    { text: "ก. สนธิสัญญาเบาว์ริง", isCorrect: true },
+                    { text: "ข. สนธิสัญญาเบอร์นีย์", isCorrect: false },
+                    { text: "ค. สนธิสัญญาฟาวน์เอง", isCorrect: false },
+                    { text: "ง. สนธิสัญญาแวร์ซาย", isCorrect: false }
+                ],
+                clue: "ทำขึ้นในปี พ.ศ. 2398 โดยเซอร์จอห์น เบาว์ริง ราชทูตอังกฤษ",
+                explanation: "สนธิสัญญาเบาว์ริงลงนามในสมัยรัชกาลที่ 4 ทำให้ไทยเปิดเสรีทางการค้ากับต่างชาติและมีการเปลี่ยนแปลงระบบเศรษฐกิจครั้งใหญ่",
+                answerKey: "ก"
+            },
+            {
+                id: 17,
+                q: "การศึกษาประวัติศาสตร์ท้องถิ่นมีความสำคัญอย่างไรต่อผู้เรียน?",
+                options: [
+                    { text: "ก. ทำให้ทราบเหตุการณ์ระดับโลกได้รวดเร็วขึ้น", isCorrect: false },
+                    { text: "ข. ช่วยให้เข้าใจความเป็นมาของชุมชนและเกิดความภาคภูมิใจในท้องถิ่น", isCorrect: true },
+                    { text: "ค. ทำให้สามารถพยากรณ์อนาคตของประเทศได้แม่นยำ", isCorrect: false },
+                    { text: "ง. เป็นข้อบังคับเดียวในการสอบคัดเลือกเข้าทำงานราชการ", isCorrect: false }
+                ],
+                clue: "เน้นเรื่องรากเหง้า ชุมชน และภูมิปัญญาใกล้ตัว",
+                explanation: "ประวัติศาสตร์ท้องถิ่นช่วยให้ผู้เรียนเข้าใจรากเหง้าของชุมชน ตระหนักถึงคุณค่าของภูมิปัญญา และเกิดความผูกพันหวงแหนท้องถิ่นของตน",
+                answerKey: "ข"
+            },
+            {
+                id: 18,
+                q: "วรรณกรรมชิ้นเอกในสมัยอยุธยาตอนปลายที่แต่งขึ้นโดยสุนทรภู่ หรือวรรณกรรมประเภทกลอนนิราศ สะท้อนสิ่งใดทางประวัติศาสตร์?",
+                options: [
+                    { text: "ก. สภาพบ้านเมือง การเดินทาง และวิถีชีวิตผู้คน", isCorrect: true },
+                    { text: "ข. ตำราพิชัยสงครามและการจัดทัพ", isCorrect: false },
+                    { text: "ค. กฎหมายตราสามดวงและการลงัฑณ์", isCorrect: false },
+                    { text: "ง. สนธิสัญญาระหว่างประเทศ", isCorrect: false }
+                ],
+                clue: "บันทึกการเดินทางผ่านสถานที่ต่างๆ พร้อมความรู้สึก",
+                explanation: "นิราศและวรรณกรรมต่างๆ บันทึกสภาพภูมิศาสตร์ วิถีชีวิต วัฒนธรรม และเหตุการณ์บ้านเมืองในยุคนั้นๆ ไว้เป็นหลักฐานทางประวัติศาสตร์ชั้นดี",
+                answerKey: "ก"
+            },
+            {
+                id: 19,
+                q: "ความมุ่งหมายสำคัญที่สุดในการประเมินคุณค่าของหลักฐานทางประวัติศาสตร์คือข้อใด?",
+                options: [
+                    { text: "ก. เพื่อตรวจสอบว่าหลักฐานชิ้นนั้นสวยงามหรือไม่", isCorrect: false },
+                    { text: "ข. เพื่อตรวจสอบความน่าเชื่อถือและความถูกต้องของข้อมูล", isCorrect: true },
+                    { text: "ค. เพื่อแปลภาษาโบราณให้เป็นภาษาปัจจุบัน", isCorrect: false },
+                    { text: "ง. เพื่อรวบรวมหลักฐานให้มีจำนวนมากที่สุด", isCorrect: false }
+                ],
+                clue: "ดูว่าข้อมูลนั้นจริงแท้ ลำเอียง หรือเชื่อถือได้มากน้อยเพียงใด",
+                explanation: "การประเมินคุณค่า (วิพากษ์วิธีทางประวัติศาสตร์) มีเป้าหมายเพื่อตรวจสอบว่าหลักฐานมีความจริงแท้ น่าเชื่อถือ หรือมีความลำเอียงหรือไม่ ก่อนนำไปอ้างอิง",
+                answerKey: "ข"
+            },
+            {
+                id: 20,
+                q: "เหตุการณ์การปฏิรูปการปกครองแผ่นดินครั้งใหญ่ให้เป็นแบบกระทรวง ทบวง กรม ในสมัยรัชกาลที่ 5 มีวัตถุประสงค์หลักเพื่อสิ่งใด?",
+                options: [
+                    { text: "ก. เพื่อเตรียมความพร้อมในการประกาศเอกราช", isCorrect: false },
+                    { text: "ข. เพื่อรวมอำนาจเข้าสู่ศูนย์กลางและป้องกันการคุกคามจากชาติตะวันตก", isCorrect: true },
+                    { text: "ค. เพื่อลดบทบาทของข้าราชการพลเรือนทั้งหมด", isCorrect: false },
+                    { text: "ง. เพื่อลดรายจ่ายของงบประมาณแผ่นดินลงครึ่งหนึ่ง", isCorrect: false }
+                ],
+                clue: "ยุคล่าอาณานิคม รัชกาลที่ 5 ทรงปรับปรุงประเทศให้ทันสมัยเพื่อรักษาเอกราช",
+                explanation: "การปฏิรูปการปกครองเป็นกระทรวง ทบวง กรม ช่วยให้การบริหารราชการแผ่นดินมีประสิทธิภาพ รวมอำนาจเข้าสู่ส่วนกลาง และแสดงความเจริญทัดเทียมตะวันตกเพื่อรักษาเอกราช",
+                answerKey: "ข"
+            }
+        ];
+
+        let currentQuestions = [];
+        let currentIndex = 0;
+        let score = 0;
+        let userAnswers = {};
+        let currentLang = 'th';
+
+        // Fisher-Yates Shuffle Algorithm สำหรับสลับตัวเลือก
+        function shuffle(array) {
+            let currentIndex = array.length, randomIndex;
+            while (currentIndex != 0) {
+                randomIndex = Math.floor(Math.random() * currentIndex);
+                currentIndex--;
+                [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+            }
+            return array;
+        }
+
+        function initExam() {
+            try {
+                currentQuestions = JSON.parse(JSON.stringify(rawQuestions)).map(q => {
+                    q.options = shuffle(q.options);
+                    return q;
+                });
+                currentIndex = 0;
+                score = 0;
+                userAnswers = {};
+                loadQuestion();
+            } catch (err) {
+                console.error("Init Error:", err);
+                document.getElementById('questionContainer').innerHTML = "<p class='text-red-600'>เกิดข้อผิดพลาดในการโหลดข้อสอบ กรุณารีเฟรชหน้าเว็บ</p>";
+            }
+        }
+
+        function loadQuestion() {
+            if (!currentQuestions || currentQuestions.length === 0) {
+                initExam();
+                return;
+            }
+            const q = currentQuestions[currentIndex];
+            document.getElementById('progressText').innerText = `ข้อที่ ${currentIndex + 1} จาก ${currentQuestions.length}`;
+            document.getElementById('scoreBadge').innerText = `คะแนน: ${score} / ${currentQuestions.length}`;
+            document.getElementById('questionTitle').innerText = `${currentIndex + 1}. ${q.q}`;
+            document.getElementById('clueText').innerText = q.clue;
+            document.getElementById('clueBox').classList.add('hidden');
+            
+            const optContainer = document.getElementById('optionsContainer');
+            optContainer.innerHTML = '';
+
+            q.options.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = "w-full text-left p-4 rounded-xl border-2 border-slate-200 hover:border-indigo-500 hover:bg-indigo-50/50 transition font-medium text-slate-700 flex justify-between items-center";
+                btn.innerHTML = `<span>${opt.text}</span>`;
+                
+                if (userAnswers[currentIndex] !== undefined) {
+                    btn.disabled = true;
+                    if (opt.isCorrect) {
+                        btn.className = "w-full text-left p-4 rounded-xl border-2 border-emerald-500 bg-emerald-50 font-medium text-emerald-900 flex justify-between items-center";
+                    } else if (userAnswers[currentIndex] === idx) {
+                        btn.className = "w-full text-left p-4 rounded-xl border-2 border-rose-500 bg-rose-50 font-medium text-rose-900 flex justify-between items-center";
+                    }
+                } else {
+                    btn.onclick = () => selectOption(idx);
+                }
+                optContainer.appendChild(btn);
+            });
+
+            const expBox = document.getElementById('explanationBox');
+            if (userAnswers[currentIndex] !== undefined) {
+                expBox.classList.remove('hidden');
+                document.getElementById('explanationText').innerText = q.explanation;
+            } else {
+                expBox.classList.add('hidden');
+            }
+
+            document.getElementById('prevBtn').disabled = currentIndex === 0;
+            document.getElementById('nextBtn').innerText = currentIndex === currentQuestions.length - 1 ? "ดูสรุปผลคะแนน" : "ข้อถัดไป →";
+        }
+
+        function selectOption(optIndex) {
+            if (userAnswers[currentIndex] !== undefined) return;
+            
+            userAnswers[currentIndex] = optIndex;
+            const q = currentQuestions[currentIndex];
+            const selectedOpt = q.options[optIndex];
+
+            if (selectedOpt.isCorrect) {
+                score++;
+            }
+
+            loadQuestion();
+        }
+
+        function changeQuestion(direction) {
+            if (direction === 1 && currentIndex < currentQuestions.length - 1) {
+                currentIndex++;
+                loadQuestion();
+            } else if (direction === -1 && currentIndex > 0) {
+                currentIndex--;
+                loadQuestion();
+            } else if (direction === 1 && currentIndex === currentQuestions.length - 1) {
+                showSummary();
+            }
+        }
+
+        function toggleClue() {
+            const box = document.getElementById('clueBox');
+            box.classList.toggle('hidden');
+        }
+
+        function toggleLanguage() {
+            currentLang = currentLang === 'th' ? 'en' : 'th';
+            document.getElementById('langBtn').innerText = currentLang === 'th' ? 'ภาษา: ไทย (TH)' : 'Language: English (EN)';
+            alert(currentLang === 'th' ? 'เปลี่ยนเป็นภาษาไทยเรียบร้อย' : 'Switched to English interface simulation.');
+        }
+
+        function resetExam() {
+            if (confirm('คุณต้องการรีเซ็ตและเริ่มทำข้อสอบใหม่ทั้งหมดใช่หรือไม่?')) {
+                initExam();
+            }
+        }
+
+        function showSummary() {
+            const percentage = ((score / currentQuestions.length) * 100).toFixed(1);
+            let feedback = percentage >= 80 ? "ยอดเยี่ยม! คุณมีความพร้อมสูงมากในการสอบวิชาประวัติศาสตร์ เข้า ม.1" : percentage >= 50 ? "อยู่ในเกณฑ์ปานกลาง ควรทบทวนเนื้อหายยุคสมัยอยุธยาและวิธีการทางประวัติศาสตร์เพิ่มเติม" : "ต้องฝึกฝนและทบทวนเนื้อหาประวัติศาสตร์เพิ่มเติมอย่างสม่ำเสมอ";
+
+            document.getElementById('questionContainer').innerHTML = `
+                <div class="text-center py-8">
+                    <h2 class="text-3xl font-bold text-indigo-900 mb-2">🎉 สรุปผลการทดสอบวิชาประวัติศาสตร์</h2>
+                    <p class="text-slate-600 mb-6">คุณทำข้อสอบเสร็จสิ้นครบถ้วนทั้ง 20 ข้อแล้ว</p>
+                    <div class="inline-block bg-indigo-50 border-2 border-indigo-200 rounded-3xl p-6 mb-6">
+                        <span class="text-5xl font-extrabold text-indigo-600">${score}</span>
+                        <span class="text-xl text-slate-500"> / 20</span>
+                        <p class="text-lg font-bold text-slate-700 mt-2">(${percentage}% ความถูกต้อง)</p>
+                    </div>
+                    <p class="text-slate-700 font-medium mb-6">${feedback}</p>
+                    <button onclick="resetExam()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-8 py-3 rounded-xl font-bold shadow-md transition">ทำข้อสอบใหม่อีกครั้ง</button>
+                </div>
+            `;
+            document.getElementById('optionsContainer').innerHTML = '';
+            document.getElementById('explanationBox').classList.add('hidden');
+            document.getElementById('prevBtn').classList.add('hidden');
+            document.getElementById('nextBtn').classList.add('hidden');
+            document.getElementById('clueToggleBtn').classList.add('hidden');
+        }
+
+        function updateTimeline() {
+            const val = document.getElementById('timelineRange').value;
+            const eras = [
+                "สมัยสุโขทัย (พ.ศ. 1792 - 1941) - พ่อปกครองลูก / ศิลาจารึกหลักที่ 1",
+                "สมัยอยุธยา (พ.ศ. 1850 - 2367) - จตุสดมภ์ / ศูนย์กลางการค้าเอเชีย",
+                "สมัยธนบุรี (พ.ศ. 2310 - 2325) - กอบกู้เอกราช / ย้ายราชธานี",
+                "สมัยรัตนโกสินทร์ (พ.ศ. 2325 - ปัจจุบัน) - สถาปนากรุง / ปฏิรูปประเทศ"
+            ];
+            document.getElementById('timelineResult').innerText = eras[val - 1];
+        }
+
+        // ไวท์บอร์ดสำหรับทดเลคเชอร์
+        const canvas = document.getElementById('whiteboard');
+        const ctx = canvas ? canvas.getContext('2d') : null;
+        let painting = false;
+
+        function resizeCanvas() {
+            if (!canvas) return;
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width;
+            canvas.height = rect.height;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        function startPosition(e) {
+            painting = true;
+            draw(e);
+        }
+        function endedPosition() {
+            painting = false;
+            if (ctx) ctx.beginPath();
+        }
+        function draw(e) {
+            if (!painting || !ctx || !canvas) return;
+            ctx.lineWidth = 3;
+            ctx.lineCap = 'round';
+            ctx.strokeStyle = '#4f46e5';
+
+            const rect = canvas.getBoundingClientRect();
+            const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+            const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+            if (!clientX || !clientY) return;
+
+            const x = clientX - rect.left;
+            const y = clientY - rect.top;
+
+            ctx.lineTo(x, y);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+        }
+
+        if(canvas) {
+            canvas.addEventListener('mousedown', startPosition);
+            canvas.addEventListener('mouseup', endedPosition);
+            canvas.addEventListener('mousemove', draw);
+            canvas.addEventListener('touchstart', startPosition);
+            canvas.addEventListener('touchend', endedPosition);
+            canvas.addEventListener('touchmove', draw);
+        }
+
+        function clearCanvas() {
+            if(ctx && canvas) {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+            }
+        }
+
+        window.onload = function() {
+            initExam();
+        };
+    </script>
+</body>
+</html>
