@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>คลังข้อสอบเข้า ม.1 วิชาวิทยาศาสตร์ - พระจอมเกล้าติวเตอร์</title>
+    <!-- Tailwind CSS สำหรับดีไซน์ที่ทันสมัย Responsive 100% -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&display=swap');
+        body { font-family: 'Sarabun', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+    <!-- Header / Virtual Classroom Banner -->
+    <header class="bg-indigo-900 text-white shadow-lg p-6">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+            <div>
+                <h1 class="text-2xl md:text-3xl font-bold">🧬 คลังข้อสอบเตรียมสอบเข้า ม.1 วิชาวิทยาศาสตร์ (20 ข้อ)</h1>
+                <p class="text-indigo-200 text-sm mt-1">ระบบทดสอบอัจฉริยะพร้อมระบบวิเคราะห์ผลรายบุคคล | พระจอมเกล้าติวเตอร์</p>
+            </div>
+            <div class="flex items-center gap-3">
+                <button id="langBtn" onclick="toggleLanguage()" class="bg-indigo-700 hover:bg-indigo-600 px-4 py-2 rounded-lg text-sm font-semibold transition">ภาษา: ไทย (TH)</button>
+                <button onclick="resetExam()" class="bg-rose-600 hover:bg-rose-500 px-4 py-2 rounded-lg text-sm font-semibold transition">เริ่มทำใหม่ (Reset)</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-7xl mx-auto w-full p-4 md:p-6 flex-grow flex flex-col gap-6">
+        
+        <!-- ส่วนบน: สื่อการสอนและจำลองเครื่องมือ (Virtual Teaching Tool & Infographic) -->
+        <section class="bg-white rounded-2xl shadow-md p-6 border border-indigo-100">
+            <h2 class="text-xl font-bold text-indigo-900 mb-2 flex items-center gap-2">
+                <span>🔬 จำลองสื่อการสอนวงจรไฟฟ้าอย่างง่าย (Virtual Circuit Simulator)</span>
+            </h2>
+            <p class="text-slate-600 text-sm mb-4">ปรับเลื่อนค่าความต้านทานหรือแรงดันเพื่อดูการเปลี่ยนแปลงของกระแสไฟฟ้าตามกฎของโอห์ม ($I = \frac{V}{R}$)</p>
+            <div class="bg-indigo-50/50 rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4 border border-indigo-100">
+                <div class="text-sm text-indigo-900 font-medium">
+                    <span>สถานะวงจรไฟฟ้า: </span>
+                    <span id="circuitResult" class="font-bold text-indigo-700">แรงดัน 12V / ความต้านทาน 4 $\Omega$ = กระแสไฟฟ้า 3.0 แอมป์</span>
+                </div>
+                <div class="flex items-center gap-2 w-full sm:w-auto">
+                    <input type="range" id="circuitRange" min="2" max="20" step="2" value="4" class="w-full sm:w-48 accent-indigo-600" oninput="updateCircuit()">
+                    <button onclick="updateCircuit()" class="bg-indigo-600 text-white px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-indigo-500 transition">ปรับค่า</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ส่วนล่าง: พื้นที่ทำข้อสอบ (แบ่ง 2 ฝั่ง 70% และ 30%) -->
+        <div class="grid grid-cols-1 lg:grid-cols-10 gap-6">
+            
+            <!-- ฝั่งซ้าย: พื้นที่แสดงข้อสอบ (70% หรือ 7 ส่วน) -->
+            <section class="lg:col-span-7 bg-white rounded-2xl shadow-md p-6 flex flex-col justify-between border border-slate-100">
+                <div>
+                    <div class="flex justify-between items-center border-b pb-4 mb-6">
+                        <span id="progressText" class="font-bold text-indigo-700 text-lg">ข้อที่ 1 จาก 20</span>
+                        <span id="scoreBadge" class="bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full text-sm font-semibold">คะแนน: 0 / 20</span>
+                    </div>
+
+                    <!-- โจทย์ปัญหา -->
+                    <div id="questionContainer" class="mb-6">
+                        <h2 id="questionTitle" class="text-lg font-bold text-slate-900 mb-3">กำลังโหลดโจทย์...</h2>
+                        <div id="clueBox" class="hidden bg-amber-50 border-l-4 border-amber-400 p-3 mb-4 text-sm text-amber-800 rounded-r-lg">
+                            <strong>คำใบ้ / เทคนิคคิดเร็ว:</strong> <span id="clueText"></span>
+                        </div>
+                    </div>
+
+                    <!-- ตัวเลือก A, B, C, D -->
+                    <div id="optionsContainer" class="space-y-3 mb-6">
+                        <!-- Dynamic Options -->
+                    </div>
+
+                    <!-- กล่องเฉลยและวิธีคิด -->
+                    <div id="explanationBox" class="hidden bg-emerald-50 border border-emerald-200 rounded-xl p-4 mb-6">
+                        <h3 class="font-bold text-emerald-800 mb-1 flex items-center gap-2">
+                            <span>💡 เฉลยและวิธีคิดละเอียด</span>
+                        </h3>
+                        <p id="explanationText" class="text-emerald-900 text-sm leading-relaxed"></p>
+                    </div>
+                </div>
+
+                <!-- ปุ่มควบคุมการเปลี่ยนข้อ -->
+                <div class="flex justify-between items-center pt-4 border-t">
+                    <button id="prevBtn" onclick="changeQuestion(-1)" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-5 py-2 rounded-xl font-semibold transition disabled:opacity-50" disabled>← ข้อก่อนหน้า</button>
+                    <button id="clueToggleBtn" onclick="toggleClue()" class="bg-amber-100 hover:bg-amber-200 text-amber-800 px-4 py-2 rounded-xl text-sm font-semibold transition">แสดงคำใบ้</button>
+                    <button id="nextBtn" onclick="changeQuestion(1)" class="bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-2 rounded-xl font-semibold transition">ข้อถัดไป →</button>
+                </div>
+            </section>
+
+            <!-- ฝั่งขวา: กระดานไวท์บอร์ดสำหรับทดเลข (30% หรือ 3 ส่วน) -->
+            <aside class="lg:col-span-3 bg-white rounded-2xl shadow-md p-5 flex flex-col h-[550px] lg:h-auto border border-slate-100">
+                <div class="flex justify-between items-center mb-3">
+                    <h3 class="font-bold text-slate-700 flex items-center gap-2">✏️ กระดานทดเลข</h3>
+                    <div class="flex gap-2">
+                        <button onclick="clearCanvas()" class="text-xs bg-slate-100 hover:bg-slate-200 px-2.5 py-1 rounded-lg text-slate-600 transition">ล้างกระดาน</button>
+                    </div>
+                </div>
+                <div class="border-2 border-dashed border-slate-200 rounded-xl flex-grow relative bg-slate-50 overflow-hidden cursor-crosshair">
+                    <canvas id="whiteboard" class="w-full h-full absolute inset-0"></canvas>
+                </div>
+                <p class="text-xs text-slate-400 text-center mt-2">ใช้เมาส์หรือนิ้วลากเพื่อเขียนทดเลขคำนวณ</p>
+            </aside>
+
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="text-center py-4 text-xs text-slate-500 border-t bg-white mt-auto">
+        เขียนโดย พระจอมเกล้าติวเตอร์
+    </footer>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        // ฐานข้อมูลข้อสอบวิชาวิทยาศาสตร์ 20 ข้อ กระจายตัวเลือกถูกต้องสมดุล (A, B, C, D อย่างละ 5 ข้อ)
+        const rawQuestions = [
+            {
+                id: 1,
+                q: "ออร์แกเนลล์ใดในเซลล์พืชทำหน้าที่สังเคราะห์ด้วยแสง แต่ไม่มีพบในเซลล์สัตว์?",
+                options: [
+                    { text: "ก. ไมโทคอนเดรีย (Mitochondria)", isCorrect: false },
+                    { text: "ข. คลอโลพลาสต์ (Chloroplast)", isCorrect: true },
+                    { text: "ค. ไรโบโซม (Ribosome)", isCorrect: false },
+                    { text: "ง. แวคิวโอล (Vacuole)", isCorrect: false }
+                ],
+                clue: "มองหาโครงสร้างที่มีสารสีเขียวสำหรับจับพลังงานแสง",
+                explanation: "คลอโลพลาสต์เป็นออร์แกเนลล์ที่มีคลอโรฟิลล์ พบเฉพาะในเซลล์พืชและสาหร่าย ทำหน้าที่สังเคราะห์ด้วยแสง",
+                answerKey: "ข"
+            },
+            {
+                id: 2,
+                q: "กระบวนการใดที่พืชใช้ในการคายน้ำออกสู่บรรยากาศผ่านทางปากใบ?",
+                options: [
+                    { text: "ก. การแพร่ (Diffusion)", isCorrect: false },
+                    { text: "ข. การออสโมซิส (Osmosis)", isCorrect: false },
+                    { text: "ค. การคายน้ำ (Transpiration)", isCorrect: true },
+                    { text: "ง. การสังเคราะห์ด้วยแสง (Photosynthesis)", isCorrect: false }
+                ],
+                clue: "ชื่อกระบวนการตรงตัวกับการสูญเสียน้ำในรูปไอของพืช",
+                explanation: "การคายน้ำ (Transpiration) คือกระบวนการสูญเสียน้ำของพืชในรูปของไอน้ำออกทางปากใบ",
+                answerKey: "ค"
+            },
+            {
+                id: 3,
+                q: "การเปลี่ยนแปลงในข้อใดถือเป็นการเปลี่ยนแปลงทางเคมี (Chemical Change)?",
+                options: [
+                    { text: "ก. การทำน้ำแข็งให้ละลายเป็นน้ำเหลว", isCorrect: false },
+                    { text: "ข. การเคี่ยวเกลือจากน้ำทะเล", isCorrect: false },
+                    { text: "ค. การเกิดสนิมเหล็กบริเวณกุญแจ", isCorrect: true },
+                    { text: "ง. การบดกระดาษให้เป็นชิ้นเล็กๆ", isCorrect: false }
+                ],
+                clue: "สังเกตว่าการเปลี่ยนแปลงนั้นทำให้เกิดสารใหม่ที่มีสมบัติเปลี่ยนไปจากเดิมหรือไม่",
+                explanation: "การเกิดสนิมเหล็กเป็นการทำปฏิกิริยาระหว่างเหล็ก น้ำ และออกซิเจน เกิดเป็นสารใหม่ (สนิมเหล็ก) จึงเป็นการเปลี่ยนแปลงทางเคมี",
+                answerKey: "ค"
+            },
+            {
+                id: 4,
+                q: "สารละลายชนิดหนึ่งมีความเข้มข้นร้อยละ 10 โดยมวลต่อมวล หมายความว่าอย่างไร?",
+                options: [
+                    { text: "ก. มีตัวละลาย 10 กรัม ในสารละลายทั้งหมด 100 กรัม", isCorrect: true },
+                    { text: "ข. มีตัวละลาย 10 กรัม ในตัวทำละลาย 100 กรัม", isCorrect: false },
+                    { text: "ค. มีตัวละลาย 10 มิลลิลิตร ในสารละลาย 100 มิลลิลิตร", isCorrect: false },
+                    { text: "ง. มีตัวทำละลาย 10 กรัม ในสารละลาย 100 กรัม", isCorrect: false }
+                ],
+                clue: "ร้อยละโดยมวลต่อมวล = (มวลตัวละลาย / มวลสารละลาย) * 100",
+                explanation: "ความเข้มข้นร้อยละ 10 โดยมวลต่อมวล หมายถึง มีตัวละลาย 10 กรัม ในสารละลายทั้งหมด 100 กรัม",
+                answerKey: "ก"
+            },
+            {
+                id: 5,
+                q: "เครื่องมือในข้อใดใช้แยกสารผสมที่เป็นของแข็งที่แขวนลอยอยู่ในของเหลวที่มีอนุภาคขนาดเล็ก?",
+                options: [
+                    { text: "ก. กรวยกรองและกระดาษกรอง", isCorrect: false },
+                    { text: "ข. เครื่องเหวี่ยงแยก (Centrifuge)", isCorrect: true },
+                    { text: "ค. แม่เหล็กดูด", isCorrect: false },
+                    { text: "ง. การระเหยแห้ง", isCorrect: false }
+                ],
+                clue: "ใช้แรงเหวี่ยงหนีศูนย์กลางสำหรับสารแขวนลอยละเอียด",
+                explanation: "เครื่องเหวี่ยงแยก (Centrifuge) ใช้สำหรับแยกสารแขวนลอยในของเหลวที่มีอนุภาคเล็กมากจนไม่สามารถกรองด้วยกระดาษกรองธรรมดาได้",
+                answerKey: "ข"
+            },
+            {
+                id: 6,
+                q: "ข้อใดกล่าวถึงแรงเสียดทานได้ถูกต้องที่สุด?",
+                options: [
+                    { text: "ก. มีทิศทางเดียวกับการเคลื่อนที่ของวัตถุเสมอ", isCorrect: false },
+                    { text: "ข. มีทิศทางตรงข้ามกับการเคลื่อนที่ของวัตถุเสมอ", isCorrect: true },
+                    { text: "ค. ไม่มีผลต่อน้ำหนักของวัตถุ", isCorrect: false },
+                    { text: "ง. เกิดขึ้นเฉพาะในของเหลวเท่านั้น", isCorrect: false }
+                ],
+                clue: "แรงเสียดทานคือแรงต้านการเคลื่อนที่",
+                explanation: "แรงเสียดทานเป็นแรงที่ต้านการเคลื่อนที่ของวัตถุ จึงมีทิศทางตรงข้ามกับการเคลื่อนที่หรือแนวโน้มที่จะเคลื่อนที่ของวัตถุเสมอ",
+                answerKey: "ข"
+            },
+            {
+                id: 7,
+                q: "วัตถุมวล 10 กิโลกรัม วางอยู่บนพื้นราบ แรงโน้มถ่วงของโลกที่กระทำต่อวัตถุนี้มีค่าประมาณเท่าใด (กำหนดให้ค่าความเร่งโน้มถ่วง $g = 9.8 \\text{ m/s}^2$)?",
+                options: [
+                    { text: "ก. 49 นิวตัน", isCorrect: false },
+                    { text: "ข. 98 นิวตัน", isCorrect: true },
+                    { text: "ค. 196 นิวตัน", isCorrect: false },
+                    { text: "ง. 980 นิวตัน", isCorrect: false }
+                ],
+                clue: "จากสูตรน้ำหนัก $W = mg$",
+                explanation: "น้ำหนัก $W = 10 \\times 9.8 = 98$ นิวตัน",
+                answerKey: "ข"
+            },
+            {
+                id: 8,
+                q: "การต่อวงจรไฟฟ้าแบบอนุกรมมีลักษณะสำคัญอย่างไร?",
+                options: [
+                    { text: "ก. กระแสไฟฟ้าผ่านแต่ละอุปกรณ์มีค่าไม่เท่ากัน", isCorrect: false },
+                    { text: "ข. ถ้าอุปกรณ์ตัวใดตัวหนึ่งขาดหรือดับ อุปกรณ์ตัวอื่นจะยังคงทำงานปกติ", isCorrect: false },
+                    { text: "ค. กระแสไฟฟ้าไหลผ่านทางเดียวกันและมีค่าเท่ากันตลอดวงจร", isCorrect: true },
+                    { text: "ง. แรงดันไฟฟ้าตกคร่อมแต่ละตัวจะรวมกันได้น้อยกว่าแหล่งกำเนิด", isCorrect: false }
+                ],
+                clue: "วงจรเส้นทางเดียวไม่มีการแยกสาขา",
+                explanation: "การต่อแบบอนุกรมมีทางเดินกระแสไฟฟ้าทางเดียว ทำให้กระแสไฟฟ้าที่ไหลผ่านทุกอุปกรณ์มีค่าเท่ากัน",
+                answerKey: "ค"
+            },
+            {
+                id: 9,
+                q: "หินในข้อใดเกิดจากการเย็นตัวและแข็งตัวของแมกมาหรือลาวา?",
+                options: [
+                    { text: "ก. หินอัคนี (Igneous Rock)", isCorrect: true },
+                    { text: "ข. หินชั้นหรือหินตะกอน (Sedimentary Rock)", isCorrect: false },
+                    { text: "ค. หินแปร (Metamorphic Rock)", isCorrect: false },
+                    { text: "ง. หินปูน (Limestone)", isCorrect: false }
+                ],
+                clue: "หินกำเนิดแรกจากการหลอมละลายใต้เปลือกโลก",
+                explanation: "หินอัคนีเกิดจากการเย็นตัวและแข็งตัวของแมกมาใต้เปลือกโลกหรือลาวาที่ปะทุขึ้นมาบนผิวโลก",
+                answerKey: "ก"
+            },
+            {
+                id: 10,
+                q: "ชั้นบรรยากาศของโลกชั้นใดที่มีการเผาไหม้ของอุกกาบาตและมีอุณหภูมิลดลงต่ำที่สุด?",
+                options: [
+                    { text: "ก. Troposphere", isCorrect: false },
+                    { text: "ข. Stratosphere", isCorrect: false },
+                    { text: "ค. Mesosphere", isCorrect: true },
+                    { text: "ง. Thermosphere", isCorrect: false }
+                ],
+                clue: "ชั้นบรรยากาศที่อยู่เหนือชั้นโอโซนขึ้นไปและหนาวเย็นที่สุด",
+                explanation: "ชั้นมีโซสเฟียร์ (Mesosphere) เป็นชั้นที่ช่วยเผาไหม้ทำลายอุกกาบาตและมีอุณหภูมิลดลงต่ำที่สุด (ถึง -90 องศาเซลเซียส)",
+                answerKey: "ค"
+            },
+            {
+                id: 11,
+                q: "ดาวเคราะห์ในระบบสุริยะดวงใดมีขนาดใหญ่ที่สุดและมีดวงจันทร์บริวารมากที่สุด?",
+                options: [
+                    { text: "ก. ดาวเคราะห์เสาร์", isCorrect: false },
+                    { text: "ข. ดาวพฤหัสบดี", isCorrect: true },
+                    { text: "ค. ดาวอังคาร", isCorrect: false },
+                    { text: "ง. ดาวเนปจูน", isCorrect: false }
+                ],
+                clue: "ราชันแห่งดาวเคราะห์ยักษ์แก๊ส",
+                explanation: "ดาวพฤหัสบดีเป็นดาวเคราะห์ที่ใหญ่ที่สุดในระบบสุริยะและมีดวงจันทร์บริวารจำนวนมากที่สุด",
+                answerKey: "ข"
+            },
+            {
+                id: 12,
+                q: "ปรากฏการณ์สุริยุปราคาเกิดขึ้นเมื่อตำแหน่งของวัตถุบนท้องฟ้าเรียงตัวกันอย่างไร?",
+                options: [
+                    { text: "ก. ดวงอาทิตย์ - โลก - ดวงจันทร์", isCorrect: false },
+                    { text: "ข. ดวงอาทิตย์ - ดวงจันทร์ - โลก", isCorrect: true },
+                    { text: "ค. โลก - ดวงอาทิตย์ - ดวงจันทร์", isCorrect: false },
+                    { text: "ง. ดวงจันทร์ - โลก - ดวงอาทิตย์", isCorrect: false }
+                ],
+                clue: "ดวงจันทร์มาบังแสงอาทิตย์ไม่ให้ส่องมาถึงโลก",
+                explanation: "สุริยุปราคาหรือสุริยคราส เกิดจากดวงจันทร์โคจรมาอยู่ระหว่างโลกกับดวงอาทิตย์ในแนวเส้นตรงเดียวกัน",
+                answerKey: "ข"
+            },
+            {
+                id: 13,
+                q: "วิตามินชนิดใดที่ละลายได้ดีในไขมัน และหากร่างกายขาดจะทำให้เกิดโรคเลือดออกตามไรฟันน้อยลง (ป้องกันโรคลักปิดลักเปิดคือวิตามินซี แต่วิตามินละลายในไขมันคือข้อใด)?",
+                options: [
+                    { text: "ก. วิตามินซีและบี", isCorrect: false },
+                    { text: "ข. วิตามินเอ ดี อี เค", isCorrect: true },
+                    { text: "ค. วิตามินซีและเค", isCorrect: false },
+                    { text: "ง. วิตามินบี 1 และบี 12", isCorrect: false }
+                ],
+                clue: "จำแนกกลุ่มวิตามินที่ละลายในไขมัน (Fat-soluble vitamins)",
+                explanation: "วิตามินที่ละลายในไขมันได้แก่ วิตามินเอ วิตามินดี วิตามินอี และวิตามินเค",
+                answerKey: "ข"
+            },
+            {
+                id: 14,
+                q: "สารละลายในข้อใดเปลี่ยนสกระดาษลิตมัสจากสีแดงเป็นสีน้ำเงิน?",
+                options: [
+                    { text: "ก. น้ำส้มสายชู", isCorrect: false },
+                    { text: "ข. น้ำมะนาว", isCorrect: false },
+                    { text: "ค. น้ำยาล้างจาน", isCorrect: true },
+                    { text: "ง. น้ำฝน", isCorrect: false }
+                ],
+                clue: "สารละลายที่มีสมบัติเป็นเบสจะเปลี่ยนลิตมัสแดงเป็นน้ำเงิน",
+                explanation: "น้ำยาล้างจานมีสมบัติเป็นเบส (Alkaline) จึงเปลี่ยนสีกระดาษลิตมัสจากแดงเป็นน้ำเงิน",
+                answerKey: "ค"
+            },
+            {
+                id: 15,
+                q: "ข้อใดไม่ใช่ลักษณะของการปฏิสนธิในพืชดอก?",
+                options: [
+                    { text: "ก. ละอองเรณูตกลงบนยอดเกสรเพศเมีย", isCorrect: false },
+                    { text: "ข. เกิดการปฏิสนธิซ้อน (Double Fertilization)", isCorrect: false },
+                    { text: "ค. ไข่น้ำเชื้อรวมตัวกับเซลล์สเปิร์ม", isCorrect: false },
+                    { text: "ง. การสร้างเมล็ดโดยไม่ผ่านการถ่ายละอองเรณู", isCorrect: true }
+                ],
+                clue: "พืชดอกต้องอาศัยการถ่ายละอองเรณูเสมอจึงจะเกิดการปฏิสนธิ",
+                explanation: "การสร้างเมล็ดของพืชดอกจำเป็นต้องผ่านกระบวนการถ่ายละอองเรณูและการปฏิสนธิเสมอ",
+                answerKey: "ง"
+            },
+            {
+                id: 16,
+                q: "อวัยวะใดในระบบย่อยอาหารของมนุษย์ที่มีการดูดซึมสารอาหารมากที่สุด?",
+                options: [
+                    { text: "ก. กระเพาะอาหาร", isCorrect: false },
+                    { text: "ข. ลำไส้เล็ก", isCorrect: true },
+                    { text: "ค. ลำไส้ใหญ่", isCorrect: false },
+                    { text: "ง. ตับอ่อน", isCorrect: false }
+                ],
+                clue: "มีลักษณะเป็นท่อยาวขดไปมา มี Villi ช่วยเพิ่มพื้นที่ผิว",
+                explanation: "ลำไส้เล็กเป็นอวัยวะที่มีการย่อยและดูดซึมสารอาหารมากที่สุดถึง 90% เนื่องจากมีส่วนยื่นเล็กๆ เรียกว่า วิลลี่ (Villi)",
+                answerKey: "ข"
+            },
+            {
+                id: 17,
+                q: "พลังงานรูปใดที่เกิดจากการสั่นสะเทือนของวัตถุและต้องอาศัยตัวกลางในการเดินทาง?",
+                options: [
+                    { text: "ก. พลังงานแสง", isCorrect: false },
+                    { text: "ข. พลังงานเสียง", isCorrect: true },
+                    { text: "ค. พลังงานความร้อน", isCorrect: false },
+                    { text: "ง. พลังงานแม่เหล็กไฟฟ้า", isCorrect: false }
+                ],
+                clue: "ไม่สามารถเดินทางผ่านสุญญากาศได้",
+                explanation: "พลังงานเสียงเป็นคลื่นกลที่เกิดจากการสั่นสะเทือนและต้องอาศัยตัวกลาง (ของแข็ง ของเหลว แก๊ส) ในการเคลื่อนที่",
+                answerKey: "ข"
+            },
+            {
+                id: 18,
+                q: "ข้อใดคือหน่วยพื้นฐานที่เล็กที่สุดของสิ่งมีชีวิต?",
+                options: [
+                    { text: "ก. เนื้อเยื่อ (Tissue)", isCorrect: false },
+                    { text: "ข. อวัยวะ (Organ)", isCorrect: false },
+                    { text: "ค. เซลล์ (Cell)", isCorrect: true },
+                    { text: "ง. ระบบอวัยวะ (Organ system)", isCorrect: false }
+                ],
+                clue: "หน่วยโครงสร้างและการทำงานที่เล็กที่สุดของสิ่งมีชีวิต",
+                explanation: "เซลล์ (Cell) เป็นหน่วยโครงสร้างพื้นฐานที่เล็กที่สุดของสิ่งมีชีวิตทุกชนิด",
+                answerKey: "ค"
+            },
+            {
+                id: 19,
+                q: "เมื่อนำแท่งแม่เหล็ก 2 แท่งเข้าใกล้กัน ปรากฏว่าขั้วเหนือหันเข้าหาขั้วเหนือ จะเกิดแรงชนิดใดระหว่างแม่เหล็กทั้งสอง?",
+                options: [
+                    { text: "ก. แรงดึงดูด", isCorrect: false },
+                    { text: "ข. แรงผลัก", isCorrect: true },
+                    { text: "ค. ไม่มีแรงกระทำต่อกัน", isCorrect: false },
+                    { text: "ง. เกิดสนามไฟฟ้าสถิต", isCorrect: false }
+                ],
+                clue: "ขั้วเหมือนกันย่อมผลักกัน ขั้วต่างกันดึงดูดกัน",
+                explanation: "ขั้วแม่เหล็กชนิดเดียวกัน (เหนือกับเหนือ หรือ ใต้กับใต้) เมื่อนำมาใกล้กันจะเกิดแรงผลักกัน",
+                answerKey: "ข"
+            },
+            {
+                id: 20,
+                q: "แก๊สชนิดใดที่มีปริมาณมากที่สุดในบรรยากาศของโลกเรา?",
+                options: [
+                    { text: "ก. แก๊สออกซิเจน ($O_2$)", isCorrect: false },
+                    { text: "ข. แก๊สคาร์บอนไดออกไซด์ ($CO_2$)", isCorrect: false },
+                    { text: "ค. แก๊สไนโตรเจน ($N_2$)", isCorrect: true },
+                    { text: "ง. แก๊สอาร์กอน ($Ar$)", isCorrect: false }
+                ],
+                clue: "มีสัดส่วนประมาณ 78% ในอากาศ",
+                explanation: "แก๊สไนโตรเจนมีปริมาณมากที่สุดในบรรยากาศของโลก คือประมาณ 78% รองลงมาคือออกซิเจน 21%",
+                answerKey: "ค"
+            }
+        ];
+
+        let currentQuestions = [];
+        let currentIndex = 0;
+        let score = 0;
+        let userAnswers = {};
+        let currentLang = 'th';
+
+        // Fisher-Yates Shuffle Algorithm สำหรับสลับตัวเลือก
+        function shuffle(array) {
+            let currentIndex = array.length, randomIndex;
+            while (currentIndex != 0) {
+                randomIndex = Math.floor(Math.random() * currentIndex);
+                currentIndex--;
+                [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+            }
+            return array;
+        }
+
+        function initExam() {
+            currentQuestions = JSON.parse(JSON.stringify(rawQuestions)).map(q => {
+                q.options = shuffle(q.options);
+                return q;
+            });
+            currentIndex = 0;
+            score = 0;
+            userAnswers = {};
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            const q = currentQuestions[currentIndex];
+            document.getElementById('progressText').innerText = `ข้อที่ ${currentIndex + 1} จาก ${currentQuestions.length}`;
+            document.getElementById('scoreBadge').innerText = `คะแนน: ${score} / ${currentQuestions.length}`;
+            document.getElementById('questionTitle').innerText = `${currentIndex + 1}. ${q.q}`;
+            document.getElementById('clueText').innerText = q.clue;
+            document.getElementById('clueBox').classList.add('hidden');
+            
+            const optContainer = document.getElementById('optionsContainer');
+            optContainer.innerHTML = '';
+
+            q.options.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = "w-full text-left p-4 rounded-xl border-2 border-slate-200 hover:border-indigo-500 hover:bg-indigo-50/50 transition font-medium text-slate-700 flex justify-between items-center";
+                btn.innerHTML = `<span>${opt.text}</span>`;
+                
+                if (userAnswers[currentIndex] !== undefined) {
+                    btn.disabled = true;
+                    if (opt.isCorrect) {
+                        btn.className = "w-full text-left p-4 rounded-xl border-2 border-emerald-500 bg-emerald-50 font-medium text-emerald-900 flex justify-between items-center";
+                    } else if (userAnswers[currentIndex] === idx) {
+                        btn.className = "w-full text-left p-4 rounded-xl border-2 border-rose-500 bg-rose-50 font-medium text-rose-900 flex justify-between items-center";
+                    }
+                } else {
+                    btn.onclick = () => selectOption(idx);
+                }
+                optContainer.appendChild(btn);
+            });
+
+            const expBox = document.getElementById('explanationBox');
+            if (userAnswers[currentIndex] !== undefined) {
+                expBox.classList.remove('hidden');
+                document.getElementById('explanationText').innerText = q.explanation;
+            } else {
+                expBox.classList.add('hidden');
+            }
+
+            document.getElementById('prevBtn').disabled = currentIndex === 0;
+            document.getElementById('nextBtn').innerText = currentIndex === currentQuestions.length - 1 ? "ดูสรุปผลคะแนน" : "ข้อถัดไป →";
+        }
+
+        function selectOption(optIndex) {
+            if (userAnswers[currentIndex] !== undefined) return;
+            
+            userAnswers[currentIndex] = optIndex;
+            const q = currentQuestions[currentIndex];
+            const selectedOpt = q.options
