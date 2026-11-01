@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>พระจอมเกล้าติวเตอร์ - คณิตศาสตร์ อนุบาล 3</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <!-- Google Fonts: Kanit -->
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Kanit', sans-serif; }
+        .canvas-container { touch-action: none; }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 min-h-screen text-gray-800">
+
+    <!-- Header -->
+    <header class="bg-white shadow-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <div class="bg-indigo-600 text-white p-3 rounded-2xl shadow-lg flex items-center justify-center text-2xl font-bold">
+                    📐
+                </div>
+                <div>
+                    <h1 class="text-xl md:text-2xl font-bold text-indigo-900">พระจอมเกล้าติวเตอร์</h1>
+                    <p class="text-xs md:text-sm text-gray-500">Expert Tutor AI & Interactive Developer (คณิตศาสตร์ อนุบาล 3)</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-3">
+                <button id="langToggleBtn" onclick="toggleLanguage()" class="px-4 py-2 bg-indigo-100 hover:bg-indigo-200 text-indigo-700 font-medium rounded-xl transition text-sm flex items-center gap-2">
+                    🌐 <span id="langText">English / ไทย</span>
+                </button>
+                <button onclick="resetApp()" class="px-4 py-2 bg-rose-100 hover:bg-rose-200 text-rose-700 font-medium rounded-xl transition text-sm flex items-center gap-2">
+                    🔄 <span data-i18n="resetBtn">เริ่มใหม่ทั้งหมด</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 py-6 space-y-8">
+
+        <!-- Section 1: Virtual Teaching Tool & Interactive Infographic -->
+        <section class="bg-white rounded-3xl shadow-xl p-6 md:p-8 border border-indigo-100">
+            <div class="flex items-center gap-2 mb-4">
+                <span class="text-2xl">🎨</span>
+                <h2 class="text-xl md:text-2xl font-bold text-indigo-900" data-i18n="toolTitle">สื่อการสอนจำลอง: นับผลไม้แสนสนุก & รูปทรงเรขาคณิต</h2>
+            </div>
+            <p class="text-gray-600 mb-6 text-sm md:text-base" data-i18n="toolDesc">คลิกเพิ่มผลไม้หรือเลือกรูปทรงเพื่อฝึกการนับจำนวน การเปรียบเทียบ และรูปทรงพื้นฐานสำหรับเด็กๆ</p>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Fruit Counter Tool -->
+                <div class="bg-amber-50 rounded-2xl p-5 border border-amber-200 flex flex-col justify-between">
+                    <div>
+                        <h3 class="font-bold text-amber-900 mb-2 flex items-center gap-2">🍎 <span data-i18n="fruitBoxTitle">เครื่องคำนวณและนับผลไม้ในตะกร้า</span></h3>
+                        <p class="text-xs text-amber-700 mb-4" data-i18n="fruitBoxDesc">กดปุ่มเพื่อเพิ่มหรือลดจำนวนแอปเปิ้ลในตะกร้า แล้วสังเกตตัวเลข</p>
+                        <div id="fruitBasket" class="flex flex-wrap gap-2 min-h-[80px] bg-white/80 p-4 rounded-xl border border-amber-200 items-center justify-center">
+                            <!-- Fruits rendered dynamically -->
+                        </div>
+                    </div>
+                    <div class="mt-4 flex flex-wrap gap-3 items-center justify-between">
+                        <div class="text-sm font-semibold text-amber-900">
+                            <span data-i18n="totalCount">จำนวนทั้งหมด</span>: <span id="fruitCountNum" class="text-xl text-amber-600">5</span>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="modifyFruit(-1)" class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl font-bold shadow transition">-</button>
+                            <button onclick="modifyFruit(1)" class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl font-bold shadow transition">+</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Shape Explorer Tool -->
+                <div class="bg-sky-50 rounded-2xl p-5 border border-sky-200 flex flex-col justify-between">
+                    <div>
+                        <h3 class="font-bold text-sky-900 mb-2 flex items-center gap-2">⭐ <span data-i18n="shapeBoxTitle">สำรวจรูปทรงเรขาคณิตรอบตัว</span></h3>
+                        <p class="text-xs text-sky-700 mb-4" data-i18n="shapeBoxDesc">คลิกที่ปุ่มรูปทรงด้านล่างเพื่อดูคำอธิบายและตัวอย่างวัตถุ</p>
+                        <div id="shapeDisplay" class="bg-white/80 p-4 rounded-xl border border-sky-200 text-center min-h-[80px] flex flex-col items-center justify-center">
+                            <span class="text-3xl mb-1" id="shapeIcon">🔴</span>
+                            <span class="font-bold text-sky-900" id="shapeName">วงกลม (Circle)</span>
+                            <span class="text-xs text-gray-500" id="shapeDesc">ไม่มีมุม กลมรีสมบูรณ์ เช่น ลูกบอล เหรียญ</span>
+                        </div>
+                    </div>
+                    <div class="mt-4 flex flex-wrap gap-2 justify-center">
+                        <button onclick="selectShape('circle')" class="px-3 py-1.5 bg-sky-200 hover:bg-sky-300 text-sky-800 rounded-lg text-xs font-semibold transition">วงกลม</button>
+                        <button onclick="selectShape('square')" class="px-3 py-1.5 bg-sky-200 hover:bg-sky-300 text-sky-800 rounded-lg text-xs font-semibold transition">สี่เหลี่ยม</button>
+                        <button onclick="selectShape('triangle')" class="px-3 py-1.5 bg-sky-200 hover:bg-sky-300 text-sky-800 rounded-lg text-xs font-semibold transition">สามเหลี่ยม</button>
+                        <button onclick="selectShape('star')" class="px-3 py-1.5 bg-sky-200 hover:bg-sky-300 text-sky-800 rounded-lg text-xs font-semibold transition">ดาว</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 2: Summary & Memory Tricks -->
+        <section class="bg-white rounded-3xl shadow-xl p-6 md:p-8 border border-indigo-100 space-y-6">
+            <div class="flex items-center gap-2">
+                <span class="text-2xl">📚</span>
+                <h2 class="text-xl md:text-2xl font-bold text-indigo-900" data-i18n="summaryTitle">สรุปเนื้อหาคณิตศาสตร์ อนุบาล 3 และเทคนิคการจำ</h2>
+            </div>
+            
+            <div class="prose max-w-none text-gray-700 space-y-4 text-sm md:text-base leading-relaxed">
+                <p data-i18n="summaryP1">
+                    คณิตศาสตร์ระดับอนุบาล 3 เป็นช่วงเวลาสำคัญในการเตรียมความพร้อมทักษะพื้นฐาน (Foundational Math Skills) ก่อนก้าวสู่ระดับประถมศึกษา โดยครอบคลุมเนื้อหาหลัก 5 ด้าน ได้แก่ <strong>(1) การนับจำนวน 1 ถึง 50 และตัวเลขไทย-ฮินดูอารบิก</strong>, <strong>(2) การบวกและการลบจำนวนที่มีผลลัพธ์และตัวตั้งไม่เกิน 20</strong>, <strong>(3) การจำแนก เปรียบเทียบขนาด (ใหญ่-เล็ก, ยาว-สั้น, หนัก-เบา)</strong>, <strong>(4) รูปทรงเรขาคณิตสองมิติและสามมิติพื้นฐาน</strong>, และ <strong>(5) การอ่านแผนภูมิรูปภาพอย่างง่ายและการบอกเวลาช่วงวัน</strong>
+                </p>
+                <p data-i18n="summaryP2">
+                    กระบวนการคิดวิเคราะห์ (Critical Thinking) ที่สำคัญในวัยนี้คือ "การเชื่อมโยงรูปธรรมสู่นามธรรม" (Concrete to Abstract) โดยผู้เรียนควรได้ฝึกนับวัตถุจริง เปรียบเทียบความยาวด้วยการทาบ และฝึกแก้โจทย์ปัญหาใกล้ตัวผ่านสถานการณ์จำลอง (Scenario-based) เช่น การแบ่งขนม การจัดเรียงบล็อกไม้ตามแบบรูป (Pattern) ซึ่งช่วยสร้างตรรกะทางความคิดและความมั่นใจในการเรียนรู้ระยะยาว
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+                <!-- Memory Tricks -->
+                <div class="bg-emerald-50 border border-emerald-200 rounded-2xl p-5">
+                    <h3 class="font-bold text-emerald-900 mb-2 flex items-center gap-2">💡 <span data-i18n="memoryTricksTitle">กล่องเทคนิคการจำ (Memory Tricks)</span></h3>
+                    <ul class="list-disc list-inside space-y-2 text-sm text-emerald-800">
+                        <li><strong data-i18n="trick1Title">นับนิ้วและแตะวัตถุ:</strong> ใช้นิ้วชี้แตะวัตถุทีละชิ้นพร้อมเปล่งเสียงนับ จะช่วยป้องกันการนับข้ามหรือนับซ้ำ</li>
+                        <li><strong data-i18n="trick2Title">การบวกคือการรวม:</strong> นึกภาพการเอาของสองกองมารวมกันในตะกร้าเดียวกัน จำนวนจะเพิ่มขึ้นเสมอ</li>
+                        <li><strong data-i18n="trick3Title">การลบคือการเอาออก:</strong> นึกภาพการกินแอปเปิ้ลหรือให้เพื่อนไป จำนวนจะลดลงและเหลือน้อยลง</li>
+                        <li><strong data-i18n="trick4Title">แบบรูปซ้ำ (Patterns):</strong> สังเกตสีหรือรูปทรงที่สลับกันเป็นระเบียบ เช่น แดง-ฟ้า-แดง-ฟ้า ตัวต่อไปต้องเป็นแดงเสมอ</li>
+                    </ul>
+                </div>
+
+                <!-- Thought Process -->
+                <div class="bg-purple-50 border border-purple-200 rounded-2xl p-5">
+                    <h3 class="font-bold text-purple-900 mb-2 flex items-center gap-2">🧠 <span data-i18n="thoughtProcessTitle">กระบวนการคิดเชิงวิเคราะห์ (Thought Process)</span></h3>
+                    <ol class="list-decimal list-inside space-y-2 text-sm text-purple-800">
+                        <li><strong data-i18n="step1Title">วิเคราะห์โจทย์ (Analyze):</strong> อ่านหรือฟังโจทย์อย่างตั้งใจ แยกแยะว่าโจทย์ถามหาอะไร (จำนวนทั้งหมด, ส่วนที่เหลือ หรือการจัดลำดับ)</li>
+                        <li><strong data-i18n="step2Title">จินตนาการภาพ (Visualize):</strong> สร้างภาพในใจหรือใช้กระดานทดวาดรูปประกอบเพื่อความเข้าใจที่ชัดเจน</li>
+                        <li><strong data-i18n="step3Title">เลือกวิธีแก้ (Select Strategy):</strong> เลือกระหว่างการนับต่อ การหักออก หรือการเปรียบเทียบ</li>
+                        <li><strong data-i18n="step4Title">ตรวจสอบคำตอบ (Verify):</strong> ลองทวนคำตอบด้วยวิธีอื่น เช่น ตรวจสอบด้วยการนับย้อนกลับหรือนับนิ้วซ้ำ</li>
+                    </ol>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 3 & 4: Interactive Quiz (70%) & Whiteboard (30%) -->
+        <div class="grid grid-cols-1 lg:grid-cols-10 gap-6">
+            
+            <!-- Left Side: Quiz Section (70% -> lg:col-span-7) -->
+            <div class="lg:col-span-7 space-y-6">
+                <div class="bg-white rounded-3xl shadow-xl p-6 md:p-8 border border-indigo-100">
+                    
+                    <!-- Quiz Navigation Bar -->
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 pb-4 border-b border-gray-100">
+                        <div>
+                            <h2 class="text-xl font-bold text-indigo-900" data-i18n="quizHeader">แบบทดสอบวัดผลคณิตศาสตร์ (15 ข้อ)</h2>
+                            <p class="text-xs text-gray-500" data-i18n="quizSub">เลือกคำตอบที่ถูกต้องที่สุด ระบบจะตรวจคำตอบและแสดงคำอธิบายทันที</p>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-sm font-semibold text-indigo-700 bg-indigo-50 px-3 py-1 rounded-xl">
+                                <span data-i18n="scoreLabel">คะแนน</span>: <span id="currentScore">0</span> / 15
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Question Numbers Quick Nav -->
+                    <div class="mb-6">
+                        <p class="text-xs font-semibold text-gray-500 mb-2" data-i18n="selectQuestionPrompt">เลือกข้อสอบ:</p>
+                        <div id="questionNavGrid" class="flex flex-wrap gap-2">
+                            <!-- Rendered via JS -->
+                        </div>
+                    </div>
+
+                    <!-- Question Card Container -->
+                    <div id="questionContainer" class="space-y-6">
+                        <!-- Populated by JavaScript -->
+                    </div>
+
+                    <!-- Quiz Navigation Buttons -->
+                    <div class="flex justify-between items-center mt-8 pt-6 border-t border-gray-100">
+                        <button onclick="prevQuestion()" id="prevBtn" class="px-5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-medium transition text-sm flex items-center gap-2">
+                            ⬅️ <span data-i18n="prevBtn">ข้อก่อนหน้า</span>
+                        </button>
+                        <button onclick="nextQuestion()" id="nextBtn" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-medium shadow transition text-sm flex items-center gap-2">
+                            <span data-i18n="nextBtn">ข้อถัดไป</span> ➡️
+                        </button>
+                    </div>
+
+                </div>
+
+                <!-- Section 5: Evaluation & Analysis Result Card (Hidden initially) -->
+                <div id="resultsCard" class="hidden bg-white rounded-3xl shadow-xl p-6 md:p-8 border border-indigo-100 space-y-6">
+                    <div class="text-center space-y-2">
+                        <div class="inline-block p-3 bg-indigo-100 text-indigo-700 rounded-2xl text-3xl mb-1">🏆</div>
+                        <h3 class="text-2xl font-bold text-indigo-900" data-i18n="evalTitle">สรุปผลการประเมินความรู้</h3>
+                        <p class="text-gray-500 text-sm" data-i18n="evalSub">ผลลัพธ์การทดสอบวิชาคณิตศาสตร์ ระดับอนุบาล 3</p>
+                    </div>
+
+                    <div class="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-2xl p-6 text-white text-center shadow-lg">
+                        <p class="text-indigo-100 text-sm mb-1" data-i18n="finalScoreText">คะแนนรวมที่คุณทำได้</p>
+                        <div class="text-4xl md:text-5xl font-extrabold mb-2"><span id="finalScoreNum">0</span> / 15</div>
+                        <p class="text-sm bg-white/20 py-1 px-3 rounded-full inline-block" id="finalPercentageText">คิดเป็น 0%</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="bg-emerald-50 border border-emerald-200 rounded-2xl p-5">
+                            <h4 class="font-bold text-emerald-900 mb-2 flex items-center gap-2">🌟 <span data-i18n="strengthsTitle">จุดเด่น (Strengths)</span></h4>
+                            <p id="strengthsText" class="text-sm text-emerald-800 leading-relaxed">-</p>
+                        </div>
+                        <div class="bg-amber-50 border border-amber-200 rounded-2xl p-5">
+                            <h4 class="font-bold text-amber-900 mb-2 flex items-center gap-2">🎯 <span data-i18n="improvementsTitle">จุดที่ควรพัฒนา (Areas for Improvement)</span></h4>
+                            <p id="improvementsText" class="text-sm text-amber-800 leading-relaxed">-</p>
+                        </div>
+                    </div>
+
+                    <div class="text-center pt-2">
+                        <button onclick="resetApp()" class="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg transition text-sm">
+                            🔄 <span data-i18n="retakeBtn">ทำแบบทดสอบใหม่อีกครั้ง</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Side: Whiteboard Section (30% -> lg:col-span-3) -->
+            <div class="lg:col-span-3">
+                <div class="bg-white rounded-3xl shadow-xl p-5 border border-indigo-100 sticky top-24 space-y-4">
+                    <div class="flex justify-between items-center">
+                        <h3 class="font-bold text-indigo-900 flex items-center gap-2 text-base">✏️ <span data-i18n="whiteboardTitle">กระดานทดเลข</span></h3>
+                        <button onclick="clearWhiteboard()" class="text-xs px-3 py-1.5 bg-rose-100 hover:bg-rose-200 text-rose-700 rounded-lg transition font-medium">
+                            <span data-i18n="clearBtn">ล้างกระดาน</span>
+                        </button>
+                    </div>
+                    <p class="text-xs text-gray-500" data-i18n="whiteboardDesc">ใช้สำหรับทดเลข วาดรูป หรือฝึกเขียนตัวเลขระหว่างทำข้อสอบ</p>
+                    
+                    <div class="border-2 border-dashed border-indigo-200 rounded-2xl overflow-hidden bg-gray-50 relative canvas-container">
+                        <canvas id="whiteboardCanvas" class="w-full h-[320px] cursor-crosshair bg-white"></canvas>
+                    </div>
+
+                    <div class="flex items-center justify-between text-xs text-gray-500 pt-1">
+                        <span data-i18n="drawTip">ลากเมาส์หรือใช้นิ้ววาดบนกระดาน</span>
+                        <div class="flex gap-1.5">
+                            <button onclick="setPenColor('#4f46e5')" class="w-5 h-5 rounded-full bg-indigo-600 ring-2 ring-offset-1 ring-indigo-300"></button>
+                            <button onclick="setPenColor('#ef4444')" class="w-5 h-5 rounded-full bg-rose-500"></button>
+                            <button onclick="setPenColor('#10b981')" class="w-5 h-5 rounded-full bg-emerald-500"></button>
+                            <button onclick="setPenColor('#1f2937')" class="w-5 h-5 rounded-full bg-gray-800"></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="mt-16 py-6 bg-white border-t border-gray-100 text-center text-sm text-gray-500">
+        <p>เขียนโดย พระจอมเกล้าติวเตอร์</p>
+    </footer>
+
+    <!-- Script Application Logic -->
+    <script>
+        // Raw Quiz Data (15 Questions for Kindergarten 3 Mathematics)
+        const rawQuizData = [
+            {
+                id: 1,
+                question: "ข้อใดแสดงจำนวนแอปเปิ้ล $\\mathbf{7}$ ผล ได้ถูกต้องที่สุด?",
+                answerOptions: [
+                    { text: "มีแอปเปิ้ล 7 ผลเรียงแถว", isCorrect: true, rationale: "ถูกต้องครับ จำนวน 7 ตรงกับชุดวัตถุที่มีแอปเปิ้ลเรียงกันครบ 7 ผลพอดี" },
+                    { text: "มีแอปเปิ้ล 5 ผลเรียงแถว", isCorrect: false, rationale: "นี่คือจำนวน 5 ผล ซึ่งขาดไปอีก 2 ผลจึงจะครบ 7 ผล" },
+                    { text: "มีแอปเปิ้ล 8 ผลเรียงแถว", isCorrect: false, rationale: "นี่คือจำนวน 8 ผล ซึ่งเกินมา 1 ผลจากจำนวน 7 ผลที่ต้องการ" },
+                    { text: "มีแอปเปิ้ล 6 ผลเรียงแถว", isCorrect: false, rationale: "นี่คือจำนวน 6 ผล ซึ่งขาดไปอีก 1 ผลจึงจะครบ 7 ผล" }
+                ],
+                hint: "ลองใช้นิ้วชี้แตะนับแอปเปิ้ลทีละผลจนครบเจ็ด",
+                tags: ["counting", "number_recognition"]
+            },
+            {
+                id: 2,
+                question: "ถ้าคุณแม่มีส้มอยู่ $\\mathbf{4}$ ผล ซื้อมาเพิ่มอีก $\\mathbf{3}$ ผล ตอนนี้คุณแม่มีส้มทั้งหมดกี่ผล?",
+                answerOptions: [
+                    { text: "มีส้มทั้งหมด 7 ผล", isCorrect: true, rationale: "ถูกต้องครับ นำ 4 บวกเพิ่มด้วย 3 ($4 + 3 = 7$) จะได้ส้มรวมทั้งหมด 7 ผล" },
+                    { text: "มีส้มทั้งหมด 6 ผล", isCorrect: false, rationale: "คำนวณผิดพลาด ได้ผลลัพธ์น้อยกว่าความเป็นจริง 1 ผล" },
+                    { text: "มีส้มทั้งหมด 8 ผล", isCorrect: false, rationale: "คำนวณเกินไป 1 ผล (4 บวก 3 ได้ 7 ไม่ใช่ 8)" },
+                    { text: "มีส้มทั้งหมด 5 ผล", isCorrect: false, rationale: "คำนวณผิดพลาด ลืมบวกจำนวนส้มที่ซื้อมาเพิ่ม" }
+                ],
+                hint: "ใช้วิธีนับต่อจาก 4 ไปอีก 3 ครั้ง (5, 6, 7)",
+                tags: ["addition", "word_problem"]
+            },
+            {
+                id: 3,
+                question: "ดินสอยาว $\\mathbf{10}$ แท่ง ใช้ไป $\\mathbf{4}$ แท่ง จะเหลือดินสอกี่แท่ง?",
+                answerOptions: [
+                    { text: "เหลือดินสอ 6 แท่ง", isCorrect: true, rationale: "ถูกต้องครับ นำ 10 ลบออก 4 ($10 - 4 = 6$) จะเหลือดินสอ 6 แท่ง" },
+                    { text: "เหลือดินสอ 5 แท่ง", isCorrect: false, rationale: "คำนวณลบเลขผิดพลาด เหลืออยู่ 6 แท่งไม่ใช่ 5 แท่ง" },
+                    { text: "เหลือดินสอ 7 แท่ง", isCorrect: false, rationale: "นี่คือผลลัพธ์ของการลบด้วย 3 ไม่ใช่การลบด้วย 4" },
+                    { text: "เหลือดินสอ 4 แท่ง", isCorrect: false, rationale: "นี่คือจำนวนที่ใช้ไป ไม่ใช่จำนวนที่เหลืออยู่" }
+                ],
+                hint: "มีอยู่ 10 หักออกเสีย 4 เหลือเท่าไหร่?",
+                tags: ["subtraction", "word_problem"]
+            },
+            {
+                id: 4,
+                question: "วัตถุในข้อใดมีลักษณะเป็น \"ทรงกลม\" เหมือนลูกบอล?",
+                answerOptions: [
+                    { text: "ลูกบอลยางเด้งดึ๋ง", isCorrect: true, rationale: "ถูกต้องครับ ลูกบอลมีผิวโค้งกลมและกลิ้งได้รอบตัวจัดเป็นทรงกลม" },
+                    { text: "กล่องของขวัญสี่เหลี่ยม", isCorrect: false, rationale: "กล่องของขวัญมีหน้าตัดเป็นสี่เหลี่ยม จัดเป็นทรงสี่เหลี่ยมมุมฉาก" },
+                    { text: "กระป๋องนมทรงกระบอก", isCorrect: false, rationale: "กระป๋องนมมีฐานเป็นวงกลมและลำตัวทรงสูง จัดเป็นทรงกระบอก" },
+                    { text: "หมวกปาร์ตี้ทรงกรวย", isCorrect: false, rationale: "หมวกปาร์ตี้มีฐานกลมและยอดแหลม จัดเป็นทรงกรวย" }
+                ],
+                hint: "นึกถึงของเล่นที่สามารถกลิ้งไปมาบนพื้นได้ทุกทิศทาง",
+                tags: ["geometry", "shapes"]
+            },
+            {
+                id: 5,
+                question: "ดินสอแท่งสีฟ้า ยาวกว่า ดินสอแท่งสีแดง และดินสอแท่งสีแดง ยาวกว่า ดินสอแท่งสีเขียว ดินสอแท่งใด <b>สั้นที่สุด</b>?",
+                answerOptions: [
+                    { text: "ดินสอแท่งสีเขียว", isCorrect: true, rationale: "ถูกต้องครับ สีเขียวสั้นกว่าสีแดง และสีแดงสั้นกว่าสีฟ้า สีเขียวจึงสั้นที่สุด" },
+                    { text: "ดินสอแท่งสีฟ้า", isCorrect: false, rationale: "สีฟ้าเป็นแท่งที่ยาวที่สุด ไม่ใช่สั้นที่สุด" },
+                    { text: "ดินสอแท่งสีแดง", isCorrect: false, rationale: "สีแดงมีความยาวอยู่ตรงกลางระหว่างสีฟ้ากับสีเขียว" },
+                    { text: "ยาวเท่ากันทุกแท่ง", isCorrect: false, rationale: "โจทย์กำหนดเงื่อนไขความยาวแตกต่างกันอย่างชัดเจน" }
+                ],
+                hint: "เรียงลำดับจากยาวไปสั้น แล้วดูว่าแท่งไหนอยู่ท้ายสุด",
+                tags: ["comparison", "measurement"]
+            },
+            {
+                id: 6,
+                question: "ตัวเลขไทยข้อใดมีค่าเท่ากับจำนวนนิ้วมือข้างเดียวของคนเรา?",
+                answerOptions: [
+                    { text: "เลข ๕ ไทย", isCorrect: true, rationale: "ถูกต้องครับ นิ้วมือข้างหนึ่งของคนเรามีจำนวน 5 นิ้ว ตรงกับเลข ๕ ไทยพอดี" },
+                    { text: "เลข ๔ ไทย", isCorrect: false, rationale: "เลข ๔ ไทยคือนิ้วสี่นิ้ว ยังขาดอีกหนึ่งนิ้ว" },
+                    { text: "เลข ๓ ไทย", isCorrect: false, rationale: "เลข ๓ ไทยคือนิ้วสามนิ้ว มีค่าน้อยกว่าห้า" },
+                    { text: "เลข ๖ ไทย", isCorrect: false, rationale: "เลข ๖ ไทยมีค่ามากกว่าห้าอยู่ 1" }
+                ],
+                hint: "ชูมือขึ้นมาหนึ่งข้างแล้วนับนิ้วทั้งหมดดูสิครับ",
+                tags: ["thai_numbers", "counting"]
+            },
+            {
+                id: 7,
+                question: "แบบรูปของรูปทรง: 🔴 🟦 🔴 🟦 🔴 ... รูปทรงใดควรอยู่ถัดไป?",
+                answerOptions: [
+                    { text: "รูปวงกลมสีแดง (🔴)", isCorrect: true, rationale: "ถูกต้องครับ แบบรูปสลับระหว่างวงกลมแดงและสี่เหลี่ยมฟ้า รูปถัดไปจึงเป็นวงกลมแดง" },
+                    { text: "รูปสี่เหลี่ยมสีฟ้า (🟦)", isCorrect: false, rationale: "สี่เหลี่ยมฟ้าเพิ่งผ่านไป รูปถัดไปต้องเริ่มรอบใหม่ด้วยวงกลมแดง" },
+                    { text: "รูปสามเหลี่ยมสีเขียว (🟢)", isCorrect: false, rationale: "สามเหลี่ยมเขียวไม่ได้อยู่ในชุดแบบรูปเริ่มต้น" },
+                    { text: "รูปดาวสีเหลือง (⭐)", isCorrect: false, rationale: "รูปดาวไม่ได้อยู่ในลำดับการสลับของแบบรูปนี้" }
+                ],
+                hint: "สังเกตความสัมพันธ์ที่วนซ้ำกันระหว่างสีแดงและสีฟ้า",
+                tags: ["patterns", "logic"]
+            },
+            {
+                id: 8,
+                question: "ผลลัพธ์ของ $\\mathbf{8 + 2}$ มีค่าเท่ากับข้อใด?",
+                answerOptions: [
+                    { text: "มีค่าเท่ากับ 10", isCorrect: true, rationale: "ถูกต้องครับ 8 บวกเพิ่มอีก 2 ได้ผลลัพธ์เท่ากับ 10 พอดี" },
+                    { text: "มีค่าเท่ากับ 9", isCorrect: false, rationale: "ผลลัพธ์นี้เกิดจาก 8 บวก 1 ไม่ใช่ 8 บวก 2" },
+                    { text: "มีค่าเท่ากับ 11", isCorrect: false, rationale: "ผลลัพธ์นี้เกิดจาก 8 บวก 3 ไม่ใช่ 8 บวก 2" },
+                    { text: "มีค่าเท่ากับ 7", isCorrect: false, rationale: "ผลลัพธ์นี้เกิดจากการลบ ไม่ใช่การบวก" }
+                ],
+                hint: "นับต่อไปจาก 8 อีกสองครั้ง (9, 10)",
+                tags: ["addition", "calculation"]
+            },
+            {
+                id: 9,
+                question: "ข้อใดกล่าวถึงช่วงเวลาในชีวิตประจำวันได้ <b>ถูกต้องตามลำดับเวลา</b>?",
+                answerOptions: [
+                    { text: "ตื่นนอน ตอนเช้า, รับประทานอาหารกลางวัน, เข้านอน ตอนกลางคืน", isCorrect: true, rationale: "ถูกต้องครับ เรียงลำดับจากเช้า กลางวัน และเข้านอนตอนกลางคืนได้อย่างถูกต้อง" },
+                    { text: "เข้านอน ตอนกลางคืน, ตื่นนอน ตอนเช้า, รับประทานอาหารกลางวัน", isCorrect: false, rationale: "ลำดับสลับกัน เพราะเราต้องตื่นนอนตอนเช้าก่อนจึงจะเข้านอนตอนกลางคืน" },
+                    { text: "รับประทานอาหารกลางวัน, ตื่นนอน ตอนเช้า, เข้านอน ตอนกลางคืน", isCorrect: false, rationale: "ตื่นนอนตอนเช้าต้องมาก่อนมื้อกลางวันเสมอ" },
+                    { text: "เข้านอน ตอนกลางคืน, รับประทานอาหารกลางวัน, ตื่นนอน ตอนเช้า", isCorrect: false, rationale: "ลำดับเวลากลับตาลปัตรไม่ถูกต้องตามความจริง" }
+                ],
+                hint: "นึกถึงกิจวัตรประจำวันที่เราทำตั้งแต่ลืมตาตื่นจนถึงเข้านอน",
+                tags: ["time", "daily_routine"]
+            },
+            {
+                id: 10,
+                question: "กระเป๋าเป้ใบใหญ่ หนักกว่า กล่องดินสอพลาสติก ข้อใดสรุปเกี่ยวกับ <b>น้ำหนัก</b> ได้ถูกต้อง?",
+                answerOptions: [
+                    { text: "กล่องดินสอพลาสติก เบากว่า กระเป๋าเป้ใบใหญ่", isCorrect: true, rationale: "ถูกต้องครับ เมื่อกระเป๋าเป้หนักกว่า กล่องดินสอจึงเบากว่าตามสมบัติการเปรียบเทียบ" },
+                    { text: "กล่องดินสอพลาสติก หนักกว่า กระเป๋าเป้ใบใหญ่", isCorrect: false, rationale: "ขัดแย้งกับโจทย์ที่ระบุว่ากระเป๋าเป้หนักกว่าชัดเจน" },
+                    { text: "น้ำหนักเท่ากันพอดี", isCorrect: false, rationale: "กระเป๋าเป้ใบใหญ่มีน้ำหนักมากกว่ากล่องดินสอแน่นอน" },
+                    { text: "เปรียบเทียบน้ำหนักไม่ได้", isCorrect: false, rationale: "วัตถุที่มีมวลแตกต่างกันสามารถเปรียบเทียบน้ำหนักได้เสมอ" }
+                ],
+                hint: "ถ้า A หนักกว่า B แสดงว่า B ต้องเบากว่า A",
+                tags: ["comparison", "weight"]
+            },
+            {
+                id: 11,
+                question: "ผลลัพธ์ของ $\\mathbf{9 - 5}$ มีค่าเท่ากับข้อใด?",
+                answerOptions: [
+                    { text: "มีค่าเท่ากับ 4", isCorrect: true, rationale: "ถูกต้องครับ มีอยู่ 9 หักออก 5 ($9 - 5 = 4$) เหลือผลลัพธ์คือ 4" },
+                    { text: "มีค่าเท่ากับ 3", isCorrect: false, rationale: "ผลลัพธ์นี้เกิดจากการลบออก 6 ไม่ใช่ 5" },
+                    { text: "มีค่าเท่ากับ 5", isCorrect: false, rationale: "นี่คือจำนวนที่ถูกหักออก ไม่ใช่ผลลัพธ์ที่เหลืออยู่" },
+                    { text: "มีค่าเท่ากับ 2", isCorrect: false, rationale: "คำนวณผิดพลาด ได้ผลลัพธ์น้อยเกินไป" }
+                ],
+                hint: "ชูนิ้วขึ้นมา 9 นิ้ว แล้วพับเก็บลงไป 5 นิ้ว จะเหลือกี่นิ้ว?",
+                tags: ["subtraction", "calculation"]
+            },
+            {
+                id: 12,
+                question: "รูปสามเหลี่ยม มีลักษณะสำคัญที่แตกต่างจากรูปสี่เหลี่ยมคือข้อใด?",
+                answerOptions: [
+                    { text: "มีมุมและด้าน 3 มุม 3 ด้าน", isCorrect: true, rationale: "ถูกต้องครับ รูปสามเหลี่ยมประกอบด้วยด้านตรง 3 ด้านและมุม 3 มุม" },
+                    { text: "มีมุมและด้าน 4 มุม 4 ด้าน", isCorrect: false, rationale: "นี่คือลักษณะของรูปสี่เหลี่ยม ไม่ใช่รูปสามเหลี่ยม" },
+                    { text: "มีผิวโค้งกลมไม่มีมุม", isCorrect: false, rationale: "นี่คือลักษณะของวงกลม ไม่ใช่รูปสามเหลี่ยม" },
+                    { text: "มีด้านเท่ากัน 5 ด้าน", isCorrect: false, rationale: "นี่คือลักษณะของรูปห้าเหลี่ยม" }
+                ],
+                hint: "นับจำนวนมุมแหลมของรูปสามเหลี่ยมดูสิครับมีกี่มุม",
+                tags: ["geometry", "properties"]
+            },
+            {
+                id: 13,
+                question: "มีดินสออยู่ $\\mathbf{6}$ แท่ง พี่สาวให้อีก $\\mathbf{4}$ แท่ง รวมเป็นดินสอกี่แท่ง?",
+                answerOptions: [
+                    { text: "มีดินสอรวม 10 แท่ง", isCorrect: true, rationale: "ถูกต้องครับ นำ 6 บวกเพิ่มด้วย 4 ($6 + 4 = 10$) ได้ผลลัพธ์เป็น 10 แท่ง" },
+                    { text: "มีดินสอรวม 9 แท่ง", isCorrect: false, rationale: "คำนวณบวกเลขพลาด ได้น้อยกว่าความจริง 1 แท่ง" },
+                    { text: "มีดินสอรวม 8 แท่ง", isCorrect: false, rationale: "คำนวณบวกเลขพลาด (6 บวก 4 ได้ 10 ไม่ใช่ 8)" },
+                    { text: "มีดินสอรวม 12 แท่ง", isCorrect: false, rationale: "คำนวณบวกเลขเกินความเป็นจริง" }
+                ],
+                hint: "ใช้วิธีนับต่อจาก 6 ไปอีก 4 ครั้ง (7, 8, 9, 10)",
+                tags: ["addition", "word_problem"]
+            },
+            {
+                id: 14,
+                question: "ข้อใดคือการเรียงลำดับตัวเลขฮินดูอารบิกจาก <b>น้อยไปมาก</b> ได้ถูกต้องที่สุด?",
+                answerOptions: [
+                    { text: "3, 5, 7, 9", isCorrect: true, rationale: "ถูกต้องครับ ตัวเลขเพิ่มขึ้นทีละจำนวนตามลำดับจากน้อยไปมากอย่างถูกต้อง" },
+                    { text: "9, 7, 5, 3", isCorrect: false, rationale: "นี่คือการเรียงลำดับจากมากไปน้อย ไม่ใช่น้อยไปมาก" },
+                    { text: "3, 7, 5, 9", isCorrect: false, rationale: "เรียงลำดับสลับที่กันระหว่างเลข 7 กับเลข 5" },
+                    { text: "5, 3, 9, 7", isCorrect: false, rationale: "ลำดับตัวเลขสะเปะสะปะไม่เรียงตามค่า" }
+                ],
+                hint: "มองหาชุดตัวเลขที่เริ่มต้นด้วยเลขน้อยแล้วค่อยๆ โตขึ้นเรื่อยๆ",
+                tags: ["ordering", "number_sense"]
+            },
+            {
+                id: 15,
+                question: "ถ้าวันนี้เป็นวันจันทร์ พรุ่งนี้จะเป็นวันอะไร?",
+                answerOptions: [
+                    { text: "วันอังคาร", isCorrect: true, rationale: "ถูกต้องครับ ตามลำดับวันในสัปดาห์ วันถัดจากวันจันทร์คือวันอังคาร" },
+                    { text: "วันอาทิตย์", isCorrect: false, rationale: "วันอาทิตย์คือวันก่อนหน้าวันจันทร์ ไม่ใช่วันถัดไป" },
+                    { text: "วันพุธ", isCorrect: false, rationale: "วันพุธอยู่ถัดจากวันอังคารอีกหนึ่งวัน" },
+                    { text: "วันศุกร์", isCorrect: false, rationale: "วันศุกร์อยู่ปลายสัปดาห์ ไม่ใช่วันถัดจากวันจันทร์" }
+                ],
+                hint: "ท่องลำดับวัน: จันทร์, อังคาร, พุธ...",
+                tags: ["time", "calendar"]
+            }
+        ];
+
+        // State variables
+        let currentLang = 'th';
+        let currentQuestionIndex = 0;
+        let userAnswers = new Array(rawQuizData.length).fill(null); // stores selected option index
+        let randomizedQuestions = [];
+        let fruitCount = 5;
+
+        // Translations Dictionary
+        const translations = {
+            th: {
+                langText: "English / ไทย",
+                resetBtn: "เริ่มใหม่ทั้งหมด",
+                toolTitle: "สื่อการสอนจำลอง: นับผลไม้แสนสนุก & รูปทรงเรขาคณิต",
+                toolDesc: "คลิกเพิ่มผลไม้หรือเลือกรูปทรงเพื่อฝึกการนับจำนวน การเปรียบเทียบ และรูปทรงพื้นฐานสำหรับเด็กๆ",
+                fruitBoxTitle: "เครื่องคำนวณและนับผลไม้ในตะกร้า",
+                fruitBoxDesc: "กดปุ่มเพื่อเพิ่มหรือลดจำนวนแอปเปิ้ลในตะกร้า แล้วสังเกตตัวเลข",
+                totalCount: "จำนวนทั้งหมด",
+                shapeBoxTitle: "สำรวจรูปทรงเรขาคณิตรอบตัว",
+                shapeBoxDesc: "คลิกที่ปุ่มรูปทรงด้านล่างเพื่อดูคำอธิบายและตัวอย่างวัตถุ",
+                summaryTitle: "สรุปเนื้อหาคณิตศาสตร์ อนุบาล 3 และเทคนิคการจำ",
+                summaryP1: "คณิตศาสตร์ระดับอนุบาล 3 เป็นช่วงเวลาสำคัญในการเตรียมความพร้อมทักษะพื้นฐาน (Foundational Math Skills) ก่อนก้าวสู่ระดับประถมศึกษา โดยครอบคลุมเนื้อหาหลัก 5 ด้าน ได้แก่ <strong>(1) การนับจำนวน 1 ถึง 50 และตัวเลขไทย-ฮินดูอารบิก</strong>, <strong>(2) การบวกและการลบจำนวนที่มีผลลัพธ์และตัวตั้งไม่เกิน 20</strong>, <strong>(3) การจำแนก เปรียบเทียบขนาด (ใหญ่-เล็ก, ยาว-สั้น, หนัก-เบา)</strong>, <strong>(4) รูปทรงเรขาคณิตสองมิติและสามมิติพื้นฐาน</strong>, และ <strong>(5) การอ่านแผนภูมิรูปภาพอย่างง่ายและการบอกเวลาช่วงวัน</strong>",
+                summaryP2: "กระบวนการคิดเชิงวิเคราะห์ (Critical Thinking) ที่สำคัญในวัยนี้คือ \"การเชื่อมโยงรูปธรรมสู่นามธรรม\" (Concrete to Abstract) โดยผู้เรียนควรได้ฝึกนับวัตถุจริง เปรียบเทียบความยาวด้วยการทาบ และฝึกแก้โจทย์ปัญหาใกล้ตัวผ่านสถานการณ์จำลอง (Scenario-based) เช่น การแบ่งขนม การจัดเรียงบล็อกไม้ตามแบบรูป (Pattern) ซึ่งช่วยสร้างตรรกะทางความคิดและความมั่นใจในการเรียนรู้ระยะยาว",
+                memoryTricksTitle: "กล่องเทคนิคการจำ (Memory Tricks)",
+                trick1Title: "นับนิ้วและแตะวัตถุ:",
+                trick2Title: "การบวกคือการรวม:",
+                trick3Title: "การลบคือการเอาออก:",
+                trick4Title: "แบบรูปซ้ำ (Patterns):",
+                thoughtProcessTitle: "กระบวนการคิดเชิงวิเคราะห์ (Thought Process)",
+                step1Title: "วิเคราะห์โจทย์ (Analyze):",
+                step2Title: "จินตนาการภาพ (Visualize):",
+                step3Title: "เลือกวิธีแก้ (Select Strategy):",
+                step4Title: "ตรวจสอบคำตอบ (Verify):",
+                quizHeader: "แบบทดสอบวัดผลคณิตศาสตร์ (15 ข้อ)",
+                quizSub: "เลือกคำตอบที่ถูกต้องที่สุด ระบบจะตรวจคำตอบและแสดงคำอธิบายทันที",
+                scoreLabel: "คะแนน",
+                selectQuestionPrompt: "เลือกข้อสอบ:",
+                prevBtn: "ข้อก่อนหน้า",
+                nextBtn: "ข้อถัดไป",
+                evalTitle: "สรุปผลการประเมินความรู้",
+                evalSub: "ผลลัพธ์การทดสอบวิชาคณิตศาสตร์ ระดับอนุบาล 3",
+                finalScoreText: "คะแนนรวมที่คุณทำได้",
+                strengthsTitle: "จุดเด่น (Strengths)",
+                improvementsTitle: "จุดที่ควรพัฒนา (Areas for Improvement)",
+                retakeBtn: "ทำแบบทดสอบใหม่อีกครั้ง",
+                whiteboardTitle: "กระดานทดเลข",
+                whiteboardDesc: "ใช้สำหรับทดเลข วาดรูป หรือฝึกเขียนตัวเลขระหว่างทำข้อสอบ",
+                clearBtn: "ล้างกระดาน",
+                drawTip: "ลากเมาส์หรือใช้นิ้ววาดบนกระดาน",
+                hintLabel: "💡 คำใบ้ (Clue): ",
+                rationaleLabel: "📝 คำอธิบาย: "
+            },
+            en: {
+                langText: "ไทย / English",
+                resetBtn: "Reset All",
+                toolTitle: "Virtual Teaching Tool: Fruit Counter & Shape Explorer",
+                toolDesc: "Click to add fruits or select shapes to practice counting, comparison, and basic geometry for kids.",
+                fruitBoxTitle: "Fruit Basket Calculator",
+                fruitBoxDesc: "Press buttons to add or remove apples in the basket and watch the numbers.",
+                totalCount: "Total Count",
+                shapeBoxTitle: "Explore Geometric Shapes",
+                shapeBoxDesc: "Click shape buttons below to view descriptions and everyday examples.",
+                summaryTitle: "Kindergarten 3 Math Summary & Memory Tricks",
+                summaryP1: "Kindergarten 3 Mathematics is a crucial stage for foundational math skills before primary school. It covers 5 core areas: <strong>(1) Counting 1 to 50 & Thai-Arabic numerals</strong>, <strong>(2) Addition & Subtraction within 20</strong>, <strong>(3) Comparison (Size, Length, Weight)</strong>, <strong>(4) 2D & 3D Basic Shapes</strong>, and <strong>(5) Simple Pictographs & Time of Day</strong>.",
+                summaryP2: "Critical thinking at this age emphasizes 'Concrete to Abstract' learning. Students practice counting real objects, comparing lengths, and solving scenario-based problems like sharing snacks or recognizing visual patterns, fostering long-term logical reasoning and confidence.",
+                memoryTricksTitle: "Memory Tricks",
+                trick1Title: "Finger & Object Pointing:",
+                trick2Title: "Addition is Combining:",
+                trick3Title: "Subtraction is Taking Away:",
+                trick4Title: "Repeating Patterns:",
+                thoughtProcessTitle: "Thought Process",
+                step1Title: "Analyze:",
+                step2Title: "Visualize:",
+                step3Title: "Select Strategy:",
+                step4Title: "Verify:",
+                quizHeader: "Mathematics Assessment (15 Questions)",
+                quizSub: "Select the best answer. The system will instantly check and explain.",
+                scoreLabel: "Score",
+                selectQuestionPrompt: "Select Question:",
+                prevBtn: "Previous",
+                nextBtn: "Next",
+                evalTitle: "Assessment Summary & Analysis",
+                evalSub: "Kindergarten 3 Mathematics Test Result",
+                finalScoreText: "Your Total Score",
+                strengthsTitle: "Strengths",
+                improvementsTitle: "Areas for Improvement",
+                retakeBtn: "Retake Quiz",
+                whiteboardTitle: "Scratchpad Whiteboard",
+                whiteboardDesc: "Use for calculations, drawing, or digit practice during the quiz.",
+                clearBtn: "Clear",
+                drawTip: "Drag mouse or touch to draw",
+                hintLabel: "💡 Hint (Clue): ",
+                rationaleLabel: "📝 Rationale: "
+            }
+        };
+
+        // Fisher-Yates Shuffle Algorithm for Options and Questions
+        function shuffleArray(array) {
+            let arr = [...array];
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        function initQuiz() {
+            // Deep clone and shuffle options for each question using Fisher-Yates
+            randomizedQuestions = rawQuizData.map(q => {
+                let clonedOptions = q.answerOptions.map(opt => ({ ...opt }));
+                return {
+                    ...q,
+                    answerOptions: shuffleArray(clonedOptions)
+                };
+            });
+            // Also shuffle question order optionally or keep sequence, keeping sequential for ease of nav while options randomized
+            userAnswers = new Array(rawQuizData.length).fill(null);
+            currentQuestionIndex = 0;
+            renderAll();
+        }
+
+        function renderAll() {
+            renderFruitBasket();
+            renderQuestionNav();
+            renderCurrentQuestion();
+            updateScoreDisplay();
+            updateLanguageUI();
+        }
+
+        // Virtual Tool: Fruit Counter
+        function renderFruitBasket() {
+            const container = document.getElementById('fruitBasket');
+            container.innerHTML = '';
+            for (let i = 0; i < fruitCount; i++) {
+                const span = document.createElement('span');
+                span.className = 'text-2xl animate-bounce';
+                span.innerText = '🍎';
+                container.appendChild(span);
+            }
+            document.getElementById('fruitCountNum').innerText = fruitCount;
+        }
+
+        function modifyFruit(change) {
+            fruitCount += change;
+            if (fruitCount < 1) fruitCount = 1;
+            if (fruitCount > 20) fruitCount = 20;
+            renderFruitBasket();
+        }
+
+        // Virtual Tool: Shape Explorer
+        const shapeData = {
+            circle: { icon: '🔴', name: 'วงกลม (Circle)', desc: 'ไม่มีมุม กลมรีสมบูรณ์ เช่น ลูกบอล เหรียญ จานอาหาร' },
+            square: { icon: '🟦', name: 'สี่เหลี่ยมจัตุรัส (Square)', desc: 'มี 4 ด้านเท่ากัน และมี 4 มุมฉาก เช่น กล่องของขวัญ หน้าต่าง' },
+            triangle: { icon: '🔺', name: 'สามเหลี่ยม (Triangle)', desc: 'มี 3 ด้านและ 3 มุม เช่น แซนด์วิชตัดแบ่ง ป้ายจราจรเตือนภัย' },
+            star: { icon: '⭐', name: 'รูปดาว (Star)', desc: 'มีแฉกแหลมยื่นออกมา 5 แฉก เช่น ดาวบนท้องฟ้า สติ๊กเกอร์ให้รางวัล' }
+        };
+
+        function selectShape(type) {
+            const data = shapeData[type];
+            document.getElementById('shapeIcon').innerText = data.icon;
+            document.getElementById('shapeName').innerText = data.name;
+            document.getElementById('shapeDesc').innerText = data.desc;
+        }
+
+        // Question Nav Grid
+        function renderQuestionNav() {
+            const grid = document.getElementById('questionNavGrid');
+            grid.innerHTML = '';
+            randomizedQuestions.forEach((q, idx) => {
+                const btn = document.createElement('button');
+                let bgClass = 'bg-gray-100 text-gray-700 hover:bg-gray-200';
+                if (userAnswers[idx] !== null) {
+                    const selectedOpt = randomizedQuestions[idx].answerOptions[userAnswers[idx]];
+                    bgClass = selectedOpt.isCorrect ? 'bg-emerald-500 text-white shadow' : 'bg-rose-500 text-white shadow';
+                }
+                if (idx === currentQuestionIndex) {
+                    bgClass += ' ring-2 ring-indigo-600 ring-offset-2';
+                }
+                btn.className = `w-9 h-9 rounded-xl font-bold text-sm flex items-center justify-center transition ${bgClass}`;
+                btn.innerText = idx + 1;
+                btn.onclick = () => goToQuestion(idx);
+                grid.appendChild(btn);
+            });
+        }
+
+        // Render Current Question
+        function renderCurrentQuestion() {
+            const container = document.getElementById('questionContainer');
+            const q = randomizedQuestions[currentQuestionIndex];
+            const userAnswer = userAnswers[currentQuestionIndex];
+
+            let html = `
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full">ข้อที่ ${currentQuestionIndex + 1} จาก ${randomizedQuestions.length}</span>
+                    </div>
+                    <h3 class="text-lg md:text-xl font-bold text-gray-900 leading-snug">${q.question}</h3>
+                    
+                    <!-- Hint Box -->
+                    <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 text-xs text-amber-800 flex items-start gap-2">
+                        <span>${currentLang === 'th' ? translations.th.hintLabel : translations.en.hintLabel}</span>
+                        <span>${q.hint}</span>
+                    </div>
+
+                    <!-- Options Grid -->
+                    <div class="grid grid-cols-1 gap-3 pt-2">
+            `;
+
+            q.answerOptions.forEach((opt, optIdx) => {
+                let optionStyle = "bg-gray-50 border-gray-200 hover:bg-indigo-50/50 hover:border-indigo-200 text-gray-800";
+                let badgeChar = String.fromCharCode(65 + optIdx); // A, B, C, D
+
+                if (userAnswer !== null) {
+                    if (opt.isCorrect) {
+                        optionStyle = "bg-emerald-100 border-emerald-500 text-emerald-900 font-semibold";
+                    } else if (userAnswer === optIdx) {
+                        optionStyle = "bg-rose-100 border-rose-500 text-rose-900";
+                    } else {
+                        optionStyle = "bg-gray-50 border-gray-200 opacity-60 text-gray-500";
+                    }
+                }
+
+                html += `
+                    <button onclick="selectAnswer(${currentQuestionIndex}, ${optIdx})" 
+                        class="w-full text-left p-4 rounded-2xl border-2 transition flex items-start gap-3 ${optionStyle}"
+                        ${userAnswer !== null ? 'disabled' : ''}>
+                        <span class="w-7 h-7 rounded-xl bg-white shadow-sm border border-gray-200 flex items-center justify-center font-bold text-xs shrink-0 text-indigo-600">${badgeChar}</span>
+                        <div class="flex-1">
+                            <div class="text-sm md:text-base">${opt.text}</div>
+                            ${userAnswer !== null ? `<div class="mt-2 text-xs font-normal pt-2 border-t border-gray-200/50 ${opt.isCorrect ? 'text-emerald-700' : 'text-gray-600'}"><strong>${currentLang === 'th' ? translations.th.rationaleLabel : translations.en.rationaleLabel}</strong>${opt.rationale}</div>` : ''}
+                        </div>
+                    </button>
+                `;
+            });
+
+            html += `</div></div>`;
+            container.innerHTML = html;
+
+            // Navigation Buttons State
+            document.getElementById('prevBtn').disabled = currentQuestionIndex === 0;
+            document.getElementById('prevBtn').style.opacity = currentQuestionIndex === 0 ? '0.5' : '1';
+        }
+
+        function selectAnswer(qIdx, optIdx) {
+            if (userAnswers[qIdx] !== null) return; // already answered
+            userAnswers[qIdx] = optIdx;
+            renderCurrentQuestion();
+            renderQuestionNav();
+            updateScoreDisplay();
+
+            // Check if all answered to show final evaluation
+            if (userAnswers.every(ans => ans !== null)) {
+                setTimeout(showEvaluationResults, 500);
+            }
+        }
+
+        function goToQuestion(idx) {
+            currentQuestionIndex = idx;
+            renderCurrentQuestion();
+            renderQuestionNav();
+        }
+
+        function nextQuestion() {
+            if (currentQuestionIndex < randomizedQuestions.length - 1) {
+                currentQuestionIndex++;
+                renderCurrentQuestion();
+                renderQuestionNav();
+            } else {
+                showEvaluationResults();
+            }
+        }
+
+        function prevQuestion() {
+            if (currentQuestionIndex > 0) {
+                currentQuestionIndex--;
+                renderCurrentQuestion();
+                renderQuestionNav();
+            }
+        }
+
+        function calculateScore() {
+            let score = 0;
+            userAnswers.forEach((ans, idx) => {
+                if (ans !== null && randomizedQuestions[idx].answerOptions[ans].isCorrect) {
+                    score++;
+                }
+            });
+            return score;
+        }
+
+        function updateScoreDisplay() {
+            document.getElementById('currentScore').innerText = calculateScore();
+        }
+
+        // Evaluation & Analysis Result Display
+        function showEvaluationResults() {
+            const score = calculateScore();
+            const percentage = Math.round((score / 15) * 100);
+            
+            document.getElementById('finalScoreNum').innerText = score;
+            document.getElementById('finalPercentageText').innerText = currentLang === 'th' ? `คิดเป็น ${percentage}%` : `Score percentage: ${percentage}%`;
+
+            let strengths = "";
+            let improvements = "";
+
+            if (percentage >= 80) {
+                strengths = currentLang === 'th' ? 
+                    "มีความโดดเด่นอย่างยิ่งในการนับจำนวน การบวก-ลบเบื้องต้น และจดจำรูปทรงเรขาคณิตได้อย่างแม่นยำ พร้อมก้าวสู่ระดับประถมศึกษาปีที่ 1 อย่างมั่นใจ" :
+                    "Exceptional proficiency in counting, basic arithmetic, and geometry. Fully prepared for Primary 1 math concepts.";
+                improvements = currentLang === 'th' ? 
+                    "ควรฝึกฝนโจทย์ปัญหาที่มีความซับซ้อนหลายขั้นตอนเพิ่มเติมเพื่อลับคมกระบวนการคิดวิเคราะห์" :
+                    "Practice multi-step word problems to further sharpen analytical reasoning.";
+            } else if (percentage >= 50) {
+                strengths = currentLang === 'th' ? 
+                    "มีความเข้าใจในหลักการนับเบื้องต้นและรูปทรงพื้นฐานดีเยี่ยม สามารถแก้โจทย์การบวก-ลบง่ายๆ ได้" :
+                    "Good understanding of fundamental counting and basic shapes, capable of simple addition and subtraction.";
+                improvements = currentLang === 'th' ? 
+                    "ควรทบทวนเนื้อหาการบอกเวลาและโจทย์ปัญหาการเปรียบเทียบน้ำหนักและความยาวเพิ่มเติม" :
+                    "Review time-telling and comparison word problems involving weight and length.";
+            } else {
+                strengths = currentLang === 'th' ? 
+                    "มีความพยายามในการเรียนรู้และทำความเข้าใจเครื่องมือสื่อการสอนพื้นฐาน" :
+                    "Demonstrated effort in engaging with foundational learning tools.";
+                improvements = currentLang === 'th' ? 
+                    "ควรทบทวนสรุปเนื้อหาและฝึกนับวัตถุจริงร่วมกับผู้ปกครองหรือครูผู้สอนซ้ำอีกครั้ง" :
+                    "Recommended to review the summary section and practice object counting with guidance.";
+            }
+
+            document.getElementById('strengthsText').innerText = strengths;
+            document.getElementById('improvementsText').innerText = improvements;
+
+            const resultsCard = document.getElementById('resultsCard');
+            resultsCard.classList.remove('hidden');
+            resultsCard.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function resetApp() {
+            document.getElementById('resultsCard').classList.add('hidden');
+            initQuiz();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Language Toggle
+        function toggleLanguage() {
+            currentLang = currentLang === 'th' ? 'en' : 'th';
+            updateLanguageUI();
+            renderCurrentQuestion();
+        }
+
+        function updateLanguageUI() {
+            const t = translations[currentLang];
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (t[key]) {
+                    el.innerHTML = t[key];
+                }
+            });
+            document.getElementById('langText').innerText = t.langText;
+        }
+
+        // Whiteboard Functionality
+        const canvas = document.getElementById('whiteboardCanvas');
+        const ctx = canvas.getContext('2d');
+        let isDrawing = false;
+        let penColor = '#4f46e5';
+
+        function resizeCanvas() {
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width;
+            canvas.height = rect.height;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            ctx.lineWidth = 3;
+            ctx.strokeStyle = penColor;
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+        window.addEventListener('load', () => {
+            resizeCanvas();
+            initQuiz();
+        });
+
+        function setPenColor(color) {
+            penColor = color;
+            ctx.strokeStyle = penColor;
+        }
+
+        function clearWhiteboard() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        // Pointer Events for Whiteboard
+        canvas.addEventListener('pointerdown', (e) => {
+            isDrawing = true;
+            ctx.beginPath();
+            ctx.moveTo(e.offsetX, e.offsetY);
+        });
+
+        canvas.addEventListener('pointermove', (e) => {
+            if (!isDrawing) return;
+            ctx.lineTo(e.offsetX, e.offsetY);
+            ctx.stroke();
+        });
+
+        canvas.addEventListener('pointerup', () => {
+            isDrawing = false;
+            ctx.closePath();
+        });
+
+        canvas.addEventListener('pointerleave', () => {
+            isDrawing = false;
+            ctx.closePath();
+        });
+    </script>
+</body>
+</html
+
+เขียนโดย พระจอมเกล้าติวเตอร์
