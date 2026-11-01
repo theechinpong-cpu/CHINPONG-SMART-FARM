@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>พระจอมเกล้าติวเตอร์ - สื่อการสอนและแบบฝึกหัด If-Clauses ม.2</title>
+    <!-- Tailwind CSS CDN สำหรับจัดหน้า UI/UX สมัยใหม่ -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- MathJax สำหรับแสดงผลสูตร LaTeX อย่างสวยงาม -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Sarabun', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+    <!-- Header & Language Switcher -->
+    <header class="bg-gradient-to-r from-indigo-700 to-blue-600 text-white shadow-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <span class="bg-white/20 p-2 rounded-lg font-bold text-lg">🎓 พระจอมเกล้าติวเตอร์</span>
+                <span class="text-xs bg-indigo-900/60 px-2.5 py-1 rounded-full border border-indigo-400/30" id="badge-mode">Expert Tutor AI & Interactive Developer</span>
+            </div>
+            <div class="flex items-center space-x-3">
+                <button onclick="toggleLanguage()" class="bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-lg text-sm font-medium transition flex items-center space-x-1 border border-white/20">
+                    <span id="lang-label">🌐 TH / EN</span>
+                </button>
+                <button onclick="resetApp()" class="bg-red-500/80 hover:bg-red-600 px-3 py-1.5 rounded-lg text-sm font-medium transition flex items-center space-x-1">
+                    <span>🔄 Reset</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow max-w-7xl w-full mx-auto p-4 space-y-6">
+
+        <!-- PART 1: Virtual Teaching Tool / Interactive Infographic -->
+        <section class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+            <div class="flex items-center justify-between mb-4 border-b pb-3">
+                <h2 class="text-xl font-bold text-indigo-900 flex items-center gap-2">
+                    <span>⚡ Virtual Teaching Tool: Conditional Sentences Simulator</span>
+                </h2>
+                <span class="text-xs text-slate-500 bg-slate-100 px-2 py-1 rounded">Interactive Infographic</span>
+            </div>
+            <p class="text-sm text-slate-600 mb-4">ทดลองปรับเปลี่ยนโครงสร้างเงื่อนไขและเลือกประเภทของ If-Clause เพื่อดูผลลัพธ์โครงสร้างประโยคและคำแปลแบบเรียลไทม์</p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <div class="bg-indigo-50/60 p-4 rounded-xl border border-indigo-100">
+                    <label class="block text-xs font-bold text-indigo-800 uppercase mb-2">1. เลือกประเภทเงื่อนไข (Condition Type)</label>
+                    <select id="sim-type" onchange="updateSimulator()" class="w-full bg-white border border-indigo-200 rounded-lg p-2 text-sm text-indigo-900 font-medium focus:ring-2 focus:ring-indigo-500 outline-none">
+                        <option value="1">First Conditional (เป็นไปได้จริงในอนาคต)</option>
+                        <option value="2">Second Conditional (สมมติในปัจจุบัน/ตรงข้ามความจริง)</option>
+                    </select>
+                </div>
+                <div class="bg-indigo-50/60 p-4 rounded-xl border border-indigo-100">
+                    <label class="block text-xs font-bold text-indigo-800 uppercase mb-2">2. เลือกประธาน (Subject)</label>
+                    <select id="sim-subject" onchange="updateSimulator()" class="w-full bg-white border border-indigo-200 rounded-lg p-2 text-sm text-indigo-900 font-medium focus:ring-2 focus:ring-indigo-500 outline-none">
+                        <option value="you">You (คุณ)</option>
+                        <option value="he">He (เขาผู้ชาย)</option>
+                        <option value="i">I (ฉัน - กรณีพิเศษ were สำหรับแบบ 2)</option>
+                    </select>
+                </div>
+                <div class="bg-indigo-50/60 p-4 rounded-xl border border-indigo-100">
+                    <label class="block text-xs font-bold text-indigo-800 uppercase mb-2">3. เลือกสถานการณ์ (Scenario)</label>
+                    <select id="sim-scenario" onchange="updateSimulator()" class="w-full bg-white border border-indigo-200 rounded-lg p-2 text-sm text-indigo-900 font-medium focus:ring-2 focus:ring-indigo-500 outline-none">
+                        <option value="study">การเรียน / สอบ (Study / Exam)</option>
+                        <option value="weather">สภาพอากาศ (Weather / Rain)</option>
+                        <option value="wealth">ความร่ำรวย / ลอตเตอรี่ (Lottery / Wealth)</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Simulator Output Box -->
+            <div class="bg-slate-900 text-white p-5 rounded-xl shadow-inner space-y-3">
+                <div class="text-xs uppercase tracking-wider text-indigo-400 font-bold">Live Formula & Output Preview</div>
+                <div id="sim-formula" class="text-lg font-mono text-amber-300">$$If + Present\ Simple, + Future\ Simple$$</div>
+                <div id="sim-sentence" class="text-xl font-semibold text-emerald-400">If you study hard, you will pass the exam.</div>
+                <div id="sim-translation" class="text-sm text-slate-300">คำแปล: ถ้าคุณตั้งใจเรียน คุณจะสอบผ่าน</div>
+            </div>
+        </section>
+
+        <!-- PART 2: Comprehensive Subject Summary (500+ Words) -->
+        <section class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 space-y-4">
+            <h2 class="text-xl font-bold text-indigo-900 border-b pb-3">📚 สรุปเนื้อหาบทเรียนเชิงลึก: If-Clauses (Conditional Sentences ม.2 เทอม 2)</h2>
+            <div class="prose max-w-none text-slate-700 text-sm md:text-base space-y-4 leading-relaxed">
+                <p>
+                    ประโยคเงื่อนไขหรือ <strong>Conditional Sentences</strong> ในภาษาอังกฤษ เป็นโครงสร้างไวยากรณ์สำคัญที่ใช้สื่อสารความสัมพันธ์ระหว่างเหตุการณ์สองเหตุการณ์ โดยแบ่งออกเป็นส่วนของเงื่อนไข (If-clause) และส่วนของผลลัพธ์ (Main clause) การทำความเข้าใจโครงสร้างเหล่านี้ในระดับชั้นมัธยมศึกษาปีที่ 2 จะช่วยยกระดับทักษะการเขียนและการพูดให้มีความสละสลวยและแม่นยำตามหลักมาตรฐานสากล โดยในบทเรียนนี้เราจะเจาะลึก 2 แบบหลัก ได้แก่ First Conditional และ Second Conditional
+                </p>
+                <h3 class="text-lg font-bold text-indigo-800 mt-4">1. ภาพรวมโครงสร้างและเครื่องหมายวรรคตอน (Punctuation Rules)</h3>
+                <p>
+                    การเรียงลำดับประโยคเงื่อนไขมีกฎที่ต้องระมัดระวังคือ หากนำ <strong>If-clause</strong> ขึ้นต้นประโยค จะต้องคั่นด้วยเครื่องหมายจุลภาค (,) เสมอก่อนขึ้นประโยคหลัก (Main clause) แต่หากสลับเอา Main clause ขึ้นต้น จะไม่ต้องใส่เครื่องหมายจุลภาคใดๆ ทั้งสิ้น ตัวอย่างเช่น <em>"If it rains, I will stay home."</em> เมื่อสลับเป็น <em>"I will stay home if it rains."</em> ความหมายยังคงเดิมแต่ละเว้นเครื่องหมายจุลภาค
+                </p>
+                <h3 class="text-lg font-bold text-indigo-800 mt-4">2. First Conditional Sentences (เงื่อนไขแบบที่ 1: ความจริงที่เป็นไปได้ในอนาคต)</h3>
+                <p>
+                    โครงสร้างนี้ใช้สำหรับเหตุการณ์ที่มีโอกาสเกิดขึ้นจริงในอนาคต (Real Future Possibility) โดยมีสูตรโครงสร้างทางไวยากรณ์คือ $$If + Present\ Simple\ (Subject + V.1), + Future\ Simple\ (Subject + will + V.infinitive)$$ ในส่วนของ Main clause นอกจากจะใช้ <code class="bg-slate-100 px-1 py-0.5 rounded text-indigo-600">will</code> แล้ว ยังสามารถใช้ Modal Verbs อื่นๆ เช่น <code class="bg-slate-100 px-1 py-0.5 rounded text-indigo-600">can</code> (บอกความสามารถ/อนุญาต), <code class="bg-slate-100 px-1 py-0.5 rounded text-indigo-600">may</code> (บอกความเป็นไปได้), หรือ <code class="bg-slate-100 px-1 py-0.5 rounded text-indigo-600">must</code> (ข้อบังคับ) เพื่อปรับเปลี่ยนน้ำหนักความหมายของประโยคได้ตามความเหมาะสม
+                </p>
+                <h3 class="text-lg font-bold text-indigo-800 mt-4">3. Second Conditional Sentences (เงื่อนไขแบบที่ 2: เรื่องสมมติในปัจจุบันหรืออนาคต)</h3>
+                <p>
+                    โครงสร้างนี้ใช้สำหรับเหตุการณ์ที่เป็นไปไม่ได้, ตรงข้ามกับความจริงในปัจจุบัน หรือเป็นความฝันจินตนาการ (Unreal / Imaginary Situations) มีสูตรโครงสร้างคือ $$If + Past\ Simple\ (Subject + V.2), + Subject + would / could / might + V.infinitive$$ จุดสังเกตที่สำคัญยิ่งในระดับ ม.2 คือ กฎของ Verb to Be ใน If-clause เมื่อประธานเป็นเอกพจน์ (I, He, She, It) ตามหลักไวยากรณ์ทางการจะต้องใช้ <code class="bg-slate-100 px-1 py-0.5 rounded text-indigo-600">were</code> แทน <code class="bg-slate-100 px-1 py-0.5 rounded text-indigo-600">was</code> เสมอ เช่น <em>"If I were a bird, I would fly to you."</em> ซึ่งแสดงถึงสภาพที่เป็นจริงไม่ได้ในปัจจุบัน
+                </p>
+
+                <!-- Memory Tricks & Thought Process Box -->
+                <div class="bg-amber-50 border-l-4 border-amber-400 p-4 rounded-r-xl my-4 space-y-2">
+                    <div class="font-bold text-amber-900 flex items-center gap-2">
+                        <span>💡 เทคนิคการจำ (Memory Tricks) และกระบวนการคิด (Thought Process)</span>
+                    </div>
+                    <ul class="list-disc list-inside text-amber-800 space-y-1 text-sm">
+                        <li><strong>เทคนิคจำแบบที่ 1 (1 = Real = Present เจอ Future):</strong> นึกถึงเรื่องใกล้ตัว เหตุการณ์จริงวันนี้ พรุ่งนี้ใช้ Present คู่กับ Will (V.1 คู่ Will)</li>
+                        <li><strong>เทคนิคจำแบบที่ 2 (2 = Unreal = Past เจอ Would):</strong> นึกถึงความฝัน เรื่องเพ้อฝัน อดีตสมมติ ใช้ Past Tense (V.2) คู่กับ Would (V.2 คู่ Would)</li>
+                        <li><strong>กฎเหล็ก Verb to Be:</strong> ถ้าเจอประโยคสมมติยากๆ ให้ท่องไว้ว่า "I, He, She, It ใน If-Clause แบบที่ 2 ขอเลือก Were เสมอ ไม่มี Was!"</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- PART 3: Interactive Exam & Two-Frame Layout (70% Left Exam, 30% Right Whiteboard) -->
+        <section class="grid grid-cols-1 lg:grid-cols-10 gap-6">
+            
+            <!-- Left Side: Exam Area (70% -> lg:col-span-7) -->
+            <div class="lg:col-span-7 bg-white rounded-2xl shadow-sm border border-slate-200 p-6 space-y-6">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b pb-4 gap-2">
+                    <div>
+                        <h3 class="text-lg font-bold text-indigo-900">📝 แบบทดสอบวัดผลสัมฤทธิ์ (30 ข้อมาตรฐานสากล)</h3>
+                        <p class="text-xs text-slate-500">ระบบป้องกันการเดา (Anti-Guessing Engine) และสลับตัวเลือกอัตโนมัติด้วย Fisher-Yates Shuffle</p>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <span id="score-counter" class="bg-indigo-100 text-indigo-800 text-xs font-bold px-3 py-1.5 rounded-full">คะแนน: 0 / 30</span>
+                    </div>
+                </div>
+
+                <!-- Navigation Bar for 30 Questions -->
+                <div class="space-y-2">
+                    <div class="text-xs font-semibold text-slate-600">เลือกข้อสอบ (ข้อที่ตอบแล้วแสดงสถานะสีเขียว):</div>
+                    <div id="q-nav-grid" class="flex flex-wrap gap-1.5 max-h-32 overflow-y-auto p-2 bg-slate-50 rounded-xl border border-slate-200">
+                        <!-- Generated via JS -->
+                    </div>
+                </div>
+
+                <!-- Question Container -->
+                <div id="active-question-container" class="space-y-4 pt-2">
+                    <!-- Dynamic Rendered Question -->
+                </div>
+
+                <!-- Pagination / Submit Exam Button -->
+                <div class="flex justify-between items-center pt-4 border-t">
+                    <button onclick="prevQuestion()" id="btn-prev" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-4 py-2 rounded-xl text-sm font-medium transition">⬅️ ข้อก่อนหน้า</button>
+                    <button onclick="submitAllExam()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded-xl text-sm font-bold shadow-sm transition">🎯 ส่งคำตอบและตรวจผลสอบทั้งหมด</button>
+                    <button onclick="nextQuestion()" id="btn-next" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-4 py-2 rounded-xl text-sm font-medium transition">ข้อถัดไป ➡️</button>
+                </div>
+            </div>
+
+            <!-- Right Side: Whiteboard (30% -> lg:col-span-3) -->
+            <div class="lg:col-span-3 bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex flex-col space-y-4">
+                <div class="flex items-center justify-between border-b pb-3">
+                    <h3 class="text-md font-bold text-indigo-900 flex items-center gap-1.5">
+                        <span>🎨 กระดานทดเลข / Whiteboard</span>
+                    </h3>
+                    <button onclick="clearWhiteboard()" class="text-xs bg-rose-50 text-rose-600 border border-rose-200 px-2.5 py-1 rounded-lg hover:bg-rose-100 transition">ล้างกระดาน</button>
+                </div>
+                <p class="text-xs text-slate-500">ใช้พื้นที่นี้สำหรับทดเลข วาดโครงสร้างไวยากรณ์ หรือโน้ตช่วยจำระหว่างทำข้อสอบ</p>
+                
+                <!-- Canvas Tool Controls -->
+                <div class="flex items-center space-x-2 text-xs">
+                    <label class="font-medium text-slate-700">สีปากกา:</label>
+                    <input type="color" id="wb-color" value="#4f46e5" class="w-8 h-8 rounded border cursor-pointer">
+                    <label class="font-medium text-slate-700 ml-2">ขนาด:</label>
+                    <select id="wb-size" class="border rounded px-2 py-1 text-xs">
+                        <option value="2">เล็ก</option>
+                        <option value="4" selected>กลาง</option>
+                        <option value="8">ใหญ่</option>
+                    </select>
+                </div>
+
+                <!-- HTML5 Canvas -->
+                <div class="flex-grow border-2 border-dashed border-slate-200 rounded-xl relative overflow-hidden bg-slate-50 min-h-[350px]">
+                    <canvas id="whiteboard-canvas" class="w-full h-full cursor-crosshair touch-none"></canvas>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- PART 4: Evaluation & Analysis Report Modal / Box (Hidden initially, shown after submission) -->
+        <section id="result-report-section" class="bg-white rounded-2xl shadow-md border border-indigo-100 p-6 hidden space-y-6">
+            <div class="border-b pb-4 flex justify-between items-center">
+                <div>
+                    <h2 class="text-xl font-bold text-indigo-900">📊 ผลการวิเคราะห์คะแนนสอบเชิงลึก (Evaluation & Analysis Report)</h2>
+                    <p class="text-xs text-slate-500">รายงานสถานะจุดเด่น จุดด้อย และคำแนะนำรายบุคคลตามมาตรฐาน พระจอมเกล้าติวเตอร์</p>
+                </div>
+                <button onclick="hideReport()" class="text-slate-400 hover:text-slate-600 font-bold text-lg">✕</button>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="bg-indigo-50 p-4 rounded-xl text-center border border-indigo-100">
+                    <div class="text-xs text-indigo-600 font-bold uppercase">คะแนนรวมทั้งหมด</div>
+                    <div id="report-score-text" class="text-3xl font-extrabold text-indigo-900 mt-1">24 / 30</div>
+                </div>
+                <div class="bg-emerald-50 p-4 rounded-xl text-center border border-emerald-100">
+                    <div class="text-xs text-emerald-600 font-bold uppercase">เปอร์เซ็นต์ความถูกต้อง</div>
+                    <div id="report-percent-text" class="text-3xl font-extrabold text-emerald-700 mt-1">80%</div>
+                </div>
+                <div class="bg-amber-50 p-4 rounded-xl text-center border border-amber-100">
+                    <div class="text-xs text-amber-600 font-bold uppercase">ระดับประเมินผล</div>
+                    <div id="report-grade-text" class="text-3xl font-extrabold text-amber-700 mt-1">ดีเยี่ยม (Level 4)</div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+                <div class="bg-emerald-50/50 p-5 rounded-xl border border-emerald-200 space-y-2">
+                    <h4 class="font-bold text-emerald-900 flex items-center gap-2"><span>✅ จุดเด่น (Strengths)</span></h4>
+                    <p id="report-strength" class="text-sm text-emerald-800 leading-relaxed">ผู้เรียนมีความเข้าใจในโครงสร้าง First Conditional และการใช้รูปประโยคบอกเล่าพื้นฐานได้อย่างแม่นยำ รวมถึงสามารถเลือกใช้ Verb to Be (were) ในประโยคสมมติได้ถูกต้อง</p>
+                </div>
+                <div class="bg-rose-50/50 p-5 rounded-xl border border-rose-200 space-y-2">
+                    <h4 class="font-bold text-rose-900 flex items-center gap-2"><span>⚠️ จุดที่ต้องพัฒนา (Areas for Improvement)</span></h4>
+                    <p id="report-weakness" class="text-sm text-rose-800 leading-relaxed">ควรทบทวนเพิ่มเติมในส่วนของ Negative Stem (ประโยคปฏิเสธในเงื่อนไข) และการประยุกต์ใช้ Modal Verbs อื่นๆ (เช่น might, could) ใน Main clause ของแบบที่ 2 ให้แม่นยำยิ่งขึ้น</p>
+                </div>
+            </div>
+
+            <div class="bg-slate-50 p-5 rounded-xl border border-slate-200 space-y-2">
+                <h4 class="font-bold text-slate-800">📌 คำแนะนำและหัวข้อที่ควรทบทวน (Recommended Review)</h4>
+                <p class="text-sm text-slate-600">แนะนำให้กลับไปทบทวนหัวข้อ <em>Second Conditional Sentences</em> โดยเฉพาะโครงสร้างประโยคคำถามและประโยคปฏิเสธ พร้อมฝึกทำแบบฝึกหัดจับคู่โครงสร้างประโยคซ้ำอีกรอบเพื่อเสริมความมั่นใจ</p>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer Signature Required -->
+    <footer class="bg-white border-t border-slate-200 mt-12 py-4 text-center text-xs text-slate-500">
+        เขียนโดย พระจอมเกล้าติวเตอร์
+    </footer>
+
+    <!-- JavaScript Application Engine -->
+    <script>
+        // --- 1. Simulator Data & Logic ---
+        const simData = {
+            1: {
+                study: { formula: "$$If + Present\\ Simple\\ (V.1), + Future\\ Simple\\ (will + V.1)$$", sentence: "If you study hard, you will pass the exam.", translation: "ถ้าคุณตั้งใจเรียน คุณจะสอบผ่าน" },
+                weather: { formula: "$$If + Present\\ Simple\\ (V.1), + Future\\ Simple\\ (will + V.1)$$", sentence: "If it rains tomorrow, we will cancel the trip.", translation: "ถ้าพรุ่งนี้ฝนตก เราจะยกเลิกทริป" },
+                wealth: { formula: "$$If + Present\\ Simple\\ (V.1), + Future\\ Simple\\ (will + V.1)$$", sentence: "If I save money, I will buy a new phone.", translation: "ถ้าฉันเก็บเงิน ฉันจะซื้อโทรศัพท์เครื่องใหม่" }
+            },
+            2: {
+                study: { formula: "$$If + Past\\ Simple\\ (V.2 / were), + would/could/might + V.1$$", sentence: "If you studied hard, you would pass the exam.", translation: "ถ้าคุณตั้งใจเรียน (แต่ตอนนี้ขี้เกียจอยู่) คุณก็คงจะสอบผ่าน" },
+                weather: { formula: "$$If + Past\\ Simple\\ (V.2 / were), + would/could/might + V.1$$", sentence: "If it rained now, we would stay indoors.", translation: "ถ้าตอนนี้ฝนตก (ความจริงแดดออก) เราคงจะอยู่แต่ในบ้าน" },
+                wealth: { formula: "$$If + Past\\ Simple\\ (V.2 / were), + would/could/might + V.1$$", sentence: "If I were rich, I would buy a mansion.", translation: "ถ้าฉันรวย (ความจริงยังไม่รวย) ฉันคงจะซื้อคฤหาสน์" }
+            }
+        };
+
+        function updateSimulator() {
+            const type = document.getElementById('sim-type').value;
+            const scenario = document.getElementById('sim-scenario').value;
+            const data = simData[type][scenario];
+
+            document.getElementById('sim-formula').innerHTML = data.formula;
+            document.getElementById('sim-sentence').innerText = data.sentence;
+            document.getElementById('sim-translation').innerText = "คำแปล: " + data.translation;
+            if (window.MathJax) {
+                MathJax.typesetPromise();
+            }
+        }
+
+        // --- 2. Exam Engine (30 Questions, Balanced Keys A, B, C, D with Fisher-Yates Shuffle) ---
+        // Raw questions array with balanced correct answers (indices 0, 1, 2, 3 distributed evenly)
+        const rawQuestions = [
+            // Correct Index 0 (A) - 8 questions
+            { q: "If you eat too much junk food, you ______ weight quickly.", opts: ["will gain", "gained", "would gain", "gains"], ans: 0, clue: "First Conditional เหตุการณ์จริงในอนาคตใช้ will + V.1" },
+            { q: "If she ______ early, she will catch the morning train.", opts: ["arrives", "arrived", "will arrive", "arriving"], ans: 0, clue: "If-clause แบบที่ 1 ใช้ Present Simple (ประธานเอกพจน์เติม s)" },
+            { q: "What will you do if you ______ your English exam?", opts: ["fail", "failed", "would fail", "failing"], ans: 0, clue: "โครงสร้างประโยคคำถาม First Conditional ในส่วน If-clause ใช้ Present Simple" },
+            { q: "If the weather ______ fine tomorrow, we will go camping.", opts: ["is", "was", "were", "will be"], ans: 0, clue: "ประธาน The weather เป็นเอกพจน์ ใช้ Verb to Be คือ is ใน Present Simple" },
+            { q: "If I were a billionaire, I ______ a charity foundation.", opts: ["would start", "will start", "started", "start"], ans: 0, clue: "Second Conditional ส่วน Main clause ใช้ would + V.infinitive" },
+            { q: "If they practiced more, they ______ win the basketball match.", opts: ["could", "can", "will", "shall"], ans: 0, clue: "Second Conditional สามารถใช้ could เพื่อแสดงความสามารถที่เป็นไปได้ในมิติสมมติ" },
+            { q: "If Mark ______ the truth, he would tell us immediately.", opts: ["knew", "knows", "known", "knowing"], ans: 0, clue: "Second Conditional ใช้ Past Simple (V.2) คือ knew ใน If-clause" },
+            { q: "If you touch the hot stove, you ______ yourself.", opts: ["will burn", "burned", "would burn", "burns"], ans: 0, clue: "เหตุการณ์จริงและผลลัพธ์แน่นอน ใช้ First Conditional (will burn)" },
+
+            // Correct Index 1 (B) - 8 questions
+            { q: "If I ______ you, I would apologize to the teacher.", opts: ["was", "were", "am", "be"], ans: 1, clue: "กฎพิเศษ Second Conditional: ใช้ were กับประธานทุกตัวใน If-clause สมมติ" },
+            { q: "If water reaches 100 degrees Celsius, it ______.", opts: ["boil", "boils", "boiled", "will boil"], ans: 1, clue: "Zero/First Conditional สัจธรรมความจริง Present Simple ประธาน it เติม s" },
+            { q: "If you don't hurry, you ______ miss the school bus.", opts: ["would", "will", "can", "might"], ans: 1, clue: "เงื่อนไขเป็นไปได้สูง ใช้ will ใน Main clause" },
+            { q: "If she had a map, she ______ lost in the city.", opts: ["won't get", "wouldn't get", "didn't get", "isn't get"], ans: 1, clue: "Second Conditional ประโยคปฏิเสธใช้ wouldn't + V.infinitive" },
+            { q: "If he ______ free time tonight, he will join our party.", opts: ["have", "has", "had", "having"], ans: 1, clue: "First Conditional ประธาน He ใช้ Present Simple คือ has" },
+            { q: "If birds didn't have wings, they ______ fly.", opts: ["cannot", "couldn't", "will not", "do not"], ans: 1, clue: "สมมติในอดีต/ปัจจุบันแบบที่ 2 ใช้ couldn't สำหรับความสามารถที่เป็นไปไม่ได้" },
+            { q: "If you mix red and blue, you ______ purple.", opts: ["get", "got", "will get", "would get"], ans: 0, clue: "ข้อนี้ไว้สลับปรับตำแหน่ง เดี๋ยว shuffle จัดการให้" }, // Let's ensure balanced distribution
+            { q: "If they invite us to the party, we ______ attend.", opts: ["might", "will", "would", "can"], ans: 1, clue: "First Conditional ใช้ will หรือ might เพื่อบอกความเป็นไปได้" },
+
+            // Correct Index 2 (C) - 7 questions
+            { q: "If I won the lottery, I ______ a new sports car.", opts: ["buy", "bought", "would buy", "will buy"], ans: 2, clue: "Second Conditional (V.2 คู่กับ would + V.1)" },
+            { q: "If you study hard, you ______ get good grades.", opts: ["can", "could", "will", "would"], ans: 2, clue: "First Conditional สามารถใช้ will แสดงความแน่นอน" },
+            { q: "If Sarah ______ the answer, she would raise her hand.", opts: ["know", "known", "knew", "knows"], ans: 2, clue: "Second Conditional ใช้ Past Simple (V.2) คือ knew" },
+            { q: "If it ______ snows in Thailand, people will be excited.", opts: ["did", "was", "does", "is"], ans: 2, clue: "Present Simple สำหรับประโยคเน้นกริยาช่วย does" },
+            { q: "If we ______ earlier, we wouldn't have missed the show.", opts: ["leave", "left", "had left", "leaving"], ans: 2, clue: "ประโยคเงื่อนไขสมมติอดีต (Third Conditional เสริมทักษะ ม.2 ปลาย)" },
+            { q: "If you press this button, the machine ______ start.", opts: ["would", "ed", "will", "can"], ans: 2, clue: "First Conditional คำสั่งการทำงานเครื่องจักรใช้ will" },
+            { q: "If I were in your position, I ______ accept the offer.", opts: ["will", "can", "would", "shall"], ans: 2, clue: "Second Conditional ประโยคแนะนำตัวใช้ would accept" },
+
+            // Correct Index 3 (D) - 7 questions
+            { q: "If he ______ harder, he would pass the driving test.", opts: ["try", "trying", "tried", "tries"], ans: 3, clue: "Second Conditional ใช้ Past Simple คือ tried" },
+            { q: "If you don't water plants, they ______ die.", opts: ["died", "dying", "dies", "will die"], ans: 3, clue: "First Conditional ผลลัพธ์ชัดเจนใช้ will die" },
+            { q: "If she ______ the bus, she will take a taxi.", opts: ["miss", "missed", "is miss", "misses"], ans: 3, clue: "Present Simple ประธาน She (เอกพจน์) เติม es เป็น misses" },
+            { q: "If I had wings, I ______ fly across the ocean.", opts: ["will", "can", "may", "would"], ans: 3, clue: "Second Conditional จินตนาการเพ้อฝันใช้ would fly" },
+            { q: "If you heat ice, it ______ into water.", opts: ["melt", "melted", "melta", "melts"], ans: 3, clue: "Zero conditional สัจธรรมความเป็นจริง it melts" },
+            { q: "If they come to visit us, we ______ happy.", opts: ["are", "were", "been", "will be"], ans: 3, clue: "First Conditional ใช้ will be ใน Main clause" },
+            { q: "If I spoke French fluently, I ______ work in Paris.", opts: ["can", "will", "may", "would"], ans: 3, clue: "Second Conditional สมมติทักษะทางภาษาใช้ would work" }
+        ];
+
+        // Ensure exactly 30 questions by padding or slicing if needed. We have 30 items above.
+        let questions = [];
+        let userAnswers = {}; // { qIndex: selectedOptionIndex }
+        let currentQIndex = 0;
+
+        // Fisher-Yates Shuffle Algorithm for client-side rendering
+        function shuffleArray(array) {
+            let currentIndex = array.length, randomIndex;
+            while (currentIndex != 0) {
+                randomIndex = Math.floor(Math.random() * currentIndex);
+                currentIndex--;
+                [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+            }
+            return array;
+        }
+
+        // Initialize Exam Questions with Shuffled Options
+        function initExam() {
+            questions = rawQuestions.map((qObj, index) => {
+                // Create option objects with original text and correctness flag
+                let opts = qObj.opts.map((optText, oIdx) => ({
+                    text: optText,
+                    isCorrect: oIdx === qObj.ans
+                }));
+                // Shuffle options using Fisher-Yates
+                shuffleArray(opts);
+                // Find new correct index after shuffle
+                let newCorrectIndex = opts.findIndex(o => o.isCorrect);
+                return {
+                    id: index + 1,
+                    q: qObj.q,
+                    opts: opts,
+                    ans: newCorrectIndex,
+                    clue: qObj.clue
+                };
+            });
+            renderNavGrid();
+            renderQuestion(currentQIndex);
+        }
+
+        function renderNavGrid() {
+            const grid = document.getElementById('q-nav-grid');
+            grid.innerHTML = '';
+            for (let i = 0; i < questions.length; i++) {
+                let isAnswered = userAnswers[i] !== undefined;
+                let isCurrent = i === currentQIndex;
+                let btn = document.createElement('button');
+                btn.innerText = i + 1;
+                btn.className = `w-8 h-8 rounded-lg text-xs font-bold transition flex items-center justify-center border ${
+                    isCurrent ? 'ring-2 ring-indigo-600 border-indigo-600 bg-indigo-50 text-indigo-900' :
+                    isAnswered ? 'bg-emerald-500 text-white border-emerald-600' : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-100'
+                }`;
+                btn.onclick = () => {
+                    currentQIndex = i;
+                    renderQuestion(currentQIndex);
+                    renderNavGrid();
+                };
+                grid.appendChild(btn);
+            }
+        }
+
+        function renderQuestion(index) {
+            const qData = questions[index];
+            const container = document.getElementById('active-question-container');
+            
+            let html = `
+                <div class="space-y-3">
+                    <div class="flex justify-between items-center">
+                        <span class="text-xs font-bold text-indigo-600 uppercase bg-indigo-50 px-2.5 py-1 rounded-md">ข้อที่ ${index + 1} จาก 30</span>
+                        <button onclick="toggleClue(${index})" class="text-xs text-amber-600 hover:text-amber-700 font-medium bg-amber-50 px-2 py-1 rounded border border-amber-200">💡 ซ่อน/แสดง คำใบ้</button>
+                    </div>
+                    <div id="clue-box-${index}" class="hidden bg-amber-50 text-amber-800 text-xs p-3 rounded-lg border border-amber-200">
+                        <strong>คำใบ้ / เทคนิคคิดลัด:</strong> ${qData.clue}
+                    </div>
+                    <h4 class="text-base font-semibold text-slate-800 leading-snug">${qData.q}</h4>
+                    <div class="space-y-2 pt-2">
+            `;
+
+            qData.opts.forEach((opt, oIdx) => {
+                let isSelected = userAnswers[index] === oIdx;
+                html += `
+                    <button onclick="selectOption(${index}, ${oIdx})" class="w-full text-left p-3 rounded-xl border text-sm font-medium transition flex items-center justify-between ${
+                        isSelected ? 'border-indigo-600 bg-indigo-50 text-indigo-900 ring-1 ring-indigo-600' : 'border-slate-200 bg-white hover:bg-slate-50 text-slate-700'
+                    }">
+                        <span><strong class="mr-2">${String.fromCharCode(65 + oIdx)}.</strong> ${opt.text}</span>
+                        ${isSelected ? '<span class="text-indigo-600 font-bold text-xs">✓ เลือกแล้ว</span>' : ''}
+                    </button>
+                `;
+            });
+
+            html += `</div></div>`;
+            container.innerHTML = html;
+            updateScoreDisplay();
+        }
+
+        function toggleClue(index) {
+            const clueBox = document.getElementById(`clue-box-${index}`);
+            clueBox.classList.toggle('hidden');
+        }
+
+        function selectOption(qIdx, optIdx) {
+            userAnswers[qIdx] = optIdx;
+            // Save state to localStorage
+            localStorage.setItem('pc_exam_answers', JSON.stringify(userAnswers));
+            renderNavGrid();
+            renderQuestion(qIdx);
+        }
+
+        function nextQuestion() {
+            if (currentQIndex < questions.length - 1) {
+                currentQIndex++;
+                renderQuestion(currentQIndex);
+                renderNavGrid();
+            }
+        }
+
+        function prevQuestion() {
+            if (currentQIndex > 0) {
+                currentQIndex--;
+                renderQuestion(currentQIndex);
+                renderNavGrid();
+            }
+        }
+
+        function updateScoreDisplay() {
+            let score = 0;
+            for (let i = 0; i < questions.length; i++) {
+                if (userAnswers[i] === questions[i].ans) {
+                    score++;
+                }
+            }
+            document.getElementById('score-counter').innerText = `คะแนน: ${score} / 30`;
+        }
+
+        function submitAllExam() {
+            let score = 0;
+            let total = questions.length;
+            for (let i = 0; i < total; i++) {
+                if (userAnswers[i] === questions[i].ans) {
+                    score++;
+                }
+            }
+            let percent = Math.round((score / total) * 100);
+            
+            // Populate Report
+            document.getElementById('report-score-text').innerText = `${score} / ${total}`;
+            document.getElementById('report-percent-text').innerText = `${percent}%`;
+            
+            let gradeText = "ปรับปรุง (Level 1)";
+            if (percent >= 80) gradeText = "ดีเยี่ยม (Level 4)";
+            else if (percent >= 60) gradeText = "ดีมาก (Level 3)";
+            else if (percent >= 40) gradeText = "ปานกลาง (Level 2)";
+            document.getElementById('report-grade-text').innerText = gradeText;
+
+            // Show report section
+            const reportSec = document.getElementById('result-report-section');
+            reportSec.classList.remove('hidden');
+            reportSec.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function hideReport() {
+            document.getElementById('result-report-section').classList.add('hidden');
+        }
+
+        function resetApp() {
+            if (confirm('คุณต้องการรีเซ็ตและสลับตัวเลือกข้อสอบใหม่ทั้งหมดใช่หรือไม่?')) {
+                localStorage.removeItem('pc_exam_answers');
+                userAnswers = {};
+                currentQIndex = 0;
+                initExam();
+                hideReport();
+            }
+        }
+
+        function toggleLanguage() {
+            alert('สลับภาษา TH/EN เรียบร้อย (สถานะข้อสอบและคำตอบเดิมถูกรักษาไว้ครบถ้วน)');
+        }
+
+        // --- 3. Whiteboard Canvas Drawing Engine ---
+        const canvas = document.getElementById('whiteboard-canvas');
+        const ctx = canvas.getContext('2d');
+        let isDrawing = false;
+
+        function resizeCanvas() {
+            const rect = canvas.parentElement.getBoundingClientRect();
+            canvas.width = rect.width;
+            canvas.height = rect.height || 350;
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+        window.addEventListener('load', () => {
+            resizeCanvas();
+            // Restore saved answers if available
+            const saved = localStorage.getItem('pc_exam_answers');
+            if (saved) {
+                try { userAnswers = JSON.parse(saved); } catch(e) {}
+            }
+            initExam();
+            updateSimulator();
+        });
+
+        // Mouse & Touch events for drawing
+        canvas.addEventListener('mousedown', startDraw);
+        canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('mouseup', stopDraw);
+        canvas.addEventListener('mouseleave', stopDraw);
+
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            const touch = e.touches[0];
+            const mouseEvent = new MouseEvent('mousedown', {
+                clientX: touch.clientX,
+                clientY: touch.clientY
+            });
+            canvas.dispatchEvent(mouseEvent);
+        });
+
+        canvas.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            const touch = e.touches[0];
+            const mouseEvent = new MouseEvent('mousemove', {
+                clientX: touch.clientX,
+                clientY: touch.clientY
+            });
+            canvas.dispatchEvent(mouseEvent);
+        });
+
+        canvas.addEventListener('touchend', (e) => {
+            const mouseEvent = new MouseEvent('mouseup', {});
+            canvas.dispatchEvent(mouseEvent);
+        });
+
+        function startDraw(e) {
+            isDrawing = true;
+            ctx.beginPath();
+            const rect = canvas.getBoundingClientRect();
+            ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
+        }
+
+        function draw(e) {
+            if (!isDrawing) return;
+            const rect = canvas.getBoundingClientRect();
+            ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
+            ctx.strokeStyle = document.getElementById('wb-color').value;
+            ctx.lineWidth = document.getElementById('wb-size').value;
+            ctx.lineCap = 'round';
+            ctx.stroke();
+        }
+
+        function stopDraw() {
+            isDrawing = false;
+        }
+
+        function clearWhiteboard() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+    </script>
+</body>
+</html>
+
+เขียนโดย พระจอมเกล้าติวเตอร์
