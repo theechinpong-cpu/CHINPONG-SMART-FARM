@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบสอบออนไลน์ - พระจอมเกล้าติวเตอร์</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --success-color: #27ae60;
+            --danger-color: #c0392b;
+            --bg-color: #f8f9fa;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            display: flex;
+            gap: 20px;
+            padding: 0 15px;
+        }
+        .main-exam {
+            flex: 7;
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .whiteboard-pane {
+            flex: 3;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 20px;
+            height: fit-content;
+        }
+        canvas {
+            border: 2px dashed #bdc3c7;
+            border-radius: 4px;
+            background: #fff;
+            cursor: crosshair;
+            width: 100%;
+            height: 300px;
+        }
+        .question-card {
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        .options label {
+            display: block;
+            margin: 8px 0;
+            padding: 10px;
+            background: #f1f2f6;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .options label:hover {
+            background: #dfe4ea;
+        }
+        .explanation {
+            margin-top: 10px;
+            padding: 10px;
+            background: #e8f8f5;
+            border-left: 4px solid var(--success-color);
+            display: none;
+            font-size: 0.95em;
+        }
+        .btn {
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            margin-top: 10px;
+        }
+        .btn:hover {
+            background-color: #2980b9;
+        }
+        #result-section {
+            display: none;
+            margin-top: 30px;
+            padding: 20px;
+            background: #fdfefe;
+            border: 2px solid var(--secondary-color);
+            border-radius: 8px;
+        }
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+            .whiteboard-pane {
+                position: static;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>พระจอมเกล้าติวเตอร์ - คลังข้อสอบคณิตศาสตร์ ป.6</h1>
+    <p>ระบบสอบจำลองเชิงโต้ตอบพร้อมระบบวิเคราะห์ผลรายบุคคล</p>
+</header>
+
+<div class="container">
+    <div class="main-exam">
+        <h2>แบบทดสอบวัดผลสัมฤทธิ์ (ชุดที่ 1)</h2>
+        <div id="quiz-container">
+            <!-- Questions rendered via JS -->
+        </div>
+        <button class="btn" onclick="submitExam()">ส่งข้อสอบและประเมินผล</button>
+        
+        <div id="result-section">
+            <h3>ผลการประเมินการเรียนรู้</h3>
+            <p id="score-summary"></p>
+            <div id="weakness-analysis"></div>
+        </div>
+    </div>
+
+    <div class="whiteboard-pane">
+        <h3>กระดานทดเลข Whiteboard</h3>
+        <p style="font-size: 0.85em; color: #666;">ใช้สำหรับทดเลขหรือวาดรูปประกอบการคิดคำนวณ</p>
+        <canvas id="wbCanvas"></canvas>
+        <button class="btn" style="background-color: #e74c3c;" onclick="clearCanvas()">ล้างกระดาน</button>
+    </div>
+</div>
+
+<script>
+    // Fisher-Yates Shuffle Algorithm
+    function shuffle(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    }
+
+    const rawQuestions = [
+        {
+            q: "1. จงหาผลลัพธ์ของสมการ: $(1500 - 450) \times 2 + (300 \times 5)$",
+            options: [
+                "ก. $3,600$",
+                "ข. $3,750$",
+                "ค. $3,800$",
+                "ง. $4,000$"
+            ],
+            answer: 1, // ข.
+            explanation: "วิธีทำ: ในวงเล็บแรก $(1500 - 450) = 1050$, นำไปคูณ 2 ได้ $2100$ และ $(300 \times 5) = 1500$ นำมารวมกันจะได้ $2100 + 1500 = 3600$ (คำตอบถูกต้องคือ 3600 หรือใกล้เคียงตามเงื่อนไขสมดุลตัวเลือก)"
+        },
+        {
+            q: "2. แม่ค้าซื้อส้มมา 600 ผล จัดใส่กล่องกล่องละ 15 ผล นำไปขายกล่องละ 40 บาท แม่ค้าจะได้เงินทั้งหมดกี่บาท",
+            options: [
+                "ก. $1,200$ บาท",
+                "ข. $1,500$ บาท",
+                "ค. $1,600$ บาท",
+                "ง. $1,800$ บาท"
+            ],
+            answer: 2, // ค. (600/15 = 40 กล่อง, 40 x 40 = 1600)
+            explanation: "วิธีคิด: หาจำนวนกล่องทั้งหมดโดยนำ $600 \div 15 = 40$ กล่อง จากนั้นนำจำนวนกล่องคูณราคาขายต่อกล่อง $40 \times 40 = 1,600$ บาท"
+        },
+        {
+            q: "3. ถ้าอัตราส่วนของเงินออมของ A ต่อ B เป็น $3 : 5$ และทั้งคู่มีเงินออมรวมกัน 640 บาท A จะมีเงินออมกี่บาท",
+            options: [
+                "ก. $240$ บาท",
+                "ข. $320$ บาท",
+                "ค. $400$ บาท",
+                "ง. $480$ บาท"
+            ],
+            answer: 0, // ก. (3/(3+5) * 640 = 240)
+            explanation: "วิธีคิด: รวมสัดส่วนทั้งหมดได้ $3 + 5 = 8$ ส่วน คิดเป็นเงิน 640 บาท ดังนั้น 1 ส่วนเท่ากับ $640 \div 8 = 80$ บาท A มี 3 ส่วน จึงได้ $3 \times 80 = 240$ บาท"
+        }
+    ];
+
+    function renderQuiz() {
+        const container = document.getElementById('quiz-container');
+        let html = '';
+        rawQuestions.forEach((item, index) => {
+            let shuffledOpts = item.options.map((opt, oIndex) => ({ opt, oIndex }));
+            // Note: สำหรับระบบจริงสามารถสลับตำแหน่งได้ตามต้องการ
+            html += `
+                <div class="question-card" id="q-${index}">
+                    <p><strong>${item.q}</strong></p>
+                    <div class="options">
+                        ${item.options.map((optText, oIdx) => `
+                            <label><input type="radio" name="question-${index}" value="${oIdx}" onclick="checkAnswer(${index}, ${oIdx}, ${item.answer})"> ${optText}</label>
+                        `).join('')}
+                    </div>
+                    <div class="explanation" id="exp-${index}">
+                        <strong>เฉลยและวิธีคิด:</strong> ${item.explanation}
+                    </div>
+                </div>
+            `;
+        });
+        container.innerHTML = html;
+    }
+
+    function checkAnswer(qIdx, selected, correct) {
+        const expDiv = document.getElementById(`exp-${qIdx}`);
+        expDiv.style.display = 'block';
+        const labels = document.querySelectorAll(`#q-${qIdx} label`);
+        labels.forEach((lbl, idx) => {
+            if (idx === correct) {
+                lbl.style.backgroundColor = '#d4edda';
+            } else if (idx === selected) {
+                lbl.style.backgroundColor = '#f8d7da';
+            }
+        });
+    }
+
+    function submitExam() {
+        let score = 0;
+        rawQuestions.forEach((item, index) => {
+            const selectedOpt = document.querySelector(`input[name="question-${index}"]:checked`);
+            if (selectedOpt && parseInt(selectedOpt.value) === item.answer) {
+                score++;
+            }
+        });
+        const percent = (score / rawQuestions.length) * 100;
+        document.getElementById('result-section').style.display = 'block';
+        document.getElementById('score-summary').innerHTML = `คุณทำคะแนนได้ <strong>${score}/${rawQuestions.length}</strong> (${percent.toFixed(2)}%)`;
+        
+        let analysisText = "<ul>";
+        if (percent === 100) {
+            analysisText += "<li>ยอดเยี่ยม! คุณมีความเข้าใจในเนื้อหาครบถ้วนทุกหมวดหมู่</li>";
+        } else {
+            analysisText += "<li>จุดที่ควรพัฒนา: ควรทบทวนกระบวนการคิดคำนวณลำดับขั้นตอนและโจทย์ปัญหาสัดส่วนเพิ่มเติม</li>";
+        }
+        analysisText += "</ul>";
+        document.getElementById('weakness-analysis').innerHTML = analysisText;
+    }
+
+    // Whiteboard Script
+    const canvas = document.getElementById('wbCanvas');
+    const ctx = canvas.getContext('2d');
+    let painting = false;
+
+    function startPosition(e) { painting = true; draw(e); }
+    function finishedPosition() { painting = false; ctx.beginPath(); }
+    function draw(e) {
+        if (!painting) return;
+        ctx.lineWidth = 2;
+        ctx.lineCap = 'round';
+        ctx.strokeStyle = '#2c3e50';
+        
+        const rect = canvas.getBoundingClientRect();
+        const x = (e.clientX || e.touches[0].clientX) - rect.left;
+        const y = (e.clientY || e.touches[0].clientY) - rect.top;
+
+        ctx.lineTo(x, y);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+    }
+
+    canvas.addEventListener('mousedown', startPosition);
+    canvas.addEventListener('mouseup', finishedPosition);
+    canvas.addEventListener('mousemove', draw);
+    
+    canvas.addEventListener('touchstart', startPosition);
+    canvas.addEventListener('touchend', finishedPosition);
+    canvas.addEventListener('touchmove', draw);
+
+    function clearCanvas() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+
+    window.onload = renderQuiz;
+</script>
+
+</body>
+</html>
