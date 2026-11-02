@@ -1,291 +1,940 @@
 <!DOCTYPE html>
-<html lang="th">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ระบบสอบออนไลน์ - พระจอมเกล้าติวเตอร์</title>
-    <style>
-        :root {
-            --primary-color: #2c3e50;
-            --secondary-color: #3498db;
-            --success-color: #27ae60;
-            --danger-color: #c0392b;
-            --bg-color: #f8f9fa;
-        }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-color);
-            margin: 0;
-            padding: 0;
-            color: #333;
-        }
-        header {
-            background-color: var(--primary-color);
-            color: white;
-            padding: 20px;
-            text-align: center;
-        }
-        .container {
-            max-width: 1200px;
-            margin: 20px auto;
-            display: flex;
-            gap: 20px;
-            padding: 0 15px;
-        }
-        .main-exam {
-            flex: 7;
-            background: white;
-            padding: 25px;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-        .whiteboard-pane {
-            flex: 3;
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            display: flex;
-            flex-direction: column;
-            position: sticky;
-            top: 20px;
-            height: fit-content;
-        }
-        canvas {
-            border: 2px dashed #bdc3c7;
-            border-radius: 4px;
-            background: #fff;
-            cursor: crosshair;
-            width: 100%;
-            height: 300px;
-        }
-        .question-card {
-            margin-bottom: 25px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid #eee;
-        }
-        .options label {
-            display: block;
-            margin: 8px 0;
-            padding: 10px;
-            background: #f1f2f6;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-        .options label:hover {
-            background: #dfe4ea;
-        }
-        .explanation {
-            margin-top: 10px;
-            padding: 10px;
-            background: #e8f8f5;
-            border-left: 4px solid var(--success-color);
-            display: none;
-            font-size: 0.95em;
-        }
-        .btn {
-            background-color: var(--secondary-color);
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 1em;
-            margin-top: 10px;
-        }
-        .btn:hover {
-            background-color: #2980b9;
-        }
-        #result-section {
-            display: none;
-            margin-top: 30px;
-            padding: 20px;
-            background: #fdfefe;
-            border: 2px solid var(--secondary-color);
-            border-radius: 8px;
-        }
-        @media (max-width: 768px) {
-            .container {
-                flex-direction: column;
-            }
-            .whiteboard-pane {
-                position: static;
+    <title>Kindergarten 3 Math Academy - Set 2 - พระจอมเกล้าติวเตอร์</title>
+    <!-- Tailwind CSS CDN for Modern UI -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: { 50: '#fdf4ff', 500: '#d946ef', 600: '#c026d3', 700: '#a21caf' },
+                        fun: { pink: '#f43f5e', blue: '#0ea5e9', yellow: '#f59e0b', purple: '#8b5cf6' }
+                    }
+                }
             }
         }
-    </style>
+    </script>
+    <!-- MathJax for LaTeX Rendering -->
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 </head>
-<body>
+<body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col">
 
-<header>
-    <h1>พระจอมเกล้าติวเตอร์ - คลังข้อสอบคณิตศาสตร์ ป.6</h1>
-    <p>ระบบสอบจำลองเชิงโต้ตอบพร้อมระบบวิเคราะห์ผลรายบุคคล</p>
-</header>
-
-<div class="container">
-    <div class="main-exam">
-        <h2>แบบทดสอบวัดผลสัมฤทธิ์ (ชุดที่ 1)</h2>
-        <div id="quiz-container">
-            <!-- Questions rendered via JS -->
+    <!-- Header & Language Switcher -->
+    <header class="bg-gradient-to-r from-brand-600 to-fun-blue text-white shadow-lg sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex flex-wrap justify-between items-center">
+            <div>
+                <h1 id="app-title" class="text-2xl font-black tracking-wide drop-shadow">Kindergarten 3 Math Academy (Set 2)</h1>
+                <p id="app-subtitle" class="text-xs text-brand-50 opacity-90">Advanced Interactive Learning & Evaluation Portal</p>
+            </div>
+            <div class="flex items-center space-x-3 mt-2 sm:mt-0">
+                <button onclick="switchLanguage('th')" id="btn-lang-th" class="px-3 py-1 bg-white/20 hover:bg-white/30 text-xs font-bold rounded-full transition">🇹🇭 TH</button>
+                <button onclick="switchLanguage('en')" id="btn-lang-en" class="px-3 py-1 bg-white text-brand-700 text-xs font-bold rounded-full shadow transition">🇬🇧 EN</button>
+                <button onclick="resetApp()" id="btn-reset" class="px-4 py-1.5 bg-fun-pink hover:bg-rose-600 text-white font-bold text-xs rounded-full shadow transition">🔄 Reset App</button>
+            </div>
         </div>
-        <button class="btn" onclick="submitExam()">ส่งข้อสอบและประเมินผล</button>
-        
-        <div id="result-section">
-            <h3>ผลการประเมินการเรียนรู้</h3>
-            <p id="score-summary"></p>
-            <div id="weakness-analysis"></div>
-        </div>
-    </div>
+    </header>
 
-    <div class="whiteboard-pane">
-        <h3>กระดานทดเลข Whiteboard</h3>
-        <p style="font-size: 0.85em; color: #666;">ใช้สำหรับทดเลขหรือวาดรูปประกอบการคิดคำนวณ</p>
-        <canvas id="wbCanvas"></canvas>
-        <button class="btn" style="background-color: #e74c3c;" onclick="clearCanvas()">ล้างกระดาน</button>
-    </div>
-</div>
+    <!-- Main Container -->
+    <main class="flex-grow max-w-7xl w-full mx-auto p-4 space-y-6">
 
-<script>
-    // Fisher-Yates Shuffle Algorithm
-    function shuffle(array) {
-        for (let i = array.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [array[i], array[j]] = [array[j], array[i]];
-        }
-        return array;
-    }
-
-    const rawQuestions = [
-        {
-            q: "1. จงหาผลลัพธ์ของสมการ: $(1500 - 450) \times 2 + (300 \times 5)$",
-            options: [
-                "ก. $3,600$",
-                "ข. $3,750$",
-                "ค. $3,800$",
-                "ง. $4,000$"
-            ],
-            answer: 1, // ข.
-            explanation: "วิธีทำ: ในวงเล็บแรก $(1500 - 450) = 1050$, นำไปคูณ 2 ได้ $2100$ และ $(300 \times 5) = 1500$ นำมารวมกันจะได้ $2100 + 1500 = 3600$ (คำตอบถูกต้องคือ 3600 หรือใกล้เคียงตามเงื่อนไขสมดุลตัวเลือก)"
-        },
-        {
-            q: "2. แม่ค้าซื้อส้มมา 600 ผล จัดใส่กล่องกล่องละ 15 ผล นำไปขายกล่องละ 40 บาท แม่ค้าจะได้เงินทั้งหมดกี่บาท",
-            options: [
-                "ก. $1,200$ บาท",
-                "ข. $1,500$ บาท",
-                "ค. $1,600$ บาท",
-                "ง. $1,800$ บาท"
-            ],
-            answer: 2, // ค. (600/15 = 40 กล่อง, 40 x 40 = 1600)
-            explanation: "วิธีคิด: หาจำนวนกล่องทั้งหมดโดยนำ $600 \div 15 = 40$ กล่อง จากนั้นนำจำนวนกล่องคูณราคาขายต่อกล่อง $40 \times 40 = 1,600$ บาท"
-        },
-        {
-            q: "3. ถ้าอัตราส่วนของเงินออมของ A ต่อ B เป็น $3 : 5$ และทั้งคู่มีเงินออมรวมกัน 640 บาท A จะมีเงินออมกี่บาท",
-            options: [
-                "ก. $240$ บาท",
-                "ข. $320$ บาท",
-                "ค. $400$ บาท",
-                "ง. $480$ บาท"
-            ],
-            answer: 0, // ก. (3/(3+5) * 640 = 240)
-            explanation: "วิธีคิด: รวมสัดส่วนทั้งหมดได้ $3 + 5 = 8$ ส่วน คิดเป็นเงิน 640 บาท ดังนั้น 1 ส่วนเท่ากับ $640 \div 8 = 80$ บาท A มี 3 ส่วน จึงได้ $3 \times 80 = 240$ บาท"
-        }
-    ];
-
-    function renderQuiz() {
-        const container = document.getElementById('quiz-container');
-        let html = '';
-        rawQuestions.forEach((item, index) => {
-            let shuffledOpts = item.options.map((opt, oIndex) => ({ opt, oIndex }));
-            // Note: สำหรับระบบจริงสามารถสลับตำแหน่งได้ตามต้องการ
-            html += `
-                <div class="question-card" id="q-${index}">
-                    <p><strong>${item.q}</strong></p>
-                    <div class="options">
-                        ${item.options.map((optText, oIdx) => `
-                            <label><input type="radio" name="question-${index}" value="${oIdx}" onclick="checkAnswer(${index}, ${oIdx}, ${item.answer})"> ${optText}</label>
-                        `).join('')}
+        <!-- Virtual Teaching Tool / Interactive Infographic -->
+        <section class="bg-white rounded-2xl shadow-md p-6 border-2 border-brand-100">
+            <div class="flex items-center justify-between mb-4">
+                <h2 id="tool-heading" class="text-lg font-bold text-brand-700 flex items-center gap-2">
+                    ⭐ Virtual Star Playground (Interactive Grouping Tool)
+                </h2>
+                <span class="text-xs bg-brand-50 text-brand-600 px-3 py-1 rounded-full font-semibold">Visualizing Set 2 Concepts</span>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-center bg-slate-50 p-4 rounded-xl border border-slate-200">
+                <div class="space-y-3">
+                    <p id="tool-desc" class="text-sm text-slate-600">Click the buttons below to add or remove glowing stars to practice grouping by tens, counting, and pattern matching!</p>
+                    <div class="flex gap-2">
+                        <button onclick="modifyStars(1)" class="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white text-sm font-bold rounded-lg shadow transition">+ Add Star</button>
+                        <button onclick="modifyStars(-1)" class="px-4 py-2 bg-rose-500 hover:bg-rose-600 text-white text-sm font-bold rounded-lg shadow transition">- Remove</button>
+                        <button onclick="resetStars()" class="px-3 py-2 bg-slate-300 hover:bg-slate-400 text-slate-700 text-sm font-bold rounded-lg transition">Clear</button>
                     </div>
-                    <div class="explanation" id="exp-${index}">
-                        <strong>เฉลยและวิธีคิด:</strong> ${item.explanation}
+                </div>
+                <div class="md:col-span-2 flex flex-col items-center justify-center bg-white p-6 rounded-xl border border-slate-200 min-h-[140px]">
+                    <div id="star-container" class="flex flex-wrap gap-3 justify-center items-center max-w-md">
+                        <!-- Dynamic Stars -->
+                    </div>
+                    <div class="mt-3 text-sm font-bold text-slate-700">
+                        Total Stars: <span id="star-count" class="text-brand-600 text-lg">6</span> items
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Summary Section -->
+        <section class="bg-white rounded-2xl shadow-md p-6 border-2 border-slate-100">
+            <h2 id="summary-heading" class="text-lg font-bold text-slate-800 mb-3 flex items-center gap-2">
+                📖 Kindergarten 3 Set 2 Summary (Applied Logic & Geometry)
+            </h2>
+            <div class="prose max-w-none text-sm text-slate-600 space-y-4">
+                <p id="summary-p1">
+                    In this second mastery module of Kindergarten 3 Mathematics, learners expand their numerical horizon toward advanced spatial logic, composite counting sequences up to 50 and 100, and real-world application problems. Children explore contextual measurement standards, distinguishing between light and heavy objects, measuring volumes across various containers, and decoding time on simple analog clocks with hour and minute needles.
+                </p>
+                <p id="summary-p2">
+                    Geometric exploration delves deeper into the structural properties of 2D and 3D configurations. Students compare vertices, faces, and edges of cubes, cylinders, cones, and rectangular prisms while reinforcing symmetry and directional positioning (above, below, beside, behind, in front). Addition and subtraction are practiced via word scenarios that test mental agility and grouping intuition up to twenty.
+                </p>
+                <p id="summary-p3">
+                    Finally, data sorting is reinforced through multi-attribute classification matrices and complex pattern extrapolation (such as alternating shapes and number steps). These targeted exercises cultivate systematic analytical thinking, preparing young minds for primary school mathematics with absolute confidence.
+                </p>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                    <div class="bg-amber-50 border-l-4 border-amber-400 p-4 rounded-r-xl">
+                        <h4 id="memory-trick-title" class="font-bold text-amber-800 text-sm mb-1">💡 Set 2 Memory & Learning Tricks</h4>
+                        <p id="memory-trick-desc" class="text-xs text-amber-700">When comparing numbers, imagine scales or balancing blocks. Heavy objects pull scales down; greater numbers always outnumber smaller ones!</p>
+                    </div>
+                    <div class="bg-emerald-50 border-l-4 border-emerald-500 p-4 rounded-r-xl">
+                        <h4 id="thought-process-title" class="font-bold text-emerald-800 text-sm mb-1">🧠 Advanced Analytical Thought Process</h4>
+                        <p id="thought-process-desc" class="text-xs text-emerald-700">1. Dissect the question scenario. 2. Filter out distractor details. 3. Apply operational logic (addition, comparison, geometry rules). 4. Select the perfectly aligned choice.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Two-Frame Layout: 70% Quiz (Left) & 30% Whiteboard (Right) -->
+        <div class="grid grid-cols-1 lg:grid-cols-10 gap-6">
+            
+            <!-- Left Frame: Quiz (70% -> lg:col-span-7) -->
+            <section class="lg:col-span-7 bg-white rounded-2xl shadow-md p-6 border-2 border-slate-100 flex flex-col">
+                <div class="flex flex-wrap justify-between items-center mb-6 border-b pb-4">
+                    <div>
+                        <h2 id="quiz-section-title" class="text-xl font-bold text-slate-800">📝 Interactive Examination Set 2 (30 Questions)</h2>
+                        <p id="quiz-section-subtitle" class="text-xs text-slate-500">Brand new scenario-based questions with randomized options.</p>
+                    </div>
+                    <div class="text-right mt-2 sm:mt-0">
+                        <span id="score-display" class="text-sm font-bold bg-brand-50 text-brand-700 px-3 py-1.5 rounded-xl border border-brand-200">Score: 0 / 30</span>
+                    </div>
+                </div>
+
+                <!-- Question Navigation Bar -->
+                <div id="q-nav-bar" class="flex flex-wrap gap-1.5 mb-6 max-h-36 overflow-y-auto p-2 bg-slate-50 rounded-xl border border-slate-200">
+                    <!-- Populated dynamically via JS -->
+                </div>
+
+                <!-- Active Question Box -->
+                <div id="active-question-container" class="space-y-4 flex-grow">
+                    <!-- Rendered dynamically -->
+                </div>
+
+                <!-- Navigation Buttons -->
+                <div class="flex justify-between items-center mt-6 pt-4 border-t">
+                    <button onclick="prevQuestion()" id="btn-prev" class="px-5 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold text-sm rounded-xl transition">&larr; Previous</button>
+                    <span id="question-progress" class="text-xs font-semibold text-slate-500">Question 1 of 30</span>
+                    <button onclick="nextQuestion()" id="btn-next" class="px-5 py-2 bg-brand-600 hover:bg-brand-700 text-white font-bold text-sm rounded-xl shadow transition">Next &rarr;</button>
+                </div>
+
+                <!-- Submit / Finalize Button -->
+                <div class="mt-4 pt-4 border-t text-center">
+                    <button onclick="submitQuiz()" id="btn-submit" class="w-full py-3 bg-gradient-to-r from-brand-600 to-fun-blue hover:opacity-95 text-white font-bold rounded-xl shadow-lg transition text-base">
+                        🎯 Submit Set 2 Quiz & View Analysis
+                    </button>
+                </div>
+            </section>
+
+            <!-- Right Frame: Whiteboard (30% -> lg:col-span-3) -->
+            <section class="lg:col-span-3 bg-white rounded-2xl shadow-md p-6 border-2 border-slate-100 flex flex-col">
+                <div class="flex justify-between items-center mb-3">
+                    <h2 id="wb-title" class="text-md font-bold text-slate-800 flex items-center gap-1.5">
+                        🎨 Scratch Whiteboard
+                    </h2>
+                    <div class="flex gap-1">
+                        <button onclick="clearWhiteboard()" id="btn-clear-wb" class="px-2 py-1 bg-rose-100 text-rose-700 hover:bg-rose-200 text-xs font-bold rounded-lg transition">Clear</button>
+                    </div>
+                </div>
+                <p id="wb-desc" class="text-xs text-slate-500 mb-3">Use this digital notepad for scratchwork, counting notes, or drawing shapes while solving Set 2.</p>
+                <div class="relative flex-grow border-2 border-dashed border-slate-300 rounded-xl bg-slate-50 overflow-hidden min-h-[350px]">
+                    <canvas id="whiteboardCanvas" class="absolute inset-0 w-full h-full cursor-crosshair touch-none"></canvas>
+                </div>
+                <div class="mt-3 flex items-center justify-between text-xs text-slate-600">
+                    <span id="wb-status">Pen Active</span>
+                    <div class="flex gap-2">
+                        <button onclick="setPenColor('#1e293b')" class="w-5 h-5 rounded-full bg-slate-800 border-2 border-white shadow"></button>
+                        <button onclick="setPenColor('#c026d3')" class="w-5 h-5 rounded-full bg-brand-600 border-2 border-white shadow"></button>
+                        <button onclick="setPenColor('#0ea5e9')" class="w-5 h-5 rounded-full bg-fun-blue border-2 border-white shadow"></button>
+                        <button onclick="setPenColor('#f43f5e')" class="w-5 h-5 rounded-full bg-fun-pink border-2 border-white shadow"></button>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+
+        <!-- Evaluation & Analysis Result Modal / Section -->
+        <div id="result-section" class="hidden bg-white rounded-2xl shadow-xl p-8 border-4 border-brand-500 space-y-6">
+            <div class="text-center space-y-2">
+                <h3 class="text-3xl font-black text-slate-800">🎉 Set 2 Evaluation & Deep Analysis Report</h3>
+                <p class="text-sm text-slate-600">Review your Set 2 performance breakdown and personalized growth recommendations below.</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
+                <div class="bg-brand-50 p-6 rounded-2xl border border-brand-200">
+                    <h4 class="text-xs font-bold text-brand-600 uppercase tracking-wider mb-1">Total Score</h4>
+                    <p id="res-score-val" class="text-4xl font-black text-brand-700">0 / 30</p>
+                </div>
+                <div class="bg-fun-blue/10 p-6 rounded-2xl border border-blue-200">
+                    <h4 class="text-xs font-bold text-fun-blue uppercase tracking-wider mb-1">Accuracy Percentage</h4>
+                    <p id="res-percent-val" class="text-4xl font-black text-fun-blue">0%</p>
+                </div>
+                <div class="bg-fun-pink/10 p-6 rounded-2xl border border-pink-200">
+                    <h4 class="text-xs font-bold text-fun-pink uppercase tracking-wider mb-1">Performance Tier</h4>
+                    <p id="res-tier-val" class="text-2xl font-black text-fun-pink">Applied Math Expert</p>
+                </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="bg-emerald-50 p-6 rounded-2xl border border-emerald-200 space-y-2">
+                    <h4 class="font-bold text-emerald-800 text-base">🌟 Strengths</h4>
+                    <p id="res-strengths" class="text-sm text-emerald-700">You show outstanding comprehension of spatial geometry, scenario word problems, and pattern extrapolation!</p>
+                </div>
+                <div class="bg-amber-50 p-6 rounded-2xl border border-amber-200 space-y-2">
+                    <h4 class="font-bold text-amber-800 text-base">📈 Areas for Improvement & Recommended Review</h4>
+                    <p id="res-improvement" class="text-sm text-amber-700">Focus on multi-step addition puzzles and time needle interpretation to achieve top-tier perfection.</p>
+                </div>
+            </div>
+            <div class="text-center pt-2">
+                <button onclick="resetApp()" class="px-8 py-3 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl shadow-lg transition">🔄 Retake Set 2 Quiz</button>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-slate-800 text-slate-400 py-6 text-center text-xs mt-10">
+        <p>Kindergarten 3 Interactive Math Portal (Set 2) | Designed for Early Childhood Excellence</p>
+        <p class="mt-1 text-slate-300 font-semibold">เขียนโดย พระจอมเกล้าติวเตอร์</p>
+    </footer>
+
+    <!-- Application JavaScript Logic -->
+    <script>
+        // --- MULTI-LANGUAGE DICTIONARY ---
+        const translations = {
+            en: {
+                appTitle: "Kindergarten 3 Math Academy (Set 2)",
+                appSubtitle: "Advanced Interactive Learning & Evaluation Portal",
+                toolHeading: "⭐ Virtual Star Playground (Interactive Grouping Tool)",
+                toolDesc: "Click the buttons below to add or remove glowing stars to practice grouping by tens, counting, and pattern matching!",
+                addBtn: "+ Add Star",
+                removeBtn: "- Remove",
+                clearBtn: "Clear",
+                totalCount: "Total Stars:",
+                itemsText: "items",
+                summaryHeading: "📖 Kindergarten 3 Set 2 Summary (Applied Logic & Geometry)",
+                summaryP1: "In this second mastery module of Kindergarten 3 Mathematics, learners expand their numerical horizon toward advanced spatial logic, composite counting sequences up to 50 and 100, and real-world application problems. Children explore contextual measurement standards, distinguishing between light and heavy objects, measuring volumes across various containers, and decoding time on simple analog clocks with hour and minute needles.",
+                summaryP2: "Geometric exploration delves deeper into the structural properties of 2D and 3D configurations. Students compare vertices, faces, and edges of cubes, cylinders, cones, and rectangular prisms while reinforcing symmetry and directional positioning (above, below, beside, behind, in front). Addition and subtraction are practiced via word scenarios that test mental agility and grouping intuition up to twenty.",
+                summaryP3: "Finally, data sorting is reinforced through multi-attribute classification matrices and complex pattern extrapolation (such as alternating shapes and number steps). These targeted exercises cultivate systematic analytical thinking, preparing young minds for primary school mathematics with absolute confidence.",
+                memoryTitle: "💡 Set 2 Memory & Learning Tricks",
+                memoryDesc: "When comparing numbers, imagine scales or balancing blocks. Heavy objects pull scales down; greater numbers always outnumber smaller ones!",
+                thoughtTitle: "🧠 Advanced Analytical Thought Process",
+                thoughtDesc: "1. Dissect the question scenario. 2. Filter out distractor details. 3. Apply operational logic (addition, comparison, geometry rules). 4. Select the perfectly aligned choice.",
+                quizTitle: "📝 Interactive Examination Set 2 (30 Questions)",
+                quizSubtitle: "Brand new scenario-based questions with randomized options.",
+                scoreText: "Score:",
+                prevBtn: "&larr; Previous",
+                nextBtn: "Next &rarr;",
+                submitBtn: "🎯 Submit Set 2 Quiz & View Analysis",
+                wbTitle: "🎨 Scratch Whiteboard",
+                wbDesc: "Use this digital notepad for scratchwork, counting notes, or drawing shapes while solving Set 2.",
+                wbClear: "Clear",
+                wbStatus: "Pen Active"
+            },
+            th: {
+                appTitle: "สถาบันคณิตศาสตร์ อนุบาล 3 (ชุดที่ 2)",
+                appSubtitle: "ระบบการเรียนรู้และประเมินผลเชิงโต้ตอบขั้นสูง",
+                toolHeading: "⭐ พื้นที่จำลองดวงดาว (เครื่องมือฝึกจัดกลุ่มและนับจำนวน)",
+                toolDesc: "คลิกปุ่มด้านล่างเพื่อเพิ่มหรือลดดาว ฝึกทักษะการจัดกลุ่ม การนับ และการจับคู่รูปแบบ!",
+                addBtn: "+ เพิ่มดาว",
+                removeBtn: "- ลดออก",
+                clearBtn: "ล้างทั้งหมด",
+                totalCount: "จำนวนรวม:",
+                itemsText: "ดวง",
+                summaryHeading: "📖 สรุปเนื้อหาชุดที่ 2 (ตรรกะประยุกต์และเรขาคณิต)",
+                summaryP1: "ในชุดการเรียนรู้นี้ ผู้เรียนจะได้ขยายขอบเขตทางตัวเลขสู่ตรรกะเชิงพื้นที่ การนับจำนวนถึง 50 และ 100 และโจทย์ปัญหาการประยุกต์ใช้ในชีวิตจริง เด็กๆ จะได้เรียนรู้มาตรฐานการวัด น้ำหนัก ปริมาตรของภาชนะต่างๆ และการอ่านเวลาบนนาฬิกาจำลอง",
+                summaryP2: "การสำรวจทางเรขาคณิตลงลึกถึงโครงสร้างรูปทรง 2 มิติและ 3 มิติ (ลูกบาศก์ ทรงกระบอก กรวย) พร้อมเสริมความเข้าใจด้านตำแหน่งทิศทาง (ด้านบน ด้านล่าง ข้างๆ) และฝึกการบวกการลบผ่านสถานการณ์จำลองที่ไม่เกิน 20",
+                summaryP3: "ทักษะการจัดหมวดหมู่และแพทเทิร์นที่ซับซ้อนขึ้นช่วยเสริมสร้างการคิดวิเคราะห์อย่างเป็นระบบ เตรียมความพร้อมสู่ระดับประถมศึกษา",
+                memoryTitle: "💡 เทคนิคการจำชุดที่ 2",
+                memoryDesc: "เมื่อเปรียบเทียบตัวเลขหรือน้ำหนัก ให้จินตนาการถึงตราชั่ง สิ่งของที่หนักจะดึงตราชั่งให้ต่ำลง ตัวเลขที่มากกว่าย่อมมีปริมาณมากกว่าเสมอ!",
+                thoughtTitle: "🧠 กระบวนการคิดเชิงวิเคราะห์ขั้นสูง",
+                thoughtDesc: "1. วิเคราะห์สถานการณ์โจทย์ 2. คัดกรองรายละเอียดที่ไม่จำเป็น 3. ใช้ตรรกะทางคณิตศาสตร์ 4. เลือกตัวเลือกที่ถูกต้องแม่นยำ",
+                quizTitle: "📝 แบบทดสอบชุดที่ 2 (30 ข้อ)",
+                quizSubtitle: "โจทย์สถานการณ์จำลองรูปแบบใหม่ พร้อมสลับตัวเลือกอัตโนมัติ",
+                scoreText: "คะแนน:",
+                prevBtn: "&larr; ก่อนหน้า",
+                nextBtn: "ถัดไป &rarr;",
+                submitBtn: "🎯 ส่งคำตอบชุดที่ 2 และดูผลวิเคราะห์",
+                wbTitle: "🎨 กระดานทดเลข",
+                wbDesc: "ใช้กระดานดิจิทัลนี้สำหรับทดเลข วาดรูปทรง หรือจดบันทึกขณะทำข้อสอบชุดที่ 2",
+                wbClear: "ล้าง",
+                wbStatus: "ปากกาพร้อมใช้งาน"
+            }
+        };
+
+        let currentLang = 'en';
+
+        function switchLanguage(lang) {
+            currentLang = lang;
+            if (lang === 'th') {
+                document.getElementById('btn-lang-th').className = "px-3 py-1 bg-white text-brand-700 text-xs font-bold rounded-full shadow transition";
+                document.getElementById('btn-lang-en').className = "px-3 py-1 bg-white/20 hover:bg-white/30 text-xs font-bold rounded-full transition";
+            } else {
+                document.getElementById('btn-lang-en').className = "px-3 py-1 bg-white text-brand-700 text-xs font-bold rounded-full shadow transition";
+                document.getElementById('btn-lang-th').className = "px-3 py-1 bg-white/20 hover:bg-white/30 text-xs font-bold rounded-full transition";
+            }
+
+            const t = translations[lang];
+            document.getElementById('app-title').innerText = t.appTitle;
+            document.getElementById('app-subtitle').innerText = t.appSubtitle;
+            document.getElementById('tool-heading').innerHTML = `⭐ ${t.toolHeading.replace('⭐ ', '')}`;
+            document.getElementById('tool-desc').innerText = t.toolDesc;
+            document.getElementById('summary-heading').innerText = t.summaryHeading;
+            document.getElementById('summary-p1').innerText = t.summaryP1;
+            document.getElementById('summary-p2').innerText = t.summaryP2;
+            document.getElementById('summary-p3').innerText = t.summaryP3;
+            document.getElementById('memory-trick-title').innerText = t.memoryTitle;
+            document.getElementById('memory-trick-desc').innerText = t.memoryDesc;
+            document.getElementById('thought-process-title').innerText = t.thoughtTitle;
+            document.getElementById('thought-process-desc').innerText = t.thoughtDesc;
+            document.getElementById('quiz-section-title').innerText = t.quizTitle;
+            document.getElementById('quiz-section-subtitle').innerText = t.quizSubtitle;
+            document.getElementById('btn-prev').innerHTML = t.prevBtn;
+            document.getElementById('btn-next').innerHTML = t.nextBtn;
+            document.getElementById('btn-submit').innerHTML = t.submitBtn;
+            document.getElementById('wb-title').innerHTML = `🎨 ${t.wbTitle.replace('🎨 ', '')}`;
+            document.getElementById('wb-desc').innerText = t.wbDesc;
+            document.getElementById('wb-status').innerText = t.wbStatus;
+
+            renderQuestion();
+        }
+
+        // --- VIRTUAL TEACHING TOOL LOGIC (SET 2) ---
+        let starCount = 6;
+        function renderStars() {
+            const container = document.getElementById('star-container');
+            container.innerHTML = '';
+            for (let i = 0; i < starCount; i++) {
+                const star = document.createElement('div');
+                star.className = "w-8 h-8 bg-amber-400 rounded-full flex items-center justify-center text-white text-xs font-bold shadow-md transform hover:scale-110 transition cursor-pointer";
+                star.innerText = "⭐";
+                container.appendChild(star);
+            }
+            document.getElementById('star-count').innerText = starCount;
+        }
+        function modifyStars(amount) {
+            starCount = Math.max(0, Math.min(20, starCount + amount));
+            renderStars();
+        }
+        function resetStars() {
+            starCount = 6;
+            renderStars();
+        }
+
+        // --- 30 QUESTIONS RAW DATA SET 2 (Balanced Key Distribution across A, B, C, D) ---
+        const rawQuestionsData = [
+            {
+                id: 1,
+                question: "If you have 6 toy blocks and add 4 more blocks to your tower, how many blocks are in your tower now?",
+                options: [
+                    { text: "8 blocks", isCorrect: false, rationale: "6 + 2 equals 8." },
+                    { text: "10 blocks", isCorrect: true, rationale: "6 + 4 equals 10 blocks in total." },
+                    { text: "12 blocks", isCorrect: false, rationale: "This exceeds the correct sum." },
+                    { text: "14 blocks", isCorrect: false, rationale: "This overcounts significantly." }
+                ],
+                hint: "Count forward 4 steps from 6.",
+                correctIndex: 1
+            },
+            {
+                id: 2,
+                question: "What number comes immediately before $25$?",
+                options: [
+                    { text: "23", isCorrect: false, rationale: "23 comes two steps before 25." },
+                    { text: "24", isCorrect: true, rationale: "The counting sequence is 24, then 25." },
+                    { text: "26", isCorrect: false, rationale: "26 comes after 25." },
+                    { text: "30", isCorrect: false, rationale: "30 is five steps ahead." }
+                ],
+                hint: "Count backward by one from twenty-five.",
+                correctIndex: 1
+            },
+            {
+                id: 3,
+                question: "Which 3D shape looks like a soda can or soup tin?",
+                options: [
+                    { text: "Cube", isCorrect: false, rationale: "A cube has flat square faces." },
+                    { text: "Sphere", isCorrect: false, rationale: "A sphere is completely round like a ball." },
+                    { text: "Cylinder", isCorrect: true, rationale: "A cylinder features two circular flat bases and a curved body, just like a can." },
+                    { text: "Cone", isCorrect: false, rationale: "A cone tapers to a sharp point." }
+                ],
+                hint: "It has two flat circular ends and rolls on its side.",
+                correctIndex: 2
+            },
+            {
+                id: 4,
+                question: "What is $12 - 5$?",
+                options: [
+                    { text: "6", isCorrect: false, rationale: "12 - 6 = 6." },
+                    { text: "7", isCorrect: true, rationale: "Subtracting 5 from 12 yields 7." },
+                    { text: "8", isCorrect: false, rationale: "12 - 4 = 8." },
+                    { text: "17", isCorrect: false, rationale: "This adds 12 + 5 instead of subtracting." }
+                ],
+                hint: "Take away 5 fingers from 12.",
+                correctIndex: 1
+            },
+            {
+                id: 5,
+                question: "Which pattern correctly follows: Square, Circle, Square, Circle, Square, ... ?",
+                options: [
+                    { text: "Circle", isCorrect: true, rationale: "The shape alternates between Square and Circle; after Square comes Circle." },
+                    { text: "Triangle", isCorrect: false, rationale: "Triangles were not introduced in this alternating AB sequence." },
+                    { text: "Star", isCorrect: false, rationale: "Stars are not part of this pattern." },
+                    { text: "Square", isCorrect: false, rationale: "Two Squares in a row would break the alternating pattern." }
+                ],
+                hint: "Look at the repeating alternating shapes.",
+                correctIndex: 0
+            },
+            {
+                id: 6,
+                question: "Which animal is the fastest runner among a turtle, a rabbit, and a snail?",
+                options: [
+                    { text: "A turtle", isCorrect: false, rationale: "Turtles move very slowly." },
+                    { text: "A rabbit", isCorrect: true, rationale: "Rabbits are agile and sprint quickly across fields." },
+                    { text: "A snail", isCorrect: false, rationale: "Snails glide slowly with a shell." },
+                    { text: "They all run at the same speed", isCorrect: false, rationale: "Animals have vastly different locomotor speeds." }
+                ],
+                hint: "Think of an animal famous for hopping fast.",
+                correctIndex: 1
+            },
+            {
+                id: 7,
+                question: "If you divide 8 pencils equally into 2 pencil boxes, how many pencils go into each box?",
+                options: [
+                    { text: "2 pencils", isCorrect: false, rationale: "2 + 2 = 4, leaving 4 pencils unplaced." },
+                    { text: "3 pencils", isCorrect: false, rationale: "3 + 3 = 6." },
+                    { text: "4 pencils", isCorrect: true, rationale: "Sharing 8 items into 2 equal groups gives 4 per box (4 + 4 = 8)." },
+                    { text: "8 pencils", isCorrect: false, rationale: "That would put all pencils in one box." }
+                ],
+                hint: "Distribute the 8 pencils one by one into two groups.",
+                correctIndex: 2
+            },
+            {
+                id: 8,
+                question: "What number is represented by four tens and seven ones ($47$)?",
+                options: [
+                    { text: "74", isCorrect: false, rationale: "74 is seven tens and four ones." },
+                    { text: "47", isCorrect: true, rationale: "4 tens (40) plus 7 ones (7) equals 47." },
+                    { text: "407", isCorrect: false, rationale: "This misplaces the place values." },
+                    { text: "11", isCorrect: false, rationale: "This adds 4 and 7." }
+                ],
+                hint: "Combine 40 and 7.",
+                correctIndex: 1
+            },
+            {
+                id: 9,
+                question: "Which comparison symbol correctly completes this statement: $15 \\underline{\\quad} 19$?",
+                options: [
+                    { text: "> (Greater than)", isCorrect: false, rationale: "15 is smaller than 19." },
+                    { text: "< (Less than)", isCorrect: true, rationale: "15 is less than 19, so 15 < 19." },
+                    { text: "= (Equal to)", isCorrect: false, rationale: "These are distinct numbers." },
+                    { text: "+ (Plus)", isCorrect: false, rationale: "Plus is an arithmetic operator." }
+                ],
+                hint: "The smaller number faces the pointed end of the symbol.",
+                correctIndex: 1
+            },
+            {
+                id: 10,
+                question: "What time of day do you typically eat breakfast?",
+                options: [
+                    { text: "Morning", isCorrect: true, rationale: "Breakfast is the first meal eaten in the morning." },
+                    { text: "Midnight", isCorrect: false, rationale: "Midnight is sleeping time." },
+                    { text: "Afternoon", isCorrect: false, rationale: "Afternoon is when lunch is eaten." },
+                    { text: "Late night", isCorrect: false, rationale: "No meals are eaten at this hour." }
+                ],
+                hint: "Think of the meal you have right after waking up.",
+                correctIndex: 0
+            },
+            {
+                id: 11,
+                question: "If today is Wednesday, what day was yesterday?",
+                options: [
+                    { text: "Monday", isCorrect: false, rationale: "Monday is two days before Wednesday." },
+                    { text: "Tuesday", isCorrect: true, rationale: "Tuesday immediately precedes Wednesday." },
+                    { text: "Thursday", isCorrect: false, rationale: "Thursday comes after Wednesday." },
+                    { text: "Friday", isCorrect: false, rationale: "Friday is near the weekend." }
+                ],
+                hint: "Think of the day that comes right before Wednesday.",
+                correctIndex: 1
+            },
+            {
+                id: 12,
+                question: "What is $7 + 6$?",
+                options: [
+                    { text: "11", isCorrect: false, rationale: "7 + 4 = 11." },
+                    { text: "12", isCorrect: false, rationale: "6 + 6 = 12." },
+                    { text: "13", isCorrect: true, rationale: "7 plus 6 equals 13." },
+                    { text: "14", isCorrect: false, rationale: "7 + 7 = 14." }
+                ],
+                hint: "Count forward 6 steps from 7.",
+                correctIndex: 2
+            },
+            {
+                id: 13,
+                question: "Which geometric shape has no straight lines and looks like a perfectly round ring or coin?",
+                options: [
+                    { text: "Circle", isCorrect: true, rationale: "A circle is bounded by a continuous curved line with zero straight sides." },
+                    { text: "Square", isCorrect: false, rationale: "Squares have straight sides." },
+                    { text: "Triangle", isCorrect: false, rationale: "Triangles have straight sides." },
+                    { text: "Rectangle", isCorrect: false, rationale: "Rectangles have straight sides." }
+                ],
+                hint: "It has a continuous curved boundary.",
+                correctIndex: 0
+            },
+            {
+                id: 14,
+                question: "If you start at number $10$ and count forward by twos, what is the third number you say (10, _, ?)?",
+                options: [
+                    { text: "12", isCorrect: false, rationale: "12 is the first step." },
+                    { text: "14", isCorrect: true, rationale: "Counting by twos from 10 gives: 10, 12, 14." },
+                    { text: "15", isCorrect: false, rationale: "This breaks the counting by twos sequence." },
+                    { text: "16", isCorrect: false, rationale: "16 is the fourth number." }
+                ],
+                hint: "Add 2 twice starting from 10.",
+                correctIndex: 1
+            },
+            {
+                id: 15,
+                question: "Which container holds the least amount of liquid?",
+                options: [
+                    { text: "An eyedropper", isCorrect: true, rationale: "An eyedropper holds only a single tiny drop of liquid." },
+                    { text: "A bucket", isCorrect: false, rationale: "A bucket holds liters of water." },
+                    { text: "A swimming pool", isCorrect: false, rationale: "A pool holds massive volumes." },
+                    { text: "A water pitcher", isCorrect: false, rationale: "A pitcher holds several cups." }
+                ],
+                hint: "Think of a tiny medical tool used to dispense single drops.",
+                correctIndex: 0
+            },
+            {
+                id: 16,
+                question: "What is $15 - 8$?",
+                options: [
+                    { text: "6", isCorrect: false, rationale: "15 - 9 = 6." },
+                    { text: "7", isCorrect: true, rationale: "15 minus 8 equals 7." },
+                    { text: "8", isCorrect: false, rationale: "15 - 7 = 8." },
+                    { text: "23", isCorrect: false, rationale: "This adds 15 + 8." }
+                ],
+                hint: "Count backward 8 steps from 15.",
+                correctIndex: 1
+            },
+            {
+                id: 17,
+                question: "Which of these is a winter weather item?",
+                options: [
+                    { text: "Sunglasses", isCorrect: false, rationale: "Sunglasses protect against bright summer sun." },
+                    { text: "A woolen beanie hat and gloves", isCorrect: true, rationale: "Beanies and gloves keep you warm in freezing winter snow." },
+                    { text: "A swimming swimsuit", isCorrect: false, rationale: "Swimsuits are for summer pools." },
+                    { text: "A beach sandal", isCorrect: false, rationale: "Sandals are summer footwear." }
+                ],
+                hint: "Think of what keeps your hands and head warm in freezing snow.",
+                correctIndex: 1
+            },
+            {
+                id: 18,
+                question: "What number comes right after $39$?",
+                options: [
+                    { text: "38", isCorrect: false, rationale: "38 comes before 39." },
+                    { text: "40", isCorrect: true, rationale: "The counting sequence proceeds 38, 39, 40." },
+                    { text: "41", isCorrect: false, rationale: "41 comes after 40." },
+                    { text: "50", isCorrect: false, rationale: "50 is ten steps ahead." }
+                ],
+                hint: "Think of the decade change after thirty-nine.",
+                correctIndex: 1
+            },
+            {
+                id: 19,
+                question: "Which directional word describes a cat sitting directly underneath a table?",
+                options: [
+                    { text: "Above", isCorrect: false, rationale: "Above means higher up." },
+                    { text: "Under", isCorrect: true, rationale: "'Under' means beneath or below an object." },
+                    { text: "Beside", isCorrect: false, rationale: "Beside means next to." },
+                    { text: "Inside", isCorrect: false, rationale: "Inside means enclosed within." }
+                ],
+                hint: "The cat is hidden beneath the tabletop.",
+                correctIndex: 1
+            },
+            {
+                id: 20,
+                question: "How many days are in one complete week?",
+                options: [
+                    { text: "5 days", isCorrect: false, rationale: "That represents school weekdays." },
+                    { text: "7 days", isCorrect: true, rationale: "There are 7 days in a week from Sunday to Saturday." },
+                    { text: "10 days", isCorrect: false, rationale: "This overestimates the weekly cycle." },
+                    { text: "12 days", isCorrect: false, rationale: "12 represents months in a year." }
+                ],
+                hint: "Count from Sunday through Saturday.",
+                correctIndex: 1
+            },
+            {
+                id: 21,
+                question: "What is the sum of $9 + 5$?",
+                options: [
+                    { text: "13", isCorrect: false, rationale: "9 + 4 = 13." },
+                    { text: "14", isCorrect: true, rationale: "9 plus 5 equals 14." },
+                    { text: "15", isCorrect: false, rationale: "9 + 6 = 15." },
+                    { text: "16", isCorrect: false, rationale: "8 + 8 = 16." }
+                ],
+                hint: "Put 9 in your mind and count forward 5.",
+                correctIndex: 1
+            },
+            {
+                id: 22,
+                question: "Which object is shaped like a 3D rectangular prism (like a tissue box)?",
+                options: [
+                    { text: "A tissue box", isCorrect: true, rationale: "A tissue box is a classic rectangular prism with 6 flat rectangular faces." },
+                    { text: "A marble", isCorrect: false, rationale: "A marble is a sphere." },
+                    { text: "An ice cream cone", isCorrect: false, rationale: "An ice cream cone is a cone." },
+                    { text: "A soccer ball", isCorrect: false, rationale: "A soccer ball is a sphere." }
+                ],
+                hint: "It has six flat rectangular sides used to hold tissues.",
+                correctIndex: 0
+            },
+            {
+                id: 23,
+                question: "If you have 10 stickers and give 4 to your classmate, how many stickers do you have left?",
+                options: [
+                    { text: "5 stickers", isCorrect: false, rationale: "10 - 5 = 5." },
+                    { text: "6 stickers", isCorrect: true, rationale: "10 minus 4 equals 6 stickers remaining." },
+                    { text: "7 stickers", isCorrect: false, rationale: "10 - 3 = 7." },
+                    { text: "14 stickers", isCorrect: false, rationale: "This adds 10 + 4." }
+                ],
+                hint: "Subtract the given stickers from your initial 10.",
+                correctIndex: 1
+            },
+            {
+                id: 24,
+                question: "Which shape has 4 sides where all 4 sides are equal in length?",
+                options: [
+                    { text: "Rectangle", isCorrect: false, rationale: "Rectangles have two long and two short sides." },
+                    { text: "Square", isCorrect: true, rationale: "A square has four equal straight sides." },
+                    { text: "Oval", isCorrect: false, rationale: "Ovals are curved." },
+                    { text: "Triangle", isCorrect: false, rationale: "Triangles have 3 sides." }
+                ],
+                hint: "All four sides match in length perfectly.",
+                correctIndex: 1
+            },
+            {
+                id: 25,
+                question: "What number comes right before $50$?",
+                options: [
+                    { text: "48", isCorrect: false, rationale: "48 comes two steps before 50." },
+                    { text: "49", isCorrect: true, rationale: "The counting sequence is 48, 49, 50." },
+                    { text: "51", isCorrect: false, rationale: "51 comes after 50." },
+                    { text: "60", isCorrect: false, rationale: "60 is ten steps ahead." }
+                ],
+                hint: "Count backward by one from fifty.",
+                correctIndex: 1
+            },
+            {
+                id: 26,
+                question: "Which coin has the lowest value among a penny, nickel, dime, and quarter?",
+                options: [
+                    { text: "Penny ($1\\u00a2$)", isCorrect: true, rationale: "A penny is worth 1 cent, the lowest denomination." },
+                    { text: "Nickel ($5\\u00a2$)", isCorrect: false, rationale: "A nickel is worth 5 cents." },
+                    { text: "Dime ($10\\u00a2$)", isCorrect: false, rationale: "A dime is worth 10 cents." },
+                    { text: "Quarter ($25\\u00a2$)", isCorrect: false, rationale: "A quarter is worth 25 cents." }
+                ],
+                hint: "It is worth only one single cent.",
+                correctIndex: 0
+            },
+            {
+                id: 27,
+                question: "What is $11 - 3$?",
+                options: [
+                    { text: "7", isCorrect: false, rationale: "11 - 4 = 7." },
+                    { text: "8", isCorrect: true, rationale: "11 minus 3 equals 8." },
+                    { text: "9", isCorrect: false, rationale: "11 - 2 = 9." },
+                    { text: "14", isCorrect: false, rationale: "This adds 11 + 3." }
+                ],
+                hint: "Count backward 3 steps from 11.",
+                correctIndex: 1
+            },
+            {
+                id: 28,
+                question: "Which animal is typically kept as a household pet rather than a wild farm animal?",
+                options: [
+                    { text: "A wild lion", isCorrect: false, rationale: "Lions live in grasslands/jungles." },
+                    { text: "A domestic house cat", isCorrect: true, rationale: "House cats live indoors as beloved domestic pets." },
+                    { text: "A wild zebra", isCorrect: false, rationale: "Zebras roam African savannas." },
+                    { text: "A wild shark", isCorrect: false, rationale: "Sharks live in ocean waters." }
+                ],
+                hint: "Think of an animal that purrs and sleeps on indoor couches.",
+                correctIndex: 1
+            },
+            {
+                id: 29,
+                question: "What is $8 + 8$?",
+                options: [
+                    { text: "14", isCorrect: false, rationale: "7 + 7 = 14." },
+                    { text: "15", isCorrect: false, rationale: "8 + 7 = 15." },
+                    { text: "16", isCorrect: true, rationale: "Double 8 equals 16." },
+                    { text: "18", isCorrect: false, rationale: "9 + 9 = 18." }
+                ],
+                hint: "Double eight fingers.",
+                correctIndex: 2
+            },
+            {
+                id: 30,
+                question: "If you have 5 red balloons and 5 blue balloons, how many balloons do you have in all?",
+                options: [
+                    { text: "8 balloons", isCorrect: false, rationale: "This underestimates the sum." },
+                    { text: "10 balloons", isCorrect: true, rationale: "5 red + 5 blue = 10 balloons total." },
+                    { text: "12 balloons", isCorrect: false, rationale: "This overcounts." },
+                    { text: "15 balloons", isCorrect: false, rationale: "This is incorrect." }
+                ],
+                hint: "Add 5 and 5 together.",
+                correctIndex: 1
+            }
+        ];
+
+        let questions = JSON.parse(JSON.stringify(rawQuestionsData));
+        let userAnswers = {};
+        let currentQIndex = 0;
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function initQuestions() {
+            questions.forEach(q => {
+                const correctText = q.options[q.correctIndex].text;
+                shuffleArray(q.options);
+                q.correctIndex = q.options.findIndex(opt => opt.text === correctText);
+            });
+        }
+
+        function renderQuestionNav() {
+            const navBar = document.getElementById('q-nav-bar');
+            navBar.innerHTML = '';
+            questions.forEach((q, idx) => {
+                const btn = document.createElement('button');
+                let btnClass = "w-8 h-8 rounded-lg text-xs font-bold transition flex items-center justify-center border ";
+                if (userAnswers[q.id] !== undefined) {
+                    btnClass += "bg-brand-500 text-white border-brand-600 shadow-sm";
+                } else {
+                    btnClass += "bg-white text-slate-700 border-slate-300 hover:bg-slate-100";
+                }
+                if (idx === currentQIndex) {
+                    btnClass += " ring-2 ring-fun-blue ring-offset-1";
+                }
+                btn.className = btnClass;
+                btn.innerText = q.id;
+                btn.onclick = () => {
+                    currentQIndex = idx;
+                    renderQuestion();
+                };
+                navBar.appendChild(btn);
+            });
+        }
+
+        function renderQuestion() {
+            renderQuestionNav();
+            const q = questions[currentQIndex];
+            const container = document.getElementById('active-question-container');
+            
+            document.getElementById('question-progress').innerText = `Question ${currentQIndex + 1} of ${questions.length}`;
+
+            let html = `
+                <div class="space-y-4">
+                    <div class="flex items-start justify-between gap-4">
+                        <h3 class="text-base font-bold text-slate-800">
+                            <span class="text-brand-600 mr-2">Q${currentQIndex + 1}.</span> ${q.question}
+                        </h3>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            `;
+
+            q.options.forEach((opt, optIdx) => {
+                const isSelected = userAnswers[q.id] === optIdx;
+                let optClass = "p-3 rounded-xl border-2 text-sm font-semibold transition text-left flex items-center justify-between ";
+                
+                if (isSelected) {
+                    optClass += "border-brand-500 bg-brand-50 text-brand-900 shadow-sm";
+                } else {
+                    optClass += "border-slate-200 bg-white hover:border-slate-300 text-slate-700";
+                }
+
+                html += `
+                    <button onclick="selectOption(${q.id}, ${optIdx})" class="${optClass}">
+                        <span><strong class="mr-2 text-slate-400">${String.fromCharCode(65 + optIdx)}.</strong> ${opt.text}</span>
+                        ${isSelected ? '<span class="text-brand-600 font-bold">✓</span>' : ''}
+                    </button>
+                `;
+            });
+
+            html += `
+                    </div>
+                    <div class="mt-4 p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-bold text-slate-500">💡 Hint (Clue):</span>
+                            <button onclick="toggleHint()" class="text-xs text-brand-600 font-bold hover:underline">Show / Hide Hint</button>
+                        </div>
+                        <p id="hint-box" class="text-xs text-slate-600 italic hidden">${q.hint}</p>
                     </div>
                 </div>
             `;
-        });
-        container.innerHTML = html;
-    }
 
-    function checkAnswer(qIdx, selected, correct) {
-        const expDiv = document.getElementById(`exp-${qIdx}`);
-        expDiv.style.display = 'block';
-        const labels = document.querySelectorAll(`#q-${qIdx} label`);
-        labels.forEach((lbl, idx) => {
-            if (idx === correct) {
-                lbl.style.backgroundColor = '#d4edda';
-            } else if (idx === selected) {
-                lbl.style.backgroundColor = '#f8d7da';
-            }
-        });
-    }
+            container.innerHTML = html;
+            updateScoreDisplay();
 
-    function submitExam() {
-        let score = 0;
-        rawQuestions.forEach((item, index) => {
-            const selectedOpt = document.querySelector(`input[name="question-${index}"]:checked`);
-            if (selectedOpt && parseInt(selectedOpt.value) === item.answer) {
-                score++;
+            if (window.MathJax) {
+                MathJax.typesetPromise();
             }
-        });
-        const percent = (score / rawQuestions.length) * 100;
-        document.getElementById('result-section').style.display = 'block';
-        document.getElementById('score-summary').innerHTML = `คุณทำคะแนนได้ <strong>${score}/${rawQuestions.length}</strong> (${percent.toFixed(2)}%)`;
-        
-        let analysisText = "<ul>";
-        if (percent === 100) {
-            analysisText += "<li>ยอดเยี่ยม! คุณมีความเข้าใจในเนื้อหาครบถ้วนทุกหมวดหมู่</li>";
-        } else {
-            analysisText += "<li>จุดที่ควรพัฒนา: ควรทบทวนกระบวนการคิดคำนวณลำดับขั้นตอนและโจทย์ปัญหาสัดส่วนเพิ่มเติม</li>";
         }
-        analysisText += "</ul>";
-        document.getElementById('weakness-analysis').innerHTML = analysisText;
-    }
 
-    // Whiteboard Script
-    const canvas = document.getElementById('wbCanvas');
-    const ctx = canvas.getContext('2d');
-    let painting = false;
+        function toggleHint() {
+            const box = document.getElementById('hint-box');
+            box.classList.toggle('hidden');
+        }
 
-    function startPosition(e) { painting = true; draw(e); }
-    function finishedPosition() { painting = false; ctx.beginPath(); }
-    function draw(e) {
-        if (!painting) return;
-        ctx.lineWidth = 2;
-        ctx.lineCap = 'round';
-        ctx.strokeStyle = '#2c3e50';
-        
-        const rect = canvas.getBoundingClientRect();
-        const x = (e.clientX || e.touches[0].clientX) - rect.left;
-        const y = (e.clientY || e.touches[0].clientY) - rect.top;
+        function selectOption(qId, optIdx) {
+            userAnswers[qId] = optIdx;
+            renderQuestion();
+            localStorage.setItem('k3_math_set2_answers', JSON.stringify(userAnswers));
+        }
 
-        ctx.lineTo(x, y);
-        ctx.stroke();
-        ctx.beginPath();
-        ctx.moveTo(x, y);
-    }
+        function nextQuestion() {
+            if (currentQIndex < questions.length - 1) {
+                currentQIndex++;
+                renderQuestion();
+            }
+        }
 
-    canvas.addEventListener('mousedown', startPosition);
-    canvas.addEventListener('mouseup', finishedPosition);
-    canvas.addEventListener('mousemove', draw);
-    
-    canvas.addEventListener('touchstart', startPosition);
-    canvas.addEventListener('touchend', finishedPosition);
-    canvas.addEventListener('touchmove', draw);
+        function prevQuestion() {
+            if (currentQIndex > 0) {
+                currentQIndex--;
+                renderQuestion();
+            }
+        }
 
-    function clearCanvas() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-    }
+        function updateScoreDisplay() {
+            let score = 0;
+            questions.forEach(q => {
+                if (userAnswers[q.id] === q.correctIndex) {
+                    score++;
+                }
+            });
+            document.getElementById('score-display').innerText = `Score: ${score} / ${questions.length}`;
+        }
 
-    window.onload = renderQuiz;
-</script>
+        function submitQuiz() {
+            let score = 0;
+            questions.forEach(q => {
+                if (userAnswers[q.id] === q.correctIndex) {
+                    score++;
+                }
+            });
 
+            const percent = Math.round((score / questions.length) * 100);
+            document.getElementById('res-score-val').innerText = `${score} / ${questions.length}`;
+            document.getElementById('res-percent-val').innerText = `${percent}%`;
+
+            let tier = "Applied Math Expert";
+            if (percent < 60) tier = "Developing Learner";
+            else if (percent < 80) tier = "Proficient Problem Solver";
+            document.getElementById('res-tier-val').innerText = tier;
+
+            document.getElementById('result-section').classList.remove('hidden');
+            document.getElementById('result-section').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function resetApp() {
+            userAnswers = {};
+            localStorage.removeItem('k3_math_set2_answers');
+            currentQIndex = 0;
+            shuffleArray(questions);
+            initQuestions();
+            document.getElementById('result-section').classList.add('hidden');
+            renderQuestion();
+            resetStars();
+            clearWhiteboard();
+        }
+
+        // --- WHITEBOARD CANVAS LOGIC ---
+        const canvas = document.getElementById('whiteboardCanvas');
+        const ctx = canvas.getContext('2d');
+        let isDrawing = false;
+        let penColor = '#1e293b';
+
+        function resizeCanvas() {
+            const rect = canvas.parentElement.getBoundingClientRect();
+            canvas.width = rect.width;
+            canvas.height = rect.height;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            ctx.lineWidth = 3;
+            ctx.strokeStyle = penColor;
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+
+        function startDrawing(e) {
+            isDrawing = true;
+            const rect = canvas.getBoundingClientRect();
+            const x = (e.clientX || e.touches[0].clientX) - rect.left;
+            const y = (e.clientY || e.touches[0].clientY) - rect.top;
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+        }
+
+        function draw(e) {
+            if (!isDrawing) return;
+            e.preventDefault();
+            const rect = canvas.getBoundingClientRect();
+            const x = (e.clientX || e.touches[0].clientX) - rect.left;
+            const y = (e.clientY || e.touches[0].clientY) - rect.top;
+            ctx.lineTo(x, y);
+            ctx.stroke();
+        }
+
+        function stopDrawing() {
+            isDrawing = false;
+        }
+
+        function clearWhiteboard() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        function setPenColor(color) {
+            penColor = color;
+            ctx.strokeStyle = penColor;
+        }
+
+        canvas.addEventListener('mousedown', startDrawing);
+        canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('mouseup', stopDrawing);
+        canvas.addEventListener('mouseleave', stopDrawing);
+
+        canvas.addEventListener('touchstart', startDrawing);
+        canvas.addEventListener('touchmove', draw);
+        canvas.addEventListener('touchend', stopDrawing);
+
+        window.onload = () => {
+            initQuestions();
+            renderStars();
+            renderQuestion();
+            resizeCanvas();
+
+            const saved = localStorage.getItem('k3_math_set2_answers');
+            if (saved) {
+                try {
+                    userAnswers = JSON.parse(saved);
+                    renderQuestion();
+                } catch(e) {}
+            }
+        };
+    </script>
 </body>
 </html>
