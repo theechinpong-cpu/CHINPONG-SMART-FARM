@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบคลังข้อสอบและสื่อการสอน - หน้าที่พลเมือง ป.4</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --accent-color: #3498db;
+            --success-color: #27ae60;
+            --danger-color: #e74c3c;
+            --bg-color: #f8f9fa;
+            --card-bg: #ffffff;
+            --text-color: #333333;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Sarabun', sans-serif; }
+        body { background-color: var(--bg-color); color: var(--text-color); line-height: 1.6; padding: 20px; }
+        header { text-align: center; margin-bottom: 30px; background: var(--primary-color); color: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        header h1 { font-size: 1.8rem; margin-bottom: 10px; }
+        header p { font-size: 1rem; opacity: 0.9; }
+        
+        .container { max-width: 1400px; margin: 0 auto; display: flex; flex-direction: column; gap: 30px; }
+        
+        /* Virtual Teaching Tool Section */
+        .virtual-tool { background: var(--card-bg); padding: 20px; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .virtual-tool h2 { color: var(--primary-color); margin-bottom: 15px; font-size: 1.3rem; border-bottom: 2px solid var(--accent-color); padding-bottom: 8px; }
+        .tool-dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px; }
+        .tool-card { background: #eef2f7; padding: 15px; border-radius: 8px; border-left: 4px solid var(--accent-color); }
+        .tool-card h3 { font-size: 1.1rem; margin-bottom: 8px; color: var(--primary-color); }
+
+        /* Main Workspace: 2-Frame Layout */
+        .workspace { display: grid; grid-template-columns: 7fr 3fr; gap: 20px; }
+        @media (max-width: 1024px) { .workspace { grid-template-columns: 1fr; } }
+
+        /* Exam Panel (70%) */
+        .exam-panel { background: var(--card-bg); padding: 25px; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .exam-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
+        .nav-buttons { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 20px; max-height: 150px; overflow-y: auto; padding: 5px; background: #f1f2f6; border-radius: 8px; }
+        .nav-btn { width: 35px; height: 35px; border: none; background: #ddd; border-radius: 4px; cursor: pointer; font-weight: bold; transition: all 0.2s; }
+        .nav-btn.answered { background: var(--accent-color); color: white; }
+        .nav-btn.active { border: 2px solid var(--primary-color); transform: scale(1.1); }
+
+        .question-box { margin-bottom: 25px; border: 1px solid #e1e1e1; padding: 20px; border-radius: 8px; background: #fff; }
+        .question-title { font-size: 1.1rem; font-weight: bold; margin-bottom: 15px; color: var(--primary-color); }
+        .options-list { display: flex; flex-direction: column; gap: 10px; }
+        .option-item { padding: 12px 15px; border: 1px solid #dcdde1; border-radius: 6px; cursor: pointer; transition: all 0.2s; background: #fdfdfd; }
+        .option-item:hover { background: #f1f2f6; }
+        .option-item.correct { background: #d4edda; border-color: var(--success-color); color: #155724; font-weight: bold; }
+        .option-item.incorrect { background: #f8d7da; border-color: var(--danger-color); color: #721c24; }
+        
+        .explanation-box { margin-top: 15px; padding: 12px; background: #fff3cd; border-left: 4px solid #ffc107; border-radius: 4px; font-size: 0.95rem; display: none; }
+        .clue-btn { background: #6c757d; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 0.85rem; margin-top: 10px; }
+
+        /* Whiteboard Panel (30%) */
+        .whiteboard-panel { background: var(--card-bg); padding: 20px; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: flex; flex-direction: column; }
+        .whiteboard-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .whiteboard-tools { display: flex; gap: 8px; margin-bottom: 10px; }
+        .wb-btn { padding: 6px 12px; border: none; background: #e0e0e0; border-radius: 4px; cursor: pointer; font-size: 0.9rem; }
+        .wb-btn.active { background: var(--primary-color); color: white; }
+        #wb-canvas { border: 2px dashed #bdc3c7; border-radius: 8px; background: #fff; cursor: crosshair; width: 100%; height: 400px; touch-action: none; }
+
+        /* Controls & Footer */
+        .action-bar { display: flex; justify-content: space-between; margin-top: 20px; align-items: center; }
+        .btn-main { background: var(--accent-color); color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-size: 1rem; font-weight: bold; transition: background 0.2s; }
+        .btn-main:hover { background: #2980b9; }
+        .btn-reset { background: var(--danger-color); color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-size: 1rem; font-weight: bold; }
+        
+        /* Results Modal / Screen */
+        .result-screen { display: none; background: #fff; padding: 30px; border-radius: 12px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .result-screen h3 { font-size: 1.8rem; color: var(--primary-color); margin-bottom: 15px; }
+        .score-display { font-size: 3rem; font-weight: bold; color: var(--success-color); margin: 20px 0; }
+        
+        footer { text-align: center; margin-top: 40px; padding: 20px; font-size: 0.9rem; color: #7f8c8d; border-top: 1px solid #e1e1e1; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>คลังข้อสอบวิชาสังคมศึกษา ป.4 (สาระหน้าที่พลเมือง)</h1>
+            <p>ระบบทดสอบแบบ Interactive พร้อมระบบป้องกันการเดา เฉลยละเอียด และกระดานทดเลข</p>
+        </header>
+
+        <!-- Virtual Teaching Tool Section -->
+        <section class="virtual-tool">
+            <h2>สื่อการสอนจำลอง (Virtual Teaching Tools)</h2>
+            <div class="tool-dashboard">
+                <div class="tool-card">
+                    <h3>🏛️ สิทธิ vs หน้าที่</h3>
+                    <p>สิทธิคือสิ่งที่เราได้รับตามกฎหมาย หน้าที่คือสิ่งที่ต้องปฏิบัติเพื่อความสงบสุขของส่วนรวม</p>
+                </div>
+                <div class="tool-card">
+                    <h3>🗳️ วิถีประชาธิปไตย</h3>
+                    <p>การรับฟังเสียงส่วนใหญ่และการเคารพมติกลุ่มคือกุญแจสำคัญในการอยู่ร่วมกันอย่างสันติสุข</p>
+                </div>
+                <div class="tool-card">
+                    <h3>🌾 วัฒนธรรมและภูมิปัญญา</h3>
+                    <p>การสืบสานและคัดกรองวัฒนธรรมไทยช่วยคงเอกลักษณ์ชาติท่ามกลางกระแสโลกาภิวัตน์</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Main Workspace -->
+        <div class="workspace" id="main-workspace">
+            <!-- Exam Panel -->
+            <div class="exam-panel">
+                <div class="exam-header">
+                    <h3>แบบทดสอบวัดผลสัมฤทธิ์ (30 ข้อ)</h3>
+                    <div>
+                        <button class="wb-btn" id="lang-toggle-btn">ภาษาไทย (TH)</button>
+                        <button class="btn-reset" onclick="resetExam()">รีเซ็ตข้อสอบ</button>
+                    </div>
+                </div>
+
+                <!-- Question Navigation Buttons -->
+                <div class="nav-buttons" id="nav-buttons-container"></div>
+
+                <!-- Active Question Container -->
+                <div id="question-container">
+                    <div class="question-box" id="current-question-box">
+                        <div class="question-title" id="q-title">กำลังโหลดคำถาม...</div>
+                        <div class="options-list" id="q-options"></div>
+                        <button class="clue-btn" onclick="toggleClue()">💡 แสดงคำใบ้</button>
+                        <div class="explanation-box" id="q-clue"></div>
+                        <div class="explanation-box" id="q-explanation" style="border-left-color: var(--success-color);"></div>
+                    </div>
+                </div>
+
+                <div class="action-bar">
+                    <button class="btn-main" onclick="prevQuestion()">⬅️ ข้อก่อนหน้า</button>
+                    <span id="question-counter">ข้อที่ 1 / 30</span>
+                    <button class="btn-main" onclick="nextQuestion()">ข้อถัดไป ➡️</button>
+                </div>
+                <div style="text-align: center; margin-top: 25px;">
+                    <button class="btn-main" style="background: var(--success-color); padding: 12px 30px; font-size: 1.1rem;" onclick="submitExam()">ส่งข้อสอบทั้งหมด 🏁</button>
+                </div>
+            </div>
+
+            <!-- Whiteboard Panel -->
+            <div class="whiteboard-panel">
+                <div class="whiteboard-header">
+                    <h3>กระดานทดเลข / โน้ต</h3>
+                    <div class="whiteboard-tools">
+                        <button class="wb-btn active" id="pen-btn" onclick="setTool('pen')">ปากกา</button>
+                        <button class="wb-btn" id="eraser-btn" onclick="setTool('eraser')">ยางลบ</button>
+                        <button class="wb-btn" onclick="clearCanvas()">ล้างกระดาน</button>
+                    </div>
+                </div>
+                <canvas id="wb-canvas"></canvas>
+            </div>
+        </div>
+
+        <!-- Result Screen -->
+        <div class="result-screen" id="result-screen">
+            <h3>ผลการประเมินการทดสอบ</h3>
+            <p>คะแนนรวมที่คุณทำได้</p>
+            <div class="score-display" id="final-score">0 / 30</div>
+            <p id="score-percentage" style="font-size: 1.2rem; margin-bottom: 20px;"></p>
+            <div id="analysis-box" style="text-align: left; max-width: 800px; margin: 0 auto; background: #f8f9fa; padding: 20px; border-radius: 8px;"></div>
+            <button class="btn-main" style="margin-top: 25px;" onclick="resetExam()">ทำแบบทดสอบใหม่อีกครั้ง</button>
+        </div>
+
+        <footer>
+            เขียนโดย พระจอมเกล้าติวเตอร์
+        </footer>
+    </div>
+
+    <script>
+        // Fisher-Yates Shuffle Algorithm
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        // Raw Question Bank (30 Items covering Civics, Rights, Culture)
+        const rawQuestions = [
+            {
+                id: 1,
+                q: "ข้อใดเป็นการปฏิบัติตนเป็นสมาชิกที่ดีของชุมชนมากที่สุด?",
+                options: [
+                    "ช่วยเหลืองานสาธารณประโยชน์และรักษาความสะอาดในชุมชน",
+                    "ซื้อสินค้าออนไลน์จากต่างประเทศเป็นประจำทุกวัน",
+                    "เปิดเพลงเสียงดังในยามวิกาลเพื่อความบันเทิงส่วนตัว",
+                    "จอดรถกีดขวางหน้าบ้านของเพื่อนบ้านเป็นประจำ"
+                ],
+                correct: 0,
+                clue: "นึกถึงการกระทำที่สร้างสรรค์และไม่สร้างความเดือดร้อนให้ผู้อื่นในชุมชน",
+                explanation: "เฉลยข้อ 1: การช่วยเหลืองานสาธารณประโยชน์และการรักษาความสะอาดแสดงถึงจิตสาธารณะและการเป็นสมาชิกที่ดีของชุมชน"
+            },
+            {
+                id: 2,
+                q: "เมื่อนักเรียนพบเห็นขยะตกอยู่บริเวณสนามหน้าโรงเรียน ควรปฏิบัติอย่างไรตามหลักพลเมืองดี?",
+                options: [
+                    "เดินหลบหนีไปเพราะไม่ใช่หน้าที่โดยตรงของเรา",
+                    "กวาดขยะไปทิ้งรวมกันไว้ใต้โต๊ะเรียนของเพื่อน",
+                    "เก็บขยะไปทิ้งลงในถังขยะให้เรียบร้อยด้วยความเต็มใจ",
+                    "รอให้ภารโรงมาจัดการเก็บเองทั้งหมดโดยไม่ต้องสนใจ"
+                ],
+                correct: 2,
+                clue: "ความรับผิดชอบต่อพื้นที่ส่วนรวมเริ่มต้นจากตัวเรา",
+                explanation: "เฉลยข้อ 2: การเก็บขยะทิ้งถังแสดงถึงความมีจิตสำนึกรับผิดชอบต่อสิ่งแวดล้อมและส่วนรวม"
+            },
+            {
+                id: 3,
+                q: "การมีส่วนร่วมในกิจกรรมตามกระบวนการประชาธิปไตยในห้องเรียนข้อใดเหมาะสมที่สุด?",
+                options: [
+                    "บังคับให้เพื่อนเลือกหัวหน้าห้องตามที่เราต้องการ",
+                    "ใช้กำลังตัดสินปัญหาเมื่อมีความเห็นไม่ตรงกัน",
+                    "ออกเสียงเลือกตั้งหัวหน้าห้องด้วยความสุจริตใจและยอมรับเสียงข้างมาก",
+                    "งดออกเสียงทุกครั้งที่มีการทำกิจกรรมกลุ่มร่วมกัน"
+                ],
+                correct: 2,
+                clue: "ประชาธิปไตยต้องอาศัยการออกเสียงและการยอมรับเสียงข้างมาก",
+                explanation: "เฉลยข้อ 3: การเลือกตั้งหัวหน้าห้องอย่างสุจริตและเคารพเสียงส่วนใหญ่เป็นรากฐานของประชาธิปไตย"
+            },
+            {
+                id: 4,
+                q: "ข้อใดคือความหมายที่ถูกต้องที่สุดของคำว่า 'สิทธิ'?",
+                options: [
+                    "สิ่งที่เราต้องปฏิบัติด้วยความรับผิดชอบตามกฎหมาย",
+                    "อำนาจหรือผลประโยชน์ที่กฎหมายรับรองและคุ้มครองให้เราได้รับ",
+                    "อิสระในการกระทำสิ่งต่างๆ โดยไม่จำกัดขอบเขต",
+                    "ข้อบังคับที่กำหนดขึ้นเพื่อให้ทุกคนปฏิบัติเหมือนกัน"
+                ],
+                correct: 1,
+                clue: "สิทธิคือสิ่งที่เรา 'ควรได้รับ' และได้รับการคุ้มครอง",
+                explanation: "เฉลยข้อ 4: สิทธิคืออำนาจหรือผลประโยชน์ที่กฎหมายรับรองและคุ้มครองให้เราได้รับอย่างเท่าเทียม"
+            },
+            {
+                id: 5,
+                q: "ข้อใดจัดเป็น 'เสรีภาพ' ของพลเมืองไทยตามกฎหมาย?",
+                options: [
+                    "เสรีภาพในการเลือกนับถือศาสนาตามความศรัทธา",
+                    "หน้าที่ในการเสียภาษีอากรให้แก่รัฐบาล",
+                    "หน้าที่ในการเข้ารับการศึกษาภาคบังคับ",
+                    "หน้าที่ในการปฏิบัติตามกฎหมายจราจรอย่างเคร่งครัด"
+                ],
+                correct: 0,
+                clue: "เสรีภาพคือความอิสระในการกระทำที่ไม่ขัดต่อกฎหมาย เช่น ความเชื่อหรือการเดินทาง",
+                explanation: "เฉลยข้อ 5: เสรีภาพในการนับถือศาสนาเป็นหนึ่งในเสรีภาพพื้นฐานที่รัฐคุ้มครอง ส่วนข้ออื่นเป็นหน้าที่"
+            },
+            {
+                id: 6,
+                q: "นักเรียนมีหน้าที่สำคัญที่สุดประการใดในฐานะเยาวชนไทยในวัยเรียน?",
+                options: [
+                    "ทำงานหาเงินเพื่อจุนเจือครอบครัวเต็มเวลา",
+                    "ตั้งใจศึกษาเล่าเรียนและหาความรู้พัฒนาตนเอง",
+                    "เดินทางท่องเที่ยวเพื่อหาประสบการณ์รอบโลก",
+                    "เข้าร่วมการชุมนุมทางการเมืองทุกสัปดาห์"
+                ],
+                correct: 1,
+                clue: "หน้าที่หลักของเด็กวัยเรียนคือการศึกษาเล่าเรียน",
+                explanation: "เฉลยข้อ 6: การตั้งใจศึกษาเล่าเรียนเป็นหน้าที่หลักของเยาวชนเพื่อเตรียมพร้อมเป็นกำลังสำคัญของชาติ"
+            },
+            {
+                id: 7,
+                q: "การปฏิบัติตนตามกฎหมายจราจร เช่น การข้ามถนนทางลายและรอสัญญาณไฟ เป็นหน้าที่ของใคร?",
+                options: [
+                    "เป็นหน้าที่ของตำรวจจราจรแต่เพียงผู้เดียว",
+                    "เป็นหน้าที่ของชาวต่างชาติที่มาเที่ยวในไทยเท่านั้น",
+                    "เป็นหน้าที่ของพลเมืองทุกคนในการรักษาความปลอดภัย",
+                    "เป็นเพียงคำแนะนำที่ไม่ต้องปฏิบัติก็ได้"
+                ],
+                correct: 2,
+                clue: "กฎหมายจราจรมีไว้สำหรับทุกคนในสังคม",
+                explanation: "เฉลยข้อ 7: พลเมืองทุกคนมีหน้าที่ปฏิบัติตามกฎหมายจราจรเพื่อความปลอดภัยในชีวิตและทรัพย์สิน"
+            },
+            {
+                id: 8,
+                q: "ข้อใดคือความสำคัญของ 'วัฒนธรรมไทย' ที่มีต่อสังคม?",
+                options: [
+                    "ช่วยสร้างเอกลักษณ์และความเป็นอันหนึ่งอันเดียวกันของคนในชาติ",
+                    "ทำให้ประเทศมีค่าใช้จ่ายในการจัดงานประเพณีเพิ่มขึ้น",
+                    "ทำให้คนในสังคมปฏิบัติตัวเหมือนกันหมดทุกระเบียบ",
+                    "จำกัดความคิดสร้างสรรค์ของเยาวชนรุ่นใหม่"
+                ],
+                correct: 0,
+                clue: "วัฒนธรรมคือเครื่องยเหนี่ยวจิตใจและเอกลักษณ์ของชาติ",
+                explanation: "เฉลยข้อ 8: วัฒนธรรมไทยสร้างเอกลักษณ์ ความภาคภูมิใจ และความสามัคคีกลมเกลียวในสังคม"
+            },
+            {
+                id: 9,
+                q: "หากนักเรียนพบเห็นประเพณีไทยท้องถิ่นที่กำลังจะสูญหาย ควรแสดงออกอย่างไร?",
+                options: [
+                    "เพิกเฉยและปล่อยให้สูญหายไปตามกาลเวลา",
+                    "ศึกษาเรียนรู้และช่วยกันเผยแพร่สืบสานคุณค่าประเพณีนั้น",
+                    "วิพากษ์วิจารณ์ว่าเป็นสิ่งล้าสมัยและไม่ควรปฏิบัติ",
+                    "ห้ามไม่ให้คนในชุมชนจัดงานประเพณีนั้นอีก"
+                ],
+                correct: 1,
+                clue: "การอนุรักษ์คือการศึกษา สืบสาน และเผยแพร่",
+                explanation: "เฉลยข้อ 9: การศึกษาเรียนรู้และสืบสานช่วยอนุรักษ์วัฒนธรรมและภูมิปัญญาไทยให้อยู่สืบไป"
+            },
+            {
+                id: 10,
+                q: "ข้อใดเป็นการเลือกรับวัฒนธรรมต่างชาติได้อย่างเหมาะสมที่สุด?",
+                options: [
+                    "รับมาทั้งหมดโดยไม่คัดกรองความเหมาะสม",
+                    "ปฏิเสธทุกวัฒนธรรมต่างชาติเพราะเกรงกลัววัฒนธรรมไทยเสื่อม",
+                    "เลือกรับเฉพาะสิ่งที่มีประโยชน์และปรับใช้ให้เข้ากับวิถีไทย",
+                    "เลียนแบบการแต่งกายทุกอย่างจากภาพยนตร์ต่างประเทศ"
+                ],
+                correct: 2,
+                clue: "การเลือกรับต้องคำนึงถึงความเหมาะสมและประโยชน์",
+                explanation: "เฉลยข้อ 10: การคัดกรองและปรับใช้สิ่งที่เหมาะสมช่วยให้เราก้าวทันโลกโดยไม่สูญเสียความเป็นไทย"
+            },
+            {
+                id: 11,
+                q: "การประชุมหมู่บ้านเพื่อลงมติสร้างสนามเด็กเล่น เกิดขึ้นจากกระบวนการใด?",
+                options: [
+                    "กระบวนการประชาธิปไตยและการมีส่วนร่วม",
+                    "การใช้อำนาจเผด็จการสั่งการโดยผู้นำ",
+                    "ความต้องการของคนเพียงคนเดียวในชุมชน",
+                    "การบังคับตามกฎหมายสูงสุดของประเทศ"
+                ],
+                correct: 0,
+                clue: "การร่วมมือและลงมติร่วมกันในชุมชนคือประชาธิปไตย",
+                explanation: "เฉลยข้อ 11: การประชุมและลงมติร่วมกันสะท้อนถึงการมีส่วนร่วมตามวิถีประชาธิปไตยในระดับชุมชน"
+            },
+            {
+                id: 12,
+                q: "ข้อใดเป็นการใช้สิทธิและเสรีภาพที่ไม่ไปละเมิดสิทธิผู้อื่น?",
+                options: [
+                    "เปิดเพลงเสียงดังรบกวนเวลานอนของเพื่อนบ้าน",
+                    "แสดงความคิดเห็นอย่างสร้างสรรค์ในที่สาธารณะโดยไม่ใช้คำหยาบ",
+                    "จอดรถขวางทางเข้าออกบ้านผู้อื่นชั่วคราว",
+                    "ทิ้งขยะลงในแม่น้ำสาธารณะเพื่อความสะดวกรวดเร็ว"
+                ],
+                correct: 1,
+                clue: "เสรีภาพมีขอบเขตคือต้องไม่สร้างความเดือดร้อนให้ใคร",
+                explanation: "เฉลยข้อ 12: การแสดงความคิดเห็นอย่างสร้างสรรค์เป็นการใช้เสรีภาพที่ถูกต้องโดยไม่ละเมิดผู้อื่น"
+            },
+            {
+                id: 13,
+                q: "ภูมิปัญญาไทยในข้อใดที่ช่วยในการเก็บรักษาอาหารให้อยู่ได้นานขึ้น?",
+                options: [
+                    "การทำขนมไทยโบราณด้วยใบตอง",
+                    "การทำปลาเค็มและการถนอมอาหารด้วยเกลือ",
+                    "การจักสานตะกร้าด้วยไม้ไผ่",
+                    "การสร้างบ้านเรือนไทยยกพื้นสูง"
+                ],
+                correct: 1,
+                clue: "การแปรรูปอาหารเพื่อเก็บไว้กินนานๆ เรียกกว่าการถนอมอาหาร",
+                explanation: "เฉลยข้อ 13: การทำปลาเค็มและการถนอมอาหารเป็นภูมิปัญญาไทยในการเก็บรักษาอาหารยามขาดแคลน"
+            },
+            {
+                id: 14,
+                q: "การแต่งกายด้วยผ้าไทยในวันสำคัญต่างๆ สะท้อนถึงสิ่งใด?",
+                options: [
+                    "ความล้าสมัยในการใช้ชีวิตยุคปัจจุบัน",
+                    "ความภาคภูมิใจและการอนุรักษ์วัฒนธรรมไทย",
+                    "การปฏิบัติตามคำสั่งบังคับของทางราชการเท่านั้น",
+                    "ความสิ้นเปลืองค่าใช้จ่ายโดยไม่จำเป็น"
+                ],
+                correct: 1,
+                clue: "ผ้าไทยคือมรดกทางวัฒนธรรมที่งดงาม",
+                explanation: "เฉลยข้อ 14: การสวมใส่ผ้าไทยแสดงถึงความภาคภูมิใจในเอกลักษณ์และวัฒนธรรมอันทรงคุณค่าของชาติ"
+            },
+            {
+                id: 15,
+                q: "หากหัวหน้าห้องไม่อยู่ นักเรียนควรปฏิบัติอย่างไรในการจัดกิจกรรมกลุ่ม?",
+                options: [
+                    "หยุดทำกิจกรรมทันทีจนกว่าหัวหน้าห้องจะกลับมา",
+                    "ร่วมมือกันเลือกตัวแทนชั่วคราวเพื่อดำเนินกิจกรรมต่ออย่างราบรื่น",
+                    "แยกย้ายกันกลับบ้านโดยไม่ต้องสนใจงานกลุ่ม",
+                    "ทะเลาะกันเพื่อแย่งชิงตำแหน่งหัวหน้าห้อง"
+                ],
+                correct: 1,
+                clue: "การแก้ปัญหาร่วมกันด้วยความร่วมมือคือทางออกที่ดี",
+                explanation: "เฉลยข้อ 15: การเลือกตัวแทนชั่วคราวสะท้อนถึงการแก้ปัญหาด้วยกระบวนการกลุ่มและความรับผิดชอบร่วมกัน"
+            },
+            {
+                id: 16,
+                q: "ข้อใดคือหน้าที่ของสมาชิกในครอบครัวตามหลักพลเมืองดีในบ้าน?",
+                options: [
+                    "ปล่อยให้พ่อแม่ทำงานบ้านทั้งหมดคนเดียว",
+                    "ช่วยเหลืองานบ้านตามกำลังความสามารถและเชื่อฟังคำสั่งสอน",
+                    "เรียกร้องเงินค่าขนมเพิ่มขึ้นทุกวันโดยไม่ช่วยอะไร",
+                    "เก็บตัวเงียบในห้องนอนและไม่พูดคุยกับใคร"
+                ],
+                correct: 1,
+                clue: "ความรับผิดชอบในบ้านเริ่มต้นจากการแบ่งเบาภาระครอบครัว",
+                explanation: "เฉลยข้อ 16: การช่วยเหลืองานบ้านและเชื่อฟังพ่อแม่เป็นหน้าที่พื้นฐานของเด็กดีในครอบครัว"
+            },
+            {
+                id: 17,
+                q: "การเลือกรับประทานอาหารไทยที่มีสมุนไพรเป็นส่วนประกอบ มีข้อดีอย่างไร?",
+                options: [
+                    "ทำให้ร่างกายแข็งแรงและสืบสานภูมิปัญญาไทยด้านสุขภาพ",
+                    "ทำให้สิ้นเปลืองเงินมากกว่าอาหารฟาสต์ฟู้ด",
+                    "ไม่มีประโยชน์อันใดต่อร่างกายเลย",
+                    "ทำให้ล้าสมัยตามกระแสโลกปัจจุบัน"
+                ],
+                correct: 0,
+                clue: "สมุนไพรไทยมีประโยชน์ต่อสุขภาพและเป็นภูมิปัญญาบรรพบุรุษ",
+                explanation: "เฉลยข้อ 17: อาหารไทยใส่สมุนไพรช่วยบำรุงสุขภาพและสะท้อนภูมิปัญญาการดูแลสุขภาพของไทย"
+            },
+            {
+                id: 18,
+                q: "วันสำคัญทางศาสนาและวัฒนธรรมไทย เช่น วันวิสาขบูชา วันสงกรานต์ มีความสำคัญอย่างไร?",
+                options: [
+                    "เป็นวันหยุดพักผ่อนโดยไม่ต้องทำกิจกรรมใดๆ",
+                    "เป็นเครื่องเตือนใจในการทำความดีและสืบทอดประเพณีอันดีงาม",
+                    "เป็นวันที่บังคับให้ทุกคนต้องเดินทางกลับต่างจังหวัด",
+                    "เป็นวันที่ไม่มีความสำคัญต่อวิถีชีวิตคนไทย"
+                ],
+                correct: 1,
+                clue: "วันสำคัญช่วยยึดเหนี่ยวจิตใจและสืบสานประเพณี",
+                explanation: "เฉลยข้อ 18: วันสำคัญทางศาสนาและวัฒนธรรมช่วยขัดเกลาจิตใจและสืบสานมรดกทางวัฒนธรรมไทย"
+            },
+            {
+                id: 19,
+                q: "เมื่อนักเรียนได้รับมอบหมายให้ทำความสะอาดห้องเรียน ควรปฏิบัติอย่างไร?",
+                options: [
+                    "แอบหนีไปเที่ยวเล่นปล่อยให้เพื่อนทำคนเดียว",
+                    "ร่วมมือกับเพื่อนในเวรทำหน้าที่ด้วยความรับผิดชอบจนสำเร็จ",
+                    "ทำแบบลวกๆ ให้ผ่านไปทีโดยไม่สะอาดจริง",
+                    "ปฏิ
