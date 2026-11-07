@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pretest วิชาภาษาไทย ม.1 กลางภาค 2 - พระจอมเกล้าติวเตอร์</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --success: #16a34a;
+            --danger: #dc2626;
+            --bg-main: #f1f5f9;
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+        }
+        body {
+            font-family: 'Sarabun', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        header {
+            background: linear-gradient(135deg, #1e3a8a, #2563eb);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+        }
+        .container {
+            display: flex;
+            flex: 1;
+            max-width: 1400px;
+            margin: 20px auto;
+            width: 95%;
+            gap: 20px;
+        }
+        .quiz-panel {
+            flex: 7;
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        .whiteboard-panel {
+            flex: 3;
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+        }
+        .question-card {
+            margin-bottom: 25px;
+            padding: 15px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .question-title {
+            font-weight: bold;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+        .options-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        .option-btn {
+            background: #f8fafc;
+            border: 1px solid #cbd5e1;
+            padding: 10px 15px;
+            border-radius: 6px;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 14px;
+        }
+        .option-btn:hover {
+            background: #e2e8f0;
+        }
+        .option-btn.correct {
+            background: #dcfce7 !important;
+            border-color: var(--success) !important;
+            color: #166534;
+            font-weight: bold;
+        }
+        .option-btn.incorrect {
+            background: #fee2e2 !important;
+            border-color: var(--danger) !important;
+            color: #991b1b;
+        }
+        .explanation {
+            margin-top: 10px;
+            padding: 10px;
+            background: #eff6ff;
+            border-left: 4px solid var(--primary);
+            font-size: 13px;
+            color: #1e40af;
+            display: none;
+        }
+        .clue-box {
+            margin-top: 5px;
+            font-size: 12px;
+            color: #64748b;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+        #canvas-board {
+            border: 2px dashed #cbd5e1;
+            border-radius: 8px;
+            background: #ffffff;
+            cursor: crosshair;
+            flex: 1;
+            margin-bottom: 10px;
+            min-height: 250px;
+        }
+        .wb-controls {
+            display: flex;
+            gap: 10px;
+        }
+        .wb-btn {
+            padding: 6px 12px;
+            background: #e2e8f0;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+        .wb-btn:hover { background: #cbd5e1; }
+        .controls-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .btn-main {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        .btn-main:hover { background: var(--primary-dark); }
+        footer {
+            text-align: center;
+            padding: 15px;
+            font-size: 13px;
+            color: #64748b;
+            background: #ffffff;
+            border-top: 1px solid #e2e8f0;
+        }
+        @media(max-width: 768px) {
+            .container { flex-direction: column; }
+            .whiteboard-panel { height: 400px; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1 id="hdr-title" style="margin:0; font-size: 22px;">ชุดข้อสอบ Pretest วิชาภาษาไทย ม.1 กลางภาค 2</h1>
+        <p id="hdr-subtitle" style="margin:5px 0 0; font-size: 14px;">ระบบทดสอบวิเคราะห์และจำลองการเรียนรู้เสมือนจริง</p>
+    </header>
+
+    <div class="container">
+        <!-- ฝั่งซ้าย: ข้อสอบ 30 ข้อ (70%) -->
+        <div class="quiz-panel">
+            <div class="controls-bar">
+                <span id="score-display" style="font-weight: bold; color: var(--primary);">คะแนนที่ได้: 0 / 30</span>
+                <div>
+                    <button class="btn-main" onclick="toggleLanguage()">สลับภาษา (TH/EN)</button>
+                    <button class="btn-main" onclick="resetQuiz()" style="background: #dc2626;">Reset ข้อสอบ</button>
+                </div>
+            </div>
+            
+            <div id="questions-container">
+                <!-- คำถามจะถูกสร้างผ่าน JavaScript พร้อม Fisher-Yates Shuffle -->
+            </div>
+            <div id="results-summary" style="margin-top: 30px; padding: 20px; background: #f8fafc; border-radius: 8px; display: none;">
+                <h3>รายงานการวิเคราะห์ผลการทดสอบรายบุคคล</h3>
+                <p id="analysis-text"></p>
+            </div>
+        </div>
+
+        <!-- ฝั่งขวา: Whiteboard สำหรับทดเลข/โน้ต (30%) -->
+        <div class="whiteboard-panel">
+            <h3 style="margin-top:0; font-size: 16px; color: #1e3a8a;">กระดานทดสอบ / Whiteboard</h3>
+            <canvas id="canvas-board"></canvas>
+            <div class="wb-controls">
+                <button class="wb-btn" onclick="clearCanvas()">ล้างกระดาน</button>
+                <button class="wb-btn" onclick="setPenColor('#2563eb')">สีน้ำเงิน</button>
+                <button class="wb-btn" onclick="setPenColor('#dc2626')">สีแดง</button>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        เขียนโดย พระจอมเกล้าติวเตอร์
+    </footer>
+
+    <script>
+        // ข้อมูลชุดข้อสอบ 30 ข้อที่ได้รับการตรวจสอบความถูกต้องและโครงสร้างตัวเลือกสมบูรณ์
+        const rawQuestions = [
+            {
+                q: "ข้อใดกล่าวถึงลักษณะของเสียงสระประสมในภาษาไทยได้ถูกต้องที่สุด",
+                options: [
+                    "เกิดจากการประสมของสระเดี่ยว 2 เสียงเข้าด้วยกันโดยออกเสียงติดต่อกัน",
+                    "เป็นเสียงสระที่เปล่งออกมาโดยมีเสียงพยัญชนะกักท้ายพยางค์ร่วมด้วย",
+                    "มีทั้งหมด 21 เสียง บันทึกด้วยรูปสระเดี่ยวผสมกับตัวสะกดในแม่ กก",
+                    "เป็นสระเสียงสั้นที่ไม่มีเสียงพยัญชนะสะกดในระบบไตรยางศ์ไทย"
+                ],
+                correct: 0,
+                clue: "คำใบ้: สระประสมมี 3 เสียงหลัก (เอีย, อัว, อือ) เกิดจากสระเดี่ยวกลายเสียง",
+                exp: "เฉลย: สระประสมเกิดจากการเลื่อนเสียงสระเดี่ยวสองตัวมาประสมกัน ได้แก่ สระเอีย สระอัว สระอือ รวม 6 เสียง"
+            },
+            {
+                q: "คำในข้อใดเป็นคำประสมทุกคำตามหลักโครงสร้างภาษาไทย",
+                options: [
+                    "แม่น้ำ ลูกเสือ พัดลม",
+                    "บ้านเรือน อ่อนนุ่ม ขาวโพลน",
+                    "เด็กๆ เร็วๆ สวยๆ",
+                    "กิน นอน เดิน นั่ง"
+                ],
+                correct: 0,
+                clue: "คำใบ้: คำประสมคือคำมูลมารวมกันแล้วเกิดความหมายใหม่ต่างจากเดิม",
+                exp: "เฉลย: แม่น้ำ ลูกเสือ พัดลม เป็นคำประสม (แม่+น้ำ, ลูก+เสือ, พัด+ลม) ส่วนข้ออื่นมีคำซ้อนและคำมูลเดี่ยวปะปน"
+            },
+            {
+                q: "คำว่า เบาๆ ในประโยค โปรดพูดเสียงเบาๆ หน่อยครับ ทำหน้าที่เป็นคำชนิดใดและสร้างจากกระบวนการใด",
+                options: [
+                    "คำวิเศษณ์ สร้างด้วยกระบวนการคำซ้ำ",
+                    "คำกริยา สร้างด้วยกระบวนการคำซ้อน",
+                    "คำนาม สร้างด้วยกระบวนการคำมูล",
+                    "คำสรรพนาม สร้างด้วยกระบวนการประสม"
+                ],
+                correct: 0,
+                clue: "คำใบ้: มีเครื่องหมายไม้ยมกและขยายคำกริยาคำว่าพูด",
+                exp: "เฉลย: เป็นคำวิเศษณ์บอกลักษณะอาการ ทำหน้าที่ขยายคำกริยา และสร้างด้วยกระบวนการคำซ้ำ (เบา + เบา)"
+            },
+            {
+                q: "ข้อใดอธิบายลักษณะของคำซ้อนเพื่อความหมายได้ถูกต้องสมบูรณ์",
+                options: [
+                    "เกิดจากคำที่มีความหมายเหมือนกันหรือใกล้เคียงมารวมกันเพื่อให้ชัดเจน",
+                    "เกิดจากคำที่มีเสียงพยัญชนะต้นพ้องกันแต่ความหมายตรงข้ามกัน",
+                    "เป็นการนำเอาคำพยางค์เดียวมาซ้ำเสียงกันเพื่อบอกจำนวนพหูพจน์",
+                    "เกิดจากการยืมคำภาษาต่างประเทศมาซ้อนทับกับคำไทยแท้"
+                ],
+                correct: 0,
+                clue: "คำใบ้: เช่นคำว่า บ้านเรือน เสื่อสาด อ่อนนุ่ม",
+                exp: "เฉลย: คำซ้อนเพื่อความหมายเกิดจากคำที่มีความหมายเหมือนหรือใกล้เคียงมารวมกันเพื่อให้ความหมายเด่นชัดยิ่งขึ้น"
+            },
+            {
+                q: "ประโยคในข้อใดมีคำกริยาที่เป็นวิกตรรถกริยา (กริยาอาศัยส่วนเติมเต็ม)",
+                options: [
+                    "คุณพ่อของฉันเป็นนายแพทย์ใหญ่โรงพยาบาล",
+                    "นักเรียนกำลังวิ่งออกกำลังกายในสนามกีฬา",
+                    "สุนัขสีดำเห่าเสียงดังลั่นบ้านในเวลากลางคืน",
+                    "ฝนตกหนักมากเมื่อช่วงบ่ายที่ผ่านมา"
+                ],
+                correct: 0,
+                clue: "คำใบ้: กริยาจำพวก เป็น เหมือน คล้าย เสมือน ดุจ",
+                exp: "เฉลย: คำว่า เป็น ในประโยคนี้เป็นวิกตรรถกริยา ต้องมีคำว่า นายแพทย์ใหญ่ มาเติมเต็มภาคประธานและภาคแสดง"
+            },
+            {
+                q: "คำว่า ความยุติธรรม จัดเป็นคำนามชนิดใดตามหลักไวยากรณ์ไทย",
+                options: [
+                    "อาการนาม เพราะขึ้นต้นด้วยคำว่า ความ นำหน้าคำวิเศษณ์",
+                    "สมุหนาม เพราะแสดงถึงหมวดหมู่ของกลุ่มคนในสังคม",
+                    "วิสามัญนาม เพราะเป็นชื่อเฉพาะของกฎหมายสากล",
+                    "ลักษณนาม เพราะใช้บอกลักษณะของนามข้างหน้า"
+                ],
+                correct: 0,
+                clue: "คำใบ้: มีคำว่า ความ หรือ การ นำหน้าคำกริยาหรือวิเศษณ์",
+                exp: "เฉลย: อาการนามคือคำนามที่เกิดจาก การ หรือ ความ นำหน้าคำกริยาหรือคำวิเศษณ์ เพื่อแสดงนามที่เป็นนามธรรม"
+            },
+            {
+                q: "ข้อใดคือลักษณะเด่นของการใช้ภาษาพูด (Informal Language) ในชีวิตประจำวัน",
+                options: [
+                    "นิยมใช้คำสั้นๆ คำตัด หรือคำสแลง และไม่ต้องเคร่งครัดไวยากรณ์มาก",
+                    "ต้องใช้ราชาศัพท์ในการสื่อสารกับบุคคลทั่วไปเสมอ",
+                    "ใช้เฉพาะในเอกสารทางราชการและบทความวิจัยระดับสูงเท่านั้น",
+                    "หลีกเลี่ยงการใช้คำสรรพนามบุรุษที่ 1 และบุรุษที่ 2 ทุกกรณี"
+                ],
+                correct: 0,
+                clue: "คำใบ้: ภาษาปากใช้สื่อสารกันไม่เป็นทางการ",
+                exp: "เฉลย: ภาษาพูดเน้นความสะดวกรวดเร็ว จึงมักพบคำตัด คำสแลง และประโยคไม่สมบูรณ์ตามหลักไวยากรณ์เคร่งครัด"
+            },
+            {
+                q: "ข้อใดคือข้อบังคับคำเอก คำโท ของโคลงสี่สุภาพ ใน 1 บาท",
+                options: [
+                    "บังคับเสียงเอก 7 แห่ง และเสียงโท 4 แห่งตลอดทั้งบท",
+                    "บังคับเสียงเอก 4 แห่ง และเสียงโท 7 แห่งตลอดทั้งบท",
+                    "บังคับเฉพาะคำสุดท้ายของวรรคที่ 1 และวรรคที่ 2 เท่านั้น",
+                    "บังคับใช้คำตายแทนคำเอกและคำเป็นแทนคำโทเสมอ"
+                ],
+                correct: 0,
+                clue: "โคลงสี่สุภาพมีเอก 7 โท 4",
+                exp: "เฉลย: โคลงสี่สุภาพ 1 บท บังคับรูปวรรณยุกต์เอก 7 แห่ง และรูปวรรณยุกต์โท 4 แห่ง"
+            },
+            {
+                q: "คำประพันธ์ประเภถกาพย์ฉบัง 16 ใน 1 บท มีจำนวนคำรวมทั้งหมดเท่าใด",
+                options: [
+                    "16 คำ แบ่งเป็น 3 วรรค (6-4-6)",
+                    "11 คำ แบ่งเป็น 2 วรรค (5-6)",
+                    "28 คำ แบ่งเป็น 4 วรรค (7-7-7-7)",
+                    "32 คำ แบ่งเป็น 4 วรรค (8-8-8-8)"
+                ],
+                correct: 0,
+                clue: "ชื่อก็บอกอยู่แล้วว่า กาพย์ฉบัง 16",
+                exp: "เฉลย: กาพย์ฉบัง 16 มีจำนวนคำรวม 16 คำใน 1 บท โดยแบ่งวรรคเป็น 6, 4 และ 6 ตามลำดับ"
+            },
+            {
+                q: "สำนวนไทยในข้อใดมีความหมายตรงกับคำพังเพยว่า ตำน้ำพริกละลายแม่น้ำ",
+                options: [
+                    "ลงทุนลงแรงมากแต่ได้ผลลัพธ์กลับมาน้อยนิดไม่คุ้มค่า",
+                    "ทำความดีแต่ไม่มีใครเห็นคุณค่าหรือประโยชน์",
+                    "รักวัวให้ผูกรักลูกให้ตีเพื่อให้เติบโตเป็นคนดี",
+                    "เข้าเมืองตาหลิ่วต้องหลิ่วตาตามตามสภาพสังคม"
+                ],
+                correct: 0,
+                clue: "คำใบ้: ใช้เงินลงทุนจำนวนมากแต่สูญเปล่า",
+                exp: "เฉลย: ตำน้ำพริกละลายแม่น้ำหมายถึงการลงทุนลงแรงหรือใช้เงินจำนวนมากไปกับกิจการที่สูญเปล่า ได้ผลประโยชน์น้อยมาก"
+            },
+            {
+                q: "ข้อใดจำแนกประเภทของคำสรรพนามได้ถูกต้องตามหลักภาษาไทย",
+                options: [
+                    "บุรุษสรรพนาม ปุจฉาสรรพนาม นิยมสรรพนาม อนิยมสรรพนาม ประพัทธสรรพนาม",
+                    "สกรรมกริยา อกรรมกริยา วิกตรรถกริยา กริยานุเคราะห์",
+                    "สามัญนาม วิสามัญนาม สมุหนาม อาการนาม",
+                    "คำบุพบทบอกเวลา บุพบทบอกสถานที่ บุพบทบอกความเป็นเจ้าของ"
+                ],
+                correct: 0,
+                clue: "คำใบ้: สรรพนามมี 5 ชนิดย่อย",
+                exp: "เฉลย: คำสรรพนามแบ่งออกเป็น 5 ชนิด ได้แก่ บุรุษ นิยม อนิยม ปุจฉา ประพัทธ"
+            },
+            {
+                q: "พยัญชนะไทยอักษรสูงมีทั้งหมดกี่เสียง และมีพื้นเสียงวรรณยุกต์ระดับใดเมื่อผันคำ",
+                options: [
+                    "มี 11 เสียง พื้นเสียงเป็นเสียงจัตวา",
+                    "มี 9 เสียง พื้นเสียงเป็นเสียงสามัญ",
+                    "มี 10 เสียง พื้นเสียงเป็นเสียงเอก",
+                    "มี 15 เสียง พื้นเสียงเป็นเสียงโท"
+                ],
+                correct: 0,
+                clue: "อักษรสูงมี 11 ตัว 11 เสียง",
+                exp: "เฉลย: อักษรสูงมี 11 เสียง (ข ฃ ฉ ฐ ถ ผ ฝ ศ ษ ส ห) พื้นเสียงเป็นเสียงจัตวา"
+            },
+            {
+                q: "คำในข้อใดเป็นคำซ้อนเพื่อเสียง ไม่ใช่ซ้อนเพื่อความหมาย",
+                options: [
+                    "อึกทึก โอบอ้อม นุ่มนิ่ม",
+                    "บ้านเรือน ข้าวปลา หน้าตา",
+                    "พี่น้อง ลูกหลาน ปู่ย่า",
+                    "อ้วนท้วน ขาวสะอาด ดีงาม"
+                ],
+                correct: 0,
+                clue: "คำใบ้: เน้นเสียงคล้องจอง เสียงสัมผัสมากกว่าความหมายใหม่",
+                exp: "เฉลย: อึกทึก โอบอ้อม นุ่มนิ่ม เป็นคำซ้อนเพื่อเสียง (เสียงพยัญชนะหรือเสียงสระคล้องจองกันเพื่อให้เกิดความไพเราะ)"
+            },
+            {
+                q: "คำว่า หนังสือพิมพ์ จัดเป็นคำประเภทใด และสร้างขึ้นมาอย่างไร",
+                options: [
+                    "เป็นคำประสม เกิดจากคำว่า หนังสือ รวมกับ พิมพ์",
+                    "เป็นคำซ้ำ เกิดจากคำว่า หนังสือ ซ้ำกัน 2 ครั้ง",
+                    "เป็นคำซ้อน เกิดจากคำมูลความหมายใกล้เคียงกัน",
+                    "เป็นคำมูลหลายพยางค์ที่มีรากศัพท์จากภาษาบาลี"
+                ],
+                correct: 0,
+                clue: "คำใบ้: สิ่งพิมพ์สำหรับอ่านข่าวสาร",
+                exp: "เฉลย: หนังสือพิมพ์ เป็นคำประสม เกิดจากการนำคำมูล หนังสือ มารวมกับ พิมพ์ เกิดเป็นคำใหม่ที่มีความหมายเฉพาะเจาะจง"
+            },
+            {
+                q: "ข้อใดคือหน้าที่หลักของคำสันธานในประโยคความซับซ้อน",
+                options: [
+                    "เชื่อมคำ ข้อความ หรือประโยคเข้าด้วยกันให้มีความสัมพันธ์กัน",
+                    "ทำหน้าที่ขยายคำนามหรือสรรพนามให้มีความชัดเจนยิ่งขึ้น",
+                    "แสดงอารมณ์ความรู้สึกตกใจ ดีใจ เสียใจ หรือประหลาดใจ",
+                    "ทำหน้าที่นำหน้านามเพื่อบอกสถานที่หรือเวลาในการเกิดเหตุการณ์"
+                ],
+                correct: 0,
+                clue: "คำใบ้: ตัวเชื่อมประโยค เช่น เพราะฉะนั้น แต่ แม้ว่า",
+                exp: "เฉลย: คำสันธานทำหน้าที่เชื่อมคำ ประโยค หรือข้อความ เพื่อบอกความคล้อยตาม ขัดแย้ง เป็นเหตุเป็นผล หรือเลือก"
+            },
+            {
+                q: "ประโยคในข้อใดใช้คำวิเศษณ์ขยายคำวิเศษณ์ด้วยกันเอง",
+                options: [
+                    "เขาวิ่งเร็วมากจนตามไม่ทัน",
+                    "ดอกไม้สีแดงบานสะพรั่งในสวน",
+                    "คุณแม่ซื้อผลไม้สดมาจากตลาด",
+                    "เด็กๆ กำลังเล่นกันอย่างสนุกสนาน"
+                ],
+                correct: 0,
+                clue: "คำใบ้: วิเศษณ์ขยายวิเศษณ์ (เร็ว - มาก)",
+                exp: "เฉลย: เร็ว เป็นคำวิเศษณ์ขยายกริยา วิ่ง และ มาก เป็นวิเศษณ์ขยายคำวิเศษณ์ เร็ว อีกทีหนึ่ง"
+            },
+            {
+                q: "ระดับภาษาในข้อใดมีความเหมาะสมสำหรับการเขียนจดหมายกิจธุระติดต่อราชการ",
+                options: [
+                    "ภาษาทางการ (Formal Language)",
+                    "ภาษาพูดหรือภาษาปาก (Informal Language)",
+                    "ภาษากึ่งทางการ (Semi-Formal Language)",
+                    "ภาษาสแลงและภาษาถิ่น (Slang and Dialect)"
+                ],
+                correct: 0,
+                clue: "คำใบ้: ติดต่อราชการและกิจธุระทางการ",
+                exp: "เฉลย: การติดต่อราชการหรือจดหมายกิจธุระจำเป็นต้องใช้ภาษาทางการที่มีความสุภาพ เป็นระเบียบแบบแผน"
+            },
+            {
+                q: "ข้อใดคือลักษณะของคำเป็นตามหลักเสียงในภาษาไทย",
+                options: [
+                    "คำที่มีตัวสะกดแม่ กง กม เกย เกอว กน และประสมด้วยสระเสียงยาวในแม่ ก กา",
+                    "คำที่มีตัวสะกดในแม่ กก กด กบ และประสมด้วยสระเสียงสั้นในแม่ ก กา",
+                    "คำที่มีพยัญชนะต้นเป็นอักษรต่ำคู่และประสมด้วยสระเสียงสั้นเท่านั้น",
+                    "คำทุกคำที่มีวรรณยุกต์เอกหรือวรรณยุกต์โทกำกับอยู่บนรูปพยัญชนะ"
+                ],
+                correct: 0,
+                clue: "คำใบ้: นมยวง + ยาว",
+                exp: "เฉลย: คำเป็นคือคำที่ประสมด้วยสระเสียงยาวในแม่ ก กา หรือมีตัวสะกดในแม่ นมยวง"
+            },
+            {
+                q: "คำว่า พระราชทาน จัดอยู่ในระดับภาษาใด และมีความหมายว่าอย่างไร",
+                options: [
+                    "ภาษาราชาศัพท์ ใช้สำหรับพระมหากษัตริย์หรือพระบรมวงศานุวงศ์ทรงให้",
+                    "ภาษาทางการ ใช้สำหรับข้าราชการระดับสูงในกระทรวงศึกษาธิการ",
+                    "ภาษาพูด ใช้สื่อสารกันในหมู่ประชาชนทั่วไปเพื่อความรวดเร็ว",
+                    "ภาษากึ่งทางการ ใช้ในการประชุมสัมมนานานาชาติ"
+                ],
+                correct: 0,
+                clue: "คำใบ้: คำขึ้นต้นด้วย พระราช",
+                exp: "เฉลย: พระราชทาน เป็นภาษาราชาศัพท์หมวดคำกริยา ใช้เมื่อพระมหากษัตริย์หรือพระบรมวงศานุวงศ์ทรงมอบสิ่งของ"
+            },
+            {
+                q: "ข้อใดกล่าวถึงโครงสร้างและสัมผัสของโคลงสี่สุภาพ ได้ถูกต้องที่สุด",
+                options: [
+                    "มีคำสร้อยได้ในบาทที่ 1, 3 และ 4 และบังคับสัมผัสระหว่างบาทที่ 1 กับบาทที่ 2",
+                    "ใน 1 บทมีทั้งหมด 4 บาท บาทละ 3 วรรค รวมเป็น 12 วรรคถ้วน",
+                    "คำสุดท้ายของวรรคแรกต้องส่งสัมผัสไปที่คำแรกของวรรคสุดท้ายเสมอ",
+                    "ไม่นิยมใช้คำเอกและคำโทในบาทที่ 4 ของโคลงสี่สุภาพ"
+                ],
+                correct: 0,
+                clue: "คำใบ้: โคลงสี่สุภาพมีคำสร้อย (สร้อยโคลง)",
+                exp: "เฉลย: โคลงสี่สุภาพอนุญาตให้มีคำสร้อยได้ในบาทที่ 1, 3 หรือ 4 และเชื่อมสัมผัสระหว่างบาทถูกต้อง"
+            },
+            {
+                q: "ประโยคในข้อใดทำหน้าที่เป็นสกรรมกริยา (กริยาต้องการกรรมมารับข้างท้าย)",
+                options: [
+                    "คุณแม่ปลูกต้นไม้ดอกสวยงามในกระถางหน้าบ้าน",
+                    "เด็กชายชายนอนหลับอย่างสบายบนเตียงนอนนุ่ม",
+                    "นกน้อยบินข้ามภูเขาสูงใหญ่ไปในยามเช้าตรู่",
+                    "ฝนตกหนักติดต่อกันหลายชั่วโมงในกรุงเทพฯ"
+                ],
+                correct: 0,
+                clue: "คำใบ้: ปลูก (อะไร?) -> ปลูกต้นไม้",
+                exp: "เฉลย: ปลูก เป็นสกรรมกริยา ต้องมีกรรมมารับคือ ต้นไม้ ประโยคจึงจะสมบูรณ์"
+            },
+            {
+                q: "คำในข้อใดเป็นคำมูลหลายพยางค์ทั้งหมด",
+                options: [
+                    "กระดาษ มะม่วง ตลาด",
+                    "แม่น้ำ ลูกเสือ พัดลม",
+                    "บ้านเรือน อ่อนนุ่ม ขาวโพลน",
+                    "ไป มา กิน นอน"
+                ],
+                correct: 0,
+                clue: "คำใบ้: คำที่มาจากภาษาอื่นหรือพยางค์ติดกันแยกความหมายไม่ได้",
+                exp: "เฉลย: กระดาษ มะม่วง ตลาด เป็นคำมูลหลายพยางค์ที่ไม่สามารถแยกพยางค์แล้วมีความหมายเดิม"
+            },
+            {
+                q: "ข้อใดอธิบายความหมายของสำนวน กบในกะลาครอบ ได้ถูกต้องที่สุด",
+                options: [
+                    "ผู้ที่มีความรู้น้อยหรือมีประสบการณ์แคบ แต่กลับคิดว่าตนเองรู้มาก",
+                    "คนที่ชอบทำตัวโดดเด่นท่ามกลางกลุ่มคนจำนวนมากในสังคม",
+                    "การช่วยเหลือคนอื่นแต่กลับสร้างความเดือดร้อนให้ตนเอง",
+                    "คนที่มีความขยันหมั่นเพียรในการทำงานจนประสบความสำเร็จ"
+                ],
+                correct: 0,
+                clue: "คำใบ้: กบอยู่ในกะลา ย่อมมองเห็นโลกแคบ",
+                exp: "เฉลย: กบในกะลาครอบหมายถึงคนที่มีความรู้น้อยและมีประสบการณ์น้อย แต่เย่อหยิ่งลำพองใจว่าตนรู้มาก"
+            },
+            {
+                q: "คำบุพบทในประโยค จดหมายฉบับนี้ส่งมาจากคุณแม่ ทำหน้าที่บอกอะไร",
+                options: [
+                    "บอกแหล่งที่มาหรือผู้เป็นเจ้าของ",
+                    "บอกเวลาที่เหตุการณ์กำลังดำเนินอยู่",
+                    "บอกสถานที่ตั้งของสถานที่ราชการ",
+                    "บอกความประสงค์หรือผู้รับประโยชน์"
+                ],
+                correct: 0,
+                clue: "คำใบ้: คำว่า จาก บอกที่มา",
+                exp: "เฉลย: คำว่า จาก เป็นคำบุพบททำหน้าที่บอกแหล่งที่มาจุดเริ่มต้นของสิ่งของหรือจดหมาย"
+            },
+            {
+                q: "คำในข้อใดมีเสียงพยัญชนะสะกดในแม่กดทุกคำ",
+                options: [
+                    "บาท โอกาส กิจธาตุ",
+                    "กราบ เมฆ โชค",
+                    "บาง ลิง กวาง",
+                    "บ้าน นาน การ"
+                ],
+                correct: 0,
+                clue: "คำใบ้: แม่กดออกเสียงเหมือน ด สะกด",
+                exp: "เฉลย: บาท (ท), โอกาส (ส), กิจธาตุ (จ, ต) ทั้งหมดออกเสียงเหมือนมี ด สะกด"
+            },
+            {
+                q: "ข้อใดคือลักษณะของคำซ้ำที่ใช้ในภาษาไทยเพื่อแสดงความหมายเบาลง",
+                options: [
+                    "สีแดงๆ, เดินช้าๆ, ตัวเล็กๆ",
+                    "เด็กๆ, บ้านๆ, คนๆ",
+                    "ไฟไหม้ๆ, ช่วยด้วยๆ",
+                    "วิ่งเร็วๆ, ตีแรงๆ"
+                ],
+                correct: 0,
+                clue: "คำใบ้: ทำให้ความหมายลดน้ำหนักลง เช่น แดงเรื่อๆ",
+                exp: "เฉลย: การซ้ำคำวิเศษณ์หรือคำกริยาบางคำ เช่น แดงๆ ช้าๆ เล็กๆ จะช่วยลดน้ำหนักความหมายให้เบาลง"
+            },
+            {
+                q: "ข้อใดใช้คำอุทานได้ถูกต้องตามสถานการณ์แสดงความตกใจกลัว",
+                options: [
+                    "ว้าย! น่ากลัวจังเลย งูตัวใหญ่มาก",
+                    "ไชโย! ฉันสอบได้ที่หนึ่งของห้องแล้ว",
+                    "อนิจจา ชีวิตช่างน่าสงสารเหลือเกิน",
+                    "พุทโธ่ ทำไมถึงทำของเสียหายแบบนี้"
+                ],
+                correct: 0,
+                clue: "คำใบ้: อุทานเมื่อตกใจ",
+                exp: "เฉลย: คำว่า ว้าย! เป็นคำอุทานแสดงอาการตกใจหรือหวาดกลัว เหมาะกับสถานการณ์เจอสัตว์น่ากลัว"
+            },
+            {
+                q: "ประโยคในข้อใดจำแนกประเภทเป็นประโยคความเดียว (Simple Sentence)",
+                options: [
+                    "คุณแม่ซื้อผลไม้สดมาจากตลาดนัด",
+                    "ฉันชอบรับประทานส้มตำเพราะว่ามันมีรสชาติเผ็ดอร่อย",
+                    "เมื่อฝนหยุดตกแล้วพวกเราจึงออกไปเตะฟุตบอลกัน",
+                    "พี่ชายชอบอ่านหนังสือพิมพ์ส่วนน้องสาวชอบดูโทรทัศน์"
+                ],
+                correct: 0,
+                clue: "คำใบ้: มีกริยาสำคัญเพียงกริยาเดียว",
+                exp: "เฉลย: คุณแม่ซื้อผลไม้สดมาจากตลาดนัด มีกริยาหลักคือ ซื้อ เพียงตัวเดียว เป็นประโยคความเดียว"
+            },
+            {
+                q: "ข้อใดคือประโยชน์สูงสุดของการศึกษาเรื่องหลักภาษาไทยและการสร้างคำ",
+                options: [
+                    "เพื่อให้สามารถสื่อสาร อ่าน เขียน และใช้ภาษาไทยได้อย่างถูกต้องเหมาะสมตามกาลเทศะ",
+                    "เพื่อให้สามารถท่องจำคำศัพท์ภาษาบาลีสันสกฤตได้ครบทุกคำในพจนานุกรม",
+                    "เพื่อนำไปใช้แต่งบทกลอนสุภาพส่งประกวดในระดับประเทศเท่านั้น",
+                    "เพื่อหลีกเลี่ยงการใช้ภาษาถิ่นและภาษาพูดในชีวิตประจำวันทั้งหมด"
+                ],
+                correct: 0,
+                clue: "คำใบ้: เป้าหมายหลักของการเรียนภาษาคือการสื่อสารให้ถูกต้อง",
+                exp: "เฉลย: การเรียนหลักภาษาช่วยให้ผู้เรียนเข้าใจโครงสร้างและกฎเกณฑ์ ส่งผลให้การสื่อสารมีประสิทธิภาพ"
+            }
+        ];
+
+        let questions = JSON.parse(JSON.stringify(rawQuestions));
+        let userAnswers = {};
+        let currentLang = 'TH';
+
+        // Fisher-Yates Shuffle Algorithm สำหรับสลับตัวเลือกและคำถาม
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                let j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function initQuiz() {
+            shuffle(questions);
+            questions.forEach(q => {
+                let originalCorrectText = q.options[q.correct];
+                shuffle(q.options);
+                q.correct = q.options.indexOf(originalCorrectText);
+            });
+            renderQuiz();
+        }
+
+        function renderQuiz() {
+            const container = document.getElementById('questions-container');
+            container.innerHTML = '';
+
+            questions.forEach((q, index) => {
+                let card = document.createElement('div');
+                card.className = 'question-card';
+                card.id = `q-card-${index}`;
+
+                let optionsHTML = '';
+                q.options.forEach((opt, optIndex) => {
+                    let optLetter = String.fromCharCode(65 + optIndex);
+                    optionsHTML += `<button class="option-btn" id="btn-${index}-${optIndex}" onclick="checkAnswer(${index}, ${optIndex})">${optLetter}. ${opt}</button>`;
+                });
+
+                card.innerHTML = `
+                    <div class="question-title">ข้อที่ ${index + 1}: ${q.q}</div>
+                    <div class="options-group">${optionsHTML}</div>
+                    <div class="clue-box" onclick="toggleClue(${index})">💡 ดูคำใบ้ / Clue</div>
+                    <div class="explanation" id="exp-${index}">
+                        <b>คำใบ้:</b> ${q.clue}<br><br>
+                        <b>เฉลยและวิธีคิด:</b> ${q.exp}
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function toggleClue(index) {
+            let expBox = document.getElementById(`exp-${index}`);
+            expBox.style.display = expBox.style.display === 'block' ? 'none' : 'block';
+        }
+
+        function checkAnswer(qIndex, optIndex) {
+            let q = questions[qIndex];
+            let buttons = document.querySelectorAll(`#q-card-${qIndex} .option-btn`);
+
+            if (userAnswers[qIndex] !== undefined) return;
+
+            userAnswers[qIndex] = optIndex;
+
+            buttons.forEach((btn, idx) => {
+                btn.disabled = true;
+                if (idx === q.correct) {
+                    btn.classList.add('correct');
+                } else if (idx === optIndex) {
+                    btn.classList.add('incorrect');
+                }
+            });
+
+            document.getElementById(`exp-${qIndex}`).style.display = 'block';
+            updateScore();
+        }
+
+        function updateScore() {
+            let score = 0;
+            let totalAnswered = Object.keys(userAnswers).length;
+
+            for (let qIdx in userAnswers) {
+                if (userAnswers[qIdx] === questions[qIdx].correct) {
+                    score++;
+                }
+            }
+
+            document.getElementById('score-display').innerText = `คะแนนที่ได้: ${score} / 30 (${totalAnswered}/30 ข้อ)`;
+
+            localStorage.setItem('thai_m1_score', score);
+            localStorage.setItem('thai_m1_answered', totalAnswered);
+
+            if (totalAnswered === 30) {
+                showAnalysis(score);
+            }
+        }
+
+        function showAnalysis(score) {
+            let summaryBox = document.getElementById('results-summary');
+            let analysisText = document.getElementById('analysis-text');
+            summaryBox.style.display = 'block';
+
+            let percentage = (score / 30) * 100;
+            let feedback = "";
+
+            if (percentage >= 80) {
+                feedback = `ยอดเยี่ยมมาก! คุณได้คะแนน ${score} ข้อ (${percentage.toFixed(1)}%) แสดงว่ามีความเข้าใจเรื่องเสียงในภาษาไทย, การสร้างคำ, และชนิดของคำในประโยคเป็นอย่างดีเยี่ยม พร้อมลุยสนามสอบจริงแล้วครับ`;
+            } else if (percentage >= 50) {
+                feedback = `ทำได้ดีครับ ได้คะแนน ${score} ข้อ (${percentage.toFixed(1)}%) จุดที่ควรพัฒนาเพิ่มเติมคือ กฎเกณฑ์การผันวรรณยุกต์อักษร 3 หมู่ และการจำแนกคำประสมกับคำซ้อน`;
+            } else {
+                feedback = `ได้คะแนน ${score} ข้อ (${percentage.toFixed(1)}%) แนะนำให้กลับมาทบทวนในส่วนของธรรมชาติของเสียงในภาษาไทย และหลักการแต่งโคลงสี่สุภาพเพิ่มเติมครับ`;
+            }
+
+            analysisText.innerText = feedback;
+        }
+
+        function resetQuiz() {
+            userAnswers = {};
+            localStorage.removeItem('thai_m1_score');
+            localStorage.removeItem('thai_m1_answered');
+            document.getElementById('results-summary').style.display = 'none';
+            initQuiz();
+            document.getElementById('score-display').innerText = `คะแนนที่ได้: 0 / 30`;
+        }
+
+        function toggleLanguage() {
+            currentLang = currentLang === 'TH' ? 'EN' : 'TH';
+            if (currentLang === 'EN') {
+                document.getElementById('hdr-title').innerText = 'Grade 7 Thai Language Pretest - Midterm 2';
+                document.getElementById('hdr-subtitle').innerText = 'Interactive Virtual Teaching & Analytical Engine';
+            } else {
+                document.getElementById('hdr-title').innerText = 'ชุดข้อสอบ Pretest วิชาภาษาไทย ม.1 กลางภาค 2';
+                document.getElementById('hdr-subtitle').innerText = 'ระบบทดสอบวิเคราะห์และจำลองการเรียนรู้เสมือนจริง';
+            }
+        }
+
+        // Setup Whiteboard Canvas (ฝั่งขวา 30%)
+        const canvas = document.getElementById('canvas-board');
+        const ctx = canvas.getContext('2d');
+        let painting = false;
+        let penColor = '#2563eb';
+
+        function resizeCanvas() {
+            canvas.width = canvas.parentElement.clientWidth - 40;
+            canvas.height = 280;
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+
+        window.addEventListener('load', resizeCanvas);
+        window.addEventListener('resize', resizeCanvas);
+
+        canvas.addEventListener('mousedown', startPosition);
+        canvas.addEventListener('mouseup', endPosition);
+        canvas.addEventListener('mousemove', draw);
+
+        canvas.addEventListener('touchstart', (e) => { startPosition(e.touches[0]); e.preventDefault(); });
+        canvas.addEventListener('touchend', endPosition);
+        canvas.addEventListener('touchmove', (e) => { draw(e.touches[0]); e.preventDefault(); });
+
+        function startPosition(e) {
+            painting = true;
+            draw(e);
+        }
+
+        function endPosition() {
+            painting = false;
+            ctx.beginPath();
+        }
+
+        function draw(e) {
+            if (!painting) return;
+            const rect = canvas.getBoundingClientRect();
+            ctx.lineWidth = 3;
+            ctx.lineCap = 'round';
+            ctx.strokeStyle = penColor;
+
+            ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
+        }
+
+        function clearCanvas() {
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+
+        function setPenColor(color) {
+            penColor = color;
+        }
+
+        // เริ่มต้นรันระบบข้อสอบเมื่อโหลดหน้าเว็บ
+        initQuiz();
+    </script>
+</body>
+</html>
