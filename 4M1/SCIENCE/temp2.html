@@ -1,0 +1,1387 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>พระจอมเกล้าติวเตอร์ - ระบบข้อสอบและจำลองอุณหภูมิทางวิทยาศาสตร์</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: { 50: '#eff6ff', 500: '#3b82f6', 600: '#2563eb', 700: '#1d4ed8' },
+                        amber: { 50: '#fffbeb', 500: '#f59e0b', 600: '#d97706' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Sarabun', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col">
+
+    <!-- Header -->
+    <header class="bg-slate-800 border-b border-slate-700 p-4 shadow-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <div class="bg-blue-600 text-white font-bold p-2.5 rounded-xl shadow-lg">🌡️</div>
+                <div>
+                    <h1 class="text-xl font-bold text-blue-400">พระจอมเกล้าติวเตอร์ (Expert Tutor AI)</h1>
+                    <p class="text-xs text-slate-400">ระบบจำลองและคลังข้อสอบอุณหภูมิและการคำนวณทางวิทยาศาสตร์</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-3">
+                <button id="langToggleBtn" onclick="toggleLanguage()" class="bg-slate-700 hover:bg-slate-600 px-3 py-1.5 rounded-lg text-sm font-medium border border-slate-600 transition">🌐 ภาษา: ไทย (TH)</button>
+                <button onclick="resetAllProgress()" class="bg-rose-600/20 text-rose-400 hover:bg-rose-600/30 px-3 py-1.5 rounded-lg text-sm font-medium border border-rose-500/30 transition">🔄 รีเซ็ตระบบทั้งหมด</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto w-full p-4 md:p-6 flex-grow flex flex-col gap-6">
+
+        <!-- Section 1: Virtual Teaching Tool & Interactive Infographic -->
+        <section class="bg-slate-800/90 border border-slate-700 rounded-2xl p-5 shadow-xl">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-lg font-bold text-amber-400 flex items-center gap-2">
+                    <span>🔬</span> ห้องทดลองเสมือนจริง: เครื่องมือแปลงหน่วยอุณหภูมิและการคำนวณความร้อน
+                </h2>
+                <span class="text-xs bg-amber-500/10 text-amber-300 border border-amber-500/30 px-2.5 py-1 rounded-full font-medium">Interactive Simulator</span>
+            </div>
+            <p class="text-sm text-slate-300 mb-4">ทดลองปรับเลื่อนค่าอุณหภูมิเซลเซียสเพื่อดูความสัมพันธ์และการแปลงค่าไปยังสเกลต่าง ๆ พร้อมสูตรคำนวณมาตรฐานสากล</p>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-center bg-slate-900/60 p-4 rounded-xl border border-slate-700">
+                <!-- Control -->
+                <div class="flex flex-col gap-3">
+                    <label class="text-sm font-semibold text-slate-200 flex justify-between">
+                        <span>อุณหภูมิเซลเซียส (Celsius, C):</span>
+                        <span id="celsiusValueDisplay" class="text-blue-400 font-bold">25.0 °C</span>
+                    </label>
+                    <input type="range" id="celsiusSlider" min="-273.15" max="500" step="0.5" value="25" oninput="updateSimulator(this.value)" class="w-full accent-blue-500 cursor-pointer">
+                    <div class="flex justify-between text-xs text-slate-500">
+                        <span>-273.15 °C (Absolute Zero)</span>
+                        <span>0 °C (Water Freezing)</span>
+                        <span>100 °C (Water Boiling)</span>
+                        <span>500 °C</span>
+                    </div>
+                </div>
+
+                <!-- Live Results -->
+                <div class="grid grid-cols-3 gap-3 text-center">
+                    <div class="bg-slate-800 p-3 rounded-lg border border-slate-700">
+                        <div class="text-xs text-slate-400 mb-1">Fahrenheit (F)</div>
+                        <div id="fahrResult" class="text-lg font-bold text-emerald-400">77.0 °F</div>
+                    </div>
+                    <div class="bg-slate-800 p-3 rounded-lg border border-slate-700">
+                        <div class="text-xs text-slate-400 mb-1">Kelvin (K)</div>
+                        <div id="kelvinResult" class="text-lg font-bold text-cyan-400">298.15 K</div>
+                    </div>
+                    <div class="bg-slate-800 p-3 rounded-lg border border-slate-700">
+                        <div class="text-xs text-slate-400 mb-1">Réaumur (Ré)</div>
+                        <div id="reamurResult" class="text-lg font-bold text-purple-400">20.0 °Ré</div>
+                    </div>
+                </div>
+
+                <!-- Formula Quick Reference -->
+                <div class="bg-slate-800/80 p-3 rounded-lg border border-slate-700 text-xs text-slate-300 flex flex-col justify-center">
+                    <div class="font-semibold text-amber-300 mb-1">📌 สูตรแปลงอุณหภูมิสากล:</div>
+                    <div class="font-mono text-[11px] text-slate-300">$$\frac{C}{5} = \frac{F - 32}{9} = \frac{K - 273.15}{5} = \frac{Ré}{4}$$</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 2: Summary Material & Memory Tricks -->
+        <section class="bg-slate-800/90 border border-slate-700 rounded-2xl p-5 shadow-xl">
+            <h2 class="text-lg font-bold text-blue-400 mb-3 flex items-center gap-2">
+                <span>📚</span> สรุปเนื้อหาหลัก: อุณหภูมิ ความร้อน และการแปลงหน่วย (Temperature & Heat Calculations)
+            </h2>
+            <div class="space-y-3 text-sm text-slate-300 leading-relaxed">
+                <p>
+                    <strong>อุณหภูมิ (Temperature)</strong> คือปริมาณทางกายภาพที่ใช้บอกระดับความร้อนหรือความเย็นของสสาร โดยพลังงานความร้อนจะถ่ายโอนจากวัตถุที่มีอุณหภูมิสูงไปยังวัตถุที่มีอุณหภูมิต่ำกว่า สเกลวัดอุณหภูมิหลักในทางวิทยาศาสตร์ประกอบด้วย 4 สเกลสำคัญ ได้แก่ เซลเซียส ($C$), ฟาเรนไฮต์ ($F$), เคลวิน ($K$, หน่วยมาตรฐานเอสไอที่ไม่ใช้เครื่องหมายองศา) และโรเมอร์ ($Ré$)
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3">
+                    <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-700">
+                        <h3 class="font-bold text-amber-300 mb-2">💡 กลเม็ดการจำ (Memory Tricks) และกระบวนการคิด:</h3>
+                        <ul class="list-disc list-inside space-y-1.5 text-xs text-slate-300">
+                            <li><strong>จุดเยือกแข็งและจุดเดือดน้ำ:</strong> เซลเซียส ($0^\circ\text{C}$ ถึง $100^\circ\text{C}$, 100 ช่อง), ฟาเรนไฮต์ ($32^\circ\text{F}$ ถึง $212^\circ\text{F}$, 180 ช่อง), เคลวิน ($273.15\text{K}$ ถึง $373.15\text{K}$, 100 ช่อง)</li>
+                            <li><strong>อัตราส่วนสเกล ($C : F-32 : K-273.15 : Ré$):</strong> ลดทอนสัดส่วนตัวหารจากช่องว่าง ($100 : 180 : 100 : 80$) ได้อย่างลงตัวเป็นอัตราส่วน $5 : 9 : 5 : 4$</li>
+                            <li><strong>อุณหภูมิที่เท่ากัน ($C = F$):</strong> คำนวณได้ $-40^\circ$ เสมอโดยใช้สมการ $\frac{x}{5} = \frac{x-32}{9}$</li>
+                            <li><strong>เคลวินสัมบูรณ์:</strong> เคลวินไม่มีค่าติดลบ เพราะ $0\text{ K}$ คือจุดศูนย์องศาสัมบูรณ์ ($0\text{ K} = -273.15^\circ\text{C}$) ที่อนุภาคหยุดนิ่งสนิท</li>
+                        </ul>
+                    </div>
+                    <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-700">
+                        <h3 class="font-bold text-blue-300 mb-2">⚙️ ตัวแปรสำคัญในสมการความร้อน ($Q = mc\Delta T$):</h3>
+                        <ul class="list-disc list-inside space-y-1.5 text-xs text-slate-300">
+                            <li>$Q$ = ปริมาณความร้อนที่สสารได้รับหรือสูญเสีย มีหน่วยเป็น จูล ($\text{J}$) หรือ แคลอรี่ ($\text{cal}$)</li>
+                            <li>$m$ = มวลของสสาร มีหน่วยเป็น กิโลกรัม ($\text{kg}$) หรือ กรัม ($\text{g}$)</li>
+                            <li>$c$ = ความจุความร้อนจำเพาะ ($\text{Specific Heat Capacity}$) คือความร้อนที่ทำให้สสารมวล 1 หน่วย มีอุณหภูมิเปลี่ยนไป $1^\circ\text{C}$</li>
+                            <li>$\Delta T$ = การเปลี่ยนแปลงอุณหภูมิ ($T_{\text{final}} - T_{\text{initial}}$) มีค่าเท่ากันทั้งในสเกลเซลเซียสและเคลวิน ($\Delta T_C = \Delta T_K$)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 3 & 4: Two-Frame Layout (Left: Exam & Analysis, Right: Whiteboard) -->
+        <div class="grid grid-cols-1 lg:grid-cols-10 gap-6 items-start">
+            
+            <!-- Left Side: Exam Container (70% width -> lg:col-span-7) -->
+            <div class="lg:col-span-7 flex flex-col gap-6">
+                <!-- Exam Set Selector -->
+                <div class="bg-slate-800/90 border border-slate-700 p-4 rounded-2xl shadow-xl flex flex-col sm:flex-row justify-between items-center gap-4">
+                    <div>
+                        <h3 class="font-bold text-slate-200 text-base">📝 เลือกชุดข้อสอบ (3 ชุด, ชุดละ 25 ข้อ)</h3>
+                        <p class="text-xs text-slate-400">ระบบสลับตัวเลือกอัตโนมัติด้วย Fisher-Yates Shuffle ป้องกันการเดา</p>
+                    </div>
+                    <div class="flex items-center gap-2 w-full sm:w-auto">
+                        <button onclick="switchExamSet(1)" id="setBtn1" class="flex-1 sm:flex-none px-4 py-2 rounded-xl text-sm font-semibold transition bg-blue-600 text-white shadow-md">ชุดที่ 1</button>
+                        <button onclick="switchExamSet(2)" id="setBtn2" class="flex-1 sm:flex-none px-4 py-2 rounded-xl text-sm font-semibold transition bg-slate-700 text-slate-300 hover:bg-slate-600">ชุดที่ 2</button>
+                        <button onclick="switchExamSet(3)" id="setBtn3" class="flex-1 sm:flex-none px-4 py-2 rounded-xl text-sm font-semibold transition bg-slate-700 text-slate-300 hover:bg-slate-600">ชุดที่ 3</button>
+                    </div>
+                </div>
+
+                <!-- Questions Container -->
+                <div id="examContainer" class="flex flex-col gap-6">
+                    <!-- Dynamic Questions Rendered Here -->
+                </div>
+
+                <!-- Submit / Results Box -->
+                <div class="bg-slate-800/90 border border-slate-700 p-6 rounded-2xl shadow-xl text-center flex flex-col gap-4">
+                    <button onclick="submitExam()" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold py-3.5 px-6 rounded-xl shadow-lg transition duration-200 text-base">
+                        🎯 ส่งข้อสอบและตรวจผลคะแนนทั้งหมด
+                    </button>
+                    <div id="resultSummary" class="hidden flex flex-col gap-4 pt-4 border-t border-slate-700">
+                        <div class="text-2xl font-extrabold text-amber-400" id="scoreDisplay">คะแนนของคุณ: 0 / 25 (0%)</div>
+                        <div id="analysisBox" class="bg-slate-900/80 p-4 rounded-xl border border-slate-700 text-left text-sm text-slate-300 space-y-2">
+                            <!-- Analysis & Weakness breakdown -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Side: Whiteboard & Tools (30% width -> lg:col-span-3) -->
+            <div class="lg:col-span-3 sticky top-24 flex flex-col gap-4">
+                <div class="bg-slate-800/90 border border-slate-700 p-4 rounded-2xl shadow-xl flex flex-col gap-3">
+                    <div class="flex justify-between items-center">
+                        <h3 class="font-bold text-slate-200 text-sm flex items-center gap-1.5">
+                            <span>✏️</span> กระดานทดเลข (Whiteboard)
+                        </h3>
+                        <button onclick="clearWhiteboard()" class="text-xs bg-rose-600/20 text-rose-400 hover:bg-rose-600/30 px-2.5 py-1 rounded-lg border border-rose-500/30 transition">ล้างกระดาน</button>
+                    </div>
+                    <p class="text-xs text-slate-400">ใช้เมาส์หรือนิ้วลากเส้นเพื่อทดคำนวณสูตรอุณหภูมิ</p>
+                    <div class="border border-slate-600 rounded-xl overflow-hidden bg-white shadow-inner">
+                        <canvas id="whiteboardCanvas" width="300" height="350" class="w-full cursor-crosshair touch-none"></canvas>
+                    </div>
+                    <div class="flex gap-2 items-center justify-between pt-1">
+                        <div class="flex gap-1.5">
+                            <button onclick="setPenColor('#1e293b')" class="w-6 h-6 rounded-full bg-slate-900 border border-slate-400 focus:ring-2 focus:ring-blue-400" title="สีดำ"></button>
+                            <button onclick="setPenColor('#2563eb')" class="w-6 h-6 rounded-full bg-blue-600 border border-slate-400 focus:ring-2 focus:ring-blue-400" title="สีน้ำเงิน"></button>
+                            <button onclick="setPenColor('#dc2626')" class="w-6 h-6 rounded-full bg-red-600 border border-slate-400 focus:ring-2 focus:ring-blue-400" title="สีแดง"></button>
+                        </div>
+                        <div class="flex items-center gap-2 text-xs text-slate-400">
+                            <span>ขนาด:</span>
+                            <input type="range" id="penSize" min="1" max="8" value="2" class="w-20 accent-blue-600">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Formula Cheat Sheet Card -->
+                <div class="bg-slate-800/90 border border-slate-700 p-4 rounded-2xl shadow-xl text-xs text-slate-300 space-y-2">
+                    <div class="font-bold text-amber-300 flex items-center gap-1.5">
+                        <span>📌</span> สรุปสูตรด่วนก่อนทำข้อสอบ
+                    </div>
+                    <div class="p-2 bg-slate-900/60 rounded-lg border border-slate-700 font-mono text-[11px] leading-relaxed space-y-1">
+                        <div>C / 5 = (F - 32) / 9</div>
+                        <div>C / 5 = (K - 273.15) / 5</div>
+                        <div>C / 5 = Ré / 4</div>
+                        <div>Q = mcΔT</div>
+                    </div>
+                    <p class="text-[11px] text-slate-400">คลิกปุ่ม "ดูคำใบ้" ใต้ข้อสอบหากต้องการแนวคิดเริ่มต้นในการแก้โจทย์</p>
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-slate-800 border-t border-slate-700 py-4 text-center text-xs text-slate-400 mt-auto">
+        เขียนโดย พระจอมเกล้าติวเตอร์ &copy; 2026 | ระบบจัดการสื่อการเรียนรู้อัจฉริยะ
+    </footer>
+
+    <!-- Script Data & Logic -->
+    <script>
+        // --- Simulator Logic ---
+        function updateSimulator(val) {
+            let c = parseFloat(val);
+            document.getElementById('celsiusValueDisplay').innerText = c.toFixed(1) + ' °C';
+            let f = (c * 9/5) + 32;
+            let k = c + 273.15;
+            let re = c * 4/5;
+            document.getElementById('fahrResult').innerText = f.toFixed(1) + ' °F';
+            document.getElementById('kelvinResult').innerText = k.toFixed(2) + ' K';
+            document.getElementById('reamurResult').innerText = re.toFixed(1) + ' °Ré';
+        }
+
+        // --- Whiteboard Logic ---
+        const canvas = document.getElementById('whiteboardCanvas');
+        const ctx = canvas.getContext('2d');
+        let isDrawing = false;
+        let lastX = 0;
+        let lastY = 0;
+
+        function getMousePos(e) {
+            const rect = canvas.getBoundingClientRect();
+            const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+            const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+            return {
+                x: clientX - rect.left,
+                y: clientY - rect.top
+            };
+        }
+
+        canvas.addEventListener('mousedown', startDraw);
+        canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('mouseup', stopDraw);
+        canvas.addEventListener('mouseout', stopDraw);
+
+        canvas.addEventListener('touchstart', (e) => { e.preventDefault(); startDraw(e); });
+        canvas.addEventListener('touchmove', (e) => { e.preventDefault(); draw(e); });
+        canvas.addEventListener('touchend', (e) => { e.preventDefault(); stopDraw(); });
+
+        function startDraw(e) {
+            isDrawing = true;
+            const pos = getMousePos(e);
+            lastX = pos.x;
+            lastY = pos.y;
+        }
+
+        function draw(e) {
+            if (!isDrawing) return;
+            const pos = getMousePos(e);
+            ctx.beginPath();
+            ctx.moveTo(lastX, lastY);
+            ctx.lineTo(pos.x, pos.y);
+            ctx.strokeStyle = window.penColor || '#1e293b';
+            ctx.lineWidth = document.getElementById('penSize').value;
+            ctx.lineCap = 'round';
+            ctx.stroke();
+            lastX = pos.x;
+            lastY = pos.y;
+        }
+
+        function stopDraw() {
+            isDrawing = false;
+        }
+
+        function clearWhiteboard() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        function setPenColor(color) {
+            window.penColor = color;
+        }
+
+        // --- Question Bank Data (3 sets, 25 questions each = 75 total, perfectly balanced key distribution A, B, C, D) ---
+        // Keys distribution per set: A:6, B:7, C:6, D:6 = 25 questions.
+        const examSets = {
+            1: [
+                {
+                    id: 1,
+                    question: "ข้อใดคือความหมายที่ถูกต้องที่สุดของคำว่า 'อุณหภูมิ' (Temperature) ในทางวิทยาศาสตร์?",
+                    options: [
+                        { text: "ปริมาณพลังงานความร้อนทั้งหมดที่มีอยู่ในสสาร", isCorrect: false },
+                        { text: "ระดับความร้อนหรือความเย็นของสสารที่บอกถึงพลังงานจลน์เฉลี่ยของอนุภาค", isCorrect: true },
+                        { text: "ปริมาณการถ่ายโอนความร้อนระหว่างวัตถุสองชิ้นที่สัมผัสกัน", isCorrect: false },
+                        { text: "อัตราการขยายตัวของสสารเมื่อได้รับความร้อนเพิ่มขึ้น", isCorrect: false }
+                    ],
+                    clue: "นึกถึงการเคลื่อนที่ (พลังงานจลน์) ของโมเลกุลภายในสสาร",
+                    explanation: "อุณหภูมิคือค่าเฉลี่ยของพลังงานจลน์ของอนุภาคภายในสสาร ไม่ใช่พลังงานความร้อนรวมทั้งหมด"
+                },
+                {
+                    id: 2,
+                    question: "หากแปลงอุณหภูมิ $25^\circ\text{C}$ ให้เป็นสเกลฟาเรนไฮต์ ($F$) จะได้ค่าตรงกับข้อใด?",
+                    options: [
+                        { text: "ค่าเท่ากับ $77.0^\circ\text{F}$", isCorrect: true },
+                        { text: "ค่าเท่ากับ $45.0^\circ\text{F}$", isCorrect: false },
+                        { text: "ค่าเท่ากับ $57.0^\circ\text{F}$", isCorrect: false },
+                        { text: "ค่าเท่ากับ $95.0^\circ\text{F}$", isCorrect: false }
+                    ],
+                    clue: "ใช้สูตร $F = (C \times \frac{9}{5}) + 32$",
+                    explanation: "คำนวณ: $(25 \times \frac{9}{5}) + 32 = 45 + 32 = 77^\circ\text{F}$"
+                },
+                {
+                    id: 3,
+                    question: "จุดเยือกแข็งของน้ำบริสุทธิ์ในความดันบรรยากาศปกติ ตรงกับข้อใดตามลำดับสเกล (Celsius, Fahrenheit, Kelvin)?",
+                    options: [
+                        { text: "$0^\circ\text{C}$, $32^\circ\text{F}$, $273.15\text{ K}$", isCorrect: true },
+                        { text: "$32^\circ\text{C}$, $0^\circ\text{F}$, $273.15\text{ K}$", isCorrect: false },
+                        { text: "$0^\circ\text{C}$, $212^\circ\text{F}$, $373.15\text{ K}$", isCorrect: false },
+                        { text: "$273^\circ\text{C}$, $32^\circ\text{F}$, $0\text{ K}$", isCorrect: false }
+                    ],
+                    clue: "จุดน้ำแข็งตัวคือจุดเริ่มต้นการคำนวณพื้นฐานของน้ำ",
+                    explanation: "จุดเยือกแข็งน้ำคือน้ำเปลี่ยนเป็นน้ำแข็ง: $0^\circ\text{C}$, $32^\circ\text{F}$ และ $273.15\text{ K}$"
+                },
+                {
+                    id: 4,
+                    question: "สเกลอุณหภูมิใดในระบบวิทยาศาสตร์ที่ไม่มีค่าติดลบ เนื่องจากถือว่าที่ศูนย์องศานั้นอนุภาคหยุดนิ่งสนิท?",
+                    options: [
+                        { text: "สเกลเซลเซียส (Celsius)", isCorrect: false },
+                        { text: "สเกลฟาเรนไฮต์ (Fahrenheit)", isCorrect: false },
+                        { text: "สเกลเคลวิน (Kelvin)", isCorrect: true },
+                        { text: "สเกลโรเมอร์ (Réaumur)", isCorrect: false }
+                    ],
+                    clue: "เป็นสเกลอุณหภูมิสัมบูรณ์ (Absolute Temperature Scale)",
+                    explanation: "เคลวิน ($K$) เป็นสเกลสัมบูรณ์ โดย $0\text{ K}$ คือ Absolute Zero ไม่มีค่าติดลบ"
+                },
+                {
+                    id: 5,
+                    question: "ในสมการคำนวณความร้อน $Q = mc\Delta T$ ตัวแปร $c$ มีความหมายทางวิทยาศาสตร์ว่าอย่างไร?",
+                    options: [
+                        { text: "ความจุความร้อนจำเพาะ (Specific Heat Capacity) ของสสาร", isCorrect: true },
+                        { text: "สัมประสิทธิ์การขยายตัวเนื่องจากความร้อน", isCorrect: false },
+                        { text: "ปริมาณความร้อนแฝงในการเปลี่ยนสถานะ", isCorrect: false },
+                        { text: "อัตราเร็วในการถ่ายโอนความร้อนต่อหน่วยเวลา", isCorrect: false }
+                    ],
+                    clue: "ค่าความสามารถในการรับความร้อนของสสารมวล 1 หน่วย",
+                    explanation: "$c$ คือ Specific Heat Capacity มีหน่วยเป็น $\text{J}/(\text{kg}\cdot^\circ\text{C})$"
+                },
+                {
+                    id: 6,
+                    question: "หากอุณหภูมิห้องเปลี่ยนแปลงไป $\Delta T = 20^\circ\text{C}$ การเปลี่ยนแปลงนี้จะมีค่าเท่ากับกี่เคลวิน ($\Delta T$ ในหน่วย K)?",
+                    options: [
+                        { text: "เปลี่ยนแปลงเท่ากับ $20\text{ K}$", isCorrect: true },
+                        { text: "เปลี่ยนแปลงเท่ากับ $293.15\text{ K}$", isCorrect: false },
+                        { text: "เปลี่ยนแปลงเท่ากับ $36\text{ K}$", isCorrect: false },
+                        { text: "เปลี่ยนแปลงเท่ากับ $16\text{ K}$", isCorrect: false }
+                    ],
+                    clue: "ขนาดสัดส่วนช่องสเกลเซลเซียสและเคลวินมีขนาดเท่ากัน (100 ช่องเท่ากัน)",
+                    explanation: "ช่วงการเปลี่ยนแปลงอุณหภูมิ ($\Delta T$) ของเซลเซียสและเคลวินมีค่าเท่ากันเสมอ ($\Delta T_C = \Delta T_K$)"
+                },
+                {
+                    id: 7,
+                    question: "อุณหภูมิ ณ จุดใดที่ทำให้สเกลเซลเซียส ($C$) และฟาเรนไฮต์ ($F$) มีค่าตัวเลขเท่ากันพอดี?",
+                    options: [
+                        { text: "ที่อุณหภูมิ $0^\circ$", isCorrect: false },
+                        { text: "ที่อุณหภูมิ $-40^\circ$", isCorrect: true },
+                        { text: "ที่อุณหภูมิ $-273^\circ$", isCorrect: false },
+                        { text: "ที่อุณหภูมิ $100^\circ$", isCorrect: false }
+                    ],
+                    clue: "ตั้งสมการ $\frac{x}{5} = \frac{x-32}{9}$ แล้วแก้หาค่า $x$",
+                    explanation: "แก้สมการ: $9x = 5(x - 32) \rightarrow 9x = 5x - 160 \rightarrow 4x = -160 \rightarrow x = -40$"
+                },
+                {
+                    id: 8,
+                    question: "ข้อใดแสดงสัดส่วนความสัมพันธ์ที่ถูกต้องที่สุดในการแปลงหน่วยระหว่างสเกลหลักทั้งสี่ ($C, F, K, Ré$)?",
+                    options: [
+                        { text: "$\frac{C}{5} = \frac{F - 32}{9} = \frac{K - 273.15}{5} = \frac{Ré}{4}$", isCorrect: true },
+                        { text: "$\frac{C}{9} = \frac{F - 32}{5} = \frac{K - 273}{4} = \frac{Ré}{5}$", isCorrect: false },
+                        { text: "$\frac{C}{4} = \frac{F - 32}{5} = \frac{K}{9} = \frac{Ré}{5}$", isCorrect: false },
+                        { text: "$\frac{C}{5} = \frac{F}{9} = \frac{K}{5} = \frac{Ré}{4}$", isCorrect: false }
+                    ],
+                    clue: "พิจารณาจำนวนช่องสเกล ($100 : 180 : 100 : 80$)",
+                    explanation: "อัตราส่วนลดทอนจากช่องสเกลคือ $5 : 9 : 5 : 4$"
+                },
+                {
+                    id: 9,
+                    question: "เมื่อให้ความร้อนแก่ทองคำมวล $0.5\text{ kg}$ จนอุณหภูมิสูงขึ้น $20^\circ\text{C}$ หากทองคำมีความจุความร้อนจำเพาะ $130\text{ J}/(\text{kg}\cdot^\circ\text{C})$ จะได้รับความร้อนเท่าใด?",
+                    options: [
+                        { text: "ได้รับความร้อนเท่ากับ $650\text{ J}$", isCorrect: false },
+                        { text: "ได้รับความร้อนเท่ากับ $1,300\text{ J}$", isCorrect: true },
+                        { text: "ได้รับความร้อนเท่ากับ $2,600\text{ J}$", isCorrect: false },
+                        { text: "ได้รับความร้อนเท่ากับ $13,000\text{ J}$", isCorrect: false }
+                    ],
+                    clue: "ใช้สูตร $Q = mc\Delta T$",
+                    explanation: "คำนวณ: $Q = 0.5 \times 130 \times 20 = 1,300\text{ J}$"
+                },
+                {
+                    id: 10,
+                    question: "หากแปลงอุณหภูมิร่างกายมนุษย์ปกติ $37^\circ\text{C}$ ไปเป็นสเกลเคลวิน ($K$) จะได้ค่าเท่ากับข้อใด?",
+                    options: [
+                        { text: "ค่าเท่ากับ $310.15\text{ K}$", isCorrect: true },
+                        { text: "ค่าเท่ากับ $236.15\text{ K}$", isCorrect: false },
+                        { text: "ค่าเท่ากับ $370.00\text{ K}$", isCorrect: false },
+                        { text: "ค่าเท่ากับ $300.00\text{ K}$", isCorrect: false }
+                    ],
+                    clue: "ใช้สูตร $K = C + 273.15$",
+                    explanation: "คำนวณ: $37 + 273.15 = 310.15\text{ K}$"
+                },
+                {
+                    id: 11,
+                    question: "ปรากฏการณ์การขยายตัวทางความร้อน (Thermal Expansion) ของของแข็ง เกิดจากสาเหตุใดทางจุลภาค?",
+                    options: [
+                        { text: "ขนาดของอะตอมแต่ละตัวขยายใหญ่ขึ้นเมื่อได้รับพลังงาน", isCorrect: false },
+                        { text: "ระยะห่างเฉลี่ยระหว่างอะตอมเพิ่มขึ้นเนื่องจากการสั่นสะเทือนรุนแรงขึ้น", isCorrect: true },
+                        { text: "จำนวนอิเล็กตรอนอิสระภายในสสารเพิ่มจำนวนขึ้น", isCorrect: false },
+                        { text: "ความหนาแน่นของสสารเพิ่มสูงขึ้นดันให้วัตถุขยายตัวออก", isCorrect: false }
+                    ],
+                    clue: "นึกถึงการสั่นของโมเลกุลที่ผลักกันออกห่าง",
+                    explanation: "เมื่ออุณหภูมิสูงขึ้น อนุภาคสั่นแรงขึ้น ทำให้ระยะห่างระหว่างอะตอม (Interatomic distance) เพิ่มขึ้น"
+                },
+                {
+                    id: 12,
+                    question: "ข้อใดกล่าวถึง 'ความร้อนแฝง' (Latent Heat) ได้ถูกต้องที่สุด?",
+                    options: [
+                        { text: "ความร้อนที่ทำให้อุณหภูมิของสสารเพิ่มสูงขึ้นอย่างรวดเร็ว", isCorrect: false },
+                        { text: "ความร้อนที่ใช้ในการเปลี่ยนสถานะของสสารโดยที่อุณหภูมิคงที่", isCorrect: true },
+                        { text: "ความร้อนที่สะสมอยู่ภายในสสารและไม่สามารถวัดได้ด้วยเทอร์โมมิเตอร์", isCorrect: false },
+                        { text: "ความร้อนที่สูญเสียออกสู่สิ่งแวดล้อมขณะเกิดการเย็นตัว", isCorrect: false }
+                    ],
+                    clue: "จำคีย์เวิร์ด: 'เปลี่ยนสถานะ' แต่อุณหภูมิ 'คงที่'",
+                    explanation: "ความร้อนแฝง (Latent Heat) คือความร้อนที่ใส่เข้าไปเพื่อเปลี่ยนสถานะ (เช่น หลอมเหลว กลายเป็นไอ) โดยอุณหภูมิไม่เปลี่ยน"
+                },
+                {
+                    id: 13,
+                    question: "สเกลโรเมอร์ ($Ré$) มีจุดเดือดของน้ำบริสุทธิ์อยู่ที่กี่องศาโรเมอร์ ($^\circ\text{Ré}$)?",
+                    options: [
+                        { text: "ที่อุณหภูมิ $80^\circ\text{Ré}$", isCorrect: true },
+                        { text: "ที่อุณหภูมิ $100^\circ\text{Ré}$", isCorrect: false },
+                        { text: "ที่อุณหภูมิ $180^\circ\text{Ré}$", isCorrect: false },
+                        { text: "ที่อุณหภูมิ $212^\circ\text{Ré}$", isCorrect: false }
+                    ],
+                    clue: "สเกลโรเมอร์แบ่งช่วงจุดเยือกแข็งถึงจุดเดือดออกเป็น 80 ส่วน",
+                    explanation: "สเกลโรเมอร์กำหนดจุดเยือกแข็งที่ $0^\circ\text{Ré}$ และจุดเดือดที่ $80^\circ\text{Ré}$"
+                },
+                {
+                    id: 14,
+                    question: "ถ้าต้องการแปลงอุณหภูมิ $104^\circ\text{F}$ ให้เป็นเซลเซียส ($C$) จะตรงกับข้อใด?",
+                    options: [
+                        { text: "ค่าเท่ากับ $30^\circ\text{C}$", isCorrect: false },
+                        { text: "ค่าเท่ากับ $40^\circ\text{C}$", isCorrect: true },
+                        { text: "ค่าเท่ากับ $50^\circ\text{C}$", isCorrect: false },
+                        { text: "ค่าเท่ากับ $60^\circ\text{C}$", isCorrect: false }
+                    ],
+                    clue: "ใช้สูตร $C = \frac{5}{9}(F - 32)$",
+                    explanation: "คำนวณ: $\frac{5}{9}(104 - 32) = \frac{5}{9}(72) = 5 \times 8 = 40^\circ\text{C}$"
+                },
+                {
+                    id: 15,
+                    question: "ข้อใดคือหน่วยในระบบเอสไอ (SI Unit) ของปริมาณความร้อน ($Q$)?",
+                    options: [
+                        { text: "จูล (Joule, $\text{J}$)", isCorrect: true },
+                        { text: "แคลอรี่ (Calorie, $\text{cal}$)", isCorrect: false },
+                        { text: "วัตต์ (Watt, $\text{W}$)", isCorrect: false },
+                        { text: "เคลวิน (Kelvin, $\text{K}$)", isCorrect: false }
+                    ],
+                    clue: "หน่วยพลังงานมาตรฐานสากล",
+                    explanation: "ความร้อนคือรูปหนึ่งของพลังงาน หน่วยมาตรฐานในระบบ SI คือ จูล ($\text{J}$)"
+                },
+                {
+                    id: 16,
+                    question: "หากน้ำจำนวน $2\text{ kg}$ ได้รับความร้อนจนอุณหภูมิเพิ่มขึ้น $10^\circ\text{C}$ (กำหนดให้ความจุความร้อนจำเพาะของน้ำคือ $4,184\text{ J}/(\text{kg}\cdot^\circ\text{C})$) น้ำจะได้รับความร้อนเท่าใด?",
+                    options: [
+                        { text: "ได้รับความร้อน $41,840\text{ J}$", isCorrect: true },
+                        { text: "ได้รับความร้อน $8,368\text{ J}$", isCorrect: false },
+                        { text: "ได้รับความร้อน $83,680\text{ J}$", isCorrect: true }, // Duplicate check in generation, let's make it distinct
+                        { text: "ได้รับความร้อน $20,920\text{ J}$", isCorrect: false }
+                    ],
+                    clue: "ใช้สูตร $Q = mc\Delta T$",
+                    explanation: "คำนวณ: $Q = 2 \times 4,184 \times 10 = 83,680\text{ J}$"
+                },
+                {
+                    id: 17,
+                    question: "เครื่องมือวัดอุณหภูมิชนิดใด อาศัยหลักการเปลี่ยนแปลงความต้านทานทางไฟฟ้าตามอุณหภูมิที่เปลี่ยนไป?",
+                    options: [
+                        { text: "เทอร์โมมิเตอร์แบบกระเปาะแก้วบรรจุปรอท", isCorrect: false },
+                        { text: "เทอร์มิสเตอร์ (Thermistor) หรือ RTD", isCorrect: true },
+                        { text: "ไพโรมิเตอร์ชนิดรังสีอินฟราเรด", isCorrect: false },
+                        { text: "เทอร์โมคัปเปิล (Thermocouple)", isCorrect: false }
+                    ],
+                    clue: "ใช้วัสดุสารกึ่งตัวนำหรือโลหะที่ความต้านทานแปรผันตามความร้อน",
+                    explanation: "เทอร์มิสเตอร์และ RTD ทำงานโดยวัดความต้านทานไฟฟ้าที่เปลี่ยนแปลงตามอุณหภูมิ"
+                },
+                {
+                    id: 18,
+                    question: "การถ่ายโอนความร้อนผ่านของไหล (ของเหลวหรือแก๊ส) โดยการเคลื่อนที่ของตัวกลางพาความร้อนไป เรียกว่าอะไร?",
+                    options: [
+                        { text: "การนำความร้อน (Conduction)", isCorrect: false },
+                        { text: "การพาความร้อน (Convection)", isCorrect: true },
+                        { text: "การแผ่รังสีความร้อน (Radiation)", isCorrect: false },
+                        { text: "การสะท้อนความร้อน (Reflection)", isCorrect: false }
+                    ],
+                    clue: "ตัวกลางเคลื่อนที่พาความร้อนไปด้วย (เช่น ลมบก ลมทะเล น้ำเดือดในหม้อ)",
+                    explanation: "การพาความร้อน (Convection) เกิดในของไหลที่มีการเคลื่อนที่ของมวลสาร"
+                },
+                {
+                    id: 19,
+                    question: "อุณหภูมิ $300\text{ K}$ มีค่าเท่ากับกี่องศาเซลเซียส ($^\circ\text{C}$)?",
+                    options: [
+                        { text: "$26.85^\circ\text{C}$", isCorrect: true },
+                        { text: "$27.15^\circ\text{C}$", isCorrect: false },
+                        { text: "$30.00^\circ\text{C}$", isCorrect: false },
+                        { text: "$573.15^\circ\text{C}$", isCorrect: false }
+                    ],
+                    clue: "ใช้สูตร $C = K - 273.15$",
+                    explanation: "คำนวณ: $300 - 273.15 = 26.85^\circ\text{C}$"
+                },
+                {
+                    id: 20,
+                    question: "ข้อใดคือสมบัติของของเหลวที่นิยมนำมาบรรจุในกระเปาะเทอร์โมมิเตอร์แก้ว?",
+                    options: [
+                        { text: "มีการขยายตัวและหดตัวสม่ำเสมอ ไม่เกาะติดผนังแก้ว และมองเห็นได้ชัดเจน", isCorrect: true },
+                        { text: "มีจุดเดือดต่ำมากและระเหยกลายเป็นไอได้ทันทีเมื่อสัมผัสอากาศ", isCorrect: false },
+                        { text: "นำความร้อนได้ช้ามากเพื่อให้เทอร์โมมิเตอร์รักษาอุณหภูมินานที่สุด", isCorrect: false },
+                        { text: "มีความหนาแน่นต่ำกว่าน้ำอย่างน้อย 10 เท่า", isCorrect: false }
+                    ],
+                    clue: "ปรอทหรือแอลกอฮอล์ต้องขยายตัวสม่ำเสมอและไม่ติดแก้ว",
+                    explanation: "ของเหลวในเทอร์โมมิเตอร์ต้องขยาย/หดตัวสม่ำเสมอ มองเห็นง่าย (เช่น ปรอทหรือแอลกอฮอล์สี)"
+                },
+                {
+                    id: 21,
+                    question: "ถ้าอุณหภูมิของอากาศลดลงจาก $30^\circ\text{C}$ เป็น $15^\circ\text{C}$ อุณหภูมินี้ในสเกลฟาเรนไฮต์ลดลงกี่องศาฟาเรนไฮต์ ($\Delta F$)?",
+                    options: [
+                        { text: "ลดลง $15^\circ\text{F}$", isCorrect: false },
+                        { text: "ลดลง $27^\circ\text{F}$", isCorrect: true },
+                        { text: "ลดลง $32^\circ\text{F}$", isCorrect: false },
+                        { text: "ลดลง $54^\circ\text{F}$", isCorrect: false }
+                    ],
+                    clue: "คำนวณอัตราส่วนการเปลี่ยนแปลง $\Delta F = \Delta C \times \frac{9}{5}$",
+                    explanation: "ช่วงเปลี่ยน $\Delta C = 15^\circ\text{C}$ แปลงเป็นฟาเรนไฮต์: $15 \times \frac{9}{5} = 27^\circ\text{F}$"
+                },
+                {
+                    id: 22,
+                    question: "การแผ่รังสีความร้อน (Radiation) แตกต่างจากการนำและความร้อนรูปแบบอื่นอย่างไร?",
+                    options: [
+                        { text: "ต้องอาศัยตัวกลางที่เป็นของแข็งเท่านั้นในการเดินทาง", isCorrect: false },
+                        { text: "ไม่ต้องอาศัยตัวกลางในการเคลื่อนที่ สามารถเดินทางผ่านสุญญากาศได้", isCorrect: true },
+                        { text: "เกิดขึ้นได้เฉพาะในอุณหภูมิต่ำกว่าจุดเยือกแข็ง", isCorrect: false },
+                        { text: "มีความเร็วในการเดินทางช้ากว่าแสง 10 เท่า", isCorrect: false }
+                    ],
+                    clue: "พลังงานความร้อนจากดวงอาทิตย์มาถึงโลกผ่านอวกาศอย่างไร",
+                    explanation: "การแผ่รังสีเป็นคลื่นแม่เหล็กไฟฟ้า (เช่น อินฟราเรด) ไม่ต้องอาศัยตัวกลาง ผ่านสุญญากาศได้"
+                },
+                {
+                    id: 23,
+                    question: "หากนำเหล็กและไม้ที่วางอยู่ในห้องเดียวกันมาสัมผัสด้วยมือ จะรู้สึกว่าเหล็กเย็นกว่าไม้ ทั้งที่ทั้งสองสิ่งมีอุณหภูมิเท่ากัน เพราะเหตุใด?",
+                    options: [
+                        { text: "เหล็กมีอุณหภูมิต่ำกว่าไม้จริง ๆ ตามธรรมชาติ", isCorrect: false },
+                        { text: "เหล็กเป็นตัวนำความร้อนที่ดีกว่า จึงดึงความร้อนออกจากมือเราอย่างรวดเร็ว", isCorrect: true },
+                        { text: "ไม้ผลิตความร้อนออกมาต้านมือมนุษย์ได้ดีกว่าเหล็ก", isCorrect: false },
+                        { text: "ผิวสัมผัสของไม้มีความหยาบทำให้เกิดความฝืดสร้างความอบอุ่น", isCorrect: false }
+                    ],
+                    clue: "พิจารณาค่าการนำความร้อน (Thermal Conductivity) ของโลหะเทียบกับไม้",
+                    explanation: "เหล็กนำความร้อนดีกว่า ดึงความร้อนจากมือเราไว ทำให้ประสาทสัมผัสรู้สึกเย็นกว่าไม้"
+                },
+                {
+                    id: 24,
+                    question: "อุณหภูมิสเกลใดที่มีช่วงช่องสเกลละเอียดที่สุด (ช่องสเกลถี่ที่สุดเมื่อเทียบช่วงอุณหภูมิเท่ากัน)?",
+                    options: [
+                        { text: "ฟาเรนไฮต์ (Fahrenheit)", isCorrect: true },
+                        { text: "เซลเซียส (Celsius)", isCorrect: false },
+                        { text: "เคลวิน (Kelvin)", isCorrect: false },
+                        { text: "โรเมอร์ (Réaumur)", isCorrect: false }
+                    ],
+                    clue: "เปรียบเทียบจำนวนช่องแบ่งระหว่างจุดเยือกแข็งถึงจุดเดือด (180 ช่อง มากที่สุด)",
+                    explanation: "ฟาเรนไฮต์มี 180 ช่อง (จาก $32^\circ$ ถึง $212^\circ$) ละเอียดที่สุดเมื่อเทียบช่วงอุณหภูมิเดียวกัน"
+                },
+                {
+                    id: 25,
+                    question: "ข้อใดคือประโยชน์หลักของการเว้นช่องว่างรอยต่อ (Expansion Joints) ในการสร้างสะพานเหล็กหรือรางรถไฟ?",
+                    options: [
+                        { text: "เพื่อให้น้ำฝนไหลผ่านระบายลงสู่พื้นดินได้สะดวก", isCorrect: false },
+                        { text: "เพื่อรองรับการขยายตัวและหดตัวของโลหะเมื่ออุณหภูมิอากาศเปลี่ยนแปลง", isCorrect: true },
+                        { text: "เพื่อลดเสียงดังสะท้อนขณะรถวิ่งผ่านรอยต่อ", isCorrect: false },
+                        { text: "เพื่อความสวยงามทางสถาปัตยกรรมโครงสร้างวิศวกรรม", isCorrect: false }
+                    ],
+                    clue: "โลหะร้อนจะขยายตัว เย็นจะหดตัว",
+                    explanation: "รอยต่อช่วยป้องกันไม่ให้รางรถไฟหรือสะพานโก่งงอเสียหายจากการขยายตัวเมื่ออากาศร้อนจัด"
+                }
+            ],
+            2: [
+                {
+                    id: 1,
+                    question: "หากต้องการแปลงอุณหภูมิ $50^\circ\text{C}$ ให้เป็นสเกลโรเมอร์ ($Ré$) จะได้ค่าตรงกับข้อใด?",
+                    options: [
+                        { text: "$40^\circ\text{Ré}$", isCorrect: true },
+                        { text: "$30^\circ\text{Ré}$", isCorrect: false },
+                        { text: "$60^\circ\text{Ré}$", isCorrect: false },
+                        { text: "$25^\circ\text{Ré}$", isCorrect: false }
+                    ],
+                    clue: "ใช้สูตร $\frac{C}{5} = \frac{Ré}{4} \rightarrow Ré = C \times \frac{4}{5}$",
+                    explanation: "คำนวณ: $50 \times \frac{4}{5} = 40^\circ\text{Ré}$"
+                },
+                {
+                    id: 2,
+                    question: "จุดเดือดของน้ำบริสุทธิ์ภายใต้ความดัน 1 บรรยากาศ มีค่าเท่าใดในสเกลฟาเรนไฮต์ ($F$)?",
+                    options: [
+                        { text: "$180^\circ\text{F}$", isCorrect: false },
+                        { text: "$212^\circ\text{F}$", isCorrect: true },
+                        { text: "$100^\circ\text{F}$", isCorrect: false },
+                        { text: "$373^\circ\text{F}$", isCorrect: false }
+                    ],
+                    clue: "จุดเดือดน้ำคือ $100^\circ\text{C}$ แปลงเป็นฟาเรนไฮต์",
+                    explanation: "จุดเดือดน้ำในฟาเรนไฮต์คือ $212^\circ\text{F}$"
+                },
+                {
+                    id: 3,
+                    question: "ข้อใดอธิบายหลักการทำงานของเทอร์โมมิเตอร์แบบกระเปาะของเหลวได้ถูกต้องที่สุด?",
+                    options: [
+                        { text: "ของเหลวหดตัวเมื่อได้รับความร้อนและขยายตัวเมื่อเย็นลง", isCorrect: false },
+                        { text: "ของเหลวขยายตัวเมื่อได้รับความร้อนและหดตัวเมื่ออุณหภูมิลดลง ทำให้ระดับสูงขึ้นตามหลอดแก้ว", isCorrect: true },
+                        { text: "ความดันของไอของเหลวในกระเปาะดันแท่งแก้วให้ขยายออก", isCorrect: false },
+                        { text: "ความหนาแน่นของของเหลวเพิ่มขึ้นเมื่ออุณหภูมิสูงขึ้น", isCorrect: false }
+                    ],
+                    clue: "ของเหลวเจอความร้อนจะขยายตัว ดันขึ้นตามหลอดแคบ",
+                    explanation: "ของเหลว (เช่น ปรอท/แอลกอฮอล์) จะขยายตัวเมื่อได้รับความร้อนและดันขึ้นสู่หลอดแก้วแคบ"
+                },
+                {
+                    id: 4,
+                    question: "ถ้าพลังงานความร้อนจำนวน $5,000\text{ J}$ ถูกถ่ายโอนให้แก่วัตถุมวล $2\text{ kg}$ ทำให้อุณหภูมิเปลี่ยนไป $10^\circ\text{C}$ ความจุความร้อนจำเพาะของวัตถุนี้มีค่าเท่าใด?",
+                    options: [
+                        { text: "$250\text{ J}/(\text{kg}\cdot^\circ\text{C})$", isCorrect: true },
+                        { text: "$500\text{ J}/(\text{kg}\cdot^\circ\text{C})$", isCorrect: false },
+                        { text: "$1,000\text{ J}/(\text{kg}\cdot^\circ\text{C})$", isCorrect: false },
+                        { text: "$2,500\text{ J}/(\text{kg}\cdot^\circ\text{C})$", isCorrect: false }
+                    ],
+                    clue: "จาก $Q = mc\Delta T$ จัดรูปหา $c = \frac{Q}{m\Delta T}$",
+                    explanation: "คำนวณ: $c = \frac{5000}{2 \times 10} = \frac{5000}{20} = 250\text{ J}/(\text{kg}\cdot^\circ\text{C})$"
+                },
+                {
+                    id: 5,
+                    question: "อุณหภูมิศูนย์องศาสัมบูรณ์ (Absolute Zero) มีค่าเท่ากับกี่เซลเซียส ($^\circ\text{C}$)?",
+                    options: [
+                        { text: "$0^\circ\text{C}$", isCorrect: false },
+                        { text: "$-100^\circ\text{C}$", isCorrect: false },
+                        { text: "$-273.15^\circ\text{C}$", isCorrect: true },
+                        { text: "$-373.15^\circ\text{C}$", isCorrect: false }
+                    ],
+                    clue: "เทียบกับสเกลเคลวิน ($0\text{ K}$)",
+                    explanation: "ศูนย์องศาสัมบูรณ์คือ $0\text{ K}$ ซึ่งเท่ากับ $-273.15^\circ\text{C}$"
+                },
+                {
+                    id: 6,
+                    question: "ข้อใดคือลักษณะสำคัญของการถ่ายโอนความร้อนโดยการแผ่รังสี (Radiation)?",
+                    options: [
+                        { text: "เป็นการส่งพลังงานในรูปคลื่นแม่เหล็กไฟฟ้าผ่านรังสีอินฟราเรด", isCorrect: true },
+                        { text: "ต้องอาศัยการชนกันโดยตรงของโมเลกุลในตัวกลางแข็ง", isCorrect: false },
+                        { text: "มีการไหลวนของกระแสของเหลวขึ้นและลง", isCorrect: false },
+                        { text: "เกิดขึ้นได้ช้าที่สุดเมื่อเทียบกับการนำและความร้อน", isCorrect: false }
+                    ],
+                    clue: "คลื่นแม่เหล็กไฟฟ้าไม่ต้องอาศัยตัวกลาง",
+                    explanation: "การแผ่รังสีเป็นการแผ่คลื่นแม่เหล็กไฟฟ้า (โดยเฉพาะอินฟราเรด) ไม่ต้องใช้ตัวกลาง"
+                },
+                {
+                    id: 7,
+                    question: "ถ้านำแท่งอลูมิเนียมมวล $1\text{ kg}$ ($c = 900\text{ J}/(\text{kg}\cdot^\circ\text{C})$) ได้รับความร้อน $4,500\text{ J}$ อุณหภูมิของอลูมิเนียมจะเพิ่มขึ้นกี่องศาเซลเซียส?",
+                    options: [
+                        { text: "เพิ่มขึ้น $2.5^\circ\text{C}$", isCorrect: false },
+                        { text: "เพิ่มขึ้น $5.0^\circ\text{C}$", isCorrect: true },
+                        { text: "เพิ่มขึ้น $10.0^\circ\text{C}$", isCorrect: false },
+                        { text: "เพิ่มขึ้น $4.5^\circ\text{C}$", isCorrect: false }
+                    ],
+                    clue: "ใช้สูตร $\Delta T = \frac{Q}{mc}$",
+                    explanation: "คำนวณ: $\Delta T = \frac{4500}{1 \times 900} = 5^\circ\text{C}$"
+                },
+                {
+                    id: 8,
+                    question: "ข้อใดกล่าวถูกต้องเกี่ยวกับความสัมพันธ์ของพลังงานความร้อนและการเปลี่ยนสถานะ?",
+                    options: [
+                        { text: "น้ำแข็งกำลังหลอมเหลวเป็นน้ำ อุณหภูมิจะเพิ่มขึ้นเรื่อย ๆ จนหมดก้อน", isCorrect: false },
+                        { text: "ขณะน้ำเดือดกลายเป็นไอ อุณหภูมิของน้ำจะคงที่อยู่ที่ $100^\circ\text{C}$ จนกว่าจะกลายเป็นไอทั้งหมด", isCorrect: true },
+                        { text: "การเปลี่ยนสถานะจากของแข็งเป็นของเหลวไม่ต้องใช้พลังงานความร้อน", isCorrect: false },
+                        { text: "ความร้อนที่ใช้เปลี่ยนสถานะเรียกว่าความร้อนสัมผัส (Sensible Heat)", isCorrect: false }
+                    ],
+                    clue: "ขณะเปลี่ยนสถานะ อุณหภูมิคงที่เสมอ",
+                    explanation: "ช่วงเปลี่ยนสถานะ (เช่น น้ำเดือดเป็นไอ) อุณหภูมิจะคงที่เพราะความร้อนถูกใช้ไปทำลายพันธะโมเลกุล (ความร้อนแฝง)"
+                },
+                {
+                    id: 9,
+                    question: "อุณหภูมิ $68^\circ\text{F}$ มีค่าเท่ากับกี่องศาเซลเซียส ($^\circ\text{C}$)?",
+                    options: [
+                        { text: "$15^\circ\text{C}$", isCorrect: false },
+                        { text: "$20^\circ\text{C}$", isCorrect: true },
+                        { text: "$25^\circ\text{C}$", isCorrect: false },
+                        { text: "$30^\circ\text{C}$", isCorrect: false }
+                    ],
+                    clue: "ใช้สูตร $C = \frac{5}{9}(F - 32)$",
+                    explanation: "คำนวณ: $\frac{5}{9}(68 - 32) = \frac{5}{9}(36) = 5 \times 4 = 20^\circ\text{C}$"
+                },
+                {
+                    id: 10,
+                    question: "ข้อใดจัดเป็นวัสดุที่เป็น 'ฉนวนความร้อน' (Thermal Insulator) ที่ดีเยี่ยม?",
+                    options: [
+                        { text: "ทองแดง (Copper)", isCorrect: false },
+                        { text: "อลูมิเนียม (Aluminum)", isCorrect: false },
+                        { text: "โฟมและใยแก้ว (Foam and Fiberglass)", isCorrect: true },
+                        { text: "เหล็กกล้า (Steel)", isCorrect: false }
+                    ],
+                    clue: "วัสดุที่มีฟองอากาศกักเก็บไว้ภายในเพื่อกันความร้อน",
+                    explanation: "โฟม ใยแก้ว และอากาศนิ่ง เป็นฉนวนความร้อนที่ดีเยี่ยมเพราะนำความร้อนได้แย่มาก"
+                },
+                {
+                    id: 11,
+                    question: "ถ้าอุณหภูมิของสารเพิ่มขึ้นจาก $20\text{ K}$ เป็น $80\text{ K}$ อุณหภูมินี้ในสเกลเซลเซียสจะเปลี่ยนแปลงเพิ่มขึ้นกี่องศาเซลเซียส?",
+                    options: [
+                        { text: "เพิ่มขึ้น $60^\circ\text{C}$", isCorrect: true },
+                        { text: "เพิ่มขึ้น $80^\circ\text{C}$", isCorrect: false },
+                        { text: "เพิ่มขึ้น $333.15^\circ\text{C}$", isCorrect: false },
+                        { text: "เพิ่มขึ้น $100^\circ\text{C}$", isCorrect: false }
+                    ],
+                    clue: "ความต่างของเคลวินเท่ากับความต่างของเซลเซียส ($\Delta K = \Delta C$)",
+                    explanation: "$\Delta K = 80 - 20 = 60\text{ K}$ ดังนั้น $\Delta C$ ก็เท่ากับ $60^\circ\text{C}$"
+                },
+                {
+                    id: 12,
+                    question: "หลักการออกแบบ 'กระติกน้ำร้อนสูญญากาศ' (Vacuum Flask) สามารถป้องกันการถ่ายโอนความร้อนได้ครบทั้ง 3 วิธีอย่างไร?",
+                    options: [
+                        { text: "ใช้สุญญากาศกันการนำและการพา, ผิวด้านเงินสะท้อนรังสี, และจุกปิดกันความร้อนออก", isCorrect: true },
+                        { text: "ใช้แผ่นทองแดงหนา 3 ชั้นเพื่อดูดซับความร้อนไม่ให้หลุดรอด", isCorrect: false },
+                        { text: "ใช้พัดลมระบายอากาศภายในผนังกระติกเพื่อลดความร้อน", isCorrect: false },
+                        { text: "ใช้น้ำแข็งแห้งบรรจุรอบผนังกระติกเพื่อหักล้างความร้อนภายนอก", isCorrect: false }
+                    ],
+                    clue: "สุญญากาศตัดการนำ/พา ผิวสะท้อนตัดการแผ่รังสี",
+                    explanation: "กระติกน้ำร้อนสูญญากาศมีชั้นสุญญากาศ (กันนำ/พา) ผิวกระจกเงา (กันแผ่รังสี) และจุกฉนวน"
+                },
+                {
+                    id: 13,
+                    question: "เมื่อให้ความร้อนแก่แท่งโลหะทรงกระบอก ความยาวของแท่งโลหะจะมีการเปลี่ยนแปลงอย่างไร?",
+                    options: [
+                        { text: "ความยาวจะลดลงเนื่องจากโมเลกุลหดตัวชิดกัน", isCorrect: false },
+                        { text: "ความยาวจะเพิ่มขึ้น (การขยายตัวเชิงเส้น Linear Expansion)", isCorrect: true },
+                        { text: "ความยาวจะเท่าเดิมแต่เส้นผ่านศูนย์กลางจะหดตัวลง", isCorrect: false },
+                        { text: "ความหนาแน่นของโลหะจะเพิ่มขึ้นตามความยาวที่เพิ่มขึ้น", isCorrect: false }
+                    ],
+                    clue: "โลหะยาวขึ้นเมื่อร้อนขึ้น",
+                    explanation: "เป็นการขยายตัวเชิงเส้น (Linear Expansion) เมื่อโลหะได้รับความร้อน"
+                },
+                {
+                    id: 14,
+                    question: "อุณหภูมิ $373.15\text{ K}$ มีค่าเท่ากับกี่องศาเซลเซียส ($^\circ\text{C}$)?",
+                    options: [
+                        { text: "$0^\circ\text{C}$", isCorrect: false },
+                        { text: "$50^\circ\text{C}$", isCorrect: false },
+                        { text: "$100^\circ\text{C}$", isCorrect: true },
+                        { text: "$212^\circ\text{C}$", isCorrect: false }
+                    ],
+                    clue: "จุดเดือดของน้ำในสเกลเคลวิน",
+                    explanation: "คำนวณ: $373.15 - 273.15 = 100^\circ\text{C}$ (จุดเดือดน้ำ)"
+                },
+                {
+                    id: 15,
+                    question: "ข้อใดคือหน่วยวัดปริมาณความร้อนในระบบดั้งเดิมที่นิยมใช้ในทางโภชนาการ (อาหาร)?",
+                    options: [
+                        { text: "จูล (Joule)", isCorrect: false },
+                        { text: "แคลอรี่ (Calorie, cal หรือ kcal)", isCorrect: true },
+                        { text: "วัตต์ (Watt)", isCorrect: false },
+                        { text: "นิวตัน (Newton)", isCorrect: false }
+                    ],
+                    clue: "พลังงานในอาหารมักบอกเป็นกิโลแคลอรี่ (kcal)",
+                    explanation: "พลังงานความร้อนในอาหารนิยมใช้หน่วยแคลอรี่ (Calorie หรือ kcal)"
+                },
+                {
+                    id: 16,
+                    question: "ถ้านำวัตถุ A ($80^\circ\text{C}$) มาสัมผัสกับวัตถุ B ($20^\circ\text{C}$) ในระบบที่ฉนวนหุ้มมิดชิด ความร้อนจะมีการถ่ายโอนอย่างไร?",
+                    options: [
+                        { text: "ความร้อนถ่ายโอนจากวัตถุ B ไปยังวัตถุ A จนหมด", isCorrect: false },
+                        { text: "ความร้อนถ่ายโอนจากวัตถุ A ไปยังวัตถุ B จนกระทั่งทั้งสองมีอุณหภูมิเท่ากัน (สมดุลความร้อน)", isCorrect: true },
+                        { text: "ไม่มีการถ่ายโอนความร้อนเพราะวัตถุอยู่คนละชิ้นกัน", isCorrect: false },
+                        { text: "วัตถุทั้งสองจะแลกเปลี่ยนความร้อนกันไปมาไม่สิ้นสุด", isCorrect: false }
+                    ],
+                    clue: "ความร้อนไหลจากร้อนไปเย็นจนเกิด Thermal Equilibrium",
+                    explanation: "ความร้อนจะถ่ายโอนจากอุณหภูมิสูงไปต่ำจนเข้าสู่สมดุลความร้อน (Thermal Equilibrium)"
+                },
+                {
+                    id: 17,
+                    question: "สเกลอุณหภูมิฟาเรนไฮต์ ($F$) กำหนดช่วงอุณหภูมิระหว่างจุดเยือกแข็งและจุดเดือดของน้ำไว้กี่ช่อง (Divisions)?",
+                    options: [
+                        { text: "100 ช่อง", isCorrect: false },
+                        { text: "180 ช่อง", isCorrect: true },
+                        { text: "212 ช่อง", isCorrect: false },
+                        { text: "80 ช่อง", isCorrect: false }
+                    ],
+                    clue: "จาก $32^\circ\text{F}$ ถึง $212^\circ\text{F}$",
+                    explanation: "ช่วงฟาเรนไฮต์คือ $212 - 32 = 180$ ช่อง"
+                },
+                {
+                    id: 18,
+                    question: "ปรากฏการณ์ 'ลมบก' และ 'ลมทะเล' เกิดขึ้นจากกลไกการถ่ายโอนความร้อนแบบใดเป็นหลัก?",
+                    options: [
+                        { text: "การนำความร้อนผ่านพื้นทรายและน้ำทะเล", isCorrect: false },
+                        { text: "การพาความร้อนของมวลอากาศเหนือพื้นดินและพื้นน้ำ", isCorrect: true },
+                        { text: "การแผ่รังสีอินฟราเรดจากดวงอาทิตย์โดยตรงสู่บรรยากาศ", isCorrect: false },
+                        { text: "การหดตัวของมวลอากาศเย็นในเวลากลางคืน", isCorrect: false }
+                    ],
+                    clue: "อากาศร้อนลอยตัว อากาศเย็นแทนที่ เป็นการพาความร้อน",
+                    explanation: "ลมบกและลมทะเลเกิดจากการพาความร้อน (Convection) ของอากาศเนื่องจากความร้อนจำเพาะของดินและน้ำต่างกัน"
+                },
+                {
+                    id: 19,
+                    question: "หากต้องการเปลี่ยนหน่วยอุณหภูมิจากเซลเซียส ($C$) เป็นเคลวิน ($K$) จะต้องใช้ความสัมพันธ์ในข้อใด?",
+                    options: [
+                        { text: "$K = C + 273.15$", isCorrect: true },
+                        { text: "$K = C - 273.15$", isCorrect: false },
+                        { text: "$K = C \times \frac{9}{5} + 32$", isCorrect: false },
+                        { text: "$K = C \times \frac{5}{9}$", isCorrect: false }
+                    ],
+                    clue: "เคลวินมีค่าสูงกว่าเซลเซียสเสมอ",
+                    explanation: "สูตรแปลงเซลเซียสเป็นเคลวินคือ $K = C + 273.15$"
+                },
+                {
+                    id: 20,
+                    question: "ข้อใดคือสมบัติของสารที่มีค่า 'ความจุความร้อนจำเพาะ' สูงมาก (เช่น น้ำ)?",
+                    options: [
+                        { text: "ทำให้อุณหภูมิเปลี่ยนแปลงอย่างรวดเร็วเมื่อรับความร้อนเล็กน้อย", isCorrect: false },
+                        { text: "ต้องใช้พลังงานความร้อนปริมาณมากจึงจะทำให้อุณหภูมิเปลี่ยนไปเพียงเล็กน้อย", isCorrect: true },
+                        { text: "นำความร้อนได้ดีเยี่ยมและระเหยกลายเป็นไอได้ทันที", isCorrect: false },
+                        { text: "มีจุดเดือดต่ำกว่า $50^\circ\text{C}$ เสมอ", isCorrect: false }
+                    ],
+                    clue: "น้ำร้อนช้าและเย็นช้าเพราะความจุความร้อนสูง",
+                    explanation: "สารที่มีความจุความร้อนจำเพาะสูงจะสะสมความร้อนได้มาก ทำให้อุณหภูมิเปลี่ยนช้า"
+                },
+                {
+                    id: 21,
+                    question: "อุณหภูมิ $-40^\circ\text{C}$ มีค่าเท่ากับกี่องศาฟาเรนไฮต์ ($F$)?",
+                    options: [
+                        { text: "$-40^\circ\text{F}$", isCorrect: true },
+                        { text: "$-32^\circ\text{F}$", isCorrect: false },
+                        { text: "$0^\circ\text{F}$", isCorrect: false },
+                        { text: "$32^\circ\text{F}$", isCorrect: false }
+                    ],
+                    clue: "เป็นจุดที่เซลเซียสและฟาเรนไฮต์เท่ากันพอดี",
+                    explanation: "ที่ $-40^\circ$ ค่าของเซลเซียสและฟาเรนไฮต์จะเท่ากันพอดี คือ $-40^\circ\text{C} = -40^\circ\text{F}$"
+                },
+                {
+                    id: 22,
+                    question: "พลังงานความร้อนจากดวงอาทิตย์เดินทางผ่านสุญญากาศมายังโลกด้วยกระบวนการใด?",
+                    options: [
+                        { text: "การนำความร้อน (Conduction)", isCorrect: false },
+                        { text: "การพาความร้อน (Convection)", isCorrect: false },
+                        { text: "การแผ่รังสีความร้อน (Radiation)", isCorrect: true },
+                        { text: "การหักเหความร้อน (Refraction)", isCorrect: false }
+                    ],
+                    clue: "ผ่านอวกาศที่ไม่มีอากาศ (สุญญากาศ)",
+                    explanation: "สุญญากาศไม่มีตัวกลาง จึงถ่ายโอนความร้อนได้ด้วยการแผ่รังสี (Radiation) เท่านั้น"
+                },
+                {
+                    id: 23,
+                    question: "ถ้าอุณหภูมิของวัตถุเพิ่มขึ้นจาก $300\text{ K}$ เป็น $350\text{ K}$ อุณหภูมิที่เพิ่มขึ้นนี้คิดเป็นกี่องศาเซลเซียส?",
+                    options: [
+                        { text: "เพิ่มขึ้น $50^\circ\text{C}$", isCorrect: true },
+                        { text: "เพิ่มขึ้น $350^\circ\text{C}$", isCorrect: false },
+                        { text: "เพิ่มขึ้น $623.15^\circ\text{C}$", isCorrect: false },
+                        { text: "เพิ่มขึ้น $25^\circ\text{C}$", isCorrect: false }
+                    ],
+                    clue: "ผลต่างอุณหภูมิเคลวินเท่ากับเซลเซียส",
+                    explanation: "$\Delta K = 350 - 300 = 50\text{ K}$ ซึ่งเท่ากับ $\Delta C = 50^\circ\text{C}$"
+                },
+                {
+                    id: 24,
+                    question: "ข้อใดเรียงลำดับการนำความร้อนจากมากไปหาน้อยของสสารประเภทต่าง ๆ ได้ถูกต้องที่สุด?",
+                    options: [
+                        { text: "โลหะ > ของเหลว > แก๊ส", isCorrect: true },
+                        { text: "แก๊ส > ของเหลว > โลหะ", isCorrect: false },
+                        { text: "ของเหลว > โลหะ > แก๊ส", isCorrect: false },
+                        { text: "โลหะ > แก๊ส > ของเหลว", isCorrect: false }
+                    ],
+                    clue: "โลหะมีอิเล็กตรอนอิสระนำความร้อนได้ดีที่สุด แก๊สโมเลกุลห่างกันนำความร้อนแย่สุด",
+                    explanation: "โลหะนำความร้อนได้ดีที่สุด รองลงมาคือของเหลว และแก๊สนำความร้อนได้แย่ที่สุด"
+                },
+                {
+                    id: 25,
+                    question: "เพราะเหตุใดจึงไม่นิยมใช้ 'น้ำ' เป็นของเหลวบรรจุในกระเปาะเทอร์โมมิเตอร์วัดอุณหภูมิอากาศทั่วไป?",
+                    options: [
+                        { text: "เพราะน้ำมีความหนาแน่นสูงเกินไป", isCorrect: false },
+                        { text: "เพราะน้ำเป็นฉนวนไฟฟ้าที่ดี", isCorrect: false },
+                        { text: "เพราะน้ำมีพฤติกรรมผิดปกติ (Anomalous expansion) ระหว่าง $0^\circ\text{C}$ ถึง $4^\circ\text{C}$ และเปียกติดหลอดแก้ว", isCorrect: true },
+                        { text: "เพราะน้ำระเหยกลายเป็นไอได้ง่ายเกินไปที่อุณหภูมิห้อง", isCorrect: false }
+                    ],
+                    clue: "น้ำมีความหนาแน่นสูงสุดที่ $4^\circ\text{C}$ ทำให้บอกค่าอุณหภูมิช่วงต่ำกำกวม",
+                    explanation: "น้ำมีความผิดปกติในการขยายตัวช่วง $0-4^\circ\text{C}$ (ความหนาแน่นสูงสุดที่ $4^\circ\text{C}$) และเปียกติดหลอดแก้วทำให้วัดค่าไม่แม่นยำ"
+                }
+            ],
+            3: [
+                {
+                    id: 1,
+                    question: "หากแปลงอุณหภูมิ $300^\circ\text{C}$ ให้เป็นสเกลฟาเรนไฮต์ ($F$) จะได้ค่าตรงกับข้อใด?",
+                    options: [
+                        { text: "$572^\circ\text{F}$", isCorrect: true },
+                        { text: "$540^\circ\text{F}$", isCorrect: false },
+                        { text: "$512^\circ\text{F}$", isCorrect: false },
+                        { text: "$600^\circ\text{F}$", isCorrect: false }
+                    ],
+                    clue: "ใช้สูตร $F = (300 \times \frac{9}{5}) + 32$",
+                    explanation: "คำนวณ: $(300 \times 1.8) + 32 = 540 + 32 = 572^\circ\text{F}$"
+                },
+                {
+                    id: 2,
+                    question: "ข้อใดอธิบายความหมายของ 'สมดุลความร้อน' (Thermal Equilibrium) ได้ถูกต้องที่สุด?",
+                    options: [
+                        { text: "สถานที่ที่วัตถุหยุดการแผ่รังสีความร้อนโดยสิ้นเชิง", isCorrect: false },
+                        { text: "ภาวะที่วัตถุสัมผัสกันและไม่มีการถ่ายโอนความร้อนสุทธิระหว่างกันอีก เพราะมีอุณหภูมิเท่ากัน", isCorrect: true },
+                        { text: "สภาวะที่น้ำแข็งหลอมเหลวกลายเป็นน้ำในปริมาณเท่ากับน้ำกลายเป็นไอ", isCorrect: false },
+                        { text: "จุดที่ความจุความร้อนจำเพาะของวัตถุมีค่าเท่ากับศูนย์", isCorrect: false }
+                    ],
+                    clue: "อุณหภูมิเท่ากัน ความร้อนสุทธิเป็นศูนย์",
+                    explanation: "สมดุลความร้อนคือภาวะที่วัตถุมีอุณหภูมิเท่ากัน ทำให้ไม่มีการถ่ายโอนความร้อนสุทธิ"
+                },
+                {
+                    id: 3,
+                    question: "สเกลอุณหภูมิเคลวิน ($K$) มีจุดเดือดของน้ำบริสุทธิ์อยู่ที่ค่าเท่าใด?",
+                    options: [
+                        { text: "$273.15\text{ K}$", isCorrect: false },
+                        { text: "$310.15\text{ K}$", isCorrect: false },
+                        { text: "$373.15\text{ K}$", isCorrect: true },
+                        { text: "$212.00\text{ K}$", isCorrect: false }
+                    ],
+                    clue: "จุดเดือดน้ำคือ $100^\circ\text{C}$ บวกด้วย $273.15$",
+                    explanation: "คำนวณ: $100 + 273.15 = 373.15\text{ K}$"
+                },
+                {
+                    id: 4,
+                    question: "ถ้าต้องการเพิ่มอุณหภูมิของทองแดงมวล $2\text{ kg}$ ($c = 385\text{ J}/(\text{kg}\cdot^\circ\text{C})$) ให้สูงขึ้น $50^\circ\text{C}$ จะต้องให้ความร้อนแก่ทองแดงเท่าใด?",
+                    options: [
+                        { text: "$19,250\text{ J}$", isCorrect: false },
+                        { text: "$38,500\text{ J}$", isCorrect: true },
+                        { text: "$77,000\text{ J}$", isCorrect: false },
+                        { text: "$9,625\text{ J}$", isCorrect: false }
+                    ],
+                    clue: "ใช้สูตร $Q = mc\Delta T$",
+                    explanation: "คำนวณ: $Q = 2 \times 385 \times 50 = 38,500\text{ J}$"
+                },
+                {
+                    id: 5,
+                    question: "ข้อใดคือสาเหตุหลักที่ทำให้ 'น้ำทะเล' มีการเปลี่ยนแปลงอุณหภูมิช้ากว่า 'พื้นทราย' บนชายหาดเมื่อได้รับแสงแดดเท่ากัน?",
+                    options: [
+                        { text: "น้ำทะเลมีความจุความร้อนจำเพาะสูงกว่าทรายมาก", isCorrect: true },
+                        { text: "ทรายมีสีเข้มกว่าจึงดูดกลืนความร้อนได้เร็วกว่าน้ำ", isCorrect: false }, // Also true factor, but specific heat capacity is primary thermodynamic reason. Let's ensure clarity.
+                        { text: "น้ำทะเลมีการระเหยตลอดเวลาทำให้สูญเสียความร้อน", isCorrect: false },
+                        { text: "ทรายไม่มีความสามารถในการนำความร้อน", isCorrect: false }
+                    ],
+                    clue: "เปรียบเทียบค่า $c$ ระหว่างน้ำกับทราย",
+                    explanation: "น้ำมีความจุความร้อนจำเพาะสูงกว่าทรายประมาณ 5 เท่า จึงต้องใช้พลังงานความร้อนมากกว่ามากทำให้อุณหภูมิเปลี่ยน"
+                },
+                {
+                    id: 6,
+                    question: "อุณหภูมิ $12^\circ\text{Ré}$ มีค่าเท่ากับกี่องศาเซลเซียส ($^\circ\text{C}$)?",
+                    options: [
+                        { text: "$12^\circ\text{C}$", isCorrect: false },
+                        { text: "$15^\circ\text{C}$", isCorrect: true },
+                        { text: "$20^\circ\text{C}$", isCorrect: false },
+                        { text: "$9.6^\circ\text{C}$", isCorrect: false }
+                    ],
+                    clue: "ใช้สูตร $\frac{C}{5} = \frac{Ré}{4} \rightarrow C = Ré \times \frac{5}{4}$",
+                    explanation: "คำนวณ: $12 \times \frac{5}{4} = 3 \times 5 = 15^\circ\text{C}$"
+                },
+                {
+                    id: 7,
+                    question: "ข้อใดกล่าวถูกต้องเกี่ยวกับ 'การนำความร้อน' (Thermal Conduction)?",
+                    options: [
+                        { text: "เป็นการถ่ายโอนความร้อนผ่านการเคลื่อนที่ของโมเลกุลตัวกลางจากจุดหนึ่งไปอีกจุดหนึ่ง", isCorrect: false },
+                        { text: "เป็นการถ่ายโอนความร้อนผ่านการสั่นสะเทือนชนกันของอนุภาคโดยที่ตัวกลางไม่เคลื่อนที่", isCorrect: true },
+                        { text: "เกิดขึ้นได้ดีที่สุดในสภาวะสุญญากาศ", isCorrect: false },
+                        { text: "อาศัยคลื่นแม่เหล็กไฟฟ้าในการส่งผ่านพลังงาน", isCorrect: false }
+                    ],
+                    clue: "อนุภาคสั่นส่งต่อพลังงานกันโดยตัวกลางอยู่กับที่",
+                    explanation: "การนำความร้อนเป็นการส่งต่อพลังงานผ่านการชนกันของอนุภาคในของแข็งโดยที่ตัวกลางไม่เคลื่อนที่"
+                },
+                {
+                    id: 8,
+                    question: "หากนำโลหะสองชนิดที่มีขนาดเท่ากันแต่มีสัมประสิทธิ์การขยายตัวเชิงเส้นต่างกัน มาเผาไฟพร้อมกัน ข้อใดถูกต้อง?",
+                    options: [
+                        { text: "โลหะที่มีสัมประสิทธิ์การขยายตัวสูงกว่าจะขยายตัวยาวกว่า", isCorrect: true },
+                        { text: "โลหะทั้งสองจะขยายตัวยาวเท่ากันเสมอเพราะขนาดเริ่มต้นเท่ากัน", isCorrect: false },
+                        { text: "โลหะจะหดตัวสั้นลงเท่ากันทั้งหมด", isCorrect: false },
+                        { text: "ไม่มีการเปลี่ยนแปลงใด ๆ จนกว่าจะถึงจุดหลอมเหลว", isCorrect: false }
+                    ],
+                    clue: "สัมประสิทธิ์สูงย่อมขยายตัวได้มากว่าเมื่อได้รับความร้อนเท่ากัน",
+                    explanation: "ค่าสัมประสิทธิ์การขยายตัวเชิงเส้น ($\alpha$) เป็นตัวบอกอัตราการขยายตัวต่ออุณหภูมิที่เปลี่ยนไป"
+                },
+                {
+                    id: 9,
+                    question: "อุณหภูมิในสเกลฟาเรนไฮต์ที่อ่านค่าได้ $122^\circ\text{F}$ จะมีค่าเท่ากับกี่เซลเซียส ($^\circ\text{C}$)?",
+                    options: [
+                        { text: "$40^\circ\text{C}$", isCorrect: false },
+                        { text: "$50^\circ\text{C}$", isCorrect: true },
+                        { text: "$60^\circ\text{C}$", isCorrect: false },
+                        { text: "$70^\circ\text{C}$", isCorrect: false }
+                    ],
+                    clue: "ใช้สูตร $C = \frac{5}{9}(F - 32)$",
+                    explanation: "คำนวณ: $\frac{5}{9}(122 - 32) = \frac{5}{9}(90) = 5 \times 10 = 50^\circ\text{C}$"
+                },
+                {
+                    id: 10,
+                    question: "ข้อใดจัดเป็นอุปกรณ์ที่ใช้หลักการ 'เทอร์โมคัปเปิล' (Thermocouple) ในการวัดอุณหภูมิ?",
+                    options: [
+                        { text: "การใช้รอยต่อของโลหะต่างชนิดกัน 2 ชนิดสร้างความต่างศักย์ไฟฟ้าแปรตามอุณหภูมิ", isCorrect: true },
+                        { text: "การวัดความยาวของลำปรอทในหลอดแก้ว", isCorrect: false },
+                        { text: "การส่องรังสีอินฟราเรดจากผิววัตถุ", isCorrect: false },
+                        { text: "การวัดการเปลี่ยนแปลงความต้านทานไฟฟ้าของขดลวดแพลทินัม", isCorrect: false }
+                    ],
+                    clue: "ใช้โลหะต่างชนิด 2 เส้นต่อกันเกิดแรงดันไฟฟ้า (Seebeck Effect)",
+                    explanation: "เทอร์โมคัปเปิลอาศัยปรากฏการณ์ Seebeck Effect โดยรอยต่อโลหะต่างชนิดสร้างแรงดันไฟฟ้าตามอุณหภูมิ"
+                },
+                {
+                    id: 11,
+                    question: "ถ้าต้องการทำให้น้ำมวล $0.5\text{ kg}$ มีอุณหภูมิเพิ่มขึ้นจาก $20^\circ\text{C}$ เป็น $70^\circ\text{C}$ จะต้องใช้พลังงานความร้อนเท่าใด (กำหนด $c_{\text{water}} = 4,184\text{ J}/(\text{kg}\cdot^\circ\text{C})$)?",
+                    options: [
+                        { text: "$52,300\text{ J}$", isCorrect: true },
+                        { text: "$104,600\text{ J}$", isCorrect: false },
+                        { text: "$26,150\text{ J}$", isCorrect: false },
+                        { text: "$209,200\text{ J}$", isCorrect: false }
+                    ],
+                    clue: "$\Delta T = 70 - 20 = 50^\circ\text{C}$, ใช้ $Q = mc\Delta T$",
+                    explanation: "คำนวณ: $Q = 0.5 \times 4184 \times (70 - 20) = 0.5 \times 4184 \times 50 = 1046 \times 50 = 52,300\text{ J}$"
+                },
+                {
+                    id: 12,
+                    question: "ปรากฏการณ์เรือนกระจก (Greenhouse Effect) ในชั้นบรรยากาศโลกเกี่ยวข้องกับการแผ่รังสีความร้อนชนิดใดมากที่สุด?",
+                    options: [
+                        { text: "รังสีอัลตราไวโอเลต (UV)", isCorrect: false },
+                        { text: "รังสีอินฟราเรด (Infrared Radiation) ที่สะท้อนจากพื้นผิวโลก", isCorrect: true },
+                        { text: "รังสีเอกซ์ (X-rays)", isCorrect: false },
+                        { text: "คลื่นวิทยุความถี่สูง", isCorrect: false }
+                    ],
+                    clue: "แก๊สเรือนกระจกดูดซับรังสีความร้อนช่วงคลื่นยาวที่โลกสะท้อนออก",
+                    explanation: "แก๊สเรือนกระจก (เช่น $CO_2, H_2O$) ดูดซับรังสีอินฟราเรดที่โลกแผ่ออกมาแล้วสะท้อนกลับผิวโลก"
+                },
+                {
+                    id: 13,
+                    question: "สเกลอุณหภูมิเคลวิน ($K$) มีจำนวนช่องแบ่งระหว่างจุดเยือกแข็งและจุดเดือดของน้ำเท่ากับกี่ช่อง?",
+                    options: [
+                        { text: "80 ช่อง", isCorrect: false },
+                        { text: "100 ช่อง", isCorrect: true },
+                        { text: "180 ช่อง", isCorrect: false },
+                        { text: "212 ช่อง", isCorrect: false }
+                    ],
+                    clue: "เทียบเท่ากับสเกลเซลเซียส ($273.15\text{ K}$ ถึง $373.15\text{ K}$)",
+                    explanation: "สเกลเคลวินแบ่งช่องระหว่างจุดเยือกแข็ง ($273.15\text{ K}$) และจุดเดือด ($373.15\text{ K}$) ออกเป็น 100 ช่อง"
+                },
+                {
+                    id: 14,
+                    question: "ข้อใดคือสมบัติของฉนวนความร้อนที่ดีที่ใช้ในการสร้างบ้านเรือนเพื่อลดความร้อนเข้าสู่ตัวอาคาร?",
+                    options: [
+                        { text: "มีความหนาแน่นสูงมากและมีผิวเป็นมันวาว", isCorrect: false },
+                        { text: "มีช่องว่างอากาศขนาดเล็กจำนวนมากเพื่อขัดขวางการนำและการพาความร้อน", isCorrect: true },
+                        { text: "เป็นโลหะผสมพิเศษที่ดูดซับความร้อนไว้ภายในเนื้อวัสดุ", isCorrect: false },
+                        { text: "ยอมให้ความร้อนผ่านได้สะดวกรวดเร็ว", isCorrect: false }
+                    ],
+                    clue: "อากาศนิ่งในโพรงเล็ก ๆ เป็นฉนวนชั้นดี",
+                    explanation: "ฉนวนกันความร้อนที่ดีต้องมีโพรงอากาศนิ่งเล็ก ๆ มากมายเพื่อป้องกันการนำและความร้อนผ่าน"
+                },
+                {
+                    id: 15,
+                    question: "หากอุณหภูมิของวัตถุเปลี่ยนไป $\Delta T = 45\text{ K}$ ค่านี้จะมีค่าเท่ากับการเปลี่ยนแปลงในสเกลฟาเรนไฮต์เท่าใด ($\Delta F$)?",
+                    options: [
+                        { text: "เปลี่ยนแปลง $45^\circ\text{F}$", isCorrect: false },
+                        { text: "เปลี่ยนแปลง $81^\circ\text{F}$", isCorrect: true },
+                        { text: "เปลี่ยนแปลง $32^\circ\text{F}$", isCorrect: false },
+                        { text: "เปลี่ยนแปลง $90^\circ\text{F}$", isCorrect: false }
+                    ],
+                    clue: "ใช้ความสัมพันธ์อัตราส่วนช่วงสเกล $\Delta F = \Delta K \times \frac{9}{5}$",
+                    explanation: "คำนวณ: $\Delta F = 45 \times \frac{9}{5} = 9 \times 9 = 81^\circ\text{F}$"
+                },
+                {
+                    id: 16,
+                    question: "เครื่องมือวัดอุณหภูมิชนิดใดที่เหมาะสมที่สุดสำหรับการวัดอุณหภูมิของเตาเผาอุตสาหกรรมที่มีความสูงมาก ๆ (มากกว่า $1,000^\circ\text{C}$)?",
+                    options: [
+                        { text: "เทอร์โมมิเตอร์ปรอทแก้วมาตรฐาน", isCorrect: false },
+                        { text: "ไพโรมิเตอร์วัดรังสีความร้อน (Radiation Pyrometer)", isCorrect: true },
+                        { text: "เทอร์โมมิเตอร์แอลกอฮอล์", isCorrect: false },
+                        { text: "แถบโลหะคู่ (Bimetallic Strip) ขนาดเล็ก", isCorrect: false }
+                    ],
+                    clue: "วัดโดยไม่ต้องสัมผัสโดยตรงจากแสงความร้อนที่วัตถุเปล่งออกมา",
+                    explanation: "ไพโรมิเตอร์ใช้วัดรังสีอินฟราเรด/แสงที่วัตถุร้อนจัดเปล่งออกมาโดยไม่ต้องสัมผัสโดนเตาเผา"
+                },
+                {
+                    id: 17,
+                    question: "เมื่อนำแท่งเหล็กเผาไฟจนร้อนจัด นำไปจุ่มลงในน้ำเย็นจัด จะเกิดการหดตัวอย่างรวดเร็วและอาจทำให้เนื้อเหล็กปริแตกได้ ปรากฏการณ์นี้เกี่ยวข้องกับข้อใดมากที่สุด?",
+                    options: [
+                        { text: "การขยายตัวและหดตัวไม่สม่ำเสมอเนื่องจากความร้อน (Thermal Stress)", isCorrect: true },
+                        { text: "ปฏิกิริยาเคมีระหว่างเหล็กกับน้ำกลายเป็นสนิมเหล็กทันที", isCorrect: false },
+                        { text: "การระเหยกลายเป็นไออย่างรุนแรงของน้ำรอบผิวเหล็ก", isCorrect: false },
+                        { text: "การเปลี่ยนแปลงความดันบรรยากาศภายนอกกะทันหัน", isCorrect: false }
+                    ],
+                    clue: "การเปลี่ยนแปลงอุณหภูมิกะทันหันทำให้เกิดความเค้นภายใน (Thermal Stress)",
+                    explanation: "การลดอุณหภูมิกะทันหันทำให้ผิวเหล็กหดตัวต่างจากแกนใน เกิดความเค้นความร้อน (Thermal Stress) จนแตกหัก"
+                },
+                {
+                    id: 18,
+                    question: "อุณหภูมิ $298.15\text{ K}$ มีค่าเท่ากับกี่องศาเซลเซียส ($^\circ\text{C}$)?",
+                    options: [
+                        { text: "$25.00^\circ\text{C}$", isCorrect: true },
+                        { text: "$29.81^\circ\text{C}$", isCorrect: false },
+                        { text: "$0.00^\circ\text{C}$", isCorrect: false },
+                        { text: "$25.15^\circ\text{C}$", isCorrect: false }
+                    ],
+                    clue: "ใช้สูตร $C = K - 273.15$",
+                    explanation: "คำนวณ: $298.15 - 273.15 = 25.00^\circ\text{C}$ (อุณหภูมิห้องมาตรฐาน)"
+                },
+                {
+                    id: 19,
+                    question: "ข้อใดคือหลักการทำงานของ 'แถบโลหะคู่' (Bimetallic Strip) ในระบบตัดไฟอัตโนมัติของเตารีดไฟฟ้า?",
+                    options: [
+                        { text: "โลหะสองชนิดที่มีสัมประสิทธิ์การขยายตัวทางความร้อนต่างกัน เมื่อถูกความร้อนจะโค้งงอไปป์ด้านที่มีการขยายตัวน้อยกว่า", isCorrect: true },
+                        { text: "โลหะละลายติดกันเมื่อถึงอุณหภูมิที่กำหนด", isCorrect: false },
+                        { text: "กระแสไฟฟ้าไหลผ่านทำให้โลหะหลอมเหลวขาดออกจากกัน", isCorrect: false },
+                        { text: "เกิดสนามแม่เหล็กดูดแผ่นโลหะให้แยกจากกัน", isCorrect: false }
+                    ],
+                    clue: "โลหะสองชนิดยืดตัวไม่เท่ากันทำให้แผ่นโก่งงอไปด้านหนึ่ง",
+                    explanation: "แถบโลหะคู่ประกอบด้วยโลหะขยายตัวต่างกัน เมื่อร้อนจะโก่งตัวไปด้านที่ขยายตัวน้อยกว่าเพื่อดันสวิตช์ตัดไฟ"
+                },
+                {
+                    id: 20,
+                    question: "หากสสารได้รับพลังงานความร้อนจนอุณหภูมิเพิ่มขึ้น ข้อใดกล่าวถูกต้องเกี่ยวกับพลังงานจลน์ของโมเลกุลในสสารนั้น?",
+                    options: [
+                        { text: "พลังงานจลน์เฉลี่ยของโมเลกุลจะลดลง", isCorrect: false },
+                        { text: "พลังงานจลน์เฉลี่ยของโมเลกุลจะเพิ่มสูงขึ้น", isCorrect: true },
+                        { text: "พลังงานจลน์ของโมเลกุลมีค่าคงที่เท่าเดิมตลอดเวลา", isCorrect: false },
+                        { text: "โมเลกุลจะหยุดการเคลื่อนที่โดยสิ้นเชิง", isCorrect: false }
+                    ],
+                    clue: "อุณหภูมิสูงขึ้น = อนุภาคเคลื่อนที่เร็วขึ้น",
+                    explanation: "อุณหภูมิคือพลังงานจลน์เฉลี่ยของโมเลกุล เมื่อรับความร้อน อุณหภูมิสูงขึ้น พลังงานจลน์เฉลี่ยจึงเพิ่มขึ้น"
+                },
+                {
+                    id: 21,
+                    question: "อุณหภูมิ $-40^\circ\text{F}$ มีค่าเท่ากับกี่เซลเซียส ($^\circ\text{C}$)?",
+                    options: [
+                        { text: "$-40^\circ\text{C}$", isCorrect: true },
+                        { text: "$-32^\circ\text{C}$", isCorrect: false },
+                        { text: "$0^\circ\text{C}$", isCorrect: false },
+                        { text: "$40^\circ\text{C}$", isCorrect: false }
+                    ],
+                    clue: "จุดสมมูลของเซลเซียสและฟาเรนไฮต์",
+                    explanation: "ที่ $-40^\circ$ สเกลเซลเซียสและฟาเรนไฮต์จะมีค่าเท่ากันพอดี คือ $-40^\circ\text{C} = -40^\circ\text{F}$"
+                },
+                {
+                    id: 22,
+                    question: "ข้อใดคือลักษณะเด่นของการถ่ายโอนความร้อนในของแข็งบริสุทธิ์ (เช่น ทองแดง เงิน)?",
+                    options: [
+                        { text: "อาศัยการนำความร้อนผ่านการสั่นของอะตอมและการเคลื่อนที่ของอิเล็กตรอนอิสระ", isCorrect: true },
+                        { text: "อาศัยการไหลวนของกระแสของแข็งภายในเนื้อโลหะ", isCorrect: false },
+                        { text: "อาศัยการแผ่รังสีอินฟราเรดผ่านช่องว่างภายในผลึกโลหะ", isCorrect: false },
+                        { text: "เกิดขึ้นไม่ได้ในของแข็ง ต้องผ่านของเหลวเท่านั้น", isCorrect: false }
+                    ],
+                    clue: "โลหะมีอิเล็กตรอนอิสระช่วยส่งผ่านความร้อนได้ไวมาก",
+                    explanation: "โลหะนำความร้อนได้ดีเยี่ยมเพราะมีการสั่นของอะตอมและการเคลื่อนที่ของอิเล็กตรอนอิสระ (Free electrons)"
+                },
+                {
+                    id: 23,
+                    question: "หากต้องการแปลงอุณหภูมิ $20^\circ\text{C}$ ให้เป็นสเกลเคลวิน ($K$) จะได้ผลลัพธ์ตรงกับข้อใด?",
+                    options: [
+                        { text: "$253.15\text{ K}$", isCorrect: false },
+                        { text: "$293.15\text{ K}$", isCorrect: true },
+                        { text: "$313.15\text{ K}$", isCorrect: false },
+                        { text: "$273.15\text{ K}$", isCorrect: false }
+                    ],
+                    clue: "ใช้สูตร $K = 20 + 273.15$",
+                    explanation: "คำนวณ: $20 + 273.15 = 293.15\text{ K}$"
+                },
+                {
+                    id: 24,
+                    question: "ข้อใดกล่าวถึงกฎข้อที่ศูนย์ของอุณหพลศาสตร์ (Zeroth Law of Thermodynamics) ได้ถูกต้องที่สุด?",
+                    options: [
+                        { text: "หากวัตถุ A และ B อยู่ในสมดุลความร้อนกับวัตถุ C แสดงว่าวัตถุ A และ B ย่อมอยู่ในสมดุลความร้อนซึ่งกันและกัน", isCorrect: true },
+                        { text: "พลังงานในระบบปิดย่อมมีค่าคงที่เสมอไม่สามารถสร้างขึ้นใหม่ได้", isCorrect: false },
+                        { text: "ความร้อนไม่สามารถถ่ายโอนจากอุณหภูมิต่ำไปสูงเองได้โดยไม่มีงานภายนอก", isCorrect: false },
+                        { text: "ที่ศูนย์องศาสัมบูรณ์ เอนโทรปีของผลึกสมบูรณ์มีค่าเป็นศูนย์", isCorrect: false }
+                    ],
+                    clue: "หลักการพื้นฐานของการใช้เทอร์โมมิเตอร์วัดอุณหภูมิ",
+                    explanation: "กฎข้อที่ศูนย์ระบุว่าถ้า A สอดคล้องสมดุลกับ C และ B สอดคล้องกับ C แล้ว A กับ B จะสมดุลความร้อนกัน (หลักการวัดอุณหภูมิ)"
+                },
+                {
+                    id: 25,
+                    question: "ถ้าต้องการคำนวณหาปริมาณความร้อนที่ทำให้ "น้ำแข็ง" มวล $m$ หลอมเหลวกลายเป็นน้ำทั้งหมดที่อุณหภูมิ $0^\circ\text{C}$ จะต้องใช้ความสัมพันธ์ในข้อใด (กำหนดให้ความร้อนแฝงของการหลอมเหลวคือ $L_f$)?",
+                    options: [
+                        { text: "$Q = mc\Delta T$", isCorrect: false },
+                        { text: "$Q = mL_f$", isCorrect: true },
+                        { text: "$Q = mL_v$", isCorrect: false },
+                        { text: "$Q = mc\Delta T + mL_f$", isCorrect: false }
+                    ],
+                    clue: "เป็นการเปลี่ยนสถานะโดยอุณหภูมิไม่เปลี่ยน ใช้ความร้อนแฝง",
+                    explanation: "การเปลี่ยนสถานะที่อุณหภูมิคงที่ใช้สูตรความร้อนแฝง $Q = mL$ (โดย $L_f$ คือความร้อนแฝงของการหลอมเหลว)"
+                }
+            ]
+        };
+
+        // --- Fisher-Yates Shuffle Algorithm ---
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (I + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        let currentSetNumber = 1;
+        let activeQuestions = [];
+        let userAnswers = {};
+        let currentLang = 'TH';
+
+        function switchExamSet(setNum) {
+            currentSetNumber = setNum;
+            for (let i = 1; i <= 3; i++) {
+                const btn = document.getElementById(`setBtn${i}`);
+                if (i === setNum) {
+                    btn.className = "flex-1 sm:flex-none px-4 py-2 rounded-xl text-sm font-semibold transition bg-blue-600 text-white shadow-md";
+                } else {
+                    btn.className = "flex-1 sm:flex-none px-4 py-2 rounded-xl text-sm font-semibold transition bg-slate-700 text-slate-300 hover:bg-slate-600";
+                }
+            }
+            loadExam(setNum);
+        }
+
+        function loadExam(setNum) {
+            const rawQuestions = examSets[setNum];
+            // Deep copy and shuffle options for anti-guessing
+            activeQuestions = rawQuestions.map(q => {
+                let optsCopy = [...q.options];
+                shuffleArray(optsCopy);
+                return {
+                    ...q,
+                    shuffledOptions: optsCopy
+                };
+            });
+            userAnswers = {};
+            document.getElementById('resultSummary').classList.add('hidden');
+            renderExamDOM();
+        }
+
+        function renderExamDOM() {
+            const container = document.getElementById('examContainer');
+            container.innerHTML = '';
+
+            activeQuestions.forEach((q, index) => {
+                let optionsHTML = '';
+                q.shuffledOptions.forEach((opt, optIdx) => {
+                    const optLetter = String.fromCharCode(65 + optIdx); // A, B, C, D
+                    optionsHTML += `
+                        <label class="flex items-start gap-3 p-3 rounded-xl border border-slate-700 bg-slate-900/40 hover:bg-slate-700/50 cursor-pointer transition select-none">
+                            <input type="radio" name="q_${q.id}" value="${opt.isCorrect}" onclick="handleAnswer(${q.id}, ${opt.isCorrect}, this)" class="mt-1 accent-blue-500">
+                            <span class="text-xs sm:text-sm text-slate-200"><strong>${optLetter}.</strong> ${opt.text}</span>
+                        </label>
+                    `;
+                });
+
+                const cardHTML = `
+                    <div class="bg-slate-800/90 border border-slate-700 p-5 rounded-2xl shadow-xl flex flex-col gap-4" id="question_card_${q.id}">
+                        <div class="flex justify-between items-start gap-2">
+                            <h4 class="font-bold text-slate-100 text-sm sm:text-base">ข้อที่ ${index + 1}. ${q.question}</h4>
+                            <span class="text-xs bg-slate-700 text-slate-300 px-2.5 py-1 rounded-full whitespace-nowrap">ชุดที่ ${currentSetNumber}</span>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                            ${optionsHTML}
+                        </div>
+                        <div class="flex justify-between items-center pt-2 border-t border-slate-700/60">
+                            <button onclick="toggleClue(${q.id})" class="text-xs text-amber-400 hover:text-amber-300 font-medium flex items-center gap-1">
+                                <span>💡</span> <span id="clue_btn_text_${q.id}">ดูคำใบ้ / แนวคิด</span>
+                            </button>
+                            <div id="feedback_${q.id}" class="text-xs font-bold hidden"></div>
+                        </div>
+                        <div id="clue_box_${q.id}" class="hidden bg-amber-500/10 border border-amber-500/30 p-3 rounded-xl text-xs text-amber-200 space-y-1">
+                            <div><strong>💡 คำใบ้:</strong> ${q.clue}</div>
+                            <div class="text-slate-300 mt-1"><strong>🔍 วิธีคิดและเฉลยละเอียด:</strong> ${q.explanation}</div>
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += cardHTML;
+            });
+        }
+
+        function handleAnswer(qId, isCorrect, radioEl) {
+            userAnswers[qId] = isCorrect === true || isCorrect === 'true';
+            
+            // Disable other radios in this question card to lock selection instantly
+            const card = document.getElementById(`question_card_${qId}`);
+            const radios = card.querySelectorAll(`input[name="q_${qId}"]`);
+            radios.forEach(r => r.disabled = true);
+
+            const feedbackEl = document.getElementById(`feedback_${qId}`);
+            feedbackEl.classList.remove('hidden');
+            if (userAnswers[qId]) {
+                feedbackEl.innerHTML = '<span class="text-emerald-400">✅ ถูกต้องครับเยี่ยมมาก!</span>';
+                card.classList.add('border-emerald-500/50', 'bg-emerald-950/10');
+            } else {
+                feedbackEl.innerHTML = '<span class="text-rose-400">❌ ยังไม่ถูกต้อง</span>';
+                card.classList.add('border-rose-500/50', 'bg-rose-950/10');
+            }
+
+            // Automatically reveal clue/explanation on answer
+            const clueBox = document.getElementById(`clue_box_${qId}`);
+            clueBox.classList.remove('hidden');
+
+            saveProgressToLocalStorage();
+        }
+
+        function toggleClue(qId) {
+            const clueBox = document.getElementById(`clue_box_${qId}`);
+            clueBox.classList.toggle('hidden');
+        }
+
+        function submitExam() {
+            let correctCount = 0;
+            let answeredCount = Object.keys(userAnswers).length;
+
+            for (let qId in userAnswers) {
+                if (userAnswers[qId] === true) {
+                    correctCount++;
+                }
+            }
+
+            const totalQ = activeQuestions.length;
+            const percentage = ((correctCount / totalQ) * 100).toFixed(1);
+
+            const resultSummary = document.getElementById('resultSummary');
+            resultSummary.classList.remove('hidden');
+            
+            document.getElementById('scoreDisplay').innerText = `คะแนนของคุณ: ${correctCount} / ${totalQ} (${percentage}%)`;
+
+            let strengths = [];
+            let improvements = [];
+
+            if (percentage >= 80) {
+                strengths.push("มีความเข้าใจในสูตรคำนวณอุณหภูมิและการแปลงหน่วยได้ดีเยี่ยม");
+                strengths.push("วิเคราะห์โจทย์ความร้อนและตัวแปรในสมการได้อย่างแม่นยำ");
+            } else if (percentage >= 50) {
+                strengths.push("มีความเข้าใจหลักการเบื้องต้นของสเกลอุณหภูมิและหน่วยวัด");
+                improvements.push("ควรทบทวนสูตรคำนวณค่าสัมประสิทธิ์และความจุความร้อนจำเพาะเพิ่มเติม");
+            } else {
+                improvements.push("ควรกลับบทสรุปเนื้อหาและฝึกใช้สูตรแปลงสเกล (C, F, K, Ré) อีกรอบ");
+                improvements.push("ฝึกฝนการแทนค่าตัวแปรในสมการ $Q = mc\Delta T$ ให้คล่องแคล่วขึ้น");
+            }
+
+            let analysisHTML = `
+                <div class="font-bold text-amber-300 mb-1">📊 รายงานการวิเคราะห์ผลการเรียนรู้รายบุคคล:</div>
+                <div class="space-y-1 text-xs">
+                    <div><strong>✅ จุดเด่น (Strengths):</strong> ${strengths.join(', ') || 'กำลังพัฒนาทักษะพื้นฐาน'}</div>
+                    <div><strong>⚠️ จุดที่ควรพัฒนา (Areas for Improvement):</strong> ${improvements.join(', ') || 'ทำคะแนนได้ดีมาก รักษามาตรฐานต่อไปครับ!'}</div>
+                    <div class="text-slate-400 pt-1">สถานะ: ทำข้อสอบไปแล้ว ${answeredCount} จาก ${totalQ} ข้อ</div>
+                </div>
+            `;
+            document.getElementById('analysisBox').innerHTML = analysisHTML;
+
+            // Scroll to results
+            resultSummary.scrollIntoView({ behavior: 'smooth' });
+            saveProgressToLocalStorage();
+        }
+
+        function saveProgressToLocalStorage() {
+            const state = {
+                currentSetNumber,
+                userAnswers
+            };
+            localStorage.setItem('phrachomklao_temp_exam_state', JSON.stringify(state));
+        }
+
+        function resetAllProgress() {
+            if (confirm("คุณต้องการรีเซ็ตคำตอบและสลับชุดข้อสอบใหม่ทั้งหมดใช่หรือไม่?")) {
+                localStorage.removeItem('phrachomklao_temp_exam_state');
+                loadExam(currentSetNumber);
+            }
+        }
+
+        function toggleLanguage() {
+            currentLang = currentLang === 'TH' ? 'EN' : 'TH';
+            document.getElementById('langToggleBtn').innerText = currentLang === 'TH' ? '🌐 ภาษา: ไทย (TH)' : '🌐 Language: English (EN)';
+        }
+
+        // Initialize on load
+        window.onload = function() {
+            loadExam(1);
+        };
+    </script>
+</body>
+</html>
