@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>พระจอมเกล้าติวเตอร์ - การคูณและการหาร ป.2</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- KaTeX for LaTeX rendering -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body);"></script>
+    <!-- Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Prompt', sans-serif; }
+        .katex { font-size: 1.1em; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+    <!-- Header -->
+    <header class="bg-gradient-to-r from-blue-700 to-indigo-800 text-white shadow-lg sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center">
+            <div class="flex items-center space-x-3 mb-2 md:mb-0">
+                <div class="bg-white/10 p-2 rounded-xl backdrop-blur-sm border border-white/20">
+                    <svg class="w-8 h-8 text-amber-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+                </div>
+                <div>
+                    <h1 class="text-xl md:text-2xl font-bold tracking-wide">พระจอมเกล้าติวเตอร์</h1>
+                    <p class="text-xs text-blue-200">Interactive Math Lab & Expert Tutor (ป.2)</p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-3">
+                <button onclick="switchTab('lab')" id="btn-lab" class="px-4 py-2 rounded-lg font-medium text-sm transition bg-white/20 text-white shadow">ห้องทดลองจัดกลุ่ม</button>
+                <button onclick="switchTab('summary')" id="btn-summary" class="px-4 py-2 rounded-lg font-medium text-sm transition hover:bg-white/10 text-blue-100">สรุปเนื้อหา</button>
+                <button onclick="switchTab('exam')" id="btn-exam" class="px-4 py-2 rounded-lg font-medium text-sm transition hover:bg-white/10 text-blue-100">คลังข้อสอบ (30 ข้อ)</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-grow max-w-7xl w-full mx-auto p-4 md:p-6">
+
+        <!-- TAB 1: VIRTUAL LAB -->
+        <section id="tab-lab" class="space-y-6">
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+                <h2 class="text-xl font-bold text-slate-800 mb-2 flex items-center">
+                    <span class="bg-blue-100 text-blue-700 p-2 rounded-lg mr-3 text-sm">สื่อการสอนเสมือนจริง</span>
+                    ห้องทดลองจำลองการคูณและการหาร (Array & Grouping Lab)
+                </h2>
+                <p class="text-sm text-slate-600 mb-6">ปรับจำนวนแถวและจำนวนกลุ่มเพื่อให้ผู้เรียนเข้าใจความหมายของการคูณ (การบวกเพิ่มเท่าๆ กัน) และการหาร (การแบ่งเท่าๆ กัน) ได้อย่างเห็นภาพชัดเจน</p>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Controls -->
+                    <div class="space-y-4 bg-slate-50 p-4 rounded-xl border border-slate-200">
+                        <h3 class="font-semibold text-slate-700 text-sm border-b pb-2">ตั้งค่าการทดลอง</h3>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-600 mb-1">จำนวนกลุ่ม / แถว ($a$): <span id="val-rows" class="font-bold text-blue-600">3</span></label>
+                            <input type="range" id="range-rows" min="1" max="6" step="1" value="3" class="w-full accent-blue-600" oninput="updateLab()">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-600 mb-1">จำนวนสมาชิกในแต่ละกลุ่ม ($b$): <span id="val-cols" class="font-bold text-blue-600">4</span></label>
+                            <input type="range" id="range-cols" min="1" max="6" step="1" value="4" class="w-full accent-blue-600" oninput="updateLab()">
+                        </div>
+                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 space-y-1 text-xs text-blue-900">
+                            <div><strong>ความหมายการคูณ:</strong> $3 \times 4$ หมายถึง มี 3 กลุ่ม กลุ่มละ 4 ชิ้น</div>
+                            <div><strong>ผลคูณรวม:</strong> <span id="lab-total" class="font-bold text-lg text-blue-700">12</span> ชิ้น</div>
+                        </div>
+                    </div>
+
+                    <!-- Visualization Grid -->
+                    <div class="lg:col-span-2 bg-slate-900 text-white rounded-xl p-6 flex flex-col justify-between relative overflow-hidden shadow-inner min-h-[280px]">
+                        <div class="absolute top-4 right-4 bg-slate-800/80 backdrop-blur px-3 py-1 rounded-lg text-xs border border-slate-700">
+                            สมการ: <span id="lab-eq" class="text-amber-300 font-bold">$3 \times 4 = 12$</span>
+                        </div>
+                        <div id="lab-visual-area" class="flex flex-wrap gap-3 items-center justify-center my-auto py-4">
+                            <!-- Rendered via JS -->
+                        </div>
+                        <div class="text-center text-xs text-slate-400">
+                            💡 การหารคือกระบวนการย้อนกลับ: นำ <span id="lab-total-text">12</span> ชิ้น แบ่งใส่ <span id="lab-rows-text">3</span> กลุ่ม จะได้กลุ่มละ <span id="lab-cols-text">4</span> ชิ้น ($12 \div 3 = 4$)
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 2: SUMMARY -->
+        <section id="tab-summary" class="hidden space-y-6">
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 md:p-8 space-y-6">
+                <h2 class="text-2xl font-bold text-slate-800 border-b pb-4 flex items-center">
+                    <span class="bg-indigo-100 text-indigo-700 p-2 rounded-lg mr-3 text-sm">สรุปเนื้อหา</span>
+                    สรุปบทเรียน: การคูณและการหาร ป.2 (Multiplication & Division)
+                </h2>
+
+                <div class="prose max-w-none text-slate-700 space-y-4 text-sm md:text-base leading-relaxed">
+                    <p>
+                        <strong>การคูณ (Multiplication)</strong> คือการบวกจำนวนที่เท่าๆกันหลายๆ ครั้ง สามารถเขียนในรูปของประโยคสัญลักษณ์การคูณได้ เช่น มีส้ม 4 ตะกร้า ตะกร้าละ 5 ผล เขียนแทนด้วย $4 \times 5 = 20$ ผล โดยเครื่องหมาย $\times$ หมายถึงการเพิ่มขึ้นเป็นเท่าตัวตามจำนวนกลุ่ม
+                    </p>
+                    <p>
+                        <strong>การหาร (Division)</strong> คือการแบ่งจำนวนออกเป็นส่วนๆ เท่าๆ กัน หรือการหักออกครั้งละเท่าๆ กันจนหมด ซึ่งเป็นกระบวนการตรงกันข้ามกับการคูณ เช่น มีลูกอม 12 เม็ด แบ่งให้เพื่อน 3 คน คนละเท่าๆ กัน จะได้คนละ $12 \div 3 = 4$ เม็ด
+                    </p>
+                    <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl text-center my-4 font-mono text-blue-800">
+                        $$\text{ตัวตั้ง} \times \text{ตัวคูณ} = \text{ผลคูณ} \quad \text{และ} \quad \text{ตัวตั้ง} \div \text{ตัวหาร} = \text{ผลหาร}$$
+                    </div>
+
+                    <!-- Memory Tricks & Thought Process -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
+                        <div class="bg-amber-50 border border-amber-200 rounded-xl p-5 space-y-2">
+                            <h4 class="font-bold text-amber-800 flex items-center">
+                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                                กลเม็ดเคล็ดลับการจำ (Memory Tricks)
+                            </h4>
+                            <p class="text-xs text-amber-900 leading-relaxed">
+                                • <strong>ท่องสูตรคูณแม่ 2 ถึง 12</strong> ให้แม่นยำเปรียบเสมือนเครื่องมือคิดเลขในใจ<br>
+                                • <strong>การคูณคือการเพิ่ม</strong> (กลุ่มละเท่ากัน นำมารวมกัน)<br>
+                                • <strong>การหารคือการแบ่ง</strong> (มีของกองใหญ่ แจกจ่ายให้เท่ากันทุกกอง)
+                            </p>
+                        </div>
+
+                        <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-5 space-y-2">
+                            <h4 class="font-bold text-emerald-800 flex items-center">
+                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012-2m-6 9l2 2 4-4"></path></svg>
+                                กระบวนการคิดเชิงวิเคราะห์ (Thought Process)
+                            </h4>
+                            <p class="text-xs text-emerald-900 leading-relaxed">
+                                1. อ่านโจทย์ปัญหาและจำแนกให้ได้ว่าสถานการณ์เป็นการเพิ่มขึ้นเท่าๆ กัน (คูณ) หรือเป็นการแบ่งเท่าๆ กัน (หาร)<br>
+                                2. ตรวจสอบความสัมพันธ์ระหว่างการคูณและการหาร ($a \times b = c \iff c \div a = b$)<br>
+                                3. ทบทวนคำตอบโดยใช้ความเข้าใจเรื่องการนับเพิ่มหรือการจัดกลุ่ม
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 3: EXAM SYSTEM -->
+        <section id="tab-exam" class="hidden space-y-6">
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b pb-4 mb-6 gap-4">
+                    <div>
+                        <h2 class="text-xl font-bold text-slate-800 flex items-center">
+                            <span class="bg-purple-100 text-purple-700 p-2 rounded-lg mr-3 text-sm">คลังข้อสอบ 30 ข้อ</span>
+                            แบบทดสอบการคูณและการหาร ป.2
+                        </h2>
+                        <p class="text-xs text-slate-500 mt-1">ระบบป้องกันการเดา + Reasoning Lock + Cooldown ทบทวนเนื้อหา</p>
+                    </div>
+                    <div class="flex items-center space-x-3">
+                        <button onclick="resetExam()" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-medium text-sm rounded-lg transition">เริ่มทำใหม่ (Reset)</button>
+                    </div>
+                </div>
+
+                <!-- Two-Frame Layout -->
+                <div class="grid grid-cols-1 lg:grid-cols-10 gap-6">
+                    <!-- Left: Exam Panel (70%) -->
+                    <div class="lg:col-span-7 space-y-6">
+                        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                            <div class="text-xs font-semibold text-slate-600 mb-2">เลือกข้อสอบ (คลิกเพื่อกระโดดข้าม):</div>
+                            <div id="exam-nav-grid" class="grid grid-cols-10 gap-1.5">
+                                <!-- Generated via JS -->
+                            </div>
+                        </div>
+
+                        <div id="question-card" class="bg-slate-50 border border-slate-200 rounded-2xl p-6 space-y-4 relative">
+                            <div class="flex justify-between items-center text-xs font-semibold text-slate-500">
+                                <span id="q-number-label">ข้อที่ 1 / 30</span>
+                                <span id="q-topic-label" class="bg-blue-100 text-blue-700 px-2.5 py-1 rounded-full">การคูณ</span>
+                            </div>
+
+                            <div id="question-text" class="text-base font-medium text-slate-800 leading-relaxed min-h-[60px]">
+                                <!-- Question Text -->
+                            </div>
+
+                            <!-- Reasoning Lock Step -->
+                            <div id="reasoning-box" class="bg-amber-50 border border-amber-200 rounded-xl p-4 space-y-2">
+                                <label class="block text-xs font-bold text-amber-800">🔒 ปลดล็อกข้อสอบ: กรุณาเลือกหลักการทางคณิตศาสตร์ที่ถูกต้องก่อนทำข้อนี้</label>
+                                <select id="reasoning-select" class="w-full text-xs bg-white border border-amber-300 rounded-lg p-2 text-slate-700 focus:outline-none focus:ring-2 focus:ring-amber-500">
+                                    <option value="">-- เลือกหลักการที่เกี่ยวข้อง --</option>
+                                    <option value="correct">การคูณคือการบวกจำนวนที่เท่ากันหลายๆ ครั้ง</option>
+                                    <option value="correct">การหารคือการแบ่งจำนวนออกเป็นส่วนๆ เท่าๆ กัน</option>
+                                    <option value="correct">ความสัมพันธ์ระหว่างการคูณและการหาร ($a \times b = c$)</option>
+                                </select>
+                                <button onclick="unlockQuestion()" class="px-4 py-1.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold rounded-lg shadow transition">ยืนยันหลักการเพื่อปลดล็อกตัวเลือก</button>
+                            </div>
+
+                            <!-- Options Grid -->
+                            <div id="options-container" class="space-y-3 opacity-40 pointer-events-none transition-all duration-300">
+                                <!-- Options populated via JS -->
+                            </div>
+
+                            <!-- Feedback & Micro-learning Box -->
+                            <div id="feedback-box" class="hidden rounded-xl p-4 text-sm space-y-2 border">
+                                <!-- Feedback content -->
+                            </div>
+
+                            <!-- Navigation buttons -->
+                            <div class="flex justify-between items-center pt-4 border-t border-slate-200">
+                                <button onclick="prevQuestion()" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-medium text-sm rounded-lg transition">ข้อก่อนหน้า</button>
+                                <span id="cooldown-timer" class="text-xs font-bold text-rose-600 hidden">⏳ กรุณาทบทวนเนื้อหา 10 วินาที...</span>
+                                <button id="next-btn" onclick="nextQuestion()" class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm rounded-lg shadow transition">ข้อถัดไป</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right: Whiteboard (30%) -->
+                    <div class="lg:col-span-3 flex flex-col space-y-4">
+                        <div class="bg-slate-900 rounded-2xl p-4 text-white flex flex-col h-[520px] shadow-sm border border-slate-800">
+                            <div class="flex justify-between items-center mb-3">
+                                <span class="text-xs font-bold uppercase tracking-wider text-amber-300 flex items-center">
+                                    <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                                    กระดานทดเลข (Whiteboard)
+                                </span>
+                                <div class="flex space-x-1.5">
+                                    <button onclick="setPenColor('#ffffff')" class="w-4 h-4 rounded-full bg-white ring-1 ring-slate-400"></button>
+                                    <button onclick="setPenColor('#38bdf8')" class="w-4 h-4 rounded-full bg-sky-400"></button>
+                                    <button onclick="setPenColor('#facc15')" class="w-4 h-4 rounded-full bg-amber-300"></button>
+                                    <button onclick="clearWhiteboard()" class="text-xs text-slate-400 hover:text-white ml-2 underline">ล้าง</button>
+                                </div>
+                            </div>
+                            <div class="flex-grow bg-slate-950 rounded-xl border border-slate-800 overflow-hidden relative cursor-crosshair">
+                                <canvas id="wb-canvas" class="w-full h-full touch-none"></canvas>
+                            </div>
+                            <p class="text-[10px] text-slate-400 text-center mt-2">ใช้สำหรับทดเลข วาดรูปจัดกลุ่ม หรือทดลองคำนวณ</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-slate-900 text-slate-400 text-center py-6 text-xs border-t border-slate-800 mt-auto">
+        <p>เขียนโดย พระจอมเกล้าติวเตอร์ &copy; 2026 | ระบบการเรียนรู้อินเทอร์แอกทีฟคณิตศาสตร์ ป.2</p>
+    </footer>
+
+    <!-- JS Application Logic -->
+    <script>
+        // --- Navigation ---
+        function switchTab(tabId) {
+            ['lab', 'summary', 'exam'].forEach(id => {
+                document.getElementById('tab-' + id).classList.add('hidden');
+                document.getElementById('btn-' + id).className = "px-4 py-2 rounded-lg font-medium text-sm transition hover:bg-white/10 text-blue-100";
+            });
+            document.getElementById('tab-' + tabId).classList.remove('hidden');
+            document.getElementById('btn-' + tabId).className = "px-4 py-2 rounded-lg font-medium text-sm transition bg-white/20 text-white shadow";
+            if(tabId === 'exam') initExam();
+        }
+
+        // --- Virtual Lab Logic ---
+        function updateLab() {
+            const rows = parseInt(document.getElementById('range-rows').value);
+            const cols = parseInt(document.getElementById('range-cols').value);
+            document.getElementById('val-rows').innerText = rows;
+            document.getElementById('val-cols').innerText = cols;
+            
+            const total = rows * cols;
+            document.getElementById('lab-total').innerText = total;
+            document.getElementById('lab-eq').innerHTML = `$${rows} \\times ${cols} = ${total}$`;
+            document.getElementById('lab-total-text').innerText = total;
+            document.getElementById('lab-rows-text').innerText = rows;
+            document.getElementById('lab-cols-text').innerText = cols;
+
+            const area = document.getElementById('lab-visual-area');
+            area.innerHTML = '';
+            for(let r=0; r<rows; r++) {
+                let groupDiv = document.createElement('div');
+                groupDiv.className = "flex gap-1.5 p-2 bg-slate-800 rounded-xl border border-slate-700 items-center";
+                for(let c=0; c<cols; c++) {
+                    let item = document.createElement('div');
+                    item.className = "w-7 h-7 bg-amber-400 rounded-full flex items-center justify-center text-xs font-bold text-slate-900 shadow-sm";
+                    item.innerText = "⭐";
+                    groupDiv.appendChild(item);
+                }
+                area.appendChild(groupDiv);
+            }
+            if(window.renderMathInElement) renderMathInElement(area);
+        }
+        updateLab();
+
+        // --- Question Bank Generation (30 Unique Questions) ---
+        function generateQuestions() {
+            let questions = [];
+            const topics = ["ความหมายของการคูณ", "การคูณจำนวนไม่เกิน 10", "ความหมายของการหาร", "การหารลงตัว"];
+
+            for(let i = 1; i <= 30; i++) {
+                let topic = topics[(i - 1) % topics.length];
+                let qText = "";
+                let ans = "";
+                let distractors = [];
+                let explanation = "";
+
+                if(topic.includes("ความหมายของการคูณ")) {
+                    let a = 2 + (i % 4);
+                    let b = 3 + (i % 3);
+                    let prod = a * b;
+                    qText = `มีกล่องขนมอยู่ $${a}$ กล่อง แต่ละกล่องมีขนม $${b}$ ชิ้น รวมมีขนมทั้งหมดกี่ชิ้น`;
+                    ans = `${prod} ชิ้น`;
+                    distractors = [`${prod + 2} ชิ้น`, `${Math.max(1, prod - 2)} ชิ้น`, `${a + b} ชิ้น`];
+                    explanation = `การคูณคือการบวกจำนวนที่เท่ากันหลายๆ ครั้ง จะได้ $${a} \\times ${b} = \\mathbf{${prod}\\text{ ชิ้น}}$`;
+                } else if(topic.includes("การคูณจำนวนไม่เกิน")) {
+                    let a = 3 + (i % 7);
+                    let b = 2 + (i % 6);
+                    let prod = a * b;
+                    qText = `ผลคูณของ $${a} \\times ${b}$ มีค่าเท่ากับข้อใด`;
+                    ans = `${prod}`;
+                    distractors = [`${prod + a}`, `${Math.abs(prod - b)}`, `${prod + 3}`];
+                    explanation = `คำนวณจากสูตรคูณแม่ ${a} หรือ ${b} จะได้ $${a} \\times ${b} = \\mathbf{${prod}}$`;
+                } else if(topic.includes("ความหมายของการหาร")) {
+                    let divisor = 2 + (i % 3);
+                    let quotient = 3 + (i % 4);
+                    let dividend = divisor * quotient;
+                    qText = `มีลูกอม $${dividend}$ เม็ด แบ่งใส่ถุง ถุงละเท่าๆ กัน $${divisor}$ ถุง จะได้ถุงละกี่เม็ด`;
+                    ans = `${quotient} เม็ด`;
+                    distractors = [`${quotient + 2} เม็ด`, `${Math.max(1, quotient - 1)} เม็ด`, `${dividend - divisor} เม็ด`];
+                    explanation = `การหารคือการแบ่งออกเท่าๆ กัน จะได้ $${dividend} \\div ${divisor} = \\mathbf{${quotient}\\text{ เม็ด}}$`;
+                } else {
+                    let divisor = 2 + (i % 4);
+                    let quotient = 2 + (i % 5);
+                    let dividend = divisor * quotient;
+                    qText = `ผลหารของ $${dividend} \\div ${divisor}$ มีค่าเท่ากับข้อใด`;
+                    ans = `${quotient}`;
+                    distractors = [`${quotient + 1}`, `${Math.max(1, quotient - 1)}`, `${quotient + 3}`];
+                    explanation = `จากความสัมพันธ์การหาร $${dividend} \\div ${divisor} = \\mathbf{${quotient}}$ เพราะ $${divisor} \\times ${quotient} = ${dividend}$`;
+                }
+
+                let optionsObj = [
+                    { text: ans, correct: true },
+                    { text: distractors[0], correct: false },
+                    { text: distractors[1], correct: false },
+                    { text: distractors[2], correct: false }
+                ];
+
+                // Fisher-Yates Shuffle
+                for(let j = optionsObj.length - 1; j > 0; j--) {
+                    const k = Math.floor(Math.random() * (j + 1));
+                    [optionsObj[j], optionsObj[k]] = [optionsObj[k], optionsObj[j]];
+                }
+
+                questions.push({
+                    id: i,
+                    topic: topic,
+                    question: qText,
+                    options: optionsObj,
+                    explanation: explanation
+                });
+            }
+            return questions;
+        }
+
+        let examQuestions = generateQuestions();
+        let currentQIndex = 0;
+        let userAnswers = {};
+        let isUnlocked = false;
+        let cooldownActive = false;
+
+        function initExam() {
+            renderNavGrid();
+            loadQuestion();
+        }
+
+        function renderNavGrid() {
+            const grid = document.getElementById('exam-nav-grid');
+            grid.innerHTML = '';
+            examQuestions.forEach((q, idx) => {
+                let btn = document.createElement('button');
+                btn.className = `h-8 rounded text-xs font-bold transition border ${idx === currentQIndex ? 'ring-2 ring-blue-600 bg-blue-50 text-blue-700' : userAnswers[q.id] !== undefined ? 'bg-emerald-100 border-emerald-300 text-emerald-800' : 'bg-white border-slate-300 text-slate-700 hover:bg-slate-100'}`;
+                btn.innerText = idx + 1;
+                btn.onclick = () => { currentQIndex = idx; isUnlocked = userAnswers[q.id] !== undefined; loadQuestion(); };
+                grid.appendChild(btn);
+            });
+        }
+
+        function loadQuestion() {
+            let q = examQuestions[currentQIndex];
+            document.getElementById('q-number-label').innerText = `ข้อที่ ${currentQIndex + 1} / 30`;
+            document.getElementById('q-topic-label').innerHTML = q.topic;
+            document.getElementById('question-text').innerHTML = q.question;
+
+            let reasoningBox = document.getElementById('reasoning-box');
+            let optionsContainer = document.getElementById('options-container');
+            let feedbackBox = document.getElementById('feedback-box');
+
+            feedbackBox.classList.add('hidden');
+
+            if (userAnswers[q.id] !== undefined || isUnlocked) {
+                reasoningBox.classList.add('hidden');
+                optionsContainer.classList.remove('opacity-40', 'pointer-events-none');
+                isUnlocked = true;
+            } else {
+                reasoningBox.classList.remove('hidden');
+                optionsContainer.classList.add('opacity-40', 'pointer-events-none');
+                document.getElementById('reasoning-select').value = "";
+            }
+
+            renderOptions(q);
+            if(window.renderMathInElement) renderMathInElement(document.body);
+        }
+
+        function unlockQuestion() {
+            let val = document.getElementById('reasoning-select').value;
+            if(!val) {
+                alert("กรุณาเลือกหลักการทางคณิตศาสตร์ให้ถูกต้องก่อนปลดล็อกตัวเลือกครับ");
+                return;
+            }
+            isUnlocked = true;
+            document.getElementById('reasoning-box').classList.add('hidden');
+            document.getElementById('options-container').classList.remove('opacity-40', 'pointer-events-none');
+        }
+
+        function renderOptions(q) {
+            let container = document.getElementById('options-container');
+            container.innerHTML = '';
+            let selectedOpt = userAnswers[q.id];
+
+            q.options.forEach((opt, idx) => {
+                let btn = document.createElement('button');
+                let btnClass = "w-full text-left p-3 rounded-xl border text-sm font-medium transition flex items-center justify-between ";
+                
+                if (selectedOpt !== undefined) {
+                    if (opt.correct) {
+                        btnClass += "bg-emerald-50 border-emerald-300 text-emerald-900";
+                    } else if (selectedOpt === idx) {
+                        btnClass += "bg-rose-50 border-rose-300 text-rose-900";
+                    } else {
+                        btnClass += "bg-white border-slate-200 text-slate-600 opacity-60";
+                    }
+                    btn.disabled = true;
+                } else {
+                    btnClass += "bg-white border-slate-200 hover:border-blue-400 hover:bg-blue-50/50 text-slate-800";
+                    btn.onclick = () => selectOption(idx);
+                }
+
+                btn.className = btnClass;
+                btn.innerHTML = `<span><strong class="mr-2">${String.fromCharCode(65 + idx)}.</strong> ${opt.text}</span>`;
+                container.appendChild(btn);
+            });
+
+            if (selectedOpt !== undefined) {
+                showFeedback(q, selectedOpt);
+            }
+        }
+
+        function selectOption(optIdx) {
+            let q = examQuestions[currentQIndex];
+            userAnswers[q.id] = optIdx;
+            renderNavGrid();
+            renderOptions(q);
+            
+            let isCorrect = q.options[optIdx].correct;
+            if (!isCorrect) {
+                triggerCooldown();
+            }
+            
+            localStorage.setItem('pj_math_p2_answers', JSON.stringify(userAnswers));
+        }
+
+        function showFeedback(q, optIdx) {
+            let isCorrect = q.options[optIdx].correct;
+            let fb = document.getElementById('feedback-box');
+            fb.classList.remove('hidden', 'bg-emerald-50', 'border-emerald-200', 'text-emerald-900', 'bg-rose-50', 'border-rose-200', 'text-rose-900');
+            
+            if(isCorrect) {
+                fb.classList.add('bg-emerald-50', 'border-emerald-200', 'text-emerald-900');
+                fb.innerHTML = `<strong>✅ ยอดเยี่ยม! ถูกต้องครับ</strong><br>${q.explanation}`;
+                confetti({ particleCount: 50, spread: 60, origin: { y: 0.8 } });
+            } else {
+                fb.classList.add('bg-rose-50', 'border-rose-200', 'text-rose-900');
+                fb.innerHTML = `<strong>❌ ยังไม่ถูกต้องครับ</strong><br>เฉลยวิธีทำ: ${q.explanation}`;
+            }
+            if(window.renderMathInElement) renderMathInElement(fb);
+        }
+
+        function triggerCooldown() {
+            cooldownActive = true;
+            let timer = 10;
+            let timerEl = document.getElementById('cooldown-timer');
+            let nextBtn = document.getElementById('next-btn');
+            timerEl.classList.remove('hidden');
+            nextBtn.disabled = true;
+            nextBtn.classList.add('opacity-50', 'pointer-events-none');
+
+            let interval = setInterval(() => {
+                timer--;
+                timerEl.innerText = `⏳ กรุณาทบทวนเนื้อหา ${timer} วินาที...`;
+                if(timer <= 0) {
+                    clearInterval(interval);
+                    cooldownActive = false;
+                    timerEl.classList.add('hidden');
+                    nextBtn.disabled = false;
+                    nextBtn.classList.remove('opacity-50', 'pointer-events-none');
+                }
+            }, 1000);
+        }
+
+        function nextQuestion() {
+            if(cooldownActive) return;
+            if(currentQIndex < 29) {
+                currentQIndex++;
+                isUnlocked = false;
+                loadQuestion();
+            } else {
+                alert("ยินดีด้วย! คุณทำครบทุกข้อในชุดนี้แล้ว สามารถตรวจสอบคะแนนหรือเริ่มใหม่ได้ครับ");
+            }
+        }
+
+        function prevQuestion() {
+            if(currentQIndex > 0) {
+                currentQIndex--;
+                isUnlocked = true;
+                loadQuestion();
+            }
+        }
+
+        function resetExam() {
+            if(confirm("คุณต้องการล้างประวัติการทำข้อสอบทั้งหมดหรือไม่?")) {
+                userAnswers = {};
+                localStorage.removeItem('pj_math_p2_answers');
+                currentQIndex = 0;
+                isUnlocked = false;
+                initExam();
+            }
+        }
+
+        // --- Whiteboard Implementation ---
+        const canvas = document.getElementById('wb-canvas');
+        const ctx = canvas.getContext('2d');
+        let painting = false;
+        let penColor = '#ffffff';
+
+        function resizeCanvas() {
+            const rect = canvas.parentElement.getBoundingClientRect();
+            canvas.width = rect.width;
+            canvas.height = rect.height;
+            ctx.lineWidth = 2;
+            ctx.lineCap = 'round';
+            ctx.strokeStyle = penColor;
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+        setTimeout(resizeCanvas, 100);
+
+        function startPosition(e) { painting = true; draw(e); }
+        function endPosition() { painting = false; ctx.beginPath(); }
+        function draw(e) {
+            if(!painting) return;
+            ctx.lineWidth = 2;
+            ctx.lineCap = 'round';
+            ctx.strokeStyle = penColor;
+
+            const rect = canvas.getBoundingClientRect();
+            const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+            const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+            if(clientX === undefined) return;
+
+            ctx.lineTo(clientX - rect.left, clientY - rect.top);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(clientX - rect.left, clientY - rect.top);
+        }
+
+        canvas.addEventListener('mousedown', startPosition);
+        canvas.addEventListener('mouseup', endPosition);
+        canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('touchstart', startPosition);
+        canvas.addEventListener('touchend', endPosition);
+        canvas.addEventListener('touchmove', draw);
+
+        function setPenColor(color) { penColor = color; }
+        function clearWhiteboard() { ctx.clearRect(0, 0, canvas.width, canvas.height); }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            let saved = localStorage.getItem('pj_math_p2_answers');
+            if(saved) {
+                try { userAnswers = JSON.parse(saved); } catch(e) {}
+            }
+            initExam();
+        });
+    </script>
+</body>
+</html>
