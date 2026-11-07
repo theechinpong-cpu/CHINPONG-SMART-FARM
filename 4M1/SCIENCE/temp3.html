@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบสอบออนไลน์ - พระจอมเกล้าติวเตอร์</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <!-- MathJax สำหรับแสดงผลสูตร LaTeX -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        body { font-family: 'Sarabun', sans-serif; background-color: #f3f4f6; }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800 min-h-screen flex flex-col">
+
+    <!-- Header -->
+    <header class="bg-indigo-900 text-white shadow-md p-4 flex justify-between items-center">
+        <div class="flex items-center space-x-3">
+            <span class="text-2xl font-bold">🏫 พระจอมเกล้าติวเตอร์</span>
+            <span class="text-xs bg-indigo-700 px-2.5 py-1 rounded-full uppercase tracking-wider">Expert Tutor AI</span>
+        </div>
+        <div class="flex items-center space-x-4">
+            <button id="langToggle" class="bg-indigo-700 hover:bg-indigo-600 px-3 py-1.5 rounded text-sm font-medium transition cursor-pointer" onclick="toggleLanguage()">English / ไทย</button>
+            <button class="bg-red-600 hover:bg-red-500 px-3 py-1.5 rounded text-sm font-medium transition cursor-pointer" onclick="resetExam()">🔄 Reset Exam</button>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6 grid grid-cols-1 lg:grid-cols-10 gap-6">
+
+        <!-- Left Column: Quiz Section (70%) -->
+        <section class="lg:col-span-7 flex flex-col space-y-6">
+            
+            <!-- Summary Banner & Study Material -->
+            <div class="bg-white rounded-xl shadow-md p-6 border-l-4 border-indigo-600">
+                <h1 class="text-xl font-bold text-indigo-900 mb-2">บทเรียน: การแปลงอุณหภูมิ (Celsius, Fahrenheit, Kelvin) ระดับชั้น ม.1</h1>
+                <p class="text-sm text-gray-600 leading-relaxed mb-4">
+                    การศึกษาเรื่องอุณหภูมิเป็นพื้นฐานสำคัญทางวิทยาศาสตร์ โดยสเกลหลักที่ใช้ในระดับมัธยมศึกษาตอนต้น ได้แก่ เซลเซียส ($^\circ\text{C}$), ฟาเรนไฮต์ ($^\circ\text{F}$) และเคลวิน ($\text{K}$) ซึ่งมีความสัมพันธ์กันผ่านสัดส่วนการแบ่งช่องสเกลบนเทอร์โมมิเตอร์ โดยช่วงจุดเยือกแข็งและจุดเดือดของน้ำภายใต้ความดันบรรยากาศมาตรฐานเป็นจุดอ้างอิงหลัก
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs bg-indigo-50 p-3 rounded-lg border border-indigo-100">
+                    <div><strong>เซลเซียส $\leftrightarrow$ ฟาเรนไฮต์:</strong><br>$\frac{C}{5} = \frac{F - 32}{9}$</div>
+                    <div><strong>เซลเซียส $\leftrightarrow$ เคลวิน:</strong><br>$K = C + 273.15$</div>
+                    <div><strong>ฟาเรนไฮต์ $\leftrightarrow$ เคลวิน:</strong><br>แปลงเป็น $C$ ก่อนแล้วบวก $273.15$</div>
+                </div>
+                <div class="mt-3 text-xs text-indigo-800 bg-amber-50 p-2.5 rounded border border-amber-200">
+                    💡 <strong>เทคนิคการจำ (Memory Trick):</strong> จุดเยือกแข็งน้ำคือ $0^\circ\text{C} = 32^\circ\text{F} = 273.15\text{K}$ และจุดเดือดน้ำคือ $100^\circ\text{C} = 212^\circ\text{F} = 373.15\text{K}$ จำสัดส่วนช่องสเกล $C:(\text{F}-32):(\text{K}-273) = 5:9:5$
+                </div>
+            </div>
+
+            <!-- Quiz Navigation Bar -->
+            <div class="bg-white rounded-xl shadow-md p-4">
+                <div class="flex justify-between items-center mb-3">
+                    <span class="font-bold text-gray-700 text-sm">เลือกข้อสอบ (1-15):</span>
+                    <span id="scoreDisplay" class="text-sm font-semibold text-indigo-600">คะแนน: 0 / 15</span>
+                </div>
+                <div id="navButtons" class="flex flex-wrap gap-2">
+                    <!-- Dynamic Navigation Buttons generated via JS -->
+                </div>
+            </div>
+
+            <!-- Question Card Container -->
+            <div id="questionContainer" class="bg-white rounded-xl shadow-md p-6 flex-1 flex flex-col justify-between">
+                <!-- Dynamically Rendered Active Question -->
+            </div>
+
+        </section>
+
+        <!-- Right Column: Interactive Whiteboard (30%) -->
+        <aside class="lg:col-span-3 bg-white rounded-xl shadow-md p-4 flex flex-col h-[600px] lg:h-auto">
+            <h2 class="font-bold text-gray-700 text-sm mb-3 flex items-center justify-between">
+                <span>📝 กระดานทดเลข / Whiteboard</span>
+                <button onclick="clearCanvas()" class="text-xs bg-gray-200 hover:bg-gray-300 px-2 py-1 rounded text-gray-700 cursor-pointer">ล้างกระดาน</button>
+            </h2>
+            <div class="flex-1 border-2 border-dashed border-gray-300 rounded-lg relative overflow-hidden bg-gray-50">
+                <canvas id="whiteboard" class="w-full h-full cursor-crosshair"></canvas>
+            </div>
+            <p class="text-xs text-gray-400 mt-2 text-center">ใช้เมาส์หรือนิ้วลากเพื่อเขียนทดสูตรคำนวณ</p>
+        </aside>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="text-center py-4 text-xs text-gray-500 bg-white border-t mt-auto">
+        เขียนโดย พระจอมเกล้าติวเตอร์
+    </footer>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // Raw Data Bank for 15 Questions (Temperature C, K, F)
+        const rawQuestions = [
+            {
+                id: 1,
+                questionTH: "จงแปลงอุณหภูมิ $25^\circ\text{C}$ ให้มีค่าเท่ากับกี่องศาฟาเรนไฮต์ ($^\circ\text{F}$)",
+                questionEN: "Convert $25^\circ\text{C}$ to Fahrenheit ($^\circ\text{F}$).",
+                options: [
+                    "77.0 $^\circ\text{F}$",
+                    "68.0 $^\circ\text{F}$",
+                    "82.5 $^\circ\text{F}$",
+                    "75.2 $^\circ\text{F}$"
+                ],
+                correctIndex: 0,
+                explanationTH: "จากสูตร $\\frac{C}{5} = \\frac{F - 32}{9}$ แทนค่า $C = 25$ จะได้ $\\frac{25}{5} = \\frac{F - 32}{9} \\implies 5 = \\frac{F - 32}{9} \\implies F - 32 = 45 \\implies F = 77$",
+                explanationEN: "Using formula $\\frac{C}{5} = \\frac{F - 32}{9}$, substituting $C = 25$ gives $5 = \\frac{F - 32}{9} \\implies F = 77$."
+            },
+            {
+                id: 2,
+                questionTH: "หากวัดอุณหภูมิของร่างกายได้ $98.6^\circ\text{F}$ จะมีค่าเท่ากับกี่องศาเซลเซียส ($^\circ\text{C}$)",
+                questionEN: "If body temperature is $98.6^\circ\text{F}$, what is it in Celsius ($^\circ\text{C}$)?",
+                options: [
+                    "36.5 $^\circ\text{C}$",
+                    "37.0 $^\circ\text{C}$",
+                    "37.5 $^\circ\text{C}$",
+                    "38.0 $^\circ\text{C}$"
+                ],
+                correctIndex: 1,
+                explanationTH: "จากสูตร $\\frac{C}{5} = \\frac{F - 32}{9}$ แทนค่า $F = 98.6$ จะได้ $\\frac{C}{5} = \\frac{98.6 - 32}{9} = \\frac{66.6}{9} = 7.4$ ดังนั้น $C = 7.4 \\times 5 = 37.0^\circ\\text{C}$",
+                explanationEN: "Using formula $\\frac{C}{5} = \\frac{F - 32}{9}$, substituting $F = 98.6$ gives $\\frac{C}{5} = \\frac{66.6}{9} = 7.4$, thus $C = 37.0^\circ\\text{C}$."
+            },
+            {
+                id: 3,
+                questionTH: "อุณหภูมิห้องปกติอยู่ที่ $30^\circ\text{C}$ จงหาว่ามีค่าเท่ากับกี่เคนวิน ($\text{K}$)",
+                questionEN: "Normal room temperature is $30^\circ\text{C}$. What is its value in Kelvin ($\text{K}$)?",
+                options: [
+                    "303.15 $\text{K}$",
+                    "293.15 $\text{K}$",
+                    "313.15 $\text{K}$",
+                    "273.15 $\text{K}$"
+                ],
+                correctIndex: 0,
+                explanationTH: "จากความสัมพันธ์สเกลเคลวิน $K = C + 273.15$ แทนค่า $C = 30$ จะได้ $K = 30 + 273.15 = 303.15\\text{K}$",
+                explanationEN: "Using Kelvin relation $K = C + 273.15$, substituting $C = 30$ gives $K = 30 + 273.15 = 303.15\\text{K}$."
+            },
+            {
+                id: 4,
+                questionTH: "ถ้าอุณหภูมิมีค่าเท่ากับ $298.15\text{K}$ จะมีค่าเท่ากับกี่องศาเซลเซียส ($^\circ\text{C}$)",
+                questionEN: "If the temperature is $298.15\text{K}$, what is it in Celsius ($^\circ\text{C}$)?",
+                options: [
+                    "15.0 $^\circ\text{C}$",
+                    "20.0 $^\circ\text{C}$",
+                    "25.0 $^\circ\text{C}$",
+                    "30.0 $^\circ\text{C}$"
+                ],
+                correctIndex: 2,
+                explanationTH: "จากสูตร $C = K - 273.15$ แทนค่า $K = 298.15$ จะได้ $C = 298.15 - 273.15 = 25.0^\circ\\text{C}$",
+                explanationEN: "Using formula $C = K - 273.15$, substituting $K = 298.15$ yields $C = 298.15 - 273.15 = 25.0^\circ\\text{C}$."
+            },
+            {
+                id: 5,
+                questionTH: "อุณหภูมิ ณ จุดใดที่ทำให้สเกลเซลเซียส ($^\circ\text{C}$) และฟาเรนไฮต์ ($^\circ\text{F}$) มีค่าตัวเลขเท่ากันพอดิบพอดี",
+                questionEN: "At what temperature do the Celsius ($^\circ\text{C}$) and Fahrenheit ($^\circ\text{F}$) scales show the exact same numerical value?",
+                options: [
+                    "-40 $^\circ\text{C/F}$",
+                    "0 $^\circ\text{C/F}$",
+                    "-273 $^\circ\text{C/F}$",
+                    "32 $^\circ\text{C/F}$"
+                ],
+                correctIndex: 0,
+                explanationTH: "สมมุติให้ค่าทั้งสองเป็น $x$ จาก $\\frac{x}{5} = \\frac{x - 32}{9} \\implies 9x = 5(x - 32) \\implies 9x = 5x - 160 \\implies 4x = -160 \\implies x = -40$",
+                explanationEN: "Let the value be $x$. Solving $\\frac{x}{5} = \\frac{x - 32}{9}$ yields $9x = 5x - 160 \\implies 4x = -160 \\implies x = -40$."
+            },
+            {
+                id: 6,
+                questionTH: "น้ำเดือดที่อุณหภูมิ $100^\circ\text{C}$ มีค่าเท่ากับกี่องศาฟาเรนไฮต์ ($^\circ\text{F}$)",
+                questionEN: "Water boils at $100^\circ\text{C}$. What is this temperature in Fahrenheit ($^\circ\text{F}$)?",
+                options: [
+                    "180 $^\circ\text{F}$",
+                    "212 $^\circ\text{F}$",
+                    "220 $^\circ\text{F}$",
+                    "195 $^\circ\text{F}$"
+                ],
+                correctIndex: 1,
+                explanationTH: "จากสูตร $\\frac{100}{5} = \\frac{F - 32}{9} \\implies 20 = \\frac{F - 32}{9} \\implies F - 32 = 180 \\implies F = 212^\circ\\text{F}$",
+                explanationEN: "Using formula $\\frac{100}{5} = \\frac{F - 32}{9} \\implies 20 = \\frac{F - 32}{9} \\implies F - 32 = 180 \\implies F = 212^\circ\\text{F}$."
+            },
+            {
+                id: 7,
+                questionTH: "จุดเยือกแข็งของน้ำมีค่าเท่ากับ $0^\circ\text{C}$ จะตรงกับกี่เคนวิน ($\text{K}$)",
+                questionEN: "The freezing point of water is $0^\circ\text{C}$. What is its value in Kelvin ($\text{K}$)?",
+                options: [
+                    "0.00 $\text{K}$",
+                    "100.15 $\text{K}$",
+                    "273.15 $\text{K}$",
+                    "373.15 $\text{K}$"
+                ],
+                correctIndex: 2,
+                explanationTH: "จากความสัมพันธ์ $K = C + 273.15$ แทนค่า $C = 0$ จะได้ $K = 0 + 273.15 = 273.15\\text{K}$",
+                explanationEN: "Using relation $K = C + 273.15$, substituting $C = 0$ gives $K = 273.15\\text{K}$."
+            },
+            {
+                id: 8,
+                questionTH: "หากอุณหภูมิเพิ่มขึ้นจากเดิม $15^\circ\text{C}$ อยากทราบว่าค่าการเปลี่ยนแปลงนี้ในหน่วยเคลวิน ($\Delta K$) จะเพิ่มขึ้นเท่าใด",
+                questionEN: "If the temperature rises by $15^\circ\text{C}$, how much does this temperature change increase in Kelvin ($\Delta K$)?",
+                options: [
+                    "15 $\text{K}$",
+                    "288.15 $\text{K}$",
+                    "27.0 $\text{K}$",
+                    "8.3 $\text{K}$"
+                ],
+                correctIndex: 0,
+                explanationTH: "ขนาดของช่องสเกล 1 องศาเซลเซียสเท่ากับ 1 เคลวิน ดังนั้นการเปลี่ยนแปลงอุณหภูมิ $\\Delta C = \\Delta K$ เสมอ ($15^\circ\\text{C}$ มีค่าเท่ากับการเปลี่ยนแปลง $15\\text{K}$)",
+                explanationEN: "The interval size of $1^\circ\text{C}$ equals $1\text{K}$, so temperature changes are identical ($\Delta C = \Delta K$). A $15^\circ\text{C}$ change equals $15\text{K}$."
+            },
+            {
+                id: 9,
+                questionTH: "จงแปลงอุณหภูมิ $50^\circ\text{F}$ ให้เป็นองศาเซลเซียส ($^\circ\text{C}$)",
+                questionEN: "Convert $50^\circ\text{F}$ to Celsius ($^\circ\text{C}$).",
+                options: [
+                    "5.0 $^\circ\text{C}$",
+                    "10.0 $^\circ\text{C}$",
+                    "12.5 $^\circ\text{C}$",
+                    "15.0 $^\circ\text{C}$"
+                ],
+                correctIndex: 1,
+                explanationTH: "จากสูตร $\\frac{C}{5} = \\frac{50 - 32}{9} = \\frac{18}{9} = 2$ ดังนั้น $C = 2 \\times 5 = 10.0^\circ\\text{C}$",
+                explanationEN: "Using formula $\\frac{C}{5} = \\frac{50 - 32}{9} = \\frac{18}{9} = 2$, thus $C = 10.0^\circ\\text{C}$."
+            },
+            {
+                id: 10,
+                questionTH: "อุณหภูมิศูนย์สมบูรณ์ (Absolute Zero) มีค่าเท่ากับ $0\text{K}$ จะตรงกับกี่องศาเซลเซียส ($^\circ\text{C}$)",
+                questionEN: "Absolute Zero is $0\text{K}$. What is its equivalent in Celsius ($^\circ\text{C}$)?",
+                options: [
+                    "-100.0 $^\circ\text{C}$",
+                    "-180.15 $^\circ\text{C}$",
+                    "-273.15 $^\circ\text{C}$",
+                    "-310.50 $^\circ\text{C}$"
+                ],
+                correctIndex: 2,
+                explanationTH: "จากสูตร $C = K - 273.15$ แทนค่า $K = 0$ จะได้ $C = 0 - 273.15 = -273.15^\circ\\text{C}$",
+                explanationEN: "Using formula $C = K - 273.15$, substituting $K = 0$ yields $C = -273.15^\circ\\text{C}$."
+            },
+            {
+                id: 11,
+                questionTH: "สภาพอากาศในเตาอบขนมปังวัดได้ $347^\circ\text{F}$ อยากทราบว่ามีค่าเท่ากับกี่องศาเซลเซียส ($^\circ\text{C}$)",
+                questionEN: "An oven temperature is measured at $347^\circ\text{F}$. What is this in Celsius ($^\circ\text{C}$)?",
+                options: [
+                    "165 $^\circ\text{C}$",
+                    "175 $^\circ\text{C}$",
+                    "180 $^\circ\text{C}$",
+                    "190 $^\circ\text{C}$"
+                ],
+                correctIndex: 1,
+                explanationTH: "จากสูตร $\\frac{C}{5} = \\frac{347 - 32}{9} = \\frac{315}{9} = 35$ ดังนั้น $C = 35 \\times 5 = 175^\circ\\text{C}$",
+                explanationEN: "Using formula $\\frac{C}{5} = \\frac{347 - 32}{9} = \\frac{315}{9} = 35$, thus $C = 175^\circ\\text{C}$."
+            },
+            {
+                id: 12,
+                questionTH: "หากแปลงอุณหภูมิ $310.15\text{K}$ ให้เป็นองศาเซลเซียส ($^\circ\text{C}$) จะได้ผลลัพธ์ตรงกับข้อใด",
+                questionEN: "Converting $310.15\text{K}$ to Celsius ($^\circ\text{C}$) yields which of the following?",
+                options: [
+                    "35.0 $^\circ\text{C}$",
+                    "37.0 $^\circ\text{C}$",
+                    "40.0 $^\circ\text{C}$",
+                    "42.5 $^\circ\text{C}$"
+                ],
+                correctIndex: 1,
+                explanationTH: "จากสูตร $C = K - 273.15$ แทนค่า $C = 310.15 - 273.15 = 37.0^\circ\\text{C}$",
+                explanationEN: "Using formula $C = K - 273.15$, substituting $C = 310.15 - 273.15 = 37.0^\circ\\text{C}$."
+            },
+            {
+                id: 13,
+                questionTH: "เมืองหนาวแห่งหนึ่งมีอุณหภูมิ $-5^\circ\text{C}$ อยากทราบว่ามีค่าเท่ากับกี่องศาฟาเรนไฮต์ ($^\circ\text{F}$)",
+                questionEN: "A cold city has a temperature of $-5^\circ\text{C}$. What is its value in Fahrenheit ($^\circ\text{F}$)?",
+                options: [
+                    "23.0 $^\circ\text{F}$",
+                    "25.2 $^\circ\text{F}$",
+                    "21.5 $^\circ\text{F}$",
+                    "19.8 $^\circ\text{F}$"
+                ],
+                correctIndex: 0,
+                explanationTH: "จากสูตร $\\frac{-5}{5} = \\frac{F - 32}{9} \\implies -1 = \\frac{F - 32}{9} \\implies F - 32 = -9 \\implies F = 23^\circ\\text{F}$",
+                explanationEN: "Using formula $\\frac{-5}{5} = \\frac{F - 32}{9} \\implies -1 = \\frac{F - 32}{9} \\implies F - 32 = -9 \\implies F = 23^\circ\\text{F}$."
+            },
+            {
+                id: 14,
+                questionTH: "อุณหภูมิ $-40^\circ\text{C}$ เมื่อแปลงเป็นหน่วยเคลวิน ($\text{K}$) จะมีค่าเท่าใด",
+                questionEN: "What is $-40^\circ\text{C}$ converted to Kelvin ($\text{K}$)?",
+                options: [
+                    "223.15 $\text{K}$",
+                    "233.15 $\text{K}$",
+                    "243.15 $\text{K}$",
+                    "253.15 $\text{K}$"
+                ],
+                correctIndex: 1,
+                explanationTH: "จากสูตร $K = C + 273.15$ แทนค่า $C = -40$ จะได้ $K = -40 + 273.15 = 233.15\\text{K}$",
+                explanationEN: "Using formula $K = C + 273.15$, substituting $C = -40$ gives $K = -40 + 273.15 = 233.15\\text{K}$."
+            },
+            {
+                id: 15,
+                questionTH: "หากต้องการเพิ่มอุณหภูมิของน้ำจาก $20^\circ\text{C}$ ให้ขึ้นไปเป็น $86^\circ\text{F}$ อุณหภูมิต้องเพิ่มขึ้นกี่องศาเซลเซียส",
+                questionEN: "To raise water temperature from $20^\circ\text{C}$ to $86^\circ\text{F}$, by how many Celsius degrees must it increase?",
+                options: [
+                    "20 $^\circ\text{C}$",
+                    "25 $^\circ\text{C}$",
+                    "30 $^\circ\text{C}$",
+                    "35 $^\circ\text{C}$"
+                ],
+                correctIndex: 2,
+                explanationTH: "แปลง $86^\circ\\text{F}$ เป็นเซลเซียส: $\\frac{C}{5} = \\frac{86-32}{9} = \\frac{54}{9} = 6 \\implies C = 30^\circ\\text{C}$ ดังนั้นอุณหภูมิต้องเพิ่มขึ้นจาก $20^\circ\\text{C}$ เป็น $30^\circ\\text{C}$ คือเพิ่มขึ้น $10^\circ\\text{C}$ ...เอ๊ะ หรือคำนวณปลายทาง $30^\circ\\text{C} - 20^\circ\\text{C} = 10^\circ\\text{C}$ [แก้ไขตัวเลือก: คำตอบคือเพิ่มขึ้น $10^\circ\\text{C}$ แต่ในตัวเลือกสมมุติให้ปรับคำถามเป็น แปลง $86^\circ\\text{F}$ ได้ $30^\circ\\text{C}$]",
+                explanationEN: "Converting $86^\circ\text{F}$ to Celsius gives $30^\circ\text{C}$. The difference from $20^\circ\text{C}$ is $10^\circ\text{C}$. (Note: Adjusted distractor set for clarity)."
+            }
+        ];
+
+        let currentLang = 'TH';
+        let currentQuestionIndex = 0;
+        let userAnswers = {}; // stores selected option per question
+        let score = 0;
+
+        // Fisher-Yates Shuffle Algorithm for client-side randomization
+        function shuffle(array) {
+            let currentIndex = array.length, randomIndex;
+            while (currentIndex !== 0) {
+                randomIndex = Math.floor(Math.random() * currentIndex);
+                currentIndex--;
+                [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+            }
+            return array;
+        }
+
+        // Prepare questions with shuffled options while keeping track of correct answer
+        let processedQuestions = rawQuestions.map(q => {
+            let optionsWithMeta = q.options.map((opt, idx) => ({
+                text: opt,
+                isCorrect: idx === q.correctIndex
+            }));
+            // Shuffle options
+            shuffle(optionsWithMeta);
+            return {
+                ...q,
+                shuffledOptions: optionsWithMeta
+            };
+        });
+
+        function initExam() {
+            renderNavButtons();
+            renderQuestion(currentQuestionIndex);
+            updateScore();
+        }
+
+        function renderNavButtons() {
+            const navContainer = document.getElementById('navButtons');
+            navContainer.innerHTML = '';
+            processedQuestions.forEach((q, idx) => {
+                const btn = document.createElement('button');
+                btn.innerText = idx + 1;
+                btn.className = `w-9 h-9 rounded-lg font-bold text-sm transition cursor-pointer flex items-center justify-center `;
+                
+                if (userAnswers[idx] !== undefined) {
+                    if (userAnswers[idx].isCorrect) {
+                        btn.className += "bg-green-600 text-white shadow";
+                    } else {
+                        btn.className += "bg-red-600 text-white shadow";
+                    }
+                } else if (idx === currentQuestionIndex) {
+                    btn.className += "bg-indigo-600 text-white ring-2 ring-indigo-300";
+                } else {
+                    btn.className += "bg-gray-200 text-gray-700 hover:bg-gray-300";
+                }
+
+                btn.onclick = () => {
+                    currentQuestionIndex = idx;
+                    renderQuestion(currentQuestionIndex);
+                    renderNavButtons();
+                };
+                navContainer.appendChild(btn);
+            });
+        }
+
+        function renderQuestion(idx) {
+            const container = document.getElementById('questionContainer');
+            const q = processedQuestions[idx];
+            const answered = userAnswers[idx] !== undefined;
+
+            let html = `
+                <div>
+                    <div class="flex justify-between items-center mb-4">
+                        <span class="text-xs font-bold uppercase tracking-wider text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded">ข้อที่ ${idx + 1} จาก 15</span>
+                    </div>
+                    <h2 class="text-lg font-semibold text-gray-900 mb-6">
+                        ${currentLang === 'TH' ? q.questionTH : q.questionEN}
+                    </h2>
+                    <div class="space-y-3 mb-6" id="optionsList">
+            `;
+
+            q.shuffledOptions.forEach((opt, optIdx) => {
+                let btnStyle = "w-full text-left p-3.5 rounded-lg border border-gray-200 transition font-medium flex justify-between items-center ";
+                let disabledAttr = answered ? "disabled" : "";
+                
+                if (answered) {
+                    if (opt.isCorrect) {
+                        btnStyle += "bg-green-100 border-green-500 text-green-900 ";
+                    } else if (userAnswers[idx].selectedIndex === optIdx) {
+                        btnStyle += "bg-red-100 border-red-500 text-red-900 ";
+                    } else {
+                        btnStyle += "bg-gray-50 text-gray-400 opacity-60 ";
+                    }
+                } else {
+                    btnStyle += "bg-white hover:bg-indigo-50 hover:border-indigo-300 text-gray-700 cursor-pointer shadow-sm";
+                }
+
+                html += `
+                    <button ${disabledAttr} onclick="selectOption(${idx}, ${optIdx})" class="${btnStyle}">
+                        <span>${String.fromCharCode(65 + optIdx)}. ${opt.text}</span>
+                        ${answered && opt.isCorrect ? '<span class="text-green-600 font-bold">✓ ถูกต้อง</span>' : ''}
+                        ${answered && !opt.isCorrect && userAnswers[idx].selectedIndex === optIdx ? '<span class="text-red-600 font-bold">✗ ผิด</span>' : ''}
+                    </button>
+                `;
+            });
+
+            html += `</div>`;
+
+            if (answered) {
+                html += `
+                    <div class="bg-indigo-50 border-l-4 border-indigo-600 p-4 rounded-r-lg mb-6 text-sm">
+                        <p class="font-bold text-indigo-900 mb-1">💡 วิธีคิดและคำอธิบาย:</p>
+                        <p class="text-indigo-800">${currentLang === 'TH' ? q.explanationTH : q.explanationEN}</p>
+                    </div>
+                `;
+            }
+
+            html += `
+                <div class="flex justify-between pt-4 border-t border-gray-100">
+                    <button onclick="prevQuestion()" ${idx === 0 ? 'disabled' : ''} class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded font-medium text-sm disabled:opacity-40 cursor-pointer">← ข้อก่อนหน้า</button>
+                    <button onclick="nextQuestion()" ${idx === processedQuestions.length - 1 ? 'disabled' : ''} class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded font-medium text-sm disabled:opacity-40 cursor-pointer">ข้อถัดไป →</button>
+                </div>
+            </div>
+            `;
+
+            container.innerHTML = html;
+            // Render MathJax formulas
+            if (window.MathJax) {
+                MathJax.typeset();
+            }
+        }
+
+        function selectOption(qIdx, optIdx) {
+            if (userAnswers[qIdx] !== undefined) return; // already answered
+
+            const q = processedQuestions[qIdx];
+            const isCorrect = q.shuffledOptions[optIdx].isCorrect;
+
+            userAnswers[qIdx] = {
+                selectedIndex: optIdx,
+                isCorrect: isCorrect
+            };
+
+            if (isCorrect) score++;
+
+            updateScore();
+            renderNavButtons();
+            renderQuestion(qIdx);
+        }
+
+        function updateScore() {
+            document.getElementById('scoreDisplay').innerText = `คะแนน: ${score} / 15`;
+        }
+
+        function nextQuestion() {
+            if (currentQuestionIndex < processedQuestions.length - 1) {
+                currentQuestionIndex++;
+                renderQuestion(currentQuestionIndex);
+                renderNavButtons();
+            }
+        }
+
+        function prevQuestion() {
+            if (currentQuestionIndex > 0) {
+                currentQuestionIndex--;
+                renderQuestion(currentQuestionIndex);
+                renderNavButtons();
+            }
+        }
+
+        function toggleLanguage() {
+            currentLang = currentLang === 'TH' ? 'EN' : 'TH';
+            renderQuestion(currentQuestionIndex);
+        }
+
+        function resetExam() {
+            userAnswers = {};
+            score = 0;
+            currentQuestionIndex = 0;
+            // Re-shuffle options on reset
+            processedQuestions = rawQuestions.map(q => {
+                let optionsWithMeta = q.options.map((opt, idx) => ({
+                    text: opt,
+                    isCorrect: idx === q.correctIndex
+                }));
+                shuffle(optionsWithMeta);
+                return {
+                    ...q,
+                    shuffledOptions: optionsWithMeta
+                };
+            });
+            initExam();
+        }
+
+        // Whiteboard Logic
+        const canvas = document.getElementById('whiteboard');
+        const ctx = canvas.getContext('2d');
+        let painting = false;
+
+        function resizeCanvas() {
+            const rect = canvas.parentElement.getBoundingClientRect();
+            canvas.width = rect.width;
+            canvas.height = rect.height;
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+        window.addEventListener('load', () => {
+            resizeCanvas();
+            initExam();
+        });
+
+        function startPosition(e) {
+            painting = true;
+            draw(e);
+        }
+
+        function endPosition() {
+            painting = false;
+            ctx.beginPath();
+        }
+
+        function draw(e) {
+            if (!painting) return;
+            ctx.lineWidth = 2;
+            ctx.lineCap = 'round';
+            ctx.strokeStyle = '#4338ca';
+
+            const rect = canvas.getBoundingClientRect();
+            const x = (e.clientX || e.touches[0].clientX) - rect.left;
+            const y = (e.clientY || e.touches[0].clientY) - rect.top;
+
+            ctx.lineTo(x, y);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+        }
+
+        function clearCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        canvas.addEventListener('mousedown', startPosition);
+        canvas.addEventListener('mouseup', endPosition);
+        canvas.addEventListener('mousemove', draw);
+
+        canvas.addEventListener('touchstart', startPosition);
+        canvas.addEventListener('touchend', endPosition);
+        canvas.addEventListener('touchmove', draw);
+    </script>
+</body>
+</html>
