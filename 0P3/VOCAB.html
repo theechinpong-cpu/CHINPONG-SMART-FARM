@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>แฟลชการ์ดคำศัพท์ ป.2 - ป.3 | พระจอมเกล้าติวเตอร์</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Sarabun', sans-serif;
+        }
+        .perspective-1000 {
+            perspective: 1000px;
+        }
+        .transform-style-3d {
+            transform-style: preserve-3d;
+        }
+        .backface-hidden {
+            backface-visibility: hidden;
+        }
+        .rotate-y-180 {
+            transform: rotateY(180deg);
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-indigo-50 via-blue-50 to-emerald-50 min-h-screen text-slate-800 flex flex-col justify-between">
+
+    <!-- Header -->
+    <header class="bg-white shadow-md py-4 px-6 mb-6">
+        <div class="max-w-4xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div>
+                <span class="text-xs font-bold uppercase tracking-wider bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full">CHINPONG SMART FARM</span>
+                <h1 class="text-2xl font-bold text-slate-900 mt-1">พระจอมเกล้าติวเตอร์ : แฟลชการ์ดคำศัพท์ ป.2 - ป.3</h1>
+            </div>
+            <div class="flex gap-2">
+                <button onclick="setGrade('P2')" id="btn-p2" class="px-4 py-2 rounded-xl font-semibold transition-all shadow-sm bg-indigo-600 text-white">คำศัพท์ ป.2</button>
+                <button onclick="setGrade('P3')" id="btn-p3" class="px-4 py-2 rounded-xl font-semibold transition-all shadow-sm bg-slate-200 text-slate-700 hover:bg-slate-300">คำศัพท์ ป.3</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-xl mx-auto px-4 w-full flex-grow flex flex-col justify-center">
+        
+        <!-- Progress Bar -->
+        <div class="flex justify-between items-center mb-2 text-sm font-medium text-slate-600">
+            <span id="category-badge" class="bg-emerald-100 text-emerald-800 px-2.5 py-0.5 rounded-md text-xs font-bold">หมวดหมู่</span>
+            <span>การ์ดที่ <span id="current-index">1</span> จาก <span id="total-cards">0</span></span>
+        </div>
+        <div class="w-full bg-slate-200 h-2 rounded-full mb-6 overflow-hidden">
+            <div id="progress-bar" class="bg-indigo-600 h-full transition-all duration-300" style="width: 0%"></div>
+        </div>
+
+        <!-- Flashcard Container -->
+        <div class="perspective-1000 w-full h-80 cursor-pointer mb-6" onclick="flipCard()">
+            <div id="flashcard" class="relative w-full h-full duration-500 transform-style-3d shadow-xl rounded-3xl">
+                
+                <!-- Front Side -->
+                <div class="absolute inset-0 w-full h-full bg-white rounded-3xl p-8 flex flex-col justify-between items-center text-center backface-hidden border-2 border-indigo-100">
+                    <div class="w-full flex justify-between items-center text-slate-400 text-sm">
+                        <span>คลิกเพื่อดูความหมาย</span>
+                        <span onclick="event.stopPropagation(); speakWord();" class="p-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 rounded-full transition cursor-pointer" title="ฟังเสียงอ่าน">
+                            🔊
+                        </span>
+                    </div>
+                    <div class="my-auto">
+                        <h2 id="card-word" class="text-4xl font-extrabold text-indigo-900 mb-2">Loading...</h2>
+                        <p id="card-phonetic" class="text-slate-500 text-base italic"></p>
+                    </div>
+                    <div class="text-xs text-indigo-500 font-medium bg-indigo-50 px-3 py-1.5 rounded-full">
+                        พลิกการ์ด ↺
+                    </div>
+                </div>
+
+                <!-- Back Side -->
+                <div class="absolute inset-0 w-full h-full bg-indigo-900 text-white rounded-3xl p-8 flex flex-col justify-between items-center text-center backface-hidden rotate-y-180 border-2 border-indigo-800">
+                    <div class="w-full text-right text-indigo-300 text-xs">
+                        ด้านหลังการ์ด
+                    </div>
+                    <div class="my-auto">
+                        <h3 id="card-meaning" class="text-3xl font-bold mb-3 text-amber-300">ความหมาย</h3>
+                        <p id="card-example" class="text-indigo-100 text-base italic mb-1">Example sentence...</p>
+                        <p id="card-example-th" class="text-indigo-300 text-sm"></p>
+                    </div>
+                    <div class="text-xs text-indigo-200 font-medium bg-indigo-800 px-3 py-1.5 rounded-full">
+                        คลิกเพื่อกลับด้านหน้า ↺
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Navigation Controls -->
+        <div class="flex justify-between items-center gap-4">
+            <button onclick="prevCard()" class="flex-1 bg-white hover:bg-slate-50 text-slate-700 font-semibold py-3 px-6 rounded-2xl shadow border border-slate-200 transition flex items-center justify-center gap-2">
+                ⬅️ การ์ดก่อนหน้า
+            </button>
+            <button onclick="nextCard()" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-6 rounded-2xl shadow transition flex items-center justify-center gap-2">
+                การ์ดถัดไป ➡️
+            </button>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-100 py-4 text-center text-xs text-slate-500 mt-8">
+        พระจอมเกล้าติวเตอร์ อำเภอร่อนพิบูลย์ จังหวัดนครศรีธรรมราช | จัดทำด้วยระบบดิจิทัลเพื่อการเรียนรู้
+    </footer>
+
+    <!-- JavaScript Data and Logic -->
+    <script>
+        const vocabP2 = [
+            { word: "Father", phonetic: "/ˈfɑːðər/", meaning: "พ่อ", category: "Family & People", example: "My father is a teacher.", exampleTh: "พ่อของฉันเป็นคุณครู" },
+            { word: "Mother", phonetic: "/ˈmʌðər/", meaning: "แม่", category: "Family & People", example: "Mother cooks delicious food.", exampleTh: "แม่ทำอาหารอร่อย" },
+            { word: "Brother", phonetic: "/ˈbrʌðər/", meaning: "พี่ชาย / น้องชาย", category: "Family & People", example: "My brother plays football.", exampleTh: "น้องชายของฉันเล่นฟุตบอล" },
+            { word: "Cat", phonetic: "/kæt/", meaning: "แมว", category: "Animals", example: "The black cat sleeps on the sofa.", exampleTh: "แมวสีดำนอนอยู่บนโซฟา" },
+            { word: "Dog", phonetic: "/dɔːɡ/", meaning: "สุนัข", category: "Animals", example: "The dog runs fast in the park.", exampleTh: "สุนัขวิ่งเร็วมากในสวนสาธารณะ" },
+            { word: "Elephant", phonetic: "/ˈelɪfənt/", meaning: "ช้าง", category: "Animals", example: "An elephant is a very big animal.", exampleTh: "ช้างเป็นสัตว์ตัวใหญ่มาก" },
+            { word: "Apple", phonetic: "/ˈæpl/", meaning: "แอปเปิ้ล", category: "Food & Drink", example: "I eat a red apple every morning.", exampleTh: "ฉันกินแอปเปิ้ลแดงทุกเช้า" },
+            { word: "Water", phonetic: "/ˈwɔːtər/", meaning: "น้ำ", category: "Food & Drink", example: "Please drink a glass of water.", exampleTh: "กรุณาดื่มน้ำหนึ่งแก้ว" },
+            { word: "Book", phonetic: "/bʊk/", meaning: "หนังสือ", category: "School", example: "Open your English book to page 10.", exampleTh: "เปิดหนังสือภาษาอังกฤษหน้า 10" },
+            { word: "Run", phonetic: "/rʌn/", meaning: "วิ่ง", category: "Actions", example: "Children like to run in the playground.", exampleTh: "เด็กๆ ชอบวิ่งเล่นในสนามเด็กเล่น" }
+        ];
+
+        const vocabP3 = [
+            { word: "Doctor", phonetic: "/ˈdɒktər/", meaning: "หมอ / แพทย์", category: "Occupations", example: "A doctor helps sick people in the hospital.", exampleTh: "คุณหมอช่วยรักษาผู้ป่วยในโรงพยาบาล" },
+            { word: "Hospital", phonetic: "/ˈhɒspɪtl/", meaning: "โรงพยาบาล", category: "Places", example: "The hospital is near the school.", exampleTh: "โรงพยาบาลอยู่ใกล้กับโรงเรียน" },
+            { word: "Sunny", phonetic: "/ˈsʌni/", meaning: "แดดจัด / ท้องฟ้าแจ่มใส", category: "Weather", example: "It is a sunny day today.", exampleTh: "วันนี้เป็นวันที่แดดจัดและแจ่มใส" },
+            { word: "Morning", phonetic: "/ˈmɔːrnɪŋ/", meaning: "ตอนเช้า", category: "Time", example: "I drink black coffee in the morning.", exampleTh: "ฉันดื่มกาแฟดำในตอนเช้า" },
+            { word: "Smart", phonetic: "/smɑːrt/", meaning: "ฉลาด / คล่องแคล่ว", category: "Adjectives", example: "My son is a smart student.", exampleTh: "ลูกชายของฉันเป็นนักเรียนที่ฉลาด" },
+            { word: "Bicycle", phonetic: "/ˈbaɪsɪkl/", meaning: "รถจักรยาน", category: "Transportation", example: "He rides a bicycle to school.", exampleTh: "เขาขี่จักรยานไปโรงเรียน" },
+            { word: "Kitchen", phonetic: "/ˈkɪtʃɪn/", meaning: "ห้องครัว", category: "House", example: "Mother is cooking in the kitchen.", exampleTh: "แม่กำลังทำอาหารอยู่ในห้องครัว" },
+            { word: "Always", phonetic: "/ˈɔːlweɪz/", meaning: "เสมอ / ตลอดเวลา", category: "Adverbs", example: "I always study hard for the exam.", exampleTh: "ฉันตั้งใจเรียนสอบเสมอ" },
+            { word: "Mountain", phonetic: "/ˈmaʊntn/", meaning: "ภูเขา", category: "Nature", example: "Our house is located near the mountain.", exampleTh: "บ้านของเราตั้งอยู่ใกล้ภูเขา" },
+            { word: "Plant", phonetic: "/plænt/", meaning: "ปลูกต้นไม้ / พืช", category: "Activities", example: "We plant trees on sustainable farm.", exampleTh: "พวกเราปลูกต้นไม้ในฟาร์มยั่งยืน" }
+        ];
+
+        let currentGrade = 'P2';
+        let currentList = vocabP2;
+        let currentIndex = 0;
+        let isFlipped = false;
+
+        function setGrade(grade) {
+            currentGrade = grade;
+            currentIndex = 0;
+            isFlipped = false;
+            
+            const btnP2 = document.getElementById('btn-p2');
+            const btnP3 = document.getElementById('btn-p3');
+
+            if (grade === 'P2') {
+                currentList = vocabP2;
+                btnP2.className = "px-4 py-2 rounded-xl font-semibold transition-all shadow-sm bg-indigo-600 text-white";
+                btnP3.className = "px-4 py-2 rounded-xl font-semibold transition-all shadow-sm bg-slate-200 text-slate-700 hover:bg-slate-300";
+            } else {
+                currentList = vocabP3;
+                btnP3.className = "px-4 py-2 rounded-xl font-semibold transition-all shadow-sm bg-indigo-600 text-white";
+                btnP2.className = "px-4 py-2 rounded-xl font-semibold transition-all shadow-sm bg-slate-200 text-slate-700 hover:bg-slate-300";
+            }
+
+            // Reset card flip state
+            document.getElementById('flashcard').style.transform = 'rotateY(0deg)';
+            updateCard();
+        }
+
+        function flipCard() {
+            const flashcard = document.getElementById('flashcard');
+            isFlipped = !isFlipped;
+            if (isFlipped) {
+                flashcard.style.transform = 'rotateY(180deg)';
+            } else {
+                flashcard.style.transform = 'rotateY(0deg)';
+            }
+        }
+
+        function nextCard() {
+            isFlipped = false;
+            document.getElementById('flashcard').style.transform = 'rotateY(0deg)';
+            setTimeout(() => {
+                currentIndex = (currentIndex + 1) % currentList.length;
+                updateCard();
+            }, 150);
+        }
+
+        function prevCard() {
+            isFlipped = false;
+            document.getElementById('flashcard').style.transform = 'rotateY(0deg)';
+            setTimeout(() => {
+                currentIndex = (currentIndex - 1 + currentList.length) % currentList.length;
+                updateCard();
+            }, 150);
+        }
+
+        function updateCard() {
+            const item = currentList[currentIndex];
+            document.getElementById('card-word').innerText = item.word;
+            document.getElementById('card-phonetic').innerText = item.phonetic;
+            document.getElementById('card-meaning').innerText = item.meaning;
+            document.getElementById('card-example').innerText = `"${item.example}"`;
+            document.getElementById('card-example-th').innerText = item.exampleTh;
+            document.getElementById('category-badge').innerText = item.category;
+            
+            document.getElementById('current-index').innerText = currentIndex + 1;
+            document.getElementById('total-cards').innerText = currentList.length;
+            
+            const progress = ((currentIndex + 1) / currentList.length) * 100;
+            document.getElementById('progress-bar').style.width = `${progress}%`;
+        }
+
+        function speakWord() {
+            const item = currentList[currentIndex];
+            if ('speechSynthesis' in window) {
+                const utterance = new SpeechSynthesisUtterance(item.word);
+                utterance.lang = 'en-US';
+                utterance.rate = 0.9;
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
+        // Initialize on load
+        window.onload = function() {
+            updateCard();
+        };
+    </script>
+</body>
+</html>
