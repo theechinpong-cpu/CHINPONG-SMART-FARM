@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบสอบออนไลน์และสื่อจำลองไฟฟ้า ม.1 - พระจอมเกล้าติวเตอร์</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Sarabun', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+    <!-- Header -->
+    <header class="bg-indigo-700 text-white shadow-md p-4 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-3">
+            <div>
+                <h1 class="text-xl font-bold">พระจอมเกล้าติวเตอร์ (Expert Tutor AI & Interactive Developer)</h1>
+                <p class="text-xs text-indigo-200">วิชาวิทยาศาสตร์ ม.1: การคำนวณทางไฟฟ้า (Ohm's Law & Power)</p>
+            </div>
+            <div class="flex items-center gap-3">
+                <button id="langBtn" onclick="toggleLanguage()" class="bg-indigo-600 hover:bg-indigo-500 border border-indigo-400 text-xs px-3 py-1.5 rounded font-medium transition">
+                    🌐 ภาษา: ไทย (TH)
+                </button>
+                <button onclick="resetExam()" class="bg-rose-600 hover:bg-rose-500 text-xs px-3 py-1.5 rounded font-medium transition">
+                    🔄 Reset สอบใหม่
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-7xl mx-auto w-full p-4 flex-1 flex flex-col gap-6">
+
+        <!-- Virtual Teaching Tool / Interactive Infographic -->
+        <section class="bg-white rounded-xl shadow-md p-5 border border-slate-200">
+            <h2 class="text-lg font-bold text-indigo-700 mb-2">⚡ Virtual Ohm's Law Simulator & Calculator</h2>
+            <p class="text-sm text-slate-600 mb-4">ปรับค่าความต่างศักย์ ($V$) และความต้านทาน ($R$) เพื่อจำลองการเปลี่ยนแปลงของกระแสไฟฟ้า ($I$) และกำลังไฟฟ้า ($P$) แบบเรียลไทม์</p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-center bg-slate-50 p-4 rounded-lg border border-slate-200">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700">ความต่างศักย์ ($V$): <span id="valV" class="text-indigo-600 font-bold">12</span> โวลต์ (V)</label>
+                        <input type="range" id="rangeV" min="1" max="240" value="12" class="w-full accent-indigo-600" oninput="updateSimulator()">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700">ความต้านทาน ($R$): <span id="valR" class="text-indigo-600 font-bold">6</span> โอห์ม ($\Omega$)</label>
+                        <input type="range" id="rangeR" min="1" max="100" value="6" class="w-full accent-indigo-600" oninput="updateSimulator()">
+                    </div>
+                </div>
+                
+                <div class="bg-indigo-900 text-white p-4 rounded-lg shadow-inner flex flex-col justify-center items-center text-center">
+                    <div class="text-xs text-indigo-300 uppercase tracking-wider">กระแสไฟฟ้าคำนวณได้ ($I$)</div>
+                    <div id="simI" class="text-3xl font-extrabold text-amber-400 my-1">2.00 A</div>
+                    <div class="text-xs text-indigo-200">สูตร: $I = \frac{V}{R} = \frac{12}{6}$</div>
+                </div>
+
+                <div class="bg-emerald-800 text-white p-4 rounded-lg shadow-inner flex flex-col justify-center items-center text-center">
+                    <div class="text-xs text-emerald-200 uppercase tracking-wider">กำลังไฟฟ้าคำนวณได้ ($P$)</div>
+                    <div id="simP" class="text-3xl font-extrabold text-amber-300 my-1">24.00 W</div>
+                    <div class="text-xs text-emerald-100">สูตร: $P = V \times I = 12 \times 2$</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Two-Frame Layout: Exam (70%) & Whiteboard (30%) -->
+        <div class="grid grid-cols-1 lg:grid-cols-10 gap-6 items-start">
+            
+            <!-- Left Frame: Exam Questions (70% -> col-span-7) -->
+            <div class="lg:col-span-7 space-y-6" id="examContainer">
+                <div class="bg-white p-5 rounded-xl shadow-md border border-slate-200 flex justify-between items-center">
+                    <div>
+                        <h3 class="font-bold text-slate-800">ชุดข้อสอบทดสอบความรู้ (15 ข้อ)</h3>
+                        <p class="text-xs text-slate-500">เลือกคำตอบที่ถูกต้องที่สุด ระบบจะแสดงเฉลยและวิธีคิดทันที</p>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-sm font-semibold text-slate-600">คะแนนสะสม:</span>
+                        <span id="scoreDisplay" class="text-xl font-bold text-indigo-600">0 / 15</span>
+                    </div>
+                </div>
+
+                <!-- Questions injected dynamically -->
+                <div id="questionsList" class="space-y-6"></div>
+
+                <!-- Result & Analysis Panel -->
+                <div id="resultPanel" class="hidden bg-white p-6 rounded-xl shadow-lg border-2 border-indigo-500 space-y-4">
+                    <h3 class="text-xl font-bold text-indigo-700 text-center">📊 ผลการประเมินการทดสอบรายบุคคล</h3>
+                    <div id="analysisContent" class="text-sm text-slate-700 space-y-2"></div>
+                </div>
+            </div>
+
+            <!-- Right Frame: Whiteboard (30% -> col-span-3) -->
+            <div class="lg:col-span-3 lg:sticky lg:top-24 space-y-4">
+                <div class="bg-white rounded-xl shadow-md p-4 border border-slate-200">
+                    <div class="flex justify-between items-center mb-3">
+                        <h3 class="font-bold text-slate-800 text-sm">📝 กระดานทดเลข (Whiteboard)</h3>
+                        <div class="flex gap-1">
+                            <button onclick="setPenColor('#1e293b')" class="w-5 h-5 rounded-full bg-slate-800 border" title="ปากกาดำ"></button>
+                            <button onclick="setPenColor('#ef4444')" class="w-5 h-5 rounded-full bg-rose-500 border" title="ปากกาแดง"></button>
+                            <button onclick="setPenColor('#2563eb')" class="w-5 h-5 rounded-full bg-blue-600 border" title="ปากกาน้ำเงิน"></button>
+                            <button onclick="clearCanvas()" class="text-xs bg-slate-200 hover:bg-slate-300 px-2 py-0.5 rounded font-medium text-slate-700">ล้าง</button>
+                        </div>
+                    </div>
+                    <canvas id="whiteboard" class="w-full h-80 bg-amber-50 rounded-lg border border-amber-200 cursor-crosshair touch-none"></canvas>
+                    <p class="text-[11px] text-slate-400 mt-2 text-center">ใช้เมาส์หรือนิ้วเขียนทดสูตรคำนวณ $V=IR$ ได้ที่นี่</p>
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-slate-800 text-slate-300 text-center py-4 text-xs mt-10">
+        เขียนโดย พระจอมเกล้าติวเตอร์
+    </footer>
+
+    <!-- Script Application Logic -->
+    <script>
+        // Data Questions (15 Items - Balanced Key Distribution & Length/Syntax Parity)
+        const rawQuestions = [
+            {
+                id: 1,
+                question: "หากวงจรไฟฟ้ามีความต่างศักย์ $12\text{ V}$ และมีความต้านทาน $4\ \Omega$ จะมีกระแสไฟฟ้าไหลผ่านวงจรนี้เท่าใด?",
+                options: [
+                    "มีกระแสไฟฟ้าไหลผ่านวงจรเท่ากับ $3.0\text{ A}$ โดยคำนวณจากสูตร $I = V / R$",
+                    "มีกระแสไฟฟ้าไหลผ่านวงจรเท่ากับ $48.0\text{ A}$ โดยคำนวณจากสูตร $I = V \times R$",
+                    "มีกระแสไฟฟ้าไหลผ่านวงจรเท่ากับ $0.33\text{ A}$ โดยคำนวณจากสูตร $I = R / V$",
+                    "มีกระแสไฟฟ้าไหลผ่านวงจรเท่ากับ $16.0\text{ A}$ โดยคำนวณจากสูตร $I = V + R$"
+                ],
+                correctIndex: 0,
+                clue: "ใช้สูตรกฎของโอห์ม $I = V / R$ นำค่า $12$ หารด้วย $4$",
+                explanation: "จากสูตรกฎของโอห์ม $I = \frac{V}{R}$ แทนค่า $V = 12$ และ $R = 4$ จะได้ $I = \frac{12}{4} = 3.0\text{ A}$"
+            },
+            {
+                id: 2,
+                question: "หลอดไฟดวงหนึ่งต่อกับแหล่งกำเนิดไฟฟ้า วัดกระแสไฟฟ้าที่ไหลผ่านได้ $2.5\text{ A}$ และมีความต้านทาน $8\ \Omega$ หลอดไฟนี้มีความต่างศักย์เท่าใด?",
+                options: [
+                    "มีความต่างศักย์ไฟฟ้าเท่ากับ $20.0\text{ V}$ โดยคำนวณจากสูตร $V = I \times R$",
+                    "มีความต่างศักย์ไฟฟ้าเท่ากับ $3.2\text{ V}$ โดยคำนวณจากสูตร $V = R / I$",
+                    "มีความต่างศักย์ไฟฟ้าเท่ากับ $10.5\text{ V}$ โดยคำนวณจากสูตร $V = I + R$",
+                    "มีความต่างศักย์ไฟฟ้าเท่ากับ $5.5\text{ V}$ โดยคำนวณจากสูตร $V = R - I$"
+                ],
+                correctIndex: 0,
+                clue: "ต้องการหา $V$ นำกระแสไฟฟ้า $I$ มาคูณกับความต้านทาน $R$",
+                explanation: "จากสูตร $V = I \times R$ แทนค่า $I = 2.5$ และ $R = 8$ จะได้ $V = 2.5 \times 8 = 20.0\text{ V}$"
+            },
+            {
+                id: 3,
+                question: "เครื่องใช้ไฟฟ้าชิ้นหนึ่งใช้ความต่างศักย์ $220\text{ V}$ และมีกระแสไฟฟ้าไหลผ่าน $2\text{ A}$ ลวดความต้านทานภายในเครื่องนี้มีค่าเท่าใด?",
+                options: [
+                    "มีความต้านทานภายในเท่ากับ $110.0\ \Omega$ โดยคำนวณจากสูตร $R = V / I$",
+                    "มีความต้านทานภายในเท่ากับ $440.0\ \Omega$ โดยคำนวณจากสูตร $R = V \times I$",
+                    "มีความต้านทานภายในเท่ากับ $0.009\ \Omega$ โดยคำนวณจากสูตร $R = I / V$",
+                    "มีความต้านทานภายในเท่ากับ $218.0\ \Omega$ โดยคำนวณจากสูตร $R = V - I$"
+                ],
+                correctIndex: 0,
+                clue: "จัดรูปจากกฎของโอห์มหา $R$ ได้จาก $R = V / I$",
+                explanation: "จากสูตร $R = \frac{V}{I}$ แทนค่า $V = 220$ และ $I = 2$ จะได้ $R = \frac{220}{2} = 110.0\ \Omega$"
+            },
+            {
+                id: 4,
+                question: "หลอดไฟดวงหนึ่งมีความต่างศักย์ $24\text{ V}$ และมีกระแสไฟฟ้าไหลผ่าน $3\text{ A}$ กำลังไฟฟ้าของหลอดไฟดวงนี้มีค่าเท่าใด?",
+                options: [
+                    "มีกำลังไฟฟ้าของหลอดไฟเท่ากับ $72.0\text{ W}$ โดยคำนวณจากสูตร $P = V \times I$",
+                    "มีกำลังไฟฟ้าของหลอดไฟเท่ากับ $8.0\text{ W}$ โดยคำนวณจากสูตร $P = V / I$",
+                    "มีกำลังไฟฟ้าของหลอดไฟเท่ากับ $27.0\text{ W}$ โดยคำนวณจากสูตร $P = V + I$",
+                    "มีกำลังไฟฟ้าของหลอดไฟเท่ากับ $21.0\text{ W}$ โดยคำนวณจากสูตร $P = V - I$"
+                ],
+                correctIndex: 0,
+                clue: "ใช้สูตรคำนวณกำลังไฟฟ้า $P = V \times I$",
+                explanation: "จากสูตรกำลังไฟฟ้า $P = V \times I$ แทนค่า $V = 24$ และ $I = 3$ จะได้ $P = 24 \times 3 = 72.0\text{ W}$"
+            },
+            {
+                id: 5,
+                question: "หากเพิ่มความต่างศักย์ในวงจรไฟฟ้าให้เป็น 2 เท่า โดยที่ความต้านทานมีค่าคงที่ กระแสไฟฟ้าในวงจรจะมีการเปลี่ยนแปลงอย่างไร?",
+                options: [
+                    "กระแสไฟฟ้าในวงจรจะมีค่าเพิ่มขึ้นเป็น 2 เท่า ตามสัดส่วนโดยตรงของกฎของโอห์ม",
+                    "กระแสไฟฟ้าในวงจรจะมีค่าลดลงเป็นครึ่งหนึ่ง ตามสัดส่วนผกผันของกฎของโอห์ม",
+                    "กระแสไฟฟ้าในวงจรจะมีค่าคงที่เท่าเดิมไม่เปลี่ยนแปลงตามความต่างศักย์",
+                    "กระแสไฟฟ้าในวงจรจะมีค่าเพิ่มขึ้นเป็น 4 เท่า ตามกำลังสองของความต่างศักย์"
+                ],
+                correctIndex: 0,
+                clue: "จาก $I = V / R$ เมื่อ $R$ คงที่ $I$ จะแปรผันตรงกับ $V$",
+                explanation: "ตามกฎของโอห์ม $I = \frac{V}{R}$ เมื่อ $R$ คงที่ หาก $V$ เพิ่มเป็น 2 เท่า ค่า $I$ จะเพิ่มเป็น 2 เท่าเช่นกัน"
+            },
+            {
+                id: 6,
+                question: "ตัวต้านทานตัวหนึ่งมีค่าความต้านทาน $10\ \Omega$ มีกระแสไฟฟ้าไหลผ่าน $1.5\text{ A}$ กำลังไฟฟ้าที่สูญเสียในตัวต้านทานนี้มีค่าเท่าใด?",
+                options: [
+                    "มีกำลังไฟฟ้าสูญเสียเท่ากับ $22.5\text{ W}$ โดยคำนวณจากสูตร $P = I^2 \times R$",
+                    "มีกำลังไฟฟ้าสูญเสียเท่ากับ $15.0\text{ W}$ โดยคำนวณจากสูตร $P = I \times R$",
+                    "มีกำลังไฟฟ้าสูญเสียเท่ากับ $6.67\text{ W}$ โดยคำนวณจากสูตร $P = R / I^2$",
+                    "มีกำลังไฟฟ้าสูญเสียเท่ากับ $3.87\text{ W}$ โดยคำนวณจากสูตรสแควรูทของ $I \times R$"
+                ],
+                correctIndex: 0,
+                clue: "ใช้สูตรกำลังไฟฟ้าในรูปตัวต้านทาน $P = I^2 R$",
+                explanation: "จากสูตร $P = I^2 R$ แทนค่า $I = 1.5$ และ $R = 10$ จะได้ $P = (1.5)^2 \times 10 = 2.25 \times 10 = 22.5\text{ W}$"
+            },
+            {
+                id: 7,
+                question: "เต้ารับไฟฟ้าภายในบ้านมาตรฐานของประเทศไทยมีความต่างศักย์ประมาณเท่าใด?",
+                options: [
+                    "มีความต่างศักย์ไฟฟ้าประมาณ $220\text{ V}$ ถึง $230\text{ V}$ ในระบบไฟฟ้ากระแสสลับ",
+                    "มีความต่างศักย์ไฟฟ้าประมาณ $110\text{ V}$ ถึง $120\text{ V}$ ในระบบไฟฟ้ากระแสสลับ",
+                    "มีความต่างศักย์ไฟฟ้าประมาณ $12\text{ V}$ ถึง $24\text{ V}$ ในระบบไฟฟ้ากระแสตรง",
+                    "มีความต่างศักย์ไฟฟ้าประมาณ $380\text{ V}$ ถึง $400\text{ V}$ ในระบบไฟฟ้า 3 เฟส"
+                ],
+                correctIndex: 0,
+                clue: "นึกถึงแรงดันไฟฟ้าของเครื่องใช้ไฟฟ้าในบ้านเรือนทั่วไปในไทย",
+                explanation: "ระบบไฟฟ้ามาตรฐานสำหรับบ้านเรือนในประเทศไทยใช้ความต่างศักย์ประมาณ $220\text{ V}$ ความถี่ $50\text{ Hz}$"
+            },
+            {
+                id: 8,
+                question: "อุปกรณ์ไฟฟ้าชิ้นหนึ่งมีกำลังไฟฟ้า $1,000\text{ W}$ ทำงานกับความต่างศักย์ $220\text{ V}$ จะมีกระแสไฟฟ้าไหลผ่านอุปกรณ์นี้ประมาณเท่าใด?",
+                options: [
+                    "มีกระแสไฟฟ้าไหลผ่านประมาณ $4.55\text{ A}$ โดยคำนวณจากสูตร $I = P / V$",
+                    "มีกระแสไฟฟ้าไหลผ่านประมาณ $220,000\text{ A}$ โดยคำนวณจากสูตร $I = P \times V$",
+                    "มีกระแสไฟฟ้าไหลผ่านประมาณ $0.22\text{ A}$ โดยคำนวณจากสูตร $I = V / P$",
+                    "มีกระแสไฟฟ้าไหลผ่านประมาณ $780.0\text{ A}$ โดยคำนวณจากสูตร $I = P - V$"
+                ],
+                correctIndex: 0,
+                clue: "จัดรูปจาก $P = V \times I$ จะได้ $I = P / V$",
+                explanation: "จากสูตร $I = \frac{P}{V}$ แทนค่า $P = 1,000$ และ $V = 220$ จะได้ $I = \frac{1000}{220} \approx 4.55\text{ A}$"
+            },
+            {
+                id: 9,
+                question: "ข้อใดคือความหมายที่ถูกต้องที่สุดของหน่วยวัตต์ (Watt) ในทางฟิสิกส์ไฟฟ้า?",
+                options: [
+                    "เป็นหน่วยของกำลังไฟฟ้า ซึ่งเท่ากับอัตราการใช้พลังงานไฟฟ้า 1 จูล ต่อ 1 วินาที",
+                    "เป็นหน่วยของความต้านทานไฟฟ้า ซึ่งเทียบเท่ากับโวลต์หารด้วยแอมแปร์",
+                    "เป็นหน่วยของประจุไฟฟ้า ซึ่งสะสมอยู่ภายในตัวเก็บประจุไฟฟ้าในวงจร",
+                    "เป็นหน่วยของกระแสไฟฟ้า ที่ไหลผ่านพื้นที่หน้าตัดของลวดตัวนำใน 1 ชั่วโมง"
+                ],
+                correctIndex: 0,
+                clue: "กำลังไฟฟ้าคือพลังงานต่อหน่วยเวลา ($P = W / t$)",
+                explanation: "1 วัตต์ (W) หมายถึงพลังงานไฟฟ้าที่ถูกใช้หรือผลิตไปในอัตรา 1 จูลต่อ 1 วินาที ($1\text{ W} = 1\text{ J/s}$)"
+            },
+            {
+                id: 10,
+                question: "หากนำตัวต้านทานขนาด $5\ \Omega$ และ $15\ \Omega$ มาต่ออนุกรมกัน จะมีความต้านทานรวมของวงจรนี้เท่าใด?",
+                options: [
+                    "มีความต้านทานรวมเท่ากับ $20.0\ \Omega$ โดยนำค่าความต้านทานมาบวกกันโดยตรง",
+                    "มีความต้านทานรวมเท่ากับ $3.75\ \Omega$ โดยคำนวณจากผลคูณหารด้วยผลบวก",
+                    "มีความต้านทานรวมเท่ากับ $10.0\ \Omega$ โดยคำนวณจากค่าเฉลี่ยของตัวต้านทาน",
+                    "มีความต้านทานรวมเท่ากับ $75.0\ \Omega$ โดยนำค่าความต้านทานมาคูณกันโดยตรง"
+                ],
+                correctIndex: 0,
+                clue: "การต่อตัวต้านทานแบบอนุกรมให้นำค่าความต้านทานมารวมกัน ($R_{total} = R_1 + R_2$)",
+                explanation: "การต่อตัวต้านทานแบบอนุกรม ความต้านทานรวมคือผลบวกของทุกตัว: $R_{total} = 5 + 15 = 20.0\ \Omega$"
+            },
+            {
+                id: 11,
+                question: "เครื่องใช้ไฟฟ้าชนิดใดต่อไปนี้ที่มีการเปลี่ยนรูปพลังงานไฟฟ้าเป็นพลังงานความร้อนเป็นหลักตามหลักการทางไฟฟ้า?",
+                options: [
+                    "เตารีดไฟฟ้าและหม้อหุงข้าวไฟฟ้า ซึ่งใช้ลวดความร้อนแปลงพลังงาน",
+                    "พัดลมตั้งโต๊ะและมอเตอร์ปั๊มน้ำ ซึ่งใช้สนามแม่เหล็กหมุนแกนเพลา",
+                    "หลอดไฟฟลูออเรสเซนต์ ซึ่งปล่อยประจุผ่านไอปรอทเรืองแสง",
+                    "วิทยุสื่อสารและลำโพงบลูทูธ ซึ่งแปลงสัญญาณเป็นคลื่นเสียง"
+                ],
+                correctIndex: 0,
+                clue: "อุปกรณ์ที่ให้ความร้อนมักมีลวดความร้อน (Resistive Heating) สูง",
+                explanation: "เตารีดและหม้อหุงข้าวใช้หลักการเปลี่ยนพลังงานไฟฟ้าเป็นความร้อนผ่านลวดความต้านทาน (Joule Heating)"
+            },
+            {
+                id: 12,
+                question: "ถ้าวงจรไฟฟ้ามีกระแสไฟฟ้าไหลผ่าน $0.5\text{ A}$ และมีความต้านทาน $40\ \Omega$ ความต่างศักย์คร่อมตัวต้านทานนี้มีค่าเท่าใด?",
+                options: [
+                    "มีความต่างศักย์ไฟฟ้าเท่ากับ $20.0\text{ V}$ โดยคำนวณจากสูตร $V = I \times R$",
+                    "มีความต่างศักย์ไฟฟ้าเท่ากับ $80.0\text{ V}$ โดยคำนวณจากสูตร $V = R / I$",
+                    "มีความต่างศักย์ไฟฟ้าเท่ากับ $40.5\text{ V}$ โดยคำนวณจากสูตร $V = I + R$",
+                    "มีความต่างศักย์ไฟฟ้าเท่ากับ $39.5\text{ V}$ โดยคำนวณจากสูตร $V = R - I$"
+                ],
+                correctIndex: 0,
+                clue: "ใช้สูตร $V = I \times R$ นำ $0.5$ คูณกับ $40$",
+                explanation: "จากสูตร $V = I \times R$ แทนค่า $I = 0.5$ และ $R = 40$ จะได้ $V = 0.5 \times 40 = 20.0\text{ V}$"
+            },
+            {
+                id: 13,
+                question: "ข้อใดคือหน้าที่หลักของฟิวส์ (Fuse) ในระบบวงจรไฟฟ้าภายในอาคารบ้านเรือน?",
+                options: [
+                    "ตัดวงจรไฟฟ้าโดยอัตโนมัติเมื่อมีกระแสไฟฟ้าไหลผ่านเกินกำหนดเพื่อความปลอดภัย",
+                    "ช่วยเพิ่มระดับความต่างศักย์ไฟฟ้าให้สูงขึ้นเพื่อให้เครื่องใช้ไฟฟ้าทำงานดีขึ้น",
+                    "ทำหน้าที่เก็บสำรองพลังงานไฟฟ้าไว้ใช้ยามฉุกเฉินเมื่อไฟฟ้าดับจากภายนอก",
+                    "ช่วยลดปริมาณความต้านทานรวมในระบบวงจรไฟฟ้าลงเพื่อประหยัดพลังงาน"
+                ],
+                correctIndex: 0,
+                clue: "ฟิวส์ทำจากโลหะจุดหลอมเหลวต่ำ จะหลอมละลายตัดวงจรเมื่อกระแสเกิน",
+                explanation: "ฟิวส์เป็นอุปกรณ์นิรภัยที่จะหลอมละลายและตัดวงจรทันทีเมื่อมีกระแสไฟฟ้าเกินขนาด เพื่อป้องกันความเสียหายและอัคคีภัย"
+            },
+            {
+                id: 14,
+                question: "หลอดไฟขนาด $60\text{ W}$ เปิดใช้งานต่อเนื่องเป็นเวลา $2$ ชั่วโมง จะใช้พลังงานไฟฟ้าไปเท่าใดในหน่วยกิโลวัตต์-ชั่วโมง (kWh หรือ หน่วย)?",
+                options: [
+                    "ใช้พลังงานไฟฟ้าไปเท่ากับ $0.12\text{ kWh}$ โดยคำนวณจาก (กำลังไฟฟ้าเป็นกิโลวัตต์ $\times$ เวลาเป็นชั่วโมง)",
+                    "ใช้พลังงานไฟฟ้าไปเท่ากับ $120.0\text{ kWh}$ โดยคำนวณจาก (กำลังไฟฟ้าเป็นวัตต์ $\times$ เวลาเป็นชั่วโมง)",
+                    "ใช้พลังงานไฟฟ้าไปเท่ากับ $30.0\text{ kWh}$ โดยคำนวณจาก (กำลังไฟฟ้าหารด้วยเวลา)",
+                    "ใช้พลังงานไฟฟ้าไปเท่ากับ $0.03\text{ kWh}$ โดยคำนวณจาก (เวลาหารด้วยกำลังไฟฟ้า)"
+                ],
+                correctIndex: 0,
+                clue: "แปลงวัตต์เป็นกิโลวัตต์ ($60\text{ W} = 0.06\text{ kW}$) แล้วคูณด้วยเวลา 2 ชั่วโมง",
+                explanation: "พลังงานไฟฟ (kWh) = $\frac{\text{Power (W)}}{1000} \times \text{Time (hours)} = \frac{60}{1000} \times 2 = 0.06 \times 2 = 0.12\text{ kWh}$"
+            },
+            {
+                id: 15,
+                question: "หากต้องการลดกระแสไฟฟ้าที่ไหลผ่านในวงจรลงครึ่งหนึ่ง โดยที่ความต่างศักย์ของแหล่งกำเนิดยังคงที่ จะต้องปรับเปลี่ยนความต้านทานอย่างไร?",
+                options: [
+                    "จะต้องเพิ่มค่าความต้านทานในวงจรให้มีค่าเป็น 2 เท่าของค่าเดิม",
+                    "จะต้องลดค่าความต้านทานในวงจรให้มีค่าลดลงเหลือครึ่งหนึ่งของเดิม",
+                    "จะต้องเพิ่มค่าความต้านทานในวงจรให้มีค่าเป็น 4 เท่าของค่าเดิม",
+                    "จะต้องรักษาค่าความต้านทานเดิมไว้โดยไม่ต้องปรับเปลี่ยนใดๆ ทั้งสิ้น"
+                ],
+                correctIndex: 0,
+                clue: "จาก $I = V / R$ หากต้องการให้ $I$ ลดลงครึ่งหนึ่ง ตัวส่วน $R$ ต้องเพิ่มเป็น 2 เท่า",
+                explanation: "จากความสัมพันธ์ผกผัน $I = \frac{V}{R}$ หากต้องการให้ $I$ ลดลงครึ่งหนึ่ง ($1/2$) จำเป็นต้องเพิ่มความต้านทาน $R$ ให้เป็น 2 เท่า"
+            }
+        ];
+
+        let questions = [];
+        let userAnswers = {};
+        let score = 0;
+
+        // Fisher-Yates Shuffle Algorithm
+        function shuffleArray(array) {
+            let currentIndex = array.length, randomIndex;
+            while (currentIndex != 0) {
+                randomIndex = Math.floor(Math.random() * currentIndex);
+                currentIndex--;
+                [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+            }
+            return array;
+        }
+
+        // Initialize Exam Questions with shuffled options
+        function initExam() {
+            questions = rawQuestions.map(q => {
+                let optionsWithMeta = q.options.map((opt, idx) => ({ text: opt, originalIndex: idx }));
+                shuffleArray(optionsWithMeta);
+                let newCorrectIndex = optionsWithMeta.findIndex(o => o.originalIndex === q.correctIndex);
+                return {
+                    id: q.id,
+                    question: q.question,
+                    options: optionsWithMeta.map(o => o.text),
+                    correctIndex: newCorrectIndex,
+                    clue: q.clue,
+                    explanation: q.explanation
+                };
+            });
+            userAnswers = {};
+            score = 0;
+            renderExam();
+            updateScoreDisplay();
+            document.getElementById('resultPanel').classList.add('hidden');
+        }
+
+        // Render Exam to DOM
+        function renderExam() {
+            const container = document.getElementById('questionsList');
+            container.innerHTML = '';
+
+            questions.forEach((q, qIndex) => {
+                let card = document.createElement('div');
+                card.className = 'bg-white p-5 rounded-xl shadow-md border border-slate-200 space-y-3';
+                card.id = `question-card-${qIndex}`;
+
+                let optionsHtml = '';
+                q.options.forEach((opt, optIndex) => {
+                    optionsHtml += `
+                        <label id="label-${qIndex}-${optIndex}" class="flex items-start gap-3 p-3 rounded-lg border border-slate-200 hover:bg-slate-50 cursor-pointer transition">
+                            <input type="radio" name="question-${qIndex}" value="${optIndex}" onchange="selectAnswer(${qIndex}, ${optIndex})" class="mt-1 accent-indigo-600">
+                            <span class="text-sm text-slate-700">${opt}</span>
+                        </label>
+                    `;
+                });
+
+                card.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <span class="text-xs font-bold bg-indigo-100 text-indigo-700 px-2.5 py-1 rounded-full">ข้อที่ ${qIndex + 1} / 15</span>
+                        <button onclick="toggleClue(${qIndex})" class="text-xs text-amber-600 hover:text-amber-700 font-medium bg-amber-50 px-2 py-1 rounded border border-amber-200">💡 คำใบ้ / แนวคิด</button>
+                    </div>
+                    <p class="font-semibold text-slate-800 text-base">${q.question}</p>
+                    <div id="clue-${qIndex}" class="hidden text-xs bg-amber-50 text-amber-800 p-2.5 rounded border border-amber-200">
+                        <strong>แนวคิด:</strong> ${q.clue}
+                    </div>
+                    <div class="space-y-2 mt-2">
+                        ${optionsHtml}
+                    </div>
+                    <div id="feedback-${qIndex}" class="hidden mt-3 p-3 rounded-lg text-xs"></div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // Toggle Clue
+        function toggleClue(qIndex) {
+            let clueBox = document.getElementById(`clue-${qIndex}`);
+            clueBox.classList.toggle('hidden');
+        }
+
+        // Handle Answer Selection
+        function selectAnswer(qIndex, selectedOptIndex) {
+            if (userAnswers[qIndex] !== undefined) return; // Answered already
+
+            userAnswers[qIndex] = selectedOptIndex;
+            let q = questions[qIndex];
+            let isCorrect = (selectedOptIndex === q.correctIndex);
+
+            if (isCorrect) score++;
+            updateScoreDisplay();
+
+            // Disable all radios for this question
+            let card = document.getElementById(`question-card-${qIndex}`);
+            let radios = card.querySelectorAll('input[type="radio"]');
+            radios.forEach(r => r.disabled = true);
+
+            // Highlight options
+            q.options.forEach((opt, optIdx) => {
+                let lbl = document.getElementById(`label-${qIndex}-${optIdx}`);
+                if (optIdx === q.correctIndex) {
+                    lbl.classList.remove('border-slate-200', 'hover:bg-slate-50');
+                    lbl.classList.add('bg-emerald-50', 'border-emerald-500', 'font-medium');
+                } else if (optIdx === selectedOptIndex && !isCorrect) {
+                    lbl.classList.remove('border-slate-200', 'hover:bg-slate-50');
+                    lbl.classList.add('bg-rose-50', 'border-rose-500');
+                }
+            });
+
+            // Show feedback
+            let feedback = document.getElementById(`feedback-${qIndex}`);
+            feedback.classList.remove('hidden');
+            if (isCorrect) {
+                feedback.className = "mt-3 p-3 rounded-lg text-xs bg-emerald-100 text-emerald-800 border border-emerald-300";
+                feedback.innerHTML = `<strong>✨ ถูกต้องครับ!</strong> ${q.explanation}`;
+            } else {
+                feedback.className = "mt-3 p-3 rounded-lg text-xs bg-rose-100 text-rose-800 border border-rose-300";
+                feedback.innerHTML = `<strong>❌ ยังไม่ถูกต้องครับ</strong> ${q.explanation}`;
+            }
+
+            // Save state to localStorage
+            localStorage.setItem('tutor_exam_answers', JSON.stringify(userAnswers));
+            localStorage.setItem('tutor_exam_score', score);
+
+            // Check if all answered
+            if (Object.keys(userAnswers).length === questions.length) {
+                showFinalAnalysis();
+            }
+        }
+
+        function updateScoreDisplay() {
+            document.getElementById('scoreDisplay').innerText = `${score} / 15`;
+        }
+
+        // Show Final Analysis
+        function showFinalAnalysis() {
+            let panel = document.getElementById('resultPanel');
+            let content = document.getElementById('analysisContent');
+            panel.classList.remove('hidden');
+
+            let percentage = (score / 15) * 100;
+            let gradeComment = "";
+            if (percentage >= 80) {
+                gradeComment = "🌟 ยอดเยี่ยมมาก! คุณมีความเข้าใจเรื่องการคำนวณกฎของโอห์มและกำลังไฟฟ้าเป็นอย่างดีพร้อมสอบเข้า ม.1";
+            } else if (percentage >= 50) {
+                gradeComment = "👍 ทำได้ดี! แต่อาจจะต้องทบทวนสูตรการแปลงหน่วยและสัดส่วนความสัมพันธ์ระหว่าง $V$, $I$, $R$ เพิ่มเติมอีกนิด";
+            } else {
+                gradeComment = "💡 ควรกลับมาทบทวนสูตรหลัก $V = I \times R$ และการจัดรูปสมการพื้นฐานใหม่เพื่อความแม่นยำครับ";
+            }
+
+            content.innerHTML = `
+                <div class="bg-indigo-50 p-4 rounded-lg border border-indigo-200 text-center space-y-1">
+                    <div class="text-lg font-bold text-indigo-700">คะแนนรวมสุทธิ: ${score} / 15 (${percentage.toFixed(1)}%)</div>
+                    <p class="text-xs text-slate-600">${gradeComment}</p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3">
+                    <div class="bg-emerald-50 p-3 rounded-lg border border-emerald-200">
+                        <strong class="text-emerald-800 text-xs block mb-1">✅ จุดเด่น (Strengths):</strong>
+                        <p class="text-xs text-slate-600">มีความเข้าใจการใช้สูตรคำนวณพื้นฐานและการวิเคราะห์หน่วยสากลทางไฟฟ้า</p>
+                    </div>
+                    <div class="bg-amber-50 p-3 rounded-lg border border-amber-200">
+                        <strong class="text-amber-800 text-xs block mb-1">🔍 จุดที่ควรพัฒนา (Areas for Improvement):</strong>
+                        <p class="text-xs text-slate-600">ระมัดระวังการแปลงหน่วยวัตต์เป็นกิโลวัตต์และการจำแนกตัวต้านทานแบบอนุกรม</p>
+                    </div>
+                </div>
+            `;
+            panel.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Reset Exam
+        function resetExam() {
+            localStorage.removeItem('tutor_exam_answers');
+            localStorage.removeItem('tutor_exam_score');
+            initExam();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Simulator Logic
+        function updateSimulator() {
+            let v = parseFloat(document.getElementById('rangeV').value);
+            let r = parseFloat(document.getElementById('rangeR').value);
+            document.getElementById('valV').innerText = v;
+            document.getElementById('valR').innerText = r;
+
+            let i = v / r;
+            let p = v * i;
+
+            document.getElementById('simI').innerText = i.toFixed(2) + " A";
+            document.getElementById('simP').innerText = p.toFixed(2) + " W";
+        }
+
+        // Whiteboard Logic
+        const canvas = document.getElementById('whiteboard');
+        const ctx = canvas.getContext('2d');
+        let painting = false;
+        let penColor = '#1e293b';
+
+        function resizeCanvas() {
+            canvas.width = canvas.parentElement.clientWidth - 32;
+            canvas.height = 320;
+            ctx.fillStyle = '#fffbeb';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        function startPosition(e) {
+            painting = true;
+            draw(e);
+        }
+
+        function finishedPosition() {
+            painting = false;
+            ctx.beginPath();
+        }
+
+        function draw(e) {
+            if (!painting) return;
+            e.preventDefault();
+            ctx.lineWidth = 2.5;
+            ctx.lineCap = 'round';
+            ctx.strokeStyle = penColor;
+
+            let rect = canvas.getBoundingClientRect();
+            let clientX = e.clientX || (e.touches && e.touches[0].clientX);
+            let clientY = e.clientY || (e.touches && e.touches[0].clientY);
+            let x = clientX - rect.left;
+            let y = clientY - rect.top;
+
+            ctx.lineTo(x, y);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+        }
+
+        function setPenColor(color) {
+            penColor = color;
+        }
+
+        function clearCanvas() {
+            ctx.fillStyle = '#fffbeb';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+
+        canvas.addEventListener('mousedown', startPosition);
+        canvas.addEventListener('mouseup', finishedPosition);
+        canvas.addEventListener('mousemove', draw);
+
+        canvas.addEventListener('touchstart', startPosition, { passive: false });
+        canvas.addEventListener('touchend', finishedPosition);
+        canvas.addEventListener('touchmove', draw, { passive: false });
+
+        // Toggle Language Simulation
+        let isThai = true;
+        function toggleLanguage() {
+            isThai = !isThai;
+            let btn = document.getElementById('langBtn');
+            btn.innerText = isThai ? "🌐 ภาษา: ไทย (TH)" : "🌐 ภาษา: อังกฤษ (EN)";
+        }
+
+        // Run Init on Load
+        window.onload = function() {
+            initExam();
+            updateSimulator();
+        };
+    </script>
+</body>
+</html>
