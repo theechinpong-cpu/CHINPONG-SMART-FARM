@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบสอบออนไลน์และสื่อจำลองไฟฟ้า ม.1 - พระจอมเกล้าติวเตอร์</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Sarabun', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+    <!-- Header -->
+    <header class="bg-indigo-700 text-white shadow-md p-4 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-3">
+            <div>
+                <h1 class="text-xl font-bold">พระจอมเกล้าติวเตอร์ (Expert Tutor AI & Interactive Developer)</h1>
+                <p class="text-xs text-indigo-200">วิชาวิทยาศาสตร์ ม.1: การคำนวณทางไฟฟ้า (Ohm's Law & Power - 30 ข้อ)</p>
+            </div>
+            <div class="flex items-center gap-3">
+                <button id="langBtn" onclick="toggleLanguage()" class="bg-indigo-600 hover:bg-indigo-500 border border-indigo-400 text-xs px-3 py-1.5 rounded font-medium transition">
+                    🌐 ภาษา: ไทย (TH)
+                </button>
+                <button onclick="resetExam()" class="bg-rose-600 hover:bg-rose-500 text-xs px-3 py-1.5 rounded font-medium transition">
+                    🔄 Reset สอบใหม่
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-7xl mx-auto w-full p-4 flex-1 flex flex-col gap-6">
+
+        <!-- Virtual Teaching Tool / Interactive Infographic -->
+        <section class="bg-white rounded-xl shadow-md p-5 border border-slate-200">
+            <h2 class="text-lg font-bold text-indigo-700 mb-2">⚡ Virtual Ohm's Law Simulator & Calculator</h2>
+            <p class="text-sm text-slate-600 mb-4">ปรับค่าความต่างศักย์ (V) และความต้านทาน (R) เพื่อจำลองการเปลี่ยนแปลงของกระแสไฟฟ้า (I) และกำลังไฟฟ้า (P) แบบเรียลไทม์</p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-center bg-slate-50 p-4 rounded-lg border border-slate-200">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700">ความต่างศักย์ (V): <span id="valV" class="text-indigo-600 font-bold">12</span> โวลต์ (V)</label>
+                        <input type="range" id="rangeV" min="1" max="240" value="12" class="w-full accent-indigo-600" oninput="updateSimulator()">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700">ความต้านทาน (R): <span id="valR" class="text-indigo-600 font-bold">6</span> โอห์ม (Ω)</label>
+                        <input type="range" id="rangeR" min="1" max="100" value="6" class="w-full accent-indigo-600" oninput="updateSimulator()">
+                    </div>
+                </div>
+                
+                <div class="bg-indigo-900 text-white p-4 rounded-lg shadow-inner flex flex-col justify-center items-center text-center">
+                    <div class="text-xs text-indigo-300 uppercase tracking-wider">กระแสไฟฟ้าคำนวณได้ (I)</div>
+                    <div id="simI" class="text-3xl font-extrabold text-amber-400 my-1">2.00 A</div>
+                    <div class="text-xs text-indigo-200">สูตร: I = V ÷ R = 12 ÷ 6</div>
+                </div>
+
+                <div class="bg-emerald-800 text-white p-4 rounded-lg shadow-inner flex flex-col justify-center items-center text-center">
+                    <div class="text-xs text-emerald-200 uppercase tracking-wider">กำลังไฟฟ้าคำนวณได้ (P)</div>
+                    <div id="simP" class="text-3xl font-extrabold text-amber-300 my-1">24.00 W</div>
+                    <div class="text-xs text-emerald-100">สูตร: P = V × I = 12 × 2</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Two-Frame Layout: Exam (70%) & Whiteboard (30%) -->
+        <div class="grid grid-cols-1 lg:grid-cols-10 gap-6 items-start">
+            
+            <!-- Left Frame: Exam Questions (70% -> col-span-7) -->
+            <div class="lg:col-span-7 space-y-6" id="examContainer">
+                <div class="bg-white p-5 rounded-xl shadow-md border border-slate-200 flex justify-between items-center">
+                    <div>
+                        <h3 class="font-bold text-slate-800">ชุดข้อสอบทดสอบความรู้ (30 ข้อถ้วน)</h3>
+                        <p class="text-xs text-slate-500">เลือกคำตอบที่ถูกต้องที่สุด ระบบจะแสดงเฉลยและวิธีคิดทันที</p>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-sm font-semibold text-slate-600">คะแนนสะสม:</span>
+                        <span id="scoreDisplay" class="text-xl font-bold text-indigo-600">0 / 30</span>
+                    </div>
+                </div>
+
+                <!-- Questions injected dynamically -->
+                <div id="questionsList" class="space-y-6"></div>
+
+                <!-- Result & Analysis Panel -->
+                <div id="resultPanel" class="hidden bg-white p-6 rounded-xl shadow-lg border-2 border-indigo-500 space-y-4">
+                    <h3 class="text-xl font-bold text-indigo-700 text-center">📊 ผลการประเมินการทดสอบรายบุคคล</h3>
+                    <div id="analysisContent" class="text-sm text-slate-700 space-y-2"></div>
+                </div>
+            </div>
+
+            <!-- Right Frame: Whiteboard (30% -> col-span-3) -->
+            <div class="lg:col-span-3 lg:sticky lg:top-24 space-y-4">
+                <div class="bg-white rounded-xl shadow-md p-4 border border-slate-200">
+                    <div class="flex justify-between items-center mb-3">
+                        <h3 class="font-bold text-slate-800 text-sm">📝 กระดานทดเลข (Whiteboard)</h3>
+                        <div class="flex gap-1">
+                            <button onclick="setPenColor('#1e293b')" class="w-5 h-5 rounded-full bg-slate-800 border" title="ปากกาดำ"></button>
+                            <button onclick="setPenColor('#ef4444')" class="w-5 h-5 rounded-full bg-rose-500 border" title="ปากกาแดง"></button>
+                            <button onclick="setPenColor('#2563eb')" class="w-5 h-5 rounded-full bg-blue-600 border" title="ปากกาน้ำเงิน"></button>
+                            <button onclick="clearCanvas()" class="text-xs bg-slate-200 hover:bg-slate-300 px-2 py-0.5 rounded font-medium text-slate-700">ล้าง</button>
+                        </div>
+                    </div>
+                    <canvas id="whiteboard" class="w-full h-80 bg-amber-50 rounded-lg border border-amber-200 cursor-crosshair touch-none"></canvas>
+                    <p class="text-[11px] text-slate-400 mt-2 text-center">ใช้เมาส์หรือนิ้วเขียนทดสูตรคำนวณ V = I × R ได้ที่นี่</p>
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-slate-800 text-slate-300 text-center py-4 text-xs mt-10">
+        เขียนโดย พระจอมเกล้าติวเตอร์
+    </footer>
+
+    <!-- Script Application Logic -->
+    <script>
+        // Data Questions (30 Items - Unicode Math Symbols & Balanced Options)
+        const rawQuestions = [
+            {
+                id: 1,
+                question: "หากวงจรไฟฟ้ามีความต่างศักย์ 12 V และมีความต้านทาน 4 Ω จะมีกระแสไฟฟ้าไหลผ่านวงจรนี้เท่าใด?",
+                options: [
+                    "มีกระแสไฟฟ้าไหลผ่านวงจรเท่ากับ 3.0 A โดยคำนวณจากสูตร I = V ÷ R",
+                    "มีกระแสไฟฟ้าไหลผ่านวงจรเท่ากับ 48.0 A โดยคำนวณจากสูตร I = V × R",
+                    "มีกระแสไฟฟ้าไหลผ่านวงจรเท่ากับ 0.33 A โดยคำนวณจากสูตร I = R ÷ V",
+                    "มีกระแสไฟฟ้าไหลผ่านวงจรเท่ากับ 16.0 A โดยคำนวณจากสูตร I = V + R"
+                ],
+                correctIndex: 0,
+                clue: "ใช้สูตรกฎของโอห์ม I = V ÷ R นำค่า 12 หารด้วย 4",
+                explanation: "จากสูตรกฎของโอห์ม I = V ÷ R แทนค่า V = 12 และ R = 4 จะได้ I = 12 ÷ 4 = 3.0 A"
+            },
+            {
+                id: 2,
+                question: "หลอดไฟดวงหนึ่งต่อกับแหล่งกำเนิดไฟฟ้า วัดกระแสไฟฟ้าที่ไหลผ่านได้ 2.5 A และมีความต้านทาน 8 Ω หลอดไฟนี้มีความต่างศักย์เท่าใด?",
+                options: [
+                    "มีความต่างศักย์ไฟฟ้าเท่ากับ 20.0 V โดยคำนวณจากสูตร V = I × R",
+                    "มีความต่างศักย์ไฟฟ้าเท่ากับ 3.2 V โดยคำนวณจากสูตร V = R ÷ I",
+                    "มีความต่างศักย์ไฟฟ้าเท่ากับ 10.5 V โดยคำนวณจากสูตร V = I + R",
+                    "มีความต่างศักย์ไฟฟ้าเท่ากับ 5.5 V โดยคำนวณจากสูตร V = R - I"
+                ],
+                correctIndex: 0,
+                clue: "ต้องการหา V นำกระแสไฟฟ้า I มาคูณกับความต้านทาน R",
+                explanation: "จากสูตร V = I × R แทนค่า I = 2.5 และ R = 8 จะได้ V = 2.5 × 8 = 20.0 V"
+            },
+            {
+                id: 3,
+                question: "เครื่องใช้ไฟฟ้าชิ้นหนึ่งใช้ความต่างศักย์ 220 V และมีกระแสไฟฟ้าไหลผ่าน 2 A ลวดความต้านทานภายในเครื่องนี้มีค่าเท่าใด?",
+                options: [
+                    "มีความต้านทานภายในเท่ากับ 110.0 Ω โดยคำนวณจากสูตร R = V ÷ I",
+                    "มีความต้านทานภายในเท่ากับ 440.0 Ω โดยคำนวณจากสูตร R = V × I",
+                    "มีความต้านทานภายในเท่ากับ 0.009 Ω โดยคำนวณจากสูตร R = I ÷ V",
+                    "มีความต้านทานภายในเท่ากับ 218.0 Ω โดยคำนวณจากสูตร R = V - I"
+                ],
+                correctIndex: 0,
+                clue: "จัดรูปจากกฎของโอห์มหา R ได้จาก R = V ÷ I",
+                explanation: "จากสูตร R = V ÷ I แทนค่า V = 220 และ I = 2 จะได้ R = 220 ÷ 2 = 110.0 Ω"
+            },
+            {
+                id: 4,
+                question: "หลอดไฟดวงหนึ่งมีความต่างศักย์ 24 V และมีกระแสไฟฟ้าไหลผ่าน 3 A กำลังไฟฟ้าของหลอดไฟดวงนี้มีค่าเท่าใด?",
+                options: [
+                    "มีกำลังไฟฟ้าของหลอดไฟเท่ากับ 72.0 W โดยคำนวณจากสูตร P = V × I",
+                    "มีกำลังไฟฟ้าของหลอดไฟเท่ากับ 8.0 W โดยคำนวณจากสูตร P = V ÷ I",
+                    "มีกำลังไฟฟ้าของหลอดไฟเท่ากับ 27.0 W โดยคำนวณจากสูตร P = V + I",
+                    "มีกำลังไฟฟ้าของหลอดไฟเท่ากับ 21.0 W โดยคำนวณจากสูตร P = V - I"
+                ],
+                correctIndex: 0,
+                clue: "ใช้สูตรคำนวณกำลังไฟฟ้า P = V × I",
+                explanation: "จากสูตรกำลังไฟฟ้า P = V × I แทนค่า V = 24 และ I = 3 จะได้ P = 24 × 3 = 72.0 W"
+            },
+            {
+                id: 5,
+                question: "หากเพิ่มความต่างศักย์ในวงจรไฟฟ้าให้เป็น 2 เท่า โดยที่ความต้านทานมีค่าคงที่ กระแสไฟฟ้าในวงจรจะมีการเปลี่ยนแปลงอย่างไร?",
+                options: [
+                    "กระแสไฟฟ้าในวงจรจะมีค่าเพิ่มขึ้นเป็น 2 เท่า ตามสัดส่วนโดยตรงของกฎของโอห์ม",
+                    "กระแสไฟฟ้าในวงจรจะมีค่าลดลงเป็นครึ่งหนึ่ง ตามสัดส่วนผกผันของกฎของโอห์ม",
+                    "กระแสไฟฟ้าในวงจรจะมีค่าคงที่เท่าเดิมไม่เปลี่ยนแปลงตามความต่างศักย์",
+                    "กระแสไฟฟ้าในวงจรจะมีค่าเพิ่มขึ้นเป็น 4 เท่า ตามกำลังสองของความต่างศักย์"
+                ],
+                correctIndex: 0,
+                clue: "จาก I = V ÷ R เมื่อ R คงที่ I จะแปรผันตรงกับ V",
+                explanation: "ตามกฎของโอห์ม I = V ÷ R เมื่อ R คงที่ หาก V เพิ่มเป็น 2 เท่า ค่า I จะเพิ่มเป็น 2 เท่าเช่นกัน"
+            },
+            {
+                id: 6,
+                question: "ตัวต้านทานตัวหนึ่งมีค่าความต้านทาน 10 Ω มีกระแสไฟฟ้าไหลผ่าน 1.5 A กำลังไฟฟ้าที่สูญเสียในตัวต้านทานนี้มีค่าเท่าใด?",
+                options: [
+                    "มีกำลังไฟฟ้าสูญเสียเท่ากับ 22.5 W โดยคำนวณจากสูตร P = (I^2) × R",
+                    "มีกำลังไฟฟ้าสูญเสียเท่ากับ 15.0 W โดยคำนวณจากสูตร P = I × R",
+                    "มีกำลังไฟฟ้าสูญเสียเท่ากับ 6.67 W โดยคำนวณจากสูตร P = R ÷ (I^2)",
+                    "มีกำลังไฟฟ้าสูญเสียเท่ากับ 3.87 W โดยคำนวณจากสแควรูทของ I × R"
+                ],
+                correctIndex: 0,
+                clue: "ใช้สูตรกำลังไฟฟ้าในรูปตัวต้านทาน P = (I^2) × R",
+                explanation: "จากสูตร P = (I^2) × R แทนค่า I = 1.5 และ R = 10 จะได้ P = (1.5)^2 × 10 = 2.25 × 10 = 22.5 W"
+            },
+            {
+                id: 7,
+                question: "เต้ารับไฟฟ้าภายในบ้านมาตรฐานของประเทศไทยมีความต่างศักย์ประมาณเท่าใด?",
+                options: [
+                    "มีความต่างศักย์ไฟฟ้าประมาณ 220 V ถึง 230 V ในระบบไฟฟ้ากระแสสลับ",
+                    "มีความต่างศักย์ไฟฟ้าประมาณ 110 V ถึง 120 V ในระบบไฟฟ้ากระแสสลับ",
+                    "มีความต่างศักย์ไฟฟ้าประมาณ 12 V ถึง 24 V ในระบบไฟฟ้ากระแสตรง",
+                    "มีความต่างศักย์ไฟฟ้าประมาณ 380 V ถึง 400 V ในระบบไฟฟ้า 3 เฟส"
+                ],
+                correctIndex: 0,
+                clue: "นึกถึงแรงดันไฟฟ้าของเครื่องใช้ไฟฟ้าในบ้านเรือนทั่วไปในไทย",
+                explanation: "ระบบไฟฟ้ามาตรฐานสำหรับบ้านเรือนในประเทศไทยใช้ความต่างศักย์ประมาณ 220 V ความถี่ 50 Hz"
+            },
+            {
+                id: 8,
+                question: "อุปกรณ์ไฟฟ้าชิ้นหนึ่งมีกำลังไฟฟ้า 1,000 W ทำงานกับความต่างศักย์ 220 V จะมีกระแสไฟฟ้าไหลผ่านอุปกรณ์นี้ประมาณเท่าใด?",
+                options: [
+                    "มีกระแสไฟฟ้าไหลผ่านประมาณ 4.55 A โดยคำนวณจากสูตร I = P ÷ V",
+                    "มีกระแสไฟฟ้าไหลผ่านประมาณ 220,000 A โดยคำนวณจากสูตร I = P × V",
+                    "มีกระแสไฟฟ้าไหลผ่านประมาณ 0.22 A โดยคำนวณจากสูตร I = V ÷ P",
+                    "มีกระแสไฟฟ้าไหลผ่านประมาณ 780.0 A โดยคำนวณจากสูตร I = P - V"
+                ],
+                correctIndex: 0,
+                clue: "จัดรูปจาก P = V × I จะได้ I = P ÷ V",
+                explanation: "จากสูตร I = P ÷ V แทนค่า P = 1,000 และ V = 220 จะได้ I = 1,000 ÷ 220 ≈ 4.55 A"
+            },
+            {
+                id: 9,
+                question: "ข้อใดคือความหมายที่ถูกต้องที่สุดของหน่วยวัตต์ (Watt) ในทางฟิสิกส์ไฟฟ้า?",
+                options: [
+                    "เป็นหน่วยของกำลังไฟฟ้า ซึ่งเท่ากับอัตราการใช้พลังงานไฟฟ้า 1 จูล ต่อ 1 วินาที",
+                    "เป็นหน่วยของความต้านทานไฟฟ้า ซึ่งเทียบเท่ากับโวลต์หารด้วยแอมแปร์",
+                    "เป็นหน่วยของประจุไฟฟ้า ซึ่งสะสมอยู่ภายในตัวเก็บประจุไฟฟ้าในวงจร",
+                    "เป็นหน่วยของกระแสไฟฟ้า ที่ไหลผ่านพื้นที่หน้าตัดของลวดตัวนำใน 1 ชั่วโมง"
+                ],
+                correctIndex: 0,
+                clue: "กำลังไฟฟ้าคือพลังงานต่อหน่วยเวลา (P = W ÷ t)",
+                explanation: "1 วัตต์ (W) หมายถึงพลังงานไฟฟ้าที่ถูกใช้หรือผลิตไปในอัตรา 1 จูลต่อ 1 วินาที (1 W = 1 J/s)"
+            },
+            {
+                id: 10,
+                question: "หากนำตัวต้านทานขนาด 5 Ω และ 15 Ω มาต่ออนุกรมกัน จะมีความต้านทานรวมของวงจรนี้เท่าใด?",
+                options: [
+                    "มีความต้านทานรวมเท่ากับ 20.0 Ω โดยนำค่าความต้านทานมาบวกกันโดยตรง",
+                    "มีความต้านทานรวมเท่ากับ 3.75 Ω โดยคำนวณจากผลคูณหารด้วยผลบวก",
+                    "มีความต้านทานรวมเท่ากับ 10.0 Ω โดยคำนวณจากค่าเฉลี่ยของตัวต้านทาน",
+                    "มีความต้านทานรวมเท่ากับ 75.0 Ω โดยนำค่าความต้านทานมาคูณกันโดยตรง"
+                ],
+                correctIndex: 0,
+                clue: "การต่อตัวต้านทานแบบอนุกรมให้นำค่าความต้านทานมารวมกัน (R_total = R_1 + R_2)",
+                explanation: "การต่อตัวต้านทานแบบอนุกรม ความต้านทานรวมคือผลบวกของทุกตัว: R_total = 5 + 15 = 20.0 Ω"
+            },
+            {
+                id: 11,
+                question: "เครื่องใช้ไฟฟ้าชนิดใดต่อไปนี้ที่มีการเปลี่ยนรูปพลังงานไฟฟ้าเป็นพลังงานความร้อนเป็นหลักตามหลักการทางไฟฟ้า?",
+                options: [
+                    "เตารีดไฟฟ้าและหม้อหุงข้าวไฟฟ้า ซึ่งใช้ลวดความร้อนแปลงพลังงาน",
+                    "พัดลมตั้งโต๊ะและมอเตอร์ปั๊มน้ำ ซึ่งใช้สนามแม่เหล็กหมุนแกนเพลา",
+                    "หลอดไฟฟลูออเรสเซนต์ ซึ่งปล่อยประจุผ่านไอปรอทเรืองแสง",
+                    "วิทยุสื่อสารและลำโพงบลูทูธ ซึ่งแปลงสัญญาณเป็นคลื่นเสียง"
+                ],
+                correctIndex: 0,
+                clue: "อุปกรณ์ที่ให้ความร้อนมักมีลวดความร้อน (Resistive Heating) สูง",
+                explanation: "เตารีดและหม้อหุงข้าวใช้หลักการเปลี่ยนพลังงานไฟฟ้าเป็นความร้อนผ่านลวดความต้านทาน (Joule Heating)"
+            },
+            {
+                id: 12,
+                question: "ถ้าวงจรไฟฟ้ามีกระแสไฟฟ้าไหลผ่าน 0.5 A และมีความต้านทาน 40 Ω ความต่างศักย์คร่อมตัวต้านทานนี้มีค่าเท่าใด?",
+                options: [
+                    "มีความต่างศักย์ไฟฟ้าเท่ากับ 20.0 V โดยคำนวณจากสูตร V = I × R",
+                    "มีความต่างศักย์ไฟฟ้าเท่ากับ 80.0 V โดยคำนวณจากสูตร V = R ÷ I",
+                    "มีความต่างศักย์ไฟฟ้าเท่ากับ 40.5 V โดยคำนวณจากสูตร V = I + R",
+                    "มีความต่างศักย์ไฟฟ้าเท่ากับ 39.5 V โดยคำนวณจากสูตร V = R - I"
+                ],
+                correctIndex: 0,
+                clue: "ใช้สูตร V = I × R นำ 0.5 คูณกับ 40",
+                explanation: "จากสูตร V = I × R แทนค่า I = 0.5 และ R = 40 จะได้ V = 0.5 × 40 = 20.0 V"
+            },
+            {
+                id: 13,
+                question: "ข้อใดคือหน้าที่หลักของฟิวส์ (Fuse) ในระบบวงจรไฟฟ้าภายในอาคารบ้านเรือน?",
+                options: [
+                    "ตัดวงจรไฟฟ้าโดยอัตโนมัติเมื่อมีกระแสไฟฟ้าไหลผ่านเกินกำหนดเพื่อความปลอดภัย",
+                    "ช่วยเพิ่มระดับความต่างศักย์ไฟฟ้าให้สูงขึ้นเพื่อให้เครื่องใช้ไฟฟ้าทำงานดีขึ้น",
+                    "ทำหน้าที่เก็บสำรองพลังงานไฟฟ้าไว้ใช้ยามฉุกเฉินเมื่อไฟฟ้าดับจากภายนอก",
+                    "ช่วยลดปริมาณความต้านทานรวมในระบบวงจรไฟฟ้าลงเพื่อประหยัดพลังงาน"
+                ],
+                correctIndex: 0,
+                clue: "ฟิวส์ทำจากโลหะจุดหลอมเหลวต่ำ จะหลอมละลายตัดวงจรเมื่อกระแสเกิน",
+                explanation: "ฟิวส์เป็นอุปกรณ์นิรภัยที่จะหลอมละลายและตัดวงจรทันทีเมื่อมีกระแสไฟฟ้าเกินขนาด เพื่อป้องกันความเสียหายและอัคคีภัย"
+            },
+            {
+                id: 14,
+                question: "หลอดไฟขนาด 60 W เปิดใช้งานต่อเนื่องเป็นเวลา 2 ชั่วโมง จะใช้พลังงานไฟฟ้าไปเท่าใดในหน่วยกิโลวัตต์-ชั่วโมง (kWh หรือ หน่วย)?",
+                options: [
+                    "ใช้พลังงานไฟฟ้าไปเท่ากับ 0.12 kWh โดยคำนวณจาก (กำลังไฟฟ้าเป็นกิโลวัตต์ × เวลาเป็นชั่วโมง)",
+                    "ใช้พลังงานไฟฟ้าไปเท่ากับ 120.0 kWh โดยคำนวณจาก (กำลังไฟฟ้าเป็นวัตต์ × เวลาเป็นชั่วโมง)",
+                    "ใช้พลังงานไฟฟ้าไปเท่ากับ 30.0 kWh โดยคำนวณจาก (กำลังไฟฟ้าหารด้วยเวลา)",
+                    "ใช้พลังงานไฟฟ้าไปเท่ากับ 0.03 kWh โดยคำนวณจาก (เวลาหารด้วยกำลังไฟฟ้า)"
+                ],
+                correctIndex: 0,
+                clue: "แปลงวัตต์เป็นกิโลวัตต์ (60 W = 0.06 kW) แล้วคูณด้วยเวลา 2 ชั่วโมง",
+                explanation: "พลังงานไฟฟ้า (kWh) = [Power (W) ÷ 1000] × Time (hours) = (60 ÷ 1000) × 2 = 0.06 × 2 = 0.12 kWh"
+            },
+            {
+                id: 15,
+                question: "หากต้องการลดกระแสไฟฟ้าที่ไหลผ่านในวงจรลงครึ่งหนึ่ง โดยที่ความต่างศักย์ของแหล่งกำเนิดยังคงที่ จะต้องปรับเปลี่ยนความต้านทานอย่างไร?",
+                options: [
+                    "จะต้องเพิ่มค่าความต้านทานในวงจรให้มีค่าเป็น 2 เท่าของค่าเดิม",
+                    "จะต้องลดค่าความต้านทานในวงจรให้มีค่าลดลงเหลือครึ่งหนึ่งของเดิม",
+                    "จะต้องเพิ่มค่าความต้านทานในวงจรให้มีค่าเป็น 4 เท่าของค่าเดิม",
+                    "จะต้องรักษาค่าความต้านทานเดิมไว้โดยไม่ต้องปรับเปลี่ยนใดๆ ทั้งสิ้น"
+                ],
+                correctIndex: 0,
+                clue: "จาก I = V ÷ R หากต้องการให้ I ลดลงครึ่งหนึ่ง ตัวส่วน R ต้องเพิ่มเป็น 2 เท่า",
+                explanation: "จากความสัมพันธ์ผกผัน I = V ÷ R หากต้องการให้ I ลดลงครึ่งหนึ่ง (1/2) จำเป็นต้องเพิ่มความต้านทาน R ให้เป็น 2 เท่า"
+            },
+            {
+                id: 16,
+                question: "หากนำตัวต้านทานขนาด 4 Ω, 6 Ω และ 10 Ω มาต่ออนุกรมกัน จะมีความต้านทานรวมของวงจรเท่าใด?",
+                options: [
+                    "มีความต้านทานรวมเท่ากับ 20.0 Ω โดยนำค่าความต้านทานทุกตัวมาบวกกัน",
+                    "มีความต้านทานรวมเท่ากับ 2.0 Ω โดยคำนวณจากผลหารของผลบวก",
+                    "มีความต้านทานรวมเท่ากับ 10.0 Ω โดยใช้ค่าความต้านทานที่มากที่สุด",
+                    "มีความต้านทานรวมเท่ากับ 240.0 Ω โดยนำค่าความต้านทานมาคูณกันทั้งหมด"
+                ],
+                correctIndex: 0,
+                clue: "การต่อตัวต้านทานแบบอนุกรมให้นำค่าความต้านทานทั้งหมดมารวมกันโดยตรง",
+                explanation: "การต่อแบบอนุกรม: R_total = R_1 + R_2 + R_3 = 4 + 6 + 10 = 20.0 Ω"
+            },
+            {
+                id: 17,
+                question: "วงจรไฟฟ้าหนึ่งมีกระแสไฟฟ้าไหลผ่าน 4 A และมีความต้านทานรวม 15 Ω แหล่งกำเนิดไฟฟ้ามีความต่างศักย์เท่าใด?",
+                options: [
+                    "มีความต่างศักย์ไฟฟ้าเท่ากับ 60.0 V โดยคำนวณจากสูตร V = I × R",
+                    "มีความต่างศักย์ไฟฟ้าเท่ากับ 3.75 V โดยคำนวณจากสูตร V = R ÷ I",
+                    "มีความต่างศักย์ไฟฟ้าเท่ากับ 19.0 V โดยคำนวณจากสูตรสลบการบวก",
+                    "มีความต่างศักย์ไฟฟ้าเท่ากับ 11.0 V โดยคำนวณจากผลต่างของค่าทั้งสอง"
+                ],
+                correctIndex: 0,
+                clue: "ใช้สูตร V = I × R นำ 4 คูณกับ 15",
+                explanation: "จากสูตร V = I × R แทนค่า I = 4 และ R = 15 จะได้ V = 4 × 15 = 60.0 V"
+            },
+            {
+                id: 18,
+                question: "เครื่องใช้ไฟฟ้าชิ้นหนึ่งใช้กำลังไฟฟ้า 500 W เมื่อต่อกับความต่างศักย์ 100 V จะมีกระแสไฟฟ้าไหลผ่านเท่าใด?",
+                options: [
+                    "มีกระแสไฟฟ้าไหลผ่านเท่ากับ 5.0 A โดยคำนวณจากสูตร I = P ÷ V",
+                    "มีกระแสไฟฟ้าไหลผ่านเท่ากับ 50,000 A โดยคำนวณจากสูตร I = P × V",
+                    "มีกระแสไฟฟ้าไหลผ่านเท่ากับ 0.2 A โดยคำนวณจากสูตร I = V ÷ P",
+                    "มีกระแสไฟฟ้าไหลผ่านเท่ากับ 400 A โดยคำนวณจากสูตร I = P - V"
+                ],
+                correctIndex: 0,
+                clue: "จัดรูปจากสมการกำลังไฟฟ้า P = V × I จะได้ I = P ÷ V",
+                explanation: "จากสูตร I = P ÷ V แทนค่า P = 500 และ V = 100 จะได้ I = 500 ÷ 100 = 5.0 A"
+            },
+            {
+                id: 19,
+                question: "ข้อใดกล่าวถึงสมบัติของลวดตัวนำไฟฟ้าที่มีความต้านทานน้อยที่สุดได้อย่างถูกต้องที่สุด?",
+                options: [
+                    "ลวดตัวนำที่มีความหนามากและมีความยาวน้อย จะมีความต้านทานน้อยที่สุด",
+                    "ลวดตัวนำที่มีความหนาน้อยและมีความยาวมาก จะมีความต้านทานน้อยที่สุด",
+                    "ลวดตัวนำที่เป็นฉนวนไฟฟ้าอย่างดี จะมีค่าความต้านทานทางไฟฟ้าน้อยมาก",
+                    "ลวดตัวนำที่มีอุณหภูมิสูงมากๆ จะส่งผลให้ความต้านทานลดลงเหลือน้อยที่สุด"
+                ],
+                correctIndex: 0,
+                clue: "ความต้านทานแปรผันตรงกับความยาว และแปรผกผันกับพื้นที่หน้าตัด",
+                explanation: "ความต้านทาน R = ρ × (L ÷ A) ดังนั้นลวดที่สั้น (L น้อย) และหนา (A มาก) จะมีความต้านทานต่ำที่สุด"
+            },
+            {
+                id: 20,
+                question: "หากกระแสไฟฟ้าในวงจรเพิ่มขึ้นเป็น 3 เท่า โดยที่ความต้านทานคงที่ ความต่างศักย์ของแหล่งกำเนิดจะเป็นอย่างไร?",
+                options: [
+                    "ความต่างศักย์ของแหล่งกำเนิดจะเพิ่มขึ้นเป็น 3 เท่าตามกฎของโอห์ม",
+                    "ความต่างศักย์ของแหล่งกำเนิดจะลดลงเหลือหนึ่งในสามของค่าเดิม",
+                    "ความต่างศักย์ของแหล่งกำเนิดจะมีค่าคงที่เท่าเดิมไม่เปลี่ยนแปลง",
+                    "ความต่างศักย์ของแหล่งกำเนิดจะเพิ่มขึ้นเป็น 9 เท่าตามกำลังสอง"
+                ],
+                correctIndex: 0,
+                clue: "จาก V = I × R เมื่อ R คงที่ V จะแปรผันตรงกับ I",
+                explanation: "จากสมการ V = I × R เมื่อ R คงที่ หากกระแส I เพิ่มเป็น 3 เท่า แรงดัน V จะต้องเพิ่มเป็น 3 เท่าตามด้วย"
+            },
+            {
+                id: 21,
+                question: "หม้อหุงข้าวไฟฟ้าขนาด 800 W ทำงานด้วยความต่างศักย์ 200 V ขดลวดความร้อนภายในมีความต้านทานเท่าใด?",
+                options: [
+                    "ขดลวดความร้อนมีความต้านทานเท่ากับ 50.0 Ω โดยใช้สูตร R = (V^2) ÷ P",
+                    "ขดลวดความร้อนมีความต้านทานเท่ากับ 160,000 Ω โดยใช้สูตร R = P × (V^2)",
+                    "ขดลวดความร้อนมีความต้านทานเท่ากับ 4.0 Ω โดยใช้สูตรการหารปกติ",
+                    "ขดลวดความร้อนมีความต้านทานเท่ากับ 0.02 Ω โดยใช้สูตรกลับเศษเป็นส่วน"
+                ],
+                correctIndex: 0,
+                clue: "ใช้สูตรกำลังไฟฟ้าในรูปความต้านทาน P = (V^2) ÷ R จัดรูปหา R = (V^2) ÷ P",
+                explanation: "จากสูตร R = (V^2) ÷ P แทนค่า V = 200 และ P = 800 จะได้ R = (200^2) ÷ 800 = 40,000 ÷ 800 = 50.0 Ω"
+            },
+            {
+                id: 22,
+                question: "อุปกรณ์ใดทำหน้าที่เป็นแหล่งกำเนิดไฟฟ้ากระแสตรง (Direct Current Source) ในชีวิตประจำวัน?",
+                options: [
+                    "แบตเตอรี่โทรศัพท์มือถือและถ่านไฟฉาย (Dry Cell)",
+                    "เครื่องกำเนิดไฟฟ้าขนาดใหญ่ตามโรงไฟฟ้าพลังน้ำ",
+                    "เต้ารับไฟฟ้ากระแสสลับ 220 โวลต์ ติดผนังภายในบ้าน",
+                    "ไดนาโมผลิตกระแสไฟฟ้าของจักรยานเสือภูเขาแบบหมุนล้อ"
+                ],
+                correctIndex: 0,
+                clue: "แหล่งจ่ายไฟ DC จ่ายกระแสทิศทางเดียว เช่น แบตเตอรี่และเซลล์สุริยะ",
+                explanation: "ถ่านไฟฉายและแบตเตอรี่โทรศัพท์เป็นแหล่งจ่ายพลังงานไฟฟ้ากระแสตรง (DC) ที่มีขั้วบวกและขั้วลบแน่นอน"
+            },
+            {
+                id: 23,
+                question: "หากหลอดไฟดวงหนึ่งมีความต้านทาน 50 Ω และมีกระแสไฟฟ้าไหลผ่าน 0.4 A กำลังไฟฟ้าที่หลอดไฟใช้อยู่มีค่าเท่าใด?",
+                options: [
+                    "มีกำลังไฟฟ้าเท่ากับ 8.0 W โดยคำนวณจากสูตร P = (I^2) × R",
+                    "มีกำลังไฟฟ้าเท่ากับ 20.0 W โดยคำนวณจากสูตร P = I × R",
+                    "มีกำลังไฟฟ้าเท่ากับ 125.0 W โดยคำนวณจากสูตร P = R ÷ (I^2)",
+                    "มีกำลังไฟฟ้าเท่ากับ 3.2 W โดยคำนวณจากสูตรตัวแปรคูณกัน"
+                ],
+                correctIndex: 0,
+                clue: "ใช้สูตร P = (I^2) × R นำ (0.4)^2 คูณกับ 50",
+                explanation: "จากสูตร P = (I^2) × R แทนค่า I = 0.4 และ R = 50 จะได้ P = (0.4)^2 × 50 = 0.16 × 50 = 8.0 W"
+            },
+            {
+                id: 24,
+                question: "ข้อใดคือหน่วยวัดของพลังงานไฟฟ้าที่ใช้ในการคิดค่าไฟฟ้าตามบ้านเรือนในใบเสร็จการไฟฟ้า?",
+                options: [
+                    "กิโลวัตต์-ชั่วโมง (Kilowatt-hour หรือ kWh) หรือที่เรียกกันทั่วไปว่า 'หน่วย'",
+                    "แอมแปร์-ชั่วโมง (Ampere-hour) ซึ่งวัดความจุของประจุไฟฟ้าในแบตเตอรี่",
+                    "โวลต์-แอมแปร์ (Volt-ampere) ซึ่งเป็นหน่วยของกำลังงานปรากฏในระบบ",
+                    "จูลต่อวินาที (Joule per second) ซึ่งเทียบเท่ากับกำลังไฟฟ้าวัตต์"
+                ],
+                correctIndex: 0,
+                clue: "หน่วยคิดค่าไฟบ้านคือหน่วยพลังงาน kWh",
+                explanation: "การคิดค่าไฟฟ้าของการไฟฟ้าจะใช้หน่วยกิโลวัตต์-ชั่วโมง (kWh) ซึ่งเกิดจากกำลังไฟฟ้า (kW) คูณด้วยเวลาที่ใช้งาน (ชั่วโมง)"
+            },
+            {
+                id: 25,
+                question: "ถ้าวงจรไฟฟ้ามีพลังงานไฟฟ้าถูกใช้ไป 3,600 J ภายในเวลา 60 วินาที กำลังไฟฟ้าของอุปกรณ์นี้มีค่าเท่าใด?",
+                options: [
+                    "มีกำลังไฟฟ้าเท่ากับ 60.0 W โดยคำนวณจากอัตราพลังงานต่อเวลา (P = W ÷ t)",
+                    "มีกำลังไฟฟ้าเท่ากับ 216,000 W โดยคำนวณจากผลคูณของพลังงานและเวลา",
+                    "มีกำลังไฟฟ้าเท่ากับ 0.017 W โดยคำนวณจากเวลาหารด้วยพลังงาน",
+                    "มีกำลังไฟฟ้าหน่วงเท่ากับ 3,540 W โดยคำนวณจากผลต่างของค่าทั้งสอง"
+                ],
+                correctIndex: 0,
+                clue: "กำลังไฟฟ้าคือพลังงานต่อหน่วยเวลา P = W ÷ t",
+                explanation: "จากนิยามกำลังไฟฟ้า P = W ÷ t แทนค่าพลังงาน W = 3600 J และเวลา t = 60 s จะได้ P = 3600 ÷ 60 = 60.0 W"
+            },
+            {
+                id: 26,
+                question: "ในการต่อวงจรไฟฟ้า หากสวิตช์อยู่ในตำแหน่ง 'เปิด' (Open Switch) จะส่งผลต่อกระแสไฟฟ้าในวงจรอย่างไร?",
+                options: [
+                    "กระแสไฟฟ้าไม่สามารถไหลผ่านวงจรได้เนื่องจากวงจรเปิด (Open Circuit)",
+                    "กระแสไฟฟ้าจะไหลผ่านวงจรด้วยความเร็วสูงมากเนื่องจากไม่มีความต้านทาน",
+                    "กระแสไฟฟ้าจะไหลผ่านวงจรได้ปกติแต่วัดค่าความต่างศักย์ไม่ได้",
+                    "กระแสไฟฟ้าจะไหลย้อนกลับทิศทางเพื่อป้องกันความเสียหายของแหล่งจ่าย"
+                ],
+                correctIndex: 0,
+                clue: "สวิตช์เปิดหมายถึงวงจรขาดตอน อิเล็กตรอนเคลื่อนที่ต่อไม่ได้",
+                explanation: "เมื่อสวิตช์เปิด (Open Switch) เส้นทางเดินของกระแสไฟฟ้าจะขาดตอน ทำให้ไม่มีกระแสไฟฟ้าไหลในวงจรหรือเรียกว่าวงจรเปิด"
+            },
+            {
+                id: 27,
+                question: "แอมมิเตอร์ (Ammeter) เป็นเครื่องมือวัดทางไฟฟ้าที่ต้องนำไปต่อในลักษณะใดของวงจรไฟฟ้าจึงจะถูกต้อง?",
+                options: [
+                    "ต้องต่อแบบอนุกรม (Series Connection) แทรกเข้าไปในเส้นทางที่กระแสไฟฟ้าไหลผ่าน",
+                    "ต้องต่อแบบขนาน (Parallel Connection) คร่อมคร่อมแหล่งกำเนิดไฟฟ้าหรืออุปกรณ์",
+                    "สามารถต่อแบบใดก็ได้ตามความสะดวกของผู้ปฏิบัติงานทดลองในห้องเรียน",
+                    "ต้องต่อลัดวงจรข้ามขั้วบวกและขั้วลบเพื่อดึงกระแสมาวัดค่าทั้งหมด"
+                ],
+                correctIndex: 0,
+                clue: "แอมมิเตอร์วัดกระแสต้องต่ออนุกรม และมีความต้านทานภายในน้อยมาก",
+                explanation: "การวัดกระแสไฟฟ้าด้วยแอมมิเตอร์ต้องต่อแบบอนุกรมในวงจรเพื่อให้กระแสไหลผ่านตัวเครื่อง และแอมมิเตอร์ที่ดีต้องมีความต้านทานน้อยมาก"
+            },
+            {
+                id: 28,
+                question: "โวลต์มิเตอร์ (Voltmeter) เป็นเครื่องมือวัดทางไฟฟ้าที่ต้องนำไปต่อในลักษณะใดของวงจรไฟฟ้าจึงจะถูกต้อง?",
+                options: [
+                    "ต้องต่อแบบขนาน (Parallel Connection) คร่อมจุดสองจุดที่ต้องการวัดความต่างศักย์",
+                    "ต้องต่อแบบอนุกรม (Series Connection) แทรกไว้ที่ขั้วบวกของแหล่งจ่ายไฟ",
+                    "ต้องต่อสายดินเชื่อมโยงกับโครงสร้างโลหะของอุปกรณ์ก่อนจึงจะเริ่มวัดค่า",
+                    "ต้องต่อสลับขั้วบวกและขั้วลบเพื่อป้องกันเข็มตีกลับสเกลการวัด"
+                ],
+                correctIndex: 0,
+                clue: "โวลต์มิเตอร์วัดความต่างศักย์ต้องต่อคร่อมแบบขนาน และมีความต้านทานภายในสูงมาก",
+                explanation: "การวัดความต่างศักย์หรือแรงดันไฟฟ้าต้องต่อโวลต์มิเตอร์แบบขนาน (คร่อม) กับอุปกรณ์ที่ต้องการวัด และโวลต์มิเตอร์ต้องมีความต้านทานภายในสูงมาก"
+            },
+            {
+                id: 29,
+                question: "หากเต้ารับไฟฟ้ามีกระแสไฟฟ้าไหลผ่านเกินขีดจำกัดความปลอดภัย จะส่งผลให้อุปกรณ์ป้องกันใดทำงานก่อนเกิดเพลิงไหม้?",
+                options: [
+                    "เบรกเกอร์ (Circuit Breaker) หรือฟิวส์ (Fuse) จะตัดวงจรไฟฟ้าทันที",
+                    "สวิตช์ไฟทั่วไปจะดีดตัวเปิดออกเองโดยอัตโนมัติเพื่อระบายความร้อน",
+                    "มิเตอร์ไฟฟ้าการไฟฟ้าหน้าบ้านจะหยุดหมุนและตัดสัญญาณเตือน",
+                    "หลอดไฟทุกดวงในบ้านจะกะพริบแสงสว่างสูงสุดแล้วดับลงพร้อมกัน"
+                ],
+                correctIndex: 0,
+                clue: "อุปกรณ์ป้องกันกระแสเกินคือฟิวส์และเบรกเกอร์",
+                explanation: "เมื่อเกิดกระแสไฟฟ้าเกิน (Overload) ฟิวส์จะหลอมละลายหรือเบรกเกอร์จะทริปตัดวงจร เพื่อป้องกันสายไฟร้อนจัดและเกิดอัคคีภัย"
+            },
+            {
+                id: 30,
+                question: "โจทย์ประยุกต์: เครื่องปรับอากาศขนาด 2,000 W ต่อกับแรงดันไฟฟ้า 220 V จะมีความต้านทานเสมือนของเครื่องปรับอากาศนี้ประมาณเท่าใด?",
+                options: [
+                    "มีความต้านทานเสมือนประมาณ 24.2 Ω โดยคำนวณจากสูตร R = (V^2) ÷ P",
+                    "มีความต้านทานเสมือนประมาณ 440,000 Ω โดยคำนวณจากผลคูณของกำลังและแรงดัน",
+                    "มีความต้านทานเสมือนประมาณ 9.09 Ω โดยคำนวณจากสูตร R = P ÷ V",
+                    "มีความต้านทานเสมือนประมาณ 0.11 Ω โดยคำนวณจากสูตรกลับเศษส่วน"
+                ],
+                correctIndex: 0,
+                clue: "ใช้สูตร R = (V^2) ÷ P นำ 220^2 หารด้วย 2000",
+                explanation: "จากสูตร R = (V^2) ÷ P แทนค่า V = 220 และ P = 2000 จะได้ R = 48400 ÷ 2000 = 24.2 Ω"
+            }
+        ];
+
+        let questions = [];
+        let userAnswers = {};
+        let score = 0;
+
+        // Fisher-Yates Shuffle Algorithm
+        function shuffleArray(array) {
+            let currentIndex = array.length, randomIndex;
+            while (currentIndex != 0) {
+                randomIndex = Math.floor(Math.random() * currentIndex);
+                currentIndex--;
+                [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+            }
+            return array;
+        }
+
+        // Initialize Exam Questions with shuffled options
+        function initExam() {
+            questions = rawQuestions.map(q => {
+                let optionsWithMeta = q.options.map((opt, idx) => ({ text: opt, originalIndex: idx }));
+                shuffleArray(optionsWithMeta);
+                let newCorrectIndex = optionsWithMeta.findIndex(o => o.originalIndex === q.correctIndex);
+                return {
+                    id: q.id,
+                    question: q.question,
+                    options: optionsWithMeta.map(o => o.text),
+                    correctIndex: newCorrectIndex,
+                    clue: q.clue,
+                    explanation: q.explanation
+                };
+            });
+            userAnswers = {};
+            score = 0;
+            renderExam();
+            updateScoreDisplay();
+            document.getElementById('resultPanel').classList.add('hidden');
+        }
+
+        // Render Exam to DOM
+        function renderExam() {
+            const container = document.getElementById('questionsList');
+            container.innerHTML = '';
+
+            questions.forEach((q, qIndex) => {
+                let card = document.createElement('div');
+                card.className = 'bg-white p-5 rounded-xl shadow-md border border-slate-200 space-y-3';
+                card.id = `question-card-${qIndex}`;
+
+                let optionsHtml = '';
+                q.options.forEach((opt, optIndex) => {
+                    optionsHtml += `
+                        <label id="label-${qIndex}-${optIndex}" class="flex items-start gap-3 p-3 rounded-lg border border-slate-200 hover:bg-slate-50 cursor-pointer transition">
+                            <input type="radio" name="question-${qIndex}" value="${optIndex}" onchange="selectAnswer(${qIndex}, ${optIndex})" class="mt-1 accent-indigo-600">
+                            <span class="text-sm text-slate-700">${opt}</span>
+                        </label>
+                    `;
+                });
+
+                card.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <span class="text-xs font-bold bg-indigo-100 text-indigo-700 px-2.5 py-1 rounded-full">ข้อที่ ${qIndex + 1} / 30</span>
+                        <button onclick="toggleClue(${qIndex})" class="text-xs text-amber-600 hover:text-amber-700 font-medium bg-amber-50 px-2 py-1 rounded border border-amber-200">💡 คำใบ้ / แนวคิด</button>
+                    </div>
+                    <p class="font-semibold text-slate-800 text-base">${q.question}</p>
+                    <div id="clue-${qIndex}" class="hidden text-xs bg-amber-50 text-amber-800 p-2.5 rounded border border-amber-200">
+                        <strong>แนวคิด:</strong> ${q.clue}
+                    </div>
+                    <div class="space-y-2 mt-2">
+                        ${optionsHtml}
+                    </div>
+                    <div id="feedback-${qIndex}" class="hidden mt-3 p-3 rounded-lg text-xs"></div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // Toggle Clue
+        function toggleClue(qIndex) {
+            let clueBox = document.getElementById(`clue-${qIndex}`);
+            clueBox.classList.toggle('hidden');
+        }
+
+        // Handle Answer Selection
+        function selectAnswer(qIndex, selectedOptIndex) {
+            if (userAnswers[qIndex] !== undefined) return; // Answered already
+
+            userAnswers[qIndex] = selectedOptIndex;
+            let q = questions[qIndex];
+            let isCorrect = (selectedOptIndex === q.correctIndex);
+
+            if (isCorrect) score++;
+            updateScoreDisplay();
+
+            // Disable all radios for this question
+            let card = document.getElementById(`question-card-${qIndex}`);
+            let radios = card.querySelectorAll('input[type="radio"]');
+            radios.forEach(r => r.disabled = true);
+
+            // Highlight options
+            q.options.forEach((opt, optIdx) => {
+                let lbl = document.getElementById(`label-${qIndex}-${optIdx}`);
+                if (optIdx === q.correctIndex) {
+                    lbl.classList.remove('border-slate-200', 'hover:bg-slate-50');
+                    lbl.classList.add('bg-emerald-50', 'border-emerald-500', 'font-medium');
+                } else if (optIdx === selectedOptIndex && !isCorrect) {
+                    lbl.classList.remove('border-slate-200', 'hover:bg-slate-50');
+                    lbl.classList.add('bg-rose-50', 'border-rose-500');
+                }
+            });
+
+            // Show feedback
+            let feedback = document.getElementById(`feedback-${qIndex}`);
+            feedback.classList.remove('hidden');
+            if (isCorrect) {
+                feedback.className = "mt-3 p-3 rounded-lg text-xs bg-emerald-100 text-emerald-800 border border-emerald-300";
+                feedback.innerHTML = `<strong>✨ ถูกต้องครับ!</strong> ${q.explanation}`;
+            } else {
+                feedback.className = "mt-3 p-3 rounded-lg text-xs bg-rose-100 text-rose-800 border border-rose-300";
+                feedback.innerHTML = `<strong>❌ ยังไม่ถูกต้องครับ</strong> ${q.explanation}`;
+            }
+
+            // Save state to localStorage
+            localStorage.setItem('tutor_exam_answers_30q', JSON.stringify(userAnswers));
+            localStorage.setItem('tutor_exam_score_30q', score);
+
+            // Check if all answered
+            if (Object.keys(userAnswers).length === questions.length) {
+                showFinalAnalysis();
+            }
+        }
+
+        function updateScoreDisplay() {
+            document.getElementById('scoreDisplay').innerText = `${score} / 30`;
+        }
+
+        // Show Final Analysis
+        function showFinalAnalysis() {
+            let panel = document.getElementById('resultPanel');
+            let content = document.getElementById('analysisContent');
+            panel.classList.remove('hidden');
+
+            let percentage = (score / 30) * 100;
+            let gradeComment = "";
+            if (percentage >= 80) {
+                gradeComment = "🌟 ยอดเยี่ยมมาก! คุณมีความเข้าใจลึกซึ้งเกี่ยวกับการคำนวณกฎของโอห์มและกำลังไฟฟ้า พร้อมสำหรับการสอบแข่งขันเข้า ม.1 อย่างยิ่ง";
+            } else if (percentage >= 50) {
+                gradeComment = "👍 ทำได้ดีมาก! แต่อาจจะต้องทบทวนสูตรความสัมพันธ์กำลังไฟฟ้า P = (I^2)R และ P = (V^2)/R เพิ่มเติมอีกเล็กน้อย";
+            } else {
+                gradeComment = "💡 ควรกลับมาทบทวนสูตรพื้นฐาน V = I × R และการวิเคราะห์หน่วยสากลทางไฟฟ้าใหม่อีกรอบเพื่อความมั่นใจครับ";
+            }
+
+            content.innerHTML = `
+                <div class="bg-indigo-50 p-4 rounded-lg border border-indigo-200 text-center space-y-1">
+                    <div class="text-lg font-bold text-indigo-700">คะแนนรวมสุทธิ: ${score} / 30 (${percentage.toFixed(1)}%)</div>
+                    <p class="text-xs text-slate-600">${gradeComment}</p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3">
+                    <div class="bg-emerald-50 p-3 rounded-lg border border-emerald-200">
+                        <strong class="text-emerald-800 text-xs block mb-1">✅ จุดเด่น (Strengths):</strong>
+                        <p class="text-xs text-slate-600">มีความเข้าใจกระบวนการคิดคำนวณและการใช้เครื่องมือวัดทางไฟฟ้าพื้นฐาน</p>
+                    </div>
+                    <div class="bg-amber-50 p-3 rounded-lg border border-amber-200">
+                        <strong class="text-amber-800 text-xs block mb-1">🔍 จุดที่ควรพัฒนา (Areas for Improvement):</strong>
+                        <p class="text-xs text-slate-600">ระมัดระวังการแปลงหน่วยพลังงานและการเลือกใช้สูตรกำลังไฟฟ้าทางเลือก</p>
+                    </div>
+                </div>
+            `;
+            panel.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Reset Exam
+        function resetExam() {
+            localStorage.removeItem('tutor_exam_answers_30q');
+            localStorage.removeItem('tutor_exam_score_30q');
+            initExam();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Simulator Logic
+        function updateSimulator() {
+            let v = parseFloat(document.getElementById('rangeV').value);
+            let r = parseFloat(document.getElementById('rangeR').value);
+            document.getElementById('valV').innerText = v;
+            document.getElementById('valR').innerText = r;
+
+            let i = v / r;
+            let p = v * i;
+
+            document.getElementById('simI').innerText = i.toFixed(2) + " A";
+            document.getElementById('simP').innerText = p.toFixed(2) + " W";
+        }
+
+        // Whiteboard Logic
+        const canvas = document.getElementById('whiteboard');
+        const ctx = canvas.getContext('2d');
+        let painting = false;
+        let penColor = '#1e293b';
+
+        function resizeCanvas() {
+            canvas.width = canvas.parentElement.clientWidth - 32;
+            canvas.height = 320;
+            ctx.fillStyle = '#fffbeb';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        function startPosition(e) {
+            painting = true;
+            draw(e);
+        }
+
+        function finishedPosition() {
+            painting = false;
+            ctx.beginPath();
+        }
+
+        function draw(e) {
+            if (!painting) return;
+            e.preventDefault();
+            ctx.lineWidth = 2.5;
+            ctx.lineCap = 'round';
+            ctx.strokeStyle = penColor;
+
+            let rect = canvas.getBoundingClientRect();
+            let clientX = e.clientX || (e.touches && e.touches[0].clientX);
+            let clientY = e.clientY || (e.touches && e.touches[0].clientY);
+            let x = clientX - rect.left;
+            let y = clientY - rect.top;
+
+            ctx.lineTo(x, y);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+        }
+
+        function setPenColor(color) {
+            penColor = color;
+        }
+
+        function clearCanvas() {
+            ctx.fillStyle = '#fffbeb';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+
+        canvas.addEventListener('mousedown', startPosition);
+        canvas.addEventListener('mouseup', finishedPosition);
+        canvas.addEventListener('mousemove', draw);
+
+        canvas.addEventListener('touchstart', startPosition, { passive: false });
+        canvas.addEventListener('touchend', finishedPosition);
+        canvas.addEventListener('touchmove', draw, { passive: false });
+
+        // Toggle Language Simulation
+        let isThai = true;
+        function toggleLanguage() {
+            isThai = !isThai;
+            let btn = document.getElementById('langBtn');
+            btn.innerText = isThai ? "🌐 ภาษา: ไทย (TH)" : "🌐 ภาษา: อังกฤษ (EN)";
+        }
+
+        // Run Init on Load
+        window.onload = function() {
+            initExam();
+            updateSimulator();
+        };
+    </script>
+</body>
+</html>
