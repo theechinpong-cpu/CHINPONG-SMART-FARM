@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>พระจอมเกล้าติวเตอร์ - เกมวงล้อสุ่มข้อสอบภาษาอังกฤษ ม.1 เทอม 2 (กลางภาค)</title>
+    <!-- Tailwind CSS CDN for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap');
+        body {
+            font-family: 'Sarabun', sans-serif;
+        }
+        .canvas-container {
+            cursor: crosshair;
+            touch-action: none;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+    <!-- Header -->
+    <header class="bg-sky-700 text-white shadow-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center">
+            <div>
+                <h1 class="text-2xl font-bold flex items-center gap-2">
+                    <span>🇬🇧</span> พระจอมเกล้าติวเตอร์ (Phra Chom Klao Tutor)
+                </h1>
+                <p class="text-sky-200 text-sm">เกมวงล้อสุ่มผู้โชคดีตอบคำถาม วิชาภาษาอังกฤษ ม.1 เทอม 2 (แนวข้อสอบกลางภาค)</p>
+            </div>
+            <div class="mt-3 sm:mt-0 flex items-center gap-3">
+                <button id="langToggleBtn" onclick="toggleLanguage()" class="bg-sky-600 hover:bg-sky-500 text-white px-3 py-1.5 rounded-lg text-sm font-medium border border-sky-500 transition shadow-sm">
+                    🌐 ภาษา: ไทย (TH)
+                </button>
+                <button onclick="resetGame()" class="bg-amber-600 hover:bg-amber-500 text-white px-3 py-1.5 rounded-lg text-sm font-medium transition shadow-sm">
+                    🔄 รีเซ็ตเกมทั้งหมด
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="max-w-7xl mx-auto px-4 py-6 flex-grow w-full space-y-8">
+
+        <!-- 0. Game Dashboard & Scoreboard (Wheel & Teacher Control) -->
+        <section class="bg-gradient-to-br from-sky-900 to-slate-900 text-white rounded-2xl shadow-xl p-6 space-y-6">
+            <div class="text-center space-y-2">
+                <h2 class="text-2xl font-bold flex items-center justify-center gap-2">
+                    <span>🎡</span> เกมวงล้อสุ่มผู้โชคดีตอบคำถาม (น้ำฟ้า | ตาล | ท็อป | ลูกเกด)
+                </h2>
+                <p class="text-sky-200 text-sm">หมุนวงล้อเพื่อเสี่ยงทายผู้โชคดีตอบคำถามภาษาอังกฤษ พร้อมระบบคะแนนสะสมโดยครูผู้สอน</p>
+            </div>
+
+            <!-- Scoreboard & Teacher Controls (4 Players) -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <!-- Player 1: น้ำฟ้า -->
+                <div class="bg-white/10 backdrop-blur-md border border-white/20 p-4 rounded-xl flex flex-col justify-between space-y-3">
+                    <div class="flex justify-between items-center">
+                        <span class="font-bold text-base text-pink-300">👧 น้ำฟ้า</span>
+                        <span class="bg-pink-500/20 text-pink-300 text-xs px-2.5 py-1 rounded-full font-semibold border border-pink-400/30">คะแนน: <span id="score-namfah">0</span></span>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="modifyScore('namfah', 1)" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold py-2 rounded-lg transition shadow-sm">
+                            ✅ ถูก (+1)
+                        </button>
+                        <button onclick="modifyScore('namfah', -1)" class="flex-1 bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold py-2 rounded-lg transition shadow-sm">
+                            ❌ ผิด (-1)
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Player 2: ตาล -->
+                <div class="bg-white/10 backdrop-blur-md border border-white/20 p-4 rounded-xl flex flex-col justify-between space-y-3">
+                    <div class="flex justify-between items-center">
+                        <span class="font-bold text-base text-amber-300">👧 ตาล</span>
+                        <span class="bg-amber-500/20 text-amber-300 text-xs px-2.5 py-1 rounded-full font-semibold border border-amber-400/30">คะแนน: <span id="score-tan">0</span></span>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="modifyScore('tan', 1)" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold py-2 rounded-lg transition shadow-sm">
+                            ✅ ถูก (+1)
+                        </button>
+                        <button onclick="modifyScore('tan', -1)" class="flex-1 bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold py-2 rounded-lg transition shadow-sm">
+                            ❌ ผิด (-1)
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Player 3: ท็อป -->
+                <div class="bg-white/10 backdrop-blur-md border border-white/20 p-4 rounded-xl flex flex-col justify-between space-y-3">
+                    <div class="flex justify-between items-center">
+                        <span class="font-bold text-base text-cyan-300">👦 ท็อป</span>
+                        <span class="bg-cyan-500/20 text-cyan-300 text-xs px-2.5 py-1 rounded-full font-semibold border border-cyan-400/30">คะแนน: <span id="score-top">0</span></span>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="modifyScore('top', 1)" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold py-2 rounded-lg transition shadow-sm">
+                            ✅ ถูก (+1)
+                        </button>
+                        <button onclick="modifyScore('top', -1)" class="flex-1 bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold py-2 rounded-lg transition shadow-sm">
+                            ❌ ผิด (-1)
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Player 4: ลูกเกด -->
+                <div class="bg-white/10 backdrop-blur-md border border-white/20 p-4 rounded-xl flex flex-col justify-between space-y-3">
+                    <div class="flex justify-between items-center">
+                        <span class="font-bold text-base text-purple-300">👧 ลูกเกด</span>
+                        <span class="bg-purple-500/20 text-purple-300 text-xs px-2.5 py-1 rounded-full font-semibold border border-purple-400/30">คะแนน: <span id="score-lookgate">0</span></span>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="modifyScore('lookgate', 1)" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold py-2 rounded-lg transition shadow-sm">
+                            ✅ ถูก (+1)
+                        </button>
+                        <button onclick="modifyScore('lookgate', -1)" class="flex-1 bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold py-2 rounded-lg transition shadow-sm">
+                            ❌ ผิด (-1)
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Wheel Spinner Arena -->
+            <div class="bg-white/5 border border-white/10 p-6 rounded-xl text-center space-y-4">
+                <div class="text-sm text-sky-200">ผู้โชคดีรอบนี้คือ:</div>
+                <div id="wheelResultDisplay" class="text-3xl font-extrabold text-amber-300 tracking-wide animate-pulse">
+                    กดปุ่มหมุนวงล้อเพื่อเสี่ยงทายผู้โชคดี!
+                </div>
+                <div>
+                    <button onclick="spinWheel()" id="spinBtn" class="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white font-bold px-8 py-3 rounded-xl shadow-lg transition transform hover:scale-105 active:scale-95">
+                        🎰 หมุนวงล้อสุ่มผู้โชคดี
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- 1. Virtual Teaching Tool & Interactive Infographic (English Grammar & Vocabulary Builder) -->
+        <section class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+            <div class="border-b border-slate-100 pb-4 mb-6">
+                <h2 class="text-xl font-bold text-slate-900 flex items-center gap-2">
+                    <span class="text-sky-600">💡</span> เครื่องมือจำลองโครงสร้างประโยคภาษาอังกฤษ (Sentence Builder Tool)
+                </h2>
+                <p class="text-slate-600 text-sm mt-1">ทดลองเลือก Tense และโครงสร้างประโยค เพื่อดูตัวอย่างและการเรียงคำศัพท์ (Subject + Verb + Object) แบบเรียลไทม์</p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-center">
+                <!-- Control Panel -->
+                <div class="bg-slate-50 p-5 rounded-xl border border-slate-200 space-y-4">
+                    <h3 class="font-semibold text-slate-800 text-sm uppercase tracking-wider">แผงควบคุมไวยากรณ์</h3>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 mb-1">เลือก Tense / รูปแบบประโยค:</label>
+                        <select id="simTense" onchange="runEnglishSimulation()" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-sky-500 focus:outline-none">
+                            <option value="present_simple">Present Simple Tense (กิจวัตร)</option>
+                            <option value="present_cont">Present Continuous Tense (กำลังทำ)</option>
+                            <option value="past_simple">Past Simple Tense (อดีต)</option>
+                            <option value="future_simple">Future Simple Tense (อนาคต)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 mb-1">ประธาน (Subject):</label>
+                        <select id="simSubject" onchange="runEnglishSimulation()" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-sky-500 focus:outline-none">
+                            <option value="she">She (ผู้หญิงคนเดียว)</option>
+                            <option value="they">They (พวกเรา/พวกเขา)</option>
+                            <option value="i">I (ฉัน)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Live Result Display -->
+                <div class="lg:col-span-2 bg-gradient-to-br from-sky-50 to-blue-50 p-6 rounded-xl border border-sky-100 flex flex-col justify-center space-y-4">
+                    <div class="text-sm font-semibold text-sky-900">ตัวอย่างประโยคจำลองจากระบบ:</div>
+                    <div id="simSentenceDisplay" class="text-2xl font-bold text-sky-950 bg-white px-5 py-4 rounded-xl shadow-sm border border-sky-100 text-center">
+                        She studies English every day.
+                    </div>
+                    <div id="simExplanation" class="text-sm text-slate-700 bg-white/80 p-4 rounded-xl border border-sky-100">
+                        <strong>คำอธิบายโครงสร้าง:</strong> ประธานเอกพจน์ (She) กริยาช่องที่ 1 ต้องเติม s/es (studies) ใช้บอกกิจวัตรประจำวัน
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 2. Comprehensive Subject Summary (English M.1 Term 2 Midterm) -->
+        <section class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+            <div class="border-b border-slate-100 pb-4 mb-6">
+                <h2 class="text-xl font-bold text-slate-900 flex items-center gap-2">
+                    <span class="text-sky-600">📖</span> สรุปเนื้อหาภาษาอังกฤษ ม.1 เทอม 2 (เตรียมสอบกลางภาค)
+                </h2>
+            </div>
+            
+            <div class="prose max-w-none text-slate-700 space-y-4 text-sm leading-relaxed">
+                <p>
+                    การเตรียมตัวสอบกลางภาควิชาภาษาอังกฤษ ระดับชั้นมัธยมศึกษาปีที่ 1 เทอม 2 เน้นทักษะการบูรณาการทั้งด้านคำศัพท์ (Vocabulary) ไวยากรณ์ (Grammar) และสำนวนการสนทนาในชีวิตประจำวัน (Conversations) โดยเนื้อหาหลักประกอบด้วย: <strong>1) Tenses พื้นฐาน</strong> ได้แก่ Present Simple Tense (เหตุการณ์จริง กิจวัตร), Present Continuous Tense (กำลังกระทำ ณ ขณะนี้), Past Simple Tense (เหตุการณ์ในอดีต มีคำบอกเวลาเช่น yesterday, last week), และ Future Simple Tense (อนาคต ใช้ will หรือ be going to), <strong>2) Prepositions of Time and Place</strong> (การใช้ at, on, in กับเวลาและสถานที่), <strong>3) Wh-Questions</strong> (การตั้งคำถามและตอบคำถามด้วย Who, What, Where, When, Why, How), และ <strong>4) Everyday Expressions & Functional Dialogues</strong> เช่น การขอร้อง การกล่าวขอโทษ การให้คำแนะนำ และการทักทายตามมารยาทสากล
+                </p>
+                <p>
+                    เทคนิคสำคัญในการพิชิตข้อสอบระดับ ม.1 คือการหมั่นสังเกต Keyword ในประโยค เช่น หากพบคำว่า "every day" หรือ "always" ให้พิจารณาโครงสร้าง Present Simple ทันที แต่ถ้าพบคำว่า "yesterday" หรือ "last night" ต้องเปลี่ยนกริยาเป็นช่องที่ 2 (Past Simple) เสมอ นอกจากนี้ในส่วนของบทสนทนา (Conversations) นักเรียนต้องวิเคราะห์บริบทของสถานการณ์ (Context clues) ว่าเป็นการพูดคุยระหว่างใคร อยู่ในสถานที่ใด เพื่อเลือกตอบสำนวนที่สุภาพและเหมาะสมที่สุด การฝึกฝนทำโจทย์หลากหลายรูปแบบจะช่วยสร้างความมั่นใจและลดความผิดพลาดในการสอบจริงได้อย่างยอดเยี่ยม
+                </p>
+
+                <!-- Memory Tricks & Thought Process Box -->
+                <div class="bg-amber-50 border-l-4 border-amber-500 p-4 rounded-r-xl my-4">
+                    <h3 class="font-bold text-amber-900 mb-1 flex items-center gap-2">
+                        <span>💡</span> เทคนิคการจำและกระบวนการคิด (Memory Tricks & Thought Process)
+                    </h3>
+                    <ul class="list-disc pl-5 space-y-1 text-amber-900">
+                        <li><strong>In, On, At สำหรับเวลา:</strong> "In เดือน ปี ฤดูกาล / On วัน วันที่ / At เวลาเจาะจง" (In-On-At: เล็กไปใหญ่ หรือจำว่า At เวลา On วัน In เดือนปี)</li>
+                        <li><strong>Past Simple Tense:</strong> นึกถึงอดีตต้องเปลี่ยนรูปกริยา (V.2) เสมอ เช่น go -> went, eat -> ate, have -> had</li>
+                        <li><strong>การวิเคราะห์บทสนทนา:</strong> อ่านประโยคตอบ (Response) ก่อน หากตอบว่า "That's a good idea." ประโยคคำถามก่อนหน้ามักจะเป็นการชักชวน เช่น "Let's go..." หรือ "Shall we...?"</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3 & 4. Two-Frame Layout: Exam (70%) & Whiteboard (30%) -->
+        <section class="grid grid-cols-1 lg:grid-cols-10 gap-6 items-start">
+            
+            <!-- Left Frame: Exam System (70% -> lg:col-span-7) -->
+            <div class="lg:col-span-7 bg-white rounded-2xl shadow-sm border border-slate-200 p-6 space-y-6">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-100 pb-4 gap-3">
+                    <div>
+                        <h2 class="text-xl font-bold text-slate-900 flex items-center gap-2">
+                            <span class="text-sky-600">📝</span> พื้นที่ทำข้อสอบภาษาอังกฤษ (ผู้ตอบปัจจุบัน: <span id="activePlayerName" class="text-sky-600 font-extrabold">ยังไม่ได้เลือกผู้เล่น</span>)
+                        </h2>
+                        <p class="text-slate-500 text-xs mt-0.5">ข้อสอบกลางภาค ม.1 เทอม 2 สุ่มด้วย Fisher-Yates Shuffle ป้องกันการเดาและตรวจคำตอบทันที</p>
+                    </div>
+                    <div id="scoreBadge" class="bg-sky-50 text-sky-700 px-4 py-2 rounded-xl font-bold text-sm border border-sky-150">
+                        ชุดข้อสอบ Midterm ม.1
+                    </div>
+                </div>
+
+                <!-- Active Question Container -->
+                <div id="questionContainer" class="space-y-4 pt-2">
+                    <!-- Populated dynamically -->
+                </div>
+
+                <!-- Navigation & Action Controls -->
+                <div class="flex justify-between items-center pt-4 border-t border-slate-100">
+                    <button onclick="nextRandomQuestion()" class="bg-sky-600 hover:bg-sky-500 text-white px-6 py-2.5 rounded-xl text-sm font-bold shadow-sm transition">
+                        🔀 สุ่มข้อสอบข้อถัดไปสำหรับผู้เล่น
+                    </button>
+                    <button onclick="submitExam()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-2.5 rounded-xl text-sm font-bold shadow-sm transition">
+                        🎯 สรุปผลภาพรวม
+                    </button>
+                </div>
+
+                <!-- Evaluation & Analysis Panel (Hidden initially) -->
+                <div id="analysisPanel" class="hidden bg-slate-50 border border-slate-200 rounded-2xl p-6 space-y-4 mt-6">
+                    <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                        <span>📊</span> รายงานผลการวิเคราะห์สมรรถนะรายบุคคล (Performance Analytics)
+                    </h3>
+                    <div id="analysisContent" class="text-sm text-slate-700 space-y-2">
+                        <!-- Populated upon submission -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Frame: Whiteboard for Scratchpad (30% -> lg:col-span-3) -->
+            <div class="lg:col-span-3 bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sticky top-24 space-y-4">
+                <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                    <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+                        <span>✏️</span> กระดานทดโน้ต / Whiteboard
+                    </h3>
+                    <button onclick="clearCanvas()" class="text-xs bg-rose-50 text-rose-600 hover:bg-rose-100 px-2.5 py-1 rounded-lg font-medium border border-rose-200 transition">
+                        ล้างกระดาน
+                    </button>
+                </div>
+                <div class="border border-slate-300 rounded-xl overflow-hidden bg-slate-50 relative">
+                    <canvas id="scratchpad" class="w-full h-80 canvas-container block bg-white"></canvas>
+                </div>
+                <p class="text-[11px] text-slate-400 text-center">สามารถใช้เมาส์หรือนิ้วมือเขียนทดโน้ตคำศัพท์หรือไวยากรณ์ประกอบการทำข้อสอบได้ทันที</p>
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-200 py-6 text-center text-slate-500 text-sm mt-12">
+        <p>เขียนโดย พระจอมเกล้าติวเตอร์</p>
+    </footer>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        // --- 0. Web Audio API Sound Generator for Wheel Spinning ---
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playSpinSound() {
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            let osc = audioCtx.createOscillator();
+            let gain = audioCtx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(300, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(800, audioCtx.currentTime + 0.15);
+            gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+            gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.15);
+        }
+
+        function playWinSound() {
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            let notes = [523.25, 659.25, 783.99, 1046.50];
+            notes.forEach((freq, index) => {
+                let osc = audioCtx.createOscillator();
+                let gain = audioCtx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(freq, audioCtx.currentTime + index * 0.1);
+                gain.gain.setValueAtTime(0.2, audioCtx.currentTime + index * 0.1);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + index * 0.1 + 0.3);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start(audioCtx.currentTime + index * 0.1);
+                osc.stop(audioCtx.currentTime + index * 0.1 + 0.3);
+            });
+        }
+
+        // --- Game State & Players (น้ำฟ้า, ตาล, ท็อป, ลูกเกด) ---
+        const players = [
+            { id: 'namfah', name: 'น้ำฟ้า (Namfah)' },
+            { id: 'tan', name: 'ตาล (Tan)' },
+            { id: 'top', name: 'ท็อป (Top)' },
+            { id: 'lookgate', name: 'ลูกเกด (Lookgate)' }
+        ];
+        let scores = { namfah: 0, tan: 0, top: 0, lookgate: 0 };
+        let activePlayer = null;
+        let availableQuestionIndices = [];
+        let currentQuestionObj = null;
+
+        function spinWheel() {
+            const resultDisplay = document.getElementById('wheelResultDisplay');
+            const spinBtn = document.getElementById('spinBtn');
+            spinBtn.disabled = true;
+            resultDisplay.classList.add('animate-bounce');
+
+            let counter = 0;
+            let spinInterval = setInterval(() => {
+                playSpinSound();
+                let randomPlayer = players[Math.floor(Math.random() * players.length)];
+                resultDisplay.innerText = `🔄 กำลังสุ่ม... ${randomPlayer.name}`;
+                counter++;
+
+                if (counter > 15) {
+                    clearInterval(spinInterval);
+                    playWinSound();
+                    let winner = players[Math.floor(Math.random() * players.length)];
+                    activePlayer = winner;
+                    resultDisplay.classList.remove('animate-bounce');
+                    resultDisplay.innerText = `🎉 ผู้โชคดีรอบนี้คือ: ${winner.name}! 🎉`;
+                    document.getElementById('activePlayerName').innerText = winner.name;
+                    spinBtn.disabled = false;
+
+                    // Load a random unique English question for this player
+                    loadRandomQuestion();
+                }
+            }, 100);
+        }
+
+        function modifyScore(playerId, amount) {
+            scores[playerId] += amount;
+            document.getElementById(`score-${playerId}`).innerText = scores[playerId];
+        }
+
+        // --- 1. English Sentence Builder Simulation Logic ---
+        function runEnglishSimulation() {
+            const tense = document.getElementById('simTense').value;
+            const subject = document.getElementById('simSubject').value;
+            let sentence = "";
+            let desc = "";
+
+            if (tense === 'present_simple') {
+                if (subject === 'she') {
+                    sentence = "She studies English every day.";
+                    desc = "ประธานเอกพจน์ (She) กริยาช่อง 1 เติม -es (studies) ใช้บอกกิจวัตรประจำวัน";
+                } else if (subject === 'they') {
+                    sentence = "They study English every day.";
+                    desc = "ประธานพหูพจน์ (They) ใช้กริยาช่อง 1 รูปเดิม (study) ไม่ต้องเติม s/es";
+                } else {
+                    sentence = "I study English every day.";
+                    desc = "ประธาน I ใช้กริยาช่อง 1 รูปเดิม (study) เสมอใน Present Simple";
+                }
+            } else if (tense === 'present_cont') {
+                if (subject === 'she') {
+                    sentence = "She is studying English now.";
+                    desc = "ประธานเอกพจน์ใช้ is + V.ing (is studying) เหตุการณ์กำลังเกิดขึ้นขณะพูด";
+                } else if (subject === 'they') {
+                    sentence = "They are studying English now.";
+                    desc = "ประธานพหูพจน์ใช้ are + V.ing (are studying)";
+                } else {
+                    sentence = "I am studying English now.";
+                    desc = "ประธาน I ใช้ am + V.ing (am studying)";
+                }
+            } else if (tense === 'past_simple') {
+                sentence = subject === 'she' ? "She studied English yesterday." : (subject === 'they' ? "They studied English yesterday." : "I studied English yesterday.");
+                desc = "เหตุการณ์จบลงในอดีต (มักมีคำว่า yesterday) ใช้กริยาช่องที่ 2 (studied)";
+            } else if (tense === 'future_simple') {
+                sentence = subject === 'she' ? "She will study English tomorrow." : (subject === 'they' ? "They will study English tomorrow." : "I will study English tomorrow.");
+                desc = "เหตุการณ์ในอนาคต (tomorrow) ใช้ will + V.1 (will study)";
+            }
+
+            document.getElementById('simSentenceDisplay').innerText = sentence;
+            document.getElementById('simExplanation').innerHTML = `<strong>คำอธิบายโครงสร้าง:</strong> ${desc}`;
+        }
+
+        // --- 2. Whiteboard (Scratchpad) Implementation ---
+        const canvas = document.getElementById('scratchpad');
+        const ctx = canvas.getContext('2d');
+        let drawing = false;
+
+        function resizeCanvas() {
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width;
+            canvas.height = rect.height;
+            ctx.strokeStyle = '#0284c7';
+            ctx.lineWidth = 2;
+            ctx.lineCap = 'round';
+        }
+        window.addEventListener('resize', resizeCanvas);
+        window.addEventListener('load', resizeCanvas);
+
+        function getPos(e) {
+            const rect = canvas.getBoundingClientRect();
+            let clientX = e.clientX;
+            let clientY = e.clientY;
+            if(e.touches && e.touches.length > 0) {
+                clientX = e.touches[0].clientX;
+                clientY = e.touches[0].clientY;
+            }
+            return {
+                x: clientX - rect.left,
+                y: clientY - rect.top
+            };
+        }
+
+        canvas.addEventListener('mousedown', (e) => { drawing = true; const pos = getPos(e); ctx.beginPath(); ctx.moveTo(pos.x, pos.y); });
+        canvas.addEventListener('mousemove', (e) => { if(!drawing) return; const pos = getPos(e); ctx.lineTo(pos.x, pos.y); ctx.stroke(); });
+        canvas.addEventListener('mouseup', () => { drawing = false; });
+        canvas.addEventListener('mouseleave', () => { drawing = false; });
+
+        canvas.addEventListener('touchstart', (e) => { drawing = true; const pos = getPos(e); ctx.beginPath(); ctx.moveTo(pos.x, pos.y); e.preventDefault(); });
+        canvas.addEventListener('touchmove', (e) => { if(!drawing) return; const pos = getPos(e); ctx.lineTo(pos.x, pos.y); ctx.stroke(); e.preventDefault(); });
+        canvas.addEventListener('touchend', () => { drawing = false; });
+
+        function clearCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        // --- 3. English M.1 Term 2 Midterm Exam Bank (30 Questions) ---
+        const rawQuestions = [
+            { id: 1, q: "Choose the correct sentence in Present Simple Tense.", options: ["She goes to school every day.", "She going to school every day.", "She go to school every day.", "She gone to school every day."], answer: 0, clue: "ประธานเอกพจน์ (She) กริยาช่อง 1 ต้องเติม s/es", explanation: "ประธาน She เป็นเอกพจน์บุรุษที่ 3 กริยา go จึงต้องเปลี่ยนเป็น goes ตามกฎ Present Simple Tense" },
+            { id: 2, q: "What are you doing? - I _______ a book now.", options: ["am reading", "read", "reads", "is reading"], answer: 0, clue: "มีคำว่า 'now' บ่งบอกเหตุการณ์กำลังกระทำ (Present Continuous)", explanation: "ประธาน I ใช้คู่กับ verb to be คือ am ตามด้วย V.ing (am reading)" },
+            { id: 3, q: "They _______ football in the playground yesterday.", options: ["played", "play", "playing", "plays"], answer: 0, clue: "มีคำว่า 'yesterday' บ่งบอกเหตุการณ์ในอดีต (Past Simple)", explanation: "เหตุการณ์เกิดขึ้นในอดีตต้องใช้กริยาช่องที่ 2 คือ played" },
+            { id: 4, q: "My mother was born _______ July.", options: ["in", "on", "at", "by"], answer: 0, clue: "การใช้ Preposition กับชื่อเดือน ให้ใช้คำว่าอะไร", explanation: "การระบุเดือน ฤดูกาล หรือปี ให้ใช้ Preposition 'in'" },
+            { id: 5, q: "We have English class _______ Monday morning.", options: ["on", "in", "at", "to"], answer: 0, clue: "การระบุเจาะจงลงไปที่ 'วัน' ใช้ Preposition ใด", explanation: "การระบุวันในสัปดาห์ (เช่น Monday morning) ให้ใช้ Preposition 'on'" },
+            { id: 6, q: "_______ is your birthday? - It's on May 10th.", options: ["When", "Where", "Who", "What"], answer: 0, clue: "คำถามขึ้นต้นด้วยวันเดือนปี ควรใช้ Wh-question ใด", explanation: "When ใช้ถามเกี่ยวกับเวลาหรือวันที่" },
+            { id: 7, q: "A: Excuse me, where is the library? - B: _______", options: ["Go straight and turn left.", "It's 12 years old.", "I like reading books.", "Yes, I do."], answer: 0, clue: "เป็นการถามทาง (Directions)", explanation: "การตอบคำถามสถานที่ (where) ต้องบอกเส้นทาง เช่น Go straight and turn left" },
+            { id: 8, q: "Choose the correct plural noun of 'child'.", options: ["children", "childs", "childes", "childrens"], answer: 0, clue: "คำนามพหูพจน์เปลี่ยนรูปผิดปกติ (Irregular Noun)", explanation: "รูปพหูพจน์ของ child คือ children" },
+            { id: 9, q: "There _______ some apples in the basket.", options: ["are", "is", "am", "be"], answer: 0, clue: "คำว่า 'apples' เป็นคำนามพหูพจน์นับได้", explanation: "นามพหูพจน์นับได้ใช้ There are" },
+            { id: 10, q: "She is _______ than her sister.", options: ["taller", "tall", "tallest", "more tall"], answer: 0, clue: "เป็นการเปรียบเทียบขั้นกว่า (Comparative Degree)", explanation: "ขั้นกว่าของคำคุณศัพท์ 1 พยางค์ (tall) เติม -er และตามด้วย than (taller than)" },
+            { id: 11, q: "An elephant is the _______ animal in the zoo.", options: ["largest", "large", "larger", "more large"], answer: 0, clue: "เป็นการเปรียบเทียบขั้นสูงสุด (Superlative Degree)", explanation: "ขั้นสูงสุดนำหน้าด้วย the และเติม -est หลังคำคุณศัพท์ (the largest)" },
+            { id: 12, q: "What will you do tomorrow? - I _______ visit my grandparents.", options: ["will", "am", "do", "did"], answer: 0, clue: "โครงสร้าง Future Simple Tense ใช้กริยาช่วยใด", explanation: "อนาคตใช้ will + V.1 (I will visit)" },
+            { id: 13, q: "He _______ speak English fluently.", options: ["can", "do", "is", "has"], answer: 0, clue: "แสดงความสามารถ (Ability)", explanation: "Modal verb 'can' ใช้บอกความสามารถ สามารถ + V.1 ได้เลย" },
+            { id: 14, q: "A: Thank you very much. - B: _______", options: ["You're welcome.", "Never mind.", "Goodbye.", "Yes, please."], answer: 0, clue: "การตอบรับคำขอบคุณ", explanation: "สำนวนตอบรับคำขอบคุณที่นิยมและสุภาพที่สุดคือ You're welcome" },
+            { id: 15, q: "Which word has a different vowel sound?", options: ["cat", "bat", "rat", "car"], answer: 3, clue: "สังเกตเสียงสระสั้น /æ/ กับสระยาว /ɑː/", explanation: "cat, bat, rat ออกเสียงสระแอ (/æ/) ส่วน car ออกเสียงสระอา (/ɑː/) แตกต่างจากพวก" },
+            { id: 16, q: "My father works in a hospital. He is a _______.", options: ["doctor", "teacher", "driver", "chef"], answer: 0, clue: "อาชีพที่ทำงานในโรงพยาบาลและตรวจรักษาโรค", explanation: "Doctor (หมอ) ทำงานในโรงพยาบาล" },
+            { id: 17, q: "We use a _______ to cut paper in art class.", options: ["scissors", "pen", "ruler", "eraser"], answer: 0, clue: "อุปกรณ์สำหรับตัดกระดาษ", explanation: "Scissors คือกรรไกร (มักใช้ในรูปพหูพจน์คู่)" },
+            { id: 18, q: "How _______ milk do you drink every day?", options: ["much", "many", "long", "old"], answer: 0, clue: "คำนามนับไม่ได้ (milk) ใช้ถามปริมาณด้วย How อะไร", explanation: "นามนับไม่ได้ใช้ How much ส่วนนามนับได้พหูพจน์ใช้ How many" },
+            { id: 19, q: "If it rains tomorrow, I _______ at home.", options: ["will stay", "stay", "stayed", "staying"], answer: 0, clue: "ประโยคเงื่อนไขแบบที่ 1 (First Conditional)", options: "If + Present Simple, Future Simple (will + V.1)", explanation: "โครงสร้าง First Conditional Tense ในส่วนผลลัพธ์ใช้ will + V.1 (will stay)" },
+            { id: 20, q: "Look at the dark clouds! It _______ rain.", options: ["is going to", "will", "shall", "can"], answer: 0, clue: "มีการคาดการณ์โดยมีหลักฐานปรากฏชัดเจน (ก้อนเมฆดำ)", explanation: "การคาดการณ์จากหลักฐานปัจจุบันใช้โครงสร้าง be going to (It is going to rain)" },
+            { id: 21, q: "Choose the correct spelling.", options: ["Beautiful", "Beutiful", "Beatiful", "Beatifull"], answer: 0, clue: "คำว่าสวยงามสะกดอย่างไร", explanation: "การสะกดที่ถูกต้องคือ B-e-a-u-t-i-f-u-l" },
+            { id: 22, q: "What is the capital city of Thailand?", options: ["Bangkok", "Chiang Mai", "Phuket", "Pattaya"], answer: 0, clue: "เมืองหลวงของประเทศไทย", explanation: "Bangkok คือเมืองหลวงของประเทศไทย" },
+            { id: 23, q: "She _______ breakfast at 6:30 AM every morning.", options: ["has", "have", "haves", "had"], answer: 0, clue: "ประธาน She เป็นเอกพจน์ใน Present Simple", explanation: "กริยา have เมื่อใช้กับประธานเอกพจน์บุรุษที่ 3 จะเปลี่ยนเป็น has" },
+            { id: 24, q: "_______ pen is this? - It's mine.", options: ["Whose", "Who", "What", "Which"], answer: 0, clue: "คำถามแสดงความเป็นเจ้าของ", explanation: "Whose ใช้ถามความเป็นเจ้าของ (ของใคร)" },
+            { id: 25, q: "I'm thirsty. I want to buy a bottle of _______.", options: ["water", "bread", "apple", "rice"], answer: 0, clue: "อาการกระหายน้ำต้องการดื่มอะไร", explanation: "กระหายน้ำ (thirsty) ต้องการดื่มน้ำ (water)" },
+            { id: 26, q: "Students _______ run in the school hallway.", options: ["mustn't", "must", "can", "should"], answer: 0, clue: "กฎระเบียบข้อบังคับห้ามทำในโรงเรียน", explanation: "Mustn't (ต้องไม่) ใช้บอกข้อห้ามในกฎระเบียบ" },
+            { id: 27, q: "Which animal can swim and jump, but cannot fly?", options: ["Frog", "Bird", "Bat", "Eagle"], answer: 0, clue: "สัตว์ครึ่งบกครึ่งน้ำกระโดดได้และว่ายน้ำได้", explanation: "Frog (กบ) ว่ายน้ำและกระโดดได้ แต่บินไม่ได้" },
+            { id: 28, q: "A: Would you like some tea? - B: _______, I prefer coffee.", options: ["No, thank you", "Yes, please", "That's right", "Good idea"], answer: 0, clue: "การปฏิเสธข้อเสนออย่างสุภาพเมื่อต้องการสิ่งอื่น", explanation: "ปฏิเสธความต้องการชารวมถึงบอกความชอบกาแฟแทน ใช้ No, thank you" },
+            { id: 29, q: "Today is Monday, so tomorrow is _______.", options: ["Tuesday", "Sunday", "Wednesday", "Friday"], answer: 0, clue: "วันถัดจากวันจันทร์คือวันอะไร", explanation: "วันพรุ่งนี้ของวันจันทร์ (Monday) คือวันอังคาร (Tuesday)" },
+            { id: 30, q: "How do you spell the number 15 in English?", options: ["fifteen", "fiveteen", "fifty", "fiftteen"], answer: 0, clue: "ตัวเลข 15 เขียนเป็นภาษาอังกฤษอย่างไร", explanation: "15 เขียนว่า fifteen ส่วน 50 คือ fifty" }
+        ];
+
+        let shuffledQuestionIndices = [];
+
+        // Fisher-Yates Shuffle
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function initGame() {
+            shuffledQuestionIndices = Array.from({length: rawQuestions.length}, (_, i) => i);
+            shuffleArray(shuffledQuestionIndices);
+            availableQuestionIndices = [...shuffledQuestionIndices];
+            scores = { namfah: 0, tan: 0, top: 0, lookgate: 0 };
+            document.getElementById('score-namfah').innerText = '0';
+            document.getElementById('score-tan').innerText = '0';
+            document.getElementById('score-top').innerText = '0';
+            document.getElementById('score-lookgate').innerText = '0';
+            activePlayer = null;
+            document.getElementById('activePlayerName').innerText = "ยังไม่ได้เลือกผู้เล่น (กรุณากดหมุนวงล้อ)";
+            document.getElementById('questionContainer').innerHTML = `
+                <div class="text-center py-12 text-slate-400">
+                    <p class="text-lg">👈 กรุณากดปุ่ม <strong>"หมุนวงล้อสุ่มผู้โชคดี"</strong> ด้านบนเพื่อเริ่มเกมตอบคำถามภาษาอังกฤษ</p>
+                </div>
+            `;
+            document.getElementById('analysisPanel').classList.add('hidden');
+        }
+
+        function loadRandomQuestion() {
+            if (availableQuestionIndices.length === 0) {
+                alert("ทำครบทุกข้อแล้ว! ระบบจะทำการสุ่มวนข้อสอบใหม่");
+                availableQuestionIndices = [...shuffledQuestionIndices];
+            }
+
+            const rawIdx = availableQuestionIndices.pop();
+            const originalQ = rawQuestions[rawIdx];
+
+            // Shuffle options with Fisher-Yates
+            let optionsWithMeta = originalQ.options.map((opt, idx) => ({
+                text: opt,
+                isCorrect: idx === originalQ.answer
+            }));
+            shuffleArray(optionsWithMeta);
+            const newCorrectIdx = optionsWithMeta.findIndex(o => o.isCorrect);
+
+            currentQuestionObj = {
+                id: originalQ.id,
+                q: originalQ.q,
+                options: optionsWithMeta.map(o => o.text),
+                answer: newCorrectIdx,
+                clue: originalQ.clue,
+                explanation: originalQ.explanation
+            };
+
+            renderActiveQuestion();
+        }
+
+        function renderActiveQuestion() {
+            if (!activePlayer) {
+                return;
+            }
+            const qContainer = document.getElementById('questionContainer');
+            const q = currentQuestionObj;
+
+            let html = `
+                <div class="space-y-4 bg-sky-50/50 p-5 rounded-2xl border border-sky-100">
+                    <div class="flex justify-between items-center">
+                        <span class="text-xs font-bold text-sky-700 bg-white px-3 py-1 rounded-full border border-sky-200 shadow-sm">ผู้ตอบ: ${activePlayer.name} (แนวข้อสอบ Midterm ม.1 เทอม 2)</span>
+                        <button onclick="toggleClue()" class="text-xs text-amber-600 hover:text-amber-700 font-medium bg-amber-50 px-2.5 py-1 rounded-lg border border-amber-200 transition">
+                            💡 แสดง/ซ่อน คำใบ้ (Clue)
+                        </button>
+                    </div>
+                    <div id="clueBox" class="hidden bg-amber-50 border border-amber-200 text-amber-900 text-xs p-3 rounded-xl">
+                        <strong>คำใบ้:</strong> ${q.clue}
+                    </div>
+                    <div class="text-lg font-bold text-slate-900 leading-snug">
+                        ${q.q}
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2" id="optionsGrid">
+            `;
+
+            q.options.forEach((opt, oIdx) => {
+                html += `
+                    <button onclick="selectGameAnswer(${oIdx})" class="p-3.5 rounded-xl border bg-white border-slate-200 text-slate-700 hover:border-sky-400 hover:bg-sky-50 text-left text-sm transition flex items-center gap-3 shadow-sm">
+                        <span class="w-6 h-6 rounded-full border border-slate-300 flex items-center justify-center text-xs font-bold shrink-0">${String.fromCharCode(65 + oIdx)}</span>
+                        <span>${opt}</span>
+                    </button>
+                `;
+            });
+
+            html += `</div><div id="feedbackContainer"></div></div>`;
+            qContainer.innerHTML = html;
+        }
+
+        function toggleClue() {
+            const clueBox = document.getElementById('clueBox');
+            if(clueBox) clueBox.classList.toggle('hidden');
+        }
+
+        function selectGameAnswer(optIdx) {
+            const q = currentQuestionObj;
+            const isCorrect = optIdx === q.answer;
+            
+            // Disable all option buttons
+            const optionBtns = document.querySelectorAll('#optionsGrid button');
+            optionBtns.forEach((btn, idx) => {
+                btn.disabled = true;
+                if(idx === q.answer) {
+                    btn.className = "p-3.5 rounded-xl border bg-emerald-50 border-emerald-500 text-emerald-900 font-semibold text-left text-sm flex items-center gap-3 shadow-sm";
+                } else if(idx === optIdx && !isCorrect) {
+                    btn.className = "p-3.5 rounded-xl border bg-rose-50 border-rose-500 text-rose-900 font-semibold text-left text-sm flex items-center gap-3 shadow-sm";
+                } else {
+                    btn.className = "p-3.5 rounded-xl border bg-slate-50 border-slate-200 text-slate-400 opacity-60 text-left text-sm flex items-center gap-3";
+                }
+            });
+
+            const feedbackContainer = document.getElementById('feedbackContainer');
+            feedbackContainer.innerHTML = `
+                <div class="mt-4 p-4 rounded-xl border ${isCorrect ? 'bg-emerald-50 border-emerald-200 text-emerald-900' : 'bg-rose-50 border-rose-200 text-rose-900'} space-y-1">
+                    <div class="font-bold flex items-center gap-2">
+                        <span>${isCorrect ? '✅ ตอบถูกต้องครับ! (ครูสามารถกดให้ +1 คะแนนด้านบนได้เลย)' : '❌ ตอบยังไม่ถูกต้อง (ครูสามารถกดให้ -1 คะแนนด้านบนได้เลย)'}</span>
+                    </div>
+                    <div class="text-xs leading-relaxed opacity-90">
+                        <strong>เฉลยและวิธีคิด:</strong> ${q.explanation}
+                    </div>
+                </div>
+            `;
+        }
+
+        function nextRandomQuestion() {
+            if (!activePlayer) {
+                alert("กรุณากดหมุนวงล้อสุ่มชื่อผู้เล่นก่อนครับ!");
+                return;
+            }
+            loadRandomQuestion();
+        }
+
+        function submitExam() {
+            const analysisPanel = document.getElementById('analysisPanel');
+            const analysisContent = document.getElementById('analysisContent');
+
+            analysisContent.innerHTML = `
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+                    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-center">
+                        <div class="text-xs text-slate-500">คะแนน น้ำฟ้า</div>
+                        <div class="text-2xl font-bold text-pink-600">${scores.namfah} คะแนน</div>
+                    </div>
+                    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-center">
+                        <div class="text-xs text-slate-500">คะแนน ตาล</div>
+                        <div class="text-2xl font-bold text-amber-600">${scores.tan} คะแนน</div>
+                    </div>
+                    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-center">
+                        <div class="text-xs text-slate-500">คะแนน ท็อป</div>
+                        <div class="text-2xl font-bold text-cyan-600">${scores.top} คะแนน</div>
+                    </div>
+                    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-center">
+                        <div class="text-xs text-slate-500">คะแนน ลูกเกด</div>
+                        <div class="text-2xl font-bold text-purple-600">${scores.lookgate} คะแนน</div>
+                    </div>
+                </div>
+                <div class="bg-white p-4 rounded-xl border border-slate-200 space-y-2 text-center">
+                    <div class="font-bold text-sky-900 text-base">🏆 สรุปผลการแข่งขันเกมวงล้อ ภาษาอังกฤษ ม.1 เทอม 2 🏆</div>
+                    <p class="text-xs text-slate-600">ขอบคุณนักเรียนทุกคน (น้ำฟ้า, ตาล, ท็อป, ลูกเกด) ที่ร่วมสนุกและฝึกฝนทักษะภาษาอังกฤษกับพระจอมเกล้าติวเตอร์ครับ!</p>
+                </div>
+            `;
+
+            analysisPanel.classList.remove('hidden');
+            analysisPanel.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function resetGame() {
+            if(confirm("คุณต้องการรีเซ็ตเกมและคะแนนทั้งหมดใช่หรือไม่?")) {
+                initGame();
+            }
+        }
+
+        let isThai = true;
+        function toggleLanguage() {
+            isThai = !isThai;
+            const btn = document.getElementById('langToggleBtn');
+            btn.innerText = isThai ? "🌐 ภาษา: ไทย (TH)" : "🌐 ภาษา: อังกฤษ (EN)";
+        }
+
+        window.onload = () => {
+            runEnglishSimulation();
+            initGame();
+        };
+    </script>
+</body>
+</html>
+
+เขียนโดย พระจอมเกล้าติวเตอร์
