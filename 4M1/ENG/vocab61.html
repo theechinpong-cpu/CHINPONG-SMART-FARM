@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบทดสอบความรู้ภาษาอังกฤษ ม.1 เทอม 2 - พระจอมเกล้าติวเตอร์</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-hover: #4338ca;
+            --success: #10b981;
+            --error: #ef4444;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text: #1e293b;
+            --border: #cbd5e1;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Sarabun', sans-serif; }
+        body { background: var(--bg); color: var(--text); line-height: 1.6; padding: 20px; }
+        .container { max-width: 1400px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
+        header { background: var(--primary); color: white; padding: 20px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .main-layout { display: grid; grid-template-columns: 7fr 3fr; gap: 20px; }
+        @media(max-width: 1024px) { .main-layout { grid-template-columns: 1fr; } }
+        .exam-panel, .whiteboard-panel { background: var(--card-bg); padding: 25px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .question-box { margin-bottom: 25px; padding: 20px; border: 1px solid var(--border); border-radius: 8px; background: #fff; transition: all 0.3s; }
+        .question-box.answered { border-color: var(--primary); background: #f0fdf4; }
+        .options { display: flex; flex-direction: column; gap: 10px; margin-top: 15px; }
+        .option-btn { padding: 12px 15px; border: 1px solid var(--border); border-radius: 6px; background: #fff; text-align: left; cursor: pointer; transition: all 0.2s; font-size: 1rem; }
+        .option-btn:hover { background: #f1f5f9; border-color: var(--primary); }
+        .option-btn.correct { background: #d1fae5; border-color: var(--success); color: #065f46; font-weight: bold; }
+        .option-btn.incorrect { background: #fee2e2; border-color: var(--error); color: #991b1b; }
+        .explanation { margin-top: 10px; padding: 12px; background: #eff6ff; border-left: 4px solid var(--primary); border-radius: 4px; display: none; font-size: 0.95rem; }
+        .clue-box { margin-top: 8px; font-size: 0.85rem; color: #64748b; cursor: pointer; font-style: italic; }
+        /* Whiteboard */
+        #whiteboard { width: 100%; height: 450px; border: 2px dashed var(--border); border-radius: 8px; cursor: crosshair; background: #fff; touch-action: none; }
+        .wb-tools { display: flex; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
+        .btn { padding: 8px 16px; background: var(--primary); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        .btn:hover { background: var(--primary-hover); }
+        .btn-secondary { background: #64748b; }
+        .btn-secondary:hover { background: #475569; }
+        /* Navigation & Footer */
+        .controls { display: flex; justify-content: space-between; align-items: center; margin-top: 20px; }
+        #results-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 1000; }
+        .modal-content { background: white; padding: 30px; border-radius: 12px; width: 90%; max-width: 600px; text-align: center; }
+        .footer-credit { text-align: center; margin-top: 20px; font-size: 0.9rem; color: #64748b; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <header>
+        <div>
+            <h1>แบบทดสอบภาษาอังกฤษ ม.1 เทอม 2</h1>
+            <p>พระจอมเกล้าติวเตอร์ (Expert Tutor AI & Interactive Developer)</p>
+        </div>
+        <div>
+            <button class="btn btn-secondary" onclick="resetExam()">Reset ข้อสอบใหม่</button>
+            <button class="btn" onclick="submitExam()">ส่งข้อสอบทั้งหมด</button>
+        </div>
+    </header>
+
+    <div class="main-layout">
+        <!-- ฝั่งซ้าย: ข้อสอบ 35 ข้อ -->
+        <div class="exam-panel">
+            <div id="questions-container"></div>
+        </div>
+
+        <!-- ฝั่งขวา: Whiteboard สำหรับทดเลข/จดบันทึก -->
+        <div class="whiteboard-panel">
+            <h3>กระดานทดเลข Whiteboard</h3>
+            <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 10px;">ใช้สำหรับทดคำตอบหรือจดบันทึกความคิดระหว่างทำข้อสอบ</p>
+            <div class="wb-tools">
+                <button class="btn" style="background: #1e293b;" onclick="setPenColor('#1e293b')">ดำ</button>
+                <button class="btn" style="background: var(--primary);" onclick="setPenColor('#4f46e5')">น้ำเงิน</button>
+                <button class="btn" style="background: var(--error);" onclick="setPenColor('#ef4444')">แดง</button>
+                <button class="btn btn-secondary" onclick="clearCanvas()">ล้างกระดาน</button>
+            </div>
+            <canvas id="whiteboard"></canvas>
+        </div>
+    </div>
+    
+    <div class="footer-credit">เขียนโดย พระจอมเกล้าติวเตอร์</div>
+</div>
+
+<!-- Modal แสดงผลวิเคราะห์ -->
+<div id="results-modal">
+    <div class="modal-content">
+        <h2>ผลการประเมินการทดสอบ</h2>
+        <div id="score-display" style="font-size: 2rem; font-weight: bold; margin: 15px 0; color: var(--primary);"></div>
+        <div id="analysis-text" style="text-align: left; margin-bottom: 20px;"></div>
+        <button class="btn" onclick="closeModal()">ปิดหน้าต่าง</button>
+    </div>
+</div>
+
+<script>
+    // ฐานข้อมูลข้อสอบ 35 ข้อ (Anti-Guessing Engine & Balanced Key Distribution)
+    const rawQuestions = [
+        {
+            id: 1,
+            q: "What is the correct antonym of the word **'ancient'** in English?",
+            options: [
+                { text: "A. Modern", correct: true },
+                { text: "B. Historic", correct: false },
+                { text: "C. Antique", correct: false },
+                { text: "D. Classical", correct: false }
+            ],
+            clue: "Clue: Think about something very new or current.",
+            explanation: "คำว่า 'ancient' แปลว่า โบราณ คำที่มีความหมายตรงกันข้าม (Antonym) คือ 'Modern' (ทันสมัย)"
+        },
+        {
+            id: 2,
+            q: "Choose the correct preposition to complete the sentence: 'My birthday is **___** July.'",
+            options: [
+                { text: "A. On", correct: false },
+                { text: "B. In", correct: true },
+                { text: "C. At", correct: false },
+                { text: "D. By", correct: false }
+            ],
+            clue: "Clue: Use this preposition for months and years.",
+            explanation: "สำหรับการระบุเดือน ปี หรือฤดูกาล เราต้องใช้บุพบท 'In' เสมอ"
+        },
+        {
+            id: 3,
+            q: "Which sentence is written in the correct **Past Simple Tense**?",
+            options: [
+                { text: "A. She go to school yesterday.", correct: false },
+                { text: "B. She goes to the market now.", correct: false },
+                { text: "C. She went to the zoo last week.", correct: true },
+                { text: "D. She will go to Chiang Mai.", correct: false }
+            ],
+            clue: "Clue: Look at the time marker 'last week' and verb form.",
+            explanation: "Past Simple Tense ใช้กริช่องที่ 2 คำว่า 'go' เปลี่ยนเป็น 'went' และมีคำบอกเวลา 'last week'"
+        },
+        {
+            id: 4,
+            q: "What is the superlative form of the adjective **'expensive'**?",
+            options: [
+                { text: "A. Expensiver", correct: false },
+                { text: "B. More expensive", correct: false },
+                { text: "C. The most expensive", correct: true },
+                { text: "D. Most expensivest", correct: false }
+            ],
+            clue: "Clue: Long adjectives use 'most' for superlative form.",
+            explanation: "คำคุณศัพท์ที่มีหลายพยางค์ (expensive) ในขั้นสูงสุด (Superlative) จะต้องใช้ 'The most' นำหน้า"
+        },
+        {
+            id: 5,
+            q: "Which word means **'a very large and heavy animal'** often found in Africa?",
+            options: [
+                { text: "A. Elephant", correct: true },
+                { text: "B. Rabbit", correct: false },
+                { text: "C. Mouse", correct: false },
+                { text: "D. Hamster", correct: false }
+            ],
+            clue: "Clue: It has a long trunk and big ears.",
+            explanation: "'Elephant' (ช้าง) เป็นสัตว์ขนาดใหญ่และมีน้ำหนักมากตามคำนิยาม"
+        },
+        {
+            id: 6,
+            q: "Complete the sentence with the correct modal verb: 'You **___** wear a helmet when riding a motorcycle.'",
+            options: [
+                { text: "A. must", correct: true },
+                { text: "B. can", correct: false },
+                { text: "C. may", correct: false },
+                { text: "D. might", correct: false }
+            ],
+            clue: "Clue: This is a strict traffic rule for safety.",
+            explanation: "การสวมหมวกกันน็อคเป็นกฎหมายและความปลอดภัยที่จำเป็นอย่างยิ่ง จึงต้องใช้ 'must'"
+        },
+        {
+            id: 7,
+            q: "Identify the correct plural form of the noun **'child'**.",
+            options: [
+                { text: "A. Childs", correct: false },
+                { text: "B. Childes", correct: false },
+                { text: "C. Children", correct: true },
+                { text: "D. Childrens", correct: false }
+            ],
+            clue: "Clue: This is an irregular plural noun.",
+            explanation: "คำนามพหูพจน์ที่ไม่ปกติของ 'child' คือ 'children'"
+        },
+        {
+            id: 8,
+            q: "Choose the correct sentence using **Past Continuous Tense**.",
+            options: [
+                { text: "A. I was sleeping when the phone rang.", correct: true },
+                { text: "B. I sleep every night at 9 PM.", correct: false },
+                { text: "C. I am cooking dinner right now.", correct: false },
+                { text: "D. I will visit my grandma tomorrow.", correct: false }
+            ],
+            clue: "Clue: Look for 'was/were + V.ing' combined with Past Simple.",
+            explanation: "Past Continuous ใช้ 'was/were + V.ing' เพื่อบอกเหตุการณ์ที่กำลังทำอยู่และมีเหตุการณ์อื่นแทรก"
+        },
+        {
+            id: 9,
+            q: "What does the idiom **'piece of cake'** mean?",
+            options: [
+                { text: "A. Something very delicious to eat", correct: false },
+                { text: "B. Something very easy to do", correct: true },
+                { text: "C. A birthday celebration gift", correct: false },
+                { text: "D. A difficult math problem", correct: false }
+            ],
+            clue: "Clue: It describes a task requiring very little effort.",
+            explanation: "'Piece of cake' เป็นสำนวนแปลว่า ง่ายมาก หมูๆ กล้วยๆ"
+        },
+        {
+            id: 10,
+            q: "Choose the correct conjunction to link the ideas: 'I was tired, **___** I went to bed early.'",
+            options: [
+                { text: "A. but", correct: false },
+                { text: "B. because", correct: false },
+                { text: "C. so", correct: true },
+                { text: "D. although", correct: false }
+            ],
+            clue: "Clue: This word shows a cause-and-effect relationship.",
+            explanation: "'so' ใช้เชื่อมประโยคที่เป็นผลลัพธ์ (เหนื่อย จึงเข้านอนเร็ว)"
+        },
+        {
+            id: 11,
+            q: "Which word is a synonym for **'intelligent'**?",
+            options: [
+                { text: "A. Smart", correct: true },
+                { text: "B. Lazy", correct: false },
+                { text: "C. Tired", correct: false },
+                { text: "D. Angry", correct: false }
+            ],
+            clue: "Clue: Having or showing a high level of mental ability.",
+            explanation: "'Intelligent' และ 'Smart' มีความหมายเหมือนกันคือ ฉลาด"
+        },
+        {
+            id: 12,
+            q: "Complete the sentence: 'She is **___** than her younger sister.'",
+            options: [
+                { text: "A. tall", correct: false },
+                { text: "B. taller", correct: true },
+                { text: "C. tallest", correct: false },
+                { text: "D. the tallest", correct: false }
+            ],
+            clue: "Clue: Look at the word 'than' which indicates comparative degree.",
+            explanation: "มีคำว่า 'than' บ่งบอกถึงการเปรียบเทียบขั้นกว่า (Comparative) จึงต้องใช้ 'taller'"
+        },
+        {
+            id: 13,
+            q: "What is the past participle form of the verb **'eat'**?",
+            options: [
+                { text: "A. Ate", correct: false },
+                { text: "B. Eaten", correct: true },
+                { text: "C. Eating", correct: false },
+                { text: "D. Eated", correct: false }
+            ],
+            clue: "Clue: Used in Present Perfect Tense (have/has + V.3).",
+            explanation: "ช่อง 3 (Past Participle) ของ eat คือ eaten"
+        },
+        {
+            id: 14,
+            q: "Choose the correct preposition of place: 'The cat is hiding **___** the table.'",
+            options: [
+                { text: "A. under", correct: true },
+                { text: "B. on", correct: false },
+                { text: "C. in", correct: false },
+                { text: "D. at", correct: false }
+            ],
+            clue: "Clue: Positioned beneath or lower than something.",
+            explanation: "แมวหลบอยู่ใต้โต๊ะ ใช้บุพบท 'under'"
+        },
+        {
+            id: 15,
+            q: "Which word represents a **natural disaster**?",
+            options: [
+                { text: "A. Earthquake", correct: true },
+                { text: "B. Celebration", correct: false },
+                { text: "C. Vacation", correct: false },
+                { text: "D. Festival", correct: false }
+            ],
+            clue: "Clue: A sudden violent shaking of the ground.",
+            explanation: "'Earthquake' (แผ่นดินไหว) คือภัยพิบัติทางธรรมชาติ"
+        },
+        {
+            id: 16,
+            q: "Identify the correct question word for asking about a reason: '**___** are you crying?'",
+            options: [
+                { text: "A. What", correct: false },
+                { text: "B. Where", correct: false },
+                { text: "C. Why", correct: true },
+                { text: "D. When", correct: false }
+            ],
+            clue: "Clue: The answer usually starts with 'Because...'.",
+            explanation: "คำถามที่ต้องการเหตุผลต้องขึ้นต้นด้วย 'Why' (ทำไม)"
+        },
+        {
+            id: 17,
+            q: "Choose the correct sentence with a **future plan** using 'be going to'.",
+            options: [
+                { text: "A. I am going to visit Japan next month.", correct: true },
+                { text: "B. I went to Japan last year.", correct: false },
+                { text: "C. I visit Japan every day.", correct: false },
+                { text: "D. I was visiting Japan yesterday.", correct: false }
+            ],
+            clue: "Clue: Look for 'am/is/are + going to + V.1'.",
+            explanation: "โครงสร้าง 'be going to' ใช้บอกแผนการในอนาคต"
+        },
+        {
+            id: 18,
+            q: "What is the plural form of **'potato'**?",
+            options: [
+                { text: "A. Potatos", correct: false },
+                { text: "B. Potatoes", correct: true },
+                { text: "C. Potatotes", correct: false },
+                { text: "D. Potati", correct: false }
+            ],
+            clue: "Clue: Nouns ending in 'o' preceded by a consonant add '-es'.",
+            explanation: "คำนามลงท้ายด้วย 'o' เติม '-es' กลายเป็น 'potatoes'"
+        },
+        {
+            id: 19,
+            q: "Choose the correct spelling word.",
+            options: [
+                { text: "A. Beautiful", correct: true },
+                { text: "B. Beautifull", correct: false },
+                { text: "C. Beautyful", correct: false },
+                { text: "D. Beutifull", correct: false }
+            ],
+            clue: "Clue: Starts with 'Beau-' meaning pleasing to look at.",
+            explanation: "การสะกดที่ถูกต้องคือ 'Beautiful' (สวยงาม)"
+        },
+        {
+            id: 20,
+            q: "Complete the sentence: 'If it rains, we **___** stay at home.'",
+            options: [
+                { text: "A. will", correct: true },
+                { text: "B. would", correct: false },
+                { text: "C. did", correct: false },
+                { text: "D. had", correct: false }
+            ],
+            clue: "Clue: First Conditional Sentence structure (If + Present Simple, Subject + will + V.1).",
+            explanation: "First Conditional Sentence ใช้คู่กับ 'will + V.1' ในประโยคหลัก"
+        },
+        {
+            id: 21,
+            q: "What does the word **'generous'** mean?",
+            options: [
+                { text: "A. Willing to give and share with others", correct: true },
+                { text: "B. Feeling unhappy or sad", correct: false },
+                { text: "C. Moving at a very slow speed", correct: false },
+                { text: "D. Making a lot of loud noise", correct: false }
+            ],
+            clue: "Clue: A person who loves giving gifts and helping people.",
+            explanation: "'Generous' แปลว่า ใจบุญ ใจกว้าง ชอบเอื้อเฟื้อเผื่อแผ่"
+        },
+        {
+            id: 22,
+            q: "Choose the correct reflexive pronoun for **'She'**.",
+            options: [
+                { text: "A. Himself", correct: false },
+                { text: "B. Herself", correct: true },
+                { text: "C. Themselves", correct: false },
+                { text: "D. Yourself", correct: false }
+            ],
+            clue: "Clue: Pronoun reflecting back to a female subject.",
+            explanation: "สรรพนามสะท้อนตัวตน (Reflexive Pronoun) ของประธาน 'She' คือ 'Herself'"
+        },
+        {
+            id: 23,
+            q: "Which sentence uses the correct **article** ('a', 'an', 'the')?",
+            options: [
+                { text: "A. I saw an elephant at the zoo.", correct: true },
+                { text: "B. She wants eat a apple.", correct: false },
+                { text: "C. Sun is shining brightly.", correct: false },
+                { text: "D. He is a honest boy.", correct: false }
+            ],
+            clue: "Clue: 'elephant' starts with a vowel sound.",
+            explanation: "คำว่า elephant ขึ้นต้นด้วยเสียงสระ จึงใช้ 'an' นำหน้าได้อย่างถูกต้อง"
+        },
+        {
+            id: 24,
+            q: "What is the opposite of **'dangerous'**?",
+            options: [
+                { text: "A. Safe", correct: true },
+                { text: "B. Wild", correct: false },
+                { text: "C. Dark", correct: false },
+                { text: "D. Fast", correct: false }
+            ],
+            clue: "Clue: Free from harm or risk.",
+            explanation: "'Dangerous' (อันตราย) ตรงข้ามกับ 'Safe' (ปลอดภัย)"
+        },
+        {
+            id: 25,
+            q: "Choose the correct sentence in **Present Perfect Tense**.",
+            options: [
+                { text: "A. I have lived here for five years.", correct: true },
+                { text: "B. I live in Bangkok yesterday.", correct: false },
+                { text: "C. I am living in Thailand now.", correct: false },
+                { text: "D. I will live in Phuket tomorrow.", correct: false }
+            ],
+            clue: "Clue: Look for 'have/has + V.3' and time word 'for/since'.",
+            explanation: "Present Perfect ใช้ 'have + V.3' ร่วมกับ 'for' เพื่อบอกเหตุการณ์ที่ทำต่อเนื่องจากอดีตจนถึงปัจจุบัน"
+        },
+        {
+            id: 26,
+            q: "What is the meaning of the phrasal verb **'turn off'**?",
+            options: [
+                { text: "A. To stop a machine or light", correct: true },
+                { text: "B. To start a television or radio", correct: false },
+                { text: "C. To find information online", correct: false },
+                { text: "D. To wear new clothes", correct: false }
+            ],
+            clue: "Clue: What you do to a lamp when you go to sleep.",
+            explanation: "'Turn off' หมายถึง ปิด (อุปกรณ์ไฟฟ้า ไฟฟ้า หรือเครื่องมือ)"
+        },
+        {
+            id: 27,
+            q: "Identify the correct comparative sentence.",
+            options: [
+                { text: "A. A car is faster than a bicycle.", correct: true },
+                { text: "B. A car is fast than a bicycle.", correct: false },
+                { text: "C. A car is the fastest a bicycle.", correct: false },
+                { text: "D. A car is more fast than a bicycle.", correct: false }
+            ],
+            clue: "Clue: Short adjective + -er + than.",
+            explanation: "'fast' เป็นคำคุณศัพท์สั้น ขั้นกว่าเติม '-er' และตามด้วย 'than'"
+        },
+        {
+            id: 28,
+            q: "Choose the correct word to complete: 'Please speak **___**; the baby is sleeping.'",
+            options: [
+                { text: "A. quietly", correct: true },
+                { text: "B. loud", correct: false },
+                { text: "C. noisy", correct: false },
+                { text: "D. quick", correct: false }
+            ],
+            clue: "Clue: You need an adverb to describe how to speak.",
+            explanation: "ขยายกริยา 'speak' ต้องใช้กริยาวิเศษณ์ (Adverb) คือ 'quietly' (อย่างเงียบๆ)"
+        },
+        {
+            id: 29,
+            q: "What does **'biodiversity'** refer to?",
+            options: [
+                { text: "A. The variety of plant and animal life in the world", correct: true },
+                { text: "B. The speed of modern computers", correct: false },
+                { text: "C. The study of distant planets and stars", correct: false },
+                { text: "D. The process of recycling plastic bottles", correct: false }
+            ],
+            clue: "Clue: Bio = life, diversity = variety.",
+            explanation: "Biodiversity แปลว่า ความหลากหลายทางชีวภาพ (พืชและสัตว์นานาพันธุ์)"
+        },
+        {
+            id: 30,
+            q: "Choose the correct modal verb for inability in the past: 'When I was five, I **___** swim.'",
+            options: [
+                { text: "A. couldn't", correct: true },
+                { text: "B. can't", correct: false },
+                { text: "C. mustn't", correct: false },
+                { text: "D. shouldn't", correct: false }
+            ],
+            clue: "Clue: Past form of 'cannot'.",
+            explanation: "เหตุการณ์ในอดีตตอนอายุ 5 ขวบและไม่สามารถทำได้ ใช้รูปอดีตคือ 'couldn't'"
+        },
+        {
+            id: 31,
+            q: "Which word represents a professional who treats sick animals?",
+            options: [
+                { text: "A. Veterinarian", correct: true },
+                { text: "B. Architect", correct: false },
+                { text: "C. Mechanic", correct: false },
+                { text: "D. Plumber", correct: false }
+            ],
+            clue: "Clue: Also known as a vet.",
+            explanation: "'Veterinarian' คือ สัตวแพทย์ ผู้รักษาและดูแลสัตว์ป่วย"
+        },
+        {
+            id: 32,
+            q: "Choose the correct possessive pronoun: 'This book belongs to me. It is **___**.'",
+            options: [
+                { text: "A. mine", correct: true },
+                { text: "B. my", correct: false },
+                { text: "C. me", correct: false },
+                { text: "D. your", correct: false }
+            ],
+            clue: "Clue: Stands alone at the end of a sentence showing ownership.",
+            explanation: "สรรพนามแสดงความเป็นเจ้าของที่อยู่ท้ายประโยค (Possessive Pronoun) ของ I คือ 'mine'"
+        },
+        {
+            id: 33,
+            q: "What is the meaning of the word **'environment'**?",
+            options: [
+                { text: "A. The surroundings or conditions in which a person, animal, or plant lives", correct: true },
+                { text: "B. A large collection of ancient books and manuscripts", correct: false },
+                { text: "C. A financial plan for saving money at a bank", correct: false },
+                { text: "D. A high-speed vehicle used for public transportation", correct: false }
+            ],
+            clue: "Clue: Nature, surroundings, air, water, and land around us.",
+            explanation: "'Environment' แปลว่า สิ่งแวดล้อมรอบตัวเรา"
+        },
+        {
+            id: 34,
+            q: "Choose the correct sentence in the **Passive Voice** (Present Simple).",
+            options: [
+                { text: "A. English is spoken all over the world.", correct: true },
+                { text: "B. People speak English everywhere.", correct: false },
+                { text: "C. English speaks many people.", correct: false },
+                { text: "D. English was speak by everyone.", correct: false }
+            ],
+            clue: "Clue: Subject + is/am/are + V.3.",
+            explanation: "โครงสร้าง Passive Voice ใน Present Simple คือ 'is/am/are + V.3' (English is spoken)"
+        },
+        {
+            id: 35,
+            q: "What is the best closing greeting for a formal email?",
+            options: [
+                { text: "A. Sincerely yours", correct: true },
+                { text: "B. See ya later", correct: false },
+                { text: "C. Catch you later", correct: false },
+                { text: "D. Bye bye", correct: false }
+            ],
+            clue: "Clue: Professional and formal signing off.",
+            explanation: "'Sincerely yours' หรือ 'Yours sincerely' เป็นคำลงท้ายอีเมลหรือจดหมายที่เป็นทางการ"
+        }
+    ];
+
+    let userAnswers = {};
+
+    // Fisher-Yates Shuffle Algorithm สำหรับสลับตำแหน่งตัวเลือก
+    function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    }
+
+    function renderExam() {
+        const container = document.getElementById('questions-container');
+        container.innerHTML = '';
+
+        rawQuestions.forEach((qItem, index) => {
+            // สลับตำแหน่งตัวเลือกเพื่อป้องกันการเดาตำแหน่ง
+            let shuffledOptions = [...qItem.options];
+            shuffleArray(shuffledOptions);
+
+            let html = `
+                <div class="question-box" id="q-box-${qItem.id}">
+                    <h3>ข้อที่ ${index + 1}: ${qItem.q}</h3>
+                    <div class="options">
+            `;
+
+            shuffledOptions.forEach((opt, oIndex) => {
+                html += `
+                    <button class="option-btn" id="q-${qItem.id}-opt-${oIndex}" 
+                        onclick="selectAnswer(${qItem.id}, ${opt.correct}, ${oIndex}, this)">
+                        ${opt.text}
+                    </button>
+                `;
+            });
+
+            html += `
+                    </div>
+                    <div class="clue-box" onclick="toggleClue(${qItem.id})">💡 แสดง/ซ่อน คำใบ้ (Clue)</div>
+                    <div class="explanation" id="clue-${qItem.id}">${qItem.clue}</div>
+                    <div class="explanation" id="exp-${qItem.id}"><strong>เฉลยและวิธีคิด:</strong> ${qItem.explanation}</div>
+                </div>
+            `;
+            container.innerHTML += html;
+        });
+    }
+
+    function selectAnswer(qid, isCorrect, optIndex, btnElement) {
+        // บันทึกคำตอบ
+        userAnswers[qid] = isCorrect;
+        document.getElementById(`q-box-${qid}`).classList.add('answered');
+
+        // ปิดการคลิกปุ่มทั้งหมดในข้อนั้น
+        const parent = btnElement.parentElement;
+        const buttons = parent.getElementsByClassName('option-btn');
+        for (let b of buttons) {
+            b.disabled = true;
+            if (b.innerText.startsWith('A.') && findCorrectStatus(qid, 'A')) {
+                // Highlight ตัวถูก
+            }
+        }
+
+        // แสดงสีถูกต้อง/ผิด
+        if (isCorrect) {
+            btnElement.classList.add('correct');
+        } else {
+            btnElement.classList.add('incorrect');
+            // หาข้อที่ถูกมาโชว์ด้วย
+            for (let b of buttons) {
+                if (b.getAttribute('onclick').includes('true')) {
+                    b.classList.add('correct');
+                }
+            }
+        }
+
+        // แสดงคำอธิบายเฉลย
+        document.getElementById(`exp-${qid}`).style.display = 'block';
+    }
+
+    function findCorrectStatus(qid, textPrefix) {
+        return true;
+    }
+
+    function toggleClue(qid) {
+        const clueEl = document.getElementById(`clue-${qid}`);
+        clueEl.style.display = clueEl.style.display === 'block' ? 'none' : 'block';
+    }
+
+    function submitExam() {
+        let score = 0;
+        let total = rawQuestions.length;
+        for (let qid in userAnswers) {
+            if (userAnswers[qid]) score++;
+        }
+
+        let percentage = ((score / total) * 100).toFixed(2);
+        
+        document.getElementById('score-display').innerText = `คะแนนที่ได้: ${score} / ${total} (${percentage}%)`;
+        
+        let analysis = `<ul>`;
+        if (percentage >= 80) {
+            analysis += `<li><strong>จุดเด่น:</strong> มีความเข้าใจในคำศัพท์ระดับ ป.6-ม.1 และหลักไวยากรณ์ (Tenses & Comparison) ได้เป็นอย่างดีเยี่ยม</li>`;
+            analysis += `<li><strong>คำแนะนำ:</strong> สามารถต่อยอดไปสู่โครงสร้างประโยคที่ซับซ้อนขึ้นในระดับ ม.2 ได้ทันที</li>`;
+        } else if (percentage >= 50) {
+            analysis += `<li><strong>จุดเด่น:</strong> ผ่านเกณฑ์ความเข้าใจพื้นฐานคำศัพท์ทั่วไป</li>`;
+            analysis += `<li><strong>จุดที่ต้องพัฒนา:</strong> ควรทบทวนเรื่องการใช้ Past Tenses และ Prepositions เพิ่มเติม เนื่องจากยังมีจุดที่สับสน</li>`;
+        } else {
+            analysis += `<li><strong>จุดที่ต้องพัฒนา:</strong> แนะนำให้กลับไปทบทวนคำศัพท์พื้นฐาน Parts of Speech และโครงสร้างประโยคขั้นต้นอีกครั้งเพื่อความแม่นยำ</li>`;
+        }
+        analysis += `</ul>`;
+
+        document.getElementById('analysis-text').innerHTML = analysis;
+        document.getElementById('results-modal').style.display = 'flex';
+
+        if (percentage >= 50) {
+            confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 } });
+        }
+    }
+
+    function closeModal() {
+        document.getElementById('results-modal').style.display = 'none';
+    }
+
+    function resetExam() {
+        userAnswers = {};
+        renderExam();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // Whiteboard Scripting
+    const canvas = document.getElementById('whiteboard');
+    const ctx = canvas.getContext('2d');
+    let painting = false;
+
+    function resizeCanvas() {
+        canvas.width = canvas.parentElement.clientWidth - 50;
+        canvas.height = 400;
+        ctx.strokeStyle = '#1e293b';
+        ctx.lineWidth = 3;
+        ctx.lineCap = 'round';
+    }
+
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    function startPosition(e) { painting = true; draw(e); }
+    function endPosition() { painting = false; ctx.beginPath(); }
+    function draw(e) {
+        if (!painting) return;
+        let rect = canvas.getBoundingClientRect();
+        let x = (e.clientX || e.touches[0].clientX) - rect.left;
+        let y = (e.clientY || e.touches[0].clientY) - rect.top;
+
+        ctx.lineTo(x, y);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+    }
+
+    canvas.addEventListener('mousedown', startPosition);
+    canvas.addEventListener('mouseup', endPosition);
+    canvas.addEventListener('mousemove', draw);
+
+    canvas.addEventListener('touchstart', startPosition);
+    canvas.addEventListener('touchend', endPosition);
+    canvas.addEventListener('touchmove', draw);
+
+    function setPenColor(color) { ctx.strokeStyle = color; }
+    function clearCanvas() { ctx.clearRect(0, 0, canvas.width, canvas.height); }
+
+    // โหลดข้อสอบครั้งแรกเมื่อเปิดหน้าเว็บ
+    window.onload = function() {
+        renderExam();
+    };
+</script>
+</body>
+</html>
