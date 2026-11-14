@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>พระจอมเกล้าติวเตอร์ - เกมวงล้อสุ่มข้อสอบวิทยาศาสตร์ ม.1 (แนว O-NET)</title>
+    <!-- Tailwind CSS CDN for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap');
+        body {
+            font-family: 'Sarabun', sans-serif;
+        }
+        .canvas-container {
+            cursor: crosshair;
+            touch-action: none;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+    <!-- Header -->
+    <header class="bg-emerald-700 text-white shadow-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center">
+            <div>
+                <h1 class="text-2xl font-bold flex items-center gap-2">
+                    <span>🧬</span> พระจอมเกล้าติวเตอร์ (Phra Chom Klao Tutor)
+                </h1>
+                <p class="text-emerald-200 text-sm">เกมวงล้อสุ่มผู้โชคดีตอบคำถาม วิชาวิทยาศาสตร์ ม.1 (แนวข้อสอบเข้า ม.1 และ O-NET)</p>
+            </div>
+            <div class="mt-3 sm:mt-0 flex items-center gap-3">
+                <button id="langToggleBtn" onclick="toggleLanguage()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded-lg text-sm font-medium border border-emerald-500 transition shadow-sm">
+                    🌐 ภาษา: ไทย (TH)
+                </button>
+                <button onclick="resetGame()" class="bg-amber-600 hover:bg-amber-500 text-white px-3 py-1.5 rounded-lg text-sm font-medium transition shadow-sm">
+                    🔄 รีเซ็ตเกมทั้งหมด
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="max-w-7xl mx-auto px-4 py-6 flex-grow w-full space-y-8">
+
+        <!-- 0. Game Dashboard & Scoreboard (Wheel & Teacher Control) -->
+        <section class="bg-gradient-to-br from-emerald-900 to-slate-900 text-white rounded-2xl shadow-xl p-6 space-y-6">
+            <div class="text-center space-y-2">
+                <h2 class="text-2xl font-bold flex items-center justify-center gap-2">
+                    <span>🎡</span> เกมวงล้อสุ่มผู้โชคดีตอบคำถาม วิชาวิทยาศาสตร์ (ภูภูมิ | บูม | นานา)
+                </h2>
+                <p class="text-emerald-200 text-sm">หมุนวงล้อเพื่อเสี่ยงทายว่าใครจะได้ตอบคำถาม พร้อมระบบคะแนนสะสมโดยครูผู้สอน</p>
+            </div>
+
+            <!-- Scoreboard & Teacher Controls -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <!-- Player 1: ภูภูมิ -->
+                <div class="bg-white/10 backdrop-blur-md border border-white/20 p-4 rounded-xl flex flex-col justify-between space-y-3">
+                    <div class="flex justify-between items-center">
+                        <span class="font-bold text-lg text-amber-300">👦 ภูภูมิ</span>
+                        <span class="bg-amber-500/20 text-amber-300 text-xs px-2.5 py-1 rounded-full font-semibold border border-amber-400/30">คะแนน: <span id="score-phu">0</span></span>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="modifyScore('phu', 1)" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold py-2 rounded-lg transition shadow-sm">
+                            ✅ ถูก (+1)
+                        </button>
+                        <button onclick="modifyScore('phu', -1)" class="flex-1 bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold py-2 rounded-lg transition shadow-sm">
+                            ❌ ผิด (-1)
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Player 2: บูม -->
+                <div class="bg-white/10 backdrop-blur-md border border-white/20 p-4 rounded-xl flex flex-col justify-between space-y-3">
+                    <div class="flex justify-between items-center">
+                        <span class="font-bold text-lg text-cyan-300">👦 บูม</span>
+                        <span class="bg-cyan-500/20 text-cyan-300 text-xs px-2.5 py-1 rounded-full font-semibold border border-cyan-400/30">คะแนน: <span id="score-boom">0</span></span>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="modifyScore('boom', 1)" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold py-2 rounded-lg transition shadow-sm">
+                            ✅ ถูก (+1)
+                        </button>
+                        <button onclick="modifyScore('boom', -1)" class="flex-1 bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold py-2 rounded-lg transition shadow-sm">
+                            ❌ ผิด (-1)
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Player 3: นานา -->
+                <div class="bg-white/10 backdrop-blur-md border border-white/20 p-4 rounded-xl flex flex-col justify-between space-y-3">
+                    <div class="flex justify-between items-center">
+                        <span class="font-bold text-lg text-pink-300">👧 นานา</span>
+                        <span class="bg-pink-500/20 text-pink-300 text-xs px-2.5 py-1 rounded-full font-semibold border border-pink-400/30">คะแนน: <span id="score-nana">0</span></span>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="modifyScore('nana', 1)" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold py-2 rounded-lg transition shadow-sm">
+                            ✅ ถูก (+1)
+                        </button>
+                        <button onclick="modifyScore('nana', -1)" class="flex-1 bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold py-2 rounded-lg transition shadow-sm">
+                            ❌ ผิด (-1)
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Wheel Spinner Arena -->
+            <div class="bg-white/5 border border-white/10 p-6 rounded-xl text-center space-y-4">
+                <div class="text-sm text-emerald-200">ผู้โชคดีรอบนี้คือ:</div>
+                <div id="wheelResultDisplay" class="text-3xl font-extrabold text-amber-300 tracking-wide animate-pulse">
+                    กดปุ่มหมุนวงล้อเพื่อเสี่ยงทายผู้โชคดี!
+                </div>
+                <div>
+                    <button onclick="spinWheel()" id="spinBtn" class="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white font-bold px-8 py-3 rounded-xl shadow-lg transition transform hover:scale-105 active:scale-95">
+                        🎰 หมุนวงล้อสุ่มผู้โชคดี
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- 1. Virtual Teaching Tool & Interactive Infographic (Science Lab Simulation) -->
+        <section class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+            <div class="border-b border-slate-100 pb-4 mb-6">
+                <h2 class="text-xl font-bold text-slate-900 flex items-center gap-2">
+                    <span class="text-emerald-600">🔬</span> ห้องทดลองเสมือนจริง: การจำลองสถานะของสสารและการเปลี่ยนสถานะ
+                </h2>
+                <p class="text-slate-600 text-sm mt-1">ทดลองปรับเปลี่ยนอุณหภูมิและความดันเพื่อสังเกตพฤติกรรมของอนุภาคและการเปลี่ยนสถานะสสารแบบเรียลไทม์</p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-center">
+                <!-- Control Panel -->
+                <div class="bg-slate-50 p-5 rounded-xl border border-slate-200 space-y-4">
+                    <h3 class="font-semibold text-slate-800 text-sm uppercase tracking-wider">แผงควบคุมห้องทดลอง</h3>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 mb-1">อุณหภูมิ (°C): <span id="tempVal" class="font-bold text-emerald-600">25</span> °C</label>
+                        <input type="range" id="simTemp" min="-50" max="150" value="25" oninput="runScienceSimulation()" class="w-full accent-emerald-600">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 mb-1">ชนิดของสารตั้งต้น:</label>
+                        <select id="simSubstance" onchange="runScienceSimulation()" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                            <option value="water">น้ำ (Water - H₂O)</option>
+                            <option value="iron">เหล็ก (Iron - Fe)</option>
+                            <option value="co2">คาร์บอนไดออกไซด์ (Dry Ice)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Live Result Display -->
+                <div class="lg:col-span-2 bg-gradient-to-br from-emerald-50 to-teal-50 p-6 rounded-xl border border-emerald-100 flex flex-col justify-center space-y-4">
+                    <div class="text-sm font-semibold text-emerald-900">ผลการวิเคราะห์พฤติกรรมอนุภาค:</div>
+                    <div id="simStateDisplay" class="text-2xl font-bold text-emerald-950 bg-white px-5 py-4 rounded-xl shadow-sm border border-emerald-100 text-center">
+                        สถานะ: ของเหลว (Liquid) | อนุภาคเคลื่อนที่ได้อิสระพอสมควร
+                    </div>
+                    <div id="simExplanation" class="text-sm text-slate-700 bg-white/80 p-4 rounded-xl border border-emerald-100">
+                        คำอธิบายทางวิทยาศาสตร์: ที่อุณหภูมิห้อง แรงยึดเหนี่ยวระหว่างอนุภาคของน้ำมีค่าปานกลาง อนุภาคสามารถไหลผ่านกันได้
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 2. Comprehensive Subject Summary -->
+        <section class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+            <div class="border-b border-slate-100 pb-4 mb-6">
+                <h2 class="text-xl font-bold text-slate-900 flex items-center gap-2">
+                    <span class="text-emerald-600">📖</span> สรุปเนื้อหาวิทยาศาสตร์ ม.1 (แนวข้อสอบ O-NET และเข้า ม.1)
+                </h2>
+            </div>
+            
+            <div class="prose max-w-none text-slate-700 space-y-4 text-sm leading-relaxed">
+                <p>
+                    การศึกษาวิชาวิทยาศาสตร์ระดับมัธยมศึกษาปีที่ 1 มุ่งเน้นการพัฒนาทักษะกระบวนการทางวิทยาศาสตร์และการคิดเชิงวิเคราะห์ (Critical Thinking) โดยครอบคลุมสาระสำคัญหลัก ได้แก่ <strong>เซลล์และหน่วยพื้นฐานของสิ่งมีชีวิต</strong> (โครงสร้างเซลล์พืชและเซลล์สัตว์ หน้าที่ของออร์แกเนลล์ เช่น นิวเคลียส ไมโทคอนเดรีย คลอโรพลาสต์), <strong>สารและการจำแนกสาร</strong> (สถานะของสสาร จุดเดือด จุดหลอมเหลว การแยกสารผสม เช่น การกลั่น การระเหยแห้ง โครมาโทกราฟี), <strong>แรงและการเคลื่อนที่</strong> (แรงลัพธ์ แรงเสียดทาน กฎการเคลื่อนที่ของนิวตันเบื้องต้น), และ<strong>พลังงานความร้อน</strong> (การถ่ายโอนความร้อน การขยายตัวของสสาร สมดุลความร้อน) ซึ่งเป็นเนื้อหายอดฮิตที่มักปรากฏในข้อสอบคัดเลือกเข้าโรงเรียนเตรียมอุดมศึกษา, โรงเรียนมหิดลวิทยานุสรณ์ และข้อสอบทดสอบทางการศึกษาระดับชาติขั้นพื้นฐาน (O-NET)
+                </p>
+                <p>
+                    หัวใจสำคัญในการทำคะแนนสอบแข่งขันให้ได้สูง คือการทำความเข้าใจคอนเซปต์หลัก (Core Concepts) มากกว่าการท่องจำ ตัวอย่างเช่น ในเรื่องเซลล์ ผู้เรียนต้องแยกแยะให้ได้ว่าผนังเซลล์ (Cell wall) และคลอโรพลาสต์ (Chloroplast) พบเฉพาะในเซลล์พืชเท่านั้น ในขณะที่เซนทริโอล (Centriole) พบในเซลล์สัตว์ ส่วนในเรื่องการแยกสาร ผู้เรียนต้องเข้าใจเงื่อนไขการเลือกใช้วิธีการ เช่น หากต้องการแยกเกลือออกจากน้ำทะเลต้องใช้การระเหยแห้ง แต่หากต้องการน้ำบริสุทธิ์จากน้ำเกลือต้องใช้การกลั่นอย่างง่าย เป็นต้น การฝึกฝนผ่านโจทย์สถานการณ์จำลองจะช่วยเสริมสร้างความแม่นยำในการวิเคราะห์โจทย์ข้อสอบจริงได้อย่างมีประสิทธิภาพ
+                </p>
+
+                <!-- Memory Tricks & Thought Process Box -->
+                <div class="bg-amber-50 border-l-4 border-amber-500 p-4 rounded-r-xl my-4">
+                    <h3 class="font-bold text-amber-900 mb-1 flex items-center gap-2">
+                        <span>💡</span> เทคนิคการจำและกระบวนการคิด (Memory Tricks & Thought Process)
+                    </h3>
+                    <ul class="list-disc pl-5 space-y-1 text-amber-900">
+                        <li><strong>เซลล์พืช vs เซลล์สัตว์:</strong> ท่องจำว่า "พืชมีเกราะและโรงงานสีเขียว" (Cell wall และ Chloroplast) ส่วนสัตว์มีรูปร่างยืดหยุ่นกว่าและมี Centriole ไว้ช่วยแบ่งเซลล์</li>
+                        <li><strong>การแยกสาร:</strong> "สารละลายของแข็งในของเหลว" ถ้าเอาตัวละลายใช้ระเหยแห้ง ถ้าเอาตัวทำละลายใช้การกลั่น</li>
+                        <li><strong>การวิเคราะห์โจทย์ O-NET:</strong> ให้อ่านคำถามท้ายสุดก่อนว่าโจทย์ต้องการถามอะไร จากนั้นจึงย้อนกลับไปดูข้อมูลในตารางหรือแผนภาพที่โจทย์กำหนดให้ เพื่อตัดตัวลวงออกอย่างรวดเร็ว</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3 & 4. Two-Frame Layout: Exam (70%) & Whiteboard (30%) -->
+        <section class="grid grid-cols-1 lg:grid-cols-10 gap-6 items-start">
+            
+            <!-- Left Frame: Exam System (70% -> lg:col-span-7) -->
+            <div class="lg:col-span-7 bg-white rounded-2xl shadow-sm border border-slate-200 p-6 space-y-6">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-100 pb-4 gap-3">
+                    <div>
+                        <h2 class="text-xl font-bold text-slate-900 flex items-center gap-2">
+                            <span class="text-emerald-600">📝</span> พื้นที่ทำข้อสอบ (ผู้ตอบปัจจุบัน: <span id="activePlayerName" class="text-emerald-600 font-extrabold">ยังไม่ได้เลือกผู้เล่น</span>)
+                        </h2>
+                        <p class="text-slate-500 text-xs mt-0.5">แนวข้อสอบ O-NET และเข้า ม.1 สุ่มด้วย Fisher-Yates Shuffle ป้องกันการเดาและตรวจสอบความถูกต้องทันที</p>
+                    </div>
+                    <div id="scoreBadge" class="bg-emerald-50 text-emerald-700 px-4 py-2 rounded-xl font-bold text-sm border border-emerald-150">
+                        ชุดข้อสอบ O-NET ม.1
+                    </div>
+                </div>
+
+                <!-- Active Question Container -->
+                <div id="questionContainer" class="space-y-4 pt-2">
+                    <!-- Populated dynamically -->
+                </div>
+
+                <!-- Navigation & Action Controls -->
+                <div class="flex justify-between items-center pt-4 border-t border-slate-100">
+                    <button onclick="nextRandomQuestion()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-2.5 rounded-xl text-sm font-bold shadow-sm transition">
+                        🔀 สุ่มข้อสอบข้อถัดไปสำหรับผู้เล่น
+                    </button>
+                    <button onclick="submitExam()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-2.5 rounded-xl text-sm font-bold shadow-sm transition">
+                        🎯 สรุปผลภาพรวม
+                    </button>
+                </div>
+
+                <!-- Evaluation & Analysis Panel (Hidden initially) -->
+                <div id="analysisPanel" class="hidden bg-slate-50 border border-slate-200 rounded-2xl p-6 space-y-4 mt-6">
+                    <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                        <span>📊</span> รายงานผลการวิเคราะห์สมรรถนะรายบุคคล (Performance Analytics)
+                    </h3>
+                    <div id="analysisContent" class="text-sm text-slate-700 space-y-2">
+                        <!-- Populated upon submission -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Frame: Whiteboard for Scratchpad (30% -> lg:col-span-3) -->
+            <div class="lg:col-span-3 bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sticky top-24 space-y-4">
+                <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                    <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+                        <span>✏️</span> กระดานทดเลข / Whiteboard
+                    </h3>
+                    <button onclick="clearCanvas()" class="text-xs bg-rose-50 text-rose-600 hover:bg-rose-100 px-2.5 py-1 rounded-lg font-medium border border-rose-200 transition">
+                        ล้างกระดาน
+                    </button>
+                </div>
+                <div class="border border-slate-300 rounded-xl overflow-hidden bg-slate-50 relative">
+                    <canvas id="scratchpad" class="w-full h-80 canvas-container block bg-white"></canvas>
+                </div>
+                <p class="text-[11px] text-slate-400 text-center">สามารถใช้เมาส์หรือนิ้วมือเขียนทดเลขและวาดภาพประกอบการทำข้อสอบได้ทันที</p>
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-200 py-6 text-center text-slate-500 text-sm mt-12">
+        <p>เขียนโดย พระจอมเกล้าติวเตอร์</p>
+    </footer>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        // --- 0. Web Audio API Sound Generator for Wheel Spinning ---
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playSpinSound() {
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            let osc = audioCtx.createOscillator();
+            let gain = audioCtx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(300, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(800, audioCtx.currentTime + 0.15);
+            gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+            gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.15);
+        }
+
+        function playWinSound() {
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            let notes = [523.25, 659.25, 783.99, 1046.50];
+            notes.forEach((freq, index) => {
+                let osc = audioCtx.createOscillator();
+                let gain = audioCtx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(freq, audioCtx.currentTime + index * 0.1);
+                gain.gain.setValueAtTime(0.2, audioCtx.currentTime + index * 0.1);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + index * 0.1 + 0.3);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start(audioCtx.currentTime + index * 0.1);
+                osc.stop(audioCtx.currentTime + index * 0.1 + 0.3);
+            });
+        }
+
+        // --- Game State & Players ---
+        const players = [
+            { id: 'phu', name: 'ภูภูมิ (Phu Phum)' },
+            { id: 'boom', name: 'บูม (Boom)' },
+            { id: 'nana', name: 'นานา (Nana)' }
+        ];
+        let scores = { phu: 0, boom: 0, nana: 0 };
+        let activePlayer = null;
+        let availableQuestionIndices = [];
+        let currentQuestionObj = null;
+
+        function spinWheel() {
+            const resultDisplay = document.getElementById('wheelResultDisplay');
+            const spinBtn = document.getElementById('spinBtn');
+            spinBtn.disabled = true;
+            resultDisplay.classList.add('animate-bounce');
+
+            let counter = 0;
+            let spinInterval = setInterval(() => {
+                playSpinSound();
+                let randomPlayer = players[Math.floor(Math.random() * players.length)];
+                resultDisplay.innerText = `🔄 กำลังสุ่ม... ${randomPlayer.name}`;
+                counter++;
+
+                if (counter > 15) {
+                    clearInterval(spinInterval);
+                    playWinSound();
+                    let winner = players[Math.floor(Math.random() * players.length)];
+                    activePlayer = winner;
+                    resultDisplay.classList.remove('animate-bounce');
+                    resultDisplay.innerText = `🎉 ผู้โชคดีรอบนี้คือ: ${winner.name}! 🎉`;
+                    document.getElementById('activePlayerName').innerText = winner.name;
+                    spinBtn.disabled = false;
+
+                    // Load a random unique question for this player
+                    loadRandomQuestion();
+                }
+            }, 100);
+        }
+
+        function modifyScore(playerId, amount) {
+            scores[playerId] += amount;
+            document.getElementById(`score-${playerId}`).innerText = scores[playerId];
+        }
+
+        // --- 1. Science Lab Simulation Logic ---
+        function runScienceSimulation() {
+            const temp = parseFloat(document.getElementById('simTemp').value);
+            const substance = document.getElementById('simSubstance').value;
+            let stateText = "";
+            let descText = "";
+
+            if (substance === 'water') {
+                if (temp < 0) {
+                    stateText = "สถานะ: ของแข็ง (Solid - น้ำแข็ง)";
+                    descText = "อุณหภูมิต่ำกว่าจุดเยือกแข็ง อนุภาคสั่นอยู่กับที่และยึดติดกันแน่นด้วยแรงยึดเหนี่ยวสูง";
+                } else if (temp >= 0 && temp < 100) {
+                    stateText = "สถานะ: ของเหลว (Liquid - น้ำ)";
+                    descText = "อุณหภูมิอยู่ในช่วงสถานะของเหลว อนุภาคมีพลังงานจลน์ปานกลาง สามารถไหลและเปลี่ยนรูปตามภาชนะได้";
+                } else {
+                    stateText = "สถานะ: แก๊ส (Gas - ไอน้ำ)";
+                    descText = "อุณหภูมิสูงกว่าจุดเดือด อนุภาคมีพลังงานจลน์สูงมาก เคลื่อนที่เร็วและกระจายตัวเต็มพื้นที่";
+                }
+            } else if (substance === 'iron') {
+                if (temp < 1538) {
+                    stateText = "สถานะ: ของแข็ง (Solid - เหล็กแท่ง)";
+                    descText = "อุณหภูมิต่ำกว่าจุดหลอมเหลวของเหล็ก อนุภาคเรียงตัวกันอย่างเป็นระเบียบในโครงสร้างผลึก";
+                } else {
+                    stateText = "สถานะ: ของเหลว (Liquid - เหล็กหลอมเหลว)";
+                    descText = "อุณหภูมิสูงเกินจุดหลอมเหลว (1,538°C) อนุภาคเริ่มเคลื่อนที่หลุดออกจากโครงสร้างผลึก";
+                }
+            } else if (substance === 'co2') {
+                if (temp < -78.5) {
+                    stateText = "สถานะ: ของแข็ง (Solid - คาร์บอนไดออกไซด์แห้ง)";
+                    descText = "อุณหภูมิต่ำกว่าจุดระเหิด คาร์บอนไดออกไซด์อยู่ในรูปของแข็ง";
+                } else {
+                    stateText = "สถานะ: แก๊ส (Gas - ไอคาร์บอนไดออกไซด์)";
+                    descText = "เกิดการระเหิด (Sublimation) กลายเป็นแก๊สโดยไม่ผ่านสถานะของเหลว";
+                }
+            }
+
+            document.getElementById('simStateDisplay').innerText = stateText;
+            document.getElementById('simExplanation').innerHTML = `<strong>ผลการทดลอง:</strong> ${descText}`;
+        }
+
+        // --- 2. Whiteboard (Scratchpad) Implementation ---
+        const canvas = document.getElementById('scratchpad');
+        const ctx = canvas.getContext('2d');
+        let drawing = false;
+
+        function resizeCanvas() {
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width;
+            canvas.height = rect.height;
+            ctx.strokeStyle = '#059669';
+            ctx.lineWidth = 2;
+            ctx.lineCap = 'round';
+        }
+        window.addEventListener('resize', resizeCanvas);
+        window.addEventListener('load', resizeCanvas);
+
+        function getPos(e) {
+            const rect = canvas.getBoundingClientRect();
+            let clientX = e.clientX;
+            let clientY = e.clientY;
+            if(e.touches && e.touches.length > 0) {
+                clientX = e.touches[0].clientX;
+                clientY = e.touches[0].clientY;
+            }
+            return {
+                x: clientX - rect.left,
+                y: clientY - rect.top
+            };
+        }
+
+        canvas.addEventListener('mousedown', (e) => { drawing = true; const pos = getPos(e); ctx.beginPath(); ctx.moveTo(pos.x, pos.y); });
+        canvas.addEventListener('mousemove', (e) => { if(!drawing) return; const pos = getPos(e); ctx.lineTo(pos.x, pos.y); ctx.stroke(); });
+        canvas.addEventListener('mouseup', () => { drawing = false; });
+        canvas.addEventListener('mouseleave', () => { drawing = false; });
+
+        canvas.addEventListener('touchstart', (e) => { drawing = true; const pos = getPos(e); ctx.beginPath(); ctx.moveTo(pos.x, pos.y); e.preventDefault(); });
+        canvas.addEventListener('touchmove', (e) => { if(!drawing) return; const pos = getPos(e); ctx.lineTo(pos.x, pos.y); ctx.stroke(); e.preventDefault(); });
+        canvas.addEventListener('touchend', () => { drawing = false; });
+
+        function clearCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        // --- 3. Science Exam Bank (O-NET & Grade 7 Entrance Level - 30 Questions) ---
+        const rawQuestions = [
+            { id: 1, q: "ออร์แกเนลล์ใดในเซลล์พืชทำหน้าที่สังเคราะห์ด้วยแสงและพบได้เฉพาะในเซลล์พืชเท่านั้น?", options: ["คลอโรพลาสต์ (Chloroplast)", "ไมโทคอนเดรีย (Mitochondria)", "ไรโบโซม (Ribosome)", "กอลจิบอดี้ (Golgi body)"], answer: 0, clue: "มองหาออร์แกเนลล์ที่มีรงควัตถุสีเขียวสำหรับสร้างอาหาร", explanation: "คลอโรพลาสต์ (Chloroplast) มีสารคลอโรฟิลด์ทำหน้าที่ดูดกลืนพลังงานแสงเพื่อใช้ในกระบวนการสังเคราะห์ด้วยแสง และพบเฉพาะในเซลล์พืชและสาหร่าย" },
+            { id: 2, q: "การแยกเกลือแกงออกจากน้ำทะเล นิยมใช้กรรมวิธีทางวิทยาศาสตร์ในข้อใด?", options: ["การระเหยแห้ง (Evaporation)", "การกลั่นอย่างง่าย (Simple distillation)", "การตกตะกอน (Sedimentation)", "การกรอง (Filtration)"], answer: 0, clue: "ต้องการเก็บของแข็งที่ละลายอยู่ในของเหลวโดยไม่สนใจตัวทำละลาย", explanation: "การระเหยแห้งใช้แยกตัวละลายที่เป็นของแข็งซึ่งละลายเป็นเนื้อเดียวกับตัวทำละลายที่เป็นของเหลว โดยให้ความร้อนจนของเหลวระเหยไปหมดเหลือแต่เกลือ" },
+            { id: 3, q: "ข้อใดกล่าวถึงความแตกต่างระหว่าง 'เซลล์พืช' และ 'เซลล์สัตว์' ได้ถูกต้องที่สุด?", options: ["เซลล์พืชมีผนังเซลล์และรูปร่างเป็นเหลี่ยม ส่วนเซลล์สัตว์ไม่มีผนังเซลล์และมีรูปร่างค่อนข้างกลม", "เซลล์สัตว์มีคลอโรพลาสต์แต่เซลล์พืชไม่มี", "เซลล์พืชไม่มีนิวเคลียสแต่เซลล์สัตว์มีนิวเคลียส", "เซลล์สัตว์มีขนาดใหญ่กว่าเซลล์พืชทุกชนิด"], answer: 0, clue: "พืชมีเกราะป้องกันภายนอกที่แข็งแรงกว่าสัตว์", explanation: "เซลล์พืชมีผนังเซลล์ (Cell wall) ประกอบด้วยเซลลูโลสทำให้เซลล์มีรูปร่างคงที่และเป็นเหลี่ยม ส่วนเซลล์สัตว์ไม่มีผนังเซลล์ มีเพียงเยื่อหุ้มเซลล์ทำให้ยืดหยุ่นกว่า" },
+            { id: 4, q: "เมื่อนำน้ำเชื่อมเข้มข้นมาตั้งทิ้งไว้ในอากาศแห้งนานหลายวัน จะสังเกตเห็นผลึกน้ำตาลปรากฏขึ้น ปรากฏการณ์นี้เกี่ยวข้องกับการเปลี่ยนแปลงทางกายภาพและกระบวนการใด?", options: ["การระเหยของน้ำและการตกผลึก", "การควบแน่นและการหลอมเหลว", "การระเหิดและการละลาย", "การกลั่นและการกรอง"], answer: 0, clue: "น้ำในสารละลายค่อยๆ ระเหยออกไปทำให้ตัวละลายอิ่มตัวและรวมตัวกัน", explanation: "น้ำระเหยออกสู่อากาศอย่างช้าๆ ทำให้ความเข้มข้นเพิ่มขึ้นจนถึงจุดอิ่มตัวและเกิดการตกผลึกน้ำตาลทรายออกมา" },
+            { id: 5, q: "แรงลัพธ์ขนาด 10 นิวตัน และ 15 นิวตัน กระทำต่อวัตถุในทิศทางเดียวกัน แรงลัพธ์สูงสุดที่จะเกิดขึ้นมีค่าเท่าใด?", options: ["25 นิวตัน", "5 นิวตัน", "150 นิวตัน", "0 นิวตัน"], answer: 0, clue: "เมื่อแรงกระทำทิศทางเดียวกันให้นำขนาดของแรงมาบวกกัน", explanation: "หากแรงกระทำในทิศทางเดียวกัน แรงลัพธ์คือผลรวมของขนาดแรงทั้งสอง: 10 + 15 = 25 นิวตัน" },
+            { id: 6, q: "การถ่ายโอนความร้อนผ่านตัวกลางที่เป็นของแข็งโดยที่อนุภาคของของแข็งไม่ต้องเคลื่อนที่ เรียกว่ากระบวนการใด?", options: ["การนำความร้อน (Conduction)", "การพาความร้อน (Convection)", "การแผ่รังสีความร้อน (Radiation)", "การกลั่นตัว (Condensation)"], answer: 0, clue: "ความร้อนส่งต่อผ่านการชนกันของอนุภาคในวัตถุแข็ง", explanation: "การนำความร้อนเป็นการถ่ายโอนความร้อนผ่านตัวกลางที่เป็นของแข็ง เช่น การใช้ช้อนโลหะคนน้ำร้อนแล้วด้ามช้อนร้อนขึ้น" },
+            { id: 7, q: "โครงสร้างใดของดอกไม้ทำหน้าที่สร้างเซลล์สืบพันธุ์เพศผู้ (ละอองเรณู)?", options: ["อับเรณู (Anther) ในเกสรเพศผู้", "รังไข่ (Ovary) ในเกสรเพศเมีย", "กลีบเลี้ยง (Sepal)", "กลีบดอก (Petal)"], answer: 0, clue: "ส่วนปลายของเกสรตัวผู้มีลักษณะเป็นถุงอับเรณู", explanation: "อับเรณู (Anther) ซึ่งอยู่บนก้านชูอับเรณูในเกสรเพศผู้ ทำหน้าที่ผลิตและเก็บละอองเรณูซึ่งเป็นเซลล์สืบพันธุ์เพศผู้" },
+            { id: 8, q: "สารผสมในข้อใดสามารถแยกออกจากกันได้โดยใช้แม่เหล็กดูด?", options: ["ผงเหล็กปนกับผงกำมะถัน", "เกลือแกงปนกับน้ำตาลทราย", "ทรายปนกับน้ำ", "แอลกอฮอล์ผสมกับน้ำ"], answer: 0, clue: "เลือกสารที่มีสมบัติทางแม่เหล็กดึงดูดได้", explanation: "ผงเหล็กมีสมบัติทางแม่เหล็ก สามารถใช้แม่เหล็กดูดผงเหล็กแยกออกจากผงกำมะถันได้โดยง่าย" },
+            { id: 9, q: "อุณหภูมิ 30 องศาเซลเซียส มีค่าเท่ากับกี่องศาฟาเรนไฮต์?", options: ["86 องศาฟาเรนไฮต์", "54 องศาฟาเรนไฮต์", "98 องศาฟาเรนไฮต์", "77 องศาฟาเรนไฮต์"], answer: 0, clue: "ใช้สูตรแปลงอุณหภูมิ F = 1.8(C) + 32", explanation: "คำนวณจากสูตร F = (9/5)C + 32 -> (9/5)(30) + 32 = 54 + 32 = 86 องศาฟาเรนไฮต์" },
+            { id: 10, q: "การเปลี่ยนแปลงในข้อใดเป็นการเปลี่ยนแปลงทางเคมี (Chemical change)?", options: ["การเผาไหม้กระดาษ", "การละลายของเกลือแกงในน้ำ", "การระเหยของน้ำ", "การบดก้อนน้ำแข็งให้ละเอียด"], answer: 0, clue: "การเปลี่ยนแปลงที่ทำให้เกิดสารใหม่และไม่สามารถกลับคืนสภาพเดิมได้ง่าย", explanation: "การเผาไหม้ทำให้เกิดสารใหม่ เช่น ขี้เถ้า แก๊สคาร์บอนไดออกไซด์ และควัน ซึ่งเป็นการเปลี่ยนแปลงทางเคมี" },
+            { id: 11, q: "กระบวนการหายใจระดับเซลล์ที่สร้างพลังงานให้กับสิ่งมีชีวิตเกิดขึ้นที่ออร์แกเนลล์ใด?", options: ["ไมโทคอนเดรีย (Mitochondria)", "แวคิวโอล (Vacuole)", "ไรโบโซม (Ribosome)", "คลอโรพลาสต์ (Chloroplast)"], answer: 0, clue: "เปรียบเสมือนโรงงานผลิตพลังงาน (Powerhouse) ของเซลล์", explanation: "ไมโทคอนเดรียทำหน้าที่หายใจระดับเซลล์เพื่อสร้างพลังงาน (ATP) ให้แก่เซลล์นำไปใช้ในกิจกรรมต่างๆ" },
+            { id: 12, q: "สารละลายที่มีค่า pH เท่ากับ 3 มีสมบัติทางเคมีอย่างไร?", options: ["เป็นกรด (Acidic)", "เป็นเบส (Basic)", "เป็นกลาง (Neutral)", "เป็นเกลือบริสุทธิ์"], answer: 0, clue: "ค่า pH น้อยกว่า 7 บ่งบอกความเป็นกรด", explanation: "ค่า pH ต่ำกว่า 7 แสดงว่าเป็นสารละลายที่มีสมบัติเป็นกรด โดยยิ่งน้อยยิ่งมีความเป็นกรดสูง" },
+            { id: 13, q: "ข้อใดคือหน่วยของ 'แรง' ในระบบเอสไอ (SI Units)?", options: ["นิวตัน (Newton)", "จูล (Joule)", "วัตต์ (Watt)", "ปาสคาล (Pascal)"], answer: 0, clue: "ตั้งตามชื่อนักวิทยาศาสตร์ผู้ค้นพบกฎการเคลื่อนที่", explanation: "แรงมีหน่วยเป็นนิวตัน (N) ซึ่งเทียบเท่ากับ kg⋅m/s²" },
+            { id: 14, q: "ปรากฏการณ์ธรรมชาติในข้อใดเกิดจากการหมุนรอบตัวเองของโลกจากทิศตะวันตกไปทิศตะวันออก?", options: ["การเกิดกลางวันและกลางคืน", "การเกิดฤดูกาลต่างๆ", "การเกิดข้างขึ้นข้างแรม", "การเกิดสุริยุปราคา"], answer: 0, clue: "ทำให้เราเห็นดวงอาทิตย์ขึ้นทางทิศตะวันออกและตกทางทิศตะวันตก", explanation: "โลกหมุนรอบตัวเองทำให้ซีกโลกต่างๆ หมุนมารับแสงอาทิตย์สลับกันเกิดเป็นกลางวันและกลางคืน" },
+            { id: 15, q: "สารในข้อใดจัดเป็น 'ธาตุ' (Element) ตามนิยามทางเคมี?", options: ["ทองคำ (Gold - Au)", "น้ำ (Water - H₂O)", "เกลือแกง (NaCl)", "คาร์บอนไดออกไซด์ (CO₂)"], answer: 0, clue: "สารบริสุทธิ์ที่ประกอบด้วยอะตอมชนิดเดียวกันทั้งหมด", explanation: "ทองคำประกอบด้วยอะตอมของธาตุทองคำเพียงชนิดเดียว จัดเป็นธาตุ ส่วนน้ำ เกลือ และคาร์บอนไดออกไซด์เป็นสารประกอบ" },
+            { id: 16, q: "เมื่อให้ความร้อนแก่ลูกเหม็นที่วางไว้ในห้อง เปิดฝาภาชนะทิ้งไว้ จะพบว่าลูกเหม็นมีขนาดเล็กลงเรื่อยๆ การเปลี่ยนแปลงนี้เรียกว่าอะไร?", options: ["การระเหิด (Sublimation)", "การหลอมเหลว (Melting)", "การกลายเป็นไอ (Vaporization)", "การควบแน่น (Condensation)"], answer: 0, clue: "การเปลี่ยนสถานะจากของแข็งกลายเป็นแก๊สโดยไม่ผ่านของเหลว", explanation: "ลูกเหม็น (แนฟทาลีน) มีสมบัติระเหิดได้ โดยเปลี่ยนจากของแข็งระเหิดกลายเป็นไอสู่อากาศโดยตรง" },
+            { id: 17, q: "แรงเสียดทานมีทิศทางอย่างไรเมื่อเทียบกับการเคลื่อนที่ของวัตถุ?", options: ["มีทิศทางตรงกันข้ามกับการเคลื่อนที่ของวัตถุเสมอ", "มีทิศทางเดียวกับการเคลื่อนที่ของวัตถุ", "มีทิศทางตั้งฉากกับการเคลื่อนที่ของวัตถุ", "ไม่มีทิศทางที่แน่นอน"], answer: 0, clue: "แรงต้านทานการเคลื่อนที่", explanation: "แรงเสียดทานเป็นแรงที่ต้านการเคลื่อนที่ของวัตถุ จึงมีทิศทางตรงกันข้ามกับการเคลื่อนที่เสมอ" },
+            { id: 18, q: "ส่วนประกอบของเลือดในข้อใดทำหน้าที่ลำเลียงออกซิเจนไปยังเซลล์ต่างๆ ทั่วร่างกาย?", options: ["เม็ดเลือดแดง (Red blood cells)", "เม็ดเลือดขาว (White blood cells)", "เกล็ดเลือด (Platelets)", "พลาสมา (Plasma)"], answer: 0, clue: "มีสารฮีโมโกลบิน (Hemoglobin) สีแดงช่วยจับออกซิเจน", explanation: "เม็ดเลือดแดงมีโปรตีนฮีโมโกลบินซึ่งทำหน้าที่หลักในการจับและลำเลียงออกซิเจนจากปอดไปเลี้ยงเนื้อเยื่อทั่วร่างกาย" },
+            { id: 19, q: "เครื่องมือวัดในข้อใดใช้สำหรับวัด 'มวล' ของวัตถุ?", options: ["เครื่องชั่งสปริงแบบคาน (Beam balance)", "เทอร์โมมิเตอร์ (Thermometer)", "กระบอกตวง (Graduated cylinder)", "บารอมิเตอร์ (Barometer)"], answer: 0, clue: "เปรียบเทียบมวลกับตุ้มมาตรฐาน", explanation: "เครื่องชั่งสปริงแบบคานหรือเครื่องชั่งดิจิทัลใช้สำหรับวัดมวล ส่วนเครื่องชั่งสปริงทั่วไปใช้วัดแรงหรือน้ำหนัก" },
+            { id: 20, q: "ข้อใดเป็นผลจากแรงโน้มถ่วงของดวงจันทร์และดวงอาทิตย์ที่มีต่อโลก?", options: ["การเกิดน้ำขึ้นน้ำลง (Tides)", "การเกิดลมมรสุม", "การเกิดแผ่นดินไหว", "การเกิดพายุหมุนเขตร้อน"], answer: 0, clue: "ระดับน้ำทะเลชายฝั่งเปลี่ยนแปลงเป็นรอบเวลา", explanation: "แรงดึงดูดระหว่างมวลของดวงจันทร์และดวงอาทิตย์ที่กระทำต่อโลกทำให้เกิดปรากฏการณ์น้ำขึ้นและน้ำลง" },
+            { id: 21, q: "กระบวนการสังเคราะห์ด้วยแสงของพืชจะปล่อยแก๊สใดออกมาสู่อากาศ?", options: ["แก๊สออกซิเจน (O₂)", "แก๊สคาร์บอนไดออกไซด์ (CO₂)", "แก๊สไนโตรเจน (N₂)", "แก๊สไฮโดรเจน (H₂)"], answer: 0, clue: "แก๊สที่สิ่งมีชีวิตใช้หายใจ", explanation: "พืชดูดซับคาร์บอนไดออกไซด์และน้ำมาใช้สร้างอาหาร พร้อมทั้งปล่อยแก๊สออกซิเจนออกมาเป็นผลพลอยได้" },
+            { id: 22, q: "หากต้องการวัดปริมาตรของก้อนหินที่มีรูปร่างไม่สม่ำเสมอ ควรใช้อุปกรณ์ใดเหมาะสมที่สุด?", options: ["กระบอกตวงใส่น้ำ (Graduated cylinder)", "ไม้บรรทัดเหล็ก", "ตาชั่งสปริง", "หลอดหยดสาร (Dropper)"], answer: 0, clue: "ใช้หลักการแทนที่น้ำ (Water displacement)", explanation: "การหาปริมาตรของแข็งรูปทรงไม่สม่ำเสมอทำได้โดยการหย่อนลงในกระบอกตวงที่มีน้ำแล้วคำนวณปริมาตรน้ำที่เพิ่มขึ้น" },
+            { id: 23, q: "โรคในข้อใดเกิดจากความผิดปกติของโครโมโซมหรือพันธุกรรม ไม่ใช่โรคติดเชื้อ?", options: ["โรคธาลัสซีมีเดีย (Thalassemia)", "โรคโควิด-19", "โรคไข้เลือดออก", "โรคมาลาเรีย"], answer: 0, clue: "โรคที่ถ่ายทอดจากบรรพบุรุษสู่ลูกหลาน", explanation: "ธาลัสซีมีเดียเป็นโรคโลหิตจางทางพันธุกรรม ส่วนโรคที่เหลือเกิดจากเชื้อไวรัส ยุง หรือปรสิต" },
+            { id: 24, q: "ข้อใดคือสมบัติทางกายภาพของ 'ทองแดง' (Copper)?", options: ["นำความร้อนและไฟฟ้าได้ดี มีสีส้มแดง", "เป็นฉนวนไฟฟ้าที่ดีเยี่ยม", "เปราะและแตกหักง่ายเมื่อตีแผ่", "ละลายได้ดีในน้ำเย็น"], answer: 0, clue: "โลหะสีส้มแดงที่ใช้ทำสายไฟ", explanation: "ทองแดงเป็นโลหะที่มีสมบัติทางกายภาพคือ นำไฟฟ้าและนำความร้อนได้ดีเยี่ยม มีความเหนียวและตีแผ่เป็นแผ่นได้" },
+            { id: 25, q: "การย่อยอาหารเชิงเคมีในมนุษย์เริ่มต้นที่อวัยวะใดเป็นแห่งแรก?", options: ["ปาก (Mouth - เอนไซม์อะไมเลส)", "กระเพาะอาหาร (Stomach)", "ลำไส้เล็ก (Small intestine)", "หลอดอาหาร (Esophagus)"], answer: 0, clue: "น้ำลายมีเอนไซม์ย่อยแป้ง", explanation: "ในน้ำลายมีเอนไซม์ไทยาลิน (อะไมเลส) ย่อยแป้งให้เป็นน้ำตาลโมเลกุลคู่ ถือเป็นการย่อยเชิงเคมีขั้นแรก" },
+            { id: 26, q: "พลังงานรูปใดที่สะสมอยู่ในอาหารและน้ำมันเชื้อเพลิง?", options: ["พลังงานเคมี (Chemical energy)", "พลังงานความร้อน", "พลังงานจลน์", "พลังงานนิวเคลียร์"], answer: 0, clue: "พลังงานที่ปลดปล่อยออกมาจากปฏิกิริยาเคมี", explanation: "อาหารและเชื้อเพลิงเก็บสะสมพลังงานไว้ในพันธะเคมี เมื่อเกิดการเผาผลาญหรือเผาไหม้จะเปลี่ยนเป็นพลังงานความร้อนและพลังงานกล" },
+            { id: 27, q: "ดาวเคราะห์ในระบบสุริยะดวงใดมีขนาดใหญ่ที่สุดและได้ชื่อว่าเป็น 'ยักษ์ใหญ่แห่งแก๊ส'?", options: ["ดาวพฤหัสบดี (Jupiter)", "ดาวเสาร์ (Saturn)", "ดาวอังคาร (Mars)", "ดาวเนปจูน (Neptune)"], answer: 0, clue: "ดาวเคราะห์วงนอกดวงแรกที่มีจุดแดงใหญ่", explanation: "ดาวพฤหัสบดีเป็นดาวเคราะห์ที่มีขนาดใหญ่ที่สุดในระบบสุริยะและเป็นดาวเคราะห์แก๊สยักษ์" },
+            { id: 28, q: "การตากผ้าให้แห้งโดยอาศัยพลังงานจากแสงอาทิตย์และลม เป็นการใช้ประโยชน์จากกระบวนการใด?", options: ["การระเหย (Evaporation)", "การหลอมเหลว", "การระเหิด", "การควบแน่น"], answer: 0, clue: "น้ำบนผ้าเปลี่ยนสถานะกลายเป็นไอที่ผิวหน้าของของเหลว", explanation: "น้ำบนผ้าจะระเหยกลายเป็นไอสู่อากาศโดยอาศัยความร้อนจากแสงแดดและการพัดผ่านของลม" },
+            { id: 29, q: "หน่วยพื้นฐานที่เล็กที่สุดของสิ่งมีชีวิตคือข้อใด?", options: ["เซลล์ (Cell)", "เนื้อเยื่อ (Tissue)", "ออร์แกเนลล์ (Organelle)", "ออร์แกน (Organ)"], answer: 0, clue: "โครงสร้างพื้นฐานที่ประกอบกันเป็นสิ่งมีชีวิตทุกชนิด", explanation: "เซลล์เป็นหน่วยโครงสร้างและหน้าที่ที่เล็กที่สุดของสิ่งมีชีวิตทุกชนิด ทั้งเซลล์เดียวและหลายเซลล์" },
+            { id: 30, q: "หากนักเรียนต้องการทดสอบว่าแป้งสาลีมีสาร 'แป้ง' หรือไม่ ควรใช้สารละลายใดเป็นตัวทดสอบ?", options: ["สารละลายไอโอดีน (Iodine solution)", "สารละลายเบเนดิกต์", "กระดาษสีน้ำเงิน", "สารละลายโซเดียมไฮดรอกไซด์"], answer: 0, clue: "สารละลายสีน้ำตาลส้มที่จะเปลี่ยนเป็นสีน้ำเงินเข้มเมื่อเจอแป้ง", explanation: "สารละลายไอโอดีนใช้ทดสอบแป้ง โดยหากมีแป้งอยู่จะเปลี่ยนจากสีน้ำตาลส้มเป็นสีน้ำเงินเข้มหรือม่วงดำ" }
+        ];
+
+        let shuffledQuestionIndices = [];
+
+        // Fisher-Yates Shuffle
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function initGame() {
+            shuffledQuestionIndices = Array.from({length: rawQuestions.length}, (_, i) => i);
+            shuffleArray(shuffledQuestionIndices);
+            availableQuestionIndices = [...shuffledQuestionIndices];
+            scores = { phu: 0, boom: 0, nana: 0 };
+            document.getElementById('score-phu').innerText = '0';
+            document.getElementById('score-boom').innerText = '0';
+            document.getElementById('score-nana').innerText = '0';
+            activePlayer = null;
+            document.getElementById('activePlayerName').innerText = "ยังไม่ได้เลือกผู้เล่น (กรุณากดหมุนวงล้อ)";
+            document.getElementById('questionContainer').innerHTML = `
+                <div class="text-center py-12 text-slate-400">
+                    <p class="text-lg">👈 กรุณากดปุ่ม <strong>"หมุนวงล้อสุ่มผู้โชคดี"</strong> ด้านบนเพื่อเริ่มเกมตอบคำถามวิทยาศาสตร์</p>
+                </div>
+            `;
+            document.getElementById('analysisPanel').classList.add('hidden');
+        }
+
+        function loadRandomQuestion() {
+            if (availableQuestionIndices.length === 0) {
+                alert("ทำครบทุกข้อแล้ว! ระบบจะทำการสุ่มวนข้อสอบใหม่");
+                availableQuestionIndices = [...shuffledQuestionIndices];
+            }
+
+            const rawIdx = availableQuestionIndices.pop();
+            const originalQ = rawQuestions[rawIdx];
+
+            // Shuffle options with Fisher-Yates
+            let optionsWithMeta = originalQ.options.map((opt, idx) => ({
+                text: opt,
+                isCorrect: idx === originalQ.answer
+            }));
+            shuffleArray(optionsWithMeta);
+            const newCorrectIdx = optionsWithMeta.findIndex(o => o.isCorrect);
+
+            currentQuestionObj = {
+                id: originalQ.id,
+                q: originalQ.q,
+                options: optionsWithMeta.map(o => o.text),
+                answer: newCorrectIdx,
+                clue: originalQ.clue,
+                explanation: originalQ.explanation
+            };
+
+            renderActiveQuestion();
+        }
+
+        function renderActiveQuestion() {
+            if (!activePlayer) {
+                return;
+            }
+            const qContainer = document.getElementById('questionContainer');
+            const q = currentQuestionObj;
+
+            let html = `
+                <div class="space-y-4 bg-emerald-50/50 p-5 rounded-2xl border border-emerald-100">
+                    <div class="flex justify-between items-center">
+                        <span class="text-xs font-bold text-emerald-700 bg-white px-3 py-1 rounded-full border border-emerald-200 shadow-sm">ผู้ตอบ: ${activePlayer.name} (แนวข้อสอบ O-NET ม.1)</span>
+                        <button onclick="toggleClue()" class="text-xs text-amber-600 hover:text-amber-700 font-medium bg-amber-50 px-2.5 py-1 rounded-lg border border-amber-200 transition">
+                            💡 แสดง/ซ่อน คำใบ้ (Clue)
+                        </button>
+                    </div>
+                    <div id="clueBox" class="hidden bg-amber-50 border border-amber-200 text-amber-900 text-xs p-3 rounded-xl">
+                        <strong>คำใบ้:</strong> ${q.clue}
+                    </div>
+                    <div class="text-lg font-bold text-slate-900 leading-snug">
+                        ${q.q}
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2" id="optionsGrid">
+            `;
+
+            q.options.forEach((opt, oIdx) => {
+                html += `
+                    <button onclick="selectGameAnswer(${oIdx})" class="p-3.5 rounded-xl border bg-white border-slate-200 text-slate-700 hover:border-emerald-400 hover:bg-emerald-50 text-left text-sm transition flex items-center gap-3 shadow-sm">
+                        <span class="w-6 h-6 rounded-full border border-slate-300 flex items-center justify-center text-xs font-bold shrink-0">${String.fromCharCode(65 + oIdx)}</span>
+                        <span>${opt}</span>
+                    </button>
+                `;
+            });
+
+            html += `</div><div id="feedbackContainer"></div></div>`;
+            qContainer.innerHTML = html;
+        }
+
+        function toggleClue() {
+            const clueBox = document.getElementById('clueBox');
+            if(clueBox) clueBox.classList.toggle('hidden');
+        }
+
+        function selectGameAnswer(optIdx) {
+            const q = currentQuestionObj;
+            const isCorrect = optIdx === q.answer;
+            
+            // Disable all option buttons
+            const optionBtns = document.querySelectorAll('#optionsGrid button');
+            optionBtns.forEach((btn, idx) => {
+                btn.disabled = true;
+                if(idx === q.answer) {
+                    btn.className = "p-3.5 rounded-xl border bg-emerald-50 border-emerald-500 text-emerald-900 font-semibold text-left text-sm flex items-center gap-3 shadow-sm";
+                } else if(idx === optIdx && !isCorrect) {
+                    btn.className = "p-3.5 rounded-xl border bg-rose-50 border-rose-500 text-rose-900 font-semibold text-left text-sm flex items-center gap-3 shadow-sm";
+                } else {
+                    btn.className = "p-3.5 rounded-xl border bg-slate-50 border-slate-200 text-slate-400 opacity-60 text-left text-sm flex items-center gap-3";
+                }
+            });
+
+            const feedbackContainer = document.getElementById('feedbackContainer');
+            feedbackContainer.innerHTML = `
+                <div class="mt-4 p-4 rounded-xl border ${isCorrect ? 'bg-emerald-50 border-emerald-200 text-emerald-900' : 'bg-rose-50 border-rose-200 text-rose-900'} space-y-1">
+                    <div class="font-bold flex items-center gap-2">
+                        <span>${isCorrect ? '✅ ตอบถูกต้องครับ! (ครูสามารถกดให้ +1 คะแนนด้านบนได้เลย)' : '❌ ตอบยังไม่ถูกต้อง (ครูสามารถกดให้ -1 คะแนนด้านบนได้เลย)'}</span>
+                    </div>
+                    <div class="text-xs leading-relaxed opacity-90">
+                        <strong>เฉลยและวิธีคิด:</strong> ${q.explanation}
+                    </div>
+                </div>
+            `;
+        }
+
+        function nextRandomQuestion() {
+            if (!activePlayer) {
+                alert("กรุณากดหมุนวงล้อสุ่มชื่อผู้เล่นก่อนครับ!");
+                return;
+            }
+            loadRandomQuestion();
+        }
+
+        function submitExam() {
+            const analysisPanel = document.getElementById('analysisPanel');
+            const analysisContent = document.getElementById('analysisContent');
+
+            analysisContent.innerHTML = `
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+                    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-center">
+                        <div class="text-xs text-slate-500">คะแนน ภูภูมิ</div>
+                        <div class="text-2xl font-bold text-amber-600">${scores.phu} คะแนน</div>
+                    </div>
+                    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-center">
+                        <div class="text-xs text-slate-500">คะแนน บูม</div>
+                        <div class="text-2xl font-bold text-cyan-600">${scores.boom} คะแนน</div>
+                    </div>
+                    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-center">
+                        <div class="text-xs text-slate-500">คะแนน นานา</div>
+                        <div class="text-2xl font-bold text-pink-600">${scores.nana} คะแนน</div>
+                    </div>
+                </div>
+                <div class="bg-white p-4 rounded-xl border border-slate-200 space-y-2 text-center">
+                    <div class="font-bold text-emerald-900 text-base">🏆สรุปผลการแข่งขันเกมวงล้อ วิทยาศาสตร์ ม.1🏆</div>
+                    <p class="text-xs text-slate-600">ขอบคุณนักเรียนทุกคน (ภูภูมิ, บูม, นานา) ที่ร่วมสนุกและฝึกฝนกระบวนการคิดวิเคราะห์กับพระจอมเกล้าติวเตอร์ครับ!</p>
+                </div>
+            `;
+
+            analysisPanel.classList.remove('hidden');
+            analysisPanel.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function resetGame() {
+            if(confirm("คุณต้องการรีเซ็ตเกมและคะแนนทั้งหมดใช่หรือไม่?")) {
+                initGame();
+            }
+        }
+
+        let isThai = true;
+        function toggleLanguage() {
+            isThai = !isThai;
+            const btn = document.getElementById('langToggleBtn');
+            btn.innerText = isThai ? "🌐 ภาษา: ไทย (TH)" : "🌐 ภาษา: อังกฤษ (EN)";
+        }
+
+        window.onload = () => {
+            runScienceSimulation();
+            initGame();
+        };
+    </script>
+</body>
+</html>
+
+เขียนโดย พระจอมเกล้าติวเตอร์
