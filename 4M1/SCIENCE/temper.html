@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>พระจอมเกล้าติวเตอร์ - เกมวงล้อสุ่มข้อสอบวิทยาศาสตร์ ม.1 เทอม 2 (การเปลี่ยนอุณหภูมิ)</title>
+    <!-- Tailwind CSS CDN for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap');
+        body {
+            font-family: 'Sarabun', sans-serif;
+        }
+        .canvas-container {
+            cursor: crosshair;
+            touch-action: none;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+    <!-- Header -->
+    <header class="bg-amber-700 text-white shadow-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center">
+            <div>
+                <h1 class="text-2xl font-bold flex items-center gap-2">
+                    <span>🌡️</span> พระจอมเกล้าติวเตอร์ (Phra Chom Klao Tutor)
+                </h1>
+                <p class="text-amber-200 text-sm">เกมวงล้อสุ่มผู้โชคดีตอบคำถาม วิชาวิทยาศาสตร์ ม.1 เทอม 2 (เรื่อง การเปลี่ยนอุณหภูมิและความร้อน)</p>
+            </div>
+            <div class="mt-3 sm:mt-0 flex items-center gap-3">
+                <button id="langToggleBtn" onclick="toggleLanguage()" class="bg-amber-600 hover:bg-amber-500 text-white px-3 py-1.5 rounded-lg text-sm font-medium border border-amber-500 transition shadow-sm">
+                    🌐 ภาษา: ไทย (TH)
+                </button>
+                <button onclick="resetGame()" class="bg-rose-600 hover:bg-rose-500 text-white px-3 py-1.5 rounded-lg text-sm font-medium transition shadow-sm">
+                    🔄 รีเซ็ตเกมทั้งหมด
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="max-w-7xl mx-auto px-4 py-6 flex-grow w-full space-y-8">
+
+        <!-- 0. Game Dashboard & Scoreboard (Wheel & Teacher Control) -->
+        <section class="bg-gradient-to-br from-amber-900 to-slate-900 text-white rounded-2xl shadow-xl p-6 space-y-6">
+            <div class="text-center space-y-2">
+                <h2 class="text-2xl font-bold flex items-center justify-center gap-2">
+                    <span>🎡</span> เกมวงล้อสุ่มผู้โชคดีตอบคำถาม (น้ำฟ้า | ตาล | ท็อป | ลูกเกด)
+                </h2>
+                <p class="text-amber-200 text-sm">หมุนวงล้อเพื่อเสี่ยงทายผู้โชคดีตอบคำถาม พร้อมระบบคะแนนสะสมโดยครูผู้สอน</p>
+            </div>
+
+            <!-- Scoreboard & Teacher Controls (4 Players) -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <!-- Player 1: น้ำฟ้า -->
+                <div class="bg-white/10 backdrop-blur-md border border-white/20 p-4 rounded-xl flex flex-col justify-between space-y-3">
+                    <div class="flex justify-between items-center">
+                        <span class="font-bold text-base text-pink-300">👧 น้ำฟ้า</span>
+                        <span class="bg-pink-500/20 text-pink-300 text-xs px-2.5 py-1 rounded-full font-semibold border border-pink-400/30">คะแนน: <span id="score-namfah">0</span></span>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="modifyScore('namfah', 1)" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold py-2 rounded-lg transition shadow-sm">
+                            ✅ ถูก (+1)
+                        </button>
+                        <button onclick="modifyScore('namfah', -1)" class="flex-1 bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold py-2 rounded-lg transition shadow-sm">
+                            ❌ ผิด (-1)
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Player 2: ตาล -->
+                <div class="bg-white/10 backdrop-blur-md border border-white/20 p-4 rounded-xl flex flex-col justify-between space-y-3">
+                    <div class="flex justify-between items-center">
+                        <span class="font-bold text-base text-amber-300">👧 ตาล</span>
+                        <span class="bg-amber-500/20 text-amber-300 text-xs px-2.5 py-1 rounded-full font-semibold border border-amber-400/30">คะแนน: <span id="score-tan">0</span></span>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="modifyScore('tan', 1)" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold py-2 rounded-lg transition shadow-sm">
+                            ✅ ถูก (+1)
+                        </button>
+                        <button onclick="modifyScore('tan', -1)" class="flex-1 bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold py-2 rounded-lg transition shadow-sm">
+                            ❌ ผิด (-1)
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Player 3: ท็อป -->
+                <div class="bg-white/10 backdrop-blur-md border border-white/20 p-4 rounded-xl flex flex-col justify-between space-y-3">
+                    <div class="flex justify-between items-center">
+                        <span class="font-bold text-base text-cyan-300">👦 ท็อป</span>
+                        <span class="bg-cyan-500/20 text-cyan-300 text-xs px-2.5 py-1 rounded-full font-semibold border border-cyan-400/30">คะแนน: <span id="score-top">0</span></span>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="modifyScore('top', 1)" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold py-2 rounded-lg transition shadow-sm">
+                            ✅ ถูก (+1)
+                        </button>
+                        <button onclick="modifyScore('top', -1)" class="flex-1 bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold py-2 rounded-lg transition shadow-sm">
+                            ❌ ผิด (-1)
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Player 4: ลูกเกด -->
+                <div class="bg-white/10 backdrop-blur-md border border-white/20 p-4 rounded-xl flex flex-col justify-between space-y-3">
+                    <div class="flex justify-between items-center">
+                        <span class="font-bold text-base text-purple-300">👧 ลูกเกด</span>
+                        <span class="bg-purple-500/20 text-purple-300 text-xs px-2.5 py-1 rounded-full font-semibold border border-purple-400/30">คะแนน: <span id="score-lookgate">0</span></span>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="modifyScore('lookgate', 1)" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold py-2 rounded-lg transition shadow-sm">
+                            ✅ ถูก (+1)
+                        </button>
+                        <button onclick="modifyScore('lookgate', -1)" class="flex-1 bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold py-2 rounded-lg transition shadow-sm">
+                            ❌ ผิด (-1)
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Wheel Spinner Arena -->
+            <div class="bg-white/5 border border-white/10 p-6 rounded-xl text-center space-y-4">
+                <div class="text-sm text-amber-200">ผู้โชคดีรอบนี้คือ:</div>
+                <div id="wheelResultDisplay" class="text-3xl font-extrabold text-amber-300 tracking-wide animate-pulse">
+                    กดปุ่มหมุนวงล้อเพื่อเสี่ยงทายผู้โชคดี!
+                </div>
+                <div>
+                    <button onclick="spinWheel()" id="spinBtn" class="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white font-bold px-8 py-3 rounded-xl shadow-lg transition transform hover:scale-105 active:scale-95">
+                        🎰 หมุนวงล้อสุ่มผู้โชคดี
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- 1. Virtual Teaching Tool & Interactive Infographic (Temperature Conversion Lab) -->
+        <section class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+            <div class="border-b border-slate-100 pb-4 mb-6">
+                <h2 class="text-xl font-bold text-slate-900 flex items-center gap-2">
+                    <span class="text-amber-600">🌡️</span> เครื่องมือจำลองการเปลี่ยนอุณหภูมิ (Temperature Conversion Lab)
+                </h2>
+                <p class="text-slate-600 text-sm mt-1">ทดลองป้อนค่าอุณหภูมิในหน่วยเซลเซียสเพื่อแปลงค่าเป็นฟาเรนไฮต์ เคลวิน และคำนวณปริมาณความร้อนแบบเรียลไทม์</p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-center">
+                <!-- Control Panel -->
+                <div class="bg-slate-50 p-5 rounded-xl border border-slate-200 space-y-4">
+                    <h3 class="font-semibold text-slate-800 text-sm uppercase tracking-wider">แผงควบคุมอุณหภูมิ</h3>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 mb-1">อุณหภูมิเซลเซียส (°C):</label>
+                        <input type="number" id="simC" value="25" oninput="runTempSimulation()" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                    </div>
+                </div>
+
+                <!-- Live Result Display -->
+                <div class="lg:col-span-2 bg-gradient-to-br from-amber-50 to-orange-50 p-6 rounded-xl border border-amber-100 flex flex-col justify-center space-y-4">
+                    <div class="text-sm font-semibold text-amber-900">ผลการแปลงหน่วยอุณหภูมิ:</div>
+                    <div id="simResultDisplay" class="text-xl font-bold text-amber-950 bg-white px-5 py-4 rounded-xl shadow-sm border border-amber-100 text-center">
+                        25 °C = 77.0 °F = 298.15 K
+                    </div>
+                    <div id="simExplanation" class="text-sm text-slate-700 bg-white/80 p-4 rounded-xl border border-amber-100">
+                        <strong>สูตรการคำนวณ:</strong> $F = \frac{9}{5}C + 32$ และ $K = C + 273.15$
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 2. Comprehensive Subject Summary -->
+        <section class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+            <div class="border-b border-slate-100 pb-4 mb-6">
+                <h2 class="text-xl font-bold text-slate-900 flex items-center gap-2">
+                    <span class="text-amber-600">📖</span> สรุปเนื้อหาวิทยาศาสตร์ ม.1 เทอม 2 (การเปลี่ยนอุณหภูมิและความร้อน)
+                </h2>
+            </div>
+            
+            <div class="prose max-w-none text-slate-700 space-y-4 text-sm leading-relaxed">
+                <p>
+                    การศึกษาวิชาวิทยาศาสตร์ ระดับชั้นมัธยมศึกษาปีที่ 1 เทอม 2 ในหัวข้อ <strong>พลังงานความร้อนและการเปลี่ยนอุณหภูมิ</strong> ครอบคลุมหลักการสำคัญ ได้แก่ สเกลวัดอุณหภูมิ (Celsius, Fahrenheit, Kelvin) และความสัมพันธ์ระหว่างสเกล, ปริมาณความร้อนที่ทำให้สสารเปลี่ยนอุณหภูมิ ($Q = mc\Delta t$), ความร้อนแฝงในการเปลี่ยนสถานะ ($Q = mL$), และสมดุลความร้อน ($Q_{lost} = Q_{gain}$) การทำความเข้าใจสูตรคำนวณเหล่านี้ถือเป็นหัวใจสำคัญในการทำข้อสอบกลางภาค
+                </p>
+                <p>
+                    เทคนิคการจำสูตรแปลงอุณหภูมิให้แม่นยำ: 
+                    1) การแปลงจาก Celsius ($C$) เป็น Fahrenheit ($F$) ใช้สูตร $F = \frac{9}{5}C + 32$, 
+                    2) การแปลงจาก Fahrenheit ($F$) เป็น Celsius ($C$) ใช้สูตร $C = \frac{5}{9}(F - 32)$, และ 
+                    3) การแปลงเป็น Kelvin ($K$) ใช้สูตร $K = C + 273.15$ สำหรับคำถามคำนวณความร้อน ($Q = mc\Delta t$) ให้ระวังหน่วยของมวล ($m$) ความจุความร้อนจำเพาะ ($c$) และผลต่างอุณหภูมิ ($\Delta t$) ให้สอดคล้องกันเสมอก่อนแทนค่าคำนวณ
+                </p>
+
+                <!-- Memory Tricks & Thought Process Box -->
+                <div class="bg-amber-50 border-l-4 border-amber-500 p-4 rounded-r-xl my-4">
+                    <h3 class="font-bold text-amber-900 mb-1 flex items-center gap-2">
+                        <span>💡</span> เทคนิคการจำและกระบวนการคิด (Memory Tricks & Thought Process)
+                    </h3>
+                    <ul class="list-disc pl-5 space-y-1 text-amber-900">
+                        <li><strong>สูตรความร้อนเปลี่ยนอุณหภูมิ:</strong> "คิวเท่ากับเอ็มซีเดลตาที" ($Q = mc\Delta t$) ใช้เมื่ออุณหภูมิเปลี่ยนแต่สถานะไม่เปลี่ยน</li>
+                        <li><strong>สูตรความร้อนเปลี่ยนสถานะ:</strong> "คิวเท่ากับเอ็มแอล" ($Q = mL$) ใช้เมื่ออุณหภูมิคงที่แต่เปลี่ยนสถานะ (เช่น น้ำแข็งหลอมเหลวเป็นน้ำ)</li>
+                        <li><strong>สมดุลความร้อน:</strong> "ความร้อน <u>ลด</u> เท่ากับความร้อน <u>เพิ่ม</u>" ($Q_{lost} = Q_{gain}$) นำสสารอุณหภูมิสูงผสมกับต่ำจนอุณหภูมิเท่ากัน</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3 & 4. Two-Frame Layout: Exam (70%) & Whiteboard (30%) -->
+        <section class="grid grid-cols-1 lg:grid-cols-10 gap-6 items-start">
+            
+            <!-- Left Frame: Exam System (70% -> lg:col-span-7) -->
+            <div class="lg:col-span-7 bg-white rounded-2xl shadow-sm border border-slate-200 p-6 space-y-6">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-100 pb-4 gap-3">
+                    <div>
+                        <h2 class="text-xl font-bold text-slate-900 flex items-center gap-2">
+                            <span class="text-amber-600">📝</span> พื้นที่ทำข้อสอบ (ผู้ตอบปัจจุบัน: <span id="activePlayerName" class="text-amber-600 font-extrabold">ยังไม่ได้เลือกผู้เล่น</span>)
+                        </h2>
+                        <p class="text-slate-500 text-xs mt-0.5">ข้อสอบกลางภาค ม.1 เทอม 2 สุ่มด้วย Fisher-Yates Shuffle พร้อมระบุสูตรในวงเล็บท้ายโจทย์ทุกข้อ</p>
+                    </div>
+                    <div id="scoreBadge" class="bg-amber-50 text-amber-700 px-4 py-2 rounded-xl font-bold text-sm border border-amber-150">
+                        ชุดข้อสอบ Midterm ม.1
+                    </div>
+                </div>
+
+                <!-- Active Question Container -->
+                <div id="questionContainer" class="space-y-4 pt-2">
+                    <!-- Populated dynamically -->
+                </div>
+
+                <!-- Navigation & Action Controls -->
+                <div class="flex justify-between items-center pt-4 border-t border-slate-100">
+                    <button onclick="nextRandomQuestion()" class="bg-amber-600 hover:bg-amber-500 text-white px-6 py-2.5 rounded-xl text-sm font-bold shadow-sm transition">
+                        🔀 สุ่มข้อสอบข้อถัดไปสำหรับผู้เล่น
+                    </button>
+                    <button onclick="submitExam()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-2.5 rounded-xl text-sm font-bold shadow-sm transition">
+                        🎯 สรุปผลภาพรวม
+                    </button>
+                </div>
+
+                <!-- Evaluation & Analysis Panel (Hidden initially) -->
+                <div id="analysisPanel" class="hidden bg-slate-50 border border-slate-200 rounded-2xl p-6 space-y-4 mt-6">
+                    <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                        <span>📊</span> รายงานผลการวิเคราะห์สมรรถนะรายบุคคล (Performance Analytics)
+                    </h3>
+                    <div id="analysisContent" class="text-sm text-slate-700 space-y-2">
+                        <!-- Populated upon submission -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Frame: Whiteboard for Scratchpad (30% -> lg:col-span-3) -->
+            <div class="lg:col-span-3 bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sticky top-24 space-y-4">
+                <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                    <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+                        <span>✏️</span> กระดานทดเลข / Whiteboard
+                    </h3>
+                    <button onclick="clearCanvas()" class="text-xs bg-rose-50 text-rose-600 hover:bg-rose-100 px-2.5 py-1 rounded-lg font-medium border border-rose-200 transition">
+                        ล้างกระดาน
+                    </button>
+                </div>
+                <div class="border border-slate-300 rounded-xl overflow-hidden bg-slate-50 relative">
+                    <canvas id="scratchpad" class="w-full h-80 canvas-container block bg-white"></canvas>
+                </div>
+                <p class="text-[11px] text-slate-400 text-center">สามารถใช้เมาส์หรือนิ้วมือเขียนทดสูตรคำนวณประกอบการทำข้อสอบได้ทันที</p>
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-200 py-6 text-center text-slate-500 text-sm mt-12">
+        <p>เขียนโดย พระจอมเกล้าติวเตอร์</p>
+    </footer>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        // --- 0. Web Audio API Sound Generator for Wheel Spinning ---
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playSpinSound() {
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            let osc = audioCtx.createOscillator();
+            let gain = audioCtx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(300, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(800, audioCtx.currentTime + 0.15);
+            gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+            gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.15);
+        }
+
+        function playWinSound() {
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            let notes = [523.25, 659.25, 783.99, 1046.50];
+            notes.forEach((freq, index) => {
+                let osc = audioCtx.createOscillator();
+                let gain = audioCtx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(freq, audioCtx.currentTime + index * 0.1);
+                gain.gain.setValueAtTime(0.2, audioCtx.currentTime + index * 0.1);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + index * 0.1 + 0.3);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start(audioCtx.currentTime + index * 0.1);
+                osc.stop(audioCtx.currentTime + index * 0.1 + 0.3);
+            });
+        }
+
+        // --- Game State & Players (น้ำฟ้า, ตาล, ท็อป, ลูกเกด) ---
+        const players = [
+            { id: 'namfah', name: 'น้ำฟ้า (Namfah)' },
+            { id: 'tan', name: 'ตาล (Tan)' },
+            { id: 'top', name: 'ท็อป (Top)' },
+            { id: 'lookgate', name: 'ลูกเกด (Lookgate)' }
+        ];
+        let scores = { namfah: 0, tan: 0, top: 0, lookgate: 0 };
+        let activePlayer = null;
+        let availableQuestionIndices = [];
+        let currentQuestionObj = null;
+
+        function spinWheel() {
+            const resultDisplay = document.getElementById('wheelResultDisplay');
+            const spinBtn = document.getElementById('spinBtn');
+            spinBtn.disabled = true;
+            resultDisplay.classList.add('animate-bounce');
+
+            let counter = 0;
+            let spinInterval = setInterval(() => {
+                playSpinSound();
+                let randomPlayer = players[Math.floor(Math.random() * players.length)];
+                resultDisplay.innerText = `🔄 กำลังสุ่ม... ${randomPlayer.name}`;
+                counter++;
+
+                if (counter > 15) {
+                    clearInterval(spinInterval);
+                    playWinSound();
+                    let winner = players[Math.floor(Math.random() * players.length)];
+                    activePlayer = winner;
+                    resultDisplay.classList.remove('animate-bounce');
+                    resultDisplay.innerText = `🎉 ผู้โชคดีรอบนี้คือ: ${winner.name}! 🎉`;
+                    document.getElementById('activePlayerName').innerText = winner.name;
+                    spinBtn.disabled = false;
+
+                    // Load a random unique temperature/heat question for this player
+                    loadRandomQuestion();
+                }
+            }, 100);
+        }
+
+        function modifyScore(playerId, amount) {
+            scores[playerId] += amount;
+            document.getElementById(`score-${playerId}`).innerText = scores[playerId];
+        }
+
+        // --- 1. Temperature Simulation Logic ---
+        function runTempSimulation() {
+            const c = parseFloat(document.getElementById('simC').value) || 0;
+            const f = (c * 9/5) + 32;
+            const k = c + 273.15;
+            document.getElementById('simResultDisplay').innerText = `${c} °C = ${f.toFixed(1)} °F = ${k.toFixed(2)} K`;
+        }
+
+        // --- 2. Whiteboard (Scratchpad) Implementation ---
+        const canvas = document.getElementById('scratchpad');
+        const ctx = canvas.getContext('2d');
+        let drawing = false;
+
+        function resizeCanvas() {
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width;
+            canvas.height = rect.height;
+            ctx.strokeStyle = '#d97706';
+            ctx.lineWidth = 2;
+            ctx.lineCap = 'round';
+        }
+        window.addEventListener('resize', resizeCanvas);
+        window.addEventListener('load', resizeCanvas);
+
+        function getPos(e) {
+            const rect = canvas.getBoundingClientRect();
+            let clientX = e.clientX;
+            let clientY = e.clientY;
+            if(e.touches && e.touches.length > 0) {
+                clientX = e.touches[0].clientX;
+                clientY = e.touches[0].clientY;
+            }
+            return {
+                x: clientX - rect.left,
+                y: clientY - rect.top
+            };
+        }
+
+        canvas.addEventListener('mousedown', (e) => { drawing = true; const pos = getPos(e); ctx.beginPath(); ctx.moveTo(pos.X, pos.y); });
+        canvas.addEventListener('mousemove', (e) => { if(!drawing) return; const pos = getPos(e); ctx.lineTo(pos.x, pos.y); ctx.stroke(); });
+        canvas.addEventListener('mouseup', () => { drawing = false; });
+        canvas.addEventListener('mouseleave', () => { drawing = false; });
+
+        canvas.addEventListener('touchstart', (e) => { drawing = true; const pos = getPos(e); ctx.beginPath(); ctx.moveTo(pos.x, pos.y); e.preventDefault(); });
+        canvas.addEventListener('touchmove', (e) => { if(!drawing) return; const pos = getPos(e); ctx.lineTo(pos.x, pos.y); ctx.stroke(); e.preventDefault(); });
+        canvas.addEventListener('touchend', () => { drawing = false; });
+
+        function clearCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        // --- 3. Science Midterm Exam Bank (Temperature & Heat - 35 Questions with Formula in Bracket) ---
+        const rawQuestions = [
+            { id: 1, q: "อุณหภูมิ 50 องศาเซลเซียส จะมีค่าเท่ากับกี่องศาฟาเรนไฮต์?", options: ["122 °F", "100 °F", "112 °F", "95 °F"], answer: 0, formula: "[ สูตร: F = (9/5)C + 32 ]", clue: "แทนค่า C = 50 ลงในสูตรฟาเรนไฮต์", explanation: "แทนค่า C = 50: F = (9/5)(50) + 32 = 90 + 32 = 122 องศาฟาเรนไฮต์" },
+            { id: 2, q: "อุณหภูมิ 86 องศาฟาเรนไฮต์ มีค่าเท่ากับกี่องศาเซลเซียส?", options: ["30 °C", "25 °C", "35 °C", "40 °C"], answer: 0, formula: "[ สูตร: C = (5/9)(F - 32) ]", clue: "แทนค่า F = 86 ลงในสูตรเซลเซียส", explanation: "แทนค่า F = 86: C = (5/9)(86 - 32) = (5/9)(54) = 30 องศาเซลเซียส" },
+            { id: 3, q: "อุณหภูมิ 27 องศาเซลเซียส คิดเป็นอุณหภูมิในหน่วยเคลวินเท่าใด?", options: ["300.15 K", "273.15 K", "310.15 K", "250.15 K"], answer: 0, formula: "[ สูตร: K = C + 273.15 ]", clue: "นำ 27 บวกด้วย 273.15", explanation: "K = 27 + 273.15 = 300.15 เคลวิน" },
+            { id: 4, q: "หากน้ำมีอุณหภูมิเปลี่ยนไป 40 °C จะคิดเป็นการเปลี่ยนแปลงในหน่วยเคลวินเท่าใด?", options: ["40 K", "72 K", "313 K", "233 K"], answer: 0, formula: "[ สูตร: ΔK = ΔC ]", clue: "ช่วงสเกลของเซลเซียสและเคลวินมีขนาดเท่ากัน", explanation: "ช่วงการเปลี่ยนอุณหภูมิ (ΔT) ของหน่วยเซลเซียสและเคลวินมีขนาดเท่ากัน ดังนั้นเปลี่ยนไป 40 °C ย่อมเปลี่ยนไป 40 K เช่นกัน" },
+            { id: 5, q: "การถ่ายโอนความร้อนผ่านของเหลวหรือแก๊ส โดยที่ตัวกลางเคลื่อนที่ไปด้วย เรียกว่าอะไร?", options: ["การพาความร้อน (Convection)", "การนำความร้อน (Conduction)", "การแผ่รังสีความร้อน (Radiation)", "การสะท้อนความร้อน"], answer: 0, clue: "การเคลื่อนที่ของกระแสน้ำหรือกระแสลมร้อน", explanation: "การพาความร้อนเป็นการถ่ายโอนความร้อนที่อาศัยการเคลื่อนที่ของอนุภาคตัวกลางที่เป็นของเหลวหรือแก๊ส" },
+            { id: 6, q: "ความร้อนจากดวงอาทิตย์เดินทางมายังโลกผ่านสุญญากาศด้วยวิธีใด?", options: ["การแผ่รังสี (Radiation)", "การนำความร้อน (Conduction)", "การพาความร้อน (Convection)", "การดูดกลืนความร้อน"], answer: 0, clue: "ไม่ต้องอาศัยตัวกลางในการเคลื่อนที่", explanation: "การแผ่รังสีความร้อนเป็นการส่งพลังงานความร้อนในรูปคลื่นแม่เหล็กไฟฟ้าผ่านอวกาศหรือสุญญากาศ" },
+            { id: 7, q: "เมื่อให้ความร้อนแก่แท่งทองแดง ปรากฏว่าแท่งทองแดงมีขนาดยาวขึ้น ปรากฏการณ์นี้เรียกว่าอะไร?", options: ["การขยายตัวเนื่องจากความร้อน (Thermal expansion)", "การหดตัวเนื่องจากความเย็น", "การเปลี่ยนสถานะ", "การเพิ่มมวล"], answer: 0, clue: "อุณหภูมิสูงขึ้นทำให้โมเลกุลสั่นสะเทือนและขยายออก", explanation: "สสารส่วนใหญ่เมื่อได้รับความร้อนจะขยายตัวเนื่องจากระยะห่างระหว่างอนุภาคเพิ่มขึ้น" },
+            { id: 8, q: "ถ้าต้องการคำนวณหาปริมาณความร้อนที่ทำให้สารเปลี่ยนอุณหภูมิ ต้องใช้สมการในข้อใด?", options: ["Q = mcΔt", "Q = mL", "Q = mc", "Q = mgh"], answer: 0, clue: "สมการความร้อนจำเพาะ (Specific heat capacity)", explanation: "Q = mcΔt ใช้คำนวณปริมาณความร้อนเมื่อสสารเปลี่ยนอุณหภูมิโดยไม่เปลี่ยนสถานะ" },
+            { id: 9, q: "น้ำมวล 100 กรัม มีอุณหภูมิเพิ่มขึ้นจาก 20 °C เป็น 70 °C จะได้รับความร้อนเท่าใด (กำหนดให้ความจุความร้อนจำเพาะของน้ำ c = 1 cal/g°C)", options: ["5,000 แคลอรี", "2,000 แคลอรี", "7,000 แคลอรี", "500 แคลอรี"], answer: 0, formula: "[ สูตร: Q = mcΔt ]", clue: "คำนวณจาก Q = 100 × 1 × (70 - 20)", explanation: "Q = mcΔt = 100 g × 1 cal/g°C × (70 - 20)°C = 100 × 1 × 50 = 5,000 แคลอรี" },
+            { id: 10, q: "ข้อใดกล่าวถึง 'สมดุลความร้อน' ได้ถูกต้องที่สุด?", options: ["ความร้อนที่สสารอุณหภูมิสูงคายออกมาจะเท่ากับความร้อนที่สสารอุณหภูมิต่ำได้รับ", "อุณหภูมิของสารทั้งสองจะลดลงจนเท่ากับศูนย์", "มวลของสารทั้งสองต้องเท่ากันเสมอ", "ความร้อนจะหยุดถ่ายโอนเมื่อเวลาผ่านไป 1 นาที"], answer: 0, clue: "กฎการอนุรักษ์พลังงานความร้อน (Q_lost = Q_gain)", explanation: "ณ สมดุลความร้อน ความร้อนที่ลดลง (Q_lost) เท่ากับความร้อนที่เพิ่มขึ้น (Q_gain) และอุณหภูมิผสมจะเท่ากัน" },
+            { id: 11, q: "จุดเดือดของน้ำในหน่วยฟาเรนไฮต์มีค่าเท่ากับกี่องศา?", options: ["212 °F", "100 °F", "180 °F", "32 °F"], answer: 0, formula: "[ สูตร: F = (9/5)C + 32 ]", clue: "จุดเดือดน้ำคือ 100 °C แทนค่าหา F", explanation: "แทนค่า C = 100: F = (9/5)(100) + 32 = 180 + 32 = 212 °F" },
+            { id: 12, q: "จุดเยือกแข็งของน้ำในหน่วยฟาเรนไฮต์มีค่าเท่ากับกี่องศา?", options: ["32 °F", "0 °F", "273 °F", "100 °F"], answer: 0, formula: "[ สูตร: F = (9/5)C + 32 ]", clue: "จุดเยือกแข็งน้ำคือ 0 °C แทนค่าหา F", explanation: "แทนค่า C = 0: F = (9/5)(0) + 32 = 32 องศาฟาเรนไฮต์" },
+            { id: 13, q: "เครื่องมือวัดอุณหภูมิอาศัยสมบัติข้อใดของสสารเป็นหลัก?", options: ["การขยายตัวหรือหดตัวของของเหลวในหลอดแก้ว", "การเปลี่ยนสีของสาร", "การนำไฟฟ้าของโลหะ", "มวลที่เปลี่ยนแปลงตามอุณหภูมิ"], answer: 0, clue: "เทอร์โมมิเตอร์ใช้แอลกอฮอล์หรือปรอท", explanation: "เทอร์โมมิเตอร์ทั่วไปอาศัยสมบัติการขยายตัวและหดตัวของของเหลว (ปรอทหรือแอลกอฮอล์) เมื่อได้รับความร้อน" },
+            { id: 14, q: "สลักเกลียวหรือรางรถไฟมักเว้นช่องว่างเล็กๆ ไว้เพื่อจุดประสงค์ใด?", options: ["ป้องกันความเสียหายจากการขยายตัวเมื่ออากาศร้อน", "ช่วยระบายน้ำฝนไม่ให้ท่วมขัง", "ประหยัดวัสดุในการผลิต", "ช่วยให้รถไฟวิ่งได้เร็วขึ้น"], answer: 0, clue: "เกี่ยวข้องกับการขยายตัวเนื่องจากความร้อน", explanation: "เพื่อป้องกันไม่ให้รางรถไฟคดงอหรือเสียหายเมื่อโลหะขยายตัวในวันที่อากาศร้อนจัด" },
+            { id: 15, q: "น้ำแข็งมวล 50 กรัม หลอมเหลวกลายเป็นน้ำหมดพอดี จะใช้ความร้อนแฝงเท่าใด (ความร้อนแฝงของการหลอมเหลวของน้ำ L = 80 cal/g)", options: ["4,000 แคลอรี", "2,500 แคลอรี", "1,600 แคลอรี", "400 แคลอรี"], answer: 0, formula: "[ สูตร: Q = mL ]", clue: "ใช้สูตรการเปลี่ยนสถานะโดยอุณหภูมิคงที่", explanation: "Q = mL = 50 g × 80 cal/g = 4,000 แคลอรี" },
+            { id: 16, q: "สเกลอุณหภูมิใดที่ไม่มีค่าเป็นติดลบในทางฟิสิกส์?", options: ["เคลวิน (Kelvin)", "เซลเซียส (Celsius)", "ฟาเรนไฮต์ (Fahrenheit)", "ทุกสเกลมีค่าติดลบได้"], answer: 0, clue: "อุณหภูมิสัมบูรณ์ (Absolute zero ที่ 0 K)", explanation: "สเกลเคลวินเริ่มต้นที่ 0 K (Absolute zero) ซึ่งเป็นจุดที่อนุภาคหยุดนิ่งสนิท จึงไม่มีค่าติดลบ" },
+            { id: 17, q: "การทำน้ำแข็งใสหรือการนำน้ำแข็งมาประคบบาดแผล อาศัยความร้อนในข้อใด?", options: ["ความร้อนแฝงของการหลอมเหลว", "ความร้อนแฝงของการกลายเป็นไอ", "ความจุความร้อนจำเพาะ", "การแผ่รังสีความร้อน"], answer: 0, clue: "น้ำแข็งเปลี่ยนสถานะเป็นของเหลว", explanation: "น้ำแข็งดูดความร้อนแฝงในการหลอมเหลวจากสิ่งแวดล้อมหรือบาดแผลทำให้อุณหภูมิลดลง" },
+            { id: 18, q: "หากนำโลหะ A และโลหะ B ที่มีอุณหภูมิ 80 °C และ 20 °C มาสัมผัสกัน ความร้อนจะถ่ายโอนอย่างไร?", options: ["ถ่ายโอนจากโลหะ A ไปยังโลหะ B", "ถ่ายโอนจากโลหะ B ไปยังโลหะ A", "ไม่มีการถ่ายโอนความร้อน", "ถ่ายโอนสลับไปมาตลอดเวลา"], answer: 0, clue: "ความร้อนไหลจากอุณหภูมิสูงไปต่ำ", explanation: "ความร้อนจะถ่ายโอนจากวัตถุที่มีอุณหภูมิสูงกว่าไปยังวัตถุที่มีอุณหภูมิต่ำกว่าเสมอ" },
+            { id: 19, q: "ข้อใดเป็นตัวอย่างของการนำความร้อนได้ดีที่สุด?", options: ["ทองคำและอะลูมิเนียม", "ไม้และโฟม", "แก้วและพลาสติก", "อากาศและยาง"], answer: 0, clue: "วัสดุประเภทโลหะนำความร้อนได้ดี", explanation: "โลหะ เช่น ทองคำ เงิน ทองแดง และอะลูมิเนียม เป็นตัวนำความร้อนที่ดีเยี่ยม" },
+            { id: 20, q: "วัสดุใดเหมาะสำหรับใช้ทำเป็น 'ฉนวนกันความร้อน' ที่ดีที่สุดในบ้าน?", options: ["โฟมและใยแก้ว", "เหล็กกล้า", "ทองแดง", "แผ่นอลูมิเนียมฟอยล์"], answer: 0, clue: "วัสดุที่มีอากาศกักเก็บอยู่ภายในเยอะ", explanation: "โฟมและใยแก้วมีอากาศกักเก็บอยู่มากซึ่งนำความร้อนได้ไม่ดี จึงเป็นฉนวนกันความร้อนที่ดี" },
+            { id: 21, q: "เมื่อต้มน้ำในหม้อต้ม จะสังเกตเห็นน้ำด้านล่างร้อนแล้วลอยตัวสูงขึ้นให้น้ำด้านบนไหลมาแทนที่ เกิดเป็นกระแสหมุนเวียน เรียกว่ากระบวนการใด?", options: ["การพาความร้อน (Convection)", "การนำความร้อน", "การแผ่รังสีความร้อน", "การระเหิด"], answer: 0, clue: "การเคลื่อนที่ของของเหลวตามอุณหภูมิ", explanation: "การต้มน้ำเป็นการพาความร้อนโดยของเหลวเคลื่อนที่นำความร้อนขึ้นสู่ด้านบน" },
+            { id: 22, q: "อุณหภูมิร่างกายมนุษย์ปกติเท่ากับประมาณ 37 °C จะมีค่าเท่ากับกี่องศาฟาเรนไฮต์?", options: ["98.6 °F", "97.2 °F", "100.4 °F", "95.0 °F"], answer: 0, formula: "[ สูตร: F = (9/5)C + 32 ]", clue: "แทนค่า C = 37 ลงในสูตรฟาเรนไฮต์", explanation: "แทนค่า C = 37: F = (9/5)(37) + 32 = 66.6 + 32 = 98.6 องศาฟาเรนไฮต์" },
+            { id: 23, q: "พลังงานความร้อนมีหน่วยในระบบเอสไอ (SI Units) ตรงกับข้อใด?", options: ["จูล (Joule)", "แคลอรี (Calorie)", "วัตต์ (Watt)", "นิวตัน (Newton)"], answer: 0, clue: "หน่วยพลังงานมาตรฐานสากล", explanation: "พลังงานความร้อนเป็นรูปหนึ่งของพลังงาน จึงมีหน่วยมาตรฐานสากลเป็นจูล (J) แม้ในทางเคมีนิยมใช้แคลอรีก็ตาม" },
+            { id: 24, q: "การเปลี่ยนสถานะจาก 'แก๊สเป็นของเหลว' เรียกว่ากระบวนการใด และมีการดูดหรือคายความร้อน?", options: ["การควบแน่น และคายความร้อน", "การระเหิด และดูดความร้อน", "การหลอมเหลว และคายความร้อน", "การกลายเป็นไอ และดูดความร้อน"], answer: 0, clue: "ไอน้ำกลาะเป็นหยดน้ำ", explanation: "การควบแน่น (Condensation) คือการเปลี่ยนสถานะจากแก๊สเป็นของเหลว ซึ่งกระบวนการนี้จะคายความร้อนออกมา" },
+            { id: 25, q: "สาเหตุหลักที่ทำให้ลมบทะเล (Sea breeze) พัดจากทะเลเข้าสู่ฝั่งในเวลากลางวันคืออะไร?", options: ["พื้นดินร้อนเร็วกว่าพื้นน้ำ ทำให้อากาศบนบกาลอยตัวสูงขึ้น อากาศเย็นจากทะเลจึงพัดมาแทนที่", "น้ำทะเลร้อนเร็วกว่าพื้นดิน", "ดวงอาทิตย์ส่องแสงกระทบน้ำทะเลแรงกว่า", "แรงเหวี่ยงจากการหมุนของโลก"], answer: 0, clue: "ความแตกต่างของอัตราการรับความร้อนระหว่างดินกับน้ำ", explanation: "กลางวันดินรับความร้อนได้ดีกว่าน้ำ อากาศเหนือดินร้อนและลอยตัวขึ้น อากาศเย็นจากทะเลจึงพัดเข้าฝั่ง" },
+            { id: 26, q: "เตาผิงหรือเครื่องทำความร้อนมักติดตั้งไว้บริเวณพื้นห้อง เพื่อให้ความร้อนกระจายทั่วห้องด้วยวิธีใดเป็นหลัก?", options: ["การพาความร้อน", "การนำความร้อน", "การแผ่รังสี", "การสะท้อนแสง"], answer: 0, clue: "อากาศร้อนจะลอยตัวสูงขึ้น", explanation: "เครื่องทำความร้อนที่พื้นจะทำให้อากาศรอบๆ ร้อนและลอยตัวสูงขึ้น อากาศเย็นด้านบนจมลงมาหมุนเวียนด้วยการพาความร้อน" },
+            { id: 27, q: "อุณหภูมิ -40 องศาเซลเซียส จะมีค่าตรงกับกี่องศาฟาเรนไฮต์?", options: ["-40 °F", "0 °F", "32 °F", "-32 °F"], answer: 0, formula: "[ สูตร: F = (9/5)C + 32 ]", clue: "จุดที่สเกลเซลเซียสและฟาเรนไฮต์มีค่าเท่ากัน", explanation: "แทนค่า C = -40: F = (9/5)(-40) + 32 = -72 + 32 = -40 °F" },
+            { id: 28, q: "การตากเนื้อสัตว์ให้แห้งกลางแดด อาศัยการถ่ายโอนความร้อนรูปแบบใดบ้าง?", options: ["การแผ่รังสีและความร้อนทำให้เกิดการระเหยของน้ำ", "การนำความร้อนเพียงอย่างเดียว", "การพาความร้อนในสุญญากาศ", "การตกผลึกความร้อน"], answer: 0, clue: "แสงแดดส่องถึงและลมพัดผ่าน", explanation: "แสงแดดแผ่รังสีมายังเนื้อสัตว์พร้อมพาความร้อนช่วยให้น้ำระเหยออกไปทำให้แห้ง" },
+            { id: 29, q: "ข้อใดเป็นผลกระทบทางลบจากการขยายตัวเนื่องจากความร้อนในชีวิตประจำวัน?", options: ["สายไฟ้าหย่อนยานในฤดูร้อน", "เทอร์โมมิเตอร์ทำงานได้", "การตรึงหมุดยึดโลหะ", "การหลอมโลหะในโรงงานอุตสาหกรรม"], answer: 0, clue: "โลหะยืดยาวออกเมื่อเจออากาศร้อนจัด", explanation: "สายไฟฟ้าและสายโทรศัพท์จะขยายตัวและหย่อนยานในฤดูร้อนเนื่องจากความร้อน" },
+            { id: 30, q: "สสารในข้อใดเมื่อเปลี่ยนสถานะจากของแข็งเป็นของเหลวแล้ว 'ปริมาตรจะลดลง' (เป็นกรณียกเว้นของสสารส่วนใหญ่)?", options: ["น้ำแข็ง (Water)", "ทองคำ (Gold)", "เหล็ก (Iron)", "พาราฟิน (Paraffin)"], answer: 0, clue: "น้ำแข็งมีความหนาแน่นน้อยกว่าน้ำเหลว", explanation: "น้ำแข็งมีโครงสร้างผลึกเปิดทำให้มีความหนาแน่นน้อยกว่าน้ำ เมื่อหลอมเหลวเป็นน้ำ โมเลกุลจะอัดแน่นขึ้น ปริมาตรจึงลดลง" },
+            { id: 31, q: "กระติกน้ำร้อนสุญญากาศออกแบบชั้นผนังสองชั้นสูบอากาศออก เพื่อป้องกันการถ่ายโอนความร้อนด้วยวิธีใดเป็นหลัก?", options: ["การนำความร้อนและการพาความร้อน", "การแผ่รังสีความร้อน", "การระเหิด", "การสะท้อนแสง"], answer: 0, clue: "การไม่มีตัวกลางช่วยหยุดการนำและพาความร้อน", explanation: "การทำเป็นสุญญากาศไม่มีอนุภาคตัวกลาง จึงตัดช่องทางการนำความร้อนและการพาความร้อนออกไปได้" },
+            { id: 32, q: "ถ้าผสมน้ำมวล 200 กรัม อุณหภูมิ 80 °C กับน้ำมวล 200 กรัม อุณหภูมิ 20 °C เข้าด้วยกัน อุณหภูมิผสมจะมีค่าเท่าใด (สมดุลความร้อน)", options: ["50 °C", "60 °C", "40 °C", "30 °C"], answer: 0, formula: "[ สูตร: Q_lost = Q_gain ]", clue: "มวลเท่ากันและชนิดเดียวกัน อุณหภูมิผสมจะเป็นค่าเฉลี่ย", explanation: "จาก Q_lost = Q_gain -> m1c(T1 - T_mix) = m2c(T_mix - T2) -> 80 - T = T - 20 -> 2T = 100 -> T = 50 °C" },
+            { id: 33, q: "การที่ลมว่าวหรือลมหนาวพัดมาจากซีกโลกเหนือสู่ประเทศไทยในช่วงฤดูหนาว เป็นตัวอย่างของการถ่ายโอนความร้อนแบบใด?", options: ["การพาความร้อนของบรรยากาศโลก", "การนำความร้อนผ่านพื้นดิน", "การแผ่รังสีจากแกนโลก", "การกลั่นตัวของความชื้น"], answer: 0, clue: "การเคลื่อนที่ของมวลอากาศ", explanation: "การเคลื่อนที่ของกระแสลมใหญ่บนโลกเป็นการพาความร้อนของมวลอากาศ (Convection currents)" },
+            { id: 34, q: "ในการทดลองวัดอุณหภูมิ ข้อใดปฏิบัติได้อย่างถูกต้องตามหลักความปลอดภัยทางวิทยาศาสตร์?", options: ["จุ่มกระเปาะเทอร์โมมิเตอร์ไว้ตรงกลางของเหลวโดยไม่ให้ชนก้นบิ๊กเกอร์", "ใช้เทอร์โมมิเตอร์คนสารละลายแรงๆ เพื่อให้ละลายเร็วขึ้น", "นำเทอร์โมมิเตอร์ไปลนไฟโดยตรงเพื่อวัดความร้อน", "วางเทอร์โมมิเตอร์ไว้ริมโต๊ะขณะใช้งาน"], answer: 0, clue: "ป้องกันเทอร์โมมิเตอร์แตกและความคลาดเคลื่อน", explanation: "การจุ่มเทอร์โมมิเตอร์ต้องให้อยู่กลางของเหลว ไม่ชนก้นหรือข้างภาชนะ และห้ามใช้คนสารหรือลนไฟตรงๆ" },
+            { id: 35, q: "อุณหภูมิห้องปกติมีค่าประมาณ 25 °C คิดเป็นอุณหภูมิในหน่วยเคลวินเท่าใด?", options: ["298.15 K", "248.15 K", "273.15 K", "312.15 K"], answer: 0, formula: "[ สูตร: K = C + 273.15 ]", clue: "นำ 25 บวกด้วย 273.15", explanation: "K = 25 + 273.15 = 298.15 เคลวิน" }
+        ];
+
+        let shuffledQuestionIndices = [];
+
+        // Fisher-Yates Shuffle
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function initGame() {
+            shuffledQuestionIndices = Array.from({length: rawQuestions.length}, (_, i) => i);
+            shuffleArray(shuffledQuestionIndices);
+            availableQuestionIndices = [...shuffledQuestionIndices];
+            scores = { namfah: 0, tan: 0, top: 0, lookgate: 0 };
+            document.getElementById('score-namfah').innerText = '0';
+            document.getElementById('score-tan').innerText = '0';
+            document.getElementById('score-top').innerText = '0';
+            document.getElementById('score-lookgate').innerText = '0';
+            activePlayer = null;
+            document.getElementById('activePlayerName').innerText = "ยังไม่ได้เลือกผู้เล่น (กรุณากดหมุนวงล้อ)";
+            document.getElementById('questionContainer').innerHTML = `
+                <div class="text-center py-12 text-slate-400">
+                    <p class="text-lg">👈 กรุณากดปุ่ม <strong>"หมุนวงล้อสุ่มผู้โชคดี"</strong> ด้านบนเพื่อเริ่มเกมตอบคำถามวิทยาศาสตร์</p>
+                </div>
+            `;
+            document.getElementById('analysisPanel').classList.add('hidden');
+        }
+
+        function loadRandomQuestion() {
+            if (availableQuestionIndices.length === 0) {
+                alert("ทำครบทุกข้อแล้ว! ระบบจะทำการสุ่มวนข้อสอบใหม่");
+                availableQuestionIndices = [...shuffledQuestionIndices];
+            }
+
+            const rawIdx = availableQuestionIndices.pop();
+            const originalQ = rawQuestions[rawIdx];
+
+            // Shuffle options with Fisher-Yates
+            let optionsWithMeta = originalQ.options.map((opt, idx) => ({
+                text: opt,
+                isCorrect: idx === originalQ.answer
+            }));
+            shuffleArray(optionsWithMeta);
+            const newCorrectIdx = optionsWithMeta.findIndex(o => o.isCorrect);
+
+            currentQuestionObj = {
+                id: originalQ.id,
+                q: `${originalQ.q} <span class="text-xs text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200 ml-1 font-mono">${originalQ.formula}</span>`,
+                options: optionsWithMeta.map(o => o.text),
+                answer: newCorrectIdx,
+                clue: originalQ.clue,
+                explanation: originalQ.explanation
+            };
+
+            renderActiveQuestion();
+        }
+
+        function renderActiveQuestion() {
+            if (!activePlayer) {
+                return;
+            }
+            const qContainer = document.getElementById('questionContainer');
+            const q = currentQuestionObj;
+
+            let html = `
+                <div class="space-y-4 bg-amber-50/50 p-5 rounded-2xl border border-amber-100">
+                    <div class="flex justify-between items-center">
+                        <span class="text-xs font-bold text-amber-800 bg-white px-3 py-1 rounded-full border border-amber-200 shadow-sm">ผู้ตอบ: ${activePlayer.name} (ข้อสอบการเปลี่ยนอุณหภูมิ ม.1)</span>
+                        <button onclick="toggleClue()" class="text-xs text-amber-600 hover:text-amber-700 font-medium bg-amber-50 px-2.5 py-1 rounded-lg border border-amber-200 transition">
+                            💡 แสดง/ซ่อน คำใบ้ (Clue)
+                        </button>
+                    </div>
+                    <div id="clueBox" class="hidden bg-amber-50 border border-amber-200 text-amber-900 text-xs p-3 rounded-xl">
+                        <strong>คำใบ้:</strong> ${q.clue}
+                    </div>
+                    <div class="text-lg font-bold text-slate-900 leading-snug">
+                        ${q.q}
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2" id="optionsGrid">
+            `;
+
+            q.options.forEach((opt, oIdx) => {
+                html += `
+                    <button onclick="selectGameAnswer(${oIdx})" class="p-3.5 rounded-xl border bg-white border-slate-200 text-slate-700 hover:border-amber-400 hover:bg-amber-50 text-left text-sm transition flex items-center gap-3 shadow-sm">
+                        <span class="w-6 h-6 rounded-full border border-slate-300 flex items-center justify-center text-xs font-bold shrink-0">${String.fromCharCode(65 + oIdx)}</span>
+                        <span>${opt}</span>
+                    </button>
+                `;
+            });
+
+            html += `</div><div id="feedbackContainer"></div></div>`;
+            qContainer.innerHTML = html;
+        }
+
+        function toggleClue() {
+            const clueBox = document.getElementById('clueBox');
+            if(clueBox) clueBox.classList.toggle('hidden');
+        }
+
+        function selectGameAnswer(optIdx) {
+            const q = currentQuestionObj;
+            const isCorrect = optIdx === q.answer;
+            
+            // Disable all option buttons
+            const optionBtns = document.querySelectorAll('#optionsGrid button');
+            optionBtns.forEach((btn, idx) => {
+                btn.disabled = true;
+                if(idx === q.answer) {
+                    btn.className = "p-3.5 rounded-xl border bg-emerald-50 border-emerald-500 text-emerald-900 font-semibold text-left text-sm flex items-center gap-3 shadow-sm";
+                } else if(idx === optIdx && !isCorrect) {
+                    btn.className = "p-3.5 rounded-xl border bg-rose-50 border-rose-500 text-rose-900 font-semibold text-left text-sm flex items-center gap-3 shadow-sm";
+                } else {
+                    btn.className = "p-3.5 rounded-xl border bg-slate-50 border-slate-200 text-slate-400 opacity-60 text-left text-sm flex items-center gap-3";
+                }
+            });
+
+            const feedbackContainer = document.getElementById('feedbackContainer');
+            feedbackContainer.innerHTML = `
+                <div class="mt-4 p-4 rounded-xl border ${isCorrect ? 'bg-emerald-50 border-emerald-200 text-emerald-900' : 'bg-rose-50 border-rose-200 text-rose-900'} space-y-1">
+                    <div class="font-bold flex items-center gap-2">
+                        <span>${isCorrect ? '✅ ตอบถูกต้องครับ! (ครูสามารถกดให้ +1 คะแนนด้านบนได้เลย)' : '❌ ตอบยังไม่ถูกต้อง (ครูสามารถกดให้ -1 คะแนนด้านบนได้เลย)'}</span>
+                    </div>
+                    <div class="text-xs leading-relaxed opacity-90">
+                        <strong>เฉลยและวิธีคิด:</strong> ${q.explanation}
+                    </div>
+                </div>
+            `;
+        }
+
+        function nextRandomQuestion() {
+            if (!activePlayer) {
+                alert("กรุณากดหมุนวงล้อสุ่มชื่อผู้เล่นก่อนครับ!");
+                return;
+            }
+            loadRandomQuestion();
+        }
+
+        function submitExam() {
+            const analysisPanel = document.getElementById('analysisPanel');
+            const analysisContent = document.getElementById('analysisContent');
+
+            analysisContent.innerHTML = `
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+                    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-center">
+                        <div class="text-xs text-slate-500">คะแนน น้ำฟ้า</div>
+                        <div class="text-2xl font-bold text-pink-600">${scores.namfah} คะแนน</div>
+                    </div>
+                    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-center">
+                        <div class="text-xs text-slate-500">คะแนน ตาล</div>
+                        <div class="text-2xl font-bold text-amber-600">${scores.tan} คะแนน</div>
+                    </div>
+                    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-center">
+                        <div class="text-xs text-slate-500">คะแนน ท็อป</div>
+                        <div class="text-2xl font-bold text-cyan-600">${scores.top} คะแนน</div>
+                    </div>
+                    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-center">
+                        <div class="text-xs text-slate-500">คะแนน ลูกเกด</div>
+                        <div class="text-2xl font-bold text-purple-600">${scores.lookgate} คะแนน</div>
+                    </div>
+                </div>
+                <div class="bg-white p-4 rounded-xl border border-slate-200 space-y-2 text-center">
+                    <div class="font-bold text-amber-900 text-base">🏆 สรุปผลการแข่งขันเกมวงล้อ วิทยาศาสตร์ ม.1 (การเปลี่ยนอุณหภูมิ) 🏆</div>
+                    <p class="text-xs text-slate-600">ขอบคุณนักเรียนทุกคน (น้ำฟ้า, ตาล, ท็อป, ลูกเกด) ที่ร่วมสนุกและฝึกฝนกระบวนการคิดวิเคราะห์กับพระจอมเกล้าติวเตอร์ครับ!</p>
+                </div>
+            `;
+
+            analysisPanel.classList.remove('hidden');
+            analysisPanel.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function resetGame() {
+            if(confirm("คุณต้องการรีเซ็ตเกมและคะแนนทั้งหมดใช่หรือไม่?")) {
+                initGame();
+            }
+        }
+
+        let isThai = true;
+        function toggleLanguage() {
+            isThai = !isThai;
+            const btn = document.getElementById('langToggleBtn');
+            btn.innerText = isThai ? "🌐 ภาษา: ไทย (TH)" : "🌐 ภาษา: อังกฤษ (EN)";
+        }
+
+        window.onload = () => {
+            runTempSimulation();
+            initGame();
+        };
+    </script>
+</body>
+</html>
+
+เขียนโดย พระจอมเกล้าติวเตอร์
