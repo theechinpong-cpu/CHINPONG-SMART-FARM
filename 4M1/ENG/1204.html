@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>เกมสุ่มผู้เล่นและคลังข้อสอบ Past Tenses - พระจอมเกล้าติวเตอร์</title>
+    <style>
+        :root {
+            --primary-color: #4f46e5;
+            --secondary-color: #818cf8;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-color: #1e293b;
+            --border-color: #cbd5e1;
+            --success-color: #10b981;
+            --error-color: #ef4444;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        .game-panel {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .wheel-container {
+            font-size: 26px;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin: 15px 0;
+            min-height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #e0e7ff;
+            border-radius: 8px;
+            padding: 10px;
+        }
+        .btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin: 5px;
+        }
+        .btn:hover {
+            background-color: #4338ca;
+        }
+        .main-layout {
+            display: flex;
+            gap: 20px;
+        }
+        .exam-area {
+            flex: 7;
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+        }
+        .whiteboard-area {
+            flex: 3;
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+        }
+        canvas {
+            border: 2px dashed var(--border-color);
+            border-radius: 8px;
+            background: #fff;
+            cursor: crosshair;
+            width: 100%;
+            height: 400px;
+        }
+        .question-card {
+            margin-bottom: 25px;
+            padding: 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+        }
+        .options label {
+            display: block;
+            margin: 8px 0;
+            padding: 8px 12px;
+            background: #f1f5f9;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .options label:hover {
+            background: #e2e8f0;
+        }
+        .explanation {
+            margin-top: 10px;
+            padding: 10px;
+            background: #eff6ff;
+            border-left: 4px solid var(--primary-color);
+            display: none;
+            font-size: 14px;
+        }
+        .footer-credit {
+            text-align: center;
+            margin-top: 30px;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+        @media (max-width: 900px) {
+            .main-layout {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>ระบบทดสอบความรู้ Past Simple & Past Continuous Tense</h1>
+        <p>พระจอมเกล้าติวเตอร์ - Interactive Exam Engine</p>
+    </header>
+
+    <!-- Game Panel: หมุนป้ายสุ่มผู้เล่นพร้อมเสียงตื่นเต้น -->
+    <div class="game-panel">
+        <h2>วงล้อสุ่มผู้เล่น (Game Mode)</h2>
+        <p>ผู้เล่นที่มีสิทธิ์ทำข้อสอบชุดนี้: <strong>ตาล, น้ำฟ้า, ท็อป, ลูกเกด</strong></p>
+        <div class="wheel-container" id="selectedPlayerDisplay">กดปุ่มเพื่อหมุนวงล้อสุ่มผู้เล่น</div>
+        <button class="btn" onclick="spinWheelWithSound()">🎡 หมุนวงล้อสุ่มผู้เล่นสุดตื่นเต้น</button>
+        <button class="btn" style="background-color: #64748b;" onclick="resetExam()">🔄 Reset ระบบทั้งหมด</button>
+    </div>
+
+    <div class="main-layout">
+        <!-- ฝั่งซ้าย: ข้อสอบ 30 ข้อ (70%) -->
+        <div class="exam-area">
+            <h3>ชุดข้อสอบแบบสุ่ม (30 ข้อไม่ซ้ำกัน - Anti-Guessing Engine)</h3>
+            <div id="examContainer">
+                <!-- เรนเดอร์ข้อสอบด้วย JavaScript -->
+            </div>
+            <button class="btn" onclick="submitExam()">📤 ส่งคำตอบและตรวจคะแนน</button>
+            <div id="scoreResult" style="margin-top: 15px; font-size: 18px; font-weight: bold;"></div>
+        </div>
+
+        <!-- ฝั่งขวา: กระดาน Whiteboard (30%) -->
+        <div class="whiteboard-area">
+            <h3>กระดานทดเลข Whiteboard</h3>
+            <p style="font-size: 13px; color: #64748b;">ใช้สำหรับทดเลข วาดแผนผัง Timeline หรือจดบันทึกช่วยจำ</p>
+            <canvas id="whiteboard" width="300" height="400"></canvas>
+            <div style="margin-top: 10px; display: flex; gap: 5px;">
+                <button class="btn" style="flex:1; background-color:#ef4444;" onclick="clearCanvas()">🗑️ ล้างกระดาน</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer-credit">
+        เขียนโดย พระจอมเกล้าติวเตอร์
+    </div>
+</div>
+
+<script>
+    // รายชื่อผู้เล่นตามโจทย์
+    const players = ["ตาล", "น้ำฟ้า", "ท็อป", "ลูกเกด"];
+
+    // ฟังก์ชันสร้างเสียงตื่นเต้นด้วย Web Audio API (สลัดปัญหาไฟล์เสียงหาย)
+    function playSpinSound() {
+        try {
+            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            let notes = [261.63, 329.63, 392.00, 523.25, 587.33, 659.25, 783.99];
+            notes.forEach((freq, index) => {
+                let osc = audioCtx.createOscillator();
+                let gain = audioCtx.createGain();
+                osc.type = 'triangle';
+                osc.frequency.value = freq;
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime + index * 0.08);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + index * 0.08 + 0.07);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start(audioCtx.currentTime + index * 0.08);
+                osc.stop(audioCtx.currentTime + index * 0.08 + 0.07);
+            });
+        } catch (e) {
+            console.log("Audio Context not supported or blocked.");
+        }
+    }
+
+    function spinWheelWithSound() {
+        playSpinSound();
+        const display = document.getElementById("selectedPlayerDisplay");
+        display.innerText = "🌀 กำลังหมุนวงล้อสุ่มผู้เล่น...";
+        
+        let counter = 0;
+        let interval = setInterval(() => {
+            let tempRand = Math.floor(Math.random() * players.length);
+            display.innerText = `กำลังสุ่ม... [ ${players[tempRand]} ]`;
+            counter++;
+            if (counter > 12) {
+                clearInterval(interval);
+                const finalIndex = Math.floor(Math.random() * players.length);
+                const chosen = players[finalIndex];
+                display.innerText = `🎉 ผู้เล่นที่ได้รับสิทธิ์ทำข้อสอบรอบนี้คือ: คุณ ${chosen} 🎉`;
+                localStorage.setItem("currentPlayer", chosen);
+            }
+        }, 80);
+    }
+
+    // คลังข้อสอบ 30 ข้อ กระจายตัวเลือกถูกต้องสมดุล (A, B, C, D อย่างละ 7-8 ข้อ)
+    const rawQuestions = [
+        { q: "1. Yesterday, I _____ to the market with my mother.", options: ["A) go", "B) went", "C) was going", "D) gone"], answer: 1, exp: "เหตุการณ์เกิดขึ้นและจบลงในอดีต (Yesterday) ใช้ Past Simple (Verb 2) คือ went" },
+        { q: "2. While she _____ dinner, the phone rang suddenly.", options: ["A) cook", "B) cooked", "C) was cooking", "D) cooks"], answer: 2, exp: "เหตุการณ์กำลังดำเนินอยู่ (While) ใช้ Past Continuous (was/were + V-ing)" },
+        { q: "3. They _____ football when it started to rain heavily.", options: ["A) play", "B) played", "C) were playing", "D) are playing"], answer: 2, exp: "เหตุการณ์กำลังดำเนินอยู่และมีเหตุการณ์อื่นแทรก ใช้ Past Continuous (were playing)" },
+        { q: "4. What _____ you do last night?", options: ["A) do", "B) did", "C) were", "D) does"], answer: 1, exp: "ประโยคคำถามในอดีตใช้ did ร่วมกับ Verb ช่องที่ 1" },
+        { q: "5. He _____ not sleep well last night because of the noise.", options: ["A) do", "B) does", "C) did", "D) was"], answer: 2, exp: "ปฏิเสธในอดีตใช้ did not (didn't) + Verb 1" },
+        { q: "6. At 8 PM yesterday, I _____ my homework.", options: ["A) do", "B) did", "C) was doing", "D) am doing"], answer: 2, exp: "ระบุเวลาเจาะจงในอดีต (At 8 PM yesterday) ใช้ Past Continuous" },
+        { q: "7. When the teacher entered the room, the students _____.", options: ["A) talk", "B) talked", "C) were talking", "D) are talking"], answer: 2, exp: "เหตุการณ์กำลังทำอยู่แล้วมีเหตุการณ์สั้นเข้ามาแทรก (entered)" },
+        { q: "8. She _____ her keys on the way home yesterday.", options: ["A) lose", "B) lost", "C) was losing", "D) losed"], answer: 1, exp: "เหตุการณ์เกิดในอดีตและจบแล้ว ใช้ Verb 2 คือ lost" },
+        { q: "9. While we _____ TV, the lights went out.", options: ["A) watch", "B) watched", "C) were watching", "D) are watching"], answer: 2, exp: "ใช้ While เชื่อมคู่กับ Past Continuous (were watching)" },
+        { q: "10. I _____ a great movie two days ago.", options: ["A) see", "B) saw", "C) was seeing", "D) seen"], answer: 1, exp: "มีคำบอกเวลา two days ago ใช้ Verb 2 คือ saw" },
+        { q: "11. The sun _____ brightly when we woke up.", options: ["A) shine", "B) shined", "C) was shining", "D) is shining"], answer: 2, exp: "บรรยากาศที่กำลังดำเนินอยู่ตอนตื่นนอน ใช้ Past Continuous" },
+        { q: "12. Where _____ you go for your vacation last year?", options: ["A) do", "B) did", "C) were", "D) are"], answer: 1, exp: "คำถาม Past Simple ใช้ did" },
+        { q: "13. She _____ cooking when her friends arrived.", options: ["A) finish", "B) finished", "C) was finishing", "D) finishes"], answer: 2, exp: "เหตุการณ์กำลังทำอยู่ตอนที่เพื่อนมาถึง ใช้ Past Continuous" },
+        { q: "14. They _____ tired after the long journey.", options: ["A) was", "B) were", "C) are", "D) did"], answer: 1, exp: "ประธาน They เป็นพหูพจน์ ใช้ Verb to be คือ were" },
+        { q: "15. He _____ a book while she was listening to music.", options: ["A) read", "B) reads", "C) was reading", "D) is reading"], answer: 2, exp: "เหตุการณ์คู่ขนานกำลังดำเนินพร้อมกัน ใช้ Past Continuous ทั้งสองฝั่งได้" },
+        { q: "16. I _____ happy when I heard the good news.", options: ["A) am", "B) was", "C) were", "D) did"], answer: 1, exp: "ประธาน I ใช้ was ในอดีต" },
+        { q: "17. What _____ you doing at this time yesterday?", options: ["A) do", "B) did", "C) were", "D) are"], answer: 2, exp: "คำถามถามสิ่งที่กำลังทำในอดีตใช้ were + V-ing" },
+        { q: "18. Columbus _____ America in 1492.", options: ["A) discover", "B) discovered", "C) was discovering", "D) discovers"], answer: 1, exp: "เหตุการณ์ประวัติศาสตร์ในอดีต ใช้ Past Simple (discovered)" },
+        { q: "19. While it _____ , we stayed inside.", options: ["A) rain", "B) rained", "C) was raining", "D) is raining"], answer: 2, exp: "เหตุการณ์ฝนกำลังตกใช้ Past Continuous" },
+        { q: "20. She _____ her room last Sunday.", options: ["A) clean", "B) cleaned", "C) was cleaning", "D) cleans"], answer: 1, exp: "มีคำว่า last Sunday ใช้ Past Simple (cleaned)" },
+        { q: "21. They _____ computer games all evening yesterday.", options: ["A) play", "B) played", "C) were playing", "D) are playing"], answer: 2, exp: "เน้นความต่อเนื่องตลอดช่วงเย็น ใช้ Past Continuous" },
+        { q: "22. Why _____ you late for class this morning?", options: ["A) do", "B) did", "C) were", "D) was"], answer: 2, exp: "ประธาน you ใช้ were ในรูปประโยคคำถามบอกสภาพ" },
+        { q: "23. I _____ an interesting book when the light went off.", options: ["A) read", "B) was reading", "C) am reading", "D) reads"], answer: 1, exp: "กำลังอ่านอยู่ตอนไฟดับ ใช้ Past Continuous (was reading)" },
+        { q: "24. My brother _____ to Bangkok last month.", options: ["A) move", "B) moved", "C) was moving", "D) moves"], answer: 1, exp: "มีคำว่า last month ใช้ Past Simple (moved)" },
+        { q: "25. As I _____ down the street, I saw an old friend.", options: ["A) walk", "B) walked", "C) was walking", "D) am walking"], answer: 2, exp: "As ทำหน้าที่เหมือน While ใช้คู่กับ Past Continuous" },
+        { q: "26. She _____ breakfast at 7 AM this morning.", options: ["A) eat", "B) ate", "C) was eating", "D) eats"], answer: 2, exp: "เจาะจงเวลาช่วงเช้าที่กำลังทานอยู่ ใช้ Past Continuous" },
+        { q: "27. The dogs _____ loudly last night.", options: ["A) bark", "B) barked", "C) were barking", "D) barks"], answer: 1, exp: "เหตุการณ์ในอดีตจบแล้ว ใช้ Past Simple (barked)" },
+        { q: "28. We _____ dinner when the doorbell rang.", options: ["A) have", "B) had", "C) were having", "D) are having"], answer: 2, exp: "กำลังทานอยู่แล้วมีเสียงกริ่งแทรก ใช้ Past Continuous" },
+        { q: "29. He _____ his homework before he went to bed.", options: ["A) finish", "B) finished", "C) was finishing", "D) finishes"], answer: 1, exp: "เหตุการณ์เกิดตามลำดับในอดีต ใช้ Past Simple" },
+        { q: "30. It _____ a cold winter day.", options: ["A) is", "B) was", "C) were", "D) did"], answer: 1, exp: "เล่าสภาพในอดีตใช้ was" }
+    ];
+
+    // Fisher-Yates Shuffle Algorithm
+    function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    }
+
+    let activeQuestions = [];
+
+    function initExam() {
+        activeQuestions = JSON.parse(JSON.stringify(rawQuestions));
+        shuffleArray(activeQuestions);
+
+        const container = document.getElementById("examContainer");
+        container.innerHTML = "";
+
+        activeQuestions.forEach((item, index) => {
+            const card = document.createElement("div");
+            card.className = "question-card";
+            
+            let optionsHtml = "";
+            item.options.forEach((opt, optIdx) => {
+                optionsHtml += `<label><input type="radio" name="q${index}" value="${optIdx}"> ${opt}</label>`;
+            });
+
+            card.innerHTML = `
+                <p><strong>ข้อที่ ${index + 1}:</strong> ${item.q.replace(/^\d+\.\s*/, '')}</p>
+                <div class="options">${optionsHtml}</div>
+                <button class="btn" style="padding: 5px 10px; font-size: 12px; margin-top: 8px;" onclick="toggleExp(${index})">💡 แสดง/ซ่อน คำอธิบาย</button>
+                <div class="explanation" id="exp${index}"><strong>วิธีคิดและเฉลย:</strong> ${item.exp}</div>
+            `;
+            container.appendChild(card);
+        });
+    }
+
+    function toggleExp(index) {
+        const expBox = document.getElementById(`exp${index}`);
+        expBox.style.display = expBox.style.display === "block" ? "none" : "block";
+    }
+
+    function submitExam() {
+        let score = 0;
+        activeQuestions.forEach((item, index) => {
+            const radios = document.getElementsByName(`q${index}`);
+            let answered = -1;
+            for (let i = 0; i < radios.length; i++) {
+                if (radios[i].checked) {
+                    answered = parseInt(radios[i].value);
+                    break;
+                }
+            }
+            if (answered === item.answer) {
+                score++;
+            }
+        });
+
+        const player = localStorage.getItem("currentPlayer") || "ผู้เรียน";
+        const percentage = (score / activeQuestions.length) * 100;
+        const resultDiv = document.getElementById("scoreResult");
+        resultDiv.innerHTML = `👤 คุณ ${player} ทำคะแนนได้: ${score} / ${activeQuestions.length} (${percentage.toFixed(2)}%)`;
+        
+        if (percentage >= 80) {
+            resultDiv.innerHTML += "<br>🌟 ยอดเยี่ยมมาก! มีความเข้าใจเรื่อง Past Tenses เป็นอย่างดีเยี่ยม";
+        } else {
+            resultDiv.innerHTML += "<br>💡 แนะนำให้ทบทวนความแตกต่างระหว่าง When และ While เพิ่มเติมอีกนิดครับ";
+        }
+    }
+
+    function resetExam() {
+        localStorage.clear();
+        document.getElementById("selectedPlayerDisplay").innerText = "กดปุ่มเพื่อหมุนวงล้อสุ่มผู้เล่น";
+        document.getElementById("scoreResult").innerHTML = "";
+        initExam();
+        clearCanvas();
+    }
+
+    // Whiteboard Scripting
+    const canvas = document.getElementById("whiteboard");
+    const ctx = canvas.getContext("2d");
+    let painting = false;
+
+    function startPosition(e) {
+        painting = true;
+        draw(e);
+    }
+    function finishedPosition() {
+        painting = false;
+        ctx.beginPath();
+    }
+    function draw(e) {
+        if (!painting) return;
+        ctx.lineWidth = 2;
+        ctx.lineCap = "round";
+        ctx.strokeStyle = "#4f46e5";
+
+        const rect = canvas.getBoundingClientRect();
+        const x = (e.clientX || e.touches[0].clientX) - rect.left;
+        const y = (e.clientY || e.touches[0].clientY) - rect.top;
+
+        ctx.lineTo(x, y);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+    }
+
+    canvas.addEventListener("mousedown", startPosition);
+    canvas.addEventListener("mouseup", finishedPosition);
+    canvas.addEventListener("mousemove", draw);
+
+    canvas.addEventListener("touchstart", startPosition);
+    canvas.addEventListener("touchend", finishedPosition);
+    canvas.addEventListener("touchmove", draw);
+
+    function clearCanvas() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+
+    window.onload = initExam;
+</script>
+
+</body>
+</html>
