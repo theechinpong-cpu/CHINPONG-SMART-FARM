@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>วงกลมมหาสนุก ลุ้นเซียน ห.ร.ม. และ ค.ร.น. - พระจอมเกล้าติวเตอร์</title>
+    <!-- Tailwind CSS CDN สำหรับจัดหน้า UI ให้สวยงามทันสมัย -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <!-- Google Fonts: Sarabun สำหรับภาษาไทยที่อ่านง่ายสบายตา -->
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <!-- MathJax สำหรับแสดงผลสูตรคณิตศาสตร์ LaTeX -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        body { font-family: 'Sarabun', sans-serif; }
+        .spinner-wheel {
+            transition: transform 4s cubic-bezier(0.15, 0.9, 0.2, 1);
+        }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col items-center justify-between p-4">
+
+    <!-- Header -->
+    <header class="w-full max-w-6xl text-center py-4 bg-slate-800 rounded-2xl shadow-xl border border-slate-700 mb-4">
+        <h1 class="text-2xl md:text-3xl font-bold text-emerald-400">🎯 เกมวงกลมมหาสนุก: ศึกเซียน ห.ร.ม. และ ค.ร.น.</h1>
+        <p class="text-slate-300 text-sm md:text-base mt-1">ผู้แข่งขัน: นานา | ภูผา | พี่บูม (35 ข้อท้าทายความคิด)</p>
+    </header>
+
+    <!-- Main Container -->
+    <main class="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-12 gap-6 flex-grow">
+        
+        <!-- Left Section: Game & Question Area (70% on large screens) -->
+        <section class="lg:col-span-8 flex flex-col gap-6">
+            
+            <!-- Score Board Card -->
+            <div class="bg-slate-800 border border-slate-700 rounded-2xl p-4 shadow-lg flex justify-around items-center text-center">
+                <div class="p-3 rounded-xl bg-slate-700/50 flex-1 mx-1 border-b-4 border-pink-500">
+                    <p class="text-xs text-slate-400">ผู้เล่น 1</p>
+                    <h3 class="text-lg font-bold text-pink-400">นานา</h3>
+                    <p id="score-nana" class="text-2xl font-bold text-white">0 คะแนน</p>
+                </div>
+                <div class="p-3 rounded-xl bg-slate-700/50 flex-1 mx-1 border-b-4 border-cyan-500">
+                    <p class="text-xs text-slate-400">ผู้เล่น 2</p>
+                    <h3 class="text-lg font-bold text-cyan-400">ภูผา</h3>
+                    <p id="score-phupha" class="text-2xl font-bold text-white">0 คะแนน</p>
+                </div>
+                <div class="p-3 rounded-xl bg-slate-700/50 flex-1 mx-1 border-b-4 border-amber-500">
+                    <p class="text-xs text-slate-400">ผู้เล่น 3</p>
+                    <h3 class="text-lg font-bold text-amber-400">พี่บูม</h3>
+                    <p id="score-boom" class="text-2xl font-bold text-white">0 คะแนน</p>
+                </div>
+            </div>
+
+            <!-- Stage 1: Wheel Spin Section -->
+            <div id="wheel-section" class="bg-slate-800 border border-slate-700 rounded-2xl p-6 shadow-xl flex flex-col items-center justify-center text-center">
+                <h2 class="text-xl font-bold text-emerald-300 mb-4">หมุนวงกลมเพื่อสุ่มผู้โชคดีตอบคำถาม!</h2>
+                
+                <!-- Wheel Graphic Simulation -->
+                <div class="relative w-64 h-64 md:w-72 md:h-72 mb-6 flex items-center justify-center">
+                    <div id="wheel" class="absolute inset-0 rounded-full border-8 border-emerald-500 shadow-2xl overflow-hidden spinner-wheel flex items-center justify-center bg-gradient-to-tr from-pink-600 via-cyan-600 to-amber-600">
+                        <div class="absolute w-full h-full flex items-center justify-center text-white font-bold text-lg drop-shadow-md">
+                            <span class="absolute top-4">นานา</span>
+                            <span class="absolute right-6">ภูผา</span>
+                            <span class="absolute bottom-6">พี่บูม</span>
+                        </div>
+                    </div>
+                    <!-- Pointer Indicator -->
+                    <div class="absolute -top-3 w-0 h-0 border-l-[12px] border-l-transparent border-r-[12px] border-r-transparent border-t-[20px] border-t-yellow-400 z-10 filter drop-shadow"></div>
+                    <div class="w-16 h-16 bg-slate-900 rounded-full border-4 border-emerald-400 z-0 flex items-center justify-center text-xs font-bold text-emerald-300 shadow-inner">
+                        SPIN
+                    </div>
+                </div>
+
+                <button onclick="spinWheel()" id="spin-btn" class="px-8 py-3 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold text-lg rounded-xl shadow-lg transition-transform transform active:scale-95 cursor-pointer">
+                    🎡 หมุนวงกลมเสี่ยงทาย!
+                </button>
+                <p id="spin-result-text" class="mt-4 text-lg font-semibold text-amber-300 h-8"></p>
+            </div>
+
+            <!-- Stage 2: Question Section (Hidden initially) -->
+            <div id="question-section" class="bg-slate-800 border border-slate-700 rounded-2xl p-6 shadow-xl hidden flex-col">
+                <div class="flex justify-between items-center mb-4 border-b border-slate-700 pb-3">
+                    <span id="current-turn-player" class="px-3 py-1 bg-emerald-500/20 text-emerald-400 font-bold rounded-lg border border-emerald-500/30 text-sm"></span>
+                    <span id="question-progress" class="text-sm text-slate-400">ข้อที่ 1 / 35</span>
+                </div>
+
+                <div class="mb-6">
+                    <h3 id="question-text" class="text-lg md:text-xl font-semibold text-white mb-2 leading-relaxed"></h3>
+                    <div id="clue-box" class="hidden mt-2 p-3 bg-amber-500/10 border border-amber-500/30 rounded-xl text-amber-300 text-sm">
+                        💡 <strong>คำใบ้/สูตรคิด:</strong> <span id="clue-text"></span>
+                    </div>
+                    <button onclick="toggleClue()" class="mt-2 text-xs text-amber-400 hover:underline cursor-pointer">🔍 แสดง/ซ่อน คำใบ้</button>
+                </div>
+
+                <div id="options-container" class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+                    <!-- Options generated dynamically -->
+                </div>
+
+                <div id="feedback-box" class="hidden mt-4 p-4 rounded-xl border">
+                    <p id="feedback-text" class="font-bold text-base mb-1"></p>
+                    <p id="explanation-text" class="text-sm text-slate-300"></p>
+                    <button onclick="nextTurn()" class="mt-4 px-6 py-2 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold rounded-xl text-sm transition cursor-pointer">
+                        ➡️ หมุนวงกลมข้อถัดไป
+                    </button>
+                </div>
+            </div>
+
+            <!-- Completion Screen -->
+            <div id="completion-section" class="bg-slate-800 border border-slate-700 rounded-2xl p-8 shadow-xl hidden text-center flex flex-col items-center">
+                <h2 class="text-3xl font-bold text-emerald-400 mb-4">🎉 สิ้นสุดการประลองความรู้ ห.ร.ม. และ ค.ร.น.!</h2>
+                <p class="text-slate-300 mb-6">ผู้แข่งขันทุกท่านได้ทำครบทั้ง 35 ข้อเรียบร้อยแล้ว มาดูสรุปผลคะแนนกันเลยครับ</p>
+                <div id="final-scoreboard" class="w-full max-w-md bg-slate-900/60 p-4 rounded-xl border border-slate-700 mb-6 space-y-3 text-left">
+                    <!-- Final scores populated here -->
+                </div>
+                <button onclick="resetGame()" class="px-8 py-3 bg-cyan-500 hover:bg-cyan-600 text-slate-950 font-bold rounded-xl shadow-lg cursor-pointer">
+                    🔄 เริ่มเกมใหม่ทั้งหมด
+                </button>
+            </div>
+
+        </section>
+
+        <!-- Right Section: Whiteboard (30% on large screens) -->
+        <section class="lg:col-span-4 bg-slate-800 border border-slate-700 rounded-2xl p-4 shadow-xl flex flex-col h-[500px] lg:h-auto">
+            <div class="flex justify-between items-center mb-3">
+                <h3 class="font-bold text-slate-300 flex items-center gap-2">📝 กระดานทดเลข</h3>
+                <div class="flex gap-2">
+                    <button onclick="clearCanvas()" class="px-3 py-1 bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 text-xs rounded-lg border border-rose-500/30 cursor-pointer">ล้างกระดาน</button>
+                </div>
+            </div>
+            <div class="flex-grow bg-slate-900 rounded-xl border border-slate-700 overflow-hidden relative cursor-crosshair">
+                <canvas id="whiteboard" class="w-full h-full block touch-none"></canvas>
+            </div>
+            <p class="text-xs text-slate-400 text-center mt-2">ใช้เมาส์หรือนิ้วลากเพื่อเขียนทดเลขคำนวณ</p>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="w-full max-w-6xl text-center py-4 mt-4 text-xs text-slate-500 border-t border-slate-800">
+        เขียนโดย พระจอมเกล้าติวเตอร์
+    </footer>
+
+    <!-- JavaScript Game & Question Bank Logic -->
+    <script>
+        // รายชื่อผู้เล่น
+        const players = [
+            { name: "นานา", key: "nana", score: 0, color: "text-pink-400" },
+            { name: "ภูผา", key: "phupha", score: 0, color: "text-cyan-400" },
+            { name: "พี่บูม", key: "boom", score: 0, color: "text-amber-400" }
+        ];
+        let currentPlayerIndex = 0;
+        let currentWheelAngle = 0;
+
+        // คลังข้อสอบ 35 ข้อ ห.ร.ม. และ ค.ร.น. พร้อมตัวเลือกสลับและคำอธิบาย
+        const rawQuestions = [
+            {
+                q: "ตัวประกอบทั้งหมดของจำนวน $12$ มีจำนวนกี่ตัว?",
+                options: ["$4$ ตัว", "$6$ ตัว ($1, 2, 3, 4, 6, 12$)", "$5$ ตัว", "$8$ ตัว"],
+                answer: 1,
+                clue: "หาจำนวนนับที่หาร $12$ ได้ลงตัว ได้แก่ $1, 2, 3, 4, 6, 12$",
+                explanation: "ตัวประกอบของ $12$ คือจำนวนนับที่หาร $12$ ลงตัว ซึ่งมีทั้งหมด $6$ จำนวน ได้แก่ $1, 2, 3, 4, 6$ และ $12$"
+            },
+            {
+                q: "จำนวนในข้อใดต่อไปนี้เป็นจำนวนเฉพาะทั้งหมด?",
+                options: ["$2, 3, 5, 7, 11$", "$1, 2, 3, 5, 7$", "$2, 3, 9, 11, 13$", "$3, 5, 7, 9, 11$"],
+                answer: 0,
+                clue: "จำนวนเฉพาะคือจำนวนนับที่มากกว่า $1$ และมีตัวประกอบเพียง $2$ ตัวคือ $1$ และตัวมันเอง",
+                explanation: "$2, 3, 5, 7, 11$ เป็นจำนวนเฉพาะทั้งหมด เพราะไม่มีจำนวนนับอื่นใดนอกจาก $1$ และตัวมันเองหารลงตัว ($1$ ไม่ใช่จำนวนเฉพาะ)"
+            },
+            {
+                q: "ห.ร.ม. ของ $12$ และ $18$ คือจำนวนใด?",
+                options: ["$3$", "$6$", "$9$", "$12$"],
+                answer: 1,
+                clue: "หาตัวประกอบร่วมที่มากที่สุด หรือใช้การแยกตัวประกอบ ($12 = 2^2 \\times 3$, $18 = 2 \\times 3^2$)",
+                explanation: "ตัวประกอบร่วมของ $12$ และ $18$ คือ $1, 2, 3, 6$ ตัวที่มากที่สุดคือ $6$"
+            },
+            {
+                q: "ค.ร.น. ของ $4$ และ $6$ คือจำนวนใด?",
+                options: ["$12$", "$24$", "$8$", "$18$"],
+                answer: 0,
+                clue: "หาพหูคูณของ $4$ ($4, 8, 12, 16$) และ $6$ ($6, 12, 18$) ตัวที่น้อยที่สุดที่ซ้ำกัน",
+                explanation: "พหูคูณร่วมที่น้อยที่สุดของ $4$ และ $6$ คือ $12$ เนื่องจาก $12$ เป็นจำนวนที่น้อยที่สุดที่ทั้ง $4$ และ $6$ หารลงตัว"
+            },
+            {
+                q: "ตัวประกอบร่วมที่มากที่สุด (ห.ร.ม.) ของ $24$ และ $36$ คือข้อใด?",
+                options: ["$6$", "$8$", "$12$", "$18$"],
+                answer: 2,
+                clue: "แยกตัวประกอบ: $24 = 2^3 \\times 3$, $36 = 2^2 \\times 3^2$. ห.ร.ม. เอาตัวซ้ำกำลังน้อยสุด",
+                explanation: "ห.ร.ม. คือ $2^2 \\times 3 = 4 \\times 3 = 12$"
+            },
+            {
+                q: "ค.ร.น. ของ $5$ และ $7$ คือจำนวนใด?",
+                options: ["$12$", "$30$", "$35$", "$70$"],
+                answer: 2,
+                clue: "เพราะ $5$ และ $7$ เป็นจำนวนเฉพาะสัมพัทธ์ ค.ร.น. หาได้จากการคูณกันโดยตรง",
+                explanation: "เนื่องจาก $5$ และ $7$ ไม่มีตัวประกอบร่วมอื่นนอกจาก $1$ ดังนั้น ค.ร.น. คือ $5 \\times 7 = 35$"
+            },
+            {
+                q: "จำนวนนับที่น้อยที่สุดที่หารด้วย $8$ และ $12$ แล้วเหลือเศษ $0$ เท่ากันคือจำนวนใด?",
+                options: ["$16$", "$24$", "$32$", "$48$"],
+                answer: 1,
+                clue: "โจทย์ถามหาจำนวนที่น้อยที่สุดที่หารด้วย $8$ และ $12$ ลงตัว นั่นคือการหา ค.ร.น.",
+                explanation: "ค.ร.น. ของ $8$ และ $12$ คือ $24$"
+            },
+            {
+                q: "ถ้า ห.ร.ม. ของ $a$ และ $b$ คือ $4$ และผลคูณของสองจำนวนนี้คือ $96$ ค.ร.น. ของ $a$ และ $b$ คือเท่าใด?",
+                options: ["$16$", "$24$", "$32$", "$384$"],
+                answer: 1,
+                clue: "จากสูตร: $a \\times b = \\text{ห.ร.ม.} \\times \\text{ค.ร.น.}$",
+                explanation: "จากสูตร $\\text{ค.ร.น.} = (a \\times b) \\div \\text{ห.ร.ม.} = 96 \\div 4 = 24$"
+            },
+            {
+                q: "การแยกตัวประกอบของ $60$ ในข้อใดถูกต้อง?",
+                options: ["$2 \\times 3 \\times 10$", "$2^2 \\times 3 \\times 5$", "$2 \\times 3^2 \\times 5$", "$2^3 \\times 5$"],
+                answer: 1,
+                clue: "ทำให้อยู่ในรูปการคูณของจำนวนเฉพาะทั้งหมด $60 = 4 \\times 15 = 2^2 \\times 3 \\times 5$",
+                explanation: "$60 = 4 \\times 15 = (2 \\times 2) \\times (3 \\times 5) = 2^2 \\times 3 \\times 5$"
+            },
+            {
+                q: "ห.ร.ม. ของ $15, 30$ และ $45$ คือจำนวนใด?",
+                options: ["$5$", "$10$", "$15$", "$30$"],
+                answer: 2,
+                clue: "หาจำนวนที่มากที่สุดที่หารทั้งสามจำนวนลงตัว",
+                explanation: "$15$ หาร $15, 30, 45$ ลงตัวทั้งหมด และเป็นจำนวนที่มากที่สุดที่เป็นตัวประกอบร่วม"
+            },
+            {
+                q: "ค.ร.น. ของ $9, 12$ และ $18$ คือจำนวนใด?",
+                options: ["$36$", "$54$", "$72$", "$108$"],
+                answer: 0,
+                clue: "ใช้การตั้งหารสั้นหา ค.ร.น. ของสามจำนวน",
+                explanation: "พหูคูณของ $9, 12, 18$ ที่น้อยที่สุดคือ $36$ เนื่องจาก $36 \\div 9 = 4$, $36 \\div 12 = 3$, $36 \\div 18 = 2$"
+            },
+            {
+                q: "ระฆัง $3$ ใบ ใบแรกตีทุกๆ $2$ นาที ใบที่สองทุกๆ $3$ นาที และใบที่สามทุกๆ $4$ นาที ระฆังจะตีพร้อมกันครั้งแรกในอีกกี่นาที?",
+                options: ["$6$ นาที", "$10$ นาที", "$12$ นาที", "$24$ นาที"],
+                answer: 2,
+                clue: "หา ค.ร.น. ของ $2, 3$ และ $4$",
+                explanation: "ค.ร.น. ของ $2, 3, 4$ คือ $12$ ดังนั้น ระฆังจะตีพร้อมกันทุกๆ $12$ นาที"
+            },
+            {
+                q: "มีขนมอยู่ $24$ ชิ้น และนมอัดเม็ด $32$ กล่อง ต้องการจัดใส่ถุง ถุงละเท่าๆ กัน โดยไม่มีเศษเหลือ และได้จำนวนถุงมากที่สุด จะจัดได้กี่ถุง?",
+                options: ["$4$ ถุง", "$6$ ถุง", "$8$ ถุง", "$12$ ถุง"],
+                answer: 2,
+                clue: "โจทย์ต้องการแบ่งของออกเท่าๆ กันและได้มากที่สุด คือการหา ห.ร.ม. ของ $24$ และ $32$",
+                explanation: "ห.ร.ม. ของ $24$ และ $32$ คือ $8$ ดังนั้นจะจัดได้มากที่สุด $8$ ถุง (ถุงละ ขนม $3$ ชิ้น นม $4$ กล่อง)"
+            },
+            {
+                q: "ข้อใดกล่าวถูกต้องเกี่ยวกับ ห.ร.ม. และ ค.ร.น.",
+                options: ["ห.ร.ม. ของจำนวนสองจำนวนจะต้องมีค่ามากกว่าหรือเท่ากับ ค.ร.น. เสมอ", "ค.ร.น. ของจำนวนนับใดๆ จะต้องน้อยกว่าหรือเท่ากับ ห.ร.ม. ของจำนวนนั้น", "ห.ร.ม. ของจำนวนนับใดๆ จะต้องน้อยกว่าหรือเท่ากับจำนวนนับที่น้อยที่สุดในกลุ่มนั้น", "ค.ร.น. จะต้องเป็นตัวประกอบของจำนวนนับทุกจำนวนในกลุ่ม"],
+                answer: 2,
+                clue: "พิจารณาจากนิยามและสมบัติของ ห.ร.ม. และ ค.ร.น.",
+                explanation: "ห.ร.ม. คือตัวหารร่วมที่มีค่าไม่เกินจำนวนที่น้อยที่สุดในกลุ่มเสมอ ส่วน ค.ร.น. จะต้องมีค่ามากกว่าหรือเท่ากับจำนวนที่มากที่สุดในกลุ่ม"
+            },
+            {
+                q: "ถ้า ห.ร.ม. ของ $a$ และ $b$ เป็น $1$ แสดงว่า $a$ และ $b$ มีความสัมพันธ์กันอย่างไร?",
+                options: ["เป็นจำนวนคู่ทั้งคู่", "เป็นจำนวนเฉพาะสัมพัทธ์ (Co-prime)", "เป็นพหูคูณซึ่งกันและกัน", "เป็นจำนวนคี่ทั้งคู่"],
+                answer: 1,
+                clue: "จำนวนที่มี ห.ร.ม. เป็น $1$ เรียกอีกชื่อหนึ่งว่าอะไร?",
+                explanation: "จำนวนนับสองจำนวนที่มี ห.ร.ม. เป็น $1$ เรียกว่า จำนวนเฉพาะสัมพัทธ์ (Relative Prime หรือ Co-prime)"
+            },
+            {
+                q: "พหูคูณร่วมสามจำนวนแรกของ $3$ และ $4$ คือข้อใด?",
+                options: ["$3, 6, 9$", "$4, 8, 12$", "$12, 24, 36$", "$6, 12, 18$"],
+                answer: 2,
+                clue: "หา ค.ร.น. ก่อน แล้วหาพหูคูณของ ค.ร.น. นั้น ($12, 24, 36$)",
+                explanation: "ค.ร.น. ของ $3$ และ $4$ คือ $12$ พหูคูณร่วมคือ $12 \\times 1, 12 \\times 2, 12 \\times 3$ ซึ่งก็คือ $12, 24, 36$"
+            },
+            {
+                q: "ห.ร.ม. ของ $48$ และ $72$ มีค่าเท่ากับเท่าใด?",
+                options: ["$12$", "$16$", "$24$", "$36$"],
+                answer: 2,
+                clue: "แยกตัวประกอบ: $48 = 2^4 \\times 3$, $72 = 2^3 \\times 3^2$",
+                explanation: "ห.ร.ม. คือ $2^3 \\times 3 = 8 \\times 3 = 24$"
+            },
+            {
+                q: "ค.ร.น. ของ $10, 15$ และ $20$ คือจำนวนใด?",
+                options: ["$30$", "$45$", "$60$", "$120$"],
+                answer: 2,
+                clue: "หาพหูคูณร่วมที่น้อยที่สุดของ $10, 15, 20$",
+                explanation: "$60$ เป็นจำนวนที่น้อยที่สุดที่ทั้ง $10, 15$ และ $20$ หารลงตัว"
+            },
+            {
+                q: "ถ้าผลคูณของจำนวนสองจำนวนคือ $150$ และ ค.ร.น. คือ $30$ ห.ร.ม. ของสองจำนวนนี้คือเท่าใด?",
+                options: ["$3$", "$5$", "$10$", "$15$"],
+                answer: 1,
+                clue: "จากสูตร: $\\text{ห.ร.ม.} = (a \\times b) \\div \\text{ค.ร.น.}$",
+                explanation: "ห.ร.ม. $= 150 \\div 30 = 5$"
+            },
+            {
+                q: "ข้อใดคือตัวประกอบเฉพาะทั้งหมดของ $50$?",
+                options: ["$2, 5$", "$1, 2, 5$", "$2, 5, 10$", "$5, 25$"],
+                answer: 0,
+                clue: "ตัวประกอบของ $50$ มี $1, 2, 5, 10, 25, 50$ ตัวไหนบ้างที่เป็นจำนวนเฉพาะ?",
+                explanation: "ตัวประกอบของ $50$ ที่เป็นจำนวนเฉพาะมีเพียง $2$ และ $5$ เท่านั้น"
+            },
+            {
+                q: "รถโดยสารสาย ก ออกทุกๆ $15$ นาที และสาย ข ออกทุกๆ $20$ นาที หากรถทั้งสองสายออกพร้อมกันเวลา 08.00 น. จะออกพร้อมกันครั้งต่อไปเวลาใด?",
+                options: ["$08.45$ น.", "$09.00$ น.", "$09.20$ น.", "$10.00$ น."],
+                answer: 1,
+                clue: "หา ค.ร.น. ของ $15$ และ $20$ นาที",
+                explanation: "ค.ร.น. ของ $15$ และ $20$ คือ $60$ นาที ($1$ ชั่วโมง) ดังนั้นจะออกพร้อมกันอีกครั้งเวลา $09.00$ น."
+            },
+            {
+                q: "ห.ร.ม. ของ $17$ และ $51$ คือจำนวนใด?",
+                options: ["$1$", "$17$", "$34$", "$51$"],
+                answer: 1,
+                clue: "สังเกตว่า $51$ หารด้วย $17$ ลงตัวหรือไม่",
+                explanation: "เนื่องจาก $51 = 17 \\times 3$ ดังนั้น ห.ร.ม. ของ $17$ และ $51$ คือ $17$"
+            },
+            {
+                q: "ค.ร.น. ของ $11$ และ $13$ คือเท่าใด?",
+                options: ["$1$", "$24$", "$121$", "$143$"],
+                answer: 3,
+                clue: "ทั้ง $11$ และ $13$ เป็นจำนวนเฉพาะ",
+                explanation: "ค.ร.น. ของจำนวนเฉพาะทั้งสองคือผลคูณของมันเอง $11 \\times 13 = 143$"
+            },
+            {
+                q: "จำนวนนับที่มากที่สุดที่นำไปหาร $27$ และ $45$ แล้วเหลือเศษ $3$ เท่ากันคือจำนวนใด?",
+                options: ["$6$", "$9$", "$12$", "$15$"],
+                answer: 0,
+                clue: "นำเศษไปลบออกจากตัวตั้งก่อน: $27 - 3 = 24$ และ $45 - 3 = 42$ แล้วหา ห.ร.ม. ของ $24$ และ $42$",
+                explanation: "ห.ร.ม. ของ $24$ และ $42$ คือ $6$"
+            },
+            {
+                q: "จำนวนในข้อใดมีค่าเท่ากับ ค.ร.น. ของ $6, 8$ และ $12$?",
+                options: ["$12$", "$24$", "$48$", "$72$"],
+                answer: 1,
+                clue: "หาพหูคูณร่วมที่น้อยที่สุดของ $6, 8, 12$",
+                explanation: "ค.ร.น. ของ $6, 8, 12$ คือ $24$ เนื่องจาก $24$ เป็นจำนวนที่น้อยที่สุดที่ทั้งสามจำนวนหารลงตัว"
+            },
+            {
+                q: "ถ้า $A = 2^3 \\times 3^2$ และ $B = 2^2 \\times 3^3$ ห.ร.ม. ของ $A$ และ $B$ คือข้อใด?",
+                options: ["$2^2 \\times 3^2$", "$2^3 \\times 3^3$", "$2^2 \\times 3^3$", "$2^3 \\times 3^2$"],
+                answer: 0,
+                clue: "การหา ห.ร.ม. จากการแยกตัวประกอบ ให้นำตัวประกอบร่วมที่กำลังน้อยกว่ามาคูณกัน",
+                explanation: "ห.ร.ม. คือ $2^{\\min(3,2)} \\times 3^{\\min(2,3)} = 2^2 \\times 3^2$"
+            },
+            {
+                q: "จากข้อที่แล้ว ค.ร.น. ของ $A$ และ $B$ คือข้อใด?",
+                options: ["$2^2 \\times 3^2$", "$2^3 \\times 3^3$", "$2^2 \\times 3^3$", "$2^3 \\times 3^2$"],
+                answer: 1,
+                clue: "การหา ค.ร.น. ให้นำตัวประกอบทุกตัวที่ปรากฏที่มีกำลังมากกว่ามาคูณกัน",
+                explanation: "ค.ร.น. คือ $2^{\\max(3,2)} \\times 3^{\\max(2,3)} = 2^3 \\times 3^3$"
+            },
+            {
+                q: "มีลวด $3$ เส้น ยาว $12, 18$ และ $24$ เมตร ต้องการตัดเป็นเส้นสั้นๆ ให้ยาวเท่ากันและยาวที่สุดโดยไม่เหลือเศษ จะได้ลวดยาวเส้นละกี่เมตร?",
+                options: ["$3$ เมตร", "$6$ เมตร", "$9$ เมตร", "$12$ เมตร"],
+                answer: 1,
+                clue: "ตัดแบ่งความยาวให้เท่ากันและยาวที่สุด คือการหา ห.ร.ม. ของ $12, 18, 24$",
+                explanation: "ห.ร.ม. ของ $12, 18, 24$ คือ $6$ เมตร"
+            },
+            {
+                q: "จำนวนนับที่น้อยที่สุดซึ่งเมื่อหารด้วย $10, 15$ และ $25$ แล้วเหลือเศษ $3$ เท่ากันคือจำนวนใด?",
+                options: ["$147$", "$153$", "$157$", "$163$"],
+                answer: 1,
+                clue: "หา ค.ร.น. ของ $10, 15, 25$ แล้วบวกด้วยเศษ $3$",
+                explanation: "ค.ร.น. ของ $10, 15, 25$ คือ $150$ ดังนั้นจำนวนนั้นคือ $150 + 3 = 153$"
+            },
+            {
+                q: "ข้อใดคือตัวประกอบทั้งหมดของ $30$?",
+                options: ["$1, 2, 3, 5, 6, 10, 15, 30$", "$1, 2, 3, 5, 10, 15, 30$", "$2, 3, 5, 10, 15$", "$1, 3, 5, 10, 15, 30$"],
+                answer: 0,
+                clue: "คู่จำนวนที่คูณกันได้ $30$ มี $(1,30), (2,15), (3,10), (5,6)$",
+                explanation: "ตัวประกอบของ $30$ ทั้งหมดมี $8$ จำนวน ได้แก่ $1, 2, 3, 5, 6, 10, 15, 30$"
+            },
+            {
+                q: "ห.ร.ม. ของ $36$ และ $60$ มีค่าเท่ากับเท่าใด?",
+                options: ["$6$", "$12$", "$18$", "$24$"],
+                answer: 1,
+                clue: "แยกตัวประกอบ: $36 = 2^2 \\times 3^2$, $60 = 2^2 \\times 3 \\times 5$",
+                explanation: "ห.ร.ม. คือ $2^2 \\times 3 = 4 \\times 3 = 12$"
+            },
+            {
+                q: "ค.ร.น. ของ $14$ และ $21$ คือจำนวนใด?",
+                options: ["$28$", "$42$", "$56$", "$84$"],
+                answer: 1,
+                clue: "พหูคูณของ $14$ ($14, 28, 42$) และ $21$ ($21, 42$)",
+                explanation: "พหูคูณร่วมที่น้อยที่สุดของ $14$ และ $21$ คือ $42$"
+            },
+            {
+                q: "ถ้า ห.ร.ม. ของจำนวนสองจำนวนคือ $8$ และผลหารของสองจำนวนนั้นเมื่อหารด้วย ห.ร.ม. คือ $3$ และ $4$ ตามลำดับ จำนวนทั้งสองคือเท่าใด?",
+                options: ["$16$ และ $24$", "$24$ และ $32$", "$32$ และ $40$", "$24$ และ $40$"],
+                answer: 1,
+                clue: "นำ ห.ร.ม. ไปคูณกับผลหารแต่ละตัว: $8 \\times 3$ และ $8 \\times 4$",
+                explanation: "จำนวนทั้งสองคือ $8 \\times 3 = 24$ และ $8 \\times 4 = 32$"
+            },
+            {
+                q: "ข้อใดเป็นจำนวนเฉพาะทุกจำนวน",
+                options: ["$31, 37, 41, 43$", "$51, 53, 57, 59$", "$61, 63, 67, 71$", "$73, 77, 79, 83$"],
+                answer: 0,
+                clue: "ตรวจสอบการหารลงตัว (เช่น $51$ หารด้วย $3$ ลงตัว, $63$ หารด้วย $9$ ลงตัว, $77$ หารด้วย $7$ ลงตัว)",
+                explanation: "$31, 37, 41, 43$ เป็นจำนวนเฉพาะทั้งหมด ไม่มีจำนวนใดหารลงตัวนอกจาก $1$ และตัวมันเอง"
+            },
+            {
+                q: "ฟาร์มเลี้ยงไก่ให้อาหารทุกๆ $4$ วัน ให้อคมิน (วิตามิน) ทุกๆ $6$ วัน และฉีดยาป้องกันโรคทุกๆ $12$ วัน หากทำพร้อมกันในวันที่ $1$ มกราคม จะทำพร้อมกันอีกครั้งในวันที่เท่าใดของเดือนมกราคม?",
+                options: ["วันที่ $13$ มกราคม", "วันที่ $12$ มกราคม", "วันที่ $24$ มกราคม", "วันที่ $25$ มกราคม"],
+                answer: 0,
+                clue: "หา ค.ร.น. ของ $4, 6$ และ $12$",
+                explanation: "ค.ร.น. ของ $4, 6, 12$ คือ $12$ ดังนั้นจะทำกิจกรรมพร้อมกันอีกครั้งในอีก $12$ วันถัดมา คือวันที่ $1 + 12 = 13$ มกราคม"
+            }
+        ];
+
+        // จัดการสถานะเกมและสลับคำถามไม่ซ้ำ
+        let questions = [];
+        let currentQuestionIndex = 0;
+        let usedQuestionIndices = [];
+
+        function initGame() {
+            questions = rawQuestions.map((qObj) => {
+                let options = [...qObj.options];
+                let correctText = options[qObj.answer];
+                // Fisher-Yates Shuffle
+                for (let i = options.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [options[i], options[j]] = [options[j], options[i]];
+                }
+                let newAnswerIndex = options.indexOf(correctText);
+                return {
+                    q: qObj.q,
+                    options: options,
+                    answer: newAnswerIndex,
+                    clue: qObj.clue,
+                    explanation: qObj.explanation
+                };
+            });
+
+            usedQuestionIndices = [];
+            players.forEach(p => p.score = 0);
+            updateScoreboard();
+            document.getElementById('wheel-section').classList.remove('hidden');
+            document.getElementById('question-section').classList.add('hidden');
+            document.getElementById('completion-section').classList.add('hidden');
+        }
+
+        function updateScoreboard() {
+            document.getElementById('score-nana').innerText = players[0].score + " คะแนน";
+            document.getElementById('score-phupha').innerText = players[1].score + " คะแนน";
+            document.getElementById('score-boom').innerText = players[2].score + " คะแนน";
+        }
+
+        // ฟังก์ชันหมุนวงกลม
+        function spinWheel() {
+            if (usedQuestionIndices.length >= 35) {
+                endGame();
+                return;
+            }
+
+            const spinBtn = document.getElementById('spin-btn');
+            spinBtn.disabled = true;
+            
+            // สุ่มผู้เล่นคนถัดไป
+            currentPlayerIndex = Math.floor(Math.random() * players.length);
+            const selectedPlayer = players[currentPlayerIndex];
+
+            // คำนวณองศาการหมุนวงกลม (หมุน 3-5 รอบ + มุมของแต่ละคน)
+            const extraDegrees = 1440 + (currentPlayerIndex * 120) + Math.floor(Math.random() * 60);
+            currentWheelAngle += extraDegrees;
+
+            const wheel = document.getElementById('wheel');
+            wheel.style.transform = `rotate(${currentWheelAngle}deg)`;
+
+            document.getElementById('spin-result-text').innerText = "กำลังหมุน...";
+
+            setTimeout(() => {
+                spinBtn.disabled = false;
+                document.getElementById('spin-result-text').innerText = `🎉 เย้! ตาของ "${selectedPlayer.name}" แล้วครับ!`;
+                
+                setTimeout(() => {
+                    document.getElementById('spin-result-text').innerText = "";
+                    loadNextQuestionForPlayer(selectedPlayer);
+                }, 1200);
+
+            }, 4000);
+        }
+
+        function loadNextQuestionForPlayer(player) {
+            let qIdx;
+            do {
+                qIdx = Math.floor(Math.random() * questions.length);
+            } while (usedQuestionIndices.includes(qIdx) && usedQuestionIndices.length < questions.length);
+
+            usedQuestionIndices.push(qIdx);
+            currentQuestionIndex = qIdx;
+
+            const qData = questions[qIdx];
+
+            document.getElementById('wheel-section').classList.add('hidden');
+            const qSec = document.getElementById('question-section');
+            qSec.classList.remove('hidden');
+            qSec.classList.add('flex');
+
+            document.getElementById('current-turn-player').innerText = `👤 ผู้เล่นปัจจุบัน: ${player.name}`;
+            document.getElementById('question-progress').innerText = `ข้อที่ ${usedQuestionIndices.length} / 35`;
+            document.getElementById('question-text').innerHTML = qData.q;
+            document.getElementById('clue-text').innerText = qData.clue;
+            document.getElementById('clue-box').classList.add('hidden');
+            document.getElementById('feedback-box').classList.add('hidden');
+
+            const optContainer = document.getElementById('options-container');
+            optContainer.innerHTML = "";
+            qData.options.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = "p-4 bg-slate-700/60 hover:bg-slate-700 border border-slate-600 rounded-xl text-left font-medium transition text-white cursor-pointer hover:border-emerald-500";
+                btn.innerHTML = `<span class="font-bold text-emerald-400 mr-2">${String.fromCharCode(65 + idx)}.</span> ${opt}`;
+                btn.onclick = () => selectAnswer(idx, qData.answer, player);
+                optContainer.appendChild(btn);
+            });
+
+            if (window.MathJax) {
+                MathJax.typeset();
+            }
+        }
+
+        function toggleClue() {
+            const clueBox = document.getElementById('clue-box');
+            clueBox.classList.toggle('hidden');
+        }
+
+        function selectAnswer(selectedIndex, correctIndex, player) {
+            const optButtons = document.getElementById('options-container').children;
+            
+            for (let btn of optButtons) {
+                btn.disabled = true;
+                btn.classList.remove('hover:bg-slate-700', 'hover:border-emerald-500');
+            }
+
+            const feedbackBox = document.getElementById('feedback-box');
+            feedbackBox.classList.remove('hidden');
+
+            const feedbackText = document.getElementById('feedback-text');
+            const explanationText = document.getElementById('explanation-text');
+            const qData = questions[currentQuestionIndex];
+
+            if (selectedIndex === correctIndex) {
+                optButtons[selectedIndex].classList.add('bg-emerald-600/40', 'border-emerald-500');
+                feedbackText.className = "font-bold text-base mb-1 text-emerald-400";
+                feedbackText.innerText = `✅ ยอดเยี่ยมมากครับ ${player.name} ตอบถูก (+1 คะแนน)!`;
+                player.score += 1;
+                updateScoreboard();
+            } else {
+                optButtons[selectedIndex].classList.add('bg-rose-600/40', 'border-rose-500');
+                optButtons[correctIndex].classList.add('bg-emerald-600/40', 'border-emerald-500');
+                feedbackText.className = "font-bold text-base mb-1 text-rose-400";
+                feedbackText.innerText = `❌ น่าเสียดายครับ ${player.name} ตอบผิด ข้อที่ถูกคือข้อ ${String.fromCharCode(65 + correctIndex)}`;
+            }
+
+            explanationText.innerHTML = `<strong>คำอธิบาย:</strong> ${qData.explanation}`;
+            
+            if (window.MathJax) {
+                MathJax.typeset();
+            }
+        }
+
+        function nextTurn() {
+            if (usedQuestionIndices.length >= 35) {
+                endGame();
+            } else {
+                document.getElementById('question-section').classList.add('hidden');
+                document.getElementById('wheel-section').classList.remove('hidden');
+            }
+        }
+
+        function endGame() {
+            document.getElementById('wheel-section').classList.add('hidden');
+            document.getElementById('question-section').classList.add('hidden');
+            document.getElementById('completion-section').classList.remove('hidden');
+
+            let sortedPlayers = [...players].sort((a, b) => b.score - a.score);
+            let finalHtml = "";
+            sortedPlayers.forEach((p, idx) => {
+                let medal = idx === 0 ? "🥇 ชนะเลิศ" : idx === 1 ? "🥈 รองชนะเลิศอันดับ 1" : "🥉 รองชนะเลิศอันดับ 2";
+                finalHtml += `<div class="flex justify-between items-center p-3 bg-slate-800 rounded-lg border border-slate-700">
+                    <span class="font-bold ${p.color}">${medal}: ${p.name}</span>
+                    <span class="text-white font-bold text-lg">${p.score} คะแนน</span>
+                </div>`;
+            });
+            document.getElementById('final-scoreboard').innerHTML = finalHtml;
+        }
+
+        function resetGame() {
+            initGame();
+        }
+
+        // Whiteboard Logic
+        const canvas = document.getElementById('whiteboard');
+        const ctx = canvas.getContext('2d');
+        let painting = false;
+
+        function resizeCanvas() {
+            const rect = canvas.parentElement.getBoundingClientRect();
+            canvas.width = rect.width;
+            canvas.height = rect.height;
+            ctx.strokeStyle = '#34d399';
+            ctx.lineWidth = 3;
+            ctx.lineCap = 'round';
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+        window.addEventListener('load', () => {
+            resizeCanvas();
+            initGame();
+        });
+
+        function startPosition(e) {
+            painting = true;
+            draw(e);
+        }
+
+        function endPosition() {
+            painting = false;
+            ctx.beginPath();
+        }
+
+        function draw(e) {
+            if (!painting) return;
+            e.preventDefault();
+            const rect = canvas.getBoundingClientRect();
+            let clientX = e.clientX || (e.touches && e.touches[0].clientX);
+            let clientY = e.clientY || (e.touches && e.touches[0].clientY);
+            
+            ctx.lineTo(clientX - rect.left, clientY - rect.top);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(clientX - rect.left, clientY - rect.top);
+        }
+
+        canvas.addEventListener('mousedown', startPosition);
+        canvas.addEventListener('mouseup', endPosition);
+        canvas.addEventListener('mousemove', draw);
+
+        canvas.addEventListener('touchstart', startPosition);
+        canvas.addEventListener('touchend', endPosition);
+        canvas.addEventListener('touchmove', draw);
+
+        function clearCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+    </script>
+</body>
+</html>
