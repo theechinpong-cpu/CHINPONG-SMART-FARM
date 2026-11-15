@@ -102,7 +102,7 @@
         .options label {
             display: block;
             margin: 8px 0;
-            padding: 8px 12px;
+            padding: 10px 12px;
             background: #f1f5f9;
             border-radius: 6px;
             cursor: pointer;
@@ -111,13 +111,25 @@
         .options label:hover {
             background: #e2e8f0;
         }
+        .options label.correct {
+            background-color: #d1fae5 !important;
+            border: 1px solid var(--success-color);
+            color: #065f46;
+            font-weight: bold;
+        }
+        .options label.incorrect {
+            background-color: #fee2e2 !important;
+            border: 1px solid var(--error-color);
+            color: #991b1b;
+        }
         .explanation {
             margin-top: 10px;
-            padding: 10px;
+            padding: 12px;
             background: #eff6ff;
             border-left: 4px solid var(--primary-color);
             display: none;
             font-size: 14px;
+            border-radius: 0 6px 6px 0;
         }
         .footer-credit {
             text-align: center;
@@ -152,11 +164,11 @@
     <div class="main-layout">
         <!-- ฝั่งซ้าย: ข้อสอบ 30 ข้อ (70%) -->
         <div class="exam-area">
-            <h3>ชุดข้อสอบแบบสุ่ม (30 ข้อไม่ซ้ำกัน - Anti-Guessing Engine)</h3>
+            <h3>ชุดข้อสอบแบบสุ่ม (30 ข้อไม่ซ้ำกัน - เฉลยทันทีเมื่อเลือก)</h3>
             <div id="examContainer">
                 <!-- เรนเดอร์ข้อสอบด้วย JavaScript -->
             </div>
-            <button class="btn" onclick="submitExam()">📤 ส่งคำตอบและตรวจคะแนน</button>
+            <button class="btn" onclick="submitExam()">📤 สรุปคะแนนรวมทั้งหมด</button>
             <div id="scoreResult" style="margin-top: 15px; font-size: 18px; font-weight: bold;"></div>
         </div>
 
@@ -180,7 +192,7 @@
     // รายชื่อผู้เล่นตามโจทย์
     const players = ["ตาล", "น้ำฟ้า", "ท็อป", "ลูกเกด"];
 
-    // ฟังก์ชันสร้างเสียงตื่นเต้นด้วย Web Audio API (สลัดปัญหาไฟล์เสียงหาย)
+    // ฟังก์ชันสร้างเสียงตื่นเต้นด้วย Web Audio API
     function playSpinSound() {
         try {
             const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -222,7 +234,7 @@
         }, 80);
     }
 
-    // คลังข้อสอบ 30 ข้อ กระจายตัวเลือกถูกต้องสมดุล (A, B, C, D อย่างละ 7-8 ข้อ)
+    // คลังข้อสอบ 30 ข้อ
     const rawQuestions = [
         { q: "1. Yesterday, I _____ to the market with my mother.", options: ["A) go", "B) went", "C) was going", "D) gone"], answer: 1, exp: "เหตุการณ์เกิดขึ้นและจบลงในอดีต (Yesterday) ใช้ Past Simple (Verb 2) คือ went" },
         { q: "2. While she _____ dinner, the phone rang suddenly.", options: ["A) cook", "B) cooked", "C) was cooking", "D) cooks"], answer: 2, exp: "เหตุการณ์กำลังดำเนินอยู่ (While) ใช้ Past Continuous (was/were + V-ing)" },
@@ -277,47 +289,70 @@
         activeQuestions.forEach((item, index) => {
             const card = document.createElement("div");
             card.className = "question-card";
+            card.id = `qCard${index}`;
             
             let optionsHtml = "";
             item.options.forEach((opt, optIdx) => {
-                optionsHtml += `<label><input type="radio" name="q${index}" value="${optIdx}"> ${opt}</label>`;
+                optionsHtml += `<label id="q${index}_opt${optIdx}">
+                    <input type="radio" name="q${index}" value="${optIdx}" onclick="checkAnswer(${index}, ${optIdx})"> ${opt}
+                </label>`;
             });
 
             card.innerHTML = `
                 <p><strong>ข้อที่ ${index + 1}:</strong> ${item.q.replace(/^\d+\.\s*/, '')}</p>
                 <div class="options">${optionsHtml}</div>
-                <button class="btn" style="padding: 5px 10px; font-size: 12px; margin-top: 8px;" onclick="toggleExp(${index})">💡 แสดง/ซ่อน คำอธิบาย</button>
-                <div class="explanation" id="exp${index}"><strong>วิธีคิดและเฉลย:</strong> ${item.exp}</div>
+                <div class="explanation" id="exp${index}"><strong>💡 วิธีคิดและเฉลย:</strong> ${item.exp}</div>
             `;
             container.appendChild(card);
         });
     }
 
-    function toggleExp(index) {
-        const expBox = document.getElementById(`exp${index}`);
-        expBox.style.display = expBox.style.display === "block" ? "none" : "block";
+    // ฟังก์ชันตรวจสอบและเฉลยทันทีที่เลือก
+    function checkAnswer(qIndex, selectedOpt) {
+        const item = activeQuestions[qIndex];
+        const radios = document.getElementsByName(`q${qIndex}`);
+        
+        // ล็อกตัวเลือกทั้งหมดในข้อนี้ไม่ให้เปลี่ยนได้อีก
+        for (let r of radios) {
+            r.disabled = true;
+        }
+
+        // ไฮไลต์คำตอบ
+        for (let i = 0; i < item.options.length; i++) {
+            const label = document.getElementById(`q${qIndex}_opt${i}`);
+            if (i === item.answer) {
+                label.classList.add("correct");
+            } else if (i === selectedOpt) {
+                label.classList.add("incorrect");
+            }
+        }
+
+        // แสดงคำอธิบายทันที
+        document.getElementById(`exp${qIndex}`).style.display = "block";
     }
 
     function submitExam() {
         let score = 0;
+        let answeredCount = 0;
+
         activeQuestions.forEach((item, index) => {
             const radios = document.getElementsByName(`q${index}`);
-            let answered = -1;
             for (let i = 0; i < radios.length; i++) {
                 if (radios[i].checked) {
-                    answered = parseInt(radios[i].value);
+                    answeredCount++;
+                    if (parseInt(radios[i].value) === item.answer) {
+                        score++;
+                    }
                     break;
                 }
-            }
-            if (answered === item.answer) {
-                score++;
             }
         });
 
         const player = localStorage.getItem("currentPlayer") || "ผู้เรียน";
         const percentage = (score / activeQuestions.length) * 100;
         const resultDiv = document.getElementById("scoreResult");
-        resultDiv.innerHTML = `👤 คุณ ${player} ทำคะแนนได้: ${score} / ${activeQuestions.length} (${percentage.toFixed(2)}%)`;
+        
+        resultDiv.innerHTML = `👤 คุณ ${player} ทำข้อสอบไปแล้ว ${answeredCount}/${activeQuestions.length} ข้อ<br>🎯 คะแนนรวม: ${score} / ${activeQuestions.length} (${percentage.toFixed(2)}%)`;
         
         if (percentage >= 80) {
             resultDiv.innerHTML += "<br>🌟 ยอดเยี่ยมมาก! มีความเข้าใจเรื่อง Past Tenses เป็นอย่างดีเยี่ยม";
