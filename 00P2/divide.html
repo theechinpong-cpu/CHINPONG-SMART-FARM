@@ -1,0 +1,1519 @@
+<!DOCTYPE html>
+<html lang="th" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>สื่อการสอนและคลังข้อสอบการหาร ป.2 - พระจอมเกล้าติวเตอร์</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts (Inter & Sarabun) -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- KaTeX for Mathematics -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
+    <style>
+        body {
+            font-family: 'Sarabun', 'Inter', sans-serif;
+        }
+        .whiteboard-canvas {
+            touch-action: none;
+            cursor: crosshair;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-indigo-50 via-blue-50 to-emerald-50 min-h-screen text-slate-800">
+
+    <!-- Header Navigation -->
+    <header class="bg-white/80 backdrop-blur-md sticky top-0 z-50 border-b border-indigo-100 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <div class="bg-indigo-600 text-white p-2.5 rounded-2xl shadow-md shadow-indigo-200">
+                    <i class="fa-solid fa-divide text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg font-bold text-slate-900 tracking-tight">พระจอมเกล้าติวเตอร์</h1>
+                    <p class="text-xs text-indigo-600 font-medium">คณิตศาสตร์ ป.2 เทอม 2: เรื่อง การหาร (Division)</p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-3 mt-2 sm:mt-0">
+                <button id="langToggleBtn" onclick="toggleLanguage()" class="px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-xl text-xs font-semibold transition border border-indigo-200 shadow-sm flex items-center space-x-1.5">
+                    <i class="fa-solid fa-globe"></i>
+                    <span id="langText">ภาษาไทย (TH)</span>
+                </button>
+                <button onclick="resetAllData()" class="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-xl text-xs font-semibold transition border border-rose-200 shadow-sm flex items-center space-x-1.5">
+                    <i class="fa-solid fa-rotate-right"></i>
+                    <span class="reset-text">เริ่มใหม่ทั้งหมด</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 py-6 space-y-8">
+
+        <!-- SECTION 1: Virtual Teaching Tool & Interactive Infographic -->
+        <section class="bg-white rounded-3xl p-6 shadow-xl shadow-indigo-100/50 border border-indigo-100/80">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center pb-4 mb-6 border-b border-slate-100">
+                <div>
+                    <span class="bg-indigo-100 text-indigo-700 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">Virtual Teaching Tool</span>
+                    <h2 class="text-xl font-bold text-slate-900 mt-1 tool-title">เครื่องมือจำลองการหาร: การแบ่งออกและการจัดกลุ่ม พร้อมหารยาว/หารสั้น</h2>
+                </div>
+                <div class="mt-3 md:mt-0 flex space-x-2 bg-slate-100 p-1 rounded-2xl">
+                    <button onclick="switchTab('sharing')" id="tabSharing" class="px-4 py-2 text-xs font-bold rounded-xl bg-white text-indigo-700 shadow-sm transition">1. การแบ่ง/จัดกลุ่ม</button>
+                    <button onclick="switchTab('longdiv')" id="tabLongDiv" class="px-4 py-2 text-xs font-bold rounded-xl text-slate-600 hover:text-indigo-700 transition">2. จำลองหารยาว/สั้น</button>
+                </div>
+            </div>
+
+            <!-- Tab 1: Sharing & Grouping Visualizer -->
+            <div id="contentSharing" class="space-y-6">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Control Panel -->
+                    <div class="bg-indigo-50/60 p-5 rounded-2xl border border-indigo-100 space-y-4">
+                        <h3 class="font-bold text-indigo-900 text-sm flex items-center space-x-2">
+                            <i class="fa-solid fa-sliders text-indigo-600"></i>
+                            <span class="ctrl-panel-title">ตั้งค่าสถานการณ์การหาร</span>
+                        </h3>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1 total-items-label">จำนวนสิ่งของทั้งหมด (ตัวตั้ง): <span id="totalVal" class="text-indigo-600 font-bold">12</span></label>
+                            <input type="range" id="totalInput" min="4" max="24" value="12" step="1" class="w-full accent-indigo-600 cursor-pointer" oninput="updateSharingSim()">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1 group-mode-label">โหมดการหาร:</label>
+                            <select id="modeInput" class="w-full bg-white border border-indigo-200 rounded-xl px-3 py-2 text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500" onchange="updateSharingSim()">
+                                <option value="group">จัดกลุ่ม (ใส่กลุ่มละเท่า ๆ กัน)</option>
+                                <option value="share">แบ่งออก (แบ่งใส่ตะกร้าเท่า ๆ กัน)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1 group-size-label">จำนวนกลุ่ม / ขนาดต่อกลุ่ม: <span id="divisorVal" class="text-indigo-600 font-bold">3</span></label>
+                            <input type="range" id="divisorInput" min="2" max="6" value="3" step="1" class="w-full accent-indigo-600 cursor-pointer" oninput="updateSharingSim()">
+                        </div>
+                        <div class="bg-white p-3 rounded-xl border border-indigo-100 text-center shadow-xs">
+                            <div id="equationResult" class="text-base font-bold text-indigo-700">$12 \div 3 = 4$</div>
+                            <p id="remainderText" class="text-xs text-slate-500 mt-1">หารลงตัวพอดี (เศษ 0)</p>
+                        </div>
+                    </div>
+
+                    <!-- Visual Workspace -->
+                    <div class="lg:col-span-2 bg-slate-50 p-5 rounded-2xl border border-slate-200 flex flex-col justify-between">
+                        <div>
+                            <div class="flex justify-between items-center mb-3">
+                                <span class="text-xs font-bold text-slate-600 uppercase tracking-wider visual-workspace-title">พื้นที่จำลองภาพเสมือนจริง</span>
+                                <span id="modeDescription" class="text-xs bg-emerald-100 text-emerald-800 px-2.5 py-1 rounded-lg font-medium">มี 12 ชิ้น จัดเป็นกลุ่มละ 3 ชิ้น ได้ 4 กลุ่ม</span>
+                            </div>
+                            <!-- Container for visual groups -->
+                            <div id="visualGroupsContainer" class="grid grid-cols-2 sm:grid-cols-3 gap-3 min-h-[220px] p-3 bg-white rounded-xl border border-slate-200 items-center justify-items-center">
+                                <!-- Dynamic items rendered here -->
+                            </div>
+                        </div>
+                        <div class="mt-4 pt-3 border-t border-slate-200 flex justify-between items-center text-xs text-slate-500">
+                            <span>เคล็ดลับ: การหารคือการลดจำนวนลงครั้งละเท่า ๆ กันจนหมด หรือแบ่งให้เท่ากันทุกกลุ่ม</span>
+                            <button onclick="randomizeSharing()" class="px-3 py-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-semibold transition shadow-xs">สุ่มโจทย์ทดลอง</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 2: Long & Short Division Step-by-Step Simulator -->
+            <div id="contentLongDiv" class="hidden space-y-6">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Simulator Setup -->
+                    <div class="bg-indigo-50/60 p-5 rounded-2xl border border-indigo-100 space-y-4">
+                        <h3 class="font-bold text-indigo-900 text-sm flex items-center space-x-2">
+                            <i class="fa-solid fa-calculator text-indigo-600"></i>
+                            <span>เครื่องมือฝึกหารยาว / หารสั้น</span>
+                        </h3>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">เลือกตัวตั้ง (Dividend, ไม่เกิน 99):</label>
+                            <input type="number" id="divDividend" min="10" max="99" value="48" class="w-full bg-white border border-indigo-200 rounded-xl px-3 py-2 text-sm font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">เลือกตัวหาร (Divisor, 2 ถึง 9):</label>
+                            <input type="number" id="divDivisor" min="2" max="9" value="4" class="w-full bg-white border border-indigo-200 rounded-xl px-3 py-2 text-sm font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">รูปแบบการหาร:</label>
+                            <div class="grid grid-cols-2 gap-2">
+                                <button onclick="setDivisionType('long')" id="btnTypeLong" class="py-2 px-3 text-xs font-bold rounded-xl bg-indigo-600 text-white shadow-xs transition">หารยาว</button>
+                                <button onclick="setDivisionType('short')" id="btnTypeShort" class="py-2 px-3 text-xs font-bold rounded-xl bg-white text-slate-700 border border-indigo-200 transition">หารสั้น</button>
+                            </div>
+                        </div>
+                        <button onclick="startDivisionAnimation()" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs transition shadow-md shadow-emerald-200 flex items-center justify-center space-x-2">
+                            <i class="fa-solid fa-play"></i>
+                            <span>เริ่มแสดงอนิเมชันทีละขั้นตอน</span>
+                        </button>
+                    </div>
+
+                    <!-- Scratchpaper Animation View -->
+                    <div class="lg:col-span-2 bg-slate-900 text-emerald-400 p-6 rounded-2xl font-mono flex flex-col justify-between shadow-inner min-h-[280px]">
+                        <div>
+                            <div class="flex justify-between items-center text-xs text-slate-400 border-b border-slate-800 pb-3 mb-4">
+                                <span class="flex items-center space-x-2">
+                                    <i class="fa-solid fa-terminal text-emerald-500"></i>
+                                    <span id="scratchTitle">กระดานจำลองหารยาว (Scratchpaper Step-by-Step)</span>
+                                </span>
+                                <span id="animStepIndicator" class="bg-emerald-950 text-emerald-300 px-2.5 py-1 rounded-md text-[11px] font-bold border border-emerald-800">ขั้นตอนที่ 0 / 3</span>
+                            </div>
+                            <!-- Scratchpad Canvas Area -->
+                            <div id="scratchpadArea" class="text-xl sm:text-2xl tracking-widest leading-relaxed py-4 px-2 min-h-[120px] flex items-center justify-center">
+                                โหลดข้อมูลพร้อมแสดงขั้นตอนการคำนวณ...
+                            </div>
+                        </div>
+                        <div class="bg-slate-800/80 p-3 rounded-xl border border-slate-700 text-xs text-slate-300 flex flex-col sm:flex-row justify-between items-center gap-2">
+                            <span id="animExplanation" class="font-sans text-emerald-200">กดปุ่ม "เริ่มแสดงอนิเมชันทีละขั้นตอน" เพื่อดูการหารทีละหลักเสมือนคุณครูเขียนกระดาน</span>
+                            <div class="flex space-x-2">
+                                <button onclick="prevAnimStep()" class="px-3 py-1 bg-slate-700 hover:bg-slate-600 text-white rounded-lg text-xs font-bold transition"><i class="fa-solid fa-chevron-left"></i> ย้อนกลับ</button>
+                                <button onclick="nextAnimStep()" class="px-3 py-1 bg-emerald-700 hover:bg-emerald-600 text-white rounded-lg text-xs font-bold transition">ถัดไป <i class="fa-solid fa-chevron-right"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 2: Comprehensive Summary Section (500+ words) -->
+        <section class="bg-white rounded-3xl p-6 sm:p-8 shadow-xl shadow-indigo-100/50 border border-indigo-100/80 space-y-6">
+            <div class="border-b border-slate-100 pb-4">
+                <span class="bg-emerald-100 text-emerald-800 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">Comprehensive Knowledge Summary</span>
+                <h2 class="text-2xl font-bold text-slate-900 mt-2 summary-main-title">สรุปเนื้อหาบทเรียน: การหาร (Division) สำหรับชั้น ป.2</h2>
+            </div>
+
+            <div class="prose max-w-none text-slate-700 space-y-6 text-sm sm:text-base leading-relaxed">
+                <div>
+                    <h3 class="text-lg font-bold text-indigo-900 flex items-center space-x-2 mb-2">
+                        <i class="fa-solid fa-book-open text-indigo-600"></i>
+                        <span>1. ความหมายของการหาร (Meaning of Division)</span>
+                    </h3>
+                    <p>
+                        การหารคือกระบวนการทางคณิตศาสตร์ที่ตรงกันข้ามกับการคูณ หมายถึง <strong>การแบ่งจำนวนสิ่งของที่มีอยู่ทั้งหมดออกเป็นส่วน ๆ โดยแต่ละส่วนมีจำนวนเท่า ๆ กัน</strong> ซึ่งสามารถมองได้ใน 2 มุมมองหลัก ได้แก่:
+                    </p>
+                    <ul class="list-disc pl-6 space-y-1 mt-2">
+                        <li><strong>การแบ่งออก (Sharing):</strong> ทราบจำนวนสิ่งของทั้งหมดและทราบจำนวนกลุ่มที่ต้องการแบ่ง เช่น มีลูกอม 12 เม็ด แบ่งใส่ถุง 3 ถุงเท่า ๆ กัน จะได้ถุงละกี่เม็ด ($12 \div 3 = 4$)</li>
+                        <li><strong>การจัดกลุ่ม (Grouping):</strong> ทราบจำนวนสิ่งของทั้งหมดและทราบจำนวนชิ้นต่อกลุ่ม ต้องการรู้ว่าจะจัดได้กี่กลุ่ม เช่น มีลูกอม 12 เม็ด จัดใส่ถุง ถุงละ 4 เม็ด จะได้ทั้งหมดกี่ถุง ($12 \div 4 = 3$)</li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h3 class="text-lg font-bold text-indigo-900 flex items-center space-x-2 mb-2">
+                        <i class="fa-solid fa-link text-indigo-600"></i>
+                        <span>2. ความสัมพันธ์ระหว่างการคูณและการหาร (Multiplication and Division Relationship)</span>
+                    </h3>
+                    <p>
+                        การหารและการคูณมีความสัมพันธ์กันอย่างแนบแน่นเสมือนเหรียญสองด้าน เราสามารถใช้สูตรคูณในการหาผลหารได้อย่างรวดเร็ว โดยมีหลักการสำคัญคือ: 
+                        <br>หากตัวหารคูณกับผลหาร จะต้องเท่ากับตัวตั้งเสมอ กล่าวคือ 
+                        <br>ถ้า $\text{ตัวหาร} \times \text{ผลหาร} = \text{ตัวตั้ง}$ แล้ว $\text{ตัวตั้ง} \div \text{ตัวหาร} = \text{ผลหาร}$
+                        <br>ตัวอย่างเช่น เมื่อเรารู้ว่า $3 \times 4 = 12$ เราก็จะทราบทันทีว่า $12 \div 3 = 4$ หรือ $12 \div 4 = 3$ ซึ่งเป็นหัวใจสำคัญในการท่องสูตรคูณย้อนกลับ
+                    </p>
+                </div>
+
+                <div>
+                    <h3 class="text-lg font-bold text-indigo-900 flex items-center space-x-2 mb-2">
+                        <i class="fa-solid fa-scissors text-indigo-600"></i>
+                        <span>3. การหารลงตัวและหารไม่ลงตัว (Exact and Non-Exact Division)</span>
+                    </h3>
+                    <p>
+                        ในการหารจำนวนเต็ม เราจำแนกผลลัพธ์ออกเป็น 2 ลักษณะสำคัญ:
+                    </p>
+                    <ul class="list-disc pl-6 space-y-1 mt-2">
+                        <li><strong>การหารลงตัว (Exact Division):</strong> เป็นการแบ่งสิ่งของแล้วหมดพอดี ไม่มีสิ่งของเหลืออยู่เลย หรือเรียกว่า <em>เศษเหลือเท่ากับ 0</em> เช่น $15 \div 5 = 3$ (ไม่มีเศษ)</li>
+                        <li><strong>การหารไม่ลงตัว (Non-Exact Division):</strong> เป็นการแบ่งสิ่งของแล้วยังมีเศษเหลืออยู่ ซึ่งเศษที่เหลือนี้ <strong>จะต้องมีค่าน้อยกว่าตัวหารเสมอ</strong> เช่น มีส้ม 13 ผล จัดใส่ถุงละ 4 ผล จะได้ 3 ถุง และเหลือส้ม 1 ผล เขียนเป็นประโยคสัญลักษณ์ได้ว่า $13 \div 4 = 3 \text{ เศษ } 1$</li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h3 class="text-lg font-bold text-indigo-900 flex items-center space-x-2 mb-2">
+                        <i class="fa-solid fa-lightbulb text-indigo-600"></i>
+                        <span>4. การแก้โจทย์ปัญหาการหารในสถานการณ์จริง (Word Problems)</span>
+                    </h3>
+                    <p>
+                        การวิเคราะห์โจทย์ปัญหาการหารในชีวิตประจำวัน นักเรียนต้องอ่านโจทย์และแยกแยะองค์ประกอบให้ออก โดยสังเกตจากคำสำคัญ (Keywords) เช่นคำว่า <em>"แบ่งให้เท่า ๆ กัน", "จัดใส่กล่องละ", "กองละเท่า ๆ กัน", "ราคาเท่ากัน"</em> 
+                        เมื่อพบข้อความเหล่านี้มักจะเป็นโจทย์การหาร โดยมีขั้นตอนคิดวิเคราะห์คือ: 
+                        1) สิ่งที่โจทย์กำหนดให้ทั้งหมด 
+                        2) สิ่งที่โจทย์ต้องการถาม 
+                        3) การเขียนประโยคสัญลักษณ์ และ 4) การคำนวณตรวจสอบคำตอบด้วยวิธีคูณกลับ
+                    </p>
+                </div>
+
+                <!-- Memory Tricks & Thought Process Boxes -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
+                    <div class="bg-amber-50 border-l-4 border-amber-500 p-4 rounded-r-2xl">
+                        <h4 class="font-bold text-amber-900 text-sm flex items-center space-x-2 mb-1">
+                            <i class="fa-solid fa-brain text-amber-600"></i>
+                            <span class="memory-trick-title">กล่องเทคนิคการจำ (Memory Tricks)</span>
+                        </h4>
+                        <p class="text-xs text-amber-800 leading-relaxed memory-trick-desc">
+                            "ท่องคูณย้อนหลัง ตั้งหารจากซ้ายไปขวา เศษเหลือต้องน้อยกว่าตัวหารเสมอ!" 
+                            จำง่าย ๆ ว่าถ้าลบกันแล้วเหลือเศษมากกว่าตัวหาร แสดงว่าเราเลือกผลหารน้อยเกินไป ต้องเพิ่มผลหารขึ้นอีก 1 แต้ม
+                        </p>
+                    </div>
+                    <div class="bg-indigo-50 border-l-4 border-indigo-600 p-4 rounded-r-2xl">
+                        <h4 class="font-bold text-indigo-900 text-sm flex items-center space-x-2 mb-1">
+                            <i class="fa-solid fa-gears text-indigo-600"></i>
+                            <span class="thought-process-title">กระบวนการคิดเชิงวิเคราะห์ (Thought Process)</span>
+                        </h4>
+                        <p class="text-xs text-indigo-800 leading-relaxed thought-process-desc">
+                            1. มองภาพรวมของจำนวนทั้งหมด -> 2. นึกถึงแม่สูตรคูณที่ใกล้เคียงที่สุด -> 3. ทดลองแบ่งและตรวจสอบความถูกต้องด้วยการคูณย้อนกลับทุกครั้งเพื่อความมั่นใจ
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 3 & 4: Interactive Exam Section (70/30 Layout) -->
+        <section class="grid grid-cols-1 lg:grid-cols-10 gap-6">
+            <!-- Left Side (70%): Exam Area -->
+            <div class="lg:col-span-7 bg-white rounded-3xl p-6 sm:p-8 shadow-xl shadow-indigo-100/50 border border-indigo-100/80 space-y-6">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center pb-4 border-b border-slate-100 gap-3">
+                    <div>
+                        <span class="bg-indigo-600 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">Exam Assessment</span>
+                        <h2 class="text-xl font-bold text-slate-900 mt-2 exam-header-title">แบบทดสอบวัดความรู้การหาร 20 ข้อ (ระบบป้องกันการเดา)</h2>
+                    </div>
+                    <div class="flex items-center space-x-3 bg-indigo-50 px-4 py-2 rounded-2xl border border-indigo-100">
+                        <div class="text-xs font-semibold text-slate-600 score-display-label">คะแนนสะสม:</div>
+                        <div class="text-lg font-bold text-indigo-700"><span id="currentScore">0</span> / 20</div>
+                    </div>
+                </div>
+
+                <!-- Question Navigation Bar -->
+                <div class="space-y-2">
+                    <div class="flex justify-between items-center text-xs text-slate-500 font-medium">
+                        <span id="questionProgressText">กำลังทำข้อที่ 1 จาก 20 ข้อ</span>
+                        <span id="answeredCountText">ตอบแล้ว: 0 / 20 ข้อ</span>
+                    </div>
+                    <div id="questionNavDots" class="flex flex-wrap gap-1.5 p-2 bg-slate-50 rounded-2xl border border-slate-200">
+                        <!-- Rendered via JS -->
+                    </div>
+                </div>
+
+                <!-- Question Card Container -->
+                <div id="questionCardContainer" class="bg-gradient-to-br from-white to-indigo-50/30 p-6 rounded-2xl border border-indigo-100 space-y-5 shadow-xs">
+                    <!-- Question Header -->
+                    <div class="flex justify-between items-start">
+                        <span id="qNumberBadge" class="bg-indigo-100 text-indigo-800 px-3 py-1 rounded-xl text-xs font-bold">ข้อที่ 1</span>
+                        <button onclick="toggleClue()" class="text-xs bg-amber-50 hover:bg-amber-100 text-amber-800 px-3 py-1.5 rounded-xl font-semibold transition border border-amber-200 flex items-center space-x-1 shadow-xs">
+                            <i class="fa-solid fa-lightbulb text-amber-600"></i>
+                            <span id="clueToggleText">แสดงคำใบ้ (Clue)</span>
+                        </button>
+                    </div>
+
+                    <!-- Clue Box (Hidden by default) -->
+                    <div id="clueBox" class="hidden bg-amber-50/90 border border-amber-200 p-3.5 rounded-xl text-xs text-amber-900 font-medium flex items-start space-x-2">
+                        <i class="fa-solid fa-circle-info text-amber-600 mt-0.5"></i>
+                        <div><strong class="clue-label-text">คำใบ้ติวเตอร์:</strong> <span id="clueTextContent">ลองนึกถึงสูตรคูณแม่...</span></div>
+                    </div>
+
+                    <!-- Question Stem -->
+                    <div id="questionStem" class="text-base sm:text-lg font-bold text-slate-900 leading-relaxed">
+                        กำลังโหลดข้อสอบ...
+                    </div>
+
+                    <!-- Options Grid -->
+                    <div id="optionsContainer" class="grid grid-cols-1 gap-3 pt-2">
+                        <!-- Rendered via JS -->
+                    </div>
+
+                    <!-- Instant Feedback & Explanation Box -->
+                    <div id="feedbackBox" class="hidden mt-4 p-4 rounded-2xl border transition-all animate-fadeIn">
+                        <!-- Rendered via JS -->
+                    </div>
+                </div>
+
+                <!-- Exam Navigation Buttons -->
+                <div class="flex justify-between items-center pt-2">
+                    <button onclick="prevQuestion()" id="prevBtn" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition flex items-center space-x-1.5 disabled:opacity-40 disabled:cursor-not-allowed">
+                        <i class="fa-solid fa-arrow-left"></i>
+                        <span class="prev-btn-text">ข้อก่อนหน้า</span>
+                    </button>
+                    <button onclick="submitExam()" id="submitExamBtn" class="hidden px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition shadow-md shadow-emerald-200 items-center space-x-1.5">
+                        <i class="fa-solid fa-flag-checkered"></i>
+                        <span class="submit-btn-text">ส่งข้อสอบและดูผลวิเคราะห์</span>
+                    </button>
+                    <button onclick="nextQuestion()" id="nextBtn" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition flex items-center space-x-1.5 shadow-md shadow-indigo-200">
+                        <span class="next-btn-text">ข้อถัดไป</span>
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Right Side (30%): Whiteboard / Scratchpad -->
+            <div class="lg:col-span-3 bg-white rounded-3xl p-5 shadow-xl shadow-indigo-100/50 border border-indigo-100/80 flex flex-col justify-between">
+                <div>
+                    <div class="flex justify-between items-center pb-3 mb-3 border-b border-slate-100">
+                        <h3 class="font-bold text-slate-900 text-sm flex items-center space-x-2">
+                            <i class="fa-solid fa-pen-nib text-indigo-600"></i>
+                            <span class="whiteboard-title">กระดานทดเลข</span>
+                        </h3>
+                        <div class="flex space-x-1">
+                            <button onclick="setPenColor('#4f46e5')" class="w-5 h-5 rounded-full bg-indigo-600 border border-white shadow-xs focus:ring-1 focus:ring-indigo-400" title="ปากกา"></button>
+                            <button onclick="setPenColor('#ef4444')" class="w-5 h-5 rounded-full bg-rose-500 border border-white shadow-xs focus:ring-1 focus:ring-rose-400" title="สีแดง"></button>
+                            <button onclick="setPenColor('#10b981')" class="w-5 h-5 rounded-full bg-emerald-500 border border-white shadow-xs focus:ring-1 focus:ring-emerald-400" title="สีเขียว"></button>
+                            <button onclick="clearWhiteboard()" class="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg text-[10px] font-bold transition" title="ล้างกระดาน">ล้าง</button>
+                        </div>
+                    </div>
+                    <!-- Canvas -->
+                    <div class="relative bg-slate-50 rounded-2xl border border-slate-200 overflow-hidden h-[340px]">
+                        <canvas id="whiteboardCanvas" class="whiteboard-canvas w-full h-full"></canvas>
+                        <div class="absolute bottom-2 right-2 text-[10px] text-slate-400 pointer-events-none bg-white/80 px-2 py-0.5 rounded-md">ใช้นิ้วหรือเมาส์ขีดเขียนทดเลขได้</div>
+                    </div>
+                </div>
+
+                <!-- Analysis Summary Widget (Shown after completion or live preview) -->
+                <div class="mt-4 bg-indigo-50/70 p-3.5 rounded-2xl border border-indigo-100 space-y-2">
+                    <h4 class="font-bold text-indigo-900 text-xs flex items-center space-x-1.5">
+                        <i class="fa-solid fa-chart-pie text-indigo-600"></i>
+                        <span class="analysis-widget-title">สถานะความพร้อมผู้เรียน</span>
+                    </h4>
+                    <p id="analysisWidgetText" class="text-[11px] text-slate-600 leading-relaxed">
+                        ทำแบบทดสอบให้ครบเพื่อดูการวิเคราะห์จุดเด่นและจุดที่ควรพัฒนาอย่างละเอียด
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 5: Evaluation & Analysis Modal / Dashboard Container -->
+        <div id="evaluationModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto">
+            <div class="bg-white rounded-3xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl space-y-6 animate-scaleUp max-h-[90vh] overflow-y-auto">
+                <div class="text-center space-y-2">
+                    <div class="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto text-2xl shadow-inner">
+                        <i class="fa-solid fa-award"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-slate-900 modal-title">สรุปผลการประเมินความรู้การหาร ป.2</h3>
+                    <p class="text-xs text-slate-500 modal-subtitle">ขอชื่นชมในความตั้งใจเรียนรู้และฝึกฝนกับพระจอมเกล้าติวเตอร์ครับ</p>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4 bg-indigo-50/60 p-4 rounded-2xl border border-indigo-100 text-center">
+                    <div>
+                        <div class="text-xs text-slate-500 font-semibold score-label-text">คะแนนรวมที่ทำได้</div>
+                        <div id="modalScoreText" class="text-3xl font-extrabold text-indigo-700 mt-1">0 / 20</div>
+                    </div>
+                    <div>
+                        <div class="text-xs text-slate-500 font-semibold percentage-label-text">เปอร์เซ็นต์ความถูกต้อง</div>
+                        <div id="modalPercentageText" class="text-3xl font-extrabold text-emerald-600 mt-1">0%</div>
+                    </div>
+                </div>
+
+                <div class="space-y-4 text-xs sm:text-sm text-slate-700">
+                    <div class="bg-emerald-50 border-l-4 border-emerald-500 p-4 rounded-r-2xl space-y-1">
+                        <h4 class="font-bold text-emerald-900 flex items-center space-x-1.5 strength-title">
+                            <i class="fa-solid fa-circle-check text-emerald-600"></i>
+                            <span>จุดเด่น (Strengths) ของผู้เรียน</span>
+                        </h4>
+                        <p id="modalStrengthsText" class="text-emerald-800 leading-relaxed">กำลังประมวลผลจุดเด่น...</p>
+                    </div>
+
+                    <div class="bg-amber-50 border-l-4 border-amber-500 p-4 rounded-r-2xl space-y-1">
+                        <h4 class="font-bold text-amber-900 flex items-center space-x-1.5 improvement-title">
+                            <i class="fa-solid fa-triangle-exclamation text-amber-600"></i>
+                            <span>จุดที่ควรพัฒนา (Areas for Improvement)</span>
+                        </h4>
+                        <p id="modalImprovementsText" class="text-amber-800 leading-relaxed">กำลังประมวลผลข้อเสนอแนะ...</p>
+                    </div>
+                </div>
+
+                <div class="flex justify-end space-x-3 pt-2">
+                    <button onclick="closeEvaluationModal()" class="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold text-xs transition">ปิดหน้าต่าง</button>
+                    <button onclick="resetAllData()" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold text-xs transition shadow-md shadow-indigo-200">ทำแบบทดสอบใหม่อีกครั้ง</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer Credit -->
+    <footer class="mt-12 py-6 border-t border-slate-200 bg-white/50 text-center text-xs text-slate-500">
+        <p>เขียนโดย พระจอมเกล้าติวเตอร์</p>
+    </footer>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        // Language State ('TH' or 'EN')
+        let currentLang = 'TH';
+
+        // Sharing Simulator Data
+        let shareTotal = 12;
+        let shareMode = 'group';
+        let shareDivisor = 3;
+
+        // Division Animation Data
+        let animDividend = 48;
+        let animDivisor = 4;
+        let animType = 'long';
+        let currentAnimStep = 0;
+
+        // Exam Data - 20 Questions (Balanced Key Distribution: A=5, B=5, C=5, D=5)
+        let rawQuestions = [
+            {
+                id: 1,
+                stemTh: "ข้อใดแสดงความหมายของการหารในรูปแบบ 'การแบ่งออก (Sharing)' ได้ถูกต้องที่สุด?",
+                stemEn: "Which scenario correctly represents division as 'Sharing'?",
+                optionsTh: [
+                    "มีส้ม 12 ผล แบ่งใส่ถุง 3 ถุงเท่า ๆ กัน จะได้ถุงละกี่ผล",
+                    "มีส้ม 12 ผล จัดใส่ถุง ถุงละ 4 ผล จะได้ทั้งหมดกี่ถุง",
+                    "มีส้ม 3 ถุง ถุงละ 4 ผล รวมเป็นส้มทั้งหมดกี่ผล",
+                    "มีส้ม 12 ผล นำไปแจกเพื่อนเพิ่มอีก 3 ผล"
+                ],
+                optionsEn: [
+                    "12 oranges shared equally into 3 bags, how many per bag",
+                    "12 oranges grouped by 4 per bag, how many bags",
+                    "3 bags with 4 oranges each, total oranges",
+                    "12 oranges with 3 more added"
+                ],
+                correct: 0, // A
+                clueTh: "การแบ่งออกคือรู้จำนวนทั้งหมดและรู้จำนวนกลุ่มที่ต้องการแบ่งใส่",
+                clueEn: "Sharing means knowing total items and target number of groups.",
+                shortcutTh: "เทคนิคคิดเร็ว: แบ่งออก = ทราบกลุ่ม ถามหาขนาดต่อกลุ่ม",
+                shortcutEn: "Shortcut: Sharing = Known groups, asking for group size."
+            },
+            {
+                id: 2,
+                stemTh: "ถ้ามีดินสอ 15 แท่ง จัดใส่กล่อง กล่องละ 5 แท่ง จะได้ทั้งหมดกี่กล่อง ตรงกับประโยคสัญลักษณ์ใด?",
+                stemEn: "If 15 pencils are grouped by 5 per box, how many boxes? Match the equation.",
+                optionsTh: [
+                    "15 - 5 = 10",
+                    "15 \\div 5 = 3",
+                    "15 \\times 5 = 75",
+                    "15 + 5 = 20"
+                ],
+                optionsEn: [
+                    "15 - 5 = 10",
+                    "15 \\div 5 = 3",
+                    "15 \\times 5 = 75",
+                    "15 + 5 = 20"
+                ],
+                correct: 1, // B
+                clueTh: "เป็นการจัดกลุ่มละเท่า ๆ กัน หาจำนวนกลุ่มทั้งหมด ใช้เครื่องหมายหาร",
+                clueEn: "Grouping equal parts to find total groups uses division.",
+                shortcutTh: "เทคนิคคิดเร็ว: จัดกลุ่ม = ทราบขนาดต่อกลุ่ม ถามหาจำนวนกลุ่ม",
+                shortcutEn: "Shortcut: Grouping = Known group size, asking for total groups."
+            },
+            {
+                id: 3,
+                stemTh: "จากประโยคสัญลักษณ์การคูณ $4 \\times 6 = 24$ จะเขียนเป็นประโยคสัญลักษณ์การหารได้อย่างไร?",
+                stemEn: "From multiplication $4 \\times 6 = 24$, how to write the division equation?",
+                optionsTh: [
+                    "24 + 4 = 28",
+                    "24 \\times 4 = 96",
+                    "24 \\div 4 = 6",
+                    "24 - 6 = 18"
+                ],
+                optionsEn: [
+                    "24 + 4 = 28",
+                    "24 \\times 4 = 96",
+                    "24 \\div 4 = 6",
+                    "24 - 6 = 18"
+                ],
+                correct: 2, // C
+                clueTh: "นำผลคูณเป็นตัวตั้ง หารด้วยตัวประกอบหนึ่งตัว จะได้ผลลัพธ์เป็นตัวประกอบอีกตัว",
+                clueEn: "Product divided by one factor gives the other factor.",
+                shortcutTh: "เทคนิคคิดเร็ว: ย้ายข้างคูณเป็นหาร นำผลลัพธ์ตั้งหารด้วยตัวคูณ",
+                shortcutEn: "Shortcut: Inverse operation turns multiplication into division."
+            },
+            {
+                id: 4,
+                stemTh: "ผลลัพธ์ของ $28 \\div 4$ มีค่าเท่ากับข้อใด?",
+                stemEn: "What is the result of $28 \\div 4$?",
+                optionsTh: [
+                    "6",
+                    "7",
+                    "8",
+                    "9"
+                ],
+                optionsEn: [
+                    "6",
+                    "7",
+                    "8",
+                    "9"
+                ],
+                correct: 3, // D
+                clueTh: "ท่องสูตรคูณแม่ 4: 4 คูณอะไรได้ 28?",
+                clueEn: "Recite times table for 4: 4 times what is 28?",
+                shortcutTh: "เทคนิคคิดเร็ว: ท่องสูตรคูณแม่ 4 (4 \\times 7 = 28)",
+                shortcutEn: "Shortcut: 4 times 7 equals 28."
+            },
+            {
+                id: 5,
+                stemTh: "ข้อใดเป็นการหารที่ 'ลงตัว' พอดี ไม่มีเศษเหลือเลย?",
+                stemEn: "Which of the following is an 'exact division' with no remainder?",
+                optionsTh: [
+                    "17 \\div 3",
+                    "22 \\div 5",
+                    "36 \\div 6",
+                    "19 \\div 4"
+                ],
+                optionsEn: [
+                    "17 \\div 3",
+                    "22 \\div 5",
+                    "36 \\div 6",
+                    "19 \\div 4"
+                ],
+                correct: 0, // A
+                clueTh: "ตรวจสอบว่าตัวตั้งหารด้วยตัวหารแล้วหมดพอดีในแม่สูตรคูณหรือไม่ ($6 \\times 6 = 36$)",
+                clueEn: "Check which division divides evenly without remainder ($6 \\times 6 = 36$).",
+                shortcutTh: "เทคนิคคิดเร็ว: ลงตัวคืออยู่ในแม่สูตรคูณแม่นั้น ๆ พอดี",
+                shortcutEn: "Shortcut: Exact division means it's directly in the multiplication table."
+            },
+            {
+                id: 6,
+                stemTh: "ผลลัพธ์และเศษเหลือของ $25 \\div 4$ ตรงกับข้อใด?",
+                stemEn: "What is the quotient and remainder of $25 \\div 4$?",
+                optionsTh: [
+                    "ได้ 5 เศษ 3",
+                    "ได้ 6 เศษ 1",
+                    "ได้ 6 เศษ 2",
+                    "ได้ 7 เศษ 0"
+                ],
+                optionsEn: [
+                    "Quotient 5 remainder 3",
+                    "Quotient 6 remainder 1",
+                    "Quotient 6 remainder 2",
+                    "Quotient 7 remainder 0"
+                ],
+                correct: 1, // B
+                clueTh: "ท่องสูตรคูณแม่ 4 ใกล้เคียง 25 ($4 \\times 6 = 24$ ขาดอีก 1)",
+                clueEn: "Closest to 25 in 4 times table is $4 \\times 6 = 24$, remainder 1.",
+                shortcutTh: "เทคนิคคิดเร็ว: $25 - 24 = 1$ (ได้ 6 เศษ 1)",
+                shortcutEn: "Shortcut: $25 - 24 = 1$, quotient 6 remainder 1."
+            },
+            {
+                id: 7,
+                stemTh: "แม่มีขนม 30 ชิ้น จัดใส่จาน จานละ 5 ชิ้น จะจัดได้ทั้งหมดกี่จาน?",
+                stemEn: "Mother has 30 snacks, putting 5 per plate. How many plates?",
+                optionsTh: [
+                    "4 จาน",
+                    "5 จาน",
+                    "6 จาน",
+                    "7 จาน"
+                ],
+                optionsEn: [
+                    "4 plates",
+                    "5 plates",
+                    "6 plates",
+                    "7 plates"
+                ],
+                correct: 2, // C
+                clueTh: "ประโยคสัญลักษณ์คือ $30 \\div 5 = \\square$",
+                clueEn: "Equation is $30 \\div 5 = \\square$",
+                shortcutTh: "เทคนิคคิดเร็ว: ท่องสูตรคูณ 5 คูณอะไรได้ 30 ($5 \\times 6 = 30$)",
+                shortcutEn: "Shortcut: 5 times 6 equals 30."
+            },
+            {
+                id: 8,
+                stemTh: "ข้อใดมีค่าเท่ากับผลหารของ $42 \\div 7$?",
+                stemEn: "Which equals the quotient of $42 \\div 7$?",
+                optionsTh: [
+                    "5",
+                    "7",
+                    "8",
+                    "6"
+                ],
+                optionsEn: [
+                    "5",
+                    "7",
+                    "8",
+                    "6"
+                ],
+                correct: 3, // D
+                clueTh: "ท่องสูตรคูณแม่ 7: 7 คูณอะไรได้ 42?",
+                clueEn: "Times table of 7: 7 times what is 42?",
+                shortcutTh: "เทคนิคคิดเร็ว: $7 \\times 6 = 42$, ดังนั้นตอบ 6",
+                shortcutEn: "Shortcut: $7 \\times 6 = 42$, so answer is 6."
+            },
+            {
+                id: 9,
+                stemTh: "ในการหารจำนวนใด ๆ เศษเหลือที่เกิดขึ้น <strong>จะต้องมีเงื่อนไขอย่างไร</strong> เมื่อเทียบกับตัวหาร?",
+                stemEn: "In any division, what must the remainder be compared to the divisor?",
+                optionsTh: [
+                    "เศษเหลือต้องน้อยกว่าตัวหารเสมอ",
+                    "เศษเหลือต้องมากกว่าตัวหารเสมอ",
+                    "เศษเหลือต้องเท่ากับตัวหารพอดี",
+                    "เศษเหลือจะเป็นเท่าไรก็ได้ไม่จำกัด"
+                ],
+                optionsEn: [
+                    "Remainder must always be less than divisor",
+                    "Remainder must always be greater than divisor",
+                    "Remainder must equal divisor",
+                    "Remainder can be any number without limit"
+                ],
+                correct: 0, // A
+                clueTh: "ถ้าเศษเหลือเท่ากับหรือมากกว่าตัวหาร แสดงว่าเรายังแบ่งเพิ่มได้อีก",
+                clueEn: "If remainder is greater/equal to divisor, you can divide further.",
+                shortcutTh: "เทคนิคคิดเร็ว: กฎเหล็กการหาร เศษ < ตัวหาร เสมอ",
+                shortcutEn: "Shortcut: Golden rule: Remainder < Divisor always."
+            },
+            {
+                id: 10,
+                stemTh: "ครูมีสมุด 35 เล่ม แจกให้นักเรียน 5 คน คนละเท่า ๆ กัน นักเรียนจะได้สมุดคนละกี่เล่ม?",
+                stemEn: "Teacher has 35 notebooks, distributed equally to 5 students. How many each?",
+                optionsTh: [
+                    "6 เล่ม",
+                    "7 เล่ม",
+                    "8 เล่ม",
+                    "9 เล่ม"
+                ],
+                optionsEn: [
+                    "6 notebooks",
+                    "7 notebooks",
+                    "8 notebooks",
+                    "9 notebooks"
+                ],
+                correct: 1, // B
+                clueTh: "คำนวณจาก $35 \\div 5 = \\square$",
+                clueEn: "Calculate $35 \\div 5 = \\square$",
+                shortcutTh: "เทคนิคคิดเร็ว: $5 \\times 7 = 35$",
+                shortcutEn: "Shortcut: $5 \\times 7 = 35$"
+            },
+            {
+                id: 11,
+                stemTh: "ข้อใดต่อไปนี้คำนวณได้ผลลัพธ์ 'มากที่สุด'?",
+                stemEn: "Which of the following yields the 'largest' result?",
+                optionsTh: [
+                    "18 \\div 3",
+                    "24 \\div 4",
+                    "36 \\div 4",
+                    "20 \\div 5"
+                ],
+                optionsEn: [
+                    "18 \\div 3",
+                    "24 \\div 4",
+                    "36 \\div 4",
+                    "20 \\div 5"
+                ],
+                correct: 2, // C
+                clueTh: "หาผลลัพธ์ทีละข้อ: 18/3 = 6, 24/4 = 6, 36/4 = 9, 20/5 = 4",
+                clueEn: "Calculate each: 18/3=6, 24/4=6, 36/4=9, 20/5=4",
+                shortcutTh: "เทคนิคคิดเร็ว: เปรียบเทียบผลลัพธ์ 9 คือค่าที่มากที่สุด",
+                shortcutEn: "Shortcut: Compare results, 9 is the largest."
+            },
+            {
+                id: 12,
+                stemTh: "ถ้า $48 \\div 8 = 6$ ข้อใดคือ <strong>ตัวหาร (Divisor)</strong> ของประโยคนี้?",
+                stemEn: "If $48 \\div 8 = 6$, which is the divisor?",
+                optionsTh: [
+                    "48",
+                    "6",
+                    "\\div",
+                    "8"
+                ],
+                optionsEn: [
+                    "48",
+                    "6",
+                    "\\div",
+                    "8"
+                ],
+                correct: 3, // D
+                clueTh: "ตัวตั้ง \\div ตัวหาร = ผลหาร",
+                clueEn: "Dividend / Divisor = Quotient",
+                shortcutTh: "เทคนิคคิดเร็ว: ตัวหารคือจำนวนที่อยู่หลังเครื่องหมายหาร",
+                shortcutEn: "Shortcut: Divisor is the number after the division sign."
+            },
+            {
+                id: 13,
+                stemTh: "ลุงมีมะม่วง 40 ผล จัดใส่ตะกร้า ตะกร้าละ 8 ผล จะจัดได้กี่ตะกร้า?",
+                stemEn: "Uncle has 40 mangoes, putting 8 per basket. How many baskets?",
+                optionsTh: [
+                    "5 ตะกร้า",
+                    "6 ตะกร้า",
+                    "7 ตะกร้า",
+                    "8 ตะกร้า"
+                ],
+                optionsEn: [
+                    "5 baskets",
+                    "6 baskets",
+                    "7 baskets",
+                    "8 baskets"
+                ],
+                correct: 0, // A
+                clueTh: "ประโยคสัญลักษณ์ $40 \\div 8 = \\square$",
+                clueEn: "Equation $40 \\div 8 = \\square$",
+                shortcutTh: "เทคนิคคิดเร็ว: $8 \\times 5 = 40$",
+                shortcutEn: "Shortcut: $8 \\times 5 = 40$"
+            },
+            {
+                id: 14,
+                stemTh: "ผลลัพธ์ของข้อใดมีค่าเท่ากับ 9?",
+                stemEn: "Which expression equals 9?",
+                optionsTh: [
+                    "56 \\div 7",
+                    "63 \\div 7",
+                    "72 \\div 8",
+                    "45 \\div 5"
+                ],
+                optionsEn: [
+                    "56 \\div 7",
+                    "63 \\div 7",
+                    "72 \\div 8",
+                    "45 \\div 5"
+                ],
+                correct: 1, // B
+                clueTh: "ตรวจสอบทีละข้อ: $63 \\div 7 = 9$ เพราะ $7 \\times 9 = 63$",
+                clueEn: "Check each: $63 \\div 7 = 9$ because $7 \\times 9 = 63$",
+                shortcutTh: "เทคนิคคิดเร็ว: ท่องสูตรคูณแม่ 7 ที่ได้ 63 คือ 9",
+                shortcutEn: "Shortcut: 7 times 9 is 63."
+            },
+            {
+                id: 15,
+                stemTh: "แก้วตานำริบบิ้นยาว 54 เมตร มาตัดเป็นเส้น เส้นละ 6 เมตร จะตัดได้ทั้งหมดกี่เส้น?",
+                stemEn: "Kaewta cuts 54 meters of ribbon into 6-meter pieces. How many pieces?",
+                optionsTh: [
+                    "7 เส้น",
+                    "8 เส้น",
+                    "9 เส้น",
+                    "10 เส้น"
+                ],
+                optionsEn: [
+                    "7 pieces",
+                    "8 pieces",
+                    "9 pieces",
+                    "10 pieces"
+                ],
+                correct: 2, // C
+                clueTh: "ประโยคสัญลักษณ์ $54 \\div 6 = \\square$",
+                clueEn: "Equation $54 \\div 6 = \\square$",
+                shortcutTh: "เทคนิคคิดเร็ว: $6 \\times 9 = 54$",
+                shortcutEn: "Shortcut: $6 \\times 9 = 54$"
+            },
+            {
+                id: 16,
+                stemTh: "ในการตรวจสอบคำตอบของการหารว่าถูกต้องหรือไม่ เราใช้ความสัมพันธ์กับข้อใด?",
+                stemEn: "To verify if division is correct, which relationship is used?",
+                optionsTh: [
+                    "ผลหาร - ตัวหาร = ตัวตั้ง",
+                    "ผลหาร + ตัวหาร = ตัวตั้ง",
+                    "ผลหาร \\div ตัวหาร = ตัวตั้ง",
+                    "ผลหาร \\times ตัวหาร (+ เศษ) = ตัวตั้ง"
+                ],
+                optionsEn: [
+                    "Quotient - Divisor = Dividend",
+                    "Quotient + Divisor = Dividend",
+                    "Quotient / Divisor = Dividend",
+                    "Quotient * Divisor (+ Remainder) = Dividend"
+                ],
+                correct: 3, // D
+                clueTh: "นำผลลัพธ์คูณกับตัวหาร แล้วบวกด้วยเศษ จะต้องได้เท่ากับตัวตั้งเดิม",
+                clueEn: "Multiply quotient by divisor plus remainder to get original dividend.",
+                shortcutTh: "เทคนิคคิดเร็ว: ตรวจสอบย้อนกลับด้วยการคูณและบวกเศษ",
+                shortcutEn: "Shortcut: Inverse check via multiplication and addition."
+            },
+            {
+                id: 17,
+                stemTh: "มีเงิน 50 บาท ซื้อขนมราคาชิ้นละ 9 บาท จะซื้อได้มากที่สุดกี่ชิ้น และเหลือเงินทอนกี่บาท?",
+                stemEn: "Have 50 Baht, snacks cost 9 Baht each. Max pieces and change?",
+                optionsTh: [
+                    "ได้ 5 ชิ้น เหลือเงิน 5 บาท",
+                    "ได้ 6 ชิ้น เหลือเงิน 2 บาท",
+                    "ได้ 5 ชิ้น เหลือเงิน 4 บาท",
+                    "ได้ 7 ชิ้น พอดี"
+                ],
+                optionsEn: [
+                    "5 pieces, 5 Baht change",
+                    "6 pieces, 2 Baht change",
+                    "5 pieces, 4 Baht change",
+                    "7 pieces exact"
+                ],
+                correct: 0, // A
+                clueTh: "$50 \\div 9$: ท่องสูตรคูณแม่ 9 ใกล้ 50 ($9 \\times 5 = 45$, เหลือเศษ $50 - 45 = 5$)",
+                clueEn: "$50 \\div 9$: $9 \\times 5 = 45$, remainder $50 - 45 = 5$.",
+                shortcutTh: "เทคนิคคิดเร็ว: $9 \\times 5 = 45$ ขาดอีก 5 บาท",
+                shortcutEn: "Shortcut: $9 \\times 5 = 45$ with 5 remainder."
+            },
+            {
+                id: 18,
+                stemTh: "ผลลัพธ์ของประโยคสัญลักษณ์ $(24 \\div 3) \\div 2$ มีค่าเท่ากับข้อใด?",
+                stemEn: "What is the result of $(24 \\div 3) \\div 2$?",
+                optionsTh: [
+                    "2",
+                    "4",
+                    "6",
+                    "8"
+                ],
+                optionsEn: [
+                    "2",
+                    "4",
+                    "6",
+                    "8"
+                ],
+                correct: 1, // B
+                clueTh: "ทำในวงเล็บก่อน: $24 \\div 3 = 8$, จากนั้นนำ $8 \\div 2 = 4$",
+                clueEn: "Calculate parentheses first: $24 \\div 3 = 8$, then $8 \\div 2 = 4$.",
+                shortcutTh: "เทคนิคคิดเร็ว: ทำจากซ้ายไปขวา ทีละขั้นตอน",
+                shortcutEn: "Shortcut: Solve inside parentheses first."
+            },
+            {
+                id: 19,
+                stemTh: "ข้อใดเป็นผลหารของ $72 \\div 9$?",
+                stemEn: "What is the quotient of $72 \\div 9$?",
+                optionsTh: [
+                    "6",
+                    "7",
+                    "8",
+                    "9"
+                ],
+                optionsEn: [
+                    "6",
+                    "7",
+                    "8",
+                    "9"
+                ],
+                correct: 2, // C
+                clueTh: "ท่องสูตรคูณแม่ 9: 9 คูณอะไรได้ 72?",
+                clueEn: "Times table of 9: 9 times what is 72?",
+                shortcutTh: "เทคนิคคิดเร็ว: $9 \\times 8 = 72$",
+                shortcutEn: "Shortcut: $9 \\times 8 = 72$"
+            },
+            {
+                id: 20,
+                stemTh: "โรงเรียนจัดนักเรียนเข้าแถว 64 คน เป็น 8 แถวเท่า ๆ กัน จะได้แถวละกี่คน?",
+                stemEn: "School arranges 64 students into 8 equal rows. How many per row?",
+                optionsTh: [
+                    "6 คน",
+                    "7 คน",
+                    "9 คน",
+                    "8 คน"
+                ],
+                optionsEn: [
+                    "6 students",
+                    "7 students",
+                    "9 students",
+                    "8 students"
+                ],
+                correct: 3, // D
+                clueTh: "ประโยคสัญลักษณ์ $64 \\div 8 = \\square$",
+                clueEn: "Equation $64 \\div 8 = \\square$",
+                shortcutTh: "เทคนิคคิดเร็ว: $8 \\times 8 = 64$",
+                shortcutEn: "Shortcut: $8 \\times 8 = 64$"
+            }
+        ];
+
+        // Active Exam State
+        let currentQuestionIndex = 0;
+        let userAnswers = new Array(20).fill(null); // stores selected option index 0-3
+        let examSubmitted = false;
+        let currentClueVisible = false;
+
+        // LocalStorage Persistence
+        function saveState() {
+            const state = {
+                userAnswers,
+                examSubmitted,
+                currentQuestionIndex
+            };
+            localStorage.setItem('divExamState_v2', JSON.stringify(state));
+        }
+
+        function loadState() {
+            const saved = localStorage.getItem('divExamState_v2');
+            if (saved) {
+                try {
+                    const parsed = JSON.parse(saved);
+                    userAnswers = parsed.userAnswers || new Array(20).fill(null);
+                    examSubmitted = parsed.examSubmitted || false;
+                    currentQuestionIndex = parsed.currentQuestionIndex || 0;
+                } catch(e) { console.error(e); }
+            }
+        }
+
+        // Fisher-Yates Shuffle Algorithm for Options
+        // We want to keep track of the correct answer index after shuffling.
+        let shuffledExamData = [];
+
+        function initExamQuestions() {
+            shuffledExamData = rawQuestions.map(q => {
+                // create index array [0, 1, 2, 3]
+                let indices = [0, 1, 2, 3];
+                // Fisher-Yates Shuffle
+                for (let i = indices.length - 1; i > 0; i--) {
+                    let j = Math.floor(Math.random() * (i + 1));
+                    [indices[i], indices[j]] = [indices[j], indices[i]];
+                }
+
+                // Map options
+                let newOptsTh = indices.map(idx => q.optionsTh[idx]);
+                let newOptsEn = indices.map(idx => q.optionsEn[idx]);
+                let newCorrect = indices.indexOf(q.correct);
+
+                return {
+                    ...q,
+                    shuffledOptsTh: newOptsTh,
+                    shuffledOptsEn: newOptsEn,
+                    shuffledCorrect: newCorrect,
+                    originalIndices: indices
+                };
+            });
+        }
+
+        // Window Onload Initialization
+        window.onload = function() {
+            loadState();
+            initExamQuestions();
+            updateSharingSim();
+            renderQuestionNav();
+            renderCurrentQuestion();
+            updateScoreDisplay();
+            initWhiteboard();
+
+            // Render KaTeX math formulas
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false}
+                    ]
+                });
+            }
+        };
+
+        // Tab Switching for Virtual Tool
+        function switchTab(tab) {
+            const btnSharing = document.getElementById('tabSharing');
+            const btnLongDiv = document.getElementById('tabLongDiv');
+            const contentSharing = document.getElementById('contentSharing');
+            const contentLongDiv = document.getElementById('contentLongDiv');
+
+            if (tab === 'sharing') {
+                btnSharing.className = "px-4 py-2 text-xs font-bold rounded-xl bg-white text-indigo-700 shadow-sm transition";
+                btnLongDiv.className = "px-4 py-2 text-xs font-bold rounded-xl text-slate-600 hover:text-indigo-700 transition";
+                contentSharing.classList.remove('hidden');
+                contentLongDiv.classList.add('hidden');
+            } else {
+                btnLongDiv.className = "px-4 py-2 text-xs font-bold rounded-xl bg-white text-indigo-700 shadow-sm transition";
+                btnSharing.className = "px-4 py-2 text-xs font-bold rounded-xl text-slate-600 hover:text-indigo-700 transition";
+                contentLongDiv.classList.remove('hidden');
+                contentSharing.classList.add('hidden');
+                setupDivisionAnimation();
+            }
+        }
+
+        // Sharing Simulator Logic
+        function updateSharingSim() {
+            shareTotal = parseInt(document.getElementById('totalInput').value);
+            shareMode = document.getElementById('modeInput').value;
+            shareDivisor = parseInt(document.getElementById('divisorInput').value);
+
+            document.getElementById('totalVal').innerText = shareTotal;
+            document.getElementById('divisorVal').innerText = shareDivisor;
+
+            let quotient = Math.floor(shareTotal / shareDivisor);
+            let remainder = shareTotal % shareDivisor;
+
+            let eqStr = `$${shareTotal} \\div ${shareDivisor} = ${quotient}$`;
+            if (remainder > 0) {
+                eqStr += ` \\text{ เศษ } ${remainder}`;
+                document.getElementById('remainderText').innerText = `หารไม่ลงตัว มีเศษเหลือ ${remainder} ชิ้น`;
+                document.getElementById('remainderText').className = "text-xs text-amber-600 font-semibold mt-1";
+            } else {
+                document.getElementById('remainderText').innerText = `หารลงตัวพอดี (เศษ 0)`;
+                document.getElementById('remainderText').className = "text-xs text-emerald-600 font-semibold mt-1";
+            }
+            document.getElementById('equationResult').innerHTML = eqStr;
+
+            // Render Visual Elements
+            let container = document.getElementById('visualGroupsContainer');
+            container.innerHTML = '';
+
+            if (shareMode === 'group') {
+                // Grouping mode: create groups of size 'shareDivisor'
+                document.getElementById('modeDescription').innerText = currentLang === 'TH' ? 
+                    `มี ${shareTotal} ชิ้น จัดเป็นกลุ่มละ ${shareDivisor} ชิ้น ได้ ${quotient} กลุ่ม (เหลือ ${remainder})` :
+                    `Total ${shareTotal}, grouped by ${shareDivisor} per group, got ${quotient} groups`;
+
+                for (let g = 0; g < quotient; g++) {
+                    let box = document.createElement('div');
+                    box.className = "bg-indigo-50/80 border border-indigo-200 p-2 rounded-xl flex flex-wrap gap-1 items-center justify-center w-24 h-24 shadow-xs";
+                    for (let i = 0; i < shareDivisor; i++) {
+                        let item = document.createElement('div');
+                        item.className = "w-5 h-5 bg-indigo-600 text-white rounded-full flex items-center justify-center text-[10px] font-bold shadow-xs";
+                        item.innerHTML = `<i class="fa-solid fa-star"></i>`;
+                        box.appendChild(item);
+                    }
+                    container.appendChild(box);
+                }
+                if (remainder > 0) {
+                    let remBox = document.createElement('div');
+                    remBox.className = "bg-amber-50 border border-amber-300 p-2 rounded-xl flex flex-wrap gap-1 items-center justify-center w-24 h-24 shadow-xs";
+                    for (let i = 0; i < remainder; i++) {
+                        let item = document.createElement('div');
+                        item.className = "w-5 h-5 bg-amber-500 text-white rounded-full flex items-center justify-center text-[10px] font-bold shadow-xs";
+                        item.innerHTML = `<i class="fa-solid fa-star"></i>`;
+                        remBox.appendChild(item);
+                    }
+                    container.appendChild(remBox);
+                }
+            } else {
+                // Sharing mode: create 'shareDivisor' baskets and share items
+                document.getElementById('modeDescription').innerText = currentLang === 'TH' ?
+                    `มี ${shareTotal} ชิ้น แบ่งใส่ ${shareDivisor} ตะกร้าเท่า ๆ กัน ได้ตะกร้าละ ${quotient} ชิ้น (เหลือ ${remainder})` :
+                    `Total ${shareTotal} shared into ${shareDivisor} baskets`;
+
+                for (let b = 0; b < shareDivisor; b++) {
+                    let basket = document.createElement('div');
+                    basket.className = "bg-emerald-50/80 border border-emerald-200 p-2 rounded-xl flex flex-wrap gap-1 items-center justify-center w-24 h-24 shadow-xs";
+                    for (let i = 0; i < quotient; i++) {
+                        let item = document.createElement('div');
+                        item.className = "w-5 h-5 bg-emerald-600 text-white rounded-full flex items-center justify-center text-[10px] font-bold shadow-xs";
+                        item.innerHTML = `<i class="fa-solid fa-apple-whole"></i>`;
+                        basket.appendChild(item);
+                    }
+                    container.appendChild(basket);
+                }
+            }
+
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(container);
+                renderMathInElement(document.getElementById('equationResult'));
+            }
+        }
+
+        function randomizeSharing() {
+            document.getElementById('totalInput').value = Math.floor(Math.random() * 16) + 8;
+            document.getElementById('divisorInput').value = Math.floor(Math.random() * 4) + 2;
+            updateSharingSim();
+        }
+
+        // Division Animation Simulator
+        function setDivisionType(type) {
+            animType = type;
+            if (type === 'long') {
+                document.getElementById('btnTypeLong').className = "py-2 px-3 text-xs font-bold rounded-xl bg-indigo-600 text-white shadow-xs transition";
+                document.getElementById('btnTypeShort').className = "py-2 px-3 text-xs font-bold rounded-xl bg-white text-slate-700 border border-indigo-200 transition";
+                document.getElementById('scratchTitle').innerText = "กระดานจำลองหารยาว (Long Division Step-by-Step)";
+            } else {
+                document.getElementById('btnTypeShort').className = "py-2 px-3 text-xs font-bold rounded-xl bg-indigo-600 text-white shadow-xs transition";
+                document.getElementById('btnTypeLong').className = "py-2 px-3 text-xs font-bold rounded-xl bg-white text-slate-700 border border-indigo-200 transition";
+                document.getElementById('scratchTitle').innerText = "กระดานจำลองหารสั้น (Short Division Step-by-Step)";
+            }
+            setupDivisionAnimation();
+        }
+
+        function setupDivisionAnimation() {
+            animDividend = parseInt(document.getElementById('divDividend').value) || 48;
+            animDivisor = parseInt(document.getElementById('divDivisor').value) || 4;
+            currentAnimStep = 0;
+            renderDivisionStep();
+        }
+
+        function startDivisionAnimation() {
+            setupDivisionAnimation();
+            currentAnimStep = 1;
+            renderDivisionStep();
+        }
+
+        function nextAnimStep() {
+            if (currentAnimStep < 3) {
+                currentAnimStep++;
+                renderDivisionStep();
+            }
+        }
+
+        function prevAnimStep() {
+            if (currentAnimStep > 1) {
+                currentAnimStep--;
+                renderDivisionStep();
+            }
+        }
+
+        function renderDivisionStep() {
+            let tens = Math.floor(animDividend / 10);
+            let units = animDividend % 10;
+            let qTens = Math.floor(tens / animDivisor);
+            let remTens = tens % animDivisor;
+            let combinedUnits = remTens * 10 + units;
+            let qUnits = Math.floor(combinedUnits / animDivisor);
+            let finalRem = combinedUnits % animDivisor;
+            let totalQuotient = qTens * 10 + qUnits;
+
+            document.getElementById('animStepIndicator').innerText = `ขั้นตอนที่ ${currentAnimStep} / 3`;
+
+            let area = document.getElementById('scratchpadArea');
+            let exp = document.getElementById('animExplanation');
+
+            if (animType === 'long') {
+                if (currentAnimStep === 0) {
+                    area.innerHTML = `${animDivisor} ) <span class="border-t-2 border-emerald-400 px-2">${animDividend}</span>`;
+                    exp.innerText = "เตรียมพร้อมคำนวณ: ตั้งหารยาว นำตัวหารไว้ด้านนอก ตัวตั้งไว้ด้านในเครื่องหมาย";
+                } else if (currentAnimStep === 1) {
+                    area.innerHTML = `&nbsp;&nbsp;&nbsp;${qTens}<br>${animDivisor} ) <span class="border-t-2 border-emerald-400 px-2">${animDividend}</span><br>&nbsp;&nbsp;&nbsp;${tens - (qTens*animDivisor)}`;
+                    exp.innerText = `ขั้นที่ 1: หารหลักสิบ (${tens} \\div ${animDivisor} ได้ ${qTens}, คูณกลับได้ ${qTens*animDivisor}, ลบเหลือ ${tens - (qTens*animDivisor)})`;
+                } else if (currentAnimStep === 2) {
+                    area.innerHTML = `&nbsp;&nbsp;&nbsp;${qTens}${qUnits}<br>${animDivisor} ) <span class="border-t-2 border-emerald-400 px-2">${animDividend}</span><br>&nbsp;&nbsp;&nbsp;${tens - (qTens*animDivisor)}${units}<br>&nbsp;&nbsp;&nbsp;- ${qUnits*animDivisor}<br>&nbsp;&nbsp;&nbsp;----<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${finalRem}`;
+                    exp.innerText = `ขั้นที่ 2: ดึงหลักหน่วยลงมาเป็น ${combinedUnits} หารด้วย ${animDivisor} ได้ ${qUnits} คูณกลับ ${qUnits*animDivisor} ลบเหลือเศษ ${finalRem}`;
+                } else {
+                    area.innerHTML = `<span class="text-amber-300 font-bold">ผลลัพธ์: ${totalQuotient} ${finalRem > 0 ? `เศษ ${finalRem}` : 'ลงตัวพอดี'}</span>`;
+                    exp.innerText = `คำตอบสมบูรณ์: ${animDividend} \\div ${animDivisor} = ${totalQuotient} ${finalRem > 0 ? `เศษ ${finalRem}` : ''}`;
+                }
+            } else {
+                // Short division
+                if (currentAnimStep === 0) {
+                    area.innerHTML = `${animDivisor} ) <span class="border-b-2 border-emerald-400 pb-1 px-2">${animDividend}</span>`;
+                    exp.innerText = "เตรียมพร้อมหารสั้น: ขีดเส้นใต้ตัวตั้ง เขียนตัวหารไว้ด้านหน้า";
+                } else if (currentAnimStep === 1) {
+                    area.innerHTML = `${animDivisor} ) <span class="border-b-2 border-emerald-400 pb-1 px-2">${qTens}&nbsp;&nbsp;${qUnits}</span> <span class="text-xs text-amber-300">(เศษ ${finalRem})</span>`;
+                    exp.innerText = `หารสั้นทีละหลัก: หลักสิบ ${tens} หาร ${animDivisor} ได้ ${qTens} เศษ ${remTens}, รวมกับหลักหน่วยเป็น ${combinedUnits} หาร ${animDivisor} ได้ ${qUnits} เศษ ${finalRem}`;
+                } else {
+                    area.innerHTML = `<span class="text-amber-300 font-bold">ตอบ: ${totalQuotient} ${finalRem > 0 ? `เศษ ${finalRem}` : ''}</span>`;
+                    exp.innerText = `เสร็จสิ้นกระบวนการหารสั้น ผลลัพธ์คือ ${totalQuotient}`;
+                }
+            }
+        }
+
+        // Exam Rendering & Navigation
+        function renderQuestionNav() {
+            let container = document.getElementById('questionNavDots');
+            container.innerHTML = '';
+            for (let i = 0; i < 20; i++) {
+                let btn = document.createElement('button');
+                let isAnswered = userAnswers[i] !== null;
+                let isCurrent = i === currentQuestionIndex;
+
+                let cls = "w-7 h-7 rounded-xl text-xs font-bold transition flex items-center justify-center ";
+                if (isCurrent) {
+                    cls += "bg-indigo-600 text-white shadow-md ring-2 ring-indigo-300";
+                } else if (isAnswered) {
+                    cls += "bg-emerald-100 text-emerald-800 border border-emerald-300";
+                } else {
+                    cls += "bg-white text-slate-600 border border-slate-200 hover:bg-slate-100";
+                }
+                btn.className = cls;
+                btn.innerText = i + 1;
+                btn.onclick = () => goToQuestion(i);
+                container.appendChild(btn);
+            }
+
+            let answeredCount = userAnswers.filter(a => a !== null).length;
+            document.getElementById('answeredCountText').innerText = currentLang === 'TH' ? 
+                `ตอบแล้ว: ${answeredCount} / 20 ข้อ` : `Answered: ${answeredCount} / 20`;
+            document.getElementById('questionProgressText').innerText = currentLang === 'TH' ?
+                `กำลังทำข้อที่ ${currentQuestionIndex + 1} จาก 20 ข้อ` : `Question ${currentQuestionIndex + 1} of 20`;
+
+            if (answeredCount === 20 || examSubmitted) {
+                document.getElementById('submitExamBtn').classList.remove('hidden');
+                document.getElementById('submitExamBtn').classList.add('flex');
+            } else {
+                document.getElementById('submitExamBtn').classList.add('hidden');
+                document.getElementById('submitExamBtn').classList.remove('flex');
+            }
+        }
+
+        function renderCurrentQuestion() {
+            let q = shuffledExamData[currentQuestionIndex];
+            document.getElementById('qNumberBadge').innerText = currentLang === 'TH' ? `ข้อที่ ${currentQuestionIndex + 1} จาก 20` : `Question ${currentQuestionIndex + 1} of 20`;
+            
+            let stemText = currentLang === 'TH' ? q.stemTh : q.stemEn;
+            document.getElementById('questionStem').innerHTML = stemText;
+
+            // Clue
+            document.getElementById('clueTextContent').innerText = currentLang === 'TH' ? q.clueTh : q.clueEn;
+            if (!currentClueVisible) {
+                document.getElementById('clueBox').classList.add('hidden');
+                document.getElementById('clueToggleText').innerText = currentLang === 'TH' ? "แสดงคำใบ้ (Clue)" : "Show Clue";
+            } else {
+                document.getElementById('clueBox').classList.remove('hidden');
+                document.getElementById('clueToggleText').innerText = currentLang === 'TH' ? "ซ่อนคำใบ้" : "Hide Clue";
+            }
+
+            // Options
+            let optsContainer = document.getElementById('optionsContainer');
+            optsContainer.innerHTML = '';
+
+            let opts = currentLang === 'TH' ? q.shuffledOptsTh : q.shuffledOptsEn;
+            let userAns = userAnswers[currentQuestionIndex];
+
+            opts.forEach((optText, idx) => {
+                let btn = document.createElement('button');
+                let letter = String.fromCharCode(65 + idx); // A, B, C, D
+
+                let baseCls = "w-full p-4 rounded-2xl border text-left font-medium text-sm sm:text-base transition flex items-center justify-between ";
+                
+                if (userAns !== null) {
+                    // Already answered, show correctness
+                    if (idx === q.shuffledCorrect) {
+                        baseCls += "bg-emerald-50 border-emerald-300 text-emerald-900 shadow-sm";
+                    } else if (idx === userAns) {
+                        baseCls += "bg-rose-50 border-rose-300 text-rose-900 shadow-sm";
+                    } else {
+                        baseCls += "bg-white border-slate-200 text-slate-600 opacity-60";
+                    }
+                    btn.disabled = true;
+                } else {
+                    baseCls += "bg-white border-indigo-100 hover:border-indigo-300 hover:bg-indigo-50/40 text-slate-800 shadow-xs";
+                    btn.onclick = () => selectOption(idx);
+                }
+
+                btn.className = baseCls;
+                btn.innerHTML = `
+                    <div class="flex items-center space-x-3">
+                        <span class="w-7 h-7 rounded-xl bg-slate-100 text-slate-700 font-bold flex items-center justify-center text-xs shrink-0">${letter}</span>
+                        <span>${optText}</span>
+                    </div>
+                    ${userAns !== null && idx === q.shuffledCorrect ? '<i class="fa-solid fa-circle-check text-emerald-600 text-lg"></i>' : ''}
+                    ${userAns !== null && idx === userAns && idx !== q.shuffledCorrect ? '<i class="fa-solid fa-circle-xmark text-rose-500 text-lg"></i>' : ''}
+                `;
+                optsContainer.appendChild(btn);
+            });
+
+            // Feedback Box
+            let feedbackBox = document.getElementById('feedbackBox');
+            if (userAns !== null) {
+                feedbackBox.classList.remove('hidden');
+                let isCorrect = userAns === q.shuffledCorrect;
+                if (isCorrect) {
+                    feedbackBox.className = "mt-4 p-4 rounded-2xl border bg-emerald-50 border-emerald-200 text-emerald-900 animate-fadeIn";
+                    feedbackBox.innerHTML = `
+                        <div class="font-bold flex items-center space-x-2 text-emerald-800 mb-1">
+                            <i class="fa-solid fa-circle-check text-emerald-600"></i>
+                            <span>ตอบถูกต้องเยี่ยมมากครับ!</span>
+                        </div>
+                        <p class="text-xs text-emerald-700 leading-relaxed"><strong class="shortcut-label">เทคนิคคิดเร็ว:</strong> ${currentLang === 'TH' ? q.shortcutTh : q.shortcutEn}</p>
+                    `;
+                } else {
+                    feedbackBox.className = "mt-4 p-4 rounded-2xl border bg-rose-50 border-rose-200 text-rose-900 animate-fadeIn";
+                    feedbackBox.innerHTML = `
+                        <div class="font-bold flex items-center space-x-2 text-rose-800 mb-1">
+                            <i class="fa-solid fa-circle-xmark text-rose-500"></i>
+                            <span>ยังไม่ถูกต้องครับ ลองทบทวนดูนะ</span>
+                        </div>
+                        <p class="text-xs text-rose-700 leading-relaxed"><strong class="shortcut-label">วิธีคิดและเทคนิค:</strong> ${currentLang === 'TH' ? q.shortcutTh : q.shortcutEn}</p>
+                    `;
+                }
+            } else {
+                feedbackBox.classList.add('hidden');
+            }
+
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.getElementById('questionCardContainer'));
+            }
+            updateScoreDisplay();
+        }
+
+        function selectOption(optionIndex) {
+            userAnswers[currentQuestionIndex] = optionIndex;
+            saveState();
+            renderQuestionNav();
+            renderCurrentQuestion();
+        }
+
+        function toggleClue() {
+            currentClueVisible = !currentClueVisible;
+            renderCurrentQuestion();
+        }
+
+        function goToQuestion(index) {
+            currentQuestionIndex = index;
+            currentClueVisible = false;
+            renderQuestionNav();
+            renderCurrentQuestion();
+        }
+
+        function nextQuestion() {
+            if (currentQuestionIndex < 19) {
+                currentQuestionIndex++;
+                currentClueVisible = false;
+                renderQuestionNav();
+                renderCurrentQuestion();
+            }
+        }
+
+        function prevQuestion() {
+            if (currentQuestionIndex > 0) {
+                currentQuestionIndex--;
+                currentClueVisible = false;
+                renderQuestionNav();
+                renderCurrentQuestion();
+            }
+        }
+
+        function updateScoreDisplay() {
+            let score = 0;
+            shuffledExamData.forEach((q, idx) => {
+                if (userAnswers[idx] === q.shuffledCorrect) {
+                    score++;
+                }
+            });
+            document.getElementById('currentScore').innerText = score;
+
+            let answeredCount = userAnswers.filter(a => a !== null).length;
+            if (answeredCount > 0) {
+                let pct = Math.round((score / 20) * 100);
+                document.getElementById('analysisWidgetText').innerHTML = currentLang === 'TH' ?
+                    `ทำไปแล้ว ${answeredCount}/20 ข้อ คะแนนปัจจุบัน ${score} (${pct}%) ${pct >= 80 ? 'เก่งมาก ยอดเยี่ยม!' : 'ฝึกฝนเพิ่มเติมอีกนิดนะ'}` :
+                    `Completed ${answeredCount}/20, Score ${score} (${pct}%)`;
+            }
+        }
+
+        function submitExam() {
+            examSubmitted = true;
+            saveState();
+
+            let score = 0;
+            shuffledExamData.forEach((q, idx) => {
+                if (userAnswers[idx] === q.shuffledCorrect) score++;
+            });
+            let pct = Math.round((score / 20) * 100);
+
+            document.getElementById('modalScoreText').innerText = `${score} / 20`;
+            document.getElementById('modalPercentageText').innerText = `${pct}%`;
+
+            let strengths = "";
+            let improvements = "";
+
+            if (pct >= 80) {
+                strengths = currentLang === 'TH' ? 
+                    "มีความเข้าใจเรื่องความหมายของการหาร ความสัมพันธ์การคูณ-การหาร และการแก้โจทย์ปัญหาได้อย่างดีเยี่ยม แม่นยำเรื่องสูตรคูณและกฎเกณฑ์เศษเหลือ" :
+                    "Excellent understanding of division concepts, multiplication relationship, and word problems.";
+                improvements = currentLang === 'TH' ? 
+                    "รักษาระดับการฝึกฝนอย่างสม่ำเสมอ และลองท้าทายโจทย์การหารตัวเลข 2 หลักที่ยากขึ้น" :
+                    "Maintain regular practice and try more challenging two-digit division problems.";
+            } else if (pct >= 50) {
+                strengths = currentLang === 'TH' ? 
+                    "มีความเข้าใจพื้นฐานการแบ่งกลุ่มและการหารเบื้องต้นได้ดี" :
+                    "Good foundational understanding of grouping and basic division.";
+                improvements = currentLang === 'TH' ? 
+                    "ควรทบทวนสูตรคูณแม่ 6 ถึงแม่ 9 เพิ่มเติม และฝึกฝนการหาเศษเหลือในโจทย์ปัญหาการหารไม่ลงตัว" :
+                    "Review multiplication tables 6-9 and practice non-exact division remainder calculations.";
+            } else {
+                strengths = currentLang === 'TH' ? 
+                    "มีความพยายามในการทำแบบทดสอบครบถ้วน" :
+                    "Completed all questions with persistent effort.";
+                improvements = currentLang === 'TH' ? 
+                    "แนะนำให้กลับไปทบทวนส่วน 'Virtual Teaching Tool' ด้านบนเพื่อดูการจำลองการแบ่งสิ่งของทีละขั้นตอน และท่องสูตรคูณซ้ำอีกรอบ" :
+                    "Recommended to review the Virtual Teaching Tool at the top and re-practice times tables.";
+            }
+
+            document.getElementById('modalStrengthsText').innerText = strengths;
+            document.getElementById('modalImprovementsText').innerText = improvements;
+            document.getElementById('evaluationModal').classList.remove('hidden');
+        }
+
+        function closeEvaluationModal() {
+            document.getElementById('evaluationModal').classList.add('hidden');
+        }
+
+        // Reset All Data & Shuffle
+        function resetAllData() {
+            localStorage.removeItem('divExamState_v2');
+            userAnswers = new Array(20).fill(null);
+            examSubmitted = false;
+            currentQuestionIndex = 0;
+            currentClueVisible = false;
+            initExamQuestions();
+            renderQuestionNav();
+            renderCurrentQuestion();
+            updateScoreDisplay();
+            closeEvaluationModal();
+        }
+
+        // Language Toggle (TH/EN)
+        function toggleLanguage() {
+            currentLang = currentLang === 'TH' ? 'EN' : 'TH';
+            document.getElementById('langText').innerText = currentLang === 'TH' ? 'ภาษาไทย (TH)' : 'English (EN)';
+            
+            // Update UI static labels
+            document.querySelector('.tool-title').innerText = currentLang === 'TH' ? 
+                'เครื่องมือจำลองการหาร: การแบ่งออกและการจัดกลุ่ม พร้อมหารยาว/หารสั้น' : 
+                'Virtual Division Tool: Sharing & Grouping with Long/Short Division';
+            
+            document.querySelector('.summary-main-title').innerText = currentLang === 'TH' ?
+                'สรุปเนื้อหาบทเรียน: การหาร (Division) สำหรับชั้น ป.2' :
+                'Comprehensive Knowledge Summary: Grade 2 Division';
+
+            document.querySelector('.exam-header-title').innerText = currentLang === 'TH' ?
+                'แบบทดสอบวัดความรู้การหาร 20 ข้อ (ระบบป้องกันการเดา)' :
+                '20-Question Division Exam (Anti-Guessing Engine)';
+
+            document.querySelector('.whiteboard-title').innerText = currentLang === 'TH' ? 'กระดานทดเลข' : 'Scratchpad Whiteboard';
+            document.querySelector('.analysis-widget-title').innerText = currentLang === 'TH' ? 'สถานะความพร้อมผู้เรียน' : 'Learner Readiness Status';
+            
+            renderCurrentQuestion();
+            updateSharingSim();
+        }
+
+        // Interactive Whiteboard (Scratchpad) Implementation
+        let canvas, ctx;
+        let isDrawing = false;
+        let penColor = '#4f46e5';
+
+        function initWhiteboard() {
+            canvas = document.getElementById('whiteboardCanvas');
+            if (!canvas) return;
+            ctx = canvas.getContext('2d');
+
+            // Resize canvas to match display size
+            resizeCanvas();
+            window.addEventListener('resize', resizeCanvas);
+
+            // Mouse Events
+            canvas.addEventListener('mousedown', startDrawing);
+            canvas.addEventListener('mousemove', draw);
+            canvas.addEventListener('mouseup', stopDrawing);
+            canvas.addEventListener('mouseleave', stopDrawing);
+
+            // Touch Events for Mobile
+            canvas.addEventListener('touchstart', handleTouchStart, {passive: false});
+            canvas.addEventListener('touchmove', handleTouchMove, {passive: false});
+            canvas.addEventListener('touchend', stopDrawing);
+        }
+
+        function resizeCanvas() {
+            if (!canvas) return;
+            let rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width;
+            canvas.height = rect.height;
+            ctx.lineWidth = 3;
+            ctx.lineCap = 'round';
+            ctx.strokeStyle = penColor;
+        }
+
+        function setPenColor(color) {
+            penColor = color;
+            if (ctx) ctx.strokeStyle = penColor;
+        }
+
+        function clearWhiteboard() {
+            if (!ctx || !canvas) return;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        function startDrawing(e) {
+            isDrawing = true;
+            let pos = getPos(e);
+            ctx.beginPath();
+            ctx.moveTo(pos.x, pos.y);
+        }
+
+        function draw(e) {
+            if (!isDrawing) return;
+            let pos = getPos(e);
+            ctx.lineTo(pos.x, pos.y);
+            ctx.stroke();
+        }
+
+        function stopDrawing() {
+            isDrawing = false;
+        }
+
+        function getPos(e) {
+            let rect = canvas.getBoundingClientRect();
+            let clientX = e.clientX;
+            let clientY = e.clientY;
+            if (e.touches && e.touches.length > 0) {
+                clientX = e.touches[0].clientX;
+                clientY = e.touches[0].clientY;
+            }
+            return {
+                x: clientX - rect.left,
+                y: clientY - rect.top
+            };
+        }
+
+        function handleTouchStart(e) {
+            e.preventDefault();
+            startDrawing(e);
+        }
+
+        function handleTouchMove(e) {
+            e.preventDefault();
+            draw(e);
+        }
+    </script>
+</body>
+</html>
