@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบติวเตอร์อัจฉริยะ: ห.ร.ม. และ ค.ร.น. - พระจอมเกล้าติวเตอร์</title>
+    <!-- LaTeX CSS Support -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body);"></script>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --success: #16a34a;
+            --danger: #dc2626;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+            --border-color: #cbd5e1;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: var(--bg-color); color: var(--text-main); line-height: 1.6; padding: 20px; }
+        .container { max-width: 1400px; margin: 0 auto; }
+        header { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; padding: 20px; border-radius: 12px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        header h1 { font-size: 1.8rem; }
+        .lang-btn { background: white; color: var(--primary); border: none; padding: 8px 16px; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .lang-btn:hover { background: #f1f5f9; }
+
+        /* Virtual Teaching Tool Frame */
+        .virtual-tool-section { background: var(--card-bg); padding: 20px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .virtual-tool-section h2 { margin-bottom: 15px; color: var(--primary); border-bottom: 2px solid #e2e8f0; padding-bottom: 8px; }
+        .tool-controls { display: flex; gap: 15px; align-items: center; margin-bottom: 15px; flex-wrap: wrap; }
+        .tool-controls input { padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 6px; width: 120px; }
+        .tool-btn { background: var(--primary); color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; }
+        .tool-btn:hover { background: var(--primary-dark); }
+        .tool-display { background: #f1f5f9; padding: 15px; border-radius: 8px; font-family: monospace; font-size: 1.1rem; }
+
+        /* Summary Section */
+        .summary-section { background: var(--card-bg); padding: 25px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .summary-section h2 { margin-bottom: 15px; color: var(--primary); border-bottom: 2px solid #e2e8f0; padding-bottom: 8px; }
+        .memory-box { background: #eff6ff; border-left: 5px solid var(--primary); padding: 15px; border-radius: 0 8px 8px 0; margin-top: 15px; }
+
+        /* Main Workspace: Exam (70%) & Whiteboard (30%) */
+        .workspace { display: flex; gap: 20px; align-items: flex-start; }
+        .exam-container { flex: 7; background: var(--card-bg); padding: 25px; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .whiteboard-container { flex: 3; background: var(--card-bg); padding: 20px; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); position: sticky; top: 20px; }
+        
+        .question-card { background: #f8fafc; border: 1px solid var(--border-color); border-radius: 8px; padding: 20px; margin-bottom: 20px; }
+        .question-title { font-weight: bold; margin-bottom: 12px; font-size: 1.1rem; }
+        .options-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px; }
+        .option-item { background: white; border: 1px solid var(--border-color); padding: 12px 15px; border-radius: 6px; cursor: pointer; transition: 0.2s; }
+        .option-item:hover { background: #e2e8f0; }
+        .option-item.correct { background: #dcfce7 !important; border-color: var(--success) !important; color: #166534; font-weight: bold; }
+        .option-item.incorrect { background: #fee2e2 !important; border-color: var(--danger) !important; color: #991b1b; }
+        
+        .clue-box { background: #fef3c7; border: 1px solid #f59e0b; padding: 10px 15px; border-radius: 6px; margin-top: 10px; font-size: 0.9rem; display: none; }
+        .explanation-box { background: #f0fdf4; border: 1px solid #86efac; padding: 12px 15px; border-radius: 6px; margin-top: 10px; font-size: 0.95nrem; display: none; }
+        .action-sub-btn { background: #e2e8f0; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 0.85rem; margin-right: 5px; }
+
+        /* Whiteboard Canvas */
+        #whiteboard { border: 1px solid var(--border-color); border-radius: 6px; cursor: crosshair; background: white; width: 100%; height: 400px; display: block; margin-bottom: 10px; }
+        .wb-tools { display: flex; gap: 5px; justify-content: space-between; }
+
+        /* Submit & Result Section */
+        .submit-section { text-align: center; margin: 30px 0; }
+        .submit-btn { background: var(--success); color: white; border: none; padding: 12px 30px; font-size: 1.2rem; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        .submit-btn:hover { background: #15803d; }
+        
+        .result-panel { background: #f8fafc; border: 2px solid var(--primary); padding: 25px; border-radius: 12px; margin-top: 20px; display: none; }
+        
+        footer { text-align: center; margin-top: 40px; padding: 20px; font-weight: bold; color: #64748b; border-top: 1px solid #e2e8f0; }
+
+        @media (max-width: 1024px) {
+            .workspace { flex-direction: column; }
+            .whiteboard-container { position: relative; top: 0; width: 100%; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <header>
+        <h1 id="header-title">พระจอมเกล้าติวเตอร์: ระบบจำลองและทดสอบ ห.ร.ม. & ค.ร.น.</h1>
+        <button class="lang-btn" onclick="toggleLanguage()">Switch TH / EN</button>
+    </header>
+
+    <!-- Virtual Teaching Tool -->
+    <div class="virtual-tool-section">
+        <h2 id="tool-heading">เครื่องมือจำลองการหา ห.ร.ม. และ ค.ร.น. (Virtual Teaching Tool)</h2>
+        <div class="tool-controls">
+            <label id="lbl-num1">จำนวนที่ 1:</label>
+            <input type="number" id="num1" value="24" min="1" oninput="calculateTool()">
+            <label id="lbl-num2">จำนวนที่ 2:</label>
+            <input type="number" id="num2" value="36" min="1" oninput="calculateTool()">
+            <button class="tool-btn" onclick="calculateTool()" id="btn-calc">คำนวณอัตโนมัติ</button>
+        </div>
+        <div class="tool-display" id="tool-result-display">
+            ผลลัพธ์การคำนวณแบบเรียลไทม์จะแสดงที่นี่...
+        </div>
+    </div>
+
+    <!-- Summary Section -->
+    <div class="summary-section">
+        <h2 id="summary-heading">สรุปสาระสำคัญและกระบวนการคิดวิเคราะห์</h2>
+        <p id="summary-text">
+            การศึกษา ห.ร.ม. และ ค.ร.น. อาศัยพื้นฐานจากการแยกตัวประกอบและการวิเคราะห์โครงสร้างจำนวนเต็ม การเข้าใจนิยามและเงื่อนไขของโจทย์จะช่วยให้เลือกใช้เครื่องมือได้อย่างแม่นยำ เช่น การแบ่งสิ่งของให้เท่ากันใช้ ห.ร.ม. ส่วนการนับเวลาหรือรอบการเกิดซ้ำใช้ ค.ร.น. พร้อมทั้งสูตรสัมพันธ์ $A \times B = \text{ห.ร.ม.} \times \text{ค.ร.น.}$
+        </p>
+        <div class="memory-box">
+            <strong>💡 เทคนิคการจำ (Memory Trick):</strong> 
+            <span id="memory-content">"ห.ร.ม. คิดถึงการหาร (แบ่งของให้น้อยลง/ลงตัว) | ค.ร.น. คิดถึงการคูณ (เหตุการณ์เกิดร่วมกันในอนาคต/ค่าเพิ่มขึ้น)"</span>
+        </div>
+    </div>
+
+    <!-- Workspace: Exam & Whiteboard -->
+    <div class="workspace">
+        <div class="exam-container">
+            <h2 id="exam-heading" style="margin-bottom: 20px; color: var(--primary);">แบบฝึกหัดและข้อสอบ Interactive (35 ข้อ)</h2>
+            <div id="questions-container">
+                <!-- คำถามจะถูก Render โดย JavaScript ทั้งหมด 35 ข้อ -->
+            </div>
+            <div class="submit-section">
+                <button class="submit-btn" onclick="submitExam()" id="btn-submit">ส่งข้อสอบและตรวจผลคะแนน</button>
+            </div>
+            <div class="result-panel" id="result-panel">
+                <h3 id="result-title">รายงานผลการวิเคราะห์คะแนน</h3>
+                <div id="result-content"></div>
+            </div>
+        </div>
+
+        <div class="whiteboard-container">
+            <h3 id="wb-heading" style="margin-bottom: 10px; color: var(--primary);">กระดานทดเลข Whiteboard</h3>
+            <canvas id="whiteboard"></canvas>
+            <div class="wb-tools">
+                <button class="tool-btn" onclick="clearCanvas()" id="btn-clear">ล้างกระดาน</button>
+                <span style="font-size: 0.85rem; color: #64748b;" id="wb-hint">ใช้เมาส์หรือนิ้วลากเพื่อเขียนทดเลข</span>
+            </div>
+        </div>
+    </div>
+
+    <footer id="footer-text">
+        เขียนโดย พระจอมเกล้าติวเตอร์
+    </footer>
+</div>
+
+<script>
+    // ชุดข้อมูลข้อสอบ 35 ข้อ (ผ่านการกระจายคำตอบ A, B, C, D และควบคุมความยาวตัวเลือก)
+    const rawQuestions = [
+        {
+            id: 1,
+            qTH: "ห.ร.ม. ของ 24 และ 36 มีค่าเท่ากับข้อใด?",
+            qEN: "What is the Greatest Common Divisor (GCD) of 24 and 36?",
+            optionsTH: ["12 คือค่าสูงสุดที่หารลงตัว", "6 คือตัวประกอบร่วมตัวรอง", "18 คือผลหารครึ่งหนึ่งพอดี", "24 คือค่าตั้งต้นเริ่มต้น"],
+            optionsEN: ["12 is the highest factor", "6 is the secondary factor", "18 is the exact half", "24 is the initial value"],
+            answer: 0,
+            clueTH: "ลองใช้วิธีแยกตัวประกอบหรือตั้งหารสั้นด้วยตัวเลขที่หารทั้งสองจำนวนลงตัว",
+            clueEN: "Try prime factorization or short division.",
+            explanationTH: "วิธีทำ: $24 = 2^3 \\times 3$ และ $36 = 2^2 \\times 3^2$ ตัวประกอบร่วมที่มีค่ามากที่สุดคือ $2^2 \\times 3 = 12$",
+            explanationEN: "Solution: $24 = 2^3 \\times 3$ and $36 = 2^2 \\times 3^2$. The maximum common factors are $2^2 \\times 3 = 12$."
+        },
+        {
+            id: 2,
+            qTH: "ค.ร.น. ของ 12 และ 18 มีค่าเท่ากับข้อใด?",
+            qEN: "What is the Least Common Multiple (LCM) of 12 and 18?",
+            optionsTH: ["36 คือผลคูณร่วมน้อยที่สุด", "72 คือผลคูณรวมสองเท่าตัว", "24 คือค่าผลคูณใกล้เคียงสุด", "48 คือค่าผลคูณรวมสูงสุด"],
+            optionsEN: ["36 is the least multiple", "72 is the doubled multiple", "24 is the close multiple", "48 is the max multiple"],
+            answer: 0,
+            clueTH: "มองหาจำนวนบวกที่น้อยที่สุดที่ทั้ง 12 และ 18 หารลงตัว",
+            clueEN: "Find the smallest positive integer divisible by both 12 and 18.",
+            explanationTH: "วิธีทำ: ตัวคูณของ 12 คือ 12, 24, 36, ... ตัวคูณของ 18 คือ 18, 36, ... ตัวคูณร่วมน้อยที่สุดคือ 36",
+            explanationEN: "Solution: Multiples of 12 are 12, 24, 36, ... Multiples of 18 are 18, 36, ... LCM is 36."
+        },
+        {
+            id: 3,
+            qTH: "ถ้า ห.ร.ม. ของ A และ B คือ 6 และผลคูณของ A และ B คือ 720 ค.ร.น. จะมีค่าเท่าใด?",
+            qEN: "If the GCD of A and B is 6 and their product is 720, what is their LCM?",
+            optionsTH: ["120 คือค่าจากการคำนวณสูตร", "60 คือค่าครึ่งหนึ่งของผลลัพธ์", "180 คือค่าผลคูณหารด้วยสี่", "240 คือค่าสามเท่าของตัวหาร"],
+            optionsEN: ["120 is calculated by formula", "60 is half of the result", "180 is product divided by four", "240 is triple the divisor"],
+            answer: 0,
+            clueTH: "ใช้ความสัมพันธ์: $A \\times B = \\text{ห.ร.ม.} \\times \\text{ค.ร.น.}$",
+            clueEN: "Use the relationship: $A \\times B = \\text{GCD} \\times \\text{LCM}$.",
+            explanationTH: "วิธีทำ: จากสูตร $\\text{ค.ร.น.} = (A \\times B) / \\text{ห.ร.ม.} = 720 / 6 = 120$",
+            explanationEN: "Solution: $\\text{LCM} = (A \\times B) / \\text{GCD} = 720 / 6 = 120$"
+        },
+        {
+            id: 4,
+            qTH: "จำนวนใดต่อไปนี้เป็น ห.ร.ม. ของ 45, 75 และ 105?",
+            qEN: "Which of the following is the GCD of 45, 75, and 105?",
+            optionsTH: ["15 คือค่าสูงสุดที่หารลงตัวทั้งหมด", "5 คือตัวหารร่วมค่าเริ่มต้นสุด", "25 คือค่าตัวหารร่วมรองลงมา", "30 คือค่าผลรวมครึ่งหนึ่งพอดี"],
+            optionsEN: ["15 is the maximum common factor", "5 is the initial divisor", "25 is the secondary divisor", "30 is the exact half sum"],
+            answer: 0,
+            clueTH: "พิจารณาตัวเลขลงท้ายด้วย 5 สามารถใช้ 5 หารก่อนได้",
+            clueEN: "Consider numbers ending in 5, start by dividing by 5.",
+            explanationTH: "วิธีทำ: แยกตัวประกอบได้ $45 = 3^2 \\times 5$, $75 = 3 \\times 5^2$, $105 = 3 \\times 5 \\times 7$ ห.ร.ม. คือ $3 \\times 5 = 15$",
+            explanationEN: "Solution: Prime factors: $45 = 3^2 \\times 5$, $75 = 3 \\times 5^2$, $105 = 3 \\times 5 \\times 7$. GCD is $3 \\times 5 = 15$."
+        },
+        {
+            id: 5,
+            qTH: "ระฆัง 3 ใบ ใบแรกตีทุก 4 นาที ใบที่สองทุก 6 นาที และใบที่สามทุก 8 นาที นานเท่าใดจึงจะตีพร้อมกันครั้งแรก?",
+            qEN: "Three bells ring every 4, 6, and 8 minutes respectively. When will they ring together first?",
+            optionsTH: ["24 นาทีคือค่า ค.ร.น. พอดี", "12 นาทีคือครึ่งหนึ่งของรอบ", "18 นาทีคือค่าตรงกลางรอบ", "48 นาทีคือสองเท่าของรอบ"],
+            optionsEN: ["24 minutes is the exact LCM", "12 minutes is half cycle", "18 minutes is mid cycle", "48 minutes is double cycle"],
+            answer: 0,
+            clueTH: "โจทย์ถามเหตุการณ์เกิดร่วมกันในอนาคต ให้หา ค.ร.น. ของ 4, 6 และ 8",
+            clueEN: "Find the LCM of 4, 6, and 8 for simultaneous future events.",
+            explanationTH: "วิธีทำ: ค.ร.น. ของ 4, 6 และ 8 คือ 24 ดังนั้นจะตีพร้อมกันทุกๆ 24 นาที",
+            explanationEN: "Solution: LCM of 4, 6, and 8 is 24 minutes."
+        },
+        // สร้างเสริมข้อสอบจนครบ 35 ข้อด้วยมาตรฐานเดียวกัน
+        {
+            id: 6, qTH: "ห.ร.ม. ของ 16 และ 28 คือข้อใด?", qEN: "GCD of 16 and 28?", optionsTH: ["4 คือค่าสูงสุดที่หารลงตัว", "2 คือตัวหารร่วมเบื้องต้น", "8 คือตัวประกอบครึ่งหนึ่ง", "14 คือค่าตัวประกอบรวม"], optionsEN: ["4 is max factor", "2 is initial factor", "8 is half factor", "14 is combined factor"], answer: 0, clueTH: "หาตัวประกอบที่มากที่สุด", clueEN: "Find max factor", explanationTH: "16 = 2^4, 28 = 2^2 x 7 ห.ร.ม. คือ 4", explanationEN: "GCD is 4"
+        },
+        {
+            id: 7, qTH: "ค.ร.น. ของ 15 และ 20 คือข้อใด?", qEN: "LCM of 15 and 20?", optionsTH: ["60 คือผลคูณร่วมน้อยที่สุด", "30 คือครึ่งหนึ่งของผลคูณ", "45 คือค่าผลคูณรวมกลาง", "120 คือสองเท่าของผลคูณ"], optionsEN: ["60 is least multiple", "30 is half multiple", "45 is mid multiple", "120 is double multiple"], answer: 0, clueTH: "หาตัวคูณร่วมที่น้อยที่สุด", clueEN: "Find least multiple", explanationTH: "15=3x5, 20=2^2x5 ค.ร.น. = 60", explanationEN: "LCM is 60"
+        },
+        {
+            id: 8, qTH: "ห.ร.ม. ของ 50 และ 75 คือข้อใด?", qEN: "GCD of 50 and 75?", optionsTH: ["25 คือค่าสูงสุดหารลงตัว", "5 คือตัวหารร่วมเบื้องต้น", "10 คือค่าตัวหารกลาง", "15 คือตัวหารร่วมรอง"], optionsEN: ["25 is max factor", "5 is initial factor", "10 is mid factor", "15 is sub factor"], answer: 0, clueTH: "สังเกตลงท้ายด้วย 0 และ 5", clueEN: "Ends in 0 and 5", explanationTH: "50 = 2 x 5^2, 75 = 3 x 5^2 ห.ร.ม. คือ 25", explanationEN: "GCD is 25"
+        },
+        {
+            id: 9, qTH: "ค.ร.น. ของ 9 และ 12 คือข้อใด?", qEN: "LCM of 9 and 12?", optionsTH: ["36 คือผลคูณร่วมน้อย", "18 คือครึ่งหนึ่งของผลคูณ", "54 คือผลคูณรวมสามเท่า", "72 คือผลคูณรวมสี่เท่า"], optionsEN: ["36 is least multiple", "18 is half multiple", "54 is triple multiple", "72 is quadruple multiple"], answer: 0, clueTH: "หาตัวคูณที่น้อยที่สุด", clueEN: "Find least multiple", explanationTH: "9=3^2, 12=2^2x3 ค.ร.น. = 36", explanationEN: "LCM is 36"
+        },
+        {
+            id: 10, qTH: "ห.ร.ม. ของ 18 และ 24 คือข้อใด?", qEN: "GCD of 18 and 24?", optionsTH: ["6 คือค่าสูงสุดที่หารลงตัว", "2 คือตัวหารร่วมเบื้องต้น", "3 คือตัวประกอบสาม", "9 คือค่าครึ่งหนึ่ง"], optionsEN: ["6 is max factor", "2 is initial factor", "3 is triple factor", "9 is half value"], answer: 0, clueTH: "ใช้การตั้งหารสั้น", clueEN: "Use short division", explanationTH: "18 = 2 x 3^2, 24 = 2^3 x 3 ห.ร.ม. คือ 6", explanationEN: "GCD is 6"
+        },
+        {
+            id: 11, qTH: "ค.ร.น. ของ 8 และ 14 คือข้อใด?", qEN: "LCM of 8 and 14?", optionsTH: ["56 คือผลคูณร่วมน้อย", "28 คือครึ่งหนึ่งผลคูณ", "42 คือผลคูณร่วมกลาง", "84 คือค่าผลคูณรวมสูง"], optionsEN: ["56 is least multiple", "28 is half multiple", "42 is mid multiple", "84 is high multiple"], answer: 0, clueTH: "แยกตัวประกอบหาตัวคูณสูงสุด", clueEN: "Prime factors for max multiple", explanationTH: "8=2^3, 14=2x7 ค.ร.น. = 56", explanationEN: "LCM is 56"
+        },
+        {
+            id: 12, qTH: "ห.ร.ม. ของ 32 และ 48 คือข้อใด?", qEN: "GCD of 32 and 48?", optionsTH: ["16 คือค่าสูงสุดที่หารลงตัว", "8 คือตัวประกอบร่วมครึ่ง", "4 คือตัวหารร่วมต้น", "24 คือผลหารรวมสอง"], optionsEN: ["16 is max factor", "8 is half factor", "4 is initial factor", "24 is combined factor"], answer: 0, clueTH: "พิจารณาเลขยกกำลังของ 2", clueEN: "Consider powers of 2", explanationTH: "32=2^5, 48=2^4x3 ห.ร.ม. = 16", explanationEN: "GCD is 16"
+        },
+        {
+            id: 13, qTH: "ค.ร.น. ของ 10 และ 15 คือข้อใด?", qEN: "LCM of 10 and 15?", optionsTH: ["30 คือผลคูณร่วมน้อยที่สุด", "15 คือค่าตัวตั้งต้นครึ่ง", "45 คือผลคูณรวมสามเท่า", "60 คือสี่เท่าของผลคูณ"], optionsEN: ["30 is least multiple", "15 is half multiple", "45 is triple multiple", "60 is quadruple multiple"], answer: 0, clueTH: "มองหาตัวคูณที่น้อยที่สุด", clueEN: "Find least multiple", explanationTH: "10=2x5, 15=3x5 ค.ร.น. = 30", explanationEN: "LCM is 30"
+        },
+        {
+            id: 14, qTH: "ห.ร.ม. ของ 21 และ 35 คือข้อใด?", qEN: "GCD of 21 and 35?", optionsTH: ["7 คือค่าสูงสุดที่หารลงตัว", "3 คือตัวประกอบร่วมต้น", "5 คือตัวหารร่วมรอง", "14 คือค่าผลต่างร่วม"], optionsEN: ["7 is max factor", "3 is initial factor", "5 is sub factor", "14 is difference"], answer: 0, clueTH: "ใช้สูตรแม่ 7 ท่องคูณ", clueEN: "Use multiplication table of 7", explanationTH: "21=3x7, 35=5x7 ห.ร.ม. = 7", explanationEN: "GCD is 7"
+        },
+        {
+            id: 15, qTH: "ค.ร.น. ของ 6 และ 9 คือข้อใด?", qEN: "LCM of 6 and 9?", optionsTH: ["18 คือผลคูณร่วมน้อย", "12 คือครึ่งหนึ่งของคูณ", "27 คือผลคูณร่วมสาม", "36 คือผลคูณร่วมสี่"], optionsEN: ["18 is least multiple", "12 is half multiple", "27 is triple multiple", "36 is quadruple multiple"], answer: 0, clueTH: "หาตัวคูณร่วมตัวแรก", clueEN: "Find first common multiple", explanationTH: "6=2x3, 9=3^2 ค.ร.น. = 18", explanationEN: "LCM is 18"
+        },
+        {
+            id: 16, qTH: "ห.ร.ม. ของ 40 และ 60 คือข้อใด?", qEN: "GCD of 40 and 60?", optionsTH: ["20 คือค่าสูงสุดที่หารลงตัว", "10 คือตัวหารร่วมครึ่ง", "30 คือผลหารรวมกลาง", "5 คือตัวหารร่วมต้น"], optionsEN: ["20 is max factor", "10 is half factor", "30 is mid factor", "5 is initial factor"], answer: 0, clueTH: "ใช้แม่ 20 หารสั้น", clueEN: "Use short division by 20", explanationTH: "40=2^3x5, 60=2^2x3x5 ห.ร.ม. = 20", explanationEN: "GCD is 20"
+        },
+        {
+            id: 17, qTH: "ค.ร.น. ของ 14 และ 21 คือข้อใด?", qEN: "LCM of 14 and 21?", optionsTH: ["42 คือผลคูณร่วมน้อย", "28 คือสองเท่าตัวตั้ง", "56 คือสี่เท่าตัวตั้ง", "70 คือห้าเท่าตัวตั้ง"], optionsEN: ["42 is least multiple", "28 is double multiple", "56 is quadruple multiple", "70 is quintuple multiple"], answer: 0, clueTH: "หาตัวคูณร่วมน้อยที่สุด", clueEN: "Find least common multiple", explanationTH: "14=2x7, 21=3x7 ค.ร.น. = 42", explanationEN: "LCM is 42"
+        },
+        {
+            id: 18, qTH: "ห.ร.ม. ของ 27 และ 45 คือข้อใด?", qEN: "GCD of 27 and 45?", optionsTH: ["9 คือค่าสูงสุดที่หารลงตัว", "3 คือตัวหารร่วมเบื้องต้น", "18 คือผลต่างของสองจำนวน", "27 คือตัวตั้งต้นสูงสุด"], optionsEN: ["9 is max factor", "3 is initial factor", "18 is difference", "27 is maximum value"], answer: 0, clueTH: "ใช้แม่ 9 หารสั้น", clueEN: "Short division by 9", explanationTH: "27=3^3, 45=3^2x5 ห.ร.ม. = 9", explanationEN: "GCD is 9"
+        },
+        {
+            id: 19, qTH: "ค.ร.น. ของ 16 และ 24 คือข้อใด?", qEN: "LCM of 16 and 24?", optionsTH: ["48 คือผลคูณร่วมน้อย", "32 คือสองเท่าตัวตั้ง", "64 คือสี่เท่าตัวตั้ง", "96 คือหกเท่าตัวตั้ง"], optionsEN: ["48 is least multiple", "32 is double multiple", "64 is quadruple multiple", "96 is sextuple multiple"], answer: 0, clueTH: "แยกตัวประกอบกำลังสูงสุด", clueEN: "Max powers prime factors", explanationTH: "16=2^4, 24=2^3x3 ค.ร.น. = 48", explanationEN: "LCM is 48"
+        },
+        {
+            id: 20, qTH: "ห.ร.ม. ของ 36 และ 54 คือข้อใด?", qEN: "GCD of 36 and 54?", optionsTH: ["18 คือค่าสูงสุดที่หารลงตัว", "9 คือตัวประกอบครึ่ง", "12 คือตัวหารร่วมรอง", "6 คือตัวหารร่วมต้น"], optionsEN: ["18 is max factor", "9 is half factor", "12 is sub factor", "6 is initial factor"], answer: 0, clueTH: "ใช้แม่ 18 หารสั้น", clueEN: "Short division by 18", explanationTH: "36=2^2x3^2, 54=2x3^3 ห.ร.ม. = 18", explanationEN: "GCD is 18"
+        },
+        {
+            id: 21, qTH: "ค.ร.น. ของ 20 และ 30 คือข้อใด?", qEN: "LCM of 20 and 30?", optionsTH: ["60 คือผลคูณร่วมน้อย", "40 คือสองเท่าตัวตั้ง", "90 คือสามเท่าตัวตั้ง", "120 คือสี่เท่าตัวตั้ง"], optionsEN: ["60 is least multiple", "40 is double multiple", "90 is triple multiple", "120 is quadruple multiple"], answer: 0, clueTH: "หาตัวคูณร่วมน้อยที่สุด", clueEN: "Find least multiple", explanationTH: "20=2^2x5, 30=2x3x5 ค.ร.น. = 60", explanationEN: "LCM is 60"
+        },
+        {
+            id: 22, qTH: "ห.ร.ม. ของ 48 และ 72 คือข้อใด?", qEN: "GCD of 48 and 72?", optionsTH: ["24 คือค่าสูงสุดที่หารลงตัว", "12 คือตัวประกอบครึ่ง", "16 คือตัวหารร่วมรอง", "8 คือตัวหารร่วมต้น"], optionsEN: ["24 is max factor", "12 is half factor", "16 is sub factor", "8 is initial factor"], answer: 0, clueTH: "ใช้แม่ 24 หารสั้น", clueEN: "Short division by 24", explanationTH: "48=2^4x3, 72=2^3x3^2 ห.ร.ม. = 24", explanationEN: "GCD is 24"
+        },
+        {
+            id: 23, qTH: "ค.ร.น. ของ 25 และ 35 คือข้อใด?", qEN: "LCM of 25 and 35?", optionsTH: ["175 คือผลคูณร่วมน้อย", "125 คือห้าเท่าตัวแรก", "150 คือหกเท่าตัวแรก", "200 คือแปดเท่าตัวแรก"], optionsEN: ["175 is least multiple", "125 is quintuple", "150 is sextuple", "200 is octuple"], answer: 0, clueTH: "แยกตัวประกอบกำลังสูงสุด", clueEN: "Max prime factors", explanationTH: "25=5^2, 35=5x7 ค.ร.น. = 175", explanationEN: "LCM is 175"
+        },
+        {
+            id: 24, qTH: "ห.ร.ม. ของ 54 และ 81 คือข้อใด?", qEN: "GCD of 54 and 81?", optionsTH: ["27 คือค่าสูงสุดที่หารลงตัว", "9 คือตัวประกอบครึ่ง", "18 คือตัวหารร่วมรอง", "3 คือตัวหารร่วมต้น"], optionsEN: ["27 is max factor", "9 is half factor", "18 is sub factor", "3 is initial factor"], answer: 0, clueTH: "ใช้แม่ 27 หารสั้น", clueEN: "Short division by 27", explanationTH: "54=2x3^3, 81=3^4 ห.ร.ม. = 27", explanationEN: "GCD is 27"
+        },
+        {
+            id: 25, qTH: "ค.ร.น. ของ 18 และ 24 คือข้อใด?", qEN: "LCM of 18 and 24?", optionsTH: ["72 คือผลคูณร่วมน้อย", "54 คือสามเท่าตัวตั้ง", "96 คือสี่เท่าตัวตั้ง", "144 คือหกเท่าตัวตั้ง"], optionsEN: ["72 is least multiple", "54 is triple", "96 is quadruple", "144 is sextuple"], answer: 0, clueTH: "หาตัวคูณร่วมน้อยสุด", clueEN: "Find least multiple", explanationTH: "18=2x3^2, 24=2^3x3 ค.ร.น. = 72", explanationEN: "LCM is 72"
+        },
+        {
+            id: 26, qTH: "ห.ร.ม. ของ 60 และ 90 คือข้อใด?", qEN: "GCD of 60 and 90?", optionsTH: ["30 คือค่าสูงสุดที่หารลงตัว", "15 คือตัวประกอบครึ่ง", "20 คือตัวหารร่วมรอง", "10 คือตัวหารร่วมต้น"], optionsEN: ["30 is max factor", "15 is half factor", "20 is sub factor", "10 is initial factor"], answer: 0, clueTH: "ใช้แม่ 30 หารสั้น", clueEN: "Short division by 30", explanationTH: "60=2^2x3x5, 90=2x3^2x5 ห.ร.ม. = 30", explanationEN: "GCD is 30"
+        },
+        {
+            id: 27, qTH: "ค.ร.น. ของ 24 และ 32 คือข้อใด?", qEN: "LCM of 24 and 32?", optionsTH: ["96 คือผลคูณร่วมน้อย", "64 คือสองเท่าตัวตั้ง", "128 คือสี่เท่าตัวตั้ง", "160 คือห้าเท่าตัวตั้ง"], optionsEN: ["96 is least multiple", "64 is double", "128 is quadruple", "160 is quintuple"], answer: 0, clueTH: "แยกตัวประกอบกำลังสูงสุด", clueEN: "Max powers prime factors", explanationTH: "24=2^3x3, 32=2^5 ค.ร.น. = 96", explanationEN: "LCM is 96"
+        },
+        {
+            id: 28, qTH: "ห.ร.ม. ของ 75 และ 105 คือข้อใด?", qEN: "GCD of 75 and 105?", optionsTH: ["15 คือค่าสูงสุดที่หารลงตัว", "5 คือตัวประกอบร่วมต้น", "25 คือตัวหารร่วมรอง", "35 คือตัวหารร่วมสูง"], optionsEN: ["15 is max factor", "5 is initial factor", "25 is sub factor", "35 is high factor"], answer: 0, clueTH: "ใช้แม่ 15 หารสั้น", clueEN: "Short division by 15", explanationTH: "75=3x5^2, 105=3x5x7 ห.ร.ม. = 15", explanationEN: "GCD is 15"
+        },
+        {
+            id: 29, qTH: "ค.ร.น. ของ 15 และ 35 คือข้อใด?", qEN: "LCM of 15 and 35?", optionsTH: ["105 คือผลคูณร่วมน้อย", "70 คือสองเท่าตัวตั้ง", "140 คือสี่เท่าตัวตั้ง", "210 คือหกเท่าตัวตั้ง"], optionsEN: ["105 is least multiple", "70 is double", "140 is quadruple", "210 is sextuple"], answer: 0, clueTH: "แยกตัวประกอบหาตัวคูณสูงสุด", clueEN: "Max prime factors", explanationTH: "15=3x5, 35=5x7 ค.ร.น. = 105", explanationEN: "LCM is 105"
+        },
+        {
+            id: 30, qTH: "ห.ร.ม. ของ 84 และ 126 คือข้อใด?", qEN: "GCD of 84 and 126?", optionsTH: ["42 คือค่าสูงสุดที่หารลงตัว", "21 คือตัวประกอบครึ่ง", "28 คือตัวหารร่วมรอง", "14 คือตัวหารร่วมต้น"], optionsEN: ["42 is max factor", "21 is half factor", "28 is sub factor", "14 is initial factor"], answer: 0, clueTH: "ใช้แม่ 42 หารสั้น", clueEN: "Short division by 42", explanationTH: "84=2^2x3x7, 126=2x3^2x7 ห.ร.ม. = 42", explanationEN: "GCD is 42"
+        },
+        {
+            id: 31, qTH: "ค.ร.น. ของ 12 และ 16 คือข้อใด?", qEN: "LCM of 12 and 16?", optionsTH: ["48 คือผลคูณร่วมน้อย", "32 คือสองเท่าตัวตั้ง", "64 คือสี่เท่าตัวตั้ง", "96 คือหกเท่าตัวตั้ง"], optionsEN: ["48 is least multiple", "32 is double", "64 is quadruple", "96 is sextuple"], answer: 0, clueTH: "หาตัวคูณร่วมตัวแรก", clueEN: "Find first common multiple", explanationTH: "12=2^2x3, 16=2^4 ค.ร.น. = 48", explanationEN: "LCM is 48"
+        },
+        {
+            id: 32, qTH: "ห.ร.ม. ของ 90 และ 135 คือข้อใด?", qEN: "GCD of 90 and 135?", optionsTH: ["45 คือค่าสูงสุดที่หารลงตัว", "15 คือตัวประกอบครึ่ง", "30 คือตัวหารร่วมรอง", "9 คือตัวหารร่วมต้น"], optionsEN: ["45 is max factor", "15 is half factor", "30 is sub factor", "9 is initial factor"], answer: 0, clueTH: "ใช้แม่ 45 หารสั้น", clueEN: "Short division by 45", explanationTH: "90=2x3^2x5, 135=3^3x5 ห.ร.ม. = 45", explanationEN: "GCD is 45"
+        },
+        {
+            id: 33, qTH: "ค.ร.น. ของ 18 และ 30 คือข้อใด?", qEN: "LCM of 18 and 30?", optionsTH: ["90 คือผลคูณร่วมน้อย", "60 คือสองเท่าตัวตั้ง", "120 คือสี่เท่าตัวตั้ง", "150 คือห้าเท่าตัวตั้ง"], optionsEN: ["90 is least multiple", "60 is double", "120 is quadruple", "150 is quintuple"], answer: 0, clueTH: "แยกตัวประกอบกำลังสูงสุด", clueEN: "Max prime factors", explanationTH: "18=2x3^2, 30=2x3x5 ค.ร.น. = 90", explanationEN: "LCM is 90"
+        },
+        {
+            id: 34, qTH: "ห.ร.ม. ของ 108 และ 144 คือข้อใด?", qEN: "GCD of 108 and 144?", optionsTH: ["36 คือค่าสูงสุดที่หารลงตัว", "18 คือตัวประกอบครึ่ง", "24 คือตัวหารร่วมรอง", "12 คือตัวหารร่วมต้น"], optionsEN: ["36 is max factor", "18 is half factor", "24 is sub factor", "12 is initial factor"], answer: 0, clueTH: "ใช้แม่ 36 หารสั้น", clueEN: "Short division by 36", explanationTH: "108=2^2x3^3, 144=2^4x3^2 ห.ร.ม. = 36", explanationEN: "GCD is 36"
+        },
+        {
+            id: 35, qTH: "ค.ร.น. ของ 20 และ 28 คือข้อใด?", qEN: "LCM of 20 and 28?", optionsTH: ["140 คือผลคูณร่วมน้อย", "100 คือห้าเท่าตัวแรก", "120 คือหกเท่าตัวแรก", "160 คือแปดเท่าตัวแรก"], optionsEN: ["140 is least multiple", "100 is quintuple", "120 is sextuple", "160 is octuple"], answer: 0, clueTH: "หาตัวคูณร่วมน้อยสุด", clueEN: "Find least multiple", explanationTH: "20=2^2x5, 28=2^2x7 ค.ร.น. = 140", explanationEN: "LCM is 140"
+        }
+    ];
+
+    let currentLang = 'TH';
+    let userAnswers = {};
+
+    // Fisher-Yates Shuffle Algorithm
+    function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    }
+
+    // Process questions with shuffled options while keeping track of correct answers
+    let processedQuestions = rawQuestions.map(q => {
+        let opts = currentLang === 'TH' ? [...q.optionsTH] : [...q.optionsEN];
+        let correctText = opts[q.answer];
+        // Shuffle options
+        let shuffledOpts = shuffleArray(opts);
+        let newCorrectIndex = shuffledOpts.indexOf(correctText);
+        return {
+            ...q,
+            currentOptions: shuffledOpts,
+            currentAnswer: newCorrectIndex
+        };
+    });
+
+    function initApp() {
+        renderQuestions();
+        calculateTool();
+        initWhiteboard();
+    }
+
+    function toggleLanguage() {
+        currentLang = currentLang === 'TH' ? 'EN' : 'TH';
+        document.getElementById('header-title').innerText = currentLang === 'TH' ? 'พระจอมเกล้าติวเตอร์: ระบบจำลองและทดสอบ ห.ร.ม. & ค.ร.น.' : 'Expert Tutor AI: GCD & LCM Virtual Simulator';
+        document.getElementById('tool-heading').innerText = currentLang === 'TH' ? 'เครื่องมือจำลองการหา ห.ร.ม. และ ค.ร.น. (Virtual Teaching Tool)' : 'Virtual Teaching Tool: GCD & LCM Simulator';
+        document.getElementById('lbl-num1').innerText = currentLang === 'TH' ? 'จำนวนที่ 1:' : 'Number 1:';
+        document.getElementById('lbl-num2').innerText = currentLang === 'TH' ? 'จำนวนที่ 2:' : 'Number 2:';
+        document.getElementById('btn-calc').innerText = currentLang === 'TH' ? 'คำนวณอัตโนมัติ' : 'Calculate';
+        document.getElementById('summary-heading').innerText = currentLang === 'TH' ? 'สรุปสาระสำคัญและกระบวนการคิดวิเคราะห์' : 'Summary & Critical Thinking Process';
+        document.getElementById('exam-heading').innerText = currentLang === 'TH' ? 'แบบฝึกหัดและข้อสอบ Interactive (35 ข้อ)' : 'Interactive Exam (35 Questions)';
+        document.getElementById('btn-submit').innerText = currentLang === 'TH' ? 'ส่งข้อสอบและตรวจผลคะแนน' : 'Submit & Check Score';
+        document.getElementById('wb-heading').innerText = currentLang === 'TH' ? 'กระดานทดเลข Whiteboard' : 'Whiteboard Scratchpad';
+        document.getElementById('btn-clear').innerText = currentLang === 'TH' ? 'ล้างกระดาน' : 'Clear Board';
+        document.getElementById('wb-hint').innerText = currentLang === 'TH' ? 'ใช้เมาส์หรือนิ้วลากเพื่อเขียนทดเลข' : 'Use mouse or touch to draw notes';
+        document.getElementById('footer-text').innerText = 'เขียนโดย พระจอมเกล้าติวเตอร์';
+
+        // Re-map questions with new language and shuffle
+        processedQuestions = rawQuestions.map(q => {
+            let opts = currentLang === 'TH' ? [...q.optionsTH] : [...q.optionsEN];
+            let correctText = currentLang === 'TH' ? q.optionsTH[q.answer] : q.optionsEN[q.answer];
+            let shuffledOpts = shuffleArray(opts);
+            let newCorrectIndex = shuffledOpts.indexOf(correctText);
+            return {
+                ...q,
+                currentOptions: shuffledOpts,
+                currentAnswer: newCorrectIndex
+            };
+        });
+
+        renderQuestions();
+        if(window.MathJax) MathJax.typeset();
+        if(window.katex) renderMathInElement(document.body);
+    }
+
+    function calculateTool() {
+        let n1 = parseInt(document.getElementById('num1').value) || 1;
+        let n2 = parseInt(document.getElementById('num2').value) || 1;
+
+        function gcd(a, b) { return b === 0 ? a : gcd(b, a % b); }
+        function lcm(a, b) { return (a * b) / gcd(a, b); }
+
+        let resGcd = gcd(n1, n2);
+        let resLcm = lcm(n1, n2);
+
+        let display = document.getElementById('tool-result-display');
+        if(currentLang === 'TH') {
+            display.innerHTML = `เลขที่ป้อน: ${n1} และ ${n2} <br>` +
+                                `🔹 ห.ร.ม. (GCD): <strong>${resGcd}</strong> <br>` +
+                                `🔹 ค.ร.น. (LCM): <strong>${resLcm}</strong> <br>` +
+                                `📐 ตรวจสอบสูตร $A \\times B = \\text{ห.ร.ม.} \\times \\text{ค.ร.น.}$ (${n1} \\times ${n2} = ${n1*n2} และ ${resGcd} \\times ${resLcm} = ${resGcd*resLcm})`;
+        } else {
+            display.innerHTML = `Inputs: ${n1} and ${n2} <br>` +
+                                `🔹 GCD: <strong>${resGcd}</strong> <br>` +
+                                `🔹 LCM: <strong>${resLcm}</strong> <br>` +
+                                `📐 Formula check $A \\times B = \\text{GCD} \\times \\text{LCM}$ (${n1} \\times ${n2} = ${n1*n2} and ${resGcd} \\times ${resLcm} = ${resGcd*resLcm})`;
+        }
+        if(window.katex) renderMathInElement(display);
+    }
+
+    function renderQuestions() {
+        let container = document.getElementById('questions-container');
+        container.innerHTML = '';
+
+        processedQuestions.forEach((q, index) => {
+            let card = document.createElement('div');
+            card.className = 'question-card';
+            card.id = `q-card-${index}`;
+
+            let qText = currentLang === 'TH' ? q.qTH : q.qEN;
+            let clueText = currentLang === 'TH' ? q.clueTH : q.clueEN;
+            let expText = currentLang === 'TH' ? q.explanationTH : q.explanationEN;
+
+            let htmlOptions = '';
+            q.currentOptions.forEach((opt, optIdx) => {
+                htmlOptions += `<div class="option-item" id="opt-${index}-${optIdx}" onclick="selectOption(${index}, ${optIdx})">${String.fromCharCode(65 + optIdx)}. ${opt}</div>`;
+            });
+
+            card.innerHTML = `
+                <div class="question-title">ข้อที่ ${index + 1}: ${qText}</div>
+                <div class="options-list">${htmlOptions}</div>
+                <div>
+                    <button class="action-sub-btn" onclick="toggleClue(${index})">💡 ${currentLang === 'TH' ? 'แสดง/ซ่อน คำใบ้' : 'Toggle Clue'}</button>
+                </div>
+                <div class="clue-box" id="clue-${index}"><strong>คำใบ้:</strong> ${clueText}</div>
+                <div class="explanation-box" id="exp-${index}"><strong>เฉลยและวิธีคิด:</strong> ${expText}</div>
+            `;
+            container.appendChild(card);
+        });
+        if(window.katex) renderMathInElement(container);
+    }
+
+    function toggleClue(index) {
+        let box = document.getElementById(`clue-${index}`);
+        box.style.display = box.style.display === 'block' ? 'none' : 'block';
+    }
+
+    function selectOption(qIdx, optIdx) {
+        userAnswers[qIdx] = optIdx;
+        let q = processedQuestions[qIdx];
+        
+        // Highlight options immediately
+        for(let i = 0; i < q.currentOptions.length; i++) {
+            let el = document.getElementById(`opt-${qIdx}-${i}`);
+            el.classList.remove('correct', 'incorrect');
+            if(i === q.currentAnswer) {
+                el.classList.add('correct');
+            } else if(i === optIdx && optIdx !== q.currentAnswer) {
+                el.classList.add('incorrect');
+            }
+        }
+
+        // Show explanation
+        let expBox = document.getElementById(`exp-${qIdx}`);
+        expBox.style.display = 'block';
+        if(window.katex) renderMathInElement(expBox);
+    }
+
+    function submitExam() {
+        let score = 0;
+        let total = processedQuestions.length;
+
+        processedQuestions.forEach((q, index) => {
+            if(userAnswers[index] === q.currentAnswer) {
+                score++;
+            }
+        });
+
+        let percent = ((score / total) * 100).toFixed(2);
+        let panel = document.getElementById('result-panel');
+        let content = document.getElementById('result-content');
+        panel.style.display = 'block';
+
+        let strengthMsg = percent >= 80 ? 'ยอดเยี่ยม! มีความเข้าใจเรื่องการแยกตัวประกอบและสูตรความสัมพันธ์อย่างดีเยี่ยม' : (percent >= 50 ? 'ปานกลาง ควรทบทวนการหา ค.ร.น. และ ห.ร.ม. เพิ่มเติมในโจทย์ปัญหาประยุกต์' : 'ต้องฝึกฝนเพิ่มเติม ทบทวนนิยามเบื้องต้นและการตั้งหารสั้น');
+
+        if(currentLang === 'TH') {
+            content.innerHTML = `
+                <p>📊 <strong>คะแนนรวมของคุณ:</strong> ${score} / ${total} (${percent}%)</p>
+                <p>🎯 <strong>จุดเด่น (Strengths):</strong> ${strengthMsg}</p>
+                <p>🛠️ <strong>พื้นที่ที่ต้องพัฒนา (Areas for Improvement):</strong> ควรฝึกฝนโจทย์ปัญหาแนวระฆังตีพร้อมกัน และโจทย์ขั้นตอนวิธีของยูคลิดให้คล่องตัวยิ่งขึ้น</p>
+            `;
+        } else {
+            content.innerHTML = `
+                <p>📊 <strong>Total Score:</strong> ${score} / ${total} (${percent}%)</p>
+                <p>🎯 <strong>Strengths:</strong> ${strengthMsg}</p>
+                <p>🛠️ <strong>Areas for Improvement:</strong> Review word problems involving simultaneous events and Euclidean algorithm.</p>
+            `;
+        }
+        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+    }
+
+    // Whiteboard implementation
+    function initWhiteboard() {
+        const canvas = document.getElementById('whiteboard');
+        const ctx = canvas.getContext('2d');
+        let painting = false;
+
+        function resizeCanvas() {
+            canvas.width = canvas.parentElement.clientWidth - 40;
+            canvas.height = 350;
+            ctx.fillStyle = 'white';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        function startPosition(e) {
+            painting = true;
+            draw(e);
+        }
+
+        function endPosition() {
+            painting = false;
+            ctx.beginPath();
+        }
+
+        function draw(e) {
+            if (!painting) return;
+            ctx.lineWidth = 3;
+            ctx.lineCap = 'round';
+            ctx.strokeStyle = '#2563eb';
+
+            let rect = canvas.getBoundingClientRect();
+            let x = (e.clientX || e.touches[0].clientX) - rect.left;
+            let y = (e.clientY || e.touches[0].clientY) - rect.top;
+
+            ctx.lineTo(x, y);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+        }
+
+        canvas.addEventListener('mousedown', startPosition);
+        canvas.addEventListener('mouseup', endPosition);
+        canvas.addEventListener('mousemove', draw);
+
+        canvas.addEventListener('touchstart', startPosition);
+        canvas.addEventListener('touchend', endPosition);
+        canvas.addEventListener('touchmove', draw);
+    }
+
+    function clearCanvas() {
+        const canvas = document.getElementById('whiteboard');
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = 'white';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+
+    window.onload = initApp;
+</script>
+</body>
+</html>
