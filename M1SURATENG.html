@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exam Game - Tense Mastery (Present Simple, Present Continuous, Future Simple, Past Simple)</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- KaTeX for Math & Formula Rendering -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body);"></script>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Sarabun', sans-serif; }
+        .gradient-bg { background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%); }
+        .glass-card { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
+        .spin-wheel { transition: transform 4s cubic-bezier(0.15, 0.85, 0.15, 1); }
+    </style>
+</head>
+<body class="bg-slate-100 min-h-screen text-slate-800 flex flex-col">
+
+    <!-- Header -->
+    <header class="gradient-bg text-white shadow-lg sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center">
+            <div class="flex items-center space-x-3 mb-2 md:mb-0">
+                <div class="bg-white/20 p-2 rounded-xl">
+                    <i data-lucide="book-open-check" class="w-8 h-8 text-white"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl md:text-2xl font-bold">พระจอมเกล้าติวเตอร์ - Tense Master Arena</h1>
+                    <p class="text-xs text-blue-100">ระบบจำแนกและทดสอบ 4 Tense หลัก ม.1 (Present Simple, Continuous, Future, Past)</p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-2 bg-white/10 px-4 py-2 rounded-lg text-sm">
+                <i data-lucide="user" class="w-4 h-4"></i>
+                <span id="header-user-mode" class="font-semibold">ผู้ใช้งาน: นักเรียน ม.1</span>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 py-6 space-y-8">
+
+        <!-- Section 1: Interactive Infographic / Visual Teaching Tool -->
+        <section class="bg-white rounded-2xl shadow-md p-6 border border-slate-200">
+            <div class="flex items-center space-x-2 mb-4">
+                <i data-lucide="compass" class="w-6 h-6 text-indigo-600"></i>
+                <h2 class="text-xl font-bold text-slate-900">1. แผนภาพอินโฟกราฟิกจำแนกเวลา (Timeline & Tense Visualizer)</h2>
+            </div>
+            <p class="text-sm text-slate-600 mb-6">คลิกเลือก Tense ด้านล่างเพื่อดูโครงสร้าง (Pattern), Keyword สำคัญ และตัวอย่างการใช้งาน เพื่อฝังจำเข้าสมองส่วนลึกทันที</p>
+            
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                <button onclick="selectTenseTab('present-simple')" id="btn-present-simple" class="p-4 rounded-xl border-2 border-indigo-600 bg-indigo-50 font-bold text-indigo-700 transition flex flex-col items-center space-y-1 shadow-sm">
+                    <i data-lucide="repeat" class="w-5 h-5"></i>
+                    <span>Present Simple</span>
+                    <span class="text-xs font-normal text-slate-500">กิจวัตร/ความจริง</span>
+                </button>
+                <button onclick="selectTenseTab('present-cont')" id="btn-present-cont" class="p-4 rounded-xl border-2 border-slate-200 hover:border-blue-400 bg-white font-bold text-slate-700 transition flex flex-col items-center space-y-1">
+                    <i data-lucide="clock" class="w-5 h-5"></i>
+                    <span>Present Continuous</span>
+                    <span class="text-xs font-normal text-slate-500">กำลังทำอยู่ตอนนี้</span>
+                </button>
+                <button onclick="selectTenseTab('future-simple')" id="btn-future-simple" class="p-4 rounded-xl border-2 border-slate-200 hover:border-blue-400 bg-white font-bold text-slate-700 transition flex flex-col items-center space-y-1">
+                    <i data-lucide="fast-forward" class="w-5 h-5"></i>
+                    <span>Future Simple</span>
+                    <span class="text-xs font-normal text-slate-500">อนาคต/จะทำ</span>
+                </button>
+                <button onclick="selectTenseTab('past-simple')" id="btn-past-simple" class="p-4 rounded-xl border-2 border-slate-200 hover:border-blue-400 bg-white font-bold text-slate-700 transition flex flex-col items-center space-y-1">
+                    <i data-lucide="history" class="w-5 h-5"></i>
+                    <span>Past Simple</span>
+                    <span class="text-xs font-normal text-slate-500">อดีต/จบแล้ว</span>
+                </button>
+            </div>
+
+            <!-- Tense Detail Display Card -->
+            <div id="tense-info-display" class="bg-indigo-50/60 border border-indigo-200 rounded-xl p-6 transition-all duration-300">
+                <h3 id="info-title" class="text-lg font-bold text-indigo-900 mb-2">1. Present Simple Tense (เหตุการณ์จริง, นิสัย, กิจวัตร)</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                    <div class="bg-white p-4 rounded-lg shadow-sm border border-indigo-100">
+                        <p class="font-semibold text-indigo-800 mb-1">📌 โครงสร้าง (Pattern):</p>
+                        <p id="info-pattern" class="text-slate-700 bg-slate-50 p-2 rounded font-mono">Subject + $V_1$ (s/es) + Object</p>
+                    </div>
+                    <div class="bg-white p-4 rounded-lg shadow-sm border border-indigo-100">
+                        <p class="font-semibold text-indigo-800 mb-1">🔑 Keyword สำคัญ:</p>
+                        <p id="info-keyword" class="text-slate-700 bg-slate-50 p-2 rounded">always, usually, often, sometimes, never, every day, on Mondays</p>
+                    </div>
+                </div>
+                <div class="mt-4 bg-white p-4 rounded-lg shadow-sm border border-indigo-100">
+                    <p class="font-semibold text-indigo-800 mb-1">💡 หลักการใช้และตัวอย่าง:</p>
+                    <p id="info-usage" class="text-slate-700">ใช้กับความจริงสากลหรือกิจวัตรประจำทำซ้ำๆ เช่น <span class="italic font-medium">"The sun rises in the east."</span> (พระอาทิตย์ขึ้นทางทิศตะวันออก)</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 2: Comprehensive Subject Summary (500+ words) -->
+        <section class="bg-white rounded-2xl shadow-md p-6 border border-slate-200">
+            <div class="flex items-center space-x-2 mb-4">
+                <i data-lucide="file-text" class="w-6 h-6 text-indigo-600"></i>
+                <h2 class="text-xl font-bold text-slate-900">2. สรุปเนื้อหาเจาะลึก 4 Tense ม.1 พร้อมเทคนิคจำและจุดที่นักมักสับสน (500+ คำ)</h2>
+            </div>
+            
+            <div class="space-y-4 text-sm text-slate-700 leading-relaxed bg-slate-50 p-6 rounded-xl border border-slate-200">
+                <p>
+                    การเรียนภาษาอังกฤษในระดับชั้นมัธยมศึกษาปีที่ 1 (Matthayom 1) หัวใจสำคัญที่สุดคือการทำความเข้าใจ <strong>"กาลเวลา (Tenses)"</strong> ซึ่งเป็นรากฐานในการสื่อสารและการสอบแข่งขัน 4 Tense หลักที่นักเรียนต้องแยกแยะให้ออกอย่างเด็ดขาด ได้แก่ <strong>Present Simple, Present Continuous, Future Simple และ Past Simple Tense</strong> หากน้องๆ เข้าใจแก่นของเวลา (Time Frame) และโครงสร้างคำกริยา (Verb Forms) จะทำให้การทำข้อสอบแกรมม่ากลายเป็นเรื่องง่ายทันที
+                </p>
+
+                <h3 class="font-bold text-indigo-900 text-base mt-3">1. Present Simple Tense: กิจวัตรและความจริงนิจสิน</h3>
+                <p>
+                    ใช้สำหรับเหตุการณ์ที่เป็นความจริงทั่วไป กิจวัตรประจำวัน หรือนิสัยที่ทำเป็นประจำ โครงสร้างหลักคือ $Subject + V_1 (เติม s หรือ es เมื่อประธานเอกพจน์บุรุษที่ 3 เช่น He, She, It)$ สิ่งที่นักเรียนมักสับสนบ่อยคือการลืมเติม $s/es$ ประธานเอกพจน์ <strong>Keyword</strong> เด่น ได้แก่ <span class="bg-yellow-100 px-1 rounded">always, usually, generally, every day/week</span> เทคนิคจำคือ <em>"กิจวัตรประจำวัน ความจริงโลกไม่เปลี่ยน ใช้ช่องหนึ่ง"</em>
+                </p>
+
+                <h3 class="font-bold text-indigo-900 text-base mt-3">2. Present Continuous Tense: เหตุการณ์กำลังดำเนินอยู่ ณ ปัจจุบัน</h3>
+                <p>
+                    ใช้พูดถึงสิ่งที่กำลังทำอยู่ขณะที่พูด โครงสร้างคือ $Subject + is/am/are + V.ing$ ข้อควรระวังคือห้ามลืม Verb to be ($is, am, are$) และคำกริยาต้องเติม $-ing$ เสมอ <strong>Keyword</strong> สำคัญ ได้แก่ <span class="bg-yellow-100 px-1 rounded">now, at the moment, right now, Look!, Listen!</span> เทคนิคจำคือ <em>"กำลังทำ -ing มี Be ช่วย"</em>
+                </p>
+
+                <h3 class="font-bold text-indigo-900 text-base mt-3">3. Future Simple Tense: เหตุการณ์ในอนาคตที่เพิ่งตัดสินใจหรือคาดการณ์</h3>
+                <p>
+                    ใช้สำหรับเหตุการณ์ที่จะเกิดขึ้นในอนาคต โครงสร้างคือ $Subject + will + V_1 (ไม่ผัน)$ หรือ $Subject + is/am/are + going to + V_1$ จุดเด่นคือหลัง will กริยาต้องเป็นช่อง 1 แท้เสมอไม่มีการเติม $s$ หรือ $-ing$ ใดๆ ทั้งสิ้น <strong>Keyword</strong> ได้แก่ <span class="bg-yellow-100 px-1 rounded">tomorrow, next week, soon, later</span> เทคนิคจำคือ <em>"อนาคตไกลใช้ will ตามด้วยช่องหนึ่งรูปเดิม"</em>
+                </p>
+
+                <h3 class="font-bold text-indigo-900 text-base mt-3">4. Past Simple Tense: อดีตที่จบลงไปแล้ว</h3>
+                <p>
+                    ใช้กับเหตุการณ์ที่เกิดขึ้นและจบลงไปแล้วในอดีต มีการระบุเวลาชัดเจน โครงสร้างคือ $Subject + V_2$ (กริยาช่อง 2 หรือเติม -ed) ถือเป็นจุดวัดความจำคำศัพท์กริยา 3 ช่อง <strong>Keyword</strong> สำคัญ ได้แก่ <span class="bg-yellow-100 px-1 rounded">yesterday, last night, ...ago, in 2010</span> เทคนิคจำคือ <em>"อดีตผ่านไป ใช้ช่องสอง ท่องจำคำบอกเวลา"</em>
+                </p>
+
+                <div class="bg-indigo-50 border-l-4 border-indigo-600 p-4 rounded-r-lg mt-4">
+                    <p class="font-bold text-indigo-900">🧠 สรุปเคล็ดลับการแยก Tense แบบเซียน:</p>
+                    <p class="text-indigo-800 text-xs mt-1">
+                        1. มองหา <strong>Keyword</strong> ในประโยคก่อนเสมอว่าเป็นเวลาไหน (อดีต ปัจจุบัน อนาคต หรือกิจวัตร)<br>
+                        2. ตรวจสอบ <strong>ประธาน (Subject)</strong> ว่าเป็นเอกพจน์หรือพหูพจน์ เพื่อเลือกรูปกริยา $V_1, V_2, is/am/are$ หรือ $will$<br>
+                        3. ระวังข้อสอบหลอกที่ให้สถานการณ์ปัจจุบันซ้อนกับเหตุการณ์กำลังทำ หรือกิจวัตรประจำวันซ้อนกับอดีต
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 3: Interactive Game & Exam Modes -->
+        <section class="bg-white rounded-2xl shadow-md p-6 border border-slate-200">
+            <div class="flex flex-col md:flex-row justify-between items-center mb-6 pb-4 border-b border-slate-200 gap-4">
+                <div class="flex items-center space-x-2">
+                    <i data-lucide="gamepad-2" class="w-6 h-6 text-indigo-600"></i>
+                    <h2 class="text-xl font-bold text-slate-900">3. โหมดจำลองการแข่งขันและห้องสอบอัจฉริยะ</h2>
+                </div>
+                <div class="flex space-x-3">
+                    <button onclick="switchGameMode('mode-a')" id="tab-mode-a" class="px-5 py-2.5 rounded-xl font-bold text-sm bg-indigo-600 text-white shadow-md transition flex items-center space-x-2">
+                        <i data-lucide="users" class="w-4 h-4"></i>
+                        <span>Mode A: เกมวงล้อประลองทีม</span>
+                    </button>
+                    <button onclick="switchGameMode('mode-b')" id="tab-mode-b" class="px-5 py-2.5 rounded-xl font-bold text-sm bg-slate-200 text-slate-700 hover:bg-slate-300 transition flex items-center space-x-2">
+                        <i data-lucide="pen-tool" class="w-4 h-4"></i>
+                        <span>Mode B: ข้อสอบเดี่ยว 30 ข้อ + กระดานทด</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- MODE A: Competitive Game Mode (Spinning Wheel & Team Help) -->
+            <div id="container-mode-a" class="space-y-6">
+                <div class="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-2xl border border-indigo-100 flex flex-col md:flex-row items-center justify-between gap-6">
+                    <div class="space-y-2 text-center md:text-left">
+                        <span class="bg-indigo-600 text-white text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wide">Competitive Arena</span>
+                        <h3 class="text-2xl font-bold text-indigo-900">วงล้อสุ่มผู้ท้าชิงและภารกิจจำแนก Tense</h3>
+                        <p class="text-sm text-slate-600 max-w-xl">หมุนวงล้อเพื่อเลือกตัวแทนทีม (นานา, บูม, ภูภา, ต้นกล้า) สุ่มโจทย์ข้อสอบระดับเข้มข้น พร้อมระบบตัวช่วยและคิดคะแนนแบบเรียลไทม์</p>
+                    </div>
+                    <div class="bg-white p-4 rounded-xl shadow-md border border-indigo-100 flex flex-col items-center min-w-[200px]">
+                        <p class="text-xs font-semibold text-slate-500 mb-1">คะแนนทีมปัจจุบัน</p>
+                        <div id="team-score-display" class="text-3xl font-extrabold text-indigo-600">0 คะแนน</div>
+                        <div id="current-contestant" class="text-xs text-slate-500 mt-1">ผู้ท้าชิง: -</div>
+                    </div>
+                </div>
+
+                <!-- Wheel & Action Area -->
+                <div id="wheel-area" class="bg-slate-50 p-8 rounded-2xl border border-slate-200 text-center space-y-6">
+                    <div class="relative w-48 h-48 mx-auto bg-indigo-600 rounded-full flex items-center justify-center text-white shadow-xl spin-wheel" id="wheel-element">
+                        <div class="text-center">
+                            <i data-lucide="award" class="w-12 h-12 mx-auto mb-1 animate-bounce"></i>
+                            <span class="font-bold text-lg">WHEEL OF TENSE</span>
+                        </div>
+                    </div>
+                    <div>
+                        <button onclick="spinWheel()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-8 py-3 rounded-xl shadow-lg transition transform hover:-translate-y-0.5">
+                            🎡 หมุนวงล้อสุ่มผู้ท้าชิงและข้อสอบ
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Game Question Card (Hidden initially) -->
+                <div id="game-question-box" class="hidden bg-white p-6 rounded-2xl border border-indigo-200 shadow-sm space-y-4">
+                    <div class="flex justify-between items-center text-xs font-semibold text-indigo-600 bg-indigo-50 px-3 py-1.5 rounded-lg">
+                        <span id="game-q-meta">โจทย์ข้อที่ 1 / 5</span>
+                        <span id="game-q-tag" class="bg-indigo-200 text-indigo-800 px-2 py-0.5 rounded">(ใช้สูตร: Past Simple เนื่องจากมี keyword ว่า yesterday)</span>
+                    </div>
+                    <h4 id="game-q-text" class="text-lg font-bold text-slate-900">Question text goes here...</h4>
+                    <div id="game-options-grid" class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <!-- Options generated dynamically -->
+                    </div>
+                    <div id="game-feedback" class="hidden p-4 rounded-xl text-sm font-medium"></div>
+                    <div class="flex justify-end pt-2">
+                        <button id="next-game-q-btn" onclick="nextGameQuestion()" class="hidden bg-indigo-600 text-white font-semibold px-6 py-2 rounded-xl hover:bg-indigo-700 transition">
+                            ข้อถัดไป ➔
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MODE B: Solo Practice Mode (30 Questions + Math Whiteboard) -->
+            <div id="container-mode-b" class="hidden space-y-6">
+                <div class="flex flex-col md:flex-row justify-between items-center bg-slate-50 p-4 rounded-xl border border-slate-200 gap-4">
+                    <div>
+                        <h3 class="font-bold text-slate-900">โหมดฝึกฝนเดี่ยว (30 ข้อเต็ม พร้อมตัวจับเวลาและกระดานทด)</h3>
+                        <p class="text-xs text-slate-500">ระบบสุ่มข้อสอบด้วย Fisher-Yates Shuffle ป้องกันการเดา พร้อมเฉลยละเอียดทันทีหลังเลือกตอบ</p>
+                    </div>
+                    <div class="flex items-center space-x-3">
+                        <button onclick="toggleWhiteboard()" class="bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold px-4 py-2 rounded-lg shadow transition flex items-center space-x-1">
+                            <i data-lucide="edit-3" class="w-4 h-4"></i>
+                            <span id="wb-toggle-text">เปิดกระดานทดไอเดีย</span>
+                        </button>
+                        <button onclick="startSoloExam()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold px-4 py-2 rounded-lg shadow transition">
+                            🔄 เริ่มต้นทำข้อสอบใหม่
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Interactive Whiteboard Canvas (Collapsible) -->
+                <div id="whiteboard-container" class="hidden bg-amber-50 border-2 border-amber-200 rounded-xl p-4 space-y-2">
+                    <div class="flex justify-between items-center">
+                        <span class="text-xs font-bold text-amber-800 flex items-center space-x-1">
+                            <i data-lucide="pen-tool" class="w-4 h-4"></i>
+                            <span>กระดานทด / โน้ตช่วยจำ (วาดหรือเขียนโน้ตชั่วคราว)</span>
+                        </span>
+                        <button onclick="clearCanvas()" class="text-xs text-amber-700 hover:underline">ล้างกระดาน</button>
+                    </div>
+                    <canvas id="exam-canvas" class="w-full h-40 bg-white rounded-lg border border-amber-200 cursor-crosshair shadow-inner"></canvas>
+                </div>
+
+                <!-- Solo Exam Container -->
+                <div id="solo-exam-area" class="space-y-6">
+                    <!-- Progress Bar -->
+                    <div class="w-full bg-slate-200 rounded-full h-2.5">
+                        <div id="solo-progress-bar" class="bg-indigo-600 h-2.5 rounded-full transition-all duration-300" style="width: 0%"></div>
+                    </div>
+                    <div id="solo-question-card" class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                        <!-- Question content rendered dynamically -->
+                    </div>
+                </div>
+
+                <!-- Exam Results & Weakness Analysis (Hidden initially) -->
+                <div id="solo-results-card" class="hidden bg-indigo-50 border border-indigo-200 rounded-2xl p-8 text-center space-y-6">
+                    <div class="w-16 h-16 bg-indigo-600 text-white rounded-full flex items-center justify-center mx-auto shadow-lg">
+                        <i data-lucide="award" class="w-8 h-8"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-indigo-900">สรุปผลการทดสอบ Tense Master Arena</h3>
+                    <div class="text-4xl font-extrabold text-indigo-600" id="final-score-text">คะแนน: 0 / 30 (0%)</div>
+                    
+                    <div class="bg-white p-6 rounded-xl border border-indigo-100 text-left max-w-2xl mx-auto space-y-3">
+                        <h4 class="font-bold text-slate-800 flex items-center space-x-2">
+                            <i data-lucide="bar-chart-2" class="w-5 h-5 text-indigo-600"></i>
+                            <span>รายงานจุดอ่อนและคำแนะนำในการพัฒนา (Weakness Analysis):</span>
+                        </h4>
+                        <div id="weakness-report-content" class="text-sm text-slate-600 space-y-2">
+                            <!-- Weakness generated -->
+                        </div>
+                    </div>
+
+                    <button onclick="startSoloExam()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-8 py-3 rounded-xl shadow transition">
+                        🔄 ทำข้อสอบใหม่อีกครั้ง
+                    </button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer with Signature Branding -->
+    <footer class="bg-slate-800 text-white py-6 mt-12 text-center text-sm border-t border-slate-700">
+        <div class="max-w-7xl mx-auto px-4 space-y-2">
+            <p class="text-slate-400">ระบบฝึกทักษะและจำแนก Tense ภาษาอังกฤษระดับมัธยมศึกษาปีที่ 1</p>
+            <p class="font-bold text-indigo-400 text-base">เขียนโดย พระจอมเกล้าติวเตอร์</p>
+        </div>
+    </footer>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        // Initialize Lucide Icons
+        lucide.createIcons();
+
+        // Tense Infographic Data
+        const tenseData = {
+            'present-simple': {
+                title: "1. Present Simple Tense (เหตุการณ์จริง, นิสัย, กิจวัตร)",
+                pattern: "Subject + $V_1$ (เติม s/es เมื่อประธานเอกพจน์) + Object",
+                keyword: "always, usually, often, sometimes, never, every day, on Mondays",
+                usage: "ใช้กับความจริงสากลหรือกิจวัตรประจำวัน เช่น \"The sun rises in the east.\" (พระอาทิตย์ขึ้นทางทิศตะวันออก)"
+            },
+            'present-cont': {
+                title: "2. Present Continuous Tense (กำลังกระทำอยู่ขณะนี้)",
+                pattern: "Subject + is / am / are + $V.ing$ + Object",
+                keyword: "now, at the moment, right now, Look!, Listen!",
+                usage: "ใช้กับเหตุการณ์ที่กำลังเกิดขึ้นเฉพาะหน้า เช่น \"She is studying English now.\" (เธอกำลังเรียนภาษาอังกฤษอยู่ตอนนี้)"
+            },
+            'future-simple': {
+                title: "3. Future Simple Tense (เหตุการณ์ในอนาคต)",
+                pattern: "Subject + will + $V_1$ (รูปเดิมไม่เติม s หรือ ing) + Object",
+                keyword: "tomorrow, next week, soon, later, in the future",
+                usage: "ใช้กับการตัดสินใจทำทันทีหรือคาดการณ์อนาคต เช่น \"We will visit Chiang Mai next month.\" (พวกเราจะไปเที่ยวเชียงใหม่เดือนหน้า)"
+            },
+            'past-simple': {
+                title: "4. Past Simple Tense (เหตุการณ์ในอดีตที่จบลงแล้ว)",
+                pattern: "Subject + $V_2$ (กริยาช่อง 2 หรือเติม -ed) + Object",
+                keyword: "yesterday, last night, ...ago, in 2015, then",
+                usage: "ใช้กับเหตุการณ์ที่เกิดขึ้นและจบในอดีตระบุเวลาชัดเจน เช่น \"He played football yesterday.\" (เขาเล่นฟุตบอลเมื่อวานนี้)"
+            }
+        };
+
+        function selectTenseTab(tenseKey) {
+            ['present-simple', 'present-cont', 'future-simple', 'past-simple'].forEach(k => {
+                const btn = document.getElementById(`btn-${k}`);
+                if (k === tenseKey) {
+                    btn.className = "p-4 rounded-xl border-2 border-indigo-600 bg-indigo-50 font-bold text-indigo-700 transition flex flex-col items-center space-y-1 shadow-sm";
+                } else {
+                    btn.className = "p-4 rounded-xl border-2 border-slate-200 hover:border-blue-400 bg-white font-bold text-slate-700 transition flex flex-col items-center space-y-1";
+                }
+            });
+
+            const data = tenseData[tenseKey];
+            document.getElementById('info-title').innerText = data.title;
+            document.getElementById('info-pattern').innerHTML = data.pattern;
+            document.getElementById('info-keyword').innerText = data.keyword;
+            document.getElementById('info-usage').innerHTML = data.usage;
+            if (window.renderMathInElement) renderMathInElement(document.getElementById('tense-info-display'));
+        }
+
+        // Master Question Dataset (30 Questions with Balanced Distribution & Parenthetical Tags)
+        const masterQuestions = [
+            // Present Simple
+            { q: "She usually ______ to school by bus every morning.", options: ["go", "goes", "is going", "went"], correct: 1, tense: "Present Simple", tag: "ใช้สูตร: Present Simple เนื่องจากมี keyword ว่า usually และเป็นกิจวัตร" },
+            { q: "The earth ______ around the sun.", options: ["move", "moving", "moves", "moved"], correct: 2, tense: "Present Simple", tag: "ใช้สูตร: Present Simple สำหรับความจริงสากล (General Truth)" },
+            { q: "I ______ coffee in the morning, but today I am drinking tea.", options: ["drink", "drinks", "drank", "am drinking"], correct: 0, tense: "Present Simple", tag: "ใช้สูตร: Present Simple บอกนิสัยประจำวันทั่วไป" },
+            { q: "They ______ English very well.", options: ["speaks", "speak", "speaking", "spoke"], correct: 1, tense: "Present Simple", tag: "ใช้สูตร: Present Simple ประธาน They เป็นพหูพจน์ใช้ V_1 รูปเดิม" },
+            { q: "My father ______ in a bank downtown.", options: ["work", "working", "works", "worked"], correct: 2, tense: "Present Simple", tag: "ใช้สูตร: Present Simple ประธานเอกพจน์ My father กริยาเติม s" },
+            { q: "______ your brother play football on weekends?", options: ["Do", "Does", "Is", "Are"], correct: 1, tense: "Present Simple", tag: "ใช้สูตร: Present Simple ประธานเอกพจน์ใช้ Does ในประโยคคำถาม" },
+            { q: "Cats ______ mice when they see them.", options: ["catch", "catches", "caught", "catching"], correct: 0, tense: "Present Simple", tag: "ใช้สูตร: Present Simple พหูพจน์ Cats ใช้ V_1" },
+            
+            // Present Continuous
+            { q: "Be quiet! The baby ______ in the bedroom.", options: ["sleep", "sleeps", "is sleeping", "slept"], correct: 2, tense: "Present Continuous", tag: "ใช้สูตร: Present Continuous มีคำเตือน Be quiet! แสดงว่ากำลังเกิดเหตุการณ์ตอนนี้" },
+            { q: "Look! The children ______ football in the rain.", options: ["play", "plays", "are playing", "played"], correct: 2, tense: "Present Continuous", tag: "ใช้สูตร: Present Continuous มี keyword ว่า Look! ใช้ is/am/are + V.ing" },
+            { q: "What ______ you ______ at the moment?", options: ["do / do", "are / doing", "did / do", "are / do"], correct: 1, tense: "Present Continuous", tag: "ใช้สูตร: Present Continuous มี keyword ว่า at the moment" },
+            { q: "I can't answer the phone right now because I ______ dinner.", options: ["cook", "am cooking", "cooked", "cooks"], correct: 1, tense: "Present Continuous", tag: "ใช้สูตร: Present Continuous เหตุการณ์กำลังดำเนินอยู่ขณะพูด (right now)" },
+            { q: "Listen! Someone ______ a beautiful song.", options: ["sing", "sings", "is singing", "sang"], correct: 2, tense: "Present Continuous", tag: "ใช้สูตร: Present Continuous มี keyword ว่า Listen!" },
+            { q: "They ______ for the bus at the bus stop right now.", options: ["wait", "waiting", "are waiting", "waited"], correct: 2, tense: "Present Continuous", tag: "ใช้สูตร: Present Continuous ใช้ are waiting" },
+            { q: "She ______ her homework at present.", options: ["is doing", "does", "did", "doing"], correct: 0, tense: "Present Continuous", tag: "ใช้สูตร: Present Continuous มี keyword คือ at present" },
+
+            // Future Simple
+            { q: "I promise I ______ you with your homework tomorrow.", options: ["help", "helped", "will help", "am helping"], correct: 2, tense: "Future Simple", tag: "ใช้สูตร: Future Simple มี keyword ว่า tomorrow และคำสัญญา (Promise) ใช้ will + V_1" },
+            { q: "Look at those dark clouds! It ______ rain soon.", options: ["will", "is going to", "rains", "rained"], correct: 1, tense: "Future Simple", tag: "ใช้สูตร: Future / Near Future มีหลักฐานชัดเจน (dark clouds) ใช้ is going to" },
+            { q: "We ______ travel to Japan next year.", options: ["will", "travels", "traveled", "are travel"], correct: 0, tense: "Future Simple", tag: "ใช้สูตร: Future Simple มี keyword ว่า next year ใช้ will" },
+            { q: "Do you think it ______ snow tomorrow?", options: ["is", "will", "does", "did"], correct: 1, tense: "Future Simple", tag: "ใช้สูตร: Future Simple ในการคาดการณ์อนาคต" },
+            { q: "Wait here! I ______ get you a glass of water.", options: ["will", "am", "do", "did"], correct: 0, tense: "Future Simple", tag: "ใช้สูตร: Future Simple ตัดสินใจทำทันทีขณะพูด (Spontaneous decision)" },
+            { q: "The concert ______ start in ten minutes.", options: ["will", "did", "does", "is"], correct: 0, tense: "Future Simple", tag: "ใช้สูตร: Future Simple กับเหตุการณ์ที่จะเกิดในอนาคตอันใกล้" },
+            { q: "She ______ graduate from university in 2030.", options: ["will", "is", "does", "was"], correct: 0, tense: "Future Simple", tag: "ใช้สูตร: Future Simple คาดการณ์เหตุการณ์ระยะยาว" },
+
+            // Past Simple
+            { q: "He ______ to Bangkok with his parents last week.", options: ["go", "goes", "went", "is going"], correct: 2, tense: "Past Simple", tag: "ใช้สูตร: Past Simple มี keyword ว่า last week ใช้กริยาช่อง 2 (went)" },
+            { q: "They ______ a great movie at the cinema yesterday.", options: ["watch", "watched", "watching", "watches"], correct: 1, tense: "Past Simple", tag: "ใช้สูตร: Past Simple มี keyword ว่า yesterday ใช้ -ed" },
+            { q: "What time ______ you get up this morning?", options: ["do", "does", "did", "are"], correct: 2, tense: "Past Simple", tag: "ใช้สูตร: Past Simple เหตุการณ์เช้านี้ที่ผ่านไปแล้ว ใช้ did ในคำถาม" },
+            { q: "She ______ not go to school yesterday because she was ill.", options: ["do", "does", "did", "will"], correct: 2, tense: "Past Simple", tag: "ใช้สูตร: Past Simple ประโยคปฏิเสธในอดีตใช้ did not ($did + V_1$)" },
+            { q: "Columbus ______ America in 1492.", options: ["discover", "discovers", "discovered", "is discovering"], correct: 2, tense: "Past Simple", tag: "ใช้สูตร: Past Simple เหตุการณ์ประวัติศาสตร์ในอดีตจบลงแล้ว" },
+            { q: "I ______ a strange noise outside my room last night.", options: ["hear", "hears", "heard", "hearing"], correct: 2, tense: "Past Simple", tag: "ใช้สูตร: Past Simple มี keyword ว่า last night ใช้ V_2 (heard)" },
+            { q: "Where ______ you born?", options: ["are", "were", "did", "was"], correct: 1, tense: "Past Simple", tag: "ใช้สูตร: Past Simple คำถามการเกิดใช้ were you born" },
+            { q: "The train ______ five minutes ago.", options: ["leave", "leaves", "left", "leaving"], correct: 2, tense: "Past Simple", tag: "ใช้สูตร: Past Simple มี keyword ว่า ago ใช้ V_2 (left)" },
+            { q: "We ______ an English test last Monday.", options: ["have", "has", "had", "having"], correct: 2, tense: "Past Simple", tag: "ใช้สูตร: Past Simple มี keyword ว่า last Monday ใช้ V_2 (had)" }
+        ];
+
+        // Fisher-Yates Shuffle Algorithm
+        function fisherYatesShuffle(array) {
+            let currentIndex = array.length, randomIndex;
+            while (currentIndex !== 0) {
+                randomIndex = Math.floor(Math.random() * currentIndex);
+                currentIndex--;
+                [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+            }
+            return array;
+        }
+
+        // Mode Switching
+        function switchGameMode(mode) {
+            const btnA = document.getElementById('tab-mode-a');
+            const btnB = document.getElementById('tab-mode-b');
+            const contA = document.getElementById('container-mode-a');
+            const contB = document.getElementById('container-mode-b');
+
+            if (mode === 'mode-a') {
+                btnA.className = "px-5 py-2.5 rounded-xl font-bold text-sm bg-indigo-600 text-white shadow-md transition flex items-center space-x-2";
+                btnB.className = "px-5 py-2.5 rounded-xl font-bold text-sm bg-slate-200 text-slate-700 hover:bg-slate-300 transition flex items-center space-x-2";
+                contA.classList.remove('hidden');
+                contB.classList.add('hidden');
+            } else {
+                btnB.className = "px-5 py-2.5 rounded-xl font-bold text-sm bg-indigo-600 text-white shadow-md transition flex items-center space-x-2";
+                btnA.className = "px-5 py-2.5 rounded-xl font-bold text-sm bg-slate-200 text-slate-700 hover:bg-slate-300 transition flex items-center space-x-2";
+                contB.classList.remove('hidden');
+                contA.classList.add('hidden');
+                startSoloExam();
+            }
+        }
+
+        // Mode A State & Logic
+        const contestants = ["นานา", "บูม", "ภูภา", "ต้นกล้า"];
+        let teamScore = 0;
+        let currentGameQIndex = 0;
+        let shuffledGameQuestions = [];
+
+        function spinWheel() {
+            const wheel = document.getElementById('wheel-element');
+            wheel.style.transform = `rotate(${Math.floor(Math.random() * 360 + 720)}deg)`;
+            
+            setTimeout(() => {
+                const chosen = contestants[Math.floor(Math.random() * contestants.length)];
+                document.getElementById('current-contestant').innerText = `ผู้ท้าชิงรอบนี้: ${chosen}`;
+                shuffledGameQuestions = [...masterQuestions].sort(() => 0.5 - Math.random()).slice(0, 5);
+                currentGameQIndex = 0;
+                document.getElementById('wheel-area').classList.add('hidden');
+                document.getElementById('game-question-box').classList.remove('hidden');
+                loadGameQuestion();
+            }, 4000);
+        }
+
+        function loadGameQuestion() {
+            if (currentGameQIndex >= shuffledGameQuestions.length) {
+                alert(`จบเกมการแข่งขัน! ทีมทำคะแนนได้ ${teamScore} คะแนน`);
+                document.getElementById('wheel-area').classList.remove('hidden');
+                document.getElementById('game-question-box').classList.add('hidden');
+                teamScore = 0;
+                document.getElementById('team-score-display').innerText = `${teamScore} คะแนน`;
+                return;
+            }
+
+            const qData = shuffledGameQuestions[currentGameQIndex];
+            document.getElementById('game-q-meta').innerText = `โจทย์ข้อที่ ${currentGameQIndex + 1} / ${shuffledGameQuestions.length}`;
+            document.getElementById('game-q-tag').innerText = qData.tag;
+            document.getElementById('game-q-text').innerText = qData.q;
+
+            const grid = document.getElementById('game-options-grid');
+            grid.innerHTML = '';
+            const feedback = document.getElementById('game-feedback');
+            feedback.classList.add('hidden');
+            document.getElementById('next-game-q-btn').classList.add('hidden');
+
+            qData.options.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = "p-3 rounded-xl border border-slate-200 bg-slate-50 hover:bg-indigo-50 hover:border-indigo-300 font-medium text-left transition flex items-center space-x-3";
+                btn.innerHTML = `<span class="w-6 h-6 bg-slate-200 rounded-full flex items-center justify-center text-xs font-bold text-slate-700">${String.fromCharCode(65 + idx)}</span><span>${opt}</span>`;
+                btn.onclick = () => checkGameAnswer(idx, qData.correct, btn);
+                grid.appendChild(btn);
+            });
+        }
+
+        function checkGameAnswer(selected, correct, btnElement) {
+            const feedback = document.getElementById('game-feedback');
+            feedback.classList.remove('hidden');
+            const buttons = document.getElementById('game-options-grid').children;
+
+            for (let b of buttons) { b.disabled = true; }
+
+            if (selected === correct) {
+                btnElement.className = "p-3 rounded-xl border border-green-300 bg-green-100 font-medium text-left flex items-center space-x-3 text-green-800";
+                feedback.className = "p-4 rounded-xl text-sm font-semibold bg-green-50 text-green-800 border border-green-200";
+                feedback.innerHTML = "✅ ถูกต้องยอดเยี่ยม! รับไป 10 คะแนนเต็ม";
+                teamScore += 10;
+                document.getElementById('team-score-display').innerText = `${teamScore} คะแนน`;
+            } else {
+                btnElement.className = "p-3 rounded-xl border border-red-300 bg-red-100 font-medium text-left flex items-center space-x-3 text-red-800";
+                buttons[correct].className = "p-3 rounded-xl border border-green-300 bg-green-100 font-medium text-left flex items-center space-x-3 text-green-800";
+                feedback.className = "p-4 rounded-xl text-sm font-semibold bg-red-50 text-red-800 border border-red-200";
+                feedback.innerHTML = `❌ ยังไม่ถูกต้อง ข้อที่ถูกคือข้อ ${String.fromCharCode(65 + correct)}`;
+            }
+            document.getElementById('next-game-q-btn').classList.remove('hidden');
+        }
+
+        function nextGameQuestion() {
+            currentGameQIndex++;
+            loadGameQuestion();
+        }
+
+        // Mode B State & Logic (Solo Practice 30 Questions)
+        let soloQuestions = [];
+        let currentSoloIndex = 0;
+        let soloScore = 0;
+        let userAnswersRecord = [];
+
+        function startSoloExam() {
+            soloQuestions = fisherYatesShuffle([...masterQuestions]).slice(0, 30);
+            currentSoloIndex = 0;
+            soloScore = 0;
+            userAnswersRecord = [];
+
+            document.getElementById('solo-results-card').classList.add('hidden');
+            document.getElementById('solo-exam-area').classList.remove('hidden');
+            loadSoloQuestion();
+        }
+
+        function loadSoloQuestion() {
+            if (currentSoloIndex >= soloQuestions.length) {
+                showSoloResults();
+                return;
+            }
+
+            const qData = soloQuestions[currentSoloIndex];
+            const progressPercent = ((currentSoloIndex) / soloQuestions.length) * 100;
+            document.getElementById('solo-progress-bar').style.width = `${progressPercent}%`;
+
+            const card = document.getElementById('solo-question-card');
+            card.innerHTML = `
+                <div class="flex justify-between items-center text-xs font-semibold text-indigo-600 bg-indigo-50 px-3 py-1.5 rounded-lg">
+                    <span>ข้อสอบเดี่ยวข้อที่ ${currentSoloIndex + 1} / ${soloQuestions.length}</span>
+                    <span class="bg-indigo-200 text-indigo-800 px-2 py-0.5 rounded">${qData.tag}</span>
+                </div>
+                <h4 class="text-lg font-bold text-slate-900">${qData.q}</h4>
+                <div id="solo-options-grid" class="grid grid-cols-1 md:grid-cols-2 gap-3"></div>
+                <div id="solo-feedback" class="hidden p-4 rounded-xl text-sm font-medium"></div>
+                <div class="flex justify-end pt-2">
+                    <button id="next-solo-btn" onclick="nextSoloQuestion()" class="hidden bg-indigo-600 text-white font-semibold px-6 py-2 rounded-xl hover:bg-indigo-700 transition">
+                        ข้อถัดไป ➔
+                    </button>
+                </div>
+            `;
+
+            const grid = document.getElementById('solo-options-grid');
+            qData.options.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = "p-3 rounded-xl border border-slate-200 bg-slate-50 hover:bg-indigo-50 hover:border-indigo-300 font-medium text-left transition flex items-center space-x-3";
+                btn.innerHTML = `<span class="w-6 h-6 bg-slate-200 rounded-full flex items-center justify-center text-xs font-bold text-slate-700">${String.fromCharCode(65 + idx)}</span><span>${opt}</span>`;
+                btn.onclick = () => checkSoloAnswer(idx, qData.correct, btn, qData.tense);
+                grid.appendChild(btn);
+            });
+        }
+
+        function checkSoloAnswer(selected, correct, btnElement, tenseType) {
+            const feedback = document.getElementById('solo-feedback');
+            feedback.classList.remove('hidden');
+            const buttons = document.getElementById('solo-options-grid').children;
+
+            for (let b of buttons) { b.disabled = true; }
+
+            const isCorrect = (selected === correct);
+            userAnswersRecord.push({ tense: tenseType, correct: isCorrect });
+
+            if (isCorrect) {
+                btnElement.className = "p-3 rounded-xl border border-green-300 bg-green-100 font-medium text-left flex items-center space-x-3 text-green-800";
+                feedback.className = "p-4 rounded-xl text-sm font-semibold bg-green-50 text-green-800 border border-green-200";
+                feedback.innerHTML = "✅ ถูกต้อง! เก่งมากครับ";
+                soloScore++;
+            } else {
+                btnElement.className = "p-3 rounded-xl border border-red-300 bg-red-100 font-medium text-left flex items-center space-x-3 text-red-800";
+                buttons[correct].className = "p-3 rounded-xl border border-green-300 bg-green-100 font-medium text-left flex items-center space-x-3 text-green-800";
+                feedback.className = "p-4 rounded-xl text-sm font-semibold bg-red-50 text-red-800 border border-red-200";
+                feedback.innerHTML = `❌ ยังไม่ถูกต้อง คำตอบที่ถูกต้องคือข้อ ${String.fromCharCode(65 + correct)}`;
+            }
+            document.getElementById('next-solo-btn').classList.remove('hidden');
+        }
+
+        function nextSoloQuestion() {
+            currentSoloIndex++;
+            loadSoloQuestion();
+        }
+
+        function showSoloResults() {
+            document.getElementById('solo-exam-area').classList.add('hidden');
+            document.getElementById('solo-results-card').classList.remove('hidden');
+            const percentage = Math.round((soloScore / soloQuestions.length) * 100);
+            document.getElementById('final-score-text').innerText = `คะแนนรวม: ${soloScore} / ${soloQuestions.length} (${percentage}%)`;
+
+            let stats = {};
+            userAnswersRecord.forEach(rec => {
+                if (!stats[rec.tense]) stats[rec.tense] = { total: 0, correct: 0 };
+                stats[rec.tense].total++;
+                if (rec.correct) stats[rec.tense].correct++;
+            });
+
+            let reportHTML = "";
+            for (let t in stats) {
+                let p = Math.round((stats[t].correct / stats[t].total) * 100);
+                let statusColor = p >= 80 ? "text-green-600" : p >= 50 ? "text-amber-600" : "text-red-600";
+                reportHTML += `<div class="flex justify-between items-center text-sm border-b pb-1"><span>${t}</span><span class="font-bold ${statusColor}">${stats[t].correct} / ${stats[t].total} (${p}%)</span></div>`;
+            }
+            document.getElementById('weakness-report-content').innerHTML = reportHTML;
+        }
+
+        // Whiteboard Functions
+        let isWhiteboardOpen = false;
+        function toggleWhiteboard() {
+            isWhiteboardOpen = !isWhiteboardOpen;
+            const container = document.getElementById('whiteboard-container');
+            const text = document.getElementById('wb-toggle-text');
+            if (isWhiteboardOpen) {
+                container.classList.remove('hidden');
+                text.innerText = "ปิดกระดานทด";
+                initCanvas();
+            } else {
+                container.classList.add('hidden');
+                text.innerText = "เปิดกระดานทดไอเดีย";
+            }
+        }
+
+        function initCanvas() {
+            const canvas = document.getElementById('exam-canvas');
+            canvas.width = canvas.parentElement.clientWidth - 32;
+            canvas.height = 160;
+            const ctx = canvas.getContext('2d');
+            ctx.lineWidth = 3;
+            ctx.lineCap = 'round';
+            ctx.strokeStyle = '#4f46e5';
+
+            let painting = false;
+            function startPosition(e) { painting = true; draw(e); }
+            function endPosition() { painting = false; ctx.beginPath(); }
+            function draw(e) {
+                if (!painting) return;
+                const rect = canvas.getBoundingClientRect();
+                const x = (e.clientX || e.touches[0].clientX) - rect.left;
+                const y = (e.clientY || e.touches[0].clientY) - rect.top;
+                ctx.lineTo(x, y);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(x, y);
+            }
+
+            canvas.onmousedown = startPosition;
+            canvas.onmouseup = endPosition;
+            canvas.onmousemove = draw;
+            canvas.ontouchstart = startPosition;
+            canvas.ontouchend = endPosition;
+            canvas.ontouchmove = draw;
+        }
+
+        function clearCanvas() {
+            const canvas = document.getElementById('exam-canvas');
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+    </script>
+</body>
+</html>
+เขียนโดย พระจอมเกล้าติวเตอร์
