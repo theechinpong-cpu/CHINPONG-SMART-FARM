@@ -27,7 +27,7 @@
                 <div class="bg-indigo-700 p-2.5 rounded-xl text-2xl shadow-inner">📐</div>
                 <div>
                     <h1 class="text-xl font-bold">คลังข้อสอบแข่งขันคณิตศาสตร์ ม.1: ห.ร.ม. และ ค.ร.น. (ชุดที่ 2)</h1>
-                    <p class="text-xs text-indigo-200">พระจอมเกล้าติวเตอร์ | ระบบฝึกทำข้อสอบเดี่ยวพร้อมเฉลยละเอียดและวิเคราะห์ผลลัพธ์</p>
+                    <p class="text-xs text-indigo-200">พระจอมเกล้าติวเตอร์ | ระบบฝึกทำข้อสอบเดี่ยวพร้อมเฉลยและวิธีทำทันทีหลังเลือกตอบ</p>
                 </div>
             </div>
             
@@ -85,8 +85,8 @@
             <div class="lg:col-span-7 space-y-6">
                 <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex justify-between items-center">
                     <div>
-                        <h3 class="font-bold text-slate-800 text-base">ชุดข้อสอบชุดที่ 2 (30 ข้อถ้วน)</h3>
-                        <p class="text-xs text-slate-500">ระบบสุ่มตัวเลือกด้วย Fisher-Yates Shuffle ป้องกันการเดา 100%</p>
+                        <h3 class="font-bold text-slate-800 text-base">ชุดข้อสอบชุดที่ 2 (30 ข้อถ้วน) - เฉลยทันทีเมื่อเลือกตอบ</h3>
+                        <p class="text-xs text-slate-500">ระบบสุ่มตัวเลือกด้วย Fisher-Yates Shuffle พร้อมแสดงผลถูก/ผิดและวิธีทำทันที</p>
                     </div>
                     <div id="exam-progress-text" class="text-xs font-bold bg-indigo-50 text-indigo-700 px-3 py-1.5 rounded-xl border border-indigo-100">
                         ทำแล้ว: 0 / 30 ข้อ
@@ -101,7 +101,7 @@
                 <!-- Submit / Finish Button -->
                 <div class="pt-4 flex justify-center">
                     <button onclick="submitExam()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3.5 px-8 rounded-2xl shadow-md transition flex items-center gap-2 text-base">
-                        <span>📊</span> ตรวจคำตอบและดูผลการวิเคราะห์คะแนน
+                        <span>📊</span> สรุปผลคะแนนและดูการวิเคราะห์รายบุคคล
                     </button>
                 </div>
             </div>
@@ -687,7 +687,7 @@
                     <div id="clue-${q.id}" class="hidden text-xs bg-amber-50 text-amber-900 p-3 rounded-xl border border-amber-200">
                         <strong>คำใบ้:</strong> ${q.clue}
                     </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-2.5 pt-2">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-2.5 pt-2" id="options-container-${q.id}">
                         ${optionsHtml}
                     </div>
                     <div id="explanation-${q.id}" class="hidden bg-slate-50 border border-slate-200 p-4 rounded-xl space-y-2 mt-4 text-xs">
@@ -718,32 +718,45 @@
             userAnswers[qId] = selectedText;
             const answeredCount = Object.keys(userAnswers).length;
             document.getElementById('exam-progress-text').textContent = `ทำแล้ว: ${answeredCount} / 30 ข้อ`;
+
+            // Find question object
+            const q = rawExamData.find(item => item.id === qId);
+            const correctOpt = q.options.find(o => o.isCorrect);
+            const expBox = document.getElementById(`explanation-${qId}`);
+            const statusEl = document.getElementById(`result-status-${qId}`);
+            const qBox = document.getElementById(`question-box-${qId}`);
+
+            // Disable radio inputs for this question to lock answer
+            const container = document.getElementById(`options-container-${qId}`);
+            const radios = container.querySelectorAll('input[type="radio"]');
+            radios.forEach(r => r.disabled = true);
+
+            expBox.classList.remove('hidden');
+
+            if (selectedText.trim() === correctOpt.text.trim()) {
+                statusEl.innerHTML = `<span class="text-emerald-600">✅ ถูกต้อง!</span>`;
+                qBox.classList.add('border-emerald-300', 'bg-emerald-50/20');
+            } else {
+                statusEl.innerHTML = `<span class="text-rose-600">❌ ตอบผิด (เฉลยที่ถูกต้องคือ: ${correctOpt.text})</span>`;
+                qBox.classList.add('border-rose-300', 'bg-rose-50/20');
+            }
+
+            // Re-render math in explanation
+            if (window.renderMathInElement) {
+                renderMathInElement(expBox);
+            }
         }
 
-        // Submit and Evaluate Exam
+        // Submit and Evaluate Exam Summary
         function submitExam() {
             let score = 0;
-            let correctTopics = [];
-            let incorrectTopics = [];
+            let answeredCount = Object.keys(userAnswers).length;
 
             rawExamData.forEach(q => {
                 const userAns = userAnswers[q.id];
                 const correctOpt = q.options.find(o => o.isCorrect);
-                const expBox = document.getElementById(`explanation-${q.id}`);
-                const statusEl = document.getElementById(`result-status-${q.id}`);
-                const qBox = document.getElementById(`question-box-${q.id}`);
-
-                expBox.classList.remove('hidden');
-
                 if (userAns && userAns.trim() === correctOpt.text.trim()) {
                     score++;
-                    statusEl.innerHTML = `<span class="text-emerald-600">✅ ถูกต้อง!</span>`;
-                    qBox.classList.add('border-emerald-300', 'bg-emerald-50/20');
-                    correctTopics.push("การคำนวณและวิเคราะห์โจทย์ ห.ร.ม. / ค.ร.น.");
-                } else {
-                    statusEl.innerHTML = `<span class="text-rose-600">❌ ตอบผิด (เฉลยที่ถูกต้องคือ: ${correctOpt.text})</span>`;
-                    qBox.classList.add('border-rose-300', 'bg-rose-50/20');
-                    incorrectTopics.push("โจทย์ปัญหาการประยุกต์หรือการหาเศษเหลือ");
                 }
             });
 
