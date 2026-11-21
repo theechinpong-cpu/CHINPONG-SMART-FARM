@@ -14,16 +14,19 @@
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body);"></script>
     
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&display=swap');
         body { font-family: 'Sarabun', sans-serif; }
         .gradient-bg { background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%); }
         .glass-card { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
         .spin-wheel { transition: transform 4s cubic-bezier(0.15, 0.85, 0.15, 1); }
-        @keyframes popIn {
-            0% { transform: scale(0.8); opacity: 0; }
-            100% { transform: scale(1); opacity: 1; }
+        @keyframes pulse-ring {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 12px rgba(99, 102, 241, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(99, 102, 241, 0); }
         }
-        .badge-pop { animation: popIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .active-badge-ring {
+            animation: pulse-ring 2s infinite;
+        }
     </style>
 </head>
 <body class="bg-slate-100 min-h-screen text-slate-800 flex flex-col">
@@ -172,104 +175,101 @@
                 </div>
             </div>
 
-            <!-- MODE A: Competitive Game Mode (Spinning Wheel & Buddy Co-op Scoring) -->
+            <!-- MODE A: Competitive Game Mode (Fixed Circular Player Badges + Helper System + Split Score) -->
             <div id="container-mode-a" class="space-y-6">
-                <div class="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-2xl border border-indigo-100 flex flex-col lg:flex-row items-center justify-between gap-6">
-                    <div class="space-y-2 text-center lg:text-left">
-                        <span class="bg-indigo-600 text-white text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wide">Competitive Arena • Co-op Mode</span>
-                        <h3 class="text-2xl font-bold text-indigo-900">วงล้อสุ่มผู้เล่นและภารกิจจำแนก Tense</h3>
-                        <p class="text-sm text-slate-600 max-w-xl">
-                            ผู้เล่นทั้งหมด 4 คน (<strong>ท็อป, ตาล, ลูกเกด, น้ำฟ้า</strong>) เมื่อสุ่มได้ผู้เล่นหลักแล้ว <strong>สามารถดึงเพื่อนมาช่วยกันคิดได้ไม่จำกัด</strong> โดยคะแนนที่ได้ (+12 คะแนน/ข้อ) จะถูก <strong>แบ่งเท่าๆ กัน</strong> ให้ทุกคนในทีมที่ร่วมตอบ และหากตอบผิดจะถูก <strong>หักคะแนนเท่าๆ กัน</strong> (-12 คะแนน/ข้อ หารเฉลี่ยทุกคนที่ร่วมตอบ)
+                <!-- Banner Info -->
+                <div class="bg-gradient-to-r from-blue-50 to-indigo-50 p-5 rounded-2xl border border-indigo-100 flex flex-col md:flex-row items-center justify-between gap-4">
+                    <div class="space-y-1 text-center md:text-left">
+                        <span class="bg-indigo-600 text-white text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wide">Competitive Arena</span>
+                        <h3 class="text-xl md:text-2xl font-bold text-indigo-900">ป้ายวงกลมสุ่มผู้ท้าชิง & ระบบดึงเพื่อนช่วยคิด</h3>
+                        <p class="text-xs md:text-sm text-slate-600 max-w-2xl">
+                            ผู้เล่น 4 คน (<strong>ท็อป, ตาล, ลูกเกด, น้ำฟ้า</strong>) ตรึงตำแหน่งคงที่! สุ่มได้ใครคนนั้นเล่น <strong>สามารถดึงเพื่อนมาช่วยคิดได้</strong> (คะแนนบวก/ลบจะถูกแบ่งเท่าๆ กันตามจำนวนคนในทีมรอบนั้น) เมื่อเล่นจบจะขึ้นป้ายวงกลมให้คนถัดไปเล่นทันที!
                         </p>
                     </div>
-                    <div class="flex items-center space-x-3">
-                        <button onclick="resetAllScores()" class="bg-white hover:bg-rose-50 text-rose-600 border border-rose-200 font-bold text-xs px-4 py-2.5 rounded-xl shadow-sm transition flex items-center space-x-1.5">
-                            <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
-                            <span>รีเซ็ตคะแนนทุกคน</span>
-                        </button>
+                    <button onclick="resetAllPlayerScores()" class="bg-white hover:bg-red-50 text-red-600 border border-red-200 text-xs font-bold px-4 py-2 rounded-xl shadow-sm transition flex items-center space-x-1 shrink-0">
+                        <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+                        <span>รีเซ็ตคะแนนทุกคน</span>
+                    </button>
+                </div>
+
+                <!-- FIXED POSITION CIRCULAR PLAYER BADGES (ตรึงตำแหน่งเดิมตลอดเวลา) -->
+                <div class="sticky top-[76px] z-30 bg-white/95 backdrop-blur-md p-4 md:p-6 rounded-2xl border-2 border-indigo-200 shadow-lg">
+                    <div class="flex justify-between items-center mb-3">
+                        <span class="text-xs font-bold text-indigo-800 uppercase tracking-wider flex items-center gap-1.5">
+                            <i data-lucide="award" class="w-4 h-4 text-indigo-600"></i>
+                            ป้ายผู้เล่นประจำตำแหน่ง (คลิกเพื่อดึงเพื่อนช่วยคิดเมื่อถึงตาเล่น)
+                        </span>
+                        <span id="turn-status-indicator" class="text-xs font-bold px-3 py-1 rounded-full bg-slate-100 text-slate-600">
+                            สถานะ: รอสุ่มผู้เล่น
+                        </span>
+                    </div>
+
+                    <!-- 4 Fixed Circular Player Badges Grid -->
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 md:gap-6 justify-items-center" id="fixed-players-board">
+                        <!-- Rendered dynamically with fixed slots 0:ท็อป, 1:ตาล, 2:ลูกเกด, 3:น้ำฟ้า -->
                     </div>
                 </div>
 
-                <!-- Circular Colorful Player Badges Scoreboard -->
-                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-                    <div class="flex flex-col sm:flex-row justify-between items-center mb-5 gap-2">
-                        <h4 class="font-bold text-slate-800 flex items-center space-x-2">
-                            <i data-lucide="award" class="w-5 h-5 text-amber-500"></i>
-                            <span>ป้ายผู้เล่นและตารางคะแนนเรียลไทม์ (ท็อป • ตาล • ลูกเกด • น้ำฟ้า)</span>
-                        </h4>
-                        <span class="text-xs text-slate-500 bg-slate-100 px-3 py-1 rounded-full">ข้อละ 12 คะแนน (หารลงตัวทั้ง 1, 2, 3 และ 4 คน)</span>
-                    </div>
-                    <div id="player-badges-container" class="grid grid-cols-2 md:grid-cols-4 gap-6 place-items-center py-2">
-                        <!-- Rendered dynamically via JS -->
-                    </div>
-                </div>
-
-                <!-- Wheel & Action Area -->
-                <div id="wheel-area" class="bg-slate-50 p-8 rounded-2xl border border-slate-200 text-center space-y-6">
-                    <div class="relative w-56 h-56 mx-auto flex items-center justify-center">
-                        <!-- Pointer Arrow -->
-                        <div class="absolute -top-3 z-20 w-0 h-0 border-l-[12px] border-l-transparent border-r-[12px] border-r-transparent border-t-[20px] border-t-rose-600 drop-shadow"></div>
-                        <!-- Colorful 4-Segment Conic Wheel -->
-                        <div id="wheel-element" class="w-52 h-52 rounded-full shadow-2xl spin-wheel border-4 border-white relative flex items-center justify-center overflow-hidden"
-                             style="background: conic-gradient(#3b82f6 0deg 90deg, #f59e0b 90deg 180deg, #ec4899 180deg 270deg, #10b981 270deg 360deg);">
-                            <!-- Quadrant Labels -->
-                            <span class="absolute top-6 right-7 text-white font-extrabold text-sm drop-shadow">ท็อป</span>
-                            <span class="absolute bottom-6 right-7 text-white font-extrabold text-sm drop-shadow">ตาล</span>
-                            <span class="absolute bottom-6 left-6 text-white font-extrabold text-sm drop-shadow">ลูกเกด</span>
-                            <span class="absolute top-6 left-6 text-white font-extrabold text-sm drop-shadow">น้ำฟ้า</span>
-                            <!-- Center Hub -->
-                            <div class="w-16 h-16 bg-white rounded-full shadow-inner flex flex-col items-center justify-center z-10 border-2 border-indigo-100">
-                                <i data-lucide="sparkles" class="w-5 h-5 text-indigo-600"></i>
-                                <span class="text-[9px] font-extrabold text-indigo-900">TENSE</span>
-                            </div>
+                <!-- Spin Action Area (Shown before/after each turn) -->
+                <div id="wheel-area" class="bg-gradient-to-b from-slate-50 to-indigo-50/40 p-8 rounded-2xl border-2 border-dashed border-indigo-200 text-center space-y-5 transition-all">
+                    <div class="relative w-36 h-36 mx-auto rounded-full bg-gradient-to-tr from-indigo-600 via-purple-600 to-pink-500 p-1 shadow-xl">
+                        <div class="w-full h-full bg-white rounded-full flex flex-col items-center justify-center p-2">
+                            <i data-lucide="sparkles" class="w-8 h-8 text-indigo-600 mb-1"></i>
+                            <span id="roulette-preview-name" class="font-extrabold text-xl text-indigo-900">พร้อมสุ่ม!</span>
+                            <span class="text-[10px] text-slate-400 font-semibold">4 ผู้ท้าชิง</span>
                         </div>
                     </div>
-                    <div>
-                        <button id="spin-wheel-btn" onclick="spinWheel()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-8 py-3.5 rounded-xl shadow-lg transition transform hover:-translate-y-0.5 flex items-center space-x-2 mx-auto">
-                            <span>🎡 หมุนวงล้อสุ่มผู้เล่นและเริ่มชุดโจทย์</span>
+                    <div class="space-y-2">
+                        <button id="btn-spin-player" onclick="spinPlayerRoulette()" class="bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white font-bold px-8 py-3.5 rounded-2xl shadow-lg transition transform hover:-translate-y-0.5 text-base flex items-center space-x-2 mx-auto">
+                            <i data-lucide="shuffle" class="w-5 h-5"></i>
+                            <span>🎯 สุ่มป้ายวงกลมเลือกผู้เล่นคนต่อไป</span>
                         </button>
+                        <p class="text-xs text-slate-500">สุ่มเลือกผู้เล่น 1 คนเพื่อรับภารกิจตอบคำถาม (ข้อละ 12 คะแนน / ตอบผิดติดลบ -12 คะแนน เพื่อหารลงตัวทุกทีม!)</p>
                     </div>
                 </div>
 
-                <!-- Game Question Card (Hidden initially) -->
-                <div id="game-question-box" class="hidden bg-white p-6 rounded-2xl border-2 border-indigo-200 shadow-md space-y-5">
-                    <!-- Active Player & Buddy Selector Bar -->
-                    <div class="bg-gradient-to-r from-indigo-50 via-purple-50 to-pink-50 p-4 rounded-xl border border-indigo-200 space-y-3">
-                        <div class="flex flex-col md:flex-row md:items-center justify-between gap-2">
+                <!-- Game Question & Helper Selection Card (Shown during a player's turn) -->
+                <div id="game-question-box" class="hidden bg-white p-6 rounded-2xl border-2 border-indigo-300 shadow-md space-y-5">
+                    <!-- Active Team & Helper Controls -->
+                    <div class="bg-indigo-50/80 border border-indigo-200 rounded-xl p-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                        <div class="space-y-1">
                             <div class="flex items-center space-x-2">
-                                <span class="bg-indigo-600 text-white text-xs font-bold px-2.5 py-1 rounded-full">ผู้เล่นหลักรอบนี้</span>
-                                <span id="active-main-player-label" class="text-base font-extrabold text-indigo-950">-</span>
+                                <span class="bg-indigo-600 text-white text-xs font-bold px-2.5 py-0.5 rounded-md">ผู้เล่นหลัก</span>
+                                <span id="active-main-player-name" class="font-extrabold text-indigo-950 text-base">-</span>
                             </div>
-                            <div id="score-split-preview" class="text-xs font-bold bg-white px-3 py-1.5 rounded-lg border border-indigo-200 text-indigo-700 shadow-sm">
-                                ตอบถูก: +12 คะแนน/คน | ตอบผิด: -12 คะแนน/คน
-                            </div>
-                        </div>
-                        <div class="pt-2 border-t border-indigo-200/60">
-                            <p class="text-xs font-bold text-slate-700 mb-2 flex items-center space-x-1">
-                                <i data-lucide="user-plus" class="w-4 h-4 text-indigo-600"></i>
-                                <span>ดึงเพื่อนมาช่วยกันคิด (คลิกป้ายวงกลมเพื่อนเพื่อเข้าร่วมทีม — คะแนนบวกหรือติดลบจะถูกหารเฉลี่ยเท่าๆ กัน):</span>
+                            <p class="text-xs text-slate-600" id="active-helpers-summary">
+                                สมาชิกช่วยคิด: <span class="font-semibold text-indigo-700">เล่นคนเดียว (รับเต็ม 100%)</span>
                             </p>
-                            <div id="buddy-selector-container" class="flex flex-wrap items-center gap-3">
-                                <!-- Circular buddy toggle pills rendered dynamically -->
-                            </div>
+                        </div>
+                        
+                        <!-- Helper Toggle Buttons -->
+                        <div class="flex flex-wrap items-center gap-2" id="helper-selector-buttons">
+                            <!-- Dynamically populated buttons to invite/remove friends -->
                         </div>
                     </div>
 
-                    <div class="flex justify-between items-center text-xs font-semibold text-indigo-600 bg-indigo-50 px-3 py-1.5 rounded-lg">
-                        <span id="game-q-meta">โจทย์ข้อที่ 1 / 5</span>
-                        <span id="game-q-tag" class="bg-indigo-200 text-indigo-800 px-2 py-0.5 rounded">คำแนะนำ</span>
+                    <!-- Question Header -->
+                    <div class="flex flex-wrap justify-between items-center gap-2 text-xs font-semibold text-indigo-600 bg-slate-100 px-3.5 py-2 rounded-lg">
+                        <span id="game-q-meta" class="font-bold text-slate-700">โจทย์ประจำรอบ</span>
+                        <span id="game-q-tag" class="bg-indigo-100 text-indigo-800 px-2.5 py-0.5 rounded-md">Formula Hint</span>
                     </div>
-                    <h4 id="game-q-text" class="text-lg font-bold text-slate-900">Question text goes here...</h4>
+
+                    <!-- Question Text -->
+                    <h4 id="game-q-text" class="text-lg md:text-xl font-bold text-slate-900 leading-snug">Question text goes here...</h4>
+
+                    <!-- Answer Options -->
                     <div id="game-options-grid" class="grid grid-cols-1 md:grid-cols-2 gap-3">
                         <!-- Options generated dynamically -->
                     </div>
-                    <div id="game-feedback" class="hidden p-4 rounded-xl text-sm font-medium"></div>
-                    <div class="flex justify-between items-center pt-2">
-                        <button onclick="endCurrentRoundEarly()" class="text-xs text-slate-500 hover:text-indigo-600 underline">
-                            ↺ กลับไปหมุนวงล้อสุ่มผู้เล่นใหม่
-                        </button>
-                        <button id="next-game-q-btn" onclick="nextGameQuestion()" class="hidden bg-indigo-600 text-white font-semibold px-6 py-2 rounded-xl hover:bg-indigo-700 transition">
-                            ข้อถัดไป ➔
+
+                    <!-- Feedback & Score Distribution Banner -->
+                    <div id="game-feedback" class="hidden p-4 rounded-xl text-sm font-medium space-y-1"></div>
+
+                    <!-- Complete Turn & Return to Next Player Circular Badge -->
+                    <div class="flex justify-end pt-2">
+                        <button id="next-game-q-btn" onclick="finishTurnAndShowNextBadge()" class="hidden bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-6 py-3 rounded-xl shadow-md transition flex items-center space-x-2">
+                            <i data-lucide="check-circle-2" class="w-5 h-5"></i>
+                            <span>เก็บคะแนน & ขึ้นป้ายวงกลมให้คนอื่นเล่นต่อ ➔</span>
                         </button>
                     </div>
                 </div>
@@ -432,7 +432,7 @@
             { q: "While she ______ a book, the phone rang.", options: ["read", "reads", "was reading", "is reading"], correct: 2, tense: "Past Continuous", tag: "ใช้สูตร: Past Continuous มี keyword คือ while ตามด้วย was/were + V.ing" },
             { q: "They ______ football when it started to rain.", options: ["play", "played", "were playing", "are playing"], correct: 2, tense: "Past Continuous", tag: "ใช้สูตร: Past Continuous เหตุการณ์กำลังทำต่อเนื่องในอดีต (were playing)" },
             { q: "He ______ sleeping when I entered his room.", options: ["was", "were", "is", "did"], correct: 0, tense: "Past Continuous", tag: "ใช้สูตร: Past Continuous ประธาน He เอกพจน์ใช้ was + V.ing" },
-            { q: "The children ______ drawing pictures at this time yesterday.", options: ["was", "were", "are", "did"], correct: 1, tense: "Past Continuous", tag: "Use Past Continuous with plural subject The children -> were" },
+            { q: "The children ______ drawing pictures at this time yesterday.", options: ["was", "were", "are", "did"], correct: 1, tense: "Past Continuous", tag: "ใช้สูตร: Past Continuous ประธานพหูพจน์ The children ใช้ were" },
 
             // Future Simple (6 questions)
             { q: "I promise I ______ you with your homework tomorrow.", options: ["help", "helped", "will help", "am helping"], correct: 2, tense: "Future Simple", tag: "ใช้สูตร: Future Simple มี keyword ว่า tomorrow และคำสัญญา ใช้ will + V_1" },
@@ -446,7 +446,7 @@
             { q: "He ______ to Bangkok with his parents last week.", options: ["go", "goes", "went", "is going"], correct: 2, tense: "Past Simple", tag: "ใช้สูตร: Past Simple มี keyword ว่า last week ใช้กริยาช่อง 2 (went)" },
             { q: "They ______ a great movie at the cinema yesterday.", options: ["watch", "watched", "watching", "watches"], correct: 1, tense: "Past Simple", tag: "ใช้สูตร: Past Simple มี keyword ว่า yesterday ใช้ -ed" },
             { q: "What time ______ you get up this morning?", options: ["do", "does", "did", "are"], correct: 2, tense: "Past Simple", tag: "ใช้สูตร: Past Simple เหตุการณ์เช้านี้ที่ผ่านไปแล้ว ใช้ did ในคำถาม" },
-            { q: "She ______ not go to school yesterday because she was ill.", options: ["do", "does", "did", "will"], correct: 2, tense: "Past Simple", tag: "ใช้สูตร: Past Simple ประโยคปฏิเสธในอดีตใช้ did not ($did + V_1$)" },
+            { q: "She ______ not go to school yesterday because she was ill.", options: ["do", "does", "did", "will"], correct: 2, tense: "Past Simple", tag: "ใช้สูตร: Past Simple ประโยคปฏิเสธในอดีตใช้ did not (did + V_1)" },
             { q: "Columbus ______ America in 1492.", options: ["discover", "discovers", "discovered", "is discovering"], correct: 2, tense: "Past Simple", tag: "ใช้สูตร: Past Simple เหตุการณ์ประวัติศาสตร์ในอดีตจบลงแล้ว" },
             { q: "I ______ a strange noise outside my room last night.", options: ["hear", "hears", "heard", "hearing"], correct: 2, tense: "Past Simple", tag: "ใช้สูตร: Past Simple มี keyword ว่า last night ใช้ V_2 (heard)" }
         ];
@@ -484,190 +484,235 @@
         }
 
         // ==========================================
-        // Mode A State & Logic: ท็อป, ตาล, ลูกเกด, น้ำฟ้า
+        // MODE A: 4 Fixed Colorful Circular Badges + Team Help + Split Score
         // ==========================================
         const players = [
             {
-                id: "top",
+                id: 0,
                 name: "ท็อป",
                 score: 0,
-                gradient: "from-sky-400 via-blue-500 to-indigo-600",
-                ring: "ring-blue-400",
-                pillBg: "bg-blue-50 border-blue-300 text-blue-800",
-                pillActive: "bg-gradient-to-r from-sky-500 to-indigo-600 text-white border-transparent shadow-md"
+                bgGradient: "from-blue-500 to-cyan-400",
+                ringColor: "ring-blue-500",
+                badgeBg: "bg-blue-50",
+                textColor: "text-blue-900",
+                emoji: "🚀"
             },
             {
-                id: "tarn",
+                id: 1,
                 name: "ตาล",
                 score: 0,
-                gradient: "from-amber-400 via-orange-500 to-rose-500",
-                ring: "ring-amber-400",
-                pillBg: "bg-amber-50 border-amber-300 text-amber-800",
-                pillActive: "bg-gradient-to-r from-amber-500 to-orange-600 text-white border-transparent shadow-md"
+                bgGradient: "from-pink-500 to-rose-400",
+                ringColor: "ring-pink-500",
+                badgeBg: "bg-pink-50",
+                textColor: "text-pink-900",
+                emoji: "🌸"
             },
             {
-                id: "lookgade",
+                id: 2,
                 name: "ลูกเกด",
                 score: 0,
-                gradient: "from-fuchsia-500 via-pink-500 to-rose-600",
-                ring: "ring-pink-400",
-                pillBg: "bg-pink-50 border-pink-300 text-pink-800",
-                pillActive: "bg-gradient-to-r from-fuchsia-500 to-pink-600 text-white border-transparent shadow-md"
+                bgGradient: "from-amber-500 to-orange-400",
+                ringColor: "ring-amber-500",
+                badgeBg: "bg-amber-50",
+                textColor: "text-amber-900",
+                emoji: "⚡"
             },
             {
-                id: "namfah",
+                id: 3,
                 name: "น้ำฟ้า",
                 score: 0,
-                gradient: "from-emerald-400 via-teal-500 to-cyan-600",
-                ring: "ring-emerald-400",
-                pillBg: "bg-emerald-50 border-emerald-300 text-emerald-800",
-                pillActive: "bg-gradient-to-r from-emerald-500 to-teal-600 text-white border-transparent shadow-md"
+                bgGradient: "from-emerald-500 to-teal-400",
+                ringColor: "ring-emerald-500",
+                badgeBg: "bg-emerald-50",
+                textColor: "text-emerald-900",
+                emoji: "💎"
             }
         ];
 
-        const QUESTION_POINTS = 12; // 12 คะแนน/ข้อ หารลงตัวเมื่อเล่น 1, 2, 3 หรือ 4 คน
-        let activeMainPlayerId = null;
-        let selectedHelperIds = [];
-        let currentGameQIndex = 0;
-        let shuffledGameQuestions = [];
-        let currentWheelRotation = 0;
-        let isQuestionAnswered = false;
+        // 12 คะแนนต่อข้อ เพื่อให้หาร 1, 2, 3, 4 คนได้ลงตัว 100% (12, 6, 4, 3 คะแนน)
+        const BASE_QUESTION_POINTS = 12;
 
-        function renderPlayerBadges() {
-            const container = document.getElementById('player-badges-container');
-            container.innerHTML = '';
+        let activeMainPlayerId = null;     // ID of the player drawn by roulette
+        let activeHelpers = new Set();     // Set of helper player IDs invited by main player
+        let isTurnAnswered = false;        // Prevent changing helpers after answering
+        let isSpinning = false;
+        let questionPoolModeA = [];
+        let currentPoolIndexA = 0;
+        let roundNumber = 0;
 
-            players.forEach(p => {
-                const isMain = (p.id === activeMainPlayerId);
-                const isHelper = selectedHelperIds.includes(p.id);
-                const isParticipating = isMain || isHelper;
+        // Render Fixed Position Circular Player Badges
+        function renderFixedPlayerBadges(highlightedId = null) {
+            const board = document.getElementById('fixed-players-board');
+            board.innerHTML = '';
 
+            players.forEach((p) => {
+                const isMain = (activeMainPlayerId === p.id);
+                const isHelper = activeHelpers.has(p.id);
+                const isHighlighted = (highlightedId === p.id);
+                const canToggleHelper = (activeMainPlayerId !== null && !isMain && !isTurnAnswered);
+
+                // Determine badge visual state
                 let statusBadge = '';
-                if (isMain) {
-                    statusBadge = `<span class="absolute -top-2.5 bg-indigo-900 text-white text-[10px] font-extrabold px-2.5 py-0.5 rounded-full shadow border border-white">👑 ผู้เล่นหลัก</span>`;
+                let ringClasses = 'opacity-90 hover:opacity-100';
+
+                if (isHighlighted) {
+                    ringClasses = `ring-4 ${p.ringColor} scale-110 shadow-2xl opacity-100`;
+                    statusBadge = `<span class="absolute -top-2 bg-indigo-600 text-white text-[10px] font-bold px-2.5 py-0.5 rounded-full shadow">กำลังสุ่ม...</span>`;
+                } else if (isMain) {
+                    ringClasses = `ring-4 ${p.ringColor} active-badge-ring scale-105 shadow-xl opacity-100`;
+                    statusBadge = `<span class="absolute -top-2 bg-indigo-600 text-white text-[10px] font-bold px-2.5 py-0.5 rounded-full shadow">👑 ผู้เล่นหลัก</span>`;
                 } else if (isHelper) {
-                    statusBadge = `<span class="absolute -top-2.5 bg-purple-600 text-white text-[10px] font-extrabold px-2.5 py-0.5 rounded-full shadow border border-white">🤝 เพื่อนร่วมคิด</span>`;
+                    ringClasses = `ring-4 ring-purple-500 scale-105 shadow-lg opacity-100`;
+                    statusBadge = `<span class="absolute -top-2 bg-purple-600 text-white text-[10px] font-bold px-2.5 py-0.5 rounded-full shadow">🤝 เพื่อนช่วยคิด</span>`;
+                } else if (activeMainPlayerId !== null && !isTurnAnswered) {
+                    ringClasses = `opacity-75 hover:opacity-100 hover:scale-105 cursor-pointer border-2 border-dashed border-slate-300`;
+                    statusBadge = `<span class="absolute -top-2 bg-slate-600 text-white text-[10px] font-semibold px-2 py-0.5 rounded-full opacity-90">+ ดึงช่วยคิด</span>`;
                 }
 
-                const scoreTextColor = p.score < 0 ? 'text-rose-200' : 'text-white';
-                const ringStyle = isParticipating ? `ring-4 ${p.ring} scale-105` : 'opacity-95 hover:scale-105';
+                // Score styling (positive vs negative)
+                const scoreColorClass = p.score > 0
+                    ? 'text-emerald-700 bg-emerald-100 border-emerald-200'
+                    : p.score < 0
+                        ? 'text-red-700 bg-red-100 border-red-200'
+                        : 'text-slate-700 bg-slate-100 border-slate-200';
 
-                const badgeHTML = `
-                    <div class="relative flex flex-col items-center transition-all duration-300 ${ringStyle} rounded-full">
-                        ${statusBadge}
-                        <div class="w-32 h-32 sm:w-36 sm:h-36 rounded-full bg-gradient-to-br ${p.gradient} text-white shadow-xl border-4 border-white flex flex-col items-center justify-center p-2 text-center select-none">
-                            <span class="text-lg sm:text-xl font-extrabold tracking-wide drop-shadow">${p.name}</span>
-                            <div class="my-1 w-14 h-[1px] bg-white/40"></div>
-                            <span class="text-xl sm:text-2xl font-black ${scoreTextColor} drop-shadow">${p.score}</span>
-                            <span class="text-[10px] font-semibold uppercase tracking-wider text-white/90">คะแนน</span>
-                        </div>
-                    </div>
+                const wrapper = document.createElement('div');
+                wrapper.className = "flex flex-col items-center space-y-2 select-none";
+
+                // Circular Badge Element
+                const circleBtn = document.createElement('button');
+                circleBtn.type = "button";
+                circleBtn.disabled = !canToggleHelper;
+                circleBtn.onclick = () => toggleHelperPlayer(p.id);
+                circleBtn.className = `relative w-24 h-24 md:w-28 md:h-28 rounded-full bg-gradient-to-br ${p.bgGradient} text-white flex flex-col items-center justify-center shadow-md transition-all duration-300 ${ringClasses}`;
+                circleBtn.innerHTML = `
+                    ${statusBadge}
+                    <span class="text-xl md:text-2xl mb-0.5">${p.emoji}</span>
+                    <span class="font-extrabold text-lg md:text-xl tracking-wide drop-shadow">${p.name}</span>
                 `;
-                container.insertAdjacentHTML('beforeend', badgeHTML);
+
+                // Fixed Score Pill directly underneath the circle
+                const scorePill = document.createElement('div');
+                scorePill.className = `px-3 py-1 rounded-full text-xs md:text-sm font-extrabold border ${scoreColorClass} transition-all`;
+                scorePill.innerText = `${p.score > 0 ? '+' : ''}${p.score} คะแนน`;
+
+                wrapper.appendChild(circleBtn);
+                wrapper.appendChild(scorePill);
+                board.appendChild(wrapper);
             });
         }
 
-        function renderBuddySelector() {
-            const container = document.getElementById('buddy-selector-container');
-            container.innerHTML = '';
+        // Toggle Helper Invitation during a turn
+        function toggleHelperPlayer(helperId) {
+            if (activeMainPlayerId === null || helperId === activeMainPlayerId || isTurnAnswered) return;
+
+            if (activeHelpers.has(helperId)) {
+                activeHelpers.delete(helperId);
+            } else {
+                activeHelpers.add(helperId);
+            }
+            renderFixedPlayerBadges();
+            updateHelperControlUI();
+        }
+
+        // Update Helper Summary & Quick Buttons inside Question Box
+        function updateHelperControlUI() {
+            const mainPlayer = players[activeMainPlayerId];
+            document.getElementById('active-main-player-name').innerText = `${mainPlayer.emoji} ${mainPlayer.name}`;
+
+            const totalParticipants = 1 + activeHelpers.size;
+            const splitPoints = BASE_QUESTION_POINTS / totalParticipants;
+            const helperNames = Array.from(activeHelpers).map(id => players[id].name);
+
+            const summaryEl = document.getElementById('active-helpers-summary');
+            if (helperNames.length === 0) {
+                summaryEl.innerHTML = `สมาชิกช่วยคิด: <span class="font-bold text-indigo-700">เล่นคนเดียว</span> (ถูก <span class="text-emerald-600 font-bold">+${splitPoints}</span> / ผิด <span class="text-red-600 font-bold">-${splitPoints}</span> คะแนน)`;
+            } else {
+                summaryEl.innerHTML = `ทีมช่วยคิด (${totalParticipants} คน): <span class="font-bold text-purple-700">${mainPlayer.name}, ${helperNames.join(', ')}</span> (หารคนละ <span class="text-emerald-600 font-bold">+${splitPoints}</span> / ผิด <span class="text-red-600 font-bold">-${splitPoints}</span> คะแนน)`;
+            }
+
+            // Render quick toggle pills for other 3 players
+            const btnContainer = document.getElementById('helper-selector-buttons');
+            btnContainer.innerHTML = '<span class="text-xs font-semibold text-slate-500 mr-1">ดึงเพื่อนช่วย:</span>';
 
             players.forEach(p => {
-                if (p.id === activeMainPlayerId) return; // ผู้เล่นหลักอยู่ในทีมแล้ว
-
-                const isSelected = selectedHelperIds.includes(p.id);
+                if (p.id === activeMainPlayerId) return;
+                const isInvited = activeHelpers.has(p.id);
                 const btn = document.createElement('button');
                 btn.type = "button";
-                btn.disabled = isQuestionAnswered;
-                btn.className = `flex items-center space-x-2 pl-1.5 pr-3.5 py-1.5 rounded-full border-2 text-xs font-bold transition transform active:scale-95 ${
-                    isSelected ? p.pillActive : p.pillBg + ' hover:opacity-80'
-                } ${isQuestionAnswered ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'}`;
-
-                btn.innerHTML = `
-                    <span class="w-6 h-6 rounded-full bg-gradient-to-br ${p.gradient} text-white flex items-center justify-center text-[11px] font-extrabold border border-white shadow-sm">
-                        ${p.name.charAt(0)}
-                    </span>
-                    <span>${p.name}</span>
-                    <span>${isSelected ? '✓ ร่วมทีม' : '+ ดึงช่วย'}</span>
-                `;
+                btn.disabled = isTurnAnswered;
                 btn.onclick = () => toggleHelperPlayer(p.id);
-                container.appendChild(btn);
+                btn.className = isInvited
+                    ? "px-3 py-1.5 rounded-full text-xs font-bold bg-purple-600 text-white shadow-sm transition flex items-center space-x-1"
+                    : "px-3 py-1.5 rounded-full text-xs font-bold bg-white text-slate-700 border border-slate-300 hover:border-purple-400 hover:bg-purple-50 transition flex items-center space-x-1";
+                btn.innerHTML = `<span>${isInvited ? '✓' : '+'} ${p.name}</span>`;
+                btnContainer.appendChild(btn);
             });
-
-            updateScoreSplitPreview();
         }
 
-        function toggleHelperPlayer(playerId) {
-            if (isQuestionAnswered) return;
-            const idx = selectedHelperIds.indexOf(playerId);
-            if (idx === -1) {
-                selectedHelperIds.push(playerId);
-            } else {
-                selectedHelperIds.splice(idx, 1);
-            }
-            renderBuddySelector();
-            renderPlayerBadges();
-        }
+        // Spin Roulette to Pick One of the 4 Circular Badges
+        function spinPlayerRoulette() {
+            if (isSpinning) return;
+            isSpinning = true;
 
-        function updateScoreSplitPreview() {
-            const teamIds = [activeMainPlayerId, ...selectedHelperIds].filter(Boolean);
-            const count = teamIds.length || 1;
-            const share = QUESTION_POINTS / count;
-            const teamNames = teamIds.map(id => players.find(p => p.id === id).name).join(', ');
-
-            document.getElementById('score-split-preview').innerHTML = `
-                ทีมตอบ (${count} คน: ${teamNames}) • ตอบถูก: <span class="text-emerald-600">+${share} คะแนน/คน</span> | ตอบผิด: <span class="text-rose-600">-${share} คะแนน/คน</span>
-            `;
-        }
-
-        function spinWheel() {
-            const spinBtn = document.getElementById('spin-wheel-btn');
+            const spinBtn = document.getElementById('btn-spin-player');
             spinBtn.disabled = true;
             spinBtn.classList.add('opacity-60', 'cursor-not-allowed');
 
-            const wheel = document.getElementById('wheel-element');
-            const randomExtraDeg = Math.floor(Math.random() * 360) + 1080;
-            currentWheelRotation += randomExtraDeg;
-            wheel.style.transform = `rotate(${currentWheelRotation}deg)`;
-            
-            setTimeout(() => {
-                spinBtn.disabled = false;
-                spinBtn.classList.remove('opacity-60', 'cursor-not-allowed');
+            document.getElementById('turn-status-indicator').innerText = "สถานะ: กำลังสุ่มเลือกผู้เล่น...";
+            document.getElementById('turn-status-indicator').className = "text-xs font-bold px-3 py-1 rounded-full bg-amber-100 text-amber-800";
 
-                const chosenPlayer = players[Math.floor(Math.random() * players.length)];
-                activeMainPlayerId = chosenPlayer.id;
-                selectedHelperIds = [];
+            const previewName = document.getElementById('roulette-preview-name');
+            let ticks = 0;
+            const totalTicks = 22;
+            const finalWinnerId = Math.floor(Math.random() * players.length);
 
-                document.getElementById('active-main-player-label').innerText = `${chosenPlayer.name} (คะแนนปัจจุบัน: ${chosenPlayer.score} คะแนน)`;
-                shuffledGameQuestions = fisherYatesShuffle([...masterQuestions]).slice(0, 5);
-                currentGameQIndex = 0;
+            const interval = setInterval(() => {
+                const currentHighlightId = ticks % players.length;
+                previewName.innerText = `${players[currentHighlightId].emoji} ${players[currentHighlightId].name}`;
+                renderFixedPlayerBadges(currentHighlightId);
+                ticks++;
 
-                document.getElementById('wheel-area').classList.add('hidden');
-                document.getElementById('game-question-box').classList.remove('hidden');
+                if (ticks > totalTicks) {
+                    clearInterval(interval);
+                    isSpinning = false;
+                    spinBtn.disabled = false;
+                    spinBtn.classList.remove('opacity-60', 'cursor-not-allowed');
 
-                renderPlayerBadges();
-                loadGameQuestion();
-            }, 4000);
+                    // Set selected player
+                    activeMainPlayerId = finalWinnerId;
+                    activeHelpers.clear();
+                    isTurnAnswered = false;
+                    roundNumber++;
+
+                    const winner = players[activeMainPlayerId];
+                    previewName.innerText = `${winner.emoji} ${winner.name}`;
+
+                    document.getElementById('turn-status-indicator').innerText = `ตาของ: ${winner.name} (คลิกป้ายเพื่อนเพื่อดึงช่วยคิดได้)`;
+                    document.getElementById('turn-status-indicator').className = "text-xs font-bold px-3 py-1 rounded-full bg-indigo-100 text-indigo-800";
+
+                    renderFixedPlayerBadges();
+                    startPlayerTurnQuestion();
+                }
+            }, 90);
         }
 
-        function loadGameQuestion() {
-            if (currentGameQIndex >= shuffledGameQuestions.length) {
-                const summary = players.map(p => `${p.name}: ${p.score} คะแนน`).join(' | ');
-                alert(`จบชุดคำถาม 5 ข้อแล้ว!\nสรุปคะแนนรวม:\n${summary}`);
-                endCurrentRoundEarly();
-                return;
+        // Load Question for the Selected Player
+        function startPlayerTurnQuestion() {
+            if (questionPoolModeA.length === 0 || currentPoolIndexA >= questionPoolModeA.length) {
+                questionPoolModeA = fisherYatesShuffle([...masterQuestions]);
+                currentPoolIndexA = 0;
             }
 
-            isQuestionAnswered = false;
-            // รีเซ็ตเพื่อนร่วมคิดในแต่ละข้อเพื่อให้ผู้เล่นหลักเลือกได้อิสระทุกข้อ
-            selectedHelperIds = [];
-            const mainPlayer = players.find(p => p.id === activeMainPlayerId);
-            document.getElementById('active-main-player-label').innerText = `${mainPlayer.name} (คะแนนปัจจุบัน: ${mainPlayer.score} คะแนน)`;
+            const qData = questionPoolModeA[currentPoolIndexA];
+            currentPoolIndexA++;
 
-            renderPlayerBadges();
-            renderBuddySelector();
+            document.getElementById('wheel-area').classList.add('hidden');
+            document.getElementById('game-question-box').classList.remove('hidden');
 
-            const qData = shuffledGameQuestions[currentGameQIndex];
-            document.getElementById('game-q-meta').innerText = `โจทย์ข้อที่ ${currentGameQIndex + 1} / ${shuffledGameQuestions.length}`;
+            updateHelperControlUI();
+
+            document.getElementById('game-q-meta').innerText = `รอบที่ ${roundNumber} • ภารกิจของ "${players[activeMainPlayerId].name}" (12 คะแนน)`;
             document.getElementById('game-q-tag').innerText = qData.tag;
             document.getElementById('game-q-text').innerText = qData.q;
 
@@ -679,16 +724,17 @@
 
             qData.options.forEach((opt, idx) => {
                 const btn = document.createElement('button');
-                btn.className = "p-3 rounded-xl border border-slate-200 bg-slate-50 hover:bg-indigo-50 hover:border-indigo-300 font-medium text-left transition flex items-center space-x-3";
-                btn.innerHTML = `<span class="w-6 h-6 bg-slate-200 rounded-full flex items-center justify-center text-xs font-bold text-slate-700">${String.fromCharCode(65 + idx)}</span><span>${opt}</span>`;
+                btn.className = "p-3.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-indigo-50 hover:border-indigo-300 font-medium text-left transition flex items-center space-x-3";
+                btn.innerHTML = `<span class="w-7 h-7 bg-slate-200 rounded-full flex items-center justify-center text-xs font-bold text-slate-700 shrink-0">${String.fromCharCode(65 + idx)}</span><span>${opt}</span>`;
                 btn.onclick = () => checkGameAnswer(idx, qData.correct, btn);
                 grid.appendChild(btn);
             });
         }
 
+        // Check Answer & Split Score Equally Among Main Player + Invited Helpers
         function checkGameAnswer(selected, correct, btnElement) {
-            isQuestionAnswered = true;
-            renderBuddySelector(); // ล็อกปุ่มเลือกเพื่อนหลังตอบแล้ว
+            if (isTurnAnswered) return;
+            isTurnAnswered = true;
 
             const feedback = document.getElementById('game-feedback');
             feedback.classList.remove('hidden');
@@ -696,67 +742,79 @@
 
             for (let b of buttons) { b.disabled = true; }
 
-            const teamIds = [activeMainPlayerId, ...selectedHelperIds].filter(Boolean);
-            const sharePoints = QUESTION_POINTS / teamIds.length;
-            const teamNames = teamIds.map(id => players.find(p => p.id === id).name).join(', ');
+            // Calculate participants and equal split
+            const participantIds = [activeMainPlayerId, ...Array.from(activeHelpers)];
+            const count = participantIds.length;
+            const sharePoints = BASE_QUESTION_POINTS / count;
+            const participantNames = participantIds.map(id => players[id].name).join(', ');
 
             if (selected === correct) {
-                btnElement.className = "p-3 rounded-xl border border-green-300 bg-green-100 font-medium text-left flex items-center space-x-3 text-green-800";
-                feedback.className = "p-4 rounded-xl text-sm font-semibold bg-green-50 text-green-800 border border-green-200";
-                
-                teamIds.forEach(id => {
-                    const playerObj = players.find(p => p.id === id);
-                    if (playerObj) playerObj.score += sharePoints;
+                btnElement.className = "p-3.5 rounded-xl border border-green-400 bg-green-100 font-bold text-left flex items-center space-x-3 text-green-900";
+                feedback.className = "p-4 rounded-xl text-sm font-semibold bg-green-50 text-green-900 border border-green-300";
+
+                // Add equal points to each participant
+                participantIds.forEach(id => {
+                    players[id].score += sharePoints;
                 });
 
-                feedback.innerHTML = `✅ ถูกต้องยอดเยี่ยม! รับรวม ${QUESTION_POINTS} คะแนน แบ่งให้ <strong>${teamNames}</strong> คนละ <strong>+${sharePoints} คะแนน</strong> เท่าๆ กัน`;
+                if (count === 1) {
+                    feedback.innerHTML = `✅ <strong>ถูกต้องยอดเยี่ยม!</strong> <strong>${participantNames}</strong> ตอบคนเดียว รับไปเต็มๆ <strong>+${sharePoints} คะแนน</strong>`;
+                } else {
+                    feedback.innerHTML = `✅ <strong>ถูกต้องยอดเยี่ยม!</strong> ทีมช่วยคิด (${count} คน: <strong>${participantNames}</strong>) แบ่งคะแนนเท่าๆ กัน รับไปคนละ <strong>+${sharePoints} คะแนน</strong>!`;
+                }
             } else {
-                btnElement.className = "p-3 rounded-xl border border-red-300 bg-red-100 font-medium text-left flex items-center space-x-3 text-red-800";
-                buttons[correct].className = "p-3 rounded-xl border border-green-300 bg-green-100 font-medium text-left flex items-center space-x-3 text-green-800";
-                feedback.className = "p-4 rounded-xl text-sm font-semibold bg-red-50 text-red-800 border border-red-200";
+                btnElement.className = "p-3.5 rounded-xl border border-red-400 bg-red-100 font-bold text-left flex items-center space-x-3 text-red-900";
+                buttons[correct].className = "p-3.5 rounded-xl border border-green-400 bg-green-100 font-bold text-left flex items-center space-x-3 text-green-900";
+                feedback.className = "p-4 rounded-xl text-sm font-semibold bg-red-50 text-red-900 border border-red-300";
 
-                teamIds.forEach(id => {
-                    const playerObj = players.find(p => p.id === id);
-                    if (playerObj) playerObj.score -= sharePoints;
+                // Deduct equal points from each participant
+                participantIds.forEach(id => {
+                    players[id].score -= sharePoints;
                 });
 
-                feedback.innerHTML = `❌ ยังไม่ถูกต้อง (ข้อที่ถูกคือ ${String.fromCharCode(65 + correct)}) หักคะแนนรวม ${QUESTION_POINTS} คะแนน เฉลี่ยหัก <strong>${teamNames}</strong> คนละ <strong>-${sharePoints} คะแนน</strong> เท่าๆ กัน`;
+                if (count === 1) {
+                    feedback.innerHTML = `❌ <strong>ยังไม่ถูกต้อง!</strong> คำตอบที่ถูกคือข้อ ${String.fromCharCode(65 + correct)} • <strong>${participantNames}</strong> ถูกหัก <strong>-${sharePoints} คะแนน</strong>`;
+                } else {
+                    feedback.innerHTML = `❌ <strong>ยังไม่ถูกต้อง!</strong> คำตอบที่ถูกคือข้อ ${String.fromCharCode(65 + correct)} • ทีมช่วยคิด (${count} คน: <strong>${participantNames}</strong>) ถูกหักคะแนนเท่าๆ กัน คนละ <strong>-${sharePoints} คะแนน</strong>`;
+                }
             }
 
-            const mainPlayer = players.find(p => p.id === activeMainPlayerId);
-            document.getElementById('active-main-player-label').innerText = `${mainPlayer.name} (คะแนนปัจจุบัน: ${mainPlayer.score} คะแนน)`;
-            renderPlayerBadges();
+            // Re-render fixed badges with updated scores & lock helper controls
+            renderFixedPlayerBadges();
+            updateHelperControlUI();
             document.getElementById('next-game-q-btn').classList.remove('hidden');
         }
 
-        function nextGameQuestion() {
-            currentGameQIndex++;
-            loadGameQuestion();
-        }
-
-        function endCurrentRoundEarly() {
+        // Collect Score & Bring Up Circular Badges Immediately for Next Player
+        function finishTurnAndShowNextBadge() {
             activeMainPlayerId = null;
-            selectedHelperIds = [];
-            isQuestionAnswered = false;
-            document.getElementById('wheel-area').classList.remove('hidden');
+            activeHelpers.clear();
+            isTurnAnswered = false;
+
             document.getElementById('game-question-box').classList.add('hidden');
-            renderPlayerBadges();
+            document.getElementById('wheel-area').classList.remove('hidden');
+            document.getElementById('roulette-preview-name').innerText = "พร้อมสุ่ม!";
+
+            document.getElementById('turn-status-indicator').innerText = "สถานะ: เก็บคะแนนเรียบร้อย พร้อมสุ่มผู้เล่นคนถัดไป";
+            document.getElementById('turn-status-indicator').className = "text-xs font-bold px-3 py-1 rounded-full bg-emerald-100 text-emerald-800";
+
+            renderFixedPlayerBadges();
         }
 
-        function resetAllScores() {
+        // Reset All Player Scores
+        function resetAllPlayerScores() {
             players.forEach(p => p.score = 0);
-            if (activeMainPlayerId) {
-                const mainPlayer = players.find(p => p.id === activeMainPlayerId);
-                document.getElementById('active-main-player-label').innerText = `${mainPlayer.name} (คะแนนปัจจุบัน: ${mainPlayer.score} คะแนน)`;
-            }
-            renderPlayerBadges();
+            roundNumber = 0;
+            finishTurnAndShowNextBadge();
+            document.getElementById('turn-status-indicator').innerText = "สถานะ: รีเซ็ตคะแนนเริ่มต้นใหม่";
+            document.getElementById('turn-status-indicator').className = "text-xs font-bold px-3 py-1 rounded-full bg-slate-100 text-slate-600";
         }
 
-        // Initial render of player badges
-        renderPlayerBadges();
+        // Initialize Fixed Circular Player Badges on Load
+        renderFixedPlayerBadges();
 
         // ==========================================
-        // Mode B State & Logic (Solo Practice 30 Questions)
+        // MODE B: Solo Practice Mode (30 Questions)
         // ==========================================
         let soloQuestions = [];
         let currentSoloIndex = 0;
@@ -904,8 +962,8 @@
             canvas.onmouseup = endPosition;
             canvas.onmousemove = draw;
             canvas.ontouchstart = startPosition;
-            canvas.ontouchend = endPosition;
             canvas.ontouchmove = draw;
+            canvas.ontouchend = endPosition;
         }
 
         function clearCanvas() {
